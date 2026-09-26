@@ -679,12 +679,16 @@ def lane_recall(b: Bewertung, champion: str, platten: bool) -> str:
     return f"{satz}. {tun}."
 
 
-def gegner_am_objective(namen: str, grube: str, name: str, kl) -> str:
-    """Die Gegner machen ein Objective: hin (contesten) oder tauschen - aus der Kampflage."""
+def gegner_am_objective(namen: str, grube: str, name: str, kl, weit: bool = False) -> str:
+    """Die Gegner machen ein Objective: hin (contesten) oder tauschen - aus der Kampflage. `weit`: du bist zu weit
+    weg, um mitzumachen (Live 26.09., 12:49, Graves top: "lauft nicht rein" - Carlos: "Ich bin doch gar nicht am
+    Drachen, ich bin auf der Toplane. Was laberst du?")."""
     wir, die, offen = kl.zahlen()
     art, _ = kl.urteil()
     akk = OBJ_AKK.get(kl.schl, name)
     satz = f"{namen} machen gerade {akk}"
+    if weit:
+        return satz + " - zu weit für dich, nutz die Zeit auf deiner Seite."
     zahl = f"{wir} gegen {die}" + (f", {offen} weitere sind nicht zu sehen" if offen else "")
     if art == "nehmen":
         return satz + f". Ihr seid {zahl}: geht hin und macht es ihnen streitig."

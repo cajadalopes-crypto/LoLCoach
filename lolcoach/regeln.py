@@ -873,8 +873,11 @@ class Regelwerk:
                 self._obj_gesagt[(schl, "gegner")] = p.zeit
                 text = cfg["gegner"].format(namen=_namen(gegner), grube=grube, objective=name,
                                             objective_akk=komponist.OBJ_AKK[schl])
+                weit = ich_weit > 0.45 and p.ich.rolle != "JUNGLE"     # ~15 s und mehr bis zur Grube
                 if (kl := bewertung.kampf_um(p, self.lage, schl)) is not None:
-                    text = komponist.gegner_am_objective(_namen(gegner), grube, name, kl)
+                    text = komponist.gegner_am_objective(_namen(gegner), grube, name, kl, weit)
+                elif weit:
+                    text = f"{_namen(gegner)} machen gerade {komponist.OBJ_AKK[schl]} - zu weit für dich, nutz die Zeit auf deiner Seite."
                 yield Ansage(text, WICHTIG, f"objgegner:{schl}", gueltig=15, sperre=20, thema="objective")
             if ich_weit <= cfg["ich_nah"]:
                 continue   # dein Team faengt an, und du stehst selbst dort - das siehst du
