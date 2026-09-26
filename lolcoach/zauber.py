@@ -136,11 +136,11 @@ _STEMPEL = re.compile(r"^\s*\[?(\d{1,2})\s?[:.]\s?(\d{2})\b")
 
 def chat_zeit(zeile: str, gelesen: float) -> float:
     """Spielzeit, zu der die Zeile geschrieben wurde: der Zeitstempel vorn ("04:48 Riven (Riven): ..."),
-    wenn er zu `gelesen` passt (hoechstens 20 s frueher) - sonst `gelesen`. Partie 4: der Leser sah
-    den Ping erst 3 s spaeter, der Flash-Timer lief 3 s zu lang."""
+    wenn er zu `gelesen` passt (hoechstens 60 s frueher) - sonst `gelesen`. Partie 4: der Leser sah
+    den Ping erst 3 s spaeter; Partie 5 (altes Chat-Fenster) bis zu 58 s - der Timer lief so viel zu lang."""
     if m := _STEMPEL.match(zeile):
         t = int(m.group(1)) * 60 + int(m.group(2))
-        if 0 <= gelesen - t <= 20:
+        if 0 <= gelesen - t <= 60:
             return float(t)
     return gelesen
 

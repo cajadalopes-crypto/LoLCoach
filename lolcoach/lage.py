@@ -193,9 +193,11 @@ class _Kamera:
 
 
 # Chat unten links, grosszuegig (Anteil des Spielfensters) - genau geeicht wird an einer Partie.
-# Chat-Fenster (Anteile des Spielfensters), geeicht an Partie 4 (46 Chat-Bilder, 4K): die neueste Zeile
-# steht bei 0.89, vier Zeilen reichen bis 0.83; oberhalb von 0.70 nur Spielwelt (Namensschilder als Rauschen)
-CHAT = (0.0, 0.70, 0.32, 0.93)
+# Chat-Fenster (Anteile des Spielfensters), geeicht an Partie 4 und 5 (4K): mit Unterkante 0.90 lag die
+# NEUESTE Zeile immer knapp darunter (~0.91) - ein Ping wurde erst lesbar, wenn die naechste Nachricht ihn
+# hochschob (Partie 5: 5:03 gepingt, 6:01 gelesen). Unten 0.95 (Eingabezeile), oben 0.70 (darueber nur
+# Spielwelt mit Namensschildern als Rauschen).
+CHAT = (0.0, 0.70, 0.32, 0.95)
 BILDER_BEHALTEN = 20 * 60     # Sekunden: aeltere Minimap-Bilder der laufenden Partie werden entfernt
 
 

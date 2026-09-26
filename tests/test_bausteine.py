@@ -113,6 +113,7 @@ def recalls_im_verlauf():
 def chat_zeitstempel():
     # Partie 4: "04:48 Riven (Riven): Tryndamere hat Blitz benutzt", gelesen um 4:51
     assert zauber.chat_zeit("04:48 Riven (Riven): Tryndamere hat Blitz benutzt", 291.0) == 288.0
+    assert zauber.chat_zeit("05:03 Riven (Riven): Tryndamere hat Entzünden benutzt", 361.0) == 303.0  # Partie 5
     assert zauber.chat_zeit("04:48 Riven (Riven): Tryndamere hat Blitz benutzt", 400.0) == 400.0   # zu alt
     assert zauber.chat_zeit("Riven (Riven): Urgot Blitz", 291.0) == 291.0                          # ohne Stempel
 
