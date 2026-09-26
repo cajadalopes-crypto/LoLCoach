@@ -343,8 +343,9 @@ class Regelwerk:
                 self._spike_bei = p.zeit
         if self._spikes and p.zeit - self._spike_bei >= 3:
             namen, self._spikes = " und ".join(self._spikes), []
-            yield Ansage(self.m["items"]["ich_fertig"].format(item=namen), WICHTIG, f"spike:{namen}",
-                         gueltig=40, sperre=10_000, situativ=True)
+            text = (komponist.spike(self.b, namen) if self.b is not None
+                    else self.m["items"]["ich_fertig"].format(item=namen))
+            yield Ansage(text, WICHTIG, f"spike:{namen}", gueltig=40, sperre=10_000, situativ=True)
         beobachtet = {s.name for s in (p.gegenueber(), p.jungler(gegenteam(p.mein_team))) if s}
         for s in p.gegner():
             alt = next((x for x in v.spieler if x.name == s.name and x.team == s.team), None)

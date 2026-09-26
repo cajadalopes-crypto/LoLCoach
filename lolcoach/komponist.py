@@ -497,3 +497,20 @@ def jungler_spaet(b: Bewertung, j: GegnerLage, seite: str) -> str:
     if ruhe and ruhe >= 20:
         return f"{satz}. Seitenwelle drücken, Turm - du hast mindestens {sek(ruhe)}."
     return satz + "."
+
+
+def spike(b: Bewertung, items: str) -> str:
+    """Eigenes Item fertig (Rueckfall, wenn Claude nicht rechtzeitig formuliert): was es gegen deinen
+    Lane-Gegner jetzt heisst - neuer Vorsprung, dazu der Trade-Hinweis aus der Spielakte."""
+    satz = f"{items} fertig"
+    g = b.lane
+    if g is None or g.s.tot:
+        return satz + " - dein Powerspike, such den nächsten Kampf."
+    wert, _ = b.kraefte()
+    v = b.vorsprung_satz()
+    if wert >= 1:
+        return satz + (f", {v}" if v else "") + f": zurück in die Lane und auf {g.champion} spielen" \
+            + (f" - {b.trade}." if b.trade else ".")
+    if wert <= -1:
+        return satz + (f", aber {v}" if v else "") + ": noch kein All-in, erst mit dem nächsten Item."
+    return satz + (f", {v}" if v else "") + f": jetzt gewinnst du kurze Trades gegen {g.champion}."
