@@ -38,7 +38,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - E: nie in 125 Reichweite neben ihm stehen, wenn hinter dir Kleber oder Turm ist.
 - Proxy: Welle einfrieren nahe dem eigenen Turm, Jungler rufen – er hat keinen Dash, nur Tempo. Kontroll-Auge hinter dem Turm.
 - R-Timer (100 s) mitzählen: ohne R ist er in Kämpfen langsam und leicht zu fangen.
-- %-Schaden gegen ihn (Liandrys Qual, Königsmord, Klinge des gestürzten Königs) und Magieresistenz (Gift = magisch).
+- %-Schaden gegen ihn (Liandrys Qual, Klinge des gestürzten Königs) und Magieresistenz (Gift = magisch).
 - Klaffende Wunden in R: eigene Heilung ist stark reduziert – nicht in seine Spur bei R.
 
 ## Makro/Teamfight
@@ -48,6 +48,6 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Build 26.19
 Richtung (ungeprüft, keine Build-Quelle abgerufen):
-- Kern: Rylais Kristallzepter → Kluftformer oder Liandrys Qual → Turbo-Chemtank/Tank-Item. Stiefel: Merkurs Schuhe oder Beschichtete Stahlkappen.
-- Tank: Sonnenfeuer-Ägide, Dornenpanzer, Kaenischer Rookern, Wille der Uralten.
+- Kern: Rylais Kristallzepter → Kluftformer oder Liandrys Qual → Tank-Item. Stiefel: Merkurs Schuhe oder Beschichtete Stahlkappen.
+- Tank: Sonnenfeuer-Ägide, Dornenpanzer, Kaenischer Rookern.
 - Skill: Q > E > W, R auf 6/11/16. Beschwörer: Blitz + Geist oder Teleportation (ungeprüft).

@@ -50,7 +50,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Build 26.19
 Richtung (ungeprüft, keine Build-Quelle abgerufen):
-- Support: Support-Item (Quest) → Mondstein-Erneuerer oder Imperiale Verfügung → Echos von Helia → Stab des fließenden Wassers/Dämmerung von Silbersee.
+- Support: Support-Item (Quest) → Mondstein-Erneuerer oder Imperiale Verfügung → Echos von Helia → Stab des fließenden Wassers.
 - Bot/Mid (APC): Ludens Echo oder Höllenmaske → Schattenflamme → Rabadons Todeshaube.
 - Situativ: Zhonyas Stundenglas gegen Dive, Morellonomikon gegen Heilung.
 - Skill: Q > E > W (Support oft Q > W > E, ungeprüft), R auf 6/11/16. Beschwörer: Blitz + Entzünden/Erschöpfung (Support), Blitz + Heilung/Teleportation (APC).

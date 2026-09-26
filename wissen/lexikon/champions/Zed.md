@@ -48,5 +48,5 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 ## Build 26.19
 Richtung (ungeprüft, keine Build-Quelle abgerufen):
 - Kern: Überheblichkeit oder Youmus Geistklinge → Saum der Nacht → Seryldas Bitterkeit. Stiefel: Ionische Stiefel der Deutlichkeit.
-- Situativ: Gelegenheit, Schutzengel, Schlund von Malmortius gegen AP.
+- Situativ: Schutzengel, Schlund von Malmortius gegen AP.
 - Skill: Q > E > W, R auf 6/11/16. Beschwörer: Blitz + Entzünden.

@@ -50,5 +50,5 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 ## Build 26.19
 Richtung (ungeprüft, keine Build-Quelle abgerufen):
 - Kern: Hohler Glanz → Jak'Sho, der Proteaner → Randuins Omen. Stiefel: Beschichtete Stahlkappen oder Merkurs Schuhe.
-- Situativ: Sonnenfeuer-Ägide, Kaenischer Rookern gegen AP, Dornenpanzer gegen Heilung, Wille der Uralten.
+- Situativ: Sonnenfeuer-Ägide, Kaenischer Rookern gegen AP, Dornenpanzer gegen Heilung.
 - Skill: Q > W > E (ungeprüft), R auf 6/11/16. Beschwörer: Zerschmettern + Blitz.

@@ -50,7 +50,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Build 26.19
 Richtung (ungeprüft, keine Build-Quelle abgerufen):
-- AD-Dschungel: Überheblichkeit oder Youmus Geistklinge → Saum der Nacht → Gelegenheit/Lord Dominiks Grüße → Schutzengel. Stiefel: Beschichtete Stahlkappen oder Ionische Stiefel der Deutlichkeit.
+- AD-Dschungel: Überheblichkeit oder Youmus Geistklinge → Saum der Nacht → Lord Dominiks Grüße → Schutzengel. Stiefel: Beschichtete Stahlkappen oder Ionische Stiefel der Deutlichkeit.
 - AP-Support/Dschungel: Schattenflamme, Rabadons Todeshaube, Zhonyas Stundenglas, Leerenstab.
 - Situativ: Saum der Nacht gegen Zielfähigkeiten (z. B. Lulu-Polymorph).
 - Skill: AD: Q > E > W, auf 1 W für Box-Clear. R auf 6/11/16. Beschwörer: Zerschmettern + Entzünden (ungeprüft).

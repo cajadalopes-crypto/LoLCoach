@@ -47,6 +47,6 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Build 26.19
 Richtung (ungeprüft, keine Build-Quelle abgerufen):
-- Kern: Support-Item (Quest) → Mondstein-Erneuerer → Echos von Helia → Stab des fließenden Wassers/Dämmerung von Silbersee.
-- Situativ: Mikaels Segen gegen harte Kontrolle, Imperiale Verfügung für Poke, Wooglets Hexenhaube/Zhonyas Stundenglas selten.
+- Kern: Support-Item (Quest) → Mondstein-Erneuerer → Echos von Helia → Stab des fließenden Wassers.
+- Situativ: Mikaels Segen gegen harte Kontrolle, Imperiale Verfügung für Poke, Zhonyas Stundenglas selten.
 - Skill: Q > W > E, R auf 6/11/16. Beschwörer: Blitz + Erschöpfung oder Entzünden.

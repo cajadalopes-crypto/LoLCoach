@@ -49,6 +49,6 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Build 26.19
 Richtung (ungeprüft, keine Build-Quelle abgerufen):
-- Kern: Support-Item (Quest) → Mondstein-Erneuerer → Echos von Helia → Stab des fließenden Wassers/Dämmerung von Silbersee.
-- Situativ: Mikaels Segen gegen harte Kontrolle, Shurelyas Kampfhymne für Tempo-Engage, Wooglets Hexenhaube gegen Dive (ungeprüft).
+- Kern: Support-Item (Quest) → Mondstein-Erneuerer → Echos von Helia → Stab des fließenden Wassers.
+- Situativ: Mikaels Segen gegen harte Kontrolle, Shurelyas Kampfhymne für Tempo-Engage, Zhonyas Stundenglas gegen Dive (ungeprüft).
 - Skill: Q > W > E (oft W > Q, ungeprüft), R auf 6/11/16. Beschwörer: Blitz + Entzünden/Erschöpfung.
