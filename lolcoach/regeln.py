@@ -79,7 +79,8 @@ class Regelwerk:
         ansagen: list[Ansage] = []
         for regel in (self._vorwarnung, self._zahlen, self._jungler_tot, self._lane_tot,
                       self._level, self._items, self._gold, self._cs, self._tod,
-                      self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf):
+                      self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf,
+                      self._ward):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 ansagen.append(a)
@@ -466,6 +467,48 @@ class Regelwerk:
             s, ort = kommen[0]
             yield Ansage(cfg["einer"].format(champion=s.champion, ort=ort), SOFORT, f"anlauf:{s.name}",
                          gueltig=3, sperre=cfg["sperre"])
+
+    def _ward(self, p: Partie, v: Partie):
+        """Ward-Vorschlag, wenn du an einer Stelle vorbeilaeufst, die JETZT zaehlt:
+        vor einem Objective die Grube, in der Lane-Phase der Gank-Weg, wenn der gegnerische
+        Jungler lange nicht zu sehen war. (Carlos: "du laeufst gerade vorbei, setz ein Ward -
+        intelligent mit Position, Laufweg und Spielstand".)"""
+        if not self.lage or not self.lage.aktiv or self._ich_weg(p):
+            return
+        cfg, w = self.m["ward"], wissen.lade("wards")
+        ich = self.lage.gesehen(p.ich)
+        if not ich or p.zeit - ich[0] > 1.5 or p.zeit < cfg["ab"]:
+            return
+        # Was zaehlt gerade?
+        anlaesse = {}
+        for schl, zweck in (("drache", "drache"), ("baron", "baron"), ("herold", "baron")):
+            n = p.naechster_spawn(schl)
+            if n is not None and 0 <= n - p.zeit <= cfg["objective_vorlauf"]:
+                name = {"drache": "Drache", "baron": "Baron", "herold": "Herold"}[schl]
+                anlaesse[zweck] = cfg["satz_objective"].format(objective=name, sekunden=int(n - p.zeit))
+        j = p.jungler(gegenteam(p.mein_team))
+        if j and not j.tot and p.zeit < self.m["sicht"]["lane_phase_bis"] and p.ich.rolle != "JUNGLE":
+            g = self.lage.gesehen(j)
+            weg = p.zeit - g[0] if g else p.zeit
+            if weg >= cfg["jungler_weg_ab"]:
+                zweck = {"TOP": "lane_top", "MIDDLE": "lane_mid", "BOTTOM": "lane_bot", "UTILITY": "lane_bot"}.get(p.ich.rolle)
+                if zweck:
+                    anlaesse[zweck] = cfg["satz_gank"].format(champion=j.champion, sekunden=int(weg))
+        if not anlaesse:
+            return
+        blau = p.mein_team == "ORDER"
+        for st in w["stelle"]:
+            zweck = next((z for z in st["wofuer"] if z in anlaesse), None)
+            if not zweck or abs(st["x"] - ich[1]) + abs(st["y"] - ich[2]) > w["radius"]:
+                continue
+            if st["seite"] == "fluss":
+                ort = f"am {st['name']}"
+            else:
+                eigen = (st["seite"] == "blau") == blau
+                ort = f"an {'deinem' if eigen else 'seinem'} {st['name']}"
+            yield Ansage(cfg["satz"].format(ort=ort, grund=anlaesse[zweck]), HINWEIS,
+                         f"ward:{st['name']}:{st['seite']}", gueltig=6, sperre=cfg["erneut_nach"])
+            return
 
     def _tod(self, p: Partie, v: Partie):
         if not (p.ich.tot and not v.ich.tot):

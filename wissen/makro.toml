@@ -179,3 +179,13 @@ naeher_um = 0.05              # so viel naeher in 2,5 s (ca. 700 Einheiten - lau
 sperre = 25
 einer = "Vorsicht, {champion} kommt {ort} auf dich zu!"
 mehrere = "{anzahl} Gegner kommen auf dich zu: {namen}. Zieh dich zurück!"
+
+[ward]
+# Ward-Vorschlaege (Stellen in wissen/wards.toml)
+ab = 150                      # vorher hat noch niemand ein Ward-Trinket geladen, das sich lohnt
+objective_vorlauf = 90        # Sekunden vor dem Spawn zaehlt die Grube
+jungler_weg_ab = 25           # so lange nicht gesehen, dann zaehlt der Gank-Weg
+erneut_nach = 120             # dieselbe Stelle frueheste wieder
+satz = "Du bist {ort} - guter Moment für ein Ward: {grund}"
+satz_objective = "{objective} kommt in {sekunden} Sekunden, so siehst du, wer sich dort sammelt."
+satz_gank = "{champion} ist seit {sekunden} Sekunden weg, so siehst du den Gank kommen."

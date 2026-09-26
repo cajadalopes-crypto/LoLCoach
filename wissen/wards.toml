@@ -1,0 +1,77 @@
+# Ward-Stellen (Kartenanteile wie die Minimap: (0,0) oben links, blaue Basis unten links).
+# Stand: aus der Minimap-Zeichnung (Data Dragon map11) und Spielwissen abgelesen, 26.09.2026 -
+# ungefaehr (+-0,03). Nicht gegen die 26.1-Faelight-Punkte geprueft (deren Lage ist offen).
+# seite: wem die Stelle gehoert (blau/rot/fluss) - daraus wird "dein"/"sein" Tri-Bush.
+# wofuer: lane_top, lane_mid, lane_bot (Gank-Schutz in der Lane-Phase), drache, baron (Objective-Setup)
+stand = "abgelesen 26.09.2026, ungeprueft"
+radius = 0.05                 # so nah musst du vorbeilaufen
+
+[[stelle]]
+name = "Tri-Bush oben"
+seite = "blau"
+x = 0.13
+y = 0.31
+wofuer = ["lane_top"]
+
+[[stelle]]
+name = "Tri-Bush oben"
+seite = "rot"
+x = 0.31
+y = 0.13
+wofuer = ["lane_top"]
+
+[[stelle]]
+name = "Pixel-Bush oben"
+seite = "fluss"
+x = 0.19
+y = 0.21
+wofuer = ["lane_top", "baron"]
+
+[[stelle]]
+name = "Eingang zur Baron-Grube"
+seite = "fluss"
+x = 0.37
+y = 0.33
+wofuer = ["baron", "lane_mid"]
+
+[[stelle]]
+name = "Fluss-Busch Mitte oben"
+seite = "fluss"
+x = 0.40
+y = 0.44
+wofuer = ["lane_mid"]
+
+[[stelle]]
+name = "Fluss-Busch Mitte unten"
+seite = "fluss"
+x = 0.60
+y = 0.56
+wofuer = ["lane_mid", "drache"]
+
+[[stelle]]
+name = "Eingang zur Drachengrube"
+seite = "fluss"
+x = 0.63
+y = 0.67
+wofuer = ["drache", "lane_bot"]
+
+[[stelle]]
+name = "Pixel-Bush unten"
+seite = "fluss"
+x = 0.81
+y = 0.79
+wofuer = ["lane_bot", "drache"]
+
+[[stelle]]
+name = "Tri-Bush unten"
+seite = "blau"
+x = 0.69
+y = 0.87
+wofuer = ["lane_bot"]
+
+[[stelle]]
+name = "Tri-Bush unten"
+seite = "rot"
+x = 0.87
+y = 0.69
+wofuer = ["lane_bot"]
