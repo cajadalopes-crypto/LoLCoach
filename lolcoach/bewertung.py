@@ -166,6 +166,7 @@ class GegnerLage:
     pos: tuple[float, float] | None = None   # zuletzt gesehen (Spiel-Einheiten)
     shutdown: bool = False       # auf ihm liegt ein Shutdown (K/D)
     leben: float | None = None   # 0..1 aus seinem Lebensbalken im Spielbild (frisch), sonst unbekannt
+    mana: float | None = None    # 0..1 aus dem Manabalken darunter (frisch), sonst unbekannt
 
     @property
     def champion(self) -> str:
@@ -593,6 +594,8 @@ def _gegner_lage(s: Spieler, p: Partie, lb, ich_pos) -> GegnerLage:
                       gold_vorsprung=s.item_gold - p.ich.item_gold, kommt_naeher=naeher, pos=pos,
                       shutdown=shutdown(s),
                       leben=lb.gegner_leben_jetzt(s, p.zeit) if lb is not None and hasattr(lb, "gegner_leben_jetzt")
+                      else None,
+                      mana=lb.gegner_mana_jetzt(s, p.zeit) if lb is not None and hasattr(lb, "gegner_mana_jetzt")
                       else None)
 
 

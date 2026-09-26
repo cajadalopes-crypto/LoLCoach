@@ -44,6 +44,7 @@ class Lagebild:
         self.eigene_zeit: float | None = None
         self.platten: dict[tuple[str, str, str], int] = {}   # (Team, Lane, Stufe) -> verbleibende Platten (Minimap)
         self.gegner_leben: dict[str, tuple[float, float]] = {}   # Spielername -> (Zeit, Leben 0..1) aus dem Spielbild
+        self.gegner_mana: dict[str, tuple[float, float]] = {}    # ... (Zeit, Mana 0..1) aus dem Balken darunter
         self._tp_kandidat: dict[str, tuple] = {}     # Spielername -> (Zeit, x, y, zuletzt gesehen) eines Fernsprungs
         self._tode: dict[str, float] = {}            # Spielername -> zuletzt tot (Spielzeit)
         self.fernspruenge: list = []                 # gemeldete TP/globale Ults (zauber.Timer)
@@ -91,9 +92,11 @@ class Lagebild:
                 # Lebensbalken ueber den Koepfen (Spielbild): nur mit gelesenem Namen zugeordnet
                 from .lebensbalken import zuordnen as balken_zuordnen
                 zeit = zeit_von_wand(e[1])
-                for text, anteil, team in e[2]:
+                for text, anteil, team, *mana in e[2]:
                     if team == "feind" and (sp := balken_zuordnen(text, p.gegner())):
                         self.gegner_leben[sp.name] = (zeit, float(anteil))
+                        if mana and mana[0] is not None:
+                            self.gegner_mana[sp.name] = (zeit, float(mana[0]))
             elif e[0] == "eigene":
                 # eigene Faehigkeiten/Zauber aus dem HUD: Wechsel bereit -> weg ist der Moment der Nutzung
                 # Ein Wechsel zaehlt erst, wenn ihn zwei Lesungen hintereinander zeigen (Partie 7, 13:10-13:12:
@@ -219,6 +222,11 @@ class Lagebild:
         return (ende - punkte[0][0] >= dauer
                 and all(abs(x - ex) + abs(y - ey) <= toleranz for _, x, y in punkte))
 
+    def gegner_mana_jetzt(self, sp: Spieler, jetzt: float) -> float | None:
+        """Mana eines Gegners (0..1) aus dem Balken unter seinem Lebensbalken, wenn frisch (<= 2,5 s)."""
+        g = self.gegner_mana.get(sp.name)
+        return g[1] if g and jetzt - g[0] <= 2.5 else None
+
     def gegner_leben_jetzt(self, sp: Spieler, jetzt: float) -> float | None:
         """Leben eines Gegners (0..1) aus seinem Lebensbalken im Spielbild, wenn frisch (<= 2,5 s)."""
         g = self.gegner_leben.get(sp.name)
@@ -277,7 +285,7 @@ def ereignis_als_json(e: tuple) -> dict:
     if e[0] == "platten":
         return {"art": "platten", "w": e[1], "p": {"/".join(k): v for k, v in e[2].items()}}
     if e[0] == "balken":
-        return {"art": "balken", "w": e[1], "b": [[t, a, team] for t, a, team in e[2]]}
+        return {"art": "balken", "w": e[1], "b": [list(x) for x in e[2]]}      # (Text, Leben, Team[, Mana])
     return {"art": e[0], "w": e[1], "text": e[2]}
 
 
@@ -505,7 +513,8 @@ class Beobachter(threading.Thread):
             try:
                 gelesen = lebensbalken.namen_lesen(klein, feind, leser)
                 with self._schloss:
-                    self._ereignisse.append(("balken", start, [(t, b.anteil, b.team) for b, t in gelesen]))
+                    self._ereignisse.append(("balken", start, [(t, b.anteil, b.team, lebensbalken.mana(klein, b))
+                                                               for b, t in gelesen]))
             except Exception as e:
                 self.fehler = f"Balken-Namen: {e}"
             finally:

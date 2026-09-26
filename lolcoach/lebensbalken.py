@@ -97,6 +97,21 @@ def finde(bild: np.ndarray) -> list[Balken]:
     return aus
 
 
+def mana(bild: np.ndarray, b: Balken) -> float | None:
+    """Mana unter dem Lebensbalken: ein duenner hellblauer Balken 10-11 px darunter (1600 px Bildbreite), gleiche
+    linke Kante, 80 px = voll. None, wenn keiner da ist (Champion ohne Mana, oder gar kein Champion-Balken).
+    Vermessen an 30 Gegner-Balken der Live-Partie 26.09.: Heimerdinger sichtbar ~96 %, gelesen 94 %."""
+    k = bild.shape[1] / BREITE_REF
+    hsv = cv2.cvtColor(bild[max(0, b.y):min(bild.shape[0], b.y + int(16 * k) + 1),
+                            b.x:min(bild.shape[1], b.x + int(82 * k))], cv2.COLOR_BGR2HSV)
+    for dy in range(int(8 * k), min(hsv.shape[0], int(15 * k) + 1)):
+        zeile = hsv[dy]
+        blau = (zeile[:, 0] >= 88) & (zeile[:, 0] <= 112) & (zeile[:, 1] >= 70) & (zeile[:, 2] >= 130)
+        if blau[:max(1, int(4 * k))].any() and int(blau.sum()) >= 3:
+            return round(min(1.0, (int(np.nonzero(blau)[0].max()) + 1) / (BALKEN * k)), 2)
+    return None
+
+
 def mit_namen(bild: np.ndarray, balken: list[Balken], namen: list[str], leser) -> list[Balken]:
     """Den Namen ueber jedem Balken lesen (Windows-Texterkennung) und einem der `namen` zuordnen."""
     import difflib

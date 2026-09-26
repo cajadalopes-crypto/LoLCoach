@@ -369,6 +369,14 @@ def lebensbalken_lesen():
     lb = lage.Lagebild()
     lb.ereignisse(lambda w: 400.0, [("balken", 0.0, [(g.champion, 0.3, "feind")])], p)
     assert lb.gegner_leben_jetzt(g, 401.0) == 0.3 and lb.gegner_leben_jetzt(g, 404.0) is None
+    # Manabalken darunter (Live 26.09., Heimerdinger: Leben 74 %, Mana sichtbar ~96 %)
+    img = cv2.imread(str(HIER / "schirm_mana.png"))
+    b = [x for x in lebensbalken.finde(img) if x.team == "feind"]
+    assert len(b) == 1 and abs(b[0].anteil - 0.74) <= 0.03 and abs(lebensbalken.mana(img, b[0]) - 0.95) <= 0.04, b
+    lb.ereignisse(lambda w: 410.0, [("balken", 0.0, [(g.champion, 0.5, "feind", 0.2)])], p)
+    assert lb.gegner_mana_jetzt(g, 411.0) == 0.2
+    assert lage.ereignis_aus_json(lage.ereignis_als_json(("balken", 1.0, [("Shen", 0.5, "feind", 0.2)])))[2] \
+        == [("Shen", 0.5, "feind", 0.2)]
 
 
 if __name__ == "__main__":

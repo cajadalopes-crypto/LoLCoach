@@ -38,7 +38,7 @@ WEG_UNTER = -2.5       # er ist klar staerker: nicht traden
 TRAENKE = (2003, 2031, 2033)   # Heiltrank, Nachfuellbarer, Verderbender - verkaufbar fuer den naechsten Kauf
 KAUF_LOHNT_AB = 850    # so viel muss ein Einkauf wert sein, damit sich ein Recall dafuer lohnt (Langschwert: nein)
 KRAFT = ("level", "ult", "items", "matchup")
-ZUSTAND = ("leben", "flash", "flash_ich", "zuenden", "welle", "gold_offen", "mana")
+ZUSTAND = ("leben", "flash", "flash_ich", "zuenden", "welle", "gold_offen", "mana", "mana_er")
 UMFELD = ("jungler", "jungler_nah", "jungler_weg", "dritter", "hilfe", "zone")
 ZONE_NAME = {"Heimerdinger": "Geschütze", "Zyra": "Pflanzen", "Azir": "Soldaten", "Illaoi": "Tentakel",
              "Yorick": "Ghule", "Teemo": "Pilze", "Shaco": "Boxen"}
@@ -145,6 +145,9 @@ def kampf_faktoren(b: Bewertung) -> list[Faktor]:
         if anteil < 0.25:
             f.append(Faktor(-1.0, "mana", f"dein {was}" if was == "Mana" else "deine Energie", "reicht",
                             "kaum für eine Combo"))
+    # sein Mana (Reasoning #4 "Mana"): aus dem Balken unter seinem Lebensbalken - nur bei Mana-Champions
+    if g.mana is not None and g.mana < 0.25 and _hat_mana(er.champion_id):
+        f.append(Faktor(1.0, "mana_er", n, "hat", f"nur noch {int(g.mana * 100)} Prozent Mana"))
     # sein Item-Timing: traegt er viel Gold, ist er nach dem naechsten Back staerker - jetzt ist besser als gleich
     from .bewertung import gold_offen
     offen = gold_offen(er, b.zeit)
@@ -216,6 +219,11 @@ def _matchup(b: Bewertung, g: GegnerLage) -> list[Faktor]:
         aus.append(Faktor(-1.2, "zone", "du", "kämpfst", f"in seiner Zone, dort stehen seine "
                                                         f"{ZONE_NAME.get(g.s.champion_id, 'Fallen')}"))
     return aus
+
+
+def _hat_mana(champion_id: str) -> bool:
+    from . import ddragon
+    return (ddragon.champions().get(champion_id) or {}).get("partype") in ("Mana", "Mana ")
 
 
 def urteil(b: Bewertung) -> Urteil | None:
