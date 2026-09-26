@@ -28,8 +28,10 @@ Prio -> Tempo -> Information -> Gegner-Vorhersage -> Aktionen -> Gegenantwort ->
 - Gegner-Ults ohne Ping: bisher nur ueber Chat-Pings bekannt.
 - "Welle crasht in X s" (Reasoning #6 wave_crash_in): aus der Wellenfront nicht verlaesslich - die Front
   springt, wenn eine Welle stirbt (dann ist die naechste an der eigenen Basis die "Front"); Klumpen nach
-  Flaeche zu zaehlen aenderte nichts (Camille-Partie: 62 -> 65 Spruenge > 0,15). Braucht Verfolgen
-  einzelner Wellen (Spawn-Takt + Punkte je Welle). Bis dahin: Kanonen-Uhr statt Crash-Zeit.
+  Flaeche zu zaehlen aenderte nichts (Camille-Partie: 62 -> 65 Spruenge > 0,15). Experiment mit der
+  fuehrenden Welle als verfolgtem Objekt: kommt sie an, liegt die Vorhersage im Median 2,2 s daneben -
+  aber nur 6-9 % der Vorhersagen kommen an (gegnerische Vasallen im Nebel sind unsichtbar, ob der Weg
+  frei ist, weiss man nicht). Bleibt draussen; Kanonen-Uhr statt Crash-Zeit.
 
 Erledigt fuer dieses Ziel (26.09., je mit Commit): Lagebewertung + Komponist (jede Ansage gerechnet),
 Entscheider (Plaene inkl. Jungle, spaete Phase, Mitspieler-Hilfe, Todesserie-Reset), Jungler-
