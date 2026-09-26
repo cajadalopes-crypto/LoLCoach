@@ -33,6 +33,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), geschrieben 26.09.2026.
 - Nicht ins Gras jagen (unsichtbar + Pilze).
 - Magieresistenz (Merkurs Schuhe); Heilungsreduktion unnötig (er heilt kaum).
 - Jungler rufen: er hat keinen Dash; Pilze vorher wegräumen.
+- Welle nahe dem eigenen Turm halten: er muss nach vorn, wo Gap-Closer ihn erreichen.
 
 ## Makro/Teamfight
 - Splitpush + Pilzkontrolle der Seiten; Teamfight schwach, eher Kite-Schaden.

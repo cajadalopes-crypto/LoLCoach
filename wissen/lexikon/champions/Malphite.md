@@ -32,6 +32,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), geschrieben 26.09.2026.
 - R-Reichweite 1000 (+400 mit Blitz) im Kopf behalten – im Teamfight verteilt stehen, nicht zu dritt in einer Linie.
 - Er baut Rüstung → Lord Dominiks Grüße/Seryldas Bitterkeit/Schwarzes Beil; Camille-Q2 (absolut) ignoriert Rüstung.
 - Mana: nach 3–4 Q ist er leer → All-in-Fenster früh.
+- Ohne R (100–130 s CD) ist er im Teamfight nur ein Tank: R-Timer mitzählen, Kämpfe in diesem Fenster erzwingen.
 - Dornenpanzer = Heilungsreduktion gegen dich.
 
 ## Makro/Teamfight
