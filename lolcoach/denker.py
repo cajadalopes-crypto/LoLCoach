@@ -343,6 +343,7 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
         saetze.append(_haupt(zustand, dazu=bool(kraft) or bool(anlass)))
     if umfeld:
         saetze.append(_gross(umfeld[0].satz) + ".")
+    trotzdem = False
     if fuer_dich:
         # was dagegen spricht, gehoert dazu - der Turm immer, sonst nur, was wirklich zaehlt
         aber = ([x for x in gegen if x.art in ("turm", "kopfgeld", "zone")]
@@ -351,10 +352,9 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
             aber = [x for x in gegen if x.art == "jungler_weg"]
         if aber:
             saetze.append(f"Aber {aber[0].satz}.")
-            if u.art == "kill":
-                handlung_trotzdem = True
+            trotzdem = u.art == "kill"
     handlung = HANDLUNG[u.art].format(n=n, j=j)
-    if locals().get("handlung_trotzdem"):
+    if trotzdem:
         handlung = "Geh trotzdem rein - das ist ein Kill."
     if u.art == "halten" and "jungler_nah" in u.arten_alle:
         handlung = f"Deshalb kein All-in, solange {j} da ist - nur kurze Trades."
