@@ -37,7 +37,7 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
     stratege_ = None
     if gehirn:
         from .stratege import Stratege
-        stratege_ = Stratege(plan)
+        stratege_ = Stratege(plan, werk=werk)
         stratege_.gehirn.ablage = gehirn_ablage
         anzeigen = [*anzeigen, stratege_]
         for a in anzeigen:

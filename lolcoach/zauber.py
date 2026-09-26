@@ -16,7 +16,8 @@ GRUND = {"SummonerFlash": 300, "SummonerTeleport": 360, "SummonerDot": 180, "Sum
          "SummonerSmite": 90}
 NAME_DE = {"SummonerFlash": "Flash", "SummonerTeleport": "Teleport", "SummonerDot": "Zünden",
            "SummonerHeal": "Heilen", "SummonerBarrier": "Barriere", "SummonerExhaust": "Erschöpfen",
-           "SummonerHaste": "Geist", "SummonerBoost": "Reinigen", "SummonerSmite": "Zerschmettern"}
+           "SummonerHaste": "Geist", "SummonerBoost": "Reinigen", "SummonerSmite": "Zerschmettern",
+           "R": "Ult"}
 # Was im Chat steht (Client auf Deutsch, Spieler tippen auch Englisch)
 WOERTER = {"blitz": "SummonerFlash", "flash": "SummonerFlash", "flashlos": "SummonerFlash",
            "zünden": "SummonerDot", "zuenden": "SummonerDot", "ignite": "SummonerDot",
@@ -24,12 +25,23 @@ WOERTER = {"blitz": "SummonerFlash", "flash": "SummonerFlash", "flashlos": "Summ
            "heal": "SummonerHeal", "barriere": "SummonerBarrier", "barrier": "SummonerBarrier",
            "erschöpfen": "SummonerExhaust", "erschoepfen": "SummonerExhaust", "exhaust": "SummonerExhaust",
            "geist": "SummonerHaste", "ghost": "SummonerHaste", "reinigen": "SummonerBoost",
-           "cleanse": "SummonerBoost"}
+           "cleanse": "SummonerBoost", "ult": "R", "ulti": "R", "ultimate": "R", "r": "R"}
 
 
-def cooldown(schluessel: str) -> float:
+def cooldown(schluessel: str, spieler=None) -> float:
     """Aus Data Dragon (champions.zauber_cooldown), sonst die Grundwerte oben.
-    Zauber-Tempo aus Stiefeln/Runen ist nicht eingerechnet: eher zu lang als zu kurz."""
+    Zauber-Tempo aus Stiefeln/Runen ist nicht eingerechnet: eher zu lang als zu kurz.
+    Die Ult ("R") nach Rang: Level 6-10 Rang 1, 11-15 Rang 2, ab 16 Rang 3."""
+    if schluessel == "R":
+        try:
+            from . import champions
+            werte = champions.ult_cooldown(spieler.champion_id) if spieler else []
+            if werte:
+                rang = 0 if spieler.level < 11 else 1 if spieler.level < 16 else 2
+                return float(werte[min(rang, len(werte) - 1)])
+        except Exception:
+            pass
+        return 100.0
     try:
         from . import champions
         if wert := champions.zauber_cooldown(schluessel):
@@ -68,7 +80,7 @@ class Zaubertimer:
             if quelle == "Chat" and alt.quelle == "Minimap":
                 alt.quelle = "Chat"  # Chat bestaetigt die Minimap
             return None
-        t = Timer(spieler.name, spieler.champion, zauber, zurueck or zeit + cooldown(zauber), quelle, zeit)
+        t = Timer(spieler.name, spieler.champion, zauber, zurueck or zeit + cooldown(zauber, spieler), quelle, zeit)
         self.timer[schl] = t
         return t
 
@@ -97,7 +109,7 @@ def aus_chat(zeile: str, p) -> list[tuple[object, str, float | None]]:
     rest = re.sub(r"^\s*\[?\d{1,2}:\d{2}\]?\s*", "", zeile)   # Zeitstempel vorn (Chat-Einstellung)
     nachricht = rest.split(":", 1)[1] if ":" in rest else rest
     woerter = re.findall(r"[a-zäöüß']+", nachricht.lower())
-    zauber = [WOERTER[w] for w in woerter if w in WOERTER]
+    zauber = [WOERTER[w] for w in woerter if w in WOERTER and (w != "r" or len(woerter) <= 3)]
     if not zauber:
         return []
     namen = {}

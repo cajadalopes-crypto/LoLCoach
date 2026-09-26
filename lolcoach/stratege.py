@@ -23,8 +23,8 @@ VEREDELN_HOECHSTENS = 12.0   # Sekunden: laenger wartet der Standardsatz nicht
 
 
 class Stratege:
-    def __init__(self, plan, modell: str = "sonnet", lane_phase_bis: float = 840):
-        self.plan = plan
+    def __init__(self, plan, modell: str = "sonnet", lane_phase_bis: float = 840, werk=None):
+        self.plan, self.werk = plan, werk
         self.gehirn = gehirn.Gehirn(modell)
         self.lane_phase_bis = lane_phase_bis
         self._briefing = self._midgame = False
@@ -44,6 +44,8 @@ class Stratege:
 
     def _briefing_sprechen(self) -> None:
         """Das Briefing kommt mit der Spielakte; nur wenn es fehlt, eigener Aufruf."""
+        if self.werk is not None:
+            self.werk.ult_warnungen = dict(self.gehirn.ult_warnungen)
         if self.gehirn.briefing and self.p is not None:
             self.plan.einwerfen(Ansage(self.gehirn.briefing, WICHTIG, "briefing", zeit=self.p.zeit,
                                        gueltig=90, sperre=600))

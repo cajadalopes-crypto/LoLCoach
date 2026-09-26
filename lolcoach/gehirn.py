@@ -131,6 +131,8 @@ AKTE_SYSTEM = (
     "Lane-Phase und danach.\n"
     "BRIEFING:\n(fuer den Spieler, ueber Headset gesprochen, 4-6 kurze Saetze, kein Markdown) das Matchup und "
     "wann er traden kann, die groesste Gefahr, die Win-Condition, die Build-Richtung.\n"
+    "ULTS:\n(je gegnerischer Champion eine Zeile 'Name: Satz', hoechstens 15 Woerter, gesprochen: was seine Ult "
+    "fuer den Spieler bedeutet und worauf er achten muss)\n"
     "Nur was das Material stuetzt; Item-Namen nur aus dem Material; Unsicheres als unsicher.")
 
 
@@ -151,7 +153,8 @@ SITUATIV_SYSTEM = (
     "dem Spieler in hoechstens zwei kurzen gesprochenen Saetzen (zusammen unter 30 Woertern; Deutsch, kein Markdown), was er "
     "GENAU JETZT tun soll und kurz warum - konkret fuer seine Position, sein Leben, sein Gold, die "
     "Welle und den Jungler. Keine Allgemeinplaetze. Stimmt der Anlass fuer ihn gerade nicht (zu weit "
-    "weg, tot, falsche Seite), sag das Passende statt des Anlasses.")
+    "weg, tot, falsche Seite), sag das Passende statt des Anlasses. Der Standardsatz zeigt nur den Anlass; "
+    "kommentiere nie die Daten oder was fehlt ('nicht erwaehnt', 'laut Lage'), sprich nur zum Spieler.")
 
 
 def kuerzen(text: str, saetze: int) -> str:
@@ -168,6 +171,7 @@ class Gehirn:
         self.modell = modell
         self.akte: str | None = None
         self.briefing: str | None = None   # kommt mit der Akte (ein Aufruf statt zwei)
+        self.ult_warnungen: dict[str, str] = {}  # Champion -> ein Satz zu seiner Ult (kommt mit der Akte)
         self._akte_laeuft = False
         self.ablage: Path | None = None    # je Partie: hier wird die Akte gespeichert
 
@@ -183,8 +187,14 @@ class Gehirn:
             try:
                 roh = llm.frage(akte_quelle(p), system=AKTE_SYSTEM, modell=self.modell,
                                 timeout=90, aufwand="low").strip()
-                akte, _, briefing = roh.partition("BRIEFING:")
+                akte, _, rest = roh.partition("BRIEFING:")
+                briefing, _, ults = rest.partition("ULTS:")
                 self.akte = akte.replace("AKTE:", "", 1).strip()
+                self.ult_warnungen = {}
+                for zeile in ults.splitlines():
+                    name, _, satz = zeile.strip().lstrip("-* ").partition(":")
+                    if name and satz.strip():
+                        self.ult_warnungen[name.strip()] = kuerzen(satz.strip(), 1)
                 from .itemnamen import absichern
                 self.briefing = absichern(kuerzen(briefing, 6))[0] or None
             except llm.LLMFehler as e:

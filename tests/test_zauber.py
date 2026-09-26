@@ -32,6 +32,12 @@ def chat_formate():
         else:
             assert treffer and (treffer[0][0].champion, treffer[0][1]) == erwartet, (zeile, treffer)
     assert zauber.aus_chat("[Team] Diana (Diana): Rakan Blitz 16:40", p)[0][2] == 1000.0
+    # Ult-Pings: "Shen Ult" / "shen r"; ein einzelnes r in einem langen Satz ist keine Ult
+    assert [(s.champion, z) for s, z, _ in zauber.aus_chat("[Team] Riven: Shen Ult", p)] == [("Shen", "R")]
+    assert [(s.champion, z) for s, z, _ in zauber.aus_chat("[Team] Riven: shen r", p)] == [("Shen", "R")]
+    assert not zauber.aus_chat("[Team] Riven: shen geht jetzt r unten mit lee", p)
+    shen = next(s for s in p.spieler if s.champion == "Shen")
+    assert zauber.cooldown("R", shen) in (200.0, 180.0, 160.0), zauber.cooldown("R", shen)
     print("Chat-Formate OK")
 
 

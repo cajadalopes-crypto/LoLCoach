@@ -68,6 +68,7 @@ class Regelwerk:
         self._gemeldet: set = set()  # einmalige Dinge (Vorwarnung je Spawn, CS je Minute)
         self._weg_seit: dict[str, float | None] = {}  # Spielername -> seit wann unsichtbar (lebendig)
         self._tot_bei: dict[str, float] = {}           # Spielername -> zuletzt tot gesehen (Spielzeit)
+        self.ult_warnungen: dict[str, str] = {}        # Champion -> ein Satz, was seine Ult bedeutet (Spielakte)
 
     def pruefe(self, p: Partie, lage=None) -> list[Ansage]:
         """`lage`: Lagebild aus der Minimap (lage.Lagebild) oder None ohne Bild."""
@@ -231,12 +232,18 @@ class Regelwerk:
                 if frueh and p.zeit > cfg["frueh_bis"]:
                     continue
                 if g.level >= stufe > g_alt.level and ich.level < stufe:
-                    yield Ansage(cfg[f"gegner_{stufe}"].format(champion=g.champion), WICHTIG, f"level{stufe}", gueltig=8)
+                    text = cfg[f"gegner_{stufe}"].format(champion=g.champion)
+                    if stufe == 6 and (warnung := self.ult_warnungen.get(g.champion)):
+                        text += " " + warnung
+                    yield Ansage(text, WICHTIG, f"level{stufe}", gueltig=8)
                 elif ich.level >= stufe > ich_alt.level and g.level < stufe:
                     yield Ansage(cfg[f"ich_{stufe}"].format(champion=g.champion), WICHTIG, f"level{stufe}", gueltig=8)
         j, j_alt = p.jungler(gegenteam(p.mein_team)), v.jungler(gegenteam(v.mein_team))
         if j and j_alt and j.level >= 6 > j_alt.level and p.ich.rolle != "JUNGLE":
-            yield Ansage(cfg["jungler_6"].format(champion=j.champion), HINWEIS, "jungler6", gueltig=20)
+            text = cfg["jungler_6"].format(champion=j.champion)
+            if warnung := self.ult_warnungen.get(j.champion):
+                text += " " + warnung
+            yield Ansage(text, HINWEIS, "jungler6", gueltig=20)
 
     def _items(self, p: Partie, v: Partie):
         ab = self.m["items"]["legendaer_ab"]
@@ -404,7 +411,7 @@ class Regelwerk:
             name = NAME_DE.get(t.zauber, t.zauber)
             if not t.gemeldet:
                 t.gemeldet = True
-                satz = cfg["neu_chat" if t.quelle == "Chat" else "neu_minimap"]
+                satz = cfg["neu_ult" if t.zauber == "R" else "neu_chat" if t.quelle == "Chat" else "neu_minimap"]
                 yield Ansage(satz.format(champion=t.champion, zauber=name,
                                          dauer=_minuten(t.zurueck - p.zeit)), WICHTIG,
                              f"zauber:{t.name}:{t.zauber}", gueltig=10, sperre=30)
@@ -414,10 +421,14 @@ class Regelwerk:
             for s in p.gegner():
                 rest = self.lage.zauber.fehlt(s, "SummonerFlash", p.zeit)
                 g = self.lage.gesehen(s)
-                if (rest and rest > 15 and g and self.lage.sichtbar(s)
-                        and abs(g[1] - ich[1]) + abs(g[2] - ich[2]) < cfg["nah"]):
+                nah = bool(g and self.lage.sichtbar(s) and abs(g[1] - ich[1]) + abs(g[2] - ich[2]) < cfg["nah"])
+                if rest and rest > 15 and nah:
                     yield Ansage(cfg["kampf"].format(champion=s.champion, dauer=_minuten(rest)), WICHTIG,
                                  f"ohneflash:{s.name}", gueltig=4, sperre=cfg["kampf_erneut"])
+                ult = self.lage.zauber.fehlt(s, "R", p.zeit)
+                if ult and ult > 10 and nah:
+                    yield Ansage(cfg["kampf_ult"].format(champion=s.champion, dauer=_minuten(ult)), WICHTIG,
+                                 f"ohneult:{s.name}", gueltig=4, sperre=cfg["kampf_erneut"])
         # Rueckkehr beim Lane-Gegner und Jungler
         for t in list(self.lage.zauber.timer.values()):
             if t.name in wichtig and t.zauber == "SummonerFlash" and v.zeit < t.zurueck <= p.zeit:

@@ -112,6 +112,16 @@ def sofort(frage: str, p: Partie, lagebild=None) -> str | None:
         return None  # "soll ich ...", "lieber ...", "warum ...": das ist eine Abwaegung, keine Nachschau
     ziel = _ziel(w, p)
 
+    if menge & {"ult", "ulti", "ultimate"}:
+        s = ziel or p.gegenueber()
+        timer = getattr(lagebild, "zauber", None)
+        if s:
+            if s.level < 6:
+                return f"{s.champion} ist erst Level {s.level} - noch keine Ult."
+            rest = timer.fehlt(s, "R", p.zeit) if timer else None
+            if rest:
+                return f"{s.champion}s Ult ist noch {_dauer(rest)} weg."
+            return f"Einen Ult-Verbrauch von {s.champion} habe ich nicht mitbekommen - rechne damit, dass sie bereit ist."
     if menge & {"flash", "zauber", "summoner", "teleport", "tp", "zünden", "ignite", "heal", "cooldown", "cooldowns"}:
         s = ziel or p.gegenueber()
         if s:
@@ -159,8 +169,11 @@ def sofort(frage: str, p: Partie, lagebild=None) -> str | None:
 def lage_text(p: Partie, lagebild=None) -> str:
     """Kompakte Lage fuer Claude."""
     it = ddragon.items()
+    zauber = [ZAUBER_DE.get(z, z) for z in p.ich.zauber]
+    if p.ich.rolle == "TOP" and "SummonerTeleport" not in p.ich.zauber and p.zeit >= 815:
+        zauber.append("Teleport (aus der Top-Quest)")
     zeilen = [f"Spielzeit {int(p.zeit // 60)}:{int(p.zeit % 60):02d}. Ich: {p.ich.champion} "
-              f"({ROLLE_DE.get(p.ich.rolle, '?')}), Gold {int(p.gold or 0)}."
+              f"({ROLLE_DE.get(p.ich.rolle, '?')}), Gold {int(p.gold or 0)}, Beschwoererzauber: {', '.join(zauber)}."
               + (" Bot-Partie (Gegner sind Bots)." if any(s.bot for s in p.gegner()) else "")]
     for team, wer in ((p.mein_team, "Mein Team"), (gegenteam(p.mein_team), "Gegner")):
         zeilen.append(f"{wer}:")
