@@ -1023,10 +1023,13 @@ class Regelwerk:
             return
         beteiligt = [s for s in [kill.taeter, *(p.spieler_namens(n) for n in kill.daten.get("Assisters", []))] if s]
         j = p.jungler(gegenteam(p.mein_team))
+        # die Lage in der letzten Sekunde davor: damit rechnen die Saetze statt Standardsaetze zu sagen
+        davor = getattr(self, "_b_lebend", None)
+        davor = davor if davor is not None and p.zeit - davor.zeit <= 5 else None
         if kill.taeter is None and struktur(kill.daten.get("KillerName", "")):
-            text = cfg["turm"]
+            text = komponist.tod_turm(davor) or cfg["turm"]
         elif j and p.ich.rolle != "JUNGLE" and any(s is j for s in beteiligt):
-            text = cfg["gank"].format(champion=j.champion)
+            text = komponist.tod_gank(davor, j.champion) if davor is not None else cfg["gank"].format(champion=j.champion)
         elif len(beteiligt) >= 2:
             text = cfg["ueberzahl"].format(anzahl=len(beteiligt))
         elif kill.taeter:
@@ -1036,8 +1039,9 @@ class Regelwerk:
                 gruende.append(f"{t.level - p.ich.level} Level vorne")
             if t.item_gold - p.ich.item_gold >= 500:
                 gruende.append(f"{(t.item_gold - p.ich.item_gold) // 100 * 100} Gold an Items vorne")
-            text = (cfg["solo_nachteil"].format(champion=t.champion, grund=" und ".join(gruende)) if gruende
-                    else cfg["solo"].format(champion=t.champion))
+            text = (komponist.tod_solo(davor, t.champion)
+                    or (cfg["solo_nachteil"].format(champion=t.champion, grund=" und ".join(gruende)) if gruende
+                        else cfg["solo"].format(champion=t.champion)))
         else:
             return
         # Lange genug tot: der Stratege sagt statt des Standardsatzes den eigentlichen Grund

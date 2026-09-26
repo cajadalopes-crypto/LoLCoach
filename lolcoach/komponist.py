@@ -104,6 +104,64 @@ def todespreis(b: Bewertung, mit_objective: bool = True) -> str:
     return satz
 
 
+def tod_turm(b: Bewertung | None) -> str:
+    """Tod am Turm, gerechnet aus der letzten Sekunde davor statt des Standardsatzes (Nachlauf 21:21, 6:10: "Vom
+    Turm erwischt. Unter seinen Turm nur mit genug Leben ..."): dein Leben, sein Schuss, wie viele du ausgehalten
+    haettest, und wie viel Leben ein Dive braucht (drei Schuesse samt Aufwaermen). '' ohne Lage."""
+    from . import rechnung, wissen
+    from .bewertung import TURM_REICHWEITE, abstand, stehende_tuerme
+    from .zustand import gegenteam
+    if b is None or b.pos is None or b.partie is None or b.leben_abs is None:
+        return ""
+    feind = gegenteam(b.partie.mein_team)
+    naechst = min(((abstand(b.pos, v), k) for k, v in stehende_tuerme(b.partie).items() if k[0] == feind), default=None)
+    if naechst is None or naechst[0] > TURM_REICHWEITE + 600:
+        return ""
+    stufe = naechst[1][2]
+    schuss = rechnung.turm_schaden(stufe, b.zeit)
+    n = rechnung.turm_schuesse(b.leben_abs, stufe, b.zeit)
+    t = wissen.lade("mechanik")["tuerme"]
+    drei = sum(schuss * (1 + min(t["aufwaermen_max"], t["aufwaermen_je_schuss"] * i)) for i in range(3))
+    satz = (f"Vom Turm erwischt: du hattest noch {b.leben_abs // 10 * 10} Leben, sein Turm trifft mit etwa "
+            f"{int(schuss) // 10 * 10}" + ((" - das war nur ein Schuss" if n <= 1 else f" - das waren nur {n} Schüsse")
+                                           if n <= 3 else ""))
+    if b.welle is not None and b.welle[0] == 0:
+        satz += ", und deine Welle war nicht da"
+    return satz + f". Unter seinen Turm erst mit etwa {int(drei) // 100 * 100} Leben, und nur, wenn deine Vasallen vorn sind."
+
+
+def tod_gank(b: Bewertung | None, champion: str) -> str:
+    """Tod durch den gegnerischen Jungler, gerechnet: wie lange er ungesehen war, wo du standest, dein Flash."""
+    j = b.jungler if b is not None else None
+    teile = []
+    if j is not None and j.seit and j.seit >= 15:
+        teile.append(f"{champion} war {sek(j.seit)} nicht zu sehen")
+    if b is not None and b.unter_gegnerturm:
+        teile.append("du standst unter seinem Turm")
+    elif b is not None and b.tiefe is not None and b.tiefe >= 0.6:
+        teile.append("du standst weit vorn")
+    if b is not None and b.flash is not None and b.flash > 0:
+        teile.append("dein Flash war weg")
+    satz = f"Gank von {champion}" + (": " + _namen(teile) if teile else "")
+    if j is not None and j.seit is not None and j.seit < 5:
+        return satz + f". {champion} war zu sehen - läuft {champion} auf dich zu, geh sofort zurück."
+    return satz + ". Fehlt der Jungler länger als 20 Sekunden, bleib hinter deiner Welle."
+
+
+def tod_solo(b: Bewertung | None, champion: str) -> str:
+    """Solo verloren: was die Denkkette in der Sekunde davor gegen dich zaehlte (die zwei staerksten Faktoren).
+    '' ohne Urteil oder ohne Gegen-Faktor - dann bleibt der Standardsatz."""
+    from .denker import urteil
+    if b is None or b.lane is None or b.lane.champion != champion:
+        return ""
+    u = urteil(b)
+    # dein Leben kurz vor dem Tod ist immer niedrig - das ist die Folge, nicht der Grund
+    gegen = sorted((x for x in u.faktoren if x.wert <= -0.8 and x.art != "leben"), key=lambda x: x.wert)[:2] if u else []
+    if not gegen:
+        return ""
+    return f"Solo gegen {champion} verloren. In der Sekunde davor: " + _namen([x.satz for x in gegen]) + "."
+
+
 def verwundbar(b: Bewertung) -> list[str]:
     """Warum du gerade nicht nach vorn gehoerst - das Wichtigste zuerst, als Satzteil."""
     aus = []
