@@ -32,6 +32,8 @@ man mit ihm redet. Anforderungen: `ANFORDERUNGEN.md`. Bedienung fuer Carlos:
 | `regeln.py` + `wissen/makro.toml` | Regelwerk: WANN der Coach etwas sagt (Saetze und Schwellen in der toml) |
 | `sprechplan.py`, `stimme.py` | wer redet wann; Stimme Killian (neuronal, edge-tts), Pause/Wiederholen bei Fragen |
 | `gehirn.py`, `stratege.py` | Spielakte + Briefing, Midgame-Plan, situative Anweisungen (Claude formuliert WAS) |
+| `todesanalyse.py` | Rueckblick der letzten 45 s; beim Tod die Fakten fuer "warum und was naechstes Mal" |
+| `profil.py` | Gedaechtnis ueber Partien: Kennzahlen je Aufnahme (Cache `aufnahmen/profil.json`), Fokus aus dem letzten Review -> Briefing, fruehere Partien -> Review |
 | `champions.py`, `wissen/lexikon/` | Wissensbasis: Steckbriefe aus Data Dragon; Lexikon (Grundlagen, Saison 2026, alle 173 Champions) |
 | `sprache.py`, `antworten.py` | Push-to-Talk, faster-whisper (RTX 4070), Sofort-Antworten oder Claude |
 | `itemnamen.py` | fast richtige Item-Namen in Claude-Saetzen korrigieren |

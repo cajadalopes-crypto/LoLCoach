@@ -2,11 +2,15 @@
 
 ## Spielen mit Coach
 
-Im Ordner `LoLCoach` ein Terminal öffnen und starten - **bevor** die Partie lädt:
+Doppelklick auf **`Coach starten.cmd`** im Ordner `LoLCoach` - oder im Terminal in
+diesem Ordner (Windows PowerShell kennt kein `&&`, also nur diese eine Zeile):
 
     python -m lolcoach
 
-Dann einfach spielen. Sobald das Spiel geladen ist, sagt Killian "Coach verbunden".
+Dann einfach spielen. Sobald das Spiel geladen ist, sagt Killian "Coach verbunden",
+nach etwa 20 Sekunden kommt das Briefing - am Ende mit deinem Fokus aus dem Review
+der letzten Partie. Stirbst du, sagt er dir, während du auf den Wiedereinstieg
+wartest, warum und was du nächstes Mal tust.
 
 - **Dashboard** (für den Platz neben dem Spielfenster): http://127.0.0.1:8790
 - **Fragen stellen:** vordere Maus-Seitentaste (Maus 5) halten, sprechen, loslassen.
@@ -26,7 +30,10 @@ Das Review entsteht automatisch (1-3 Minuten nach Spielende). Ansehen:
 
     python -m lolcoach review
 
-- Zeitleiste mit deinen Toden, Kämpfen, Objectives; Klick springt hin
+- **Fortschritt** (Startseite): alle Partien im Vergleich - CS/min, CS bei 10:00, Tode
+  vor 14:00, gehortetes Gold, Wardscore; grün/rot gegen deinen Schnitt; dazu der Fokus
+  aus jedem Review und ob du ihn umgesetzt hast. Bot-Partien zählen nicht im Schnitt.
+- Zeitleiste mit deinen Toden, Kämpfen, Objectives, Farm-Löchern; Klick springt hin
 - Minimap-Wiedergabe: wer wann wo war (abspielen, ±10 s)
 - Lektionen mit Spielzeit, Beleg und was du stattdessen tun solltest
 - **Mit dem Coach reden:** unten tippen - oder Maus 5 halten und fragen,
