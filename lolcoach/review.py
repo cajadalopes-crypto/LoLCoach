@@ -12,7 +12,7 @@ import json
 import re
 from pathlib import Path
 
-from . import champions, gehirn, llm, minimap, verlauf
+from . import champions, gehirn, llm, minimap, profil, verlauf
 from .ansicht import uhr
 
 REVIEW_SYSTEM = """Du bist ein Challenger-Coach fuer League of Legends und machst mit deinem Schueler
@@ -30,6 +30,10 @@ Regeln, ohne Ausnahme:
 - Priorisiere nach Auswirkung auf die Partie (Tode mit Folgen, verlorene Objectives, gehortetes Gold).
   Hoechstens 5 Lektionen. Auch 1-2 echte Staerken, damit er weiss, was er beibehalten soll.
 - Bot-Partie: sag knapp, was davon gegen echte Gegner gilt.
+- Kennst du BISHERIGE PARTIEN: hat der Spieler den Fokus der letzten Partie umgesetzt (Beleg aus DIESER
+  Zeitleiste)? Kehrt ein Fehler wieder, sag es ("wie schon am 26.09.") - ein wiederkehrender Fehler wiegt
+  schwerer als ein einmaliger, und der Fokus fuer die naechste Partie gilt dann ihm. Vergleiche Kennzahlen
+  nur mit dem, was dort steht.
 - Deutsch, direkt, wie im Voice-Chat nach dem Spiel - aber praezise.
 
 Antworte NUR mit JSON in genau dieser Form:
@@ -38,7 +42,8 @@ Antworte NUR mit JSON in genau dieser Form:
    "warum": "warum es ein Fehler war", "besser": "was konkret stattdessen", "beleg": ["Fakt aus der Zeitleiste", "..."],
    "wichtigkeit": 1-5}],
  "staerken": [{"zeit": "14:13", "titel": "kurz", "was": "was gut war und warum"}],
- "naechste_partie": "ein einziger Fokus fuer die naechste Partie"}"""
+ "fokus_umgesetzt": "1-2 Saetze: ob und wo der Fokus der letzten Partie umgesetzt wurde, mit Beleg - leer, wenn es keinen gab",
+ "naechste_partie": "ein einziger Fokus fuer die naechste Partie, ein Satz, als Handlung formuliert"}"""
 
 GESPRAECH_SYSTEM = """Du bist ein Challenger-Coach fuer League of Legends im Gespraech nach der Partie mit
 deinem Schueler. Du kennst die Zeitleiste der Partie (aus Spieldaten und Minimap, nicht geraten), dein
@@ -58,7 +63,7 @@ def pfade(aufnahme: Path) -> dict[str, Path]:
             "gespraech": aufnahme.with_name(stamm + "_gespraech.json")}
 
 
-def _wissen(v: verlauf.Verlauf) -> str:
+def _wissen(v: verlauf.Verlauf, ordner: Path | None = None) -> str:
     teile = []
     if v.spielakte:
         teile.append("DEINE VORBEREITUNG (Spielakte):\n" + v.spielakte)
@@ -70,6 +75,8 @@ def _wissen(v: verlauf.Verlauf) -> str:
                 teile.append(f"LEXIKON {s['champion']}:\n{eintrag[:4000]}")
     if g := gehirn.grundlagen("welle recall objective teamfight split", hoechstens=5000):
         teile.append("LEXIKON GRUNDLAGEN:\n" + g)
+    if ordner and (bisher := profil.text(ordner, vor=v.datei.removesuffix(".jsonl.gz"))):
+        teile.append(bisher)
     return "\n\n".join(teile)
 
 
@@ -88,7 +95,7 @@ def erstelle(aufnahme: str | Path, neu: bool = False, modell: str = "sonnet") ->
         return json.loads(p["review"].read_text(encoding="utf-8"))
     v = verlauf.baue(aufnahme)
     verlauf.speichern(v, p["verlauf"])
-    inhalt = f"{_wissen(v)}\n\nZEITLEISTE DER PARTIE:\n{verlauf.als_text(v, hoechstens=60)}"
+    inhalt = f"{_wissen(v, aufnahme.parent)}\n\nZEITLEISTE DER PARTIE:\n{verlauf.als_text(v, hoechstens=60)}"
     antwort = llm.frage(inhalt, system=REVIEW_SYSTEM, modell=modell, timeout=240)
     try:
         review = _json_aus(antwort)
@@ -99,6 +106,9 @@ def erstelle(aufnahme: str | Path, neu: bool = False, modell: str = "sonnet") ->
         for k in ("was", "warum", "besser", "titel"):
             if isinstance(teil.get(k), str):
                 teil[k] = absichern(teil[k])[0]
+    for k in ("zusammenfassung", "fokus_umgesetzt", "naechste_partie"):
+        if isinstance(review.get(k), str):
+            review[k] = absichern(review[k])[0]
     review["_modell"] = modell
     p["review"].write_text(json.dumps(review, ensure_ascii=False, indent=1), encoding="utf-8")
     return review
@@ -145,7 +155,7 @@ def frage(aufnahme: str | Path, text: str, zeit: float | None = None, modell: st
     zeiten = [int(m.group(1)) * 60 + int(m.group(2)) for m in _ZEIT.finditer(text)]
     if zeit is not None:
         zeiten.append(zeit)
-    teile = [_wissen(v), "ZEITLEISTE DER PARTIE:\n" + verlauf.als_text(v, hoechstens=45)]
+    teile = [_wissen(v, aufnahme.parent), "ZEITLEISTE DER PARTIE:\n" + verlauf.als_text(v, hoechstens=45)]
     if review:
         teile.append("DEIN REVIEW:\n" + json.dumps(review, ensure_ascii=False))
     for z in zeiten[:2]:

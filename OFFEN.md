@@ -47,6 +47,11 @@ Notizen und Review durchsehen und nachschaerfen.
 
 ## Erledigt
 
+- Gedaechtnis ueber Partien (`profil.py`): Kennzahlen je Partie (CS bei 10:00, Tode vor
+  14:00, Gold gehortet, ...), der Fokus aus dem letzten Review geht als eigener Satz ins
+  Briefing und in die Spielakte, das Review benennt Wiederholungen und ob der Fokus
+  umgesetzt wurde; die eigenen Beschwoererzauber stehen jetzt in der Akte (vorher riet das
+  Briefing bei Zuenden-Riven zu Teleport)
 - Live: Partie endet erst nach Spielende (10 s Stille) oder 2 min Stille ohne Spielende -
   ein Reconnect beendet sie nicht mehr mittendrin
 - Review per Sprache (Push-to-Talk im Review, Antwort gesprochen) - 54f7e40

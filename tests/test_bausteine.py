@@ -66,8 +66,40 @@ def kuerzen_und_orte():
     assert minimap.ort(0.33, 0.30, "ORDER") == "im oberen Fluss"
 
 
+def profil_ueber_partien():
+    import json
+    import shutil
+    import tempfile
+    from lolcoach import profil
+    with tempfile.TemporaryDirectory() as tmp:
+        ordner = Path(tmp)
+        for stamm in ("2026-09-26_100000", "2026-09-26_110000"):
+            shutil.copy(HIER / "botspiel_riven_1.jsonl.gz", ordner / f"{stamm}.jsonl.gz")
+        (ordner / "2026-09-26_100000_review.json").write_text(
+            json.dumps({"naechste_partie": "Frueher kaufen.", "lektionen": [{"titel": "Gold gehortet", "wichtigkeit": 5}]}),
+            encoding="utf-8")
+        alle = profil.partien(ordner)
+        assert [k.stamm for k in alle] == ["2026-09-26_110000", "2026-09-26_100000"]
+        k = alle[0]
+        assert k.champion == "Riven" and k.bots and not k.zaehlt and k.cs_min > 0, k
+        # die laufende Partie (110000) sieht nur fruehere; ein Review einer alten Partie keine spaeteren
+        assert profil.fokus(ordner, vor="2026-09-26_110000") == "Frueher kaufen."
+        assert profil.partien(ordner, vor="2026-09-26_100000") == []
+        assert "Gold gehortet" in profil.text(ordner) and "nur Bot-Partien" in profil.text(ordner)
+        assert (ordner / profil.CACHE).exists()
+
+
+def zauber_im_briefing():
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.spieler)
+    quelle = gehirn.akte_quelle(p, fokus="Frueher kaufen.")
+    namen = [zauber.NAME_DE[z] for z in p.ich.zauber]
+    assert all(n in quelle.split("Mein Team")[0] for n in namen), quelle[:300]
+    assert "FOKUS DES SPIELERS" in quelle and "Frueher kaufen." in quelle
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte):
+    for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
+                 zauber_im_briefing):
         test()
         print(f"{test.__name__} OK")

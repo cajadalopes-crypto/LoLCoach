@@ -70,7 +70,11 @@ def grundlagen(anlass: str, hoechstens: int = 5000) -> str:
 
 
 def _champion_zeile(s) -> str:
-    return f"{s.champion} ({ROLLE_DE.get(s.rolle, '?')})"
+    """'Riven (Top; Zünden + Flash)' - die Zauber gehoeren dazu: ohne sie riet das Briefing
+    (26.09.) einmal zu Entzuenden, einmal zu Teleport, bei derselben Riven mit Zuenden."""
+    from .zauber import NAME_DE
+    zauber = " + ".join(NAME_DE.get(z, z.removeprefix("Summoner")) for z in s.zauber)
+    return f"{s.champion} ({ROLLE_DE.get(s.rolle, '?')}{'; ' + zauber if zauber else ''})"
 
 
 def abschnitt(champion_id: str, titel: str, hoechstens: int = 2500) -> str:
@@ -93,14 +97,18 @@ def matchup(champion_id: str, gegner) -> str:
     return ""
 
 
-def akte_quelle(p: Partie) -> str:
+def akte_quelle(p: Partie, fokus: str | None = None) -> str:
     """Rohstoff fuer Spielakte + Briefing - schlank (gemessen 26.09.: 17 000 Zeichen, 35 s):
     fuer dich Kniffe/Spikes/Lane-Plan/Build und die EINE Matchup-Zeile gegen deinen Gegner,
-    fuer Lane-Gegner und Jungler das Noetigste, fuer den Rest Kurzsteckbriefe."""
+    fuer Lane-Gegner und Jungler das Noetigste, fuer den Rest Kurzsteckbriefe.
+    `fokus`: der Fokus aus dem Review der letzten Partie (profil.fokus)."""
     wir, die = p.mein_team, gegenteam(p.mein_team)
     g, j = p.gegenueber(), p.jungler(die)
     teile = [f"Ich: {_champion_zeile(p.ich)}. Mein Team: {', '.join(_champion_zeile(s) for s in p.team(wir))}. "
              f"Gegner: {', '.join(_champion_zeile(s) for s in p.team(die))}."]
+    if p.ich.rolle == "TOP" and "SummonerTeleport" not in p.ich.zauber:
+        teile[0] += (" Ich habe KEINEN Teleport; die Top-Rollenquest gibt mir spaetestens um 13:35 einen "
+                     "(Abklingzeit dann 390 s) - vorher kein TP-Plan.")
     ich = p.ich.champion_id
     if champion_eintrag(ich):
         teile.append(f"ICH ({p.ich.champion}) - Kniffe:\n{abschnitt(ich, 'Faehigkeiten', 1800)}\n"
@@ -119,6 +127,8 @@ def akte_quelle(p: Partie) -> str:
             teile.append(champions.steckbrief(s.champion_id))
     rest = [s for s in p.spieler if s not in (p.ich, g, j)]
     teile.append("UEBRIGE:\n" + "\n".join(champions.steckbrief(s.champion_id, kurz=True) for s in rest))
+    if fokus:
+        teile.append(f"FOKUS DES SPIELERS (aus dem Review seiner letzten Partie): {fokus}")
     return "\n\n".join(teile)
 
 
@@ -133,6 +143,9 @@ AKTE_SYSTEM = (
     "wann er traden kann, die groesste Gefahr, die Win-Condition, die Build-Richtung.\n"
     "ULTS:\n(je gegnerischer Champion eine Zeile 'Name: Satz', hoechstens 15 Woerter, gesprochen: was seine Ult "
     "fuer den Spieler bedeutet und worauf er achten muss)\n"
+    "FOKUS:\n(nur wenn das Material einen FOKUS DES SPIELERS nennt: EIN gesprochener Satz, hoechstens 25 "
+    "Woerter, der diesen Fokus auf genau diese Partie anwendet - wann und wogegen er heute darauf achten muss; "
+    "ohne Zeichen wie / oder +. Das BRIEFING selbst erwaehnt den Fokus nicht, dieser Satz wird danach gesprochen)\n"
     "Nur was das Material stuetzt; Item-Namen nur aus dem Material; Unsicheres als unsicher.")
 
 
@@ -172,6 +185,7 @@ class Gehirn:
         self.akte: str | None = None
         self.briefing: str | None = None   # kommt mit der Akte (ein Aufruf statt zwei)
         self.ult_warnungen: dict[str, str] = {}  # Champion -> ein Satz zu seiner Ult (kommt mit der Akte)
+        self.fokus_satz: str | None = None       # der Fokus aus dem letzten Review, auf diese Partie bezogen
         self._akte_laeuft = False
         self.ablage: Path | None = None    # je Partie: hier wird die Akte gespeichert
 
@@ -184,19 +198,33 @@ class Gehirn:
         self._akte_laeuft = True
 
         def lauf():
+            fokus = None
+            if self.ablage:
+                try:
+                    from . import profil
+                    fokus = profil.fokus(self.ablage.parent, vor=self.ablage.name.removesuffix("_spielakte.md"))
+                except Exception as e:  # das Profil ist Zugabe - ohne es geht die Akte trotzdem
+                    print(f"  Profil nicht lesbar: {e}", flush=True)
             try:
-                roh = llm.frage(akte_quelle(p), system=AKTE_SYSTEM, modell=self.modell,
+                roh = llm.frage(akte_quelle(p, fokus), system=AKTE_SYSTEM, modell=self.modell,
                                 timeout=90, aufwand="low").strip()
                 akte, _, rest = roh.partition("BRIEFING:")
-                briefing, _, ults = rest.partition("ULTS:")
+                briefing, _, rest = rest.partition("ULTS:")
+                ults, _, fokus_satz = rest.partition("FOKUS:")
                 self.akte = akte.replace("AKTE:", "", 1).strip()
+                if fokus:
+                    self.akte += f"\nFOKUS HEUTE (aus dem Review der letzten Partie): {fokus}"
                 self.ult_warnungen = {}
                 for zeile in ults.splitlines():
                     name, _, satz = zeile.strip().lstrip("-* ").partition(":")
                     if name and satz.strip():
                         self.ult_warnungen[name.strip()] = kuerzen(satz.strip(), 1)
                 from .itemnamen import absichern
-                self.briefing = absichern(kuerzen(briefing, 6))[0] or None
+                briefing = kuerzen(briefing, 6)
+                if fokus and (fokus_satz := kuerzen(fokus_satz.strip(), 1)):
+                    briefing += " " + fokus_satz
+                self.fokus_satz = fokus_satz if fokus else None
+                self.briefing = absichern(briefing)[0] or None
             except llm.LLMFehler as e:
                 print(f"  Spielakte fehlgeschlagen: {e}", flush=True)
                 self.akte = None

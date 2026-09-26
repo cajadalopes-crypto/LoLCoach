@@ -153,6 +153,7 @@ function zeigeReview() {
   if (!r) { $('status').textContent = P.status && P.status !== 'fertig' ? P.status : ''; return; }
   $('zusammenfassung').hidden = false;
   $('zusammenfassung').innerHTML = `<h2>Zusammenfassung</h2><p>${esc(r.zusammenfassung || '')}</p>`
+    + (r.fokus_umgesetzt ? `<p><b>Fokus der letzten Partie:</b> ${esc(r.fokus_umgesetzt)}</p>` : '')
     + (r.naechste_partie ? `<p><b>Fokus für die nächste Partie:</b> ${esc(r.naechste_partie)}</p>` : '');
   const sprung = z => { const m = /(\d{1,2}):(\d{2})/.exec(z || ''); return m ? +m[1] * 60 + +m[2] : null; };
   const karte = (l, staerke) => {
