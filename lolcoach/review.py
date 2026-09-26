@@ -36,7 +36,8 @@ Regeln, ohne Ausnahme:
   Zeitleiste)? Kehrt ein Fehler wieder, sag es ("wie schon am 26.09.") - ein wiederkehrender Fehler wiegt
   schwerer als ein einmaliger, und der Fokus fuer die naechste Partie gilt dann ihm. Vergleiche Kennzahlen
   nur mit dem, was dort steht.
-- Deutsch, direkt, wie im Voice-Chat nach dem Spiel - aber praezise.
+- Deutsch, direkt, wie im Voice-Chat nach dem Spiel - aber praezise. Sprich den Spieler mit "du" an,
+  auch in der Zusammenfassung (nicht "Riven hat ...", sondern "du hast ...").
 
 Antworte NUR mit JSON in genau dieser Form:
 {"zusammenfassung": "2-3 Saetze: warum die Partie so lief",
