@@ -40,7 +40,7 @@ Sicherheit), `komponist.py` (Saetze je Anlass), `regeln.py` (wann).
 | Goldschaetzung / ungenutztes Gold | rechnet | `bewertung.gold_offen` (+-300), Faktor "gold_offen" |
 | Flash, Teleport, globale Ults | rechnet | Minimap-Spruenge + Chat-Pings (`zauber.py`, `lage._fernsprung`) |
 | andere Beschwoererzauber, Ult | teilweise | nur, wenn gepingt; Ult erst ab Level 6 |
-| Mana | offen | Manabalken unter dem Lebensbalken lesbar - noch nicht gebaut |
+| Mana | rechnet | Manabalken unter seinem Lebensbalken (`lebensbalken.mana`), Faktor "mana_er" bei Mana-Champions |
 | Q/W/E-Abklingzeiten | nicht messbar | das Spiel zeigt fremde Abklingzeiten nicht |
 | Recall-Zustand Lane-Gegner | rechnet | stand still, dann weg = Recall (`regeln._lane_fehlt`) |
 | Roam-Potenzial, Position in 5/10/20 s | teilweise | Ankunft je Gegner; Verschwundener: "bis Mid noch X Sekunden" |
@@ -72,7 +72,7 @@ Sicherheit), `komponist.py` (Saetze je Anlass), `regeln.py` (wann).
 | alle Positionen, Tuerme, Platten, Objectives | rechnet | Minimap, Events, Platten-Ziffern (`platten.py`) |
 | wer kann dich erreichen, wer nicht (plausibel) | rechnet | `bewertung.bedrohung/plausibel`, `regeln._tief_ohne_sicht` |
 | Ward-Vorschlag mit Zweck (Objective, Jungler-Weg) | rechnet | `regeln._ward`, `denker.ward_plan` |
-| eigene/gegnerische Wards, Kontroll-Augen auf der Karte | offen | Ward-Icons der Minimap noch nicht gelesen |
+| eigene/gegnerische Wards, Kontroll-Augen auf der Karte | offen | Ward-Icons der Minimap; ein erster Versuch fand sie neben Champion-Icons und Vasallen schwer unterscheidbar |
 | Absicht (Gank, Recall, Objective) | teilweise | Jungler-Gank-Seite, Recall des Lane-Gegners, Gegner an der Grube |
 
 ## 14-19 Objectives, Cross-Map, Gold, XP, Kill-Druck, Kampf

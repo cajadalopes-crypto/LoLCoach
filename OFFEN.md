@@ -53,8 +53,6 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
 
 ## Als Naechstes
 
-- Gegnerischer Manabalken (unter dem Lebensbalken im Spielbild) - Faktor "hat kaum Mana".
-- Ward-Icons der Minimap (eigene + entdeckte gegnerische) als Sicht-Faktor.
 - Camp-/Buff-Timer des gegnerischen Junglers (Camp-Icons der Minimap) fuer die Jungler-Prognose.
 - Fragen per Maustaste: Claude braucht ueber die Kommandozeile ~2,5 s bis zum ersten Satz. Ein
   Anthropic-API-Schluessel wuerde das auf ~1 s druecken (kostet je Frage) - Carlos' Entscheidung.
