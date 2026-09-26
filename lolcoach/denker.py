@@ -25,6 +25,7 @@ Was der Coach weiss und was nicht - er nennt nur, was er weiss:
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 from .bewertung import TURM_REICHWEITE, Bewertung, GegnerLage, abstand, stehende_tuerme
@@ -177,6 +178,7 @@ def urteil(b: Bewertung) -> Urteil | None:
     # Live 26.09., 11:00 haette er ihn empfohlen - 11:08 starb Riven genau dort an Heimerdinger und Turm.
     wert = sum(x.wert for x in f if x.art != "turm")
     arten = {x.art for x in f}
+    ev = erwartung(b, wert)
     bedroht = bool({"jungler_nah", "dritter"} & arten)
     if "turm" in arten and wert >= TRADE_AB:
         art = "halten" if bedroht else "turm"
@@ -195,7 +197,33 @@ def urteil(b: Bewertung) -> Urteil | None:
         art = "weg"
     else:
         art = "halten"
+    # Risiko gegen Ertrag (Reasoning #27/#28): ein Kill, der zu 80 % aufgeht, ist trotzdem falsch, wenn dein Tod
+    # (Kopfgeld + Todeszeit) mehr kostet, als der Kill bringt - "play not to throw".
+    if art in ("kill", "kill_schnell") and ev is not None and ev[0] < 0:
+        art = "trade"
+        f.append(Faktor(-1.6, "kopfgeld", "auf dir", "liegen", f"{ev[2]} Gold Kopfgeld - ein Tod kostet mehr, "
+                                                              f"als der Kill bringt"))
     return Urteil(art, wert, f)
+
+
+def erwartung(b: Bewertung, wert: float) -> tuple[float, int, int] | None:
+    """(Erwartungswert in Gold, Ertrag, dein Kopfgeld): Siegchance aus der Faktorsumme (logistisch, 50 % bei 2,
+    84 % bei 3,5), Ertrag = Kill-Gold nach seinem Level + sein Kopfgeld, Verlust = dein Kopfgeld + Todeszeit x
+    ~10 Gold/s (Farm und Erfahrung in der Lane) + seine Kill-Gold-Basis fuer den Gegner [Schaetzung]."""
+    from .bewertung import kill_gold, kopfgeld
+    g = b.lane
+    if g is None:
+        return None
+    p = 1 / (1 + math.exp(-1.1 * (wert - 2.0)))
+    ertrag = kill_gold(g.s, erstes_blut=_erstes_blut_offen(b))
+    mein = kopfgeld(b.ich)
+    verlust = mein + (b.tod_kostet or 15) * 10 + 300
+    return p * ertrag - (1 - p) * verlust, ertrag, mein
+
+
+def _erstes_blut_offen(b: Bewertung) -> bool:
+    p = b.partie
+    return p is not None and not any(e.art == "FirstBlood" for e in p.ereignisse)
 
 
 # --- Sprechen: aus Faktoren Saetze ------------------------------------------------------------------------
@@ -257,6 +285,9 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
     if "ult" in ohne:
         ohne = set(ohne) | {"level"}           # "Du bist jetzt Level 6, er erst 5" sagt beides
     fs = [x for x in u.faktoren if x.art not in ohne and abs(x.wert) >= 0.3]
+    if u.art == "trade" and "kopfgeld" in u.arten_alle:
+        fuer = [x for x in fs if x.art == "kopfgeld"]
+        fs = [x for x in fs if x.art != "kopfgeld"] + fuer        # das Kopfgeld ist das "Aber"
     fuer_dich = u.art in ("kill", "kill_schnell", "turm", "trade") or (u.art == "halten" and u.wert >= TRADE_AB)
     haupt = sorted((x for x in fs if (x.wert > 0) == fuer_dich and x.art != "turm"), key=lambda x: -abs(x.wert))
     gegen = sorted((x for x in fs if (x.wert > 0) != fuer_dich), key=lambda x: -abs(x.wert))
@@ -272,7 +303,7 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
         saetze.append(_gross(umfeld[0].satz) + ".")
     if fuer_dich:
         # was dagegen spricht, gehoert dazu - der Turm immer, sonst nur, was wirklich zaehlt
-        aber = [x for x in gegen if x.art == "turm" or abs(x.wert) >= 1.5]
+        aber = [x for x in gegen if x.art in ("turm", "kopfgeld")] or [x for x in gegen if abs(x.wert) >= 1.5]
         if u.art == "kill_schnell":
             aber = [x for x in gegen if x.art == "jungler_weg"]
         if aber:
@@ -294,11 +325,9 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
 # --- danach: Gold, Kauf, Weg -------------------------------------------------------------------------
 
 def kill_gold(b: Bewertung) -> int:
-    """Gold fuer den Kill an deinem Lane-Gegner: 300, das erste Blut 400 (ein Shutdown kommt obendrauf,
-    die Hoehe zeigt die API nicht)."""
-    p = b.partie
-    erstes_blut = p is not None and not any(e.art == "FirstBlood" for e in p.ereignisse)
-    return 400 if erstes_blut else 300
+    """Gold fuer den Kill an deinem Lane-Gegner: nach seinem Level, erstes Blut, sein Kopfgeld (bewertung)."""
+    from .bewertung import kill_gold as kg
+    return kg(b.lane.s, erstes_blut=_erstes_blut_offen(b)) if b.lane is not None else 300
 
 
 def trank_wert(b: Bewertung) -> int:
@@ -321,7 +350,7 @@ def kauf(b: Bewertung, gold: int) -> tuple[str, bool]:
     if k is None:
         return "", False
     if k.kaufen:
-        satz = " und ".join(_akk(x) for x in k.kaufen)
+        satz = _liste([_akk(x) for x in k.kaufen])
         if k2 is not None and len(k2.kaufen) > len(k.kaufen):
             extra = [x for x in k2.kaufen if x not in k.kaufen]
             satz += f", und wenn du den Trank verkaufst, auch {' und '.join(_akk(x) for x in extra)}"
@@ -342,7 +371,7 @@ def nach_dem_kill(b: Bewertung) -> str:
     kauf den Brutalisierer.' Lohnt kein Recall, dann die Platten."""
     gold = b.gold + kill_gold(b)
     was, lohnt = kauf(b, gold)
-    shutdown = " plus Shutdown" if b.lane is not None and b.lane.shutdown else ""
+    shutdown = ""
     if lohnt:
         return f"Mit dem Kill hast du {gold // 50 * 50} Gold{shutdown}: Welle in seinen Turm, dann back und {_kauf_verb(was)}."
     if b.platten_gegner:

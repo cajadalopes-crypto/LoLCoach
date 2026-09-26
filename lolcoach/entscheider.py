@@ -26,7 +26,7 @@ from . import komponist
 from .bewertung import Bewertung
 from .jungle import LANE_SEITE, Jungletracker, anders
 from .kaufplan import _dat as kaufplan_dat
-from .komponist import OBJ_NAME, sek
+from .komponist import OBJ_AKK, OBJ_NAME, OBJ_NOM, kommt, sek
 
 LANE_PHASE_BIS = 840
 STAERKER_ALS = 1.5      # Kampfkraft-Verhaeltnis, ab dem ein Rueckzug-Plan entfaellt
@@ -67,6 +67,12 @@ def naechste_kanone(zeit: float, rolle: str) -> float | None:
 
 
 def _namen_kurz(liste) -> str:
+    n = [x.champion for x in liste]
+    return n[0] if len(n) == 1 else ", ".join(n[:-1]) + " und " + n[-1]
+
+
+def _namen_kurz_s(liste) -> str:
+    """Wie _namen_kurz, fuer Spieler statt Gegner-Lagen."""
     n = [x.champion for x in liste]
     return n[0] if len(n) == 1 else ", ".join(n[:-1]) + " und " + n[-1]
 
@@ -146,8 +152,8 @@ class Entscheider:
                     # mehrere: ohne "seit X weg" - zwei Namen und ihre Zeiten waeren zu lang
                     wann = "können schon da sein" if (x.ankunft or 0) < 2 else f"können in {sek(x.ankunft)} da sein"
                 grund = verwundbar[0] if verwundbar else komponist.todespreis(b)
-                aus.append(Option("zurueck", f"{wer} {wann}, {sek(b.zum_turm)} bis zum Turm: jetzt zurück"
-                                             + (f" - {grund}." if grund else "."),
+                aus.append(Option("zurueck", f"{wer} {wann}, und bis zu deinem Turm sind es {sek(b.zum_turm)}. "
+                                             f"Geh jetzt zurück" + (f" - {grund}." if grund else "."),
                                   200, 2 + bool(verwundbar), dringend=True))
 
         # 2) Frueher Jungler-Plan: Startseite bekannt -> wo kommt der erste Gank?
@@ -155,15 +161,15 @@ class Entscheider:
             gank = anders(self.jungle.start)
             if gank == meine and (j.seit is None or j.seit >= 15):
                 aus.append(Option("gank_erwartet",
-                                  f"{j.champion} hat {self.jungle.start} angefangen, {self.jungle.start_grund}: "
-                                  + (f"ab Minute 2 kommt {j.champion} zu dir" if b.zeit < 120
-                                     else f"ab jetzt kann {j.champion} kommen")
-                                  + ". Welle nicht über die Mitte, Ward in den Fluss.",
+                                  f"{j.champion} hat {self.jungle.start} angefangen - {self.jungle.start_grund}. "
+                                  + (f"Deshalb kommt {j.champion} ab Minute 2 zu dir" if b.zeit < 120
+                                     else f"Deshalb kann {j.champion} ab jetzt zu dir kommen")
+                                  + ": lass deine Welle nicht über die Mitte laufen und setz ein Ward in den Fluss.",
                                   150, 3))
             elif gank != meine:
                 aus.append(Option("gank_weg",
-                                  f"{j.champion} hat {self.jungle.start} auf deiner Seite angefangen: sein erster Gank "
-                                  f"kommt {gank}. Bis etwa Minute 3 kannst du hart spielen.", 90, 2))
+                                  f"{j.champion} hat auf deiner Seite angefangen, also kommt der erste Gank {gank}. "
+                                  f"Bis etwa Minute 3 kannst du hart spielen.", 90, 2))
 
         # 2b) Zwei Tode kurz hintereinander (Reasoning #46, Spieler-Faktor): nach dem Wiedereinstieg einmal der
         #     Reset - sicher farmen bis zum naechsten Spike, kein Trade ohne Sicht. Und solange: kein Druck-Plan.
@@ -174,7 +180,8 @@ class Entscheider:
             spike = f"bis {name}" if name else "bis zum nächsten Level"
             wer = j.champion if j and not j.s.tot else "den Jungler"
             # kurz halten: 9 s Reset-Satz liess "Shen hat Flash benutzt" verfallen (test_zauber, 26.09.)
-            aus.append(Option("reset", f"Zweimal gestorben: sicher farmen {spike}, kein Trade ohne Sicht auf {wer}.",
+            aus.append(Option("reset", f"Du bist zweimal kurz hintereinander gestorben. Farm jetzt sicher {spike} "
+                                       f"und trade nicht ohne Sicht auf {wer}.",
                               170, 3))
 
         # 2c) Muster: sein Jungler war schon zweimal an Toden auf deiner Lane beteiligt - er kommt wieder
@@ -183,8 +190,9 @@ class Entscheider:
         if lane_phase and j and not j.s.tot and n_ganks >= 2 and ("muster", n_ganks) not in self._einmal:
             andere = {l: n for l, n in self.jungle.ganks.items() if l != mlane}
             vergleich = f", woanders {sum(andere.values())}x" if andere else ", nirgends sonst"
-            aus.append(Option("muster", f"{j.champion} war schon an {n_ganks} Toden auf deiner Lane beteiligt{vergleich}: "
-                                        f"{j.champion} spielt auf dich. Welle bei dir halten, tief nur mit Sicht.", 120, 3))
+            aus.append(Option("muster", f"{j.champion} war schon an {n_ganks} Toden auf deiner Lane beteiligt{vergleich} - "
+                                        f"{j.champion} spielt auf dich. Halte die Welle bei dir und geh nur mit Sicht "
+                                        f"tief.", 120, 3))
 
         # 3) Druck: Lane-Gegner sichtbar, du staerker, Jungler tot oder sicher weit weg, Leben gut.
         #    (Camille-Partie 26.09., 4:42/4:50: "Gragas 19 s zu dir, zurueck" und 8 s spaeter "Spiel auf Rumble")
@@ -204,32 +212,32 @@ class Entscheider:
         if braucht_back and not gefahr:
             ob = b.objective
             kauf = b.kauf.satz() if b.kauf is not None and b.kauf.kaufen else ""
-            grund = (f"{b.gold // 100 * 100} Gold" + (f" {kauf}" if kauf else "") if b.gold >= 1100
-                     else f"{int(b.leben * 100)} Prozent Leben")
+            grund = (f"Du hast {b.gold // 100 * 100} Gold" + (f", das {kauf}" if kauf else "") if b.gold >= 1100
+                     else f"Du hast nur {int(b.leben * 100)} Prozent Leben")
             if schiebt_er and welle[2] is not None and welle[2] <= 0.45:
-                satz = (f"{grund}, aber seine Welle mit {welle[1]} läuft auf deinen Turm: erst abfarmen, "
-                        f"dann back - sonst frisst der Turm dein Gold.")
+                satz = (f"{grund}, aber seine Welle mit {welle[1]} Vasallen läuft auf deinen Turm. Farm sie erst ab und "
+                        f"geh dann back - sonst frisst der Turm dein Gold.")
                 aus.append(Option("back_warten", satz, 70, 3))
             elif schiebt_ihr:
-                satz = f"{grund}: Welle in den Turm, dann back"
+                satz = f"{grund}. Schieb die Welle in seinen Turm und geh dann back"
                 if ob and 45 <= ob[1] <= 150:
-                    satz += f" - dann bist du rechtzeitig zurück für {OBJ_NAME[ob[0]]} um {uhr(b.zeit + ob[1])}."
+                    satz += f" - so bist du rechtzeitig zurück für {OBJ_AKK[ob[0]]} um {uhr(b.zeit + ob[1])}."
                 else:
                     satz += "."
                 aus.append(Option("back_plan", satz, 80 + b.gold / 50, 2 + bool(ob)))
             elif (k := naechste_kanone(b.zeit, b.ich.rolle)) and k - b.zeit <= 45:
-                aus.append(Option("back_kanone", f"{grund}: Kanonenwelle kommt {uhr(k)} - die in den Turm schieben, "
-                                                 f"dann back.", 75 + b.gold / 50, 3))
+                aus.append(Option("back_kanone", f"{grund}. Die Kanonenwelle kommt um {uhr(k)} - schieb die noch in "
+                                                 f"seinen Turm und geh dann back.", 75 + b.gold / 50, 3))
 
         # 4b) Knapp vor einem Bauteil: noch eine Welle mitnehmen, dann mit dem Bauteil zurueck
         k = b.kauf
         if (k is not None and not k.kaufen and k.naechstes and k.naechstes[1] <= 200 and b.gold >= 700
                 and not gefahr and lane_phase and b.zeit >= 180):   # vor 3:00 ist kein Back-Fenster
             kanone = naechste_kanone(b.zeit, b.ich.rolle)
-            welle_satz = (f"die Kanone {uhr(kanone)} mitnehmen" if kanone and kanone - b.zeit <= 40
-                          else "noch eine Welle mitnehmen")
-            aus.append(Option("back_knapp", f"Noch {k.naechstes[1]} Gold bis {kaufplan_dat(k.naechstes[0])}: "
-                                            f"{welle_satz}, dann back.", 72, 2))
+            welle_satz = (f"Nimm die Kanone um {uhr(kanone)} noch mit" if kanone and kanone - b.zeit <= 40
+                          else "Nimm noch eine Welle mit")
+            aus.append(Option("back_knapp", f"Dir fehlen noch {k.naechstes[1]} Gold bis {kaufplan_dat(k.naechstes[0])}. "
+                                            f"{welle_satz} und geh dann back.", 72, 2))
 
         # 5) Objective-Vorlauf 60-120 s: Reihenfolge planen (Welle, Reset, Weg). In der Lane-Phase nur fuer die
         #    Seite des Objectives; danach fuer alle - dann kaempfen alle fuenf darum.
@@ -250,15 +258,16 @@ class Entscheider:
                     weg = b.zum_objective or 20.0      # Lane -> Grube, plus ein paar Sekunden zum Crashen
                     kanone = max((k for k in kanonen if b.zeit + 10 <= k and k + 8 + weg <= spawn - 30), default=None)
                     if reset:
-                        tun = "jetzt Welle rein und back, "
+                        tun = "Schieb jetzt die Welle rein und geh back"
                     elif kanone is not None:
-                        tun = f"crash die Kanonenwelle um {uhr(kanone)}, dann "
+                        tun = f"Crash die Kanonenwelle um {uhr(kanone)} und geh dann los"
                     else:
-                        tun = "Welle langsam aufbauen, "
+                        tun = "Bau deine Welle langsam auf"
                 else:
-                    tun = (f"Seitenwelle bis {uhr(b.zeit + ob[1] - 45)} rausschieben, " + ("dazwischen back, " if reset else ""))
-                satz = (f"{name} in {sek(ob[1])}: {tun}spätestens {uhr(b.zeit + ob[1] - 30)} an der Grube sein"
-                        + (f" - {prio}." if prio else "."))
+                    tun = (f"Schieb die Seitenwelle bis {uhr(b.zeit + ob[1] - 45)} raus" + (", geh dazwischen back"
+                                                                                           if reset else ""))
+                satz = (f"{OBJ_NOM[ob[0]][:1].upper() + OBJ_NOM[ob[0]][1:]} {kommt(ob[0])} in {sek(ob[1])}. {tun}, "
+                        f"und sei spätestens um {uhr(b.zeit + ob[1] - 30)} an der Grube." + (f" {prio}." if prio else ""))
                 aus.append(Option("obj_plan", satz, 90, 2 + reset + bool(prio)))
 
         # 5a) Lokale Ueberzahl (Reasoning #19): du und Mitspieler bei dir gegen weniger sichtbare Gegner, und niemand
@@ -269,9 +278,11 @@ class Entscheider:
                 and (b.leben is None or b.leben >= 0.5) and not serie and not stark):
             wir_n, die_n = len(b.mitspieler_nah) + 1, len(nah_gegner)
             ziel = min(nah_gegner, key=lambda x: x.abstand)
-            dazu = f", {ziel.champion} ohne Flash" if ziel.flash and ziel.flash > 20 else ""
-            aus.append(Option("ueberzahl", f"{wir_n} gegen {die_n} hier: {_namen_kurz(nah_gegner)}"
-                                           f"{' allein' if die_n == 1 else ''}{dazu} - rein!", 150, 3, dringend=True))
+            dazu = f", und {ziel.champion} hat kein Flash" if ziel.flash and ziel.flash > 20 else ""
+            freunde = _namen_kurz_s(b.mitspieler_nah)
+            aus.append(Option("ueberzahl", f"Du und {freunde} gegen {_namen_kurz(nah_gegner)}"
+                                           f"{' allein' if die_n == 1 else ''}, das sind {wir_n} gegen {die_n}{dazu}. "
+                                           f"Geht zusammen rein!", 150, 3, dringend=True))
 
         # 5b) Ein Mitspieler wird angegriffen: zwei Gegner sichtbar bei ihm (oder einer und er hat wenig Leben).
         #     Wer kann zuerst helfen? Du, wenn du rechtzeitig da bist - sonst die Gegenseite nutzen.
@@ -286,54 +297,58 @@ class Entscheider:
                 namen = _namen_kurz(bei)
                 lz = f" ({int(leben * 100)} Prozent)" if leben is not None else ""
                 if weg <= 10:
-                    aus.append(Option("hilfe", f"{s.champion}{lz} kämpft {ort} gegen {namen} - du bist {sek(weg)} "
-                                               f"weg: hin!", 160, 3, dringend=True))
+                    aus.append(Option("hilfe", f"{s.champion}{lz} kämpft {ort} gegen {namen}, und du bist nur "
+                                               f"{sek(weg)} entfernt - geh sofort hin!", 160, 3, dringend=True))
                 elif weg <= 25 and not lane_phase and (leben is None or leben >= 0.35):
                     # mit 6 Prozent ist er tot, bevor du nach 20 s ankommst (Camille-Partie 17:27)
-                    aus.append(Option("hilfe", f"{s.champion}{lz} kämpft {ort} gegen {namen}, {sek(weg)} von dir: "
-                                               f"hin, wenn der Kampf noch läuft.", 110, 3))
+                    aus.append(Option("hilfe", f"{s.champion}{lz} kämpft {ort} gegen {namen}, {sek(weg)} von dir "
+                                               f"entfernt. Geh hin, wenn der Kampf dann noch läuft.", 110, 3))
                 elif g is not None and g.s.name not in {x.s.name for x in bei} and not g.s.tot:
                     continue    # dein Lane-Gegner ist nicht dabei - nichts gewonnen
                 elif len(bei) >= 2:
-                    aus.append(Option("hilfe_fern", f"{namen} sind bei {s.champion} {ort}, zu weit für dich "
-                                                    f"({sek(weg)}): nutz es auf deiner Seite - Welle, Turm, Camps.",
+                    aus.append(Option("hilfe_fern", f"{namen} sind bei {s.champion} {ort}, das ist zu weit für dich, "
+                                                    f"{sek(weg)}. Nutz es auf deiner Seite: Welle, Turm und Camps.",
                                       65, 3))
                 break
 
         # 6) Freeze/Sicherheit: Jungler wahrscheinlich bei dir, Welle vor deinem Turm, du schiebst nicht
         if lane_phase and j and not j.s.tot and j_bei_mir >= 0.6 and (j.seit is None or j.seit >= 20) \
                 and welle and welle[2] is not None and welle[2] <= 0.45 and not schiebt_ihr and b.zeit >= 115:
-            aus.append(Option("freeze", f"Welle vor deinem Turm halten: {j.champion} ist wahrscheinlich auf deiner Seite "
-                                        f"({int(j_bei_mir * 100)} Prozent), seit {sek(j.seit or b.zeit)} nicht gesehen.",
+            aus.append(Option("freeze", f"Halte die Welle vor deinem Turm: {j.champion} ist zu {int(j_bei_mir * 100)} "
+                                        f"Prozent auf deiner Seite und seit {sek(j.seit or b.zeit)} nicht zu sehen.",
                               55, 3))
 
         # 7) Nach der Lane-Phase: Gruppe vor dem Objective, sonst Seitenwelle - mit dem, der antworten kann
         if not lane_phase and rolle in ("TOP", "MIDDLE", "BOTTOM"):
             if ob and 5 <= ob[1] <= 60:
-                weg = f", {sek(b.zum_objective)} Weg" if b.zum_objective else ""
+                weg = f", das sind {sek(b.zum_objective)}" if b.zum_objective else ""
                 # wer beim Spawn noch tot ist, kann nicht streiten
                 fehlen = [s.champion for s in b.tote_gegner if s.respawn > ob[1] + 5]
-                dazu = f", {', '.join(fehlen[:3])} beim Spawn noch tot" if fehlen else ""
-                aus.append(Option("gruppe", f"{OBJ_NAME[ob[0]]} in {sek(ob[1])}{dazu}: Welle crashen und zum Team{weg}.",
+                dazu = (f", und {', '.join(fehlen[:3])} {'ist' if len(fehlen) == 1 else 'sind'} beim Spawn noch tot"
+                        if fehlen else "")
+                nom = OBJ_NOM[ob[0]][:1].upper() + OBJ_NOM[ob[0]][1:]
+                aus.append(Option("gruppe", f"{nom} {kommt(ob[0])} in {sek(ob[1])}{dazu}. Lass deine Welle crashen und "
+                                            f"geh zum Team{weg}.",
                                   100 + 20 * len(fehlen), 2 + bool(fehlen)))
             elif not gefahr and not (ob and ob[1] <= 75):
                 tp = b.zweiter is not None and b.zweiter[0] == "SummonerTeleport" and b.zweiter[1] <= 0
-                tp_satz = ", Teleport bereit für den Kampf" if tp else ""
+                tp_satz = ", und dein Teleport ist bereit für den Kampf" if tp else ""
                 sichtbar = [x for x in b.gegner if not x.s.tot and x.sichtbar]
                 if g and (g.s.tot or (g.sichtbar and (g.ankunft or 0) >= 20)):
                     wo = "tot" if g.s.tot else g.ort
-                    aus.append(Option("seite", f"Seite frei, {g.champion} {'ist ' if wo in ('tot', 'oben', 'unten') else ''}"
-                                               f"{wo}: Welle drücken, Turm{tp_satz}.", 75, 2 + tp))
+                    aus.append(Option("seite", f"Die Seite ist frei, {g.champion} ist {wo}. Drück deine Welle und geh "
+                                               f"auf den Turm{tp_satz}.", 75, 2 + tp))
                 elif g and g.seit is not None and g.seit < 3 and wert_kraefte >= 0.5 and (b.leben or 1) >= 0.6                         and len(sichtbar) >= 3:
-                    aus.append(Option("seite", f"Split: nur {g.champion} kann antworten, {vorsprung} - das 1 gegen 1 "
-                                               f"nimmst du{tp_satz}.", 80, 3 + tp))
+                    aus.append(Option("seite", f"Splitte: nur {g.champion} kann dir antworten, und {vorsprung} - das "
+                                               f"1 gegen 1 gewinnst du{tp_satz}.", 80, 3 + tp))
                 elif g and wert_kraefte <= -1 and len(sichtbar) < 3:
-                    aus.append(Option("seite_nicht", f"Nicht allein splitten: {vorsprung}, und "
+                    aus.append(Option("seite_nicht", f"Splitte nicht allein: {vorsprung}, und "
                                                      f"{5 - len(sichtbar) - len(b.tote_gegner)} Gegner siehst du nicht. "
-                                                     f"Mit dem Team gehen.", 65, 3))
+                                                     f"Geh mit dem Team.", 65, 3))
                 elif len(sichtbar) >= 3:
-                    aus.append(Option("seite", f"{len(sichtbar)} Gegner sichtbar weg von dir: Seitenwelle drücken, "
-                                               f"Platten und Turm, bis sich einer zeigt{tp_satz}.", 70, 2 + tp))
+                    aus.append(Option("seite", f"{len(sichtbar)} Gegner sind weit weg von dir zu sehen. Drück deine "
+                                               f"Seitenwelle, hol dir Platten und den Turm, bis sich einer zeigt{tp_satz}.",
+                                      70, 2 + tp))
         return aus
 
     # --- Jungle ---------------------------------------------------------------------------
@@ -392,15 +407,15 @@ class Entscheider:
                 beste = (wert, lane, gruende, weg)
         if beste is not None and beste[0] >= 1.0:
             wert, lane, gruende, weg = beste
-            aus.append(Option("gank", f"Gank {lane}: {', '.join(gruende[:3])} - {sek(weg)} Weg.",
+            aus.append(Option("gank", f"Geh {lane} ganken: {', '.join(gruende[:3])}. Du brauchst {sek(weg)} dorthin.",
                               60 + 20 * wert, len(gruende) + 1))
         # Invade: sein Jungler eben auf der einen Seite gesehen -> seine Camps auf der anderen sind frei
         if j_seite in ("oben", "unten") and (b.leben or 1) >= 0.6 and not gefahr:
             frei = "unten" if j_seite == "oben" else "oben"
             lane = "Bot" if frei == "unten" else "Top"
             if b.prio.get(lane) != "er":        # ohne Prio dort laufen dir seine Laner in den Invade
-                aus.append(Option("invade", f"{feind_j.champion} ist {j_seite} gesehen: seine Camps {frei} sind frei "
-                                            f"- klauen, solange {feind_j.champion} drüben ist.", 55, 2))
+                aus.append(Option("invade", f"{feind_j.champion} ist {j_seite} gesehen worden, also sind seine Camps "
+                                            f"{frei} frei - klau sie, solange {feind_j.champion} drüben ist.", 55, 2))
         return aus
 
     # --- Sprechen ----------------------------------------------------------------------

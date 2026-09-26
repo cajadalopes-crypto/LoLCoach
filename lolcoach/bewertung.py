@@ -87,6 +87,22 @@ def shutdown(s: Spieler) -> bool:
     return s.kills >= 3 and s.kills - s.tode >= 3
 
 
+def kopfgeld(s: Spieler) -> int:
+    """Shutdown-Gold auf `s`, geschaetzt: 1 Kopfgeld-Punkt je 3 g aus Kills/Assists (wissen/mechanik.toml [gold]),
+    Tode bauen es ab; gezahlt wird ab 100 ueber der Basis, hoechstens 700. Die API liefert das Kopfgeld nicht -
+    Kills zu je ~300 g, Assists zu ~150 g, je Tod -150."""
+    roh = (s.kills * 300 + s.assists * 150) / 3 - s.tode * 150
+    return int(max(0, min(700, roh - 100)))
+
+
+def kill_gold(opfer: Spieler, erstes_blut: bool = False) -> int:
+    """Gold fuer einen Kill an `opfer` nach seinem Level (Wiki Champion_gold_bounties) + erstes Blut + Kopfgeld."""
+    from . import wissen
+    g = wissen.lade("mechanik")["gold"]
+    basis = g["kill_basis"][max(1, min(18, opfer.level)) - 1]
+    return basis + (g["first_blood_bonus"] if erstes_blut else 0) + kopfgeld(opfer)
+
+
 def _namen_liste(n: list[str]) -> str:
     return n[0] if len(n) == 1 else ", ".join(n[:-1]) + " und " + n[-1]
 

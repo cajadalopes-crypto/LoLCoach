@@ -33,11 +33,11 @@ def mit_minimap():
     """Zweite Partie (Riven gegen Shen, 25 min) mit den Sichtungen der Minimap."""
     gesagt = ansagen(PARTIE_2, lage.SichtAusBildern.aus_cache(PARTIE_2.with_name("botspiel_riven_2_bilder")))
     um = [(a.gesprochen, a.text) for a in gesagt]
-    weg = [t for t, x in um if re.match(r"Shen seit \d+ Sekunden weg", x)]
+    weg = [t for t, x in um if re.match(r"Shen ist seit \d+ Sekunden", x)]
     assert 1 <= len(weg) <= 4, weg                                        # vorher 10 Fehlalarme
     assert any(95 <= t <= 110 and "Vom Turm erwischt" in x for t, x in um)
     # Vi taucht oben auf, Riven hat 39 % Leben: gerechnet statt "Vorsicht, Vi oben" (Komponist 26.09.)
-    assert any(380 <= t <= 395 and "Vi ist oben" in x and "Zurück" in x and "Prozent Leben" in x for t, x in um), um
+    assert any(380 <= t <= 395 and "Vi ist oben" in x and "zurück" in x.lower() and "Prozent Leben" in x for t, x in um), um
     # keine Worst-Case-Gespenster: der ADC in Minute 12 bot "kann in 1 Sekunde da sein" (26.09.)
     assert not any("in 1 Sekunde da" in x for _, x in um)
     # Toplaner ohne Teleport wird nicht zu Fuss zum Drachen geschickt

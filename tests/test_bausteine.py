@@ -237,7 +237,7 @@ def bewertung_und_plan():
     b.gegner = [b.jungler, b.lane, fern]
     assert [x.s.name for x in b.bedrohung(8)] == [b.lane.s.name, j.name], "ADC in Minute 12 bot ist keine Gefahr"
     satz = komponist.jungler_gesehen(b, b.jungler, "gefahr", platten=True)
-    assert "Zurück zum Turm" in satz and "35 Prozent Leben" in satz and "3 Sekunden" in satz, satz
+    assert "zurück zu deinem Turm" in satz and "35 Prozent Leben" in satz and "3 Sekunden" in satz, satz
     # Sofort-Antwort aus dem Entscheider, Kauf-Frage bleibt bei Claude
     plan = entscheider.Option("druck", "Spiel auf Shen: du bist 2 Level vorn.", 100, 2)
     lb = S(entscheider=S(aktuell=plan))
@@ -247,7 +247,7 @@ def bewertung_und_plan():
     # Todeszeit (Wiki Death): L9 @20:00 = 29,2 s, L18 @55:00 = 78,75 s
     assert round(bewertung.todeszeit(9, 1200), 1) == 29.2 and round(bewertung.todeszeit(18, 3300), 2) == 78.75
     b.tod_kostet, b.objective = 45.0, ("baron", 30.0)
-    assert komponist.todespreis(b) == "ein Tod kostet 45 Sekunden, Baron in 30 Sekunden"
+    assert komponist.todespreis(b) == "ein Tod kostet dich 45 Sekunden, und Baron Nashor kommt in 30 Sekunden"
     # Kaufplan aus dem Lexikon-Build: Riven Kern Stiefel -> Axiombogen -> Endloser Hunger -> Tanz des Todes
     from lolcoach import kaufplan
     assert kaufplan.plan("Riven", (1055,), 1400).satz() == "reicht für den Brutalisierer"

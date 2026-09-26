@@ -460,7 +460,7 @@ class Regelwerk:
                 self._gemeldet.add(("cs", minute))
                 cspm = p.ich.cs / (p.zeit / 60)
                 g = p.gegenueber()
-                kw = dict(minute=minute, cs=p.ich.cs, cspm=f"{cspm:.1f}".replace(".", ","))
+                kw = dict(minute=minute, cs=p.ich.cs, cspm=f"{cspm:.1f}".replace(".0", "").replace(".", ","))
                 text = (cfg["satz"].format(champion=g.champion, gegner_cs=g.cs, **kw) if g
                         else cfg["satz_ohne_gegner"].format(**kw))
                 if cspm < cfg["ziel_pro_minute"]:
@@ -745,7 +745,8 @@ class Regelwerk:
             gegner = [s for s in p.gegner() if not s.tot and self.lage.sichtbar(s) and nah(s, gx, gy, cfg["radius"])]
             if len(gegner) >= 2 and ich_weit > cfg["eng"] and frei(schl, "gegner"):
                 self._obj_gesagt[(schl, "gegner")] = p.zeit
-                text = cfg["gegner"].format(namen=_namen(gegner), grube=grube, objective=name)
+                text = cfg["gegner"].format(namen=_namen(gegner), grube=grube, objective=name,
+                                            objective_akk=komponist.OBJ_AKK[schl])
                 if (kl := bewertung.kampf_um(p, self.lage, schl)) is not None:
                     text = komponist.gegner_am_objective(_namen(gegner), grube, name, kl)
                 yield Ansage(text, WICHTIG, f"objgegner:{schl}", gueltig=15, sperre=20, thema="objective")
@@ -766,17 +767,18 @@ class Regelwerk:
             if (len(dort) >= 2 and p.zeit - self._am_pit.get(schl, p.zeit) >= cfg["bleiben"]
                     and frei(schl, "team")):
                 self._obj_gesagt[(schl, "team")] = p.zeit
-                text = cfg["team"].format(objective=name, grube=grube, namen=_namen(dort))
+                text = cfg["team"].format(objective=name, objective_akk=komponist.OBJ_AKK[schl], grube=grube,
+                                          namen=_namen(dort))
             elif (j is not None and p.zeit - self._in_grube.get((j.name, schl), p.zeit) >= cfg["jungler_ab"]
                   and frei(schl, "team")):
                 self._obj_gesagt[(schl, "team")] = p.zeit
-                text = cfg["jungler"].format(jungler=j.champion, objective=name)
+                text = cfg["jungler"].format(jungler=j.champion, objective=name, objective_akk=komponist.OBJ_AKK[schl])
             elif frei(schl, "anlauf") and frei(schl, "team"):
                 laufen = [s for s in freunde if nah(s, gx, gy, cfg["anlauf_nah"])
                           and (self.lage.naehert_sich(s, (gx, gy), p.zeit) or 0) >= 0.03]
                 if len(laufen) >= cfg["anlauf_ab"]:
                     self._obj_gesagt[(schl, "anlauf")] = p.zeit
-                    text = cfg["anlauf"].format(grube=grube, objective=name)
+                    text = cfg["anlauf"].format(grube=grube, objective=name, objective_akk=komponist.OBJ_AKK[schl])
             if text:
                 dazu = cfg["dazu"]["nah"] if ich_weit <= cfg["hin_bis"] else self._satz(cfg["dazu"], p)
                 if self.b is not None:

@@ -4,7 +4,8 @@ Was geprueft wird (26.09.2026, beim Gegenlesen von Hand gefunden - jetzt maschin
   - Widerspruch: ein "geh rein"/Druck-Satz bis 15 s nach einer Warnung,
   - Doppelung: zweimal dasselbe Thema in 10 s,
   - Vorlage: ein Satz, der woertlich in wissen/makro.toml steht (also nicht gerechnet ist),
-  - zu lang: ueber 130 Zeichen (~9 s Sprechzeit),
+  - zu lang: ueber 300 Zeichen (~25 s Sprechzeit; seit 26.09. spricht der Coach zusammenhaengend - Carlos:
+    "zusammenhaengende Saetze" -, aber eine Ansage darf nicht alles andere eine halbe Minute blockieren),
   - Sprache: "in 1 Sekunden", "Larven lebt", "fuer Der ...", doppelte Leerzeichen, "None".
 
     python werkzeuge/ansagen_pruefen.py [aufnahme ...]
@@ -68,7 +69,7 @@ def pruefe(pfad: Path) -> dict:
                 befunde["doppelt"].append((t, b.text, a.text))
         if any(a.text.startswith(k) for k in feste):
             befunde["vorlage"].append((t, a.text))
-        if len(a.text) > 130:
+        if len(a.text) > 300:
             befunde["lang"].append((t, a.text))
         for muster, name in SPRACHE:
             if re.search(muster, a.text):

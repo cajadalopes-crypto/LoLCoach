@@ -115,9 +115,9 @@ satz_viel = "Du trägst {gold} Gold mit dir herum - das ist mehr als ein ganzes 
 [cs]
 minuten = [5, 10, 15, 20]
 ziel_pro_minute = 8.0         # Diamond+
-satz = "Minute {minute}: {cs} CS, {cspm} pro Minute. {champion} hat {gegner_cs}."
-satz_ohne_gegner = "Minute {minute}: {cs} CS, {cspm} pro Minute."
-unter_ziel = " Ziel sind acht pro Minute."
+satz = "Minute {minute}: du hast {cs} Vasallen, das sind {cspm} pro Minute, und {champion} hat {gegner_cs}."
+satz_ohne_gegner = "Minute {minute}: du hast {cs} Vasallen, das sind {cspm} pro Minute."
+unter_ziel = " Ziel sind acht pro Minute - nimm jeden mit, auch die unter deinem Turm."
 
 [sicht]
 # Regeln aus der Minimap (nur, was der Spieler selbst sehen koennte).
@@ -159,10 +159,10 @@ ich_nah = 0.15       # bist du selbst so nah, siehst du es - der Coach schweigt
 anlauf_nah = 0.30    # Mitspieler, die innerhalb davon auf die Grube zulaufen ...
 anlauf_ab = 3        # ... so viele: "dein Team laeuft hin"
 hin_bis = 0.40       # so nah an der Grube: "geh hin"
-team = "Dein Team fängt {objective} an - {namen} an der {grube}."
-jungler = "{jungler} fängt {objective} an."
-anlauf = "Dein Team läuft Richtung {grube} - {objective}."
-gegner = "Achtung, {namen} an der {grube} - die Gegner machen {objective}."
+team = "Dein Team fängt {objective_akk} an, {namen} stehen an der {grube}."
+jungler = "{jungler} fängt {objective_akk} an."
+anlauf = "Dein Team läuft Richtung {grube}, sie wollen {objective_akk}."
+gegner = "Achtung, {namen} stehen an der {grube} - die Gegner machen {objective_akk}."
 
 [objective_start.dazu]
 nah = "Du bist nah genug: hin."
@@ -221,7 +221,7 @@ neu_minimap = "{champion} hat gerade Flash benutzt, das sehe ich auf der Minimap
 nah = 0.12                    # Kartenanteil: so nah bei dir ist ein Kampf moeglich
 kampf = "{champion} hat kein Flash, noch {dauer}. Nutz das Fenster."
 kampf_erneut = 120
-zurueck = "{champion} hat Flash wieder."
+zurueck = "{champion} hat Flash wieder - das Fenster ist zu."
 neu_ult = "{champion} hat seine Ult benutzt, für {dauer} weg."
 kampf_ult = "{champion} hat keine Ult, noch {dauer}. Das ist dein Fenster."
 
@@ -241,9 +241,9 @@ ab = 150                      # vorher hat noch niemand ein Ward-Trinket geladen
 objective_vorlauf = 90        # Sekunden vor dem Spawn zaehlt die Grube
 jungler_weg_ab = 25           # so lange nicht gesehen, dann zaehlt der Gank-Weg
 erneut_nach = 120             # dieselbe Stelle frueheste wieder
-satz = "Du bist {ort} - guter Moment für ein Ward: {grund}"
-satz_objective = "{objective} kommt in {sekunden} Sekunden, so siehst du, wer sich dort sammelt."
-satz_gank = "{champion} ist seit {sekunden} Sekunden weg, so siehst du den Gank kommen."
+satz = "Du läufst gerade {ort} vorbei - setz dort ein Ward: {grund}"
+satz_objective = "{objective} kommt in {sekunden} Sekunden, und so siehst du, wer sich dort sammelt."
+satz_gank = "{champion} ist seit {sekunden} Sekunden weg, und so siehst du den Gank kommen."
 
 [recall]
 # Recall-Fenster aus dem Wellenstand (Minimap): deine Welle crasht gerade in seinen Turm.
