@@ -38,7 +38,7 @@ WEG_UNTER = -2.5       # er ist klar staerker: nicht traden
 TRAENKE = (2003, 2031, 2033)   # Heiltrank, Nachfuellbarer, Verderbender - verkaufbar fuer den naechsten Kauf
 KAUF_LOHNT_AB = 850    # so viel muss ein Einkauf wert sein, damit sich ein Recall dafuer lohnt (Langschwert: nein)
 KRAFT = ("level", "ult", "items", "matchup")
-ZUSTAND = ("leben", "zuenden_kill", "combo_kill", "combo_knapp", "combo_zu_wenig", "flash", "flash_ich", "zuenden",
+ZUSTAND = ("leben", "zuenden_kill", "combo_kill", "combo_knapp", "combo_zu_wenig", "combo_er", "flash", "flash_ich", "zuenden",
            "welle", "gold_offen", "mana", "mana_er")
 UMFELD = ("jungler", "jungler_nah", "jungler_weg", "dritter", "hilfe", "zone")
 ZONE_NAME = {"Heimerdinger": "Geschütze", "Zyra": "Pflanzen", "Azir": "Soldaten", "Illaoi": "Tentakel",
@@ -140,6 +140,8 @@ def kampf_faktoren(b: Bewertung) -> list[Faktor]:
     combo_faktor = _combo(b, g, zuenden_bereit)
     if combo_faktor is not None:
         f.append(combo_faktor)
+    if (er_faktor := _combo_er(b, g)) is not None:
+        f.append(er_faktor)
     if zuenden_bereit and combo_faktor is not None and combo_faktor.art == "combo_kill":
         pass                                  # Zuenden steckt in der Combo-Rechnung
     elif zuenden_bereit:
@@ -264,8 +266,9 @@ def _hat_mana(champion_id: str) -> bool:
 
 def _combo(b: Bewertung, g: GegnerLage, zuenden: bool) -> Faktor | None:
     """Reasoning #1: dein voller Combo (combo.py: Wiki-Werte, deine Raenge und dein AD aus der API, bereit laut
-    HUD, seine Ruestung) plus Zuenden gegen sein Leben (Balken x Max-Leben). Nur fuer Riven, Camille, Graves und
-    nur mit seinem Leben im Bild - sonst keine Zahl."""
+    HUD, seine Ruestung) plus Zuenden gegen sein Leben (Balken x Max-Leben). Nur mit seinem Leben im Bild.
+    Riven, Camille, Graves von Hand geprueft - alle anderen aus den Spieldaten als Untergrenze (ein Treffer je
+    Faehigkeit): die zaehlt nur, wenn sie schon reicht; "reicht nicht" sagt sie nicht (lieber stumm als falsch)."""
     from . import combo, rechnung
     if g.leben is None or b.partie is None or not combo.kann(b.ich.champion_id):
         return None
@@ -278,10 +281,28 @@ def _combo(b: Bewertung, g: GegnerLage, zuenden: bool) -> Faktor | None:
     n = g.champion
     zahl, leben = int(dmg) // 10 * 10, int(rest) // 10 * 10
     if dmg >= 1.1 * rest:     # 10 % Reserve: Heilung, Schilde, ein verfehlter Treffer
+        if not combo.genau(b.ich.champion_id):
+            return Faktor(2.2, "combo_kill", "dein Combo", "macht", f"mindestens {zahl} Schaden, {n} hat noch {leben} Leben")
         return Faktor(2.2, "combo_kill", "dein voller Combo", "macht", f"etwa {zahl} Schaden, {n} hat noch {leben} Leben")
+    if not combo.genau(b.ich.champion_id):
+        return None
     if dmg >= 0.8 * rest:
         return Faktor(0.6, "combo_knapp", "dein Combo", "macht", f"etwa {zahl}, {n} hat noch {leben} - das ist knapp")
     return Faktor(-1.0, "combo_zu_wenig", "dein Combo", "macht", f"nur etwa {zahl}, {n} hat noch {leben} Leben")
+
+
+def _combo_er(b: Bewertung, g: GegnerLage) -> Faktor | None:
+    """Reasoning #1 andersherum: toetet SEIN Combo dich? Untergrenze aus den Spieldaten (combo.gegner_schaden:
+    ein Treffer je Faehigkeit, Raenge aus seinem Level und der Skill-Reihenfolge des Lexikons, seine Items, deine
+    Ruestung und Magieresistenz aus der API) gegen dein Leben (API). Nur wenn schon die Untergrenze reicht."""
+    from . import combo
+    if b.leben_abs is None or b.leben_abs <= 0 or b.partie is None:
+        return None
+    dmg = combo.gegner_schaden(g.s, b.partie.werte, ult_bereit=not (g.ult and g.ult > 0), anteil=g.leben)
+    if dmg is None or dmg < 1.05 * b.leben_abs:
+        return None
+    # ohne dein Leben als Zahl: der Leben-Faktor nennt es oft schon ("nur 20 Prozent Leben")
+    return Faktor(-2.0, "combo_er", g.champion, "tötet", f"dich schon mit einem Combo, mindestens {int(dmg) // 10 * 10} Schaden")
 
 
 def urteil(b: Bewertung) -> Urteil | None:

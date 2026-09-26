@@ -434,7 +434,37 @@ def combo_rechnung():
     assert 950 <= voll <= 1250 and halb > voll and halb > 0.5 * rechnung.max_leben(g), (voll, halb)
     ohne_r = combo.schaden(p.ich, p.werte, p.raenge, {"Q": True, "W": True, "E": True, "R": False}, g, 0.5)
     assert ohne_r < halb, "ohne bereite Ult keine Windschnitt-Rechnung"
-    assert not combo.kann("Heimerdinger")          # nur Carlos' Champions - sonst keine Zahl
+    assert combo.kann("Heimerdinger") and not combo.genau("Heimerdinger")   # aus den Spieldaten: nur Untergrenze
+
+
+def faehigkeiten_aus_spieldaten():
+    """Formeln aller Champions (CommunityDragon, wissen/faehigkeiten.json) gegen die von Hand geprueften Wiki-Werte:
+    Riven Q/W/R, Graves R, Camille W stimmen auf den Punkt. Gegner-Raenge aus Level + Skill-Reihenfolge; sein Combo
+    als Untergrenze gegen dein Leben; Nunus Q (1200 gegen Vasallen) und Maximalwerte sind draussen."""
+    from lolcoach import combo, faehigkeiten as fa
+    st = {"ad": 150.0, "ad_basis": 100.0, "ad_bonus": 50.0, "ap": 80.0, "ap_bonus": 80.0}
+    w = combo.WIKI
+
+    def gleich(champion, slot, rang, soll):
+        (ist, _), = fa.schaden(champion, slot, rang, 9, st)
+        assert abs(ist - soll) < 0.01, (champion, slot, ist, soll)     # Spieldaten sind float32
+    gleich("Riven", "Q", 3, w["Riven"]["q"][2] + w["Riven"]["q_bonus"][2] * 50)
+    gleich("Riven", "W", 2, w["Riven"]["w"][1] + 50.0)
+    gleich("Riven", "R", 1, w["Riven"]["r2_min"][0] + w["Riven"]["r2_min_bonus"] * 50)
+    gleich("Graves", "R", 1, w["Graves"]["r"][0] + w["Graves"]["r_bonus"] * 50)
+    gleich("Camille", "W", 2, w["Camille"]["w"][1] + w["Camille"]["w_bonus"] * 50)
+    assert fa.schaden("Annie", "Q", 5, 9, st)[0][1] == "magisch" and fa.schaden("Garen", "R", 1, 9, st)[0][1] == "wahr"
+    assert all(n != "MonsterMinionDamage" for n, _ in fa.daten()["Nunu"]["Q"]["schaden"])
+    assert sum(1 for c in fa.daten().values() if any(v["schaden"] for v in c.values())) >= 165
+    assert combo.raenge_geschaetzt("Zed", 9) == {"Q": 5, "E": 2, "W": 1, "R": 1}
+    assert sum(combo.raenge_geschaetzt("Garen", 18).values()) == 18
+    # sein Combo auf dich: Zed Level 9 mit zwei Items gegen 60 Ruestung
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.zeit > 400)
+    from dataclasses import replace
+    zed = replace(p.gegenueber(), champion_id="Zed", champion="Zed", level=9, items=(3142, 3071))
+    mit = combo.gegner_schaden(zed, {"armor": 60, "magicResist": 40})
+    ohne = combo.gegner_schaden(zed, {"armor": 60, "magicResist": 40}, ult_bereit=False)
+    assert 350 <= ohne < mit <= 1600, (ohne, mit)
 
 
 def platten_lesen():
@@ -559,6 +589,7 @@ if __name__ == "__main__":
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
                  aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121, combo_rechnung,
-                 platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr):
+                 platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr,
+                 faehigkeiten_aus_spieldaten):
         test()
         print(f"{test.__name__} OK")

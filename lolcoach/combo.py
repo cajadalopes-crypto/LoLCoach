@@ -15,6 +15,10 @@ Ult bereit ist. Das Ergebnis ist deshalb eher zu niedrig als zu hoch.
 """
 from __future__ import annotations
 
+import re
+from functools import lru_cache
+from pathlib import Path
+
 from . import ddragon
 from .rechnung import wachstum
 
@@ -41,7 +45,122 @@ WIKI = {
 
 
 def kann(champion_id: str) -> bool:
+    from . import faehigkeiten
+    return champion_id in WIKI or faehigkeiten.kann(champion_id)
+
+
+def genau(champion_id: str) -> bool:
+    """Von Hand geprueft (Treffer je Faehigkeit, Passiv, Ult-Verstaerkung). Alle anderen rechnen aus den Spieldaten
+    eine Untergrenze (ein Treffer je Faehigkeit) - die gilt nur, wenn sie schon reicht."""
     return champion_id in WIKI
+
+
+def mr(s) -> float:
+    """Magieresistenz eines Gegners: Grundwert nach Level (Data Dragon) + Items."""
+    st = (ddragon.champions().get(s.champion_id) or {}).get("stats", {})
+    r = wachstum(float(st.get("spellblock", 30)), float(st.get("spellblockperlevel", 1.3)), s.level)
+    it = ddragon.items()
+    return r + sum(float(it.get(i, {}).get("stats", {}).get("FlatSpellBlockMod", 0.0)) for i in s.items)
+
+
+def _eigene_werte(champion_id: str, level: int, werte: dict) -> dict:
+    """Deine Werte aus der Live-API, aufgeteilt in Grundwert und Bonus (fuer die Formeln der Spieldaten)."""
+    st = (ddragon.champions().get(champion_id) or {}).get("stats", {})
+    aus = {}
+    for name, api, basis, je in (("ad", "attackDamage", "attackdamage", "attackdamageperlevel"),
+                                 ("ruestung", "armor", "armor", "armorperlevel"),
+                                 ("mr", "magicResist", "spellblock", "spellblockperlevel"),
+                                 ("leben_max", "maxHealth", "hp", "hpperlevel")):
+        gesamt = float(werte.get(api) or 0.0)
+        b = wachstum(float(st.get(basis, 0.0)), float(st.get(je, 0.0)), level)
+        aus.update({name: gesamt, name + "_basis": b, name + "_bonus": max(0.0, gesamt - b)})
+    ap = float(werte.get("abilityPower") or 0.0)
+    aus.update(ap=ap, ap_basis=0.0, ap_bonus=ap, leben=float(werte.get("currentHealth") or 0.0),
+               tempo_angriff=float(werte.get("attackSpeed") or 0.0), lauftempo=float(werte.get("moveSpeed") or 0.0))
+    return aus
+
+
+# Uebliche Punktvergabe: die erste Faehigkeit ist auf 9 voll, die zweite auf 13, die dritte auf 18 (R auf 6/11/16)
+PUNKTE = ((1, 4, 5, 7, 9), (2, 8, 10, 12, 13), (3, 14, 15, 17, 18))
+LEXIKON = Path(__file__).resolve().parent.parent / "wissen" / "lexikon" / "champions"
+
+
+@lru_cache(maxsize=256)
+def reihenfolge(champion_id: str) -> tuple[str, str, str]:
+    """Skill-Reihenfolge aus dem Lexikon ('- Skill: Q > E > W'), sonst die haeufigste (Q > E > W, 71 von 135)."""
+    try:
+        text = (LEXIKON / f"{champion_id}.md").read_text(encoding="utf-8")
+    except OSError:
+        text = ""
+    m = re.search(r"^- Skill:\s*([QWE])\s*>\s*([QWE])\s*>\s*([QWE])", text, re.M)
+    return (m.group(1), m.group(2), m.group(3)) if m and len({m.group(1), m.group(2), m.group(3)}) == 3 else ("Q", "E", "W")
+
+
+def raenge_geschaetzt(champion_id: str, level: int) -> dict[str, int]:
+    """Raenge eines Gegners aus seinem Level - die Live-API nennt nur deine."""
+    aus = {t: sum(1 for x in stufen if x <= level) for t, stufen in zip(reihenfolge(champion_id), PUNKTE)}
+    aus["R"] = (level >= 6) + (level >= 11) + (level >= 16)
+    return aus
+
+
+def _gegner_werte(s, anteil: float | None) -> dict:
+    """Werte eines Gegners: Grundwerte nach Level (Data Dragon) + Items. Ohne Runen und Stapel - eher zu wenig."""
+    st = (ddragon.champions().get(s.champion_id) or {}).get("stats", {})
+    it = ddragon.items()
+
+    def items(schl: str) -> float:
+        return sum(float(it.get(i, {}).get("stats", {}).get(schl, 0.0)) for i in s.items)
+
+    aus = {}
+    for name, basis, je, item in (("ad", "attackdamage", "attackdamageperlevel", "FlatPhysicalDamageMod"),
+                                  ("ruestung", "armor", "armorperlevel", "FlatArmorMod"),
+                                  ("mr", "spellblock", "spellblockperlevel", "FlatSpellBlockMod"),
+                                  ("leben_max", "hp", "hpperlevel", "FlatHPPoolMod")):
+        b, bonus = wachstum(float(st.get(basis, 0.0)), float(st.get(je, 0.0)), s.level), items(item)
+        aus.update({name: b + bonus, name + "_basis": b, name + "_bonus": bonus})
+    ap = items("FlatMagicDamageMod")
+    aus.update(ap=ap, ap_basis=0.0, ap_bonus=ap, leben=aus["leben_max"] * (anteil if anteil is not None else 1.0),
+               lauftempo=float(st.get("movespeed", 340)))
+    return aus
+
+
+def gegner_schaden(s, meine_werte: dict, ult_bereit: bool = True, anteil: float | None = None) -> float | None:
+    """Untergrenze fuer den Combo eines Gegners auf dich: je Faehigkeit ein Treffer (Raenge aus seinem Level und
+    der Skill-Reihenfolge), ein normaler Angriff, nach DEINER Ruestung/Magieresistenz (API). Ohne Runen,
+    Durchdringung, Stapel. Beschwoererzauber zaehlen nicht. None ohne Spieldaten."""
+    from . import faehigkeiten
+    if not faehigkeiten.kann(s.champion_id) or not meine_werte:
+        return None
+    L = max(1, s.level)
+    st = _gegner_werte(s, anteil)
+    arm, mag = float(meine_werte.get("armor") or 0.0), float(meine_werte.get("magicResist") or 0.0)
+    teiler = {"physisch": 100 / (100 + max(0.0, arm)), "magisch": 100 / (100 + max(0.0, mag)), "wahr": 1.0}
+    summe = st["ad"] * teiler["physisch"]      # ein Angriff: Garens Q enthaelt schon einen
+    for t, r in raenge_geschaetzt(s.champion_id, L).items():
+        if r <= 0 or (t == "R" and not ult_bereit):
+            continue
+        summe += sum(max(0.0, x) * teiler.get(art, 0.0) for x, art in faehigkeiten.schaden(s.champion_id, t, r, L, st))
+    return summe
+
+
+def _allgemein(ich, werte: dict, raenge: dict[str, int], bereit: dict[str, bool] | None, ziel) -> float | None:
+    """Untergrenze aus den Spieldaten (faehigkeiten.py): je bereite Faehigkeit ein Treffer ihrer Tooltip-
+    Schadensteile nach Ruestung/Magieresistenz, dazu ein normaler Angriff."""
+    from . import faehigkeiten
+    L = max(1, ich.level)
+    st = _eigene_werte(ich.champion_id, L, werte)
+    arm = max(0.0, ruestung(ziel) * float(werte.get("armorPenetrationPercent") or 1.0)
+              - float(werte.get("physicalLethality") or 0.0))
+    mag = max(0.0, mr(ziel) * float(werte.get("magicPenetrationPercent") or 1.0)
+              - float(werte.get("magicPenetrationFlat") or 0.0) - float(werte.get("magicLethality") or 0.0))
+    teiler = {"physisch": 100 / (100 + arm), "magisch": 100 / (100 + mag), "wahr": 1.0}
+    summe = st["ad"] * teiler["physisch"]      # ein Angriff: Garens Q enthaelt schon einen
+    for t in "QWER":
+        r = int(raenge.get(t) or 0)
+        if r <= 0 or (bereit is not None and bereit.get(t) is False):
+            continue
+        summe += sum(max(0.0, x) * teiler.get(art, 0.0) for x, art in faehigkeiten.schaden(ich.champion_id, t, r, L, st))
+    return summe
 
 
 def _basis_ad(champion_id: str, level: int) -> float:
@@ -61,8 +180,10 @@ def schaden(ich, werte: dict, raenge: dict[str, int], bereit: dict[str, bool] | 
     """Voller Combo-Schaden nach Ruestung (ohne Zuenden) auf `ziel` mit `ziel_anteil` Leben; None, wenn der
     Champion nicht gerechnet wird. `bereit`: Q/W/E/R aus dem HUD (None = unbekannt, dann zaehlt jeder Rang)."""
     daten = WIKI.get(ich.champion_id)
-    if daten is None or not werte:
+    if not werte:
         return None
+    if daten is None:
+        return _allgemein(ich, werte, raenge, bereit, ziel) if kann(ich.champion_id) else None
     L = max(1, ich.level)
     ad = float(werte.get("attackDamage") or 0.0)
     bonus = max(0.0, ad - _basis_ad(ich.champion_id, L))

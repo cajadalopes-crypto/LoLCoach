@@ -79,8 +79,18 @@ def items() -> dict[int, dict]:
 
 @lru_cache(maxsize=1)
 def champions() -> dict[str, dict]:
-    """Schluessel ist die interne ID ("MonkeyKing" fuer Wukong)."""
-    return _lade("champion.json")
+    """Schluessel ist die interne ID ("MonkeyKing" fuer Wukong). Grundwerte aus den Spieldaten gehen vor
+    (wissen/grundwerte.json, werkzeuge/faehigkeiten_holen.py): Data Dragon 16.19.1 fuehrt fuer alle Champions
+    attackdamageperlevel = 0 - dein Grund-AD war so auf Level 13 ~33 zu niedrig, der Bonus-AD (Combo) zu hoch."""
+    daten = _lade("champion.json")
+    try:
+        echt = json.loads((Path(__file__).resolve().parent.parent / "wissen" / "grundwerte.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        echt = {}
+    for cid, werte in echt.items():
+        if cid in daten:
+            daten[cid].setdefault("stats", {}).update(werte)
+    return daten
 
 
 def item_preis(item_id: int, api_preis: int = 0) -> int:
