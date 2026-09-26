@@ -23,6 +23,7 @@ import threading
 import time
 
 _ASYNC, _UNTERBRECHEN = 1, 2
+ZWEITE_ANFRAGE_NACH = 0.35   # Sekunden ohne Audio, bis eine zweite Synthese-Anfrage mitlaeuft
 NOCH_AKTUELL = 25.0   # so alt darf ein unterbrochener Satz sein, um wiederholt zu werden
 
 
@@ -71,12 +72,39 @@ class _Neural:
         import edge_tts
         import numpy as np
 
-        async def hole() -> bytes:
+        async def hole_eins(erstes: asyncio.Event) -> bytes:
             daten = bytearray()
             async for teil in edge_tts.Communicate(text, self.stimme, rate=self.tempo).stream():
                 if teil["type"] == "audio":
+                    erstes.set()
                     daten += teil["data"]
+            if not daten:
+                raise RuntimeError("edge-tts: kein Audio")
             return bytes(daten)
+
+        async def hole() -> bytes:
+            """Gemessen 26.09. nachts, 15 Anfragen: erstes Audio im Median nach 0,17 s, aber jede zehnte erst nach
+            1,4-1,8 s (Ausreisser beim Dienst) - live 'Stimme' 1,5 s im Median, bis 2,5 s. Kommt nach
+            ZWEITE_ANFRAGE_NACH kein Audio, laeuft eine zweite Anfrage mit; die erste fertige gilt."""
+            e1 = asyncio.Event()
+            t1 = asyncio.create_task(hole_eins(e1))
+            try:
+                await asyncio.wait_for(e1.wait(), ZWEITE_ANFRAGE_NACH)
+                return await t1
+            except asyncio.TimeoutError:
+                pass
+            t2 = asyncio.create_task(hole_eins(asyncio.Event()))
+            offen = {t1, t2}
+            fehler = None
+            while offen:
+                fertig, offen = await asyncio.wait(offen, return_when=asyncio.FIRST_COMPLETED)
+                for t in fertig:
+                    if t.exception() is None:
+                        for rest in offen:
+                            rest.cancel()
+                        return t.result()
+                    fehler = t.exception()
+            raise fehler or RuntimeError("edge-tts: kein Audio")
 
         mp3 = asyncio.run(asyncio.wait_for(hole(), timeout=6))
         with av.open(io.BytesIO(mp3)) as c:
