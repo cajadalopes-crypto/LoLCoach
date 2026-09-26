@@ -147,6 +147,28 @@ solo_nachteil = "Solo gegen {champion} verloren - er war {grund}. Erst nachziehe
 solo = "Solo gegen {champion} verloren. Denk an seine Cooldowns - trade, wenn seine wichtigste Fähigkeit weg ist."
 turm = "Vom Turm erwischt. Unter seinen Turm nur mit genug Leben - und wenn deine Vasallen die Schüsse nehmen."
 
+[objective_start]
+# Carlos 26.09.: "ansagen, wenn mein Team Objectives anfaengt - wenn sich viele am Drachen sammeln und
+# bewegen, oder ein Jungler allein". Aus den Minimap-Positionen (Mitspieler sind immer zu sehen).
+radius = 0.09        # Kartenanteil um die Grube: "an der Grube"
+bleiben = 2          # Sekunden, die zwei Mitspieler dort stehen muessen (nicht nur durch den Fluss laufen)
+eng = 0.055          # "in der Grube" (Jungler allein)
+jungler_ab = 3       # Sekunden, die der Jungler allein in der Grube steht
+ich_nah = 0.15       # bist du selbst so nah, siehst du es - der Coach schweigt
+anlauf_nah = 0.30    # Mitspieler, die innerhalb davon auf die Grube zulaufen ...
+anlauf_ab = 3        # ... so viele: "dein Team laeuft hin"
+hin_bis = 0.40       # so nah an der Grube: "geh hin"
+team = "Dein Team fängt {objective} an - {namen} an der {grube}."
+jungler = "{jungler} fängt {objective} an."
+anlauf = "Dein Team läuft Richtung {grube} - {objective}."
+gegner = "Achtung, {namen} an der {grube} - die Gegner machen {objective}."
+
+[objective_start.dazu]
+nah = "Du bist nah genug: hin."
+TOP = "Teleport bereit? Dann TP hinter die Grube - sonst oben Welle rein und Platten."
+TOP_ohne_tp = "Zu weit für dich: oben Welle rein, Platten, Turm - Druck auf der anderen Seite."
+alle = "Schaffst du es in 20 Sekunden hin, geh; sonst Druck auf der anderen Seite."
+
 [tief]
 # Tief auf der gegnerischen Seite, waehrend Gegner lange nicht zu sehen sind - das Muster
 # hinter vier Toden in Partie 3 (Review 26.09.: 21:03, 23:16, 27:44, 32:26).

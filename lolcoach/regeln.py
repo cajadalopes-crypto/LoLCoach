@@ -47,6 +47,12 @@ def _lebende_objectives(p: Partie, bis: float = 0.0, puffer: float = 30.0) -> li
             and not ("weg" in obj[s] and obj[s]["weg"] - p.zeit < puffer)]
 
 
+def _namen(spieler) -> str:
+    """'Zaahen und Anivia', 'Zaahen, Anivia und Swain'."""
+    n = [s.champion for s in spieler]
+    return n[0] if len(n) == 1 else ", ".join(n[:-1]) + " und " + n[-1]
+
+
 def _minuten(sek: float) -> str:
     s = int(round(sek))
     if s < 90:
@@ -73,6 +79,8 @@ class Regelwerk:
         self.ult_warnungen: dict[str, str] = {}        # Champion -> ein Satz, was seine Ult bedeutet (Spielakte)
         from .todesanalyse import Rueckblick
         self.rueckblick = Rueckblick()                 # die letzten 45 s - fuer die Todesanalyse
+        self._in_grube: dict[tuple[str, str], float] = {}   # (Jungler, Objective) -> seit wann in der Grube
+        self._am_pit: dict[str, float] = {}                 # Objective -> seit wann zwei Mitspieler dort stehen
         self._spikes: list[str] = []                   # eben fertig gewordene eigene Items (noch nicht gesagt)
         self._spike_bei = 0.0
 
@@ -88,7 +96,8 @@ class Regelwerk:
         for regel in (self._vorwarnung, self._zahlen, self._jungler_tot, self._lane_tot,
                       self._level, self._items, self._gold, self._cs, self._tod,
                       self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf,
-                      self._ward, self._recall_fenster, self._tief_ohne_sicht, self._kontrollauge):
+                      self._ward, self._recall_fenster, self._tief_ohne_sicht, self._kontrollauge,
+                      self._objective_start):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 ansagen.append(a)
@@ -549,6 +558,67 @@ class Regelwerk:
             yield Ansage(cfg["satz"].format(ort=ort, grund=anlaesse[zweck]), HINWEIS,
                          f"ward:{st['name']}:{st['seite']}", gueltig=6, sperre=cfg["erneut_nach"])
             return
+
+    GRUBEN = {"drache": (0.675, 0.71, "Drachengrube"), "baron": (0.325, 0.29, "Baron-Grube"),
+              "herold": (0.325, 0.29, "Baron-Grube"), "larven": (0.325, 0.29, "Baron-Grube")}   # an map11 vermessen
+
+    def _objective_start(self, p: Partie, v: Partie):
+        """Dein Team (oder der Gegner) faengt ein Objective an - aus den Positionen an der Grube:
+        zwei Mitspieler dort, der Jungler allein in der Grube, drei laufen darauf zu, oder Gegner
+        sichtbar dort. Dazu, was du tun sollst (Rolle, Teleport, Abstand)."""
+        if not self.lage or not self.lage.aktiv or p.ich.tot:
+            return
+        cfg = self.m["objective_start"]
+        ich = self.lage.gesehen(p.ich)
+        ich_pos = (ich[1], ich[2]) if ich and p.zeit - ich[0] < 3 else None
+
+        def nah(s, gx, gy, r):
+            g = self.lage.gesehen(s)
+            return bool(g and p.zeit - g[0] < 2 and abs(g[1] - gx) + abs(g[2] - gy) <= r)
+
+        for schl in _lebende_objectives(p):
+            gx, gy, grube = self.GRUBEN[schl]
+            if ich_pos and abs(ich_pos[0] - gx) + abs(ich_pos[1] - gy) <= cfg["ich_nah"]:
+                continue   # du stehst selbst dort
+            spawn = int(p.naechster_spawn(schl) or 0)
+            name = _objective_name(schl, p)
+            freunde = [s for s in p.team(p.mein_team) if s is not p.ich and not s.tot]
+            dort = [s for s in freunde if nah(s, gx, gy, cfg["radius"])]
+            j = p.jungler(p.mein_team)
+            if j is not None and j is not p.ich and nah(j, gx, gy, cfg["eng"]):
+                self._in_grube.setdefault((j.name, schl), p.zeit)
+            elif j is not None:
+                self._in_grube.pop((j.name, schl), None)
+            if len(dort) >= 2:   # zwei an der Grube - aber nicht nur auf dem Weg durch den Fluss: 2 s bleiben
+                self._am_pit.setdefault(schl, p.zeit)
+            else:
+                self._am_pit.pop(schl, None)
+            text = None
+            if (len(dort) >= 2 and p.zeit - self._am_pit.get(schl, p.zeit) >= cfg["bleiben"]
+                    and ("objstart", schl, spawn, "team") not in self._gemeldet):
+                self._gemeldet.add(("objstart", schl, spawn, "team"))
+                text = cfg["team"].format(objective=name, grube=grube, namen=_namen(dort))
+            elif (j is not None and p.zeit - self._in_grube.get((j.name, schl), p.zeit) >= cfg["jungler_ab"]
+                  and ("objstart", schl, spawn, "team") not in self._gemeldet):
+                self._gemeldet.add(("objstart", schl, spawn, "team"))
+                text = cfg["jungler"].format(jungler=j.champion, objective=name)
+            elif ("objstart", schl, spawn, "anlauf") not in self._gemeldet and ("objstart", schl, spawn, "team") \
+                    not in self._gemeldet:
+                laufen = [s for s in freunde if nah(s, gx, gy, cfg["anlauf_nah"])
+                          and (self.lage.naehert_sich(s, (gx, gy), p.zeit) or 0) >= 0.03]
+                if len(laufen) >= cfg["anlauf_ab"]:
+                    self._gemeldet.add(("objstart", schl, spawn, "anlauf"))
+                    text = cfg["anlauf"].format(grube=grube, objective=name)
+            if text:
+                weit = abs(ich_pos[0] - gx) + abs(ich_pos[1] - gy) if ich_pos else 1.0
+                dazu = cfg["dazu"]["nah"] if weit <= cfg["hin_bis"] else self._satz(cfg["dazu"], p)
+                yield Ansage(f"{text} {dazu}".strip(), WICHTIG, f"objstart:{schl}", gueltig=8, sperre=20)
+            # die Gegner, wenn sie dort zu sehen sind
+            gegner = [s for s in p.gegner() if not s.tot and self.lage.sichtbar(s) and nah(s, gx, gy, cfg["radius"])]
+            if len(gegner) >= 2 and ("objstart", schl, spawn, "gegner") not in self._gemeldet:
+                self._gemeldet.add(("objstart", schl, spawn, "gegner"))
+                yield Ansage(cfg["gegner"].format(namen=_namen(gegner), grube=grube, objective=name), WICHTIG,
+                             f"objgegner:{schl}", gueltig=6, sperre=20)
 
     def _tief_ohne_sicht(self, p: Partie, v: Partie):
         """Tief auf seiner Seite, waehrend Gegner (oder in der Lane-Phase der Jungler) lange
