@@ -138,6 +138,24 @@ class PushToTalk(threading.Thread):
         self._halt.set()
 
 
+FRAGE_WORTE = {"wo", "wann", "was", "wie", "warum", "wieso", "wer", "welche", "welcher", "welches", "soll", "sollte",
+               "kann", "können", "ist", "hat", "hab", "habe", "gibt", "notiz", "merk", "merke"}
+# Wortstaemme aus dem Spiel ("Ich bin Toplane", "Ich Powerfarme lieber" sind Aussagen, die zaehlen)
+SPIEL_STAEMME = ("flash", "drach", "baron", "herold", "larven", "turm", "tower", "welle", "gold", "item", "back",
+                 "recall", "jung", "lane", "line", "tot", "kill", "ult", "ward", "gank", "top", "mid", "bot", "farm",
+                 "level", "teleport", "zünd", "leben", "mana", "push", "freez", "supp", "adc", "roam", "invad")
+
+
+def _bruchstueck(text: str, woerter: list[str], champions: list[str]) -> bool:
+    """Drei Woerter oder weniger, keine Frage, nichts aus dem Spiel: ein Bruchstueck, keine Frage an den Coach."""
+    if len(woerter) > 3 or "?" in text:
+        return False
+    klein = {w.strip(".,!:;").lower() for w in woerter}
+    if klein & FRAGE_WORTE or any(st in text.lower() for st in SPIEL_STAEMME):
+        return False
+    return not any(c.lower() in text.lower() for c in champions)
+
+
 # Whisper erfindet bei Stille gern Saetze aus seinen Trainingsdaten (Untertitel).
 ERFUNDEN = ("untertitel", "vielen dank fürs zuschauen", "danke fürs zuschauen", "copyright", "amara.org")
 
@@ -225,6 +243,12 @@ class Gespraech:
             self.sprecher.freigeben()  # Rauschen, Raeuspern, "B."
             return
         print(f"  Du: {text}", flush=True)
+        if _bruchstueck(text, woerter, [s.champion for s in p.spieler]):
+            # Live 26.09. (Practice Tool): "Und man", "Da hoere ich", "Der Thomas Dau" - Nebengeraeusche oder
+            # Gespraeche nebenbei; "Und man" bekam einen langen Rat ("Kauf jetzt Caulfields Kriegshammer ...")
+            print("  (Bruchstueck ohne Frage - keine Antwort)", flush=True)
+            self.sprecher.freigeben()
+            return
         if woerter[0].strip(":") in NOTIZ_WORTE:
             self._notiere(text, p)
             antwort = "Notiert."
