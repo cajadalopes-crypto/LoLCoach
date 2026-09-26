@@ -216,6 +216,7 @@ class Beobachter(threading.Thread):
         self.fehler: str | None = None
         self.messung: list[float] = []
         self._neu: list[tuple[float, list[minimap.Sichtung]]] = []
+        self.aktuell: tuple[float, list[minimap.Sichtung]] = (0.0, [])   # letztes Bild, nicht abholend
         self._ereignisse: list[tuple] = []
         self._schloss = threading.Lock()
         self._halt = threading.Event()
@@ -256,6 +257,7 @@ class Beobachter(threading.Thread):
                         if ergebnis is not None:
                             sichtungen, spruenge = ergebnis
                             letzte_sichtungen = sichtungen
+                            self.aktuell = (start, sichtungen)   # fuer das Dashboard (15/s statt 1/s)
                             with self._schloss:
                                 self._neu.append((start, sichtungen))
                                 self._ereignisse += [("sprung", s) for s in spruenge]

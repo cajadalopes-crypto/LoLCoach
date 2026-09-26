@@ -147,8 +147,37 @@ function zeige(z) {
   $('fokuskasten').hidden = !z.fokus;               // aus dem Review der letzten Partie
   if (z.fokus) $('fokus').textContent = z.fokus;
   $('ansagen').innerHTML = z.ansagen.map(a => `<li class="p${a.prio}"><span class="klein">${a.zeit}</span> ${a.text}</li>`).join('');
+  aufsetzen(z);
   zeichne(z);
 }
+
+// Minimap schnell: /positionen.json zehnmal je Sekunde (der Beobachter liest 15 Bilder/s);
+// alles andere kommt weiter je Sekunde mit zustand.json. Ohne diesen Kanal (aeltere Coach-Version)
+// bleibt es beim Sekundentakt.
+let schnell = null;   // { t, s: [[id, team, x, y], ...] }
+function aufsetzen(z) {
+  if (!schnell || performance.now() - schnell.t > 600 || !z.spieler) return;
+  for (const [id, team, x, y] of schnell.s) {
+    const sp = z.spieler.find(s => s.id === id && (!s.team || s.team === team));
+    if (sp && !sp.tot) sp.gesehen = { ...(sp.gesehen || {}), x, y, vor: 0, jetzt: true, ort: sp.gesehen ? sp.gesehen.ort : '' };
+  }
+}
+async function schnellFrage() {
+  let warten = 100;
+  try {
+    const r = await fetch('/positionen.json', { cache: 'no-store' });
+    if (r.status === 404) warten = 10000;
+    else {
+      const d = await r.json();
+      if (d.alter != null && d.alter < 1) {
+        schnell = { t: performance.now(), s: d.s };
+        if (letzterZustand && !letzterZustand.warte) { aufsetzen(letzterZustand); zeichne(letzterZustand); }
+      }
+    }
+  } catch (e) { warten = 1000; }
+  setTimeout(schnellFrage, warten);
+}
+schnellFrage();
 
 async function frage() {
   try { zeige(await (await fetch('/zustand.json', { cache: 'no-store' })).json()); }

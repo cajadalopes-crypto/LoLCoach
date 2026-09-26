@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 
@@ -31,7 +32,8 @@ def zustand_json(p: Partie, lagebild=None, ansagen=()) -> dict:
     wir = p.mein_team
     spieler = []
     for s in p.spieler:
-        eintrag = {"name": s.name, "id": s.champion_id, "champion": s.champion, "rolle": ROLLE_DE.get(s.rolle, ""),
+        eintrag = {"name": s.name, "id": s.champion_id, "team": s.team, "champion": s.champion,
+                   "rolle": ROLLE_DE.get(s.rolle, ""),
                    "freund": s.team == wir, "ich": s is p.ich, "tot": s.tot, "respawn": round(s.respawn),
                    "level": s.level, "cs": s.cs, "kda": f"{s.kills}/{s.tode}/{s.assists}", "itemgold": s.item_gold,
                    "gesehen": None}
@@ -76,6 +78,7 @@ class Dashboard:
     def __init__(self, port: int = PORT):
         self._json = b'{"warte": true}'
         self._schloss = threading.Lock()
+        self._beobachter = None
         dashboard = self
 
         class Anfrage(BaseHTTPRequestHandler):
@@ -86,6 +89,14 @@ class Dashboard:
                 elif pfad == "/zustand.json":
                     with dashboard._schloss:
                         self._sende(dashboard._json, "application/json")
+                elif pfad == "/positionen.json":
+                    # die Minimap mit 15 Bildern/s, direkt vom Beobachter - der Rest kommt je Sekunde
+                    # (Carlos, Partie 4: "du refreshst doch richtig oft - warum zeigt die Seite 1/s?")
+                    b = dashboard._beobachter
+                    zeit, sichtungen = b.aktuell if b is not None else (0.0, [])
+                    self._sende(json.dumps({"alter": round(time.time() - zeit, 2) if zeit else None, "s": [
+                        [s.champion_id, s.team, round(s.x, 4), round(s.y, 4)] for s in sichtungen]}).encode(),
+                        "application/json")
                 elif pfad == "/karte.png":
                     self._datei(ddragon.ABLAGE / str(ddragon.version()) / "map11.png")
                 elif pfad.startswith("/icon/") and pfad.endswith(".png"):
@@ -120,6 +131,10 @@ class Dashboard:
 
     def gehirn_setzen(self, gehirn) -> None:
         self._gehirn = gehirn
+
+    def beobachter_setzen(self, beobachter) -> None:
+        """Der Minimap-Leser der laufenden Partie (None danach) - Quelle fuer /positionen.json."""
+        self._beobachter = beobachter
 
     def aktualisiere(self, p: Partie, lagebild=None, ansagen=()) -> None:
         z = zustand_json(p, lagebild, ansagen)

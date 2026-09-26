@@ -197,6 +197,9 @@ def live(args) -> None:
             ordner = schreiber.bilderordner if schreiber else None
             beobachter = lage.Beobachter(ordner)
             beobachter.start()
+            for a in anzeigen:
+                if hasattr(a, "beobachter_setzen"):   # Dashboard: Minimap mit 15/s
+                    a.beobachter_setzen(beobachter)
         sprecher.sage("Coach verbunden.")
         plan = None
         try:
@@ -208,6 +211,9 @@ def live(args) -> None:
         finally:
             if beobachter:
                 beobachter.halt()
+                for a in anzeigen:
+                    if hasattr(a, "beobachter_setzen"):
+                        a.beobachter_setzen(None)
                 print(f"Minimap: {beobachter.anzahl} Bilder ausgewertet"
                       + (f" - letzter Fehler: {beobachter.fehler}" if beobachter.fehler else ""))
             if schreiber:
