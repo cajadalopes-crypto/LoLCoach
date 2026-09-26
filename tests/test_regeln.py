@@ -3,6 +3,7 @@ Riven Top mit Zuenden statt Teleport, gegen Shen; Sieg nach 20:50).
 
     python tests/test_regeln.py
 """
+import re
 import sys
 from pathlib import Path
 
@@ -32,10 +33,15 @@ def mit_minimap():
     """Zweite Partie (Riven gegen Shen, 25 min) mit den Sichtungen der Minimap."""
     gesagt = ansagen(PARTIE_2, lage.SichtAusBildern.aus_cache(PARTIE_2.with_name("botspiel_riven_2_bilder")))
     um = [(a.gesprochen, a.text) for a in gesagt]
-    weg = [t for t, x in um if "weg aus deiner Lane" in x]
+    weg = [t for t, x in um if re.match(r"Shen seit \d+ Sekunden weg", x)]
     assert 1 <= len(weg) <= 4, weg                                        # vorher 10 Fehlalarme
     assert any(95 <= t <= 110 and "Vom Turm erwischt" in x for t, x in um)
-    assert any(380 <= t <= 395 and "Vorsicht, Vi oben" in x for t, x in um)
+    # Vi taucht oben auf, Riven hat 39 % Leben: gerechnet statt "Vorsicht, Vi oben" (Komponist 26.09.)
+    assert any(380 <= t <= 395 and "Vi ist oben" in x and "Zurück" in x and "Prozent Leben" in x for t, x in um), um
+    # keine Worst-Case-Gespenster: der ADC in Minute 12 bot "kann in 1 Sekunde da sein" (26.09.)
+    assert not any("in 1 Sekunde da" in x for _, x in um)
+    # Toplaner ohne Teleport wird nicht zu Fuss zum Drachen geschickt
+    assert not any(t < 815 and "dann Drache" in x for t, x in um)
     assert not any(t > 840 and "sicher pushen" in x for t, x in um)       # Lane-Sprache nur in der Lane-Phase
     assert not any("Kartenseite" in x and ("Mitte" in x or "Mid-Lane" in x) for _, x in um)
     # tief ohne Sicht: vor dem Tod 19:55 gewarnt, aber nicht in einem fort (einmal je Vorstoss)

@@ -210,6 +210,14 @@ def lage_text(p: Partie, lagebild=None) -> str:
     if lagebild is not None and hasattr(lagebild, "zauber") and (aktiv := lagebild.zauber.aktiv(p.zeit)):
         zeilen.append("Beschwoererzauber weg (Gegner): " + ", ".join(
             f"{t.champion} {ZAUBER_DE.get(t.zauber, t.zauber)} noch {int(t.zurueck - p.zeit)} s ({t.quelle})" for t in aktiv))
+    # Die berechnete Lage (Laufzeiten, Fenster, Kraefte) - Claude soll rechnen lassen, nicht raten
+    if lagebild is not None and getattr(lagebild, "aktiv", False):
+        try:
+            from . import bewertung
+            if b := bewertung.bewerte(p, lagebild):
+                zeilen.append(b.text())
+        except Exception as e:
+            print(f"  Bewertung fuer Claude fehlgeschlagen: {e}", flush=True)
     # "Warum bin ich gestorben?" - die Fakten der Todesanalyse, drei Minuten lang
     if (tod := getattr(lagebild, "letzter_tod", None)) and 0 <= p.zeit - tod[0] <= 180:
         zeilen.append(f"DEIN LETZTER TOD (vor {int(p.zeit - tod[0])} s; alle Angaben Stand beim Tod):\n{tod[1]}")

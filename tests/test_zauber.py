@@ -80,7 +80,7 @@ def kette():
             break
     texte = [(round(a.gesprochen), a.text) for a in plan.gesagt]
     assert any(300 <= t <= 315 and "Shen hat Flash benutzt" in x for t, x in texte), texte
-    assert any(300 <= t <= 330 and "Vi hat gerade Flash benutzt" in x for t, x in texte), texte
+    assert any(300 <= t <= 330 and "Vi hat Flash benutzt" in x and "Minimap" in x for t, x in texte), texte
     assert "vermutlich bereit" in antwort_vorher, antwort_vorher
     assert "Flash ist noch" in antwort_nachher and "Minuten" in antwort_nachher, antwort_nachher
     print("Kette OK:", antwort_nachher)
