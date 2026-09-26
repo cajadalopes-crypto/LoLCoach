@@ -47,9 +47,22 @@ Notizen und Review durchsehen und nachschaerfen.
 - Bildschirm fuer Claude (320f58f): Sprachfrage, Todesanalyse, situative Saetze mit Bild -
   liest Claude Lebensbalken und Kampflage richtig, bleibt es unter der Frist?
 - Lane-Guide + Zettel (442e2fb): kommt er an, hilft er in den ersten Minuten?
+- Objective-Start (16d4010): "Dein Team faengt Drache an" / "Gegner an der Drachengrube" -
+  an Testpartie 2 nachgespielt zweimal "Lee Sin faengt Drache an", Drache fiel erst Minuten
+  spaeter (Bot?). Im Spiel mit echten Mitspielern pruefen.
+- Kamera-Schwenk (bf72298): "Schwenk kurz die Kamera: ..." und die Antwort mit dem neuen Bild.
+- Eigene Zauber/Faehigkeiten aus dem HUD (fbfa43b): stimmt "Flash weg, noch ~X s" im Spiel?
+  Bildschirm-Aufnahme und HUD-Lesen liefen noch nie live (Beobachter meldet Fehler am Ende).
+- Pings von Carlos' Konto, die er nicht geschickt hat ("Rumble hat Blitz benutzt" 2:13, 7:17):
+  <Partie>_sprechtaste.log gegen die Chatzeilen legen - liegt Maus 5 im Spiel auf Pingen?
 - Verdeckte Icons (700b52c): Pruefstand 80-87 % statt 71-72 % - im Spiel mit Stapeln pruefen.
 
 ## Erledigt
+
+- Partie 6 ausgewertet: falsche Rumble-Flash-Timer kamen aus dem Chat (alte Zeilen nach jedem
+  Kill neu gelesen; "Rumble — Blitz" als Verbrauch gewertet) - a56c544; Objective-Start
+  ansagen - 16d4010; Kamera-Schwenk - bf72298; eigene Zauber/Faehigkeiten aus dem HUD
+  (gelber Tasten-Buchstabe = bereit) - fbfa43b
 
 - Bildschirm verstehen: Spielbild je Sekunde (12 s im Speicher) geht mit Sprachfragen,
   Todesanalyse (6 und 3 s davor) und situativen Saetzen an Claude - 320f58f
