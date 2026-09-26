@@ -37,7 +37,7 @@ def mit_minimap():
     assert any(95 <= t <= 110 and "Vom Turm erwischt" in x for t, x in um)
     assert any(380 <= t <= 395 and "Vorsicht, Vi oben" in x for t, x in um)
     assert not any(t > 840 and "sicher pushen" in x for t, x in um)       # Lane-Sprache nur in der Lane-Phase
-    assert not any("Kartenseite" in x and "Mitte" in x for _, x in um)
+    assert not any("Kartenseite" in x and ("Mitte" in x or "Mid-Lane" in x) for _, x in um)
     print(f"Partie 2 mit Minimap: {len(gesagt)} Ansagen, OK")
 
 
@@ -50,7 +50,9 @@ def main():
         return any(von <= t <= bis and teil in x for t, x in um.items())
 
     assert 20 <= len(gesagt) <= 50, f"{len(gesagt)} Ansagen - zu still oder zu geschwaetzig"
-    assert not any("Teleport mitkämpfen" in t for t in texte), "Riven hatte kein Teleport"
+    # Riven hatte Zuenden statt Teleport - bis die Top-Quest (spaetestens 13:35) Teleport gibt
+    assert not any(a.gesprochen < 815 and "Teleport mitkämpfen" in a.text for a in gesagt), "vor der Quest kein TP"
+    assert any(a.gesprochen > 815 and "Teleport mitkämpfen" in a.text for a in gesagt), "nach der Quest mit TP"
     assert gesagt_bei(230, 250, "Drache in einer Minute. Ohne Teleport")
     assert gesagt_bei(95, 105, "Shen ist Level 2")                       # Level-2-Rennen verloren
     assert gesagt_bei(310, 325, "Level 6 vor Shen")

@@ -46,18 +46,18 @@ alle = "Baron in einer Minute. Seitenwellen jetzt rausschieben, dann gemeinsam S
 
 [jungler_tot]
 min_sekunden = 15
-alle = "{champion} ist {sekunden} Sekunden tot."
-TOP = "{champion}, der Jungler, ist {sekunden} Sekunden tot. Du kannst ohne Gankgefahr pushen und traden."
-MIDDLE = "{champion}, der Jungler, ist {sekunden} Sekunden tot. Du kannst frei pushen oder zum Fluss gehen."
-BOTTOM = "{champion}, der Jungler, ist {sekunden} Sekunden tot. Ihr könnt ohne Gankgefahr hart spielen."
-UTILITY = "{champion}, der Jungler, ist {sekunden} Sekunden tot. Ihr könnt ohne Gankgefahr hart spielen und tief Sicht setzen."
-JUNGLE = "{champion} ist {sekunden} Sekunden tot. Sein Jungle ist offen - Camps klauen oder ein Objective nehmen."
+alle = "{champion} ist tot, noch {sekunden} Sekunden."
+TOP = "Der gegnerische Jungler {champion} ist tot, noch {sekunden} Sekunden. Du kannst ohne Gankgefahr pushen und traden."
+MIDDLE = "Der gegnerische Jungler {champion} ist tot, noch {sekunden} Sekunden. Du kannst frei pushen oder zum Fluss gehen."
+BOTTOM = "Der gegnerische Jungler {champion} ist tot, noch {sekunden} Sekunden. Ihr könnt ohne Gankgefahr hart spielen."
+UTILITY = "Der gegnerische Jungler {champion} ist tot, noch {sekunden} Sekunden. Ihr könnt ohne Gankgefahr hart spielen und tief Sicht setzen."
+JUNGLE = "{champion} ist tot, noch {sekunden} Sekunden. Sein Jungle ist offen - Camps klauen oder ein Objective nehmen."
 
 [jungler_tot_objective]
 # Jungler tot UND ein Objective lebt oder kommt, bevor er zurueck ist.
 # nah: das Objective liegt auf deiner Seite; fern: dein Team muss es machen.
-nah = "{champion} ist {sekunden} Sekunden tot. {objective} jetzt - er kann nicht kontern."
-fern = "{champion} ist {sekunden} Sekunden tot. Ping {objective} für dein Team und nutz die Zeit auf deiner Lane."
+nah = "{champion} ist tot, noch {sekunden} Sekunden. {objective} jetzt - er kann nicht kontern."
+fern = "{champion} ist tot, noch {sekunden} Sekunden. Ping {objective} für dein Team und nutz die Zeit auf deiner Lane."
 
 [seiten]
 # Welche Rollen ein Objective in der Regel selbst erreichen (Rest: "fern").
@@ -70,11 +70,16 @@ nicht_mehr_vor_weg = 30       # so knapp vor dem Verschwinden schickt der Coach 
 [lane_tot]
 min_sekunden = 10
 platten_bis = 840             # 14:00 - danach keine Turmplatten mehr
-mit_platten = "{champion} ist {sekunden} Sekunden tot. Welle in den Turm schieben und Platten holen."
-ohne_platten = "{champion} ist {sekunden} Sekunden tot. Welle reinschieben, dann Turm, Recall oder zum Objective."
+mit_platten = "{champion} ist tot, noch {sekunden} Sekunden. Welle in den Turm schieben und Platten holen."
+ohne_platten = "{champion} ist tot, noch {sekunden} Sekunden. Welle reinschieben, dann Turm, Recall oder zum Objective."
 
 [zahlen]
 min_sekunden = 12             # nur Gegner zaehlen, die mindestens so lange tot bleiben
+# Objective nur ansagen, wenn IHR genug seid (gemessen Partie 3, 25:27: "Baron jetzt" mit zwei
+# toten Mitspielern und lebendem Gegner-Jungler). Leben der Mitspieler liefert die API nicht.
+vorsprung_mindestens = 2      # lebende eigene minus lebende Gegner
+lebend_baron = 4              # so viele von euch muessen fuer Baron leben
+lebend_drache = 3
 vorteil_objective = "{anzahl} Gegner tot für {sekunden} Sekunden. {objective} jetzt - sie können nicht verteidigen."
 vorteil_turm = "{anzahl} Gegner tot für {sekunden} Sekunden. Jetzt Türme drücken, solange sie fehlen."
 nachteil = "Ihr seid {sekunden} Sekunden lang zu {anzahl}. Nicht kämpfen - Objective lieber abgeben als noch jemanden verlieren."
@@ -137,3 +142,16 @@ ueberzahl = "Gestorben gegen {anzahl}. Wenn Gegner fehlen, rechne damit, dass si
 solo_nachteil = "Solo gegen {champion} verloren - er war {grund}. Erst nachziehen, dann wieder traden."
 solo = "Solo gegen {champion} verloren. Denk an seine Cooldowns - trade, wenn seine wichtigste Fähigkeit weg ist."
 turm = "Vom Turm erwischt. Unter seinen Turm nur mit genug Leben - und wenn deine Vasallen die Schüsse nehmen."
+
+[rollenquest]
+# Saison 2026: Die Top-Quest gibt Teleport (auch wer es nicht genommen hat: "Entfesselter
+# Teleport"), passiv spaetestens bei 13:35, mit guter Leistung frueher. Die Live-API zeigt
+# weiter die gewaehlten Zauber (Zuenden + Flash) - sie sieht die Quest nicht.
+# Quelle: esports.gg "League of Legends 2026 role quests", nachgeschlagen 26.09.2026.
+top_teleport_spaetestens = 815
+
+[leben]
+unter = 0.25                  # Anteil des Lebens
+dauer = 3                     # Sekunden am Stueck, damit ein kurzer Treffer im Kampf nicht zaehlt
+erneut_nach = 45
+satz = "Du hast nur noch {prozent} Prozent Leben. Zurück, bevor dich jemand erwischt."

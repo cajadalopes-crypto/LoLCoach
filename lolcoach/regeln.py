@@ -28,15 +28,6 @@ class Ansage:
     gesprochen: float | None = None  # Spielzeit, zu der der Sprechplan sie sagte
 
 
-def _satz(abschnitt: dict, p: Partie) -> str:
-    """Satz fuer die eigene Rolle; ein Toplaner ohne Teleport bekommt die
-    Variante `TOP_ohne_tp`, wenn es sie gibt."""
-    rolle = p.ich.rolle
-    if rolle == "TOP" and "SummonerTeleport" not in p.ich.zauber and "TOP_ohne_tp" in abschnitt:
-        return abschnitt["TOP_ohne_tp"]
-    return abschnitt.get(rolle, abschnitt.get("alle", ""))
-
-
 def _objective_name(schl: str, p: Partie) -> str:
     """Kurz, zum Satzanfang tauglich: "Drache jetzt", "Larven jetzt"."""
     if schl == "drache" and p.seele():
@@ -78,11 +69,46 @@ class Regelwerk:
         ansagen: list[Ansage] = []
         for regel in (self._vorwarnung, self._zahlen, self._jungler_tot, self._lane_tot,
                       self._level, self._items, self._gold, self._cs, self._tod,
-                      self._jungler_gesehen, self._lane_fehlt):
+                      self._jungler_gesehen, self._lane_fehlt, self._leben):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 ansagen.append(a)
         return ansagen
+
+    # --- Hilfen ---------------------------------------------------------------
+
+    def _satz(self, abschnitt: dict, p: Partie) -> str:
+        """Satz fuer die eigene Rolle. Wer tot oder in der Basis ist, bekommt den
+        allgemeinen Satz (keine Lane-Anweisung aus dem Brunnen - Partie 3, 24:58).
+        Ein Toplaner ohne Teleport bekommt `TOP_ohne_tp` nur, bis die Top-Quest
+        spaetestens Teleport gibt (Partie 3, 31:11: 'du sagst die ganze Zeit ohne Teleport')."""
+        if self._ich_weg(p):
+            return abschnitt.get("alle", "")
+        rolle = p.ich.rolle
+        if (rolle == "TOP" and "SummonerTeleport" not in p.ich.zauber and "TOP_ohne_tp" in abschnitt
+                and p.zeit < self.m["rollenquest"]["top_teleport_spaetestens"]):
+            return abschnitt["TOP_ohne_tp"]
+        return abschnitt.get(rolle, abschnitt.get("alle", ""))
+
+    def _ich_in_basis(self, p: Partie) -> bool:
+        if not self.lage or not self.lage.aktiv:
+            return False
+        from . import minimap
+        g = self.lage.gesehen(p.ich)
+        return bool(g and p.zeit - g[0] < 3 and "Basis" in minimap.ort(g[1], g[2], p.mein_team))
+
+    def _ich_weg(self, p: Partie) -> bool:
+        return p.ich.tot or self._ich_in_basis(p)
+
+    def _lebend(self, p: Partie) -> tuple[int, int]:
+        """(lebende eigene, lebende Gegner). Leben der Mitspieler kennt die API nicht."""
+        return (sum(1 for s in p.team(p.mein_team) if not s.tot),
+                sum(1 for s in p.gegner() if not s.tot))
+
+    def _objective_machbar(self, p: Partie, schl: str, vorsprung: int) -> bool:
+        wir, die = self._lebend(p)
+        noetig = self.m["zahlen"]["lebend_baron" if schl == "baron" else "lebend_drache"]
+        return wir - die >= vorsprung and wir >= noetig
 
     # --- einzelne Regeln ------------------------------------------------------
 
@@ -96,7 +122,7 @@ class Regelwerk:
             abschnitt = self.m["vorwarnung"][schl]
             if schl == "drache" and any(len(p.drachen(t)) == 3 for t in ("ORDER", "CHAOS")) and not p.seele():
                 abschnitt = self.m["vorwarnung"]["drache_seele"]
-            if text := _satz(abschnitt, p):
+            if text := self._satz(abschnitt, p):
                 yield Ansage(text, WICHTIG, f"vorwarnung:{schl}", gueltig=25)
 
     def _objectives(self, p: Partie, bis: float = 0.0) -> list[str]:
@@ -114,12 +140,13 @@ class Regelwerk:
         tot, vorher = self._gegner_tot(p, z["min_sekunden"]), self._gegner_tot(v, z["min_sekunden"])
         if len(tot) >= 2 and len(tot) > len(vorher) and not p.ich.tot:
             fenster = int(min(s.respawn for s in tot))
-            objs = self._objectives(p)
+            wir, die = self._lebend(p)
+            objs = [o for o in self._objectives(p) if self._objective_machbar(p, o, z["vorsprung_mindestens"])]
             if objs:
                 text = z["vorteil_objective"].format(anzahl=len(tot), sekunden=fenster,
                                                      objective=_objective_name(objs[0], p))
                 yield Ansage(text, SOFORT, f"jetzt:{objs[0]}", gueltig=6, sperre=20)
-            else:
+            elif wir > die:
                 yield Ansage(z["vorteil_turm"].format(anzahl=len(tot), sekunden=fenster), SOFORT,
                              "zahlen", gueltig=6, sperre=20)
         eigene = [s for s in p.team(p.mein_team) if s.tot and s.respawn >= z["min_sekunden"]]
@@ -136,20 +163,20 @@ class Regelwerk:
             return
         if len(self._gegner_tot(p, self.m["zahlen"]["min_sekunden"])) >= 2:
             return  # die Zahlen-Regel sagt es besser
-        objs = self._objectives(p, bis=j.respawn - 10)
-        if objs and not p.ich.tot:
+        objs = [o for o in self._objectives(p, bis=j.respawn - 10) if self._objective_machbar(p, o, 0)]
+        if objs and not self._ich_weg(p):
             nah = p.ich.rolle in self.m["seiten"][objs[0]]
             text = self.m["jungler_tot_objective"]["nah" if nah else "fern"].format(
                 champion=j.champion, sekunden=int(j.respawn), objective=_objective_name(objs[0], p))
             yield Ansage(text, SOFORT if nah else WICHTIG, f"jetzt:{objs[0]}", gueltig=6, sperre=20)
-        elif text := _satz(cfg, p):
+        elif text := self._satz(cfg, p):
             yield Ansage(text.format(champion=j.champion, sekunden=int(j.respawn)), WICHTIG,
                          "jungler_tot", gueltig=8)
 
     def _lane_tot(self, p: Partie, v: Partie):
         g = p.gegenueber()
         cfg = self.m["lane_tot"]
-        if (not g or p.ich.rolle == "JUNGLE" or p.ich.tot or not self._tot_seit_eben(p, v, g)
+        if (not g or p.ich.rolle == "JUNGLE" or self._ich_weg(p) or not self._tot_seit_eben(p, v, g)
                 or g.respawn < cfg["min_sekunden"]):
             return
         if len(self._gegner_tot(p, self.m["zahlen"]["min_sekunden"])) >= 2:
@@ -193,8 +220,8 @@ class Regelwerk:
 
     def _gold(self, p: Partie, v: Partie):
         cfg = self.m["gold"]
-        if p.gold is None or v.gold is None or p.ich.tot:
-            return
+        if p.gold is None or v.gold is None or self._ich_weg(p) or self._inventar_voll(p):
+            return  # im Brunnen kauft er gerade; mit sechs fertigen Items gibt es nichts zu kaufen
         # Solange das Gold liegen bleibt, jede Sekunde anbieten - der Sprechplan
         # laesst es nur alle `erneut_nach` Sekunden durch.
         if p.gold >= cfg["viel"]:
@@ -203,6 +230,27 @@ class Regelwerk:
         elif p.gold >= cfg["schwelle"]:
             yield Ansage(cfg["satz"].format(gold=int(p.gold // 100 * 100)), HINWEIS, "gold",
                          gueltig=5, sperre=cfg["erneut_nach"])
+
+    def _inventar_voll(self, p: Partie) -> bool:
+        """Sechs Plaetze belegt, ohne Trinket und Verbrauchsgueter (Partie 3, 30:25)."""
+        it = ddragon.items()
+        belegt = [i for i in p.ich.items if i in it and not {"Trinket", "Consumable"} & set(it[i].get("tags", []))]
+        return len(belegt) >= 6
+
+    def _leben(self, p: Partie, v: Partie):
+        cfg = self.m["leben"]
+        m = p.werte.get("maxHealth")
+        if not m or self._ich_weg(p):
+            self._wenig_leben_seit = None
+            return
+        anteil = p.werte.get("currentHealth", 0.0) / m
+        if anteil >= cfg["unter"]:
+            self._wenig_leben_seit = None
+            return
+        self._wenig_leben_seit = getattr(self, "_wenig_leben_seit", None) or p.zeit
+        if p.zeit - self._wenig_leben_seit >= cfg["dauer"]:
+            yield Ansage(cfg["satz"].format(prozent=max(1, int(anteil * 100))), WICHTIG, "leben",
+                         gueltig=4, sperre=cfg["erneut_nach"])
 
     def _cs(self, p: Partie, v: Partie):
         cfg = self.m["cs"]
@@ -263,7 +311,7 @@ class Regelwerk:
         elif meine_seite and rolle != "JUNGLE":
             yield Ansage(cfg["seine_seite"].format(champion=j.champion, ort=ort), WICHTIG, "jungler_sicht",
                          gueltig=4, sperre=30)
-        elif p.zeit > cfg["lane_phase_bis"] and "Mitte" in ort:
+        elif p.zeit > cfg["lane_phase_bis"] and ("Mitte" in ort or "Mid-Lane" in ort):
             return  # spaet und mittig: keine Kartenseite, die frei waere
         elif text := cfg.get("sicher_spaet" if p.zeit > cfg["lane_phase_bis"] else f"sicher_{rolle}"):
             yield Ansage(text.format(champion=j.champion, ort=ort), WICHTIG, "jungler_sicht", gueltig=5, sperre=40)
@@ -277,7 +325,7 @@ class Regelwerk:
         if not g or p.ich.rolle == "JUNGLE":
             return
         seit = self._unsichtbar_seit(p, g)
-        if (seit is None or p.ich.tot or not (cfg["fehlt_ab"] <= p.zeit <= cfg["fehlt_bis"])
+        if (seit is None or self._ich_weg(p) or not (cfg["fehlt_ab"] <= p.zeit <= cfg["fehlt_bis"])
                 or ("gemeldet", g.name, seit) in self._gemeldet):
             return
         zuletzt = self.lage.gesehen(g)

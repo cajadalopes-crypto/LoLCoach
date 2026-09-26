@@ -171,10 +171,13 @@ def ort(x: float, y: float, aus_sicht: str | None = None) -> str:
     if x > 0.87 or y > 0.87:
         return "unten"
     oben = x + y < 1.0                      # oberhalb der Mid-Lane
-    if abs(x + y - 1.0) < 0.09:
-        return "in der Mitte"
-    if abs(x - y) < 0.09:
+    d_mid, d_fluss = abs(x + y - 1.0), abs(x - y)   # Mid-Lane: x+y=1, Fluss: x=y
+    if d_mid < 0.07 and d_fluss < 0.07:
+        return "in der Flussmitte"
+    if d_fluss < 0.08 and d_fluss <= d_mid:  # Partie 3: "Mid-Lane und oberer Fluss unterscheiden"
         return "im oberen Fluss" if oben else "im unteren Fluss"
+    if d_mid < 0.08:
+        return "auf der Mid-Lane"
     blau = y > x                            # unterhalb des Flusses = blaue Seite
     haelfte = "oberen" if oben else "unteren"
     if aus_sicht is None:

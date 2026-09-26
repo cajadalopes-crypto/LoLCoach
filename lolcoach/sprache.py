@@ -141,34 +141,60 @@ class Gespraech:
     Haengt wie das Dashboard am Kern (`aktualisiere`) und kennt so immer den
     neuesten Zustand."""
 
-    def __init__(self, sprecher, taste: str, modell: str = "haiku"):
+    def __init__(self, sprecher, taste: str, modell: str = "sonnet"):
         from . import antworten
         self.antworten, self.sprecher, self.modell = antworten, sprecher, modell
         self.erkenner = Erkenner()
         self.p = self.lagebild = self.gesagt = None
-        self.ptt = PushToTalk(taste, self._frage, beim_druecken=sprecher.verstumme)
+        self.notizen: pathlib.Path | None = None   # je Partie gesetzt (live)
+        self.ptt = PushToTalk(taste, self._frage, beim_druecken=sprecher.pausiere)
         self.ptt.start()
 
     def aktualisiere(self, p, lagebild=None, ansagen=None) -> None:
         self.p, self.lagebild, self.gesagt = p, lagebild, ansagen
 
     def _frage(self, audio: np.ndarray) -> None:
+        try:
+            self._beantworte(audio)
+        except Exception as e:  # nie haengen bleiben: sonst bleibt der Coach stumm
+            print(f"  Sprachfrage fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
+            self.sprecher.freigeben()
+
+    def _beantworte(self, audio: np.ndarray) -> None:
         p = self.p
         if p is None or not p.ich:
-            self.sprecher.sage("Ich sehe noch keine Partie.", dringend=True)
+            self.sprecher.antworte("Ich sehe noch keine Partie.")
             return
         if float(np.sqrt(np.mean(audio ** 2))) < 0.003:
+            self.sprecher.freigeben()
             return  # nichts gesagt
         text = self.erkenner.text(audio, [s.champion for s in p.spieler])
-        if not text or any(e in text.lower() for e in ERFUNDEN):
+        woerter = text.lower().replace(",", " ").replace(".", " ").split()
+        if not text or any(e in text.lower() for e in ERFUNDEN) or len(woerter) < 2:
+            self.sprecher.freigeben()  # Rauschen, Raeuspern, "B."
             return
         print(f"  Du: {text}", flush=True)
-        antwort = self.antworten.sofort(text, p, self.lagebild)
-        if antwort is None:
-            self.sprecher.sage("Moment.", dringend=True)
-            antwort = self.antworten.mit_claude(text, self.p, self.lagebild, self.modell)
+        if woerter[0].strip(":") in NOTIZ_WORTE:
+            self._notiere(text, p)
+            antwort = "Notiert."
+        else:
+            antwort = self.antworten.sofort(text, p, self.lagebild)
+            if antwort is None:
+                letzte = [a for a in (self.gesagt or []) if a.schluessel != "antwort"][-3:]
+                antwort = self.antworten.mit_claude(text, self.p, self.lagebild, self.modell, letzte)
+                if antwort.strip().rstrip(".").lower() == "notiert":
+                    self._notiere(text, p)  # Claude hat es als Rueckmeldung erkannt
         print(f"  Coach: {antwort}", flush=True)
-        self.sprecher.sage(antwort, dringend=True)
+        self.sprecher.antworte(antwort)
         if self.gesagt is not None:
             from .regeln import WICHTIG, Ansage
             self.gesagt.append(Ansage(f"„{text}“ – {antwort}", WICHTIG, "antwort", zeit=p.zeit, gesprochen=p.zeit))
+
+    def _notiere(self, text: str, p) -> None:
+        ziel = self.notizen or MODELLE.parent.parent / "aufnahmen" / "notizen.md"
+        ziel.parent.mkdir(parents=True, exist_ok=True)
+        with open(ziel, "a", encoding="utf-8") as f:
+            f.write(f"- {int(p.zeit // 60)}:{int(p.zeit % 60):02d} ({p.ich.champion}): {text}\n")
+
+
+NOTIZ_WORTE = {"notiz", "notizen", "notiere", "merk", "merke", "feedback"}

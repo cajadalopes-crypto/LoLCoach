@@ -175,7 +175,9 @@ SYSTEM = ("Du bist ein Challenger-Coach fuer League of Legends und sitzt neben d
           "eine Partie spielt. Er fragt dich per Sprache. Antworte auf Deutsch in hoechstens zwei kurzen "
           "Saetzen, gesprochen, ohne Aufzaehlungen oder Markdown: erst was er tun soll, dann kurz warum. "
           "Nutze die Lage; erfinde nichts, was nicht darin steht. Items nur mit Namen aus der mitgegebenen "
-          "Ladenliste nennen.")
+          "Ladenliste nennen. Fragt er nach einer deiner letzten Ansagen ('was meinst du damit'), erklaere "
+          "sie. Gibt er keine Frage, sondern Rueckmeldung ueber dich oder das Programm (Lob, Kritik, "
+          "Wuensche), antworte nur mit dem einen Wort: Notiert.")
 
 
 KAUF_WORTE = {"kaufen", "kauf", "item", "items", "build", "bauen", "baue", "shop", "laden", "gold"}
@@ -190,14 +192,20 @@ def laden_liste() -> str:
     return ", ".join(namen)
 
 
-def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet") -> str:
+def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", letzte=()) -> str:
     zusatz = ""
+    if letzte:
+        zusatz += "\n\nDeine letzten Ansagen: " + " | ".join(
+            f"{int((a.gesprochen or a.zeit) // 60)}:{int((a.gesprochen or a.zeit) % 60):02d} {a.text}" for a in letzte)
     if set(_woerter(frage)) & KAUF_WORTE:
-        zusatz = f"\n\nItems im Laden (Patch {ddragon.version()}, nur diese Namen verwenden): {laden_liste()}"
+        zusatz += f"\n\nItems im Laden (Patch {ddragon.version()}, nur diese Namen verwenden): {laden_liste()}"
     try:
         return llm.frage(f"Lage:\n{lage_text(p, lagebild)}{zusatz}\n\nFrage des Spielers: {frage}",
                          system=SYSTEM, modell=modell, timeout=40, aufwand="low").strip()
     except llm.LLMFehler as e:
+        print(f"  Claude-Fehler: {e}", flush=True)
         if "login" in str(e).lower():
             return "Für diese Frage brauche ich Claude, und die Anmeldung fehlt noch."
-        return "Da komme ich gerade nicht an Claude ran."
+        if "keine antwort" in str(e).lower():
+            return "Claude braucht gerade zu lange, frag gleich noch mal."
+        return "Claude hat gerade einen Fehler gemeldet."
