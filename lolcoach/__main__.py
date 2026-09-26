@@ -63,7 +63,7 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
     return plan
 
 
-STIMME = "de-DE-ConradNeural"   # Partie 3: "viel zu roboterhaft" - neuronale Stimme statt Windows-Hedda
+STIMME = "de-DE-KillianNeural"  # Partie 3: "viel zu roboterhaft"; Carlos hat Killian aus sechs Proben gewaehlt
 
 
 def _stimme(name: str, warten: bool = False):
