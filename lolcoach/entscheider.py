@@ -237,7 +237,18 @@ class Entscheider:
                 eigene_lane = {"TOP": "Top", "BOTTOM": "Bot", "UTILITY": "Bot", "MIDDLE": "Mid"}.get(rolle)
                 prio = komponist._prio_satz(b, tuple(l for l in seite if l != eigene_lane))
                 if lane_phase:
-                    tun = "jetzt Welle rein und back, " if reset else "Welle langsam aufbauen, "
+                    # die letzte Kanonenwelle vor dem Aufbruch zur Grube: die crashen - dann verliert er Platten/CS,
+                    # waehrend du am Objective bist (grundlagen.md, Welle vor Objective)
+                    spawn = b.zeit + ob[1]
+                    kanonen = [t + LAUF_ZUR_LANE.get(rolle, 27.0) for t, k in wellen_spawns(spawn) if k]
+                    weg = b.zum_objective or 20.0      # Lane -> Grube, plus ein paar Sekunden zum Crashen
+                    kanone = max((k for k in kanonen if b.zeit + 10 <= k and k + 8 + weg <= spawn - 30), default=None)
+                    if reset:
+                        tun = "jetzt Welle rein und back, "
+                    elif kanone is not None:
+                        tun = f"crash die Kanonenwelle um {uhr(kanone)}, dann "
+                    else:
+                        tun = "Welle langsam aufbauen, "
                 else:
                     tun = (f"Seitenwelle bis {uhr(b.zeit + ob[1] - 45)} rausschieben, " + ("dazwischen back, " if reset else ""))
                 satz = (f"{name} in {sek(ob[1])}: {tun}spätestens {uhr(b.zeit + ob[1] - 30)} an der Grube sein"
