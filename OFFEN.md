@@ -45,11 +45,26 @@ Mechanik-Lexikon, Pruefwerkzeug `werkzeuge/ansagen_pruefen.py` (0 Widersprueche 
 Wiedereinstieg (Kauf + Ziel kurz vor dem Respawn), Kontroll-Auge situativ, Review vergleicht Live-Ansagen
 mit dem Ausgang, Teleport/globale Ults von der Minimap.
 
+Live-Partie 26.09. abends (Heimerdinger, "Vollkatastrophe"): erledigt am selben Abend - Denkkette
+(`denker.py`: alle Kampf-Faktoren addiert, Erwartungswert, Matchup-Kurve fuer 173 Champions, Zone,
+Gegner-Gold), ganze zusammenhaengende Saetze in allen Ansagen, keine Claude-Wartezeit mehr im Spiel
+(Vorwarnung/Spike kamen 5-21 s zu spaet), Stimme Satz fuer Satz (erster Ton ~0,4 s statt 1,5 s),
+Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stand je Faktor: `FAKTOREN.md`.
+
 ## Als Naechstes
 
-- (leer - neue Wuensche von Carlos kommen hierher)
+- Gegnerischer Manabalken (unter dem Lebensbalken im Spielbild) - Faktor "hat kaum Mana".
+- Ward-Icons der Minimap (eigene + entdeckte gegnerische) als Sicht-Faktor.
+- Camp-/Buff-Timer des gegnerischen Junglers (Camp-Icons der Minimap) fuer die Jungler-Prognose.
+- Fragen per Maustaste: Claude braucht ueber die Kommandozeile ~2,5 s bis zum ersten Satz. Ein
+  Anthropic-API-Schluessel wuerde das auf ~1 s druecken (kostet je Frage) - Carlos' Entscheidung.
 
 ## Braucht eine Partie
+
+- NEU 26.09. abends: Denkkette und ganze Saetze (91968eb .. df9205e). Live pruefen: stimmen die
+  Kill-/Trade-Urteile (Level, Items, Leben, Flash, Jungler, Matchup, Zone)? Sind die Saetze zu lang
+  waehrend eines Kampfs (bis ~25 s Sprechzeit; SOFORT unterbricht)? Kommt die Ansage jetzt ohne
+  Verzoegerung? "Wai" statt "sechs"? Nach der Partie: `python werkzeuge/ansagen_pruefen.py`.
 
 - NEU 26.09. Lagebewertung + Komponist + Entscheider (e434179, 189a636, 74d01b0): jede Ansage
   gerechnet (Laufzeiten, Leben, Flash, Tiefe, Kraefte, Welle, Objective), Plaene zwischen den
