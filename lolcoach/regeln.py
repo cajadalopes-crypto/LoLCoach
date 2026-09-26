@@ -98,6 +98,7 @@ class Regelwerk:
         self._fenster_vorher: tuple[str, set] | None = None   # Urteil und Faktoren des letzten Takts
         self._brunnen_kauf: float | None = None        # Spielzeit des letzten Einkaufs im Brunnen
         self._tipps_gesagt: set[str] = set()           # Konter-Tipps aus dem Lexikon, je Partie jeder einmal
+        self._beruhigt: dict[str, float] = {}           # Spielername -> zuletzt "du bist staerker" zu ihm gesagt
 
     def pruefe(self, p: Partie, lage=None) -> list[Ansage]:
         """`lage`: Lagebild aus der Minimap (lage.Lagebild) oder None ohne Bild."""
@@ -517,11 +518,13 @@ class Regelwerk:
             text = (komponist.jungler_gesehen(self.b, jl, "gefahr", platten) if jl
                     else cfg["gefahr"].format(champion=j.champion, ort=ort))
             self._gewarnt_vor[j.name] = p.zeit
-            yield Ansage(text, SOFORT, "jungler_sicht", gueltig=3, sperre=15, thema="gefahr")
+            if self._beruhigung_frei(j.name, text, p.zeit):
+                yield Ansage(text, SOFORT, "jungler_sicht", gueltig=3, sperre=15, thema="gefahr")
         elif meine_seite and rolle != "JUNGLE":
             text = (komponist.jungler_gesehen(self.b, jl, "seite", platten) if jl
                     else cfg["seine_seite"].format(champion=j.champion, ort=ort))
-            yield Ansage(text, WICHTIG, "jungler_sicht", gueltig=4, sperre=30, thema="gefahr")
+            if self._beruhigung_frei(j.name, text, p.zeit):
+                yield Ansage(text, WICHTIG, "jungler_sicht", gueltig=4, sperre=30, thema="gefahr")
         elif p.zeit > cfg["lane_phase_bis"] and ("Mitte" in ort or "Mid-Lane" in ort):
             return  # spaet und mittig: keine Kartenseite, die frei waere
         elif jl and p.zeit <= cfg["lane_phase_bis"]:
@@ -671,8 +674,9 @@ class Regelwerk:
         if kommen and len(mit_lage) == len(kommen):
             text = komponist.anlauf(self.b, mit_lage)
             schl = "anlauf" if len(kommen) >= 2 else f"anlauf:{kommen[0][0].name}"
-            yield Ansage(text, SOFORT, schl, gueltig=3, sperre=cfg["sperre"],
-                         thema="druck" if "Nimm den Kampf" in text else "gefahr")
+            if self._beruhigung_frei(kommen[0][0].name, text, p.zeit):
+                yield Ansage(text, SOFORT, schl, gueltig=3, sperre=cfg["sperre"],
+                             thema="druck" if "Nimm den Kampf" in text else "gefahr")
         elif len(kommen) >= 2:
             yield Ansage(cfg["mehrere"].format(anzahl=len(kommen), namen=", ".join(s.champion for s, _ in kommen)),
                          SOFORT, "anlauf", gueltig=3, sperre=cfg["sperre"])
@@ -911,6 +915,19 @@ class Regelwerk:
     @_fenster_gesagt.setter
     def _fenster_gesagt(self, t: float) -> None:
         self._fenster_box[0] = t
+
+    BERUHIGUNG = ("Du bist stärker", "nicht töten", "Nimm den Kampf an")
+    BERUHIGUNG_SPERRE = 45.0
+
+    def _beruhigung_frei(self, name: str, text: str, zeit: float) -> bool:
+        """Dieselbe Beruhigung ("du bist staerker, Gragas ist 6 Level unter dir") zum selben Gegner hoechstens alle
+        45 s - Camille-Partie 15:10/15:52/16:00: dreimal in 50 s. Warnungen sind davon nie betroffen."""
+        if not any(w in text for w in self.BERUHIGUNG) or "zurück" in text:
+            return True     # "du bist staerker, aber ... geh lieber zurueck" ist eine Warnung
+        if zeit - self._beruhigt.get(name, -1e9) < self.BERUHIGUNG_SPERRE:
+            return False
+        self._beruhigt[name] = zeit
+        return True
 
     RANG = {"weg": 0, "halten": 1, "turm": 2, "trade": 2, "kill_schnell": 3, "kill": 3, "dive": 3}
 
