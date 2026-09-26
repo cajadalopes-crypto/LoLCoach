@@ -26,7 +26,9 @@ ENTSCHEIDUNG = {"soll", "sollte", "sollen", "sollten", "lieber", "besser", "waru
                 "kaufen", "bauen", "kauf", "mache", "machen", "tun", "spielen", "gehen", "empfiehlst"}
 # "Kann ich ihn killen?", "Soll ich reingehen?": die Denkkette hat das Urteil schon - sofort statt ~3 s Claude
 KAMPF_WORTE = {"killen", "töten", "toeten", "umhauen", "reingehen", "reingehn", "kämpfen", "kaempfen", "fighten",
-               "traden", "tradeen", "trade", "allin", "diven", "dive", "kill"}
+               "traden", "tradeen", "trade", "allin", "diven", "dive", "kill",
+               # "Bin ich staerker als Gragas?", "Gewinne ich den 1 gegen 1?" - dasselbe Urteil
+               "stärker", "staerker", "schwächer", "schwaecher", "gewinne", "gewinnen", "1v1", "duell"}
 ZAUBER_DE = {"SummonerFlash": "Flash", "SummonerTeleport": "Teleport", "SummonerDot": "Zünden",
              "SummonerHeal": "Heilen", "SummonerExhaust": "Erschöpfen", "SummonerBarrier": "Barriere",
              "SummonerSmite": "Zerschmettern", "SummonerHaste": "Geist", "SummonerBoost": "Reinigen"}
@@ -160,8 +162,10 @@ def _kampf(w: list[str], roh: str, p: Partie, lagebild) -> str | None:
     menge = set(w)
     if not (menge & KAMPF_WORTE or re.search(r"\ball[\s-]?in\b", roh)) or menge & {"warum", "wieso", "weshalb"}:
         return None
-    # "Wo soll ich reingehen? Auf welcher Lane?" (Live 21:21) fragt nach dem Ort, nicht nach dem Lane-Gegner
-    if menge & {"wo", "wohin", "welche", "welcher", "welchem", "lane", "wen"}:
+    # "Wo soll ich reingehen? Auf welcher Lane?" (Live 21:21) fragt nach dem Ort, nicht nach dem Lane-Gegner;
+    # "Gewinnen wir das Spiel?" nach dem Team
+    if menge & {"wo", "wohin", "welche", "welcher", "welchem", "lane", "wen", "wir", "uns", "spiel", "game", "team",
+                "teamfight"}:
         return None
     if lagebild is None or not getattr(lagebild, "aktiv", False):
         return None
