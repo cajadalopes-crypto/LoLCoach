@@ -213,10 +213,12 @@ class Verfolger:
         """Ein neues Minimap-Bild. Gibt None, wenn es dem vorigen gleicht: ein stehendes
         Bild (Ruckler, Aufnahme mit 1 Bild/s in der Generalprobe) darf keine Zeit verstreichen
         lassen - sonst sieht jede Bewegung danach wie ein Flash-Sprung aus."""
-        stempel = cv2.resize(karte, (48, 48), interpolation=cv2.INTER_AREA)
-        if getattr(self, "_stempel", None) is not None and np.abs(stempel.astype(np.int16) - self._stempel).mean() < 0.5:
+        # Exakter Vergleich: ein verkleinerter "Stempel" hielt auch langsames Laufen (1 px je Bild)
+        # fuer Stillstand (Flash-Pruefstand 26.09.) - stehende Bilder sind wirklich pixelgleich.
+        vorher = getattr(self, "_vorher", None)
+        if vorher is not None and vorher.shape == karte.shape and np.array_equal(vorher, karte):
             return None
-        self._stempel = stempel.astype(np.int16)
+        self._vorher = karte.copy()
         seite = karte.shape[0]
         gefunden: dict[tuple[str, int], tuple[float, int, int, str | None]] = {}
         # 1. Umkreissuche fuer alle frisch gesehenen
