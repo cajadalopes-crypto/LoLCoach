@@ -537,12 +537,15 @@ def _recalls(partien: list[Partie], sekunden: list[Sekunde]) -> list[Moment]:
         for item in nachher.ich.items:
             if item in rest:
                 rest.remove(item)
-            elif (e := it.get(item)) and "Consumable" not in e.get("tags", []) and "Trinket" not in e.get("tags", []):
+            elif (e := it.get(item)) and "Trinket" not in e.get("tags", []) and (
+                    "Consumable" not in e.get("tags", []) or item == 2055):   # Kontroll-Auge zaehlt: Sicht
                 neu.append(e["name"])
         fakten = [f"Recall {'um ' + uhr(start) if start else 'kurz vor ' + uhr(kauf)} mit {int(vorher.gold)} Gold"
                   + (f" und {int(weg.leben * 100)} % Leben" if weg and weg.leben is not None else "")]
         if neu:
             fakten.append("Gekauft: " + ", ".join(neu))
+        if 2055 not in nachher.ich.items:
+            fakten.append("Kein Kontroll-Auge im Inventar")
         urteil, titel, gewicht = None, "Recall", 1
         welle = (weg or _sekunde(sekunden, kauf - 10) or Sekunde(0, None, None, 0, (0, 0), {}, [])).wellen.get(lane or "")
         if welle:
