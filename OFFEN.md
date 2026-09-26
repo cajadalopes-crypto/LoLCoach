@@ -21,9 +21,9 @@ Carlos' Ziel 26.09. (/goal): Challenger-Coach, individuelle Ansagen aus vielen F
 Standardsaetze; Grundlage `Reasoning/LoL Reasoning.txt` (Entscheidungskette Zustand -> Welle ->
 Prio -> Tempo -> Information -> Gegner-Vorhersage -> Aktionen -> Gegenantwort -> Wert).
 
-- Gegner-Leben vom Bildschirm (Lebensbalken ueber den Koepfen) -> Kill-Rechnung mit echten
-  Zahlen. Wartet auf Spielbilder MIT Gegnern: die naechste Partie legt alle 5 s `schirm_*.jpg`
-  ab - damit eichen, erst dann in Ansagen (lieber stumm als falsch).
+- Gegner-Leben vom Bildschirm: laeuft seit 3b71e7d (Balken per gelesenem Namen, in Kill-Rechnung und Fenster-
+  Saetzen); nachgeprueft 27.09. gegen die Gegner-Tode (`werkzeuge/gegner_leben_probe.py`): kein falsch
+  zugeordneter Balken. Offen: nur 21 von 133 Toden hatten eine Lesung - Gegner ausserhalb des Bildes.
 - Eigene Wards auf der Minimap lesen (Sicht als Faktor: "Fluss gewardet - Gank kommt nur ueber ...").
 - Gegner-Ults ohne Ping: globale Ults (TF, Shen, Pantheon, Galio, Ryze, Taliyah, Nocturne, Sion) und Teleport
   erkennt die Minimap jetzt als Fernsprung (197c7b1); alle anderen Ults nur ueber Chat-Pings.
