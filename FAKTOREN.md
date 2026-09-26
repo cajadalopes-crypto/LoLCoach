@@ -36,7 +36,7 @@ Sicherheit), `komponist.py` (Saetze je Anlass), `regeln.py` (wann).
 |---|---|---|
 | Position, letzte Position, Richtung, Ankunftszeit (Worst Case) | rechnet | Minimap 60/s; `bewertung._gegner_lage` |
 | Level, Items, Kills/Tode, Kopfgeld | rechnet | API; `bewertung.kopfgeld`, `kill_gold` |
-| Leben | teilweise | Lebensbalken im Spielbild, nur wenn er auf deinem Bildschirm ist (`lebensbalken.py`) |
+| Leben | teilweise | Lebensbalken im Spielbild, nur wenn er auf deinem Bildschirm ist (`lebensbalken.py`); geeicht am eigenen Balken gegen die API: 297 Bilder, 90 % innerhalb +-2 % (`werkzeuge/balken_eichen.py`) |
 | Goldschaetzung / ungenutztes Gold | rechnet | `bewertung.gold_offen` (+-300), Faktor "gold_offen" |
 | Flash, Teleport, globale Ults | rechnet | Minimap-Spruenge + Chat-Pings (`zauber.py`, `lage._fernsprung`); im Kampf dazu das Spielbild (`lebensbalken.Balkenspur`) - braucht eine Partie zur Pruefung |
 | andere Beschwoererzauber, Ult | teilweise | nur, wenn gepingt; Ult erst ab Level 6 |

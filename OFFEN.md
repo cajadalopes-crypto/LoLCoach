@@ -66,6 +66,12 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
 
 ## Braucht eine Partie
 
+- NEU 26.09. nachts: (1) jede Ansage protokolliert live ihren ersten Ton und ob sie abgebrochen wurde - nach der
+  Partie `python werkzeuge/verzoegerung_live.py` (Warten im Plan vs. Stimme, je Vorrang; das Mass fuer "geisteskrank
+  zu spaet"). (2) "Kann ich ihn killen?" / "Soll ich reingehen?" per Sprechtaste antwortet sofort aus dem
+  Kampf-Urteil statt ~3 s ueber Claude - pruefen, ob die Antwort passt. (3) Lebensbalken geeicht (78 px, blasses
+  Ende). (4) Kampf-Urteile ueber 4 Partien: kill 24 -> 10 Kills, 0 Tode (Schadensrechnung hat Vorrang).
+
 - LIVE GEPRUEFT 26.09. 21:21 (Riven gegen Gragas, 11/1/2, Stand bis 0148c93): Denkkette spricht zusammenhaengend,
   Kill-Urteile trafen (4:12 -> Kill 4:20, 15:11 -> Kill 15:17), Verbuendete 92-100 % sichtbar, Minimap 32 Bilder/s
   (vorher 33,6-34,4 - die Balkenspur kostet ~5 %), Verzoegerung Median 0 s. Behoben (dieser Commit): Flash-
