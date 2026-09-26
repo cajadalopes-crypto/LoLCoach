@@ -35,6 +35,7 @@ class Lagebild:
         self.mitspieler: dict[str, tuple[float, float, bool | None]] = {}  # Name -> (Zeit, Leben 0..1, Ult bereit)
         self.wellen: dict = {}            # Lane -> welle.LaneZustand
         self.wellen_zeit: float | None = None
+        self.letzter_tod: tuple[float, str] | None = None   # (Spielzeit, Fakten der Todesanalyse)
 
     def ereignisse(self, zeit_von_wand, liste, p: Partie) -> list:
         """Spruenge und Chatzeilen des Beobachters -> Zauber-Timer. Gibt die neuen Timer zurueck."""

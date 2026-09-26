@@ -199,6 +199,9 @@ def lage_text(p: Partie, lagebild=None) -> str:
     if lagebild is not None and hasattr(lagebild, "zauber") and (aktiv := lagebild.zauber.aktiv(p.zeit)):
         zeilen.append("Beschwoererzauber weg (Gegner): " + ", ".join(
             f"{t.champion} {ZAUBER_DE.get(t.zauber, t.zauber)} noch {int(t.zurueck - p.zeit)} s ({t.quelle})" for t in aktiv))
+    # "Warum bin ich gestorben?" - die Fakten der Todesanalyse, drei Minuten lang
+    if (tod := getattr(lagebild, "letzter_tod", None)) and 0 <= p.zeit - tod[0] <= 180:
+        zeilen.append(f"DEIN LETZTER TOD (vor {int(p.zeit - tod[0])} s; alle Angaben Stand beim Tod):\n{tod[1]}")
     return "\n".join(zeilen)
 
 

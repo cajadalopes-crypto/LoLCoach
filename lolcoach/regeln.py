@@ -584,10 +584,12 @@ class Regelwerk:
         # Lange genug tot: der Stratege sagt statt des Standardsatzes den eigentlichen Grund
         # (todesanalyse.py) - Zeit dafuer ist die Todeszeit selbst.
         cfg_a = self.m["todesanalyse"]
+        from .todesanalyse import fakten
+        kontext = fakten(p, kill, self.rueckblick, self.lage)
+        if self.lage is not None:
+            self.lage.letzter_tod = (p.zeit, kontext)   # fuer Fragen danach ("warum bin ich gestorben?")
         if p.ich.respawn >= cfg_a["ab_sekunden"]:
-            from .todesanalyse import fakten
-            yield Ansage(text, WICHTIG, "tod", gueltig=p.ich.respawn, sperre=5, situativ=True,
-                         kontext=fakten(p, kill, self.rueckblick, self.lage),
+            yield Ansage(text, WICHTIG, "tod", gueltig=p.ich.respawn, sperre=5, situativ=True, kontext=kontext,
                          frist=min(p.ich.respawn - cfg_a["puffer"], cfg_a["hoechstens"]))
         else:
             yield Ansage(text, WICHTIG, "tod", gueltig=15, sperre=5)
