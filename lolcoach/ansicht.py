@@ -5,7 +5,7 @@ Sicht von Blau/Rot.
 """
 from __future__ import annotations
 
-from .zustand import BLAU, DRACHE_DE, ROLLE_DE, ROT, Ereignis, Partie, Spieler, gegenteam
+from .zustand import BLAU, DRACHE_DE, ROLLE_DE, ROT, Ereignis, Partie, Spieler, gegenteam, struktur
 from . import wissen
 
 
@@ -22,27 +22,15 @@ def seite(p: Partie, team: str | None) -> str:
     return "Blau" if team == BLAU else "Rot"
 
 
-_LANE = {"L": "Top", "C": "Mid", "R": "Bot"}
-_STUFE = {"03": "aussen", "02": "innen", "01": "Inhib", "05": "aussen", "04": "innen"}
-
-
-def struktur(name: str) -> str:
-    """Turret_T2_L_03_A -> "Top aussen"; Barracks_T2_R1 -> "Bot"."""
-    teile = name.split("_")
-    lane = _LANE.get(teile[2][:1], "?") if len(teile) > 2 else "?"
-    if teile[0] == "Turret" and len(teile) > 3:
-        stufe = "Nexus" if lane == "Mid" and teile[3] in ("01", "02") else _STUFE.get(teile[3], teile[3])
-        return f"{lane} {stufe}"
-    return lane
-
-
-def wer(p: Partie, s: Spieler | None, roh: str = "") -> str:
+def wer(p: Partie, s: Spieler | None, roh: str = "", team: str | None = None) -> str:
+    """`team`: aus dem Ereignis erschlossen, falls der Name allein nicht reicht
+    (zwei gleiche Bots)."""
     if s is None:
-        if roh.startswith("Turret_T"):
-            return f"Turm ({seite(p, BLAU if roh[8] == '1' else ROT)})"
+        if st := struktur(roh):
+            return f"Turm ({seite(p, st.team)})"
         if roh.startswith("Minion_"):
             return "Vasallen"
-        return roh or "?"
+        return f"{roh.removesuffix('-Bot')} ({seite(p, team)})" if roh else "?"
     if p.ich and s is p.ich:
         return f"du ({s.champion})"
     return f"{s.champion} ({seite(p, s.team)})"
@@ -52,18 +40,26 @@ def ereignis(p: Partie, e: Ereignis) -> str | None:
     d, t = e.daten, uhr(e.zeit)
     match e.art:
         case "ChampionKill":
-            return f"{t}  {wer(p, e.taeter, d.get('KillerName', ''))} toetet {wer(p, e.opfer, d.get('VictimName', ''))}"
+            return (f"{t}  {wer(p, e.taeter, d.get('KillerName', ''), e.team)} toetet "
+                    f"{wer(p, e.opfer, d.get('VictimName', ''), gegenteam(e.team))}")
         case "DragonKill":
             art = DRACHE_DE.get(d.get("DragonType", ""), d.get("DragonType", "?"))
             geklaut = " - GEKLAUT" if d.get("Stolen") == "True" else ""
             return f"{t}  {seite(p, e.team)}: {art}-Drache{geklaut}"
         case "TurretKilled" | "InhibKilled":
-            was = "Turm" if e.art == "TurretKilled" else "Inhibitor"
-            besitzer = seite(p, gegenteam(e.team))
-            return f"{t}  {was} faellt: {besitzer}, {struktur(d.get(e.art, ''))}"
+            st = struktur(d.get(e.art, ""))
+            if not st:
+                return f"{t}  [{e.art}] {d.get(e.art)}"
+            was = "Turm" if st.art == "Turret" else "Inhibitor"
+            ort = st.lane if st.art == "Inhib" else f"{st.lane} {st.stufe}"
+            return f"{t}  {was} faellt: {seite(p, st.team)}, {ort}"
         case "Ace":
             return f"{t}  ACE fuer {seite(p, e.team)}"
-        case "FirstBlood" | "Multikill" | "MinionsSpawning" | "InhibRespawningSoon" | "InhibRespawned":
+        case "HordeKill":
+            n = sum(1 for x in p.kills_von("HordeKill") if x.zeit <= e.zeit)
+            geklaut = " - GEKLAUT" if d.get("Stolen") == "True" else ""
+            return f"{t}  {seite(p, e.team)}: Leerenlarve {n}/3{geklaut}"
+        case "FirstBlood" | "FirstBrick" | "Multikill" | "MinionsSpawning" | "InhibRespawningSoon" | "InhibRespawned":
             return None  # kommt mit dem ChampionKill bzw. ist Rauschen
         case "GameStart":
             return f"{t}  Spielbeginn"
@@ -78,7 +74,7 @@ def ereignis(p: Partie, e: Ereignis) -> str | None:
 
 def objective_zeile(p: Partie) -> str:
     teile = []
-    for schl in ("drache", "larven", "herold", "atakhan", "baron"):
+    for schl in ("drache", "larven", "herold", "baron"):
         n = p.naechster_spawn(schl)
         if n is None:
             continue

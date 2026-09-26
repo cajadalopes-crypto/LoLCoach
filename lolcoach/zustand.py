@@ -126,21 +126,46 @@ class Partie:
             if not kills:
                 return obj["drache"]["erster"]
             letzter = kills[-1]
-            if self.seele() or letzter.daten.get("DragonType") == "Elder":
+            if letzter.daten.get("DragonType") == "Elder":
                 return letzter.zeit + obj["aeltester"]["respawn"]
+            if self.seele():
+                return letzter.zeit + obj["aeltester"]["erster"]
             return letzter.zeit + obj["drache"]["respawn"]
         eintrag = obj[schluessel]
         kills = self.kills_von(eintrag.get("event", ""))
-        if not kills:
-            return eintrag.get("erster")
-        return kills[-1].zeit + eintrag["respawn"] if "respawn" in eintrag else None
+        if len(kills) >= eintrag.get("anzahl", 1):
+            return kills[-1].zeit + eintrag["respawn"] if "respawn" in eintrag else None
+        if "weg" in eintrag and self.zeit >= eintrag["weg"]:
+            return None
+        return eintrag.get("erster")
 
 
 # --- Aufbau aus den Rohdaten --------------------------------------------------
 
 _ZAUBER = re.compile(r"SummonerSpell_(\w+?)_DisplayName")
-_STRUKTUR = re.compile(r"^(?:Turret|Barracks)_T([12])_")
+# Gemessen (Partie 26.09.2026): "Turret_TChaos_L2_P3_2521511112_0", "Inhib_TChaos_L2_P1_..."
+# L2 = Top, L1 = Mid, L0 = Bot; P3 aussen, P2 innen, P1 Inhib-Turm, P4/P5 Nexus
+_STRUKTUR = re.compile(r"^(Turret|Inhib)_T(Order|Chaos)_L(\d)_P(\d)")
 _VASALL = re.compile(r"^Minion_T(100|200)")
+LANE = {"2": "Top", "1": "Mid", "0": "Bot"}
+STUFE = {"3": "aussen", "2": "innen", "1": "Inhib", "4": "Nexus", "5": "Nexus"}
+
+
+@dataclass(frozen=True)
+class Struktur:
+    art: str               # "Turret" oder "Inhib"
+    team: str              # Besitzer
+    lane: str              # Top/Mid/Bot
+    stufe: str             # aussen/innen/Inhib/Nexus
+
+
+def struktur(name: str) -> Struktur | None:
+    m = _STRUKTUR.match(name or "")
+    if not m:
+        return None
+    art, team, lane, stufe = m.groups()
+    return Struktur(art, BLAU if team == "Order" else ROT, LANE.get(lane, "?"),
+                    "Inhib" if art == "Inhib" else STUFE.get(stufe, stufe))
 
 
 def _zauber_schluessel(z: dict) -> str:
@@ -185,25 +210,41 @@ def _spieler(roh: dict) -> Spieler:
     )
 
 
-def _team_des_namens(name: str, nach_name: dict[str, Spieler]) -> str | None:
+def _team_des_namens(name: str, nach_name: dict[str, Spieler | None]) -> str | None:
     if name in nach_name:
-        return nach_name[name].team
-    if m := _STRUKTUR.match(name):
-        return BLAU if m.group(1) == "1" else ROT
+        s = nach_name[name]
+        return s.team if s else None  # None: Name doppelt (zwei "Varus-Bot")
+    if s := struktur(name):
+        return s.team
     if m := _VASALL.match(name):
         return BLAU if m.group(1) == "100" else ROT
     return None
 
 
-def _ereignis(roh: dict, nach_name: dict[str, Spieler]) -> Ereignis:
+def _namensbuch(spieler: list[Spieler]) -> dict[str, Spieler | None]:
+    """Name -> Spieler. Ein Name, der mehrfach vorkommt (Bot-Partien: zwei
+    gleiche Champions), zeigt auf None: lieber keine Zuordnung als eine falsche."""
+    buch: dict[str, Spieler | None] = {}
+    for s in spieler:
+        for n in s.namen:
+            buch[n] = None if n in buch and buch[n] is not s else s
+    return buch
+
+
+def _ereignis(roh: dict, nach_name: dict[str, Spieler | None]) -> Ereignis:
     art = roh.get("EventName", "?")
     taeter = nach_name.get(roh.get("KillerName", ""))
     opfer = nach_name.get(roh.get("VictimName", ""))
     if art in ("TurretKilled", "InhibKilled"):
-        # {"TurretKilled": "Turret_T2_R_03_A"} - T2 gehoerte Rot, also profitiert Blau
+        # {"TurretKilled": "Turret_TChaos_..."} - gehoerte Rot, also profitiert Blau
         team = gegenteam(_team_des_namens(roh.get(art, ""), nach_name))
     elif "KillerName" in roh:
         team = _team_des_namens(roh["KillerName"], nach_name)
+        if team is None and opfer:
+            team = gegenteam(opfer.team)
+        if team is None:  # Killer mehrdeutig: die Helfer verraten das Team
+            teams = {h.team for h in map(nach_name.get, roh.get("Assisters", [])) if h}
+            team = teams.pop() if len(teams) == 1 else None
     elif art == "Ace":
         team = roh.get("AcingTeam")
     else:
@@ -216,7 +257,7 @@ def partie(daten: dict, ich: str | None = None) -> Partie:
     """Baut den Zustand. `ich` (Champion oder Name) ersetzt den aktiven
     Spieler - noetig im Replay, wo die API keinen hat."""
     spieler = [_spieler(r) for r in daten.get("allPlayers", [])]
-    nach_name = {n: s for s in spieler for n in s.namen}
+    nach_name = _namensbuch(spieler)
 
     aktiv = daten.get("activePlayer") or {}
     zuschauer = "error" in aktiv or not aktiv

@@ -1,4 +1,4 @@
-"""Grundlage: Live-API -> Zustand -> Ansicht, gegen einen nachgebauten Client.
+﻿"""Grundlage: Live-API -> Zustand -> Ansicht, gegen einen nachgebauten Client.
 
 Der Nachbau folgt dem Aufbau der echten API. Er ersetzt NICHT die Pruefung
 an einer echten Aufnahme - er faengt nur Brueche im eigenen Code.
@@ -58,8 +58,8 @@ def schnappschuss():
         {"EventID": 2, "EventName": "DragonKill", "EventTime": 420.0, "DragonType": "Fire",
          "Stolen": "False", "KillerName": "Blau2", "Assisters": []},
         {"EventID": 3, "EventName": "TurretKilled", "EventTime": 600.0,
-         "TurretKilled": "Turret_T2_L_03_A", "KillerName": "Minion_T100L0S01N0003", "Assisters": []},
-        {"EventID": 4, "EventName": "ChampionKill", "EventTime": 650.0, "KillerName": "Turret_T1_C_05_A",
+         "TurretKilled": "Turret_TChaos_L2_P3_2521511112_0", "KillerName": "Minion_T100L0S01N0003", "Assisters": []},
+        {"EventID": 4, "EventName": "ChampionKill", "EventTime": 650.0, "KillerName": "Turret_TOrder_L1_P3_2254202041_0",
          "VictimName": "Rot2", "Assisters": []},
     ]
     return {
@@ -124,7 +124,32 @@ def main():
             print(s)
     print(ansicht.uebersicht(p))
     server.shutdown()
+    echte_partie()
     print("\nOK")
+
+
+def echte_partie():
+    """Letzter Schnappschuss einer echten Bot-Partie (26.09.2026, Riven Top, Sieg).
+    Faengt, was der Nachbau nicht kann: Riots wirkliche Namen und Formate."""
+    daten = json.loads((Path(__file__).parent / "echt_botspiel_ende.json").read_text(encoding="utf-8"))
+    p = zustand.partie(daten)
+    assert p.ich and p.ich.champion == "Riven" and p.gegenueber().champion == "Shen"
+    art = {}
+    for e in p.ereignisse:
+        art.setdefault(e.art, []).append(e)
+    # alle zehn gefallenen Tuerme und beide Inhibs gehoerten Rot -> Blau profitiert
+    assert len(art["TurretKilled"]) == 10 and all(e.team == "ORDER" for e in art["TurretKilled"])
+    assert all(e.team == "ORDER" for e in art["InhibKilled"])
+    assert [zustand.struktur(e.daten["TurretKilled"]).lane for e in art["TurretKilled"][:3]] == ["Top"] * 3
+    # Larven: 1. Vi (Rot), 2. Riven geklaut, 3. Lee Sin (Blau)
+    assert [e.team for e in art["HordeKill"]] == ["CHAOS", "ORDER", "ORDER"]
+    assert p.drachen("ORDER") == ["Earth", "Air"]
+    # jede Kill-Zuordnung steht, auch bei zwei "Varus-Bot" (dann ueber das Opfer)
+    assert all(e.team in ("ORDER", "CHAOS") for e in art["ChampionKill"])
+    assert p.kills("ORDER") == sum(1 for e in art["ChampionKill"] if e.team == "ORDER")
+    assert art["GameEnd"][0].daten["Result"] == "Win"
+    unbekannt = [e.art for e in p.ereignisse if ansicht.ereignis(p, e) and ansicht.ereignis(p, e).split()[1].startswith("[")]
+    assert not unbekannt, unbekannt
 
 
 if __name__ == "__main__":

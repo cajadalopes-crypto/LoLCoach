@@ -1,13 +1,21 @@
 # Objective-Timer, Sekunden Spielzeit.
 #
-# STAND: aus dem Modellwissen (Saison 2025), NICHT gegen den laufenden Patch
-# geprueft. Riot aendert diese Werte fast jede Saison. Vor Verlass pruefen
-# (Patchnotes oder eine eigene Partie) und `stand` dann auf den Patch setzen.
-stand = "ungeprueft"
+# STAND: Saison 2026 (Patch 26.1 ff.), am 26.09.2026 nachgeschlagen:
+#   - Atakhan ist seit 26.1 entfernt, Baron wieder ab 20:00
+#     (esports.gg "Atakhan, Feats of Strength removed")
+#   - Herold 15:00, verschwindet 19:45 (wiki.leagueoflegends.com/Rift_Herald)
+#   - Larven 8:00, einmal drei Stueck, verschwinden 14:45 (Suche, mehrere Quellen)
+#   - Drache 5:00/5:00, Aeltester 5:00 nach dem 4. Drachen, dann 6:00
+#     (wiki.leagueoflegends.com/Dragon)
+# Ungeprueft: Baron-Respawn 6:00 und Inhibitor 5:00 (seit Jahren so).
+# EventNamen gegen eine echte Partie geprueft (Aufnahme 26.09.2026), ausser BaronKill.
+stand = "Patch 26.x, nachgeschlagen 26.09.2026"
 
 # event   = EventName der Live-API, der den Kill meldet
 # erster  = erster Spawn
 # respawn = Zeit bis zum naechsten Spawn nach dem Kill; fehlt = kommt nicht wieder
+# weg     = verschwindet zu dieser Spielzeit, wenn nicht genommen
+# anzahl  = so viele Kills, bis das Lager leer ist (Larven melden jede einzeln)
 
 [drache]
 name = "Drache"
@@ -18,27 +26,26 @@ respawn = 300
 [aeltester]
 # erscheint statt des Drachen, sobald ein Team die Seele hat (4 Drachen)
 name = "Aeltester Drache"
+erster = 300                 # nach dem 4. Drachen
 respawn = 360
 
 [larven]
 name = "Leerenlarven"
-event = "HordeKill"          # EventName ungeprueft
+event = "HordeKill"
 erster = 480
+weg = 885
+anzahl = 3
 
 [herold]
 name = "Herold"
 event = "HeraldKill"
-erster = 900                 # ungeprueft
-
-[atakhan]
-name = "Atakhan"
-event = "AtakhanKill"        # EventName ungeprueft
-erster = 1200
+erster = 900
+weg = 1185
 
 [baron]
 name = "Baron"
 event = "BaronKill"
-erster = 1500
+erster = 1200
 respawn = 360
 
 [inhibitor]
