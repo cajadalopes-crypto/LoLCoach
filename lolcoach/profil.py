@@ -22,7 +22,7 @@ from .ansicht import uhr
 
 CACHE = "profil.json"
 KURZ = 300          # kuerzer: Abbruch/Test, kein echtes Spiel
-FASSUNG = 1         # hochzaehlen, wenn sich die Kennzahlen aendern -> Cache wird neu gerechnet
+FASSUNG = 2        # hochzaehlen, wenn sich die Kennzahlen aendern -> Cache wird neu gerechnet
 
 
 @dataclass
@@ -42,6 +42,7 @@ class Kennzahlen:
     horten: int              # wie oft >= 1500 Gold >= 60 s lebendig herumgetragen
     horten_max: int          # hoechster dabei getragener Betrag
     ward_min: float
+    champion_id: str = ""    # fuer das Bild in der Oberflaeche
 
     @property
     def zaehlt(self) -> bool:
@@ -92,7 +93,7 @@ def rechne(aufnahme: Path) -> Kennzahlen | None:
         bots=any(s.bot for s in ende.gegner()), kda=f"{ich.kills}/{ich.tode}/{ich.assists}",
         cs_min=round(ich.cs / minuten, 2), cs_10=bei_10.ich.cs if bei_10 else None,
         cs_10_gegner=g10.cs if g10 else None, tode_vor_14=tode, horten=horten, horten_max=horten_max,
-        ward_min=round(ich.ward_score / minuten, 2))
+        ward_min=round(ich.ward_score / minuten, 2), champion_id=ich.champion_id)
 
 
 def _review(ordner: Path, stamm: str) -> dict | None:

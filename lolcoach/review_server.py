@@ -18,7 +18,7 @@ class _EinServer(ThreadingHTTPServer):
 from pathlib import Path
 from urllib.parse import unquote
 
-from . import aufzeichnung, ddragon, minimap, review, verlauf
+from . import aufzeichnung, ddragon, minimap, profil, review, verlauf
 
 SEITE = Path(__file__).resolve().parent.parent / "web" / "review.html"
 PORT = 8791
@@ -35,9 +35,16 @@ def _aufnahme(stamm: str) -> Path | None:
 
 def partien() -> list[dict]:
     aus = []
+    try:
+        kennzahlen = {k.stamm: k for k in profil.partien(aufzeichnung.ORDNER)}
+    except Exception:
+        kennzahlen = {}
     for pfad in sorted(aufzeichnung.ORDNER.glob("*.jsonl.gz"), reverse=True):
         stamm = pfad.name.removesuffix(".jsonl.gz")
         eintrag = {"stamm": stamm, "datum": stamm[:10], "uhr": stamm[11:13] + ":" + stamm[13:15]}
+        if k := kennzahlen.get(stamm):     # schnell und ohne Minimap - der Verlauf ergaenzt, wenn es ihn gibt
+            eintrag.update(champion=k.champion, gegner=k.gegner, dauer=k.dauer, kda=k.kda, id=k.champion_id,
+                           ergebnis=k.ergebnis if k.dauer >= profil.KURZ else f"Test ({int(k.dauer) // 60}:{int(k.dauer) % 60:02d})")
         v = review.pfade(pfad)["verlauf"]
         if v.exists():
             try:
@@ -49,6 +56,18 @@ def partien() -> list[dict]:
                 pass
         eintrag["review"] = review.pfade(pfad)["review"].exists()
         aus.append(eintrag)
+    return aus
+
+
+def fortschritt() -> list[dict]:
+    """Kennzahlen aller Partien (neueste zuerst) mit dem Fokus aus ihrem Review."""
+    aus = []
+    for k in profil.partien(aufzeichnung.ORDNER):
+        if k.dauer < profil.KURZ:
+            continue
+        r = profil._review(aufzeichnung.ORDNER, k.stamm) or {}
+        aus.append({**asdict(k), "zaehlt": k.zaehlt, "fokus": r.get("naechste_partie") or "",
+                    "fokus_umgesetzt": r.get("fokus_umgesetzt") or ""})
     return aus
 
 
@@ -99,6 +118,8 @@ class _Anfrage(BaseHTTPRequestHandler):
                 self._sende(SEITE.read_bytes(), "text/html; charset=utf-8")
             elif pfad == "/api/partien":
                 self._json(partien())
+            elif pfad == "/api/profil":
+                self._json(fortschritt())
             elif pfad.startswith("/api/partie/"):
                 self._json(partie(pfad.split("/")[3]))
             elif pfad == "/karte.png":

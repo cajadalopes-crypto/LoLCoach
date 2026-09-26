@@ -63,14 +63,26 @@
   .eingabe textarea { flex: 1; min-height: 44px; resize: vertical; font: inherit; color: var(--text);
     background: var(--flaeche2); border: 1px solid var(--linie); border-radius: 8px; padding: 8px; }
   .leer { color: var(--leise); padding: 40px; text-align: center; }
+  .tabelle { overflow-x: auto; }
+  .tabelle table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  .tabelle th { text-align: left; color: var(--leise); font-weight: 500; font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--linie); white-space: nowrap; }
+  .tabelle td { padding: 7px 8px; border-bottom: 1px solid var(--linie); font-variant-numeric: tabular-nums; vertical-align: top; }
+  .tabelle tr.bots td { color: var(--leise); }
+  .tabelle tr[data-stamm] { cursor: pointer; } .tabelle tr[data-stamm]:hover td { background: var(--flaeche2); }
+  .tabelle td.fokus { font-size: 13px; color: var(--leise); min-width: 240px; }
+  .tabelle tr td.besser { color: var(--gut); } .tabelle tr td.schlechter { color: var(--feind); }
+  .schnitt { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .schnitt div { background: var(--flaeche2); border-radius: 8px; padding: 8px 10px; }
+  .schnitt b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
   a.zeit { color: var(--freund); cursor: pointer; text-decoration: none; font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
 <div class="rahmen">
-  <nav><h1>Partien</h1><div id="liste" class="klein">lädt …</div></nav>
+  <nav><h1>Partien</h1><div class="partie" id="zumFortschritt"><span style="font-size:22px;text-align:center">📈</span><div>Fortschritt<div class="klein">alle Partien im Vergleich</div></div></div>
+    <div id="liste" class="klein">lädt …</div></nav>
   <main id="haupt">
-    <div class="leer">Partie links wählen.</div>
+    <div class="leer">lädt …</div>
   </main>
 </div>
 <template id="vorlage">
@@ -80,7 +92,7 @@
   </div>
   <div class="kasten" id="zusammenfassung" hidden></div>
   <div class="kasten"><h2>Zeitleiste · Itemgold-Vorsprung · Momente</h2><svg id="zeitleiste"></svg>
-    <div class="klein">Rot: deine Tode · Orange: Kämpfe · Lila: Objectives · Gelb: gehortetes Gold · Grau: Gold-Schwung · Klick springt hin</div></div>
+    <div class="klein">Rot: deine Tode · Orange: Kämpfe · Lila: Objectives · Gelb: gehortetes Gold · Blau: Farm-Loch · Grau: Gold-Schwung · Klick springt hin</div></div>
   <div class="mitte">
     <div class="kasten">
       <div class="karte"><canvas id="karte" width="900" height="900"></canvas></div>
@@ -108,7 +120,7 @@ const uhr = s => { s = Math.max(0, Math.round(s)); return `${Math.floor(s / 60)}
 const bilder = {};
 const bild = src => { if (!bilder[src]) { const i = new Image(); i.onload = neuZeichnen; i.src = src; bilder[src] = i; } return bilder[src]; };
 const karte = bild('/karte.png');
-const FARBE = { tod: '#ff5a5a', kampf: '#ff8a3d', objective: '#b48cff', horten: '#ffb020', schwung: '#6c7a8c', lane: '#3fd08a' };
+const FARBE = { tod: '#ff5a5a', kampf: '#ff8a3d', objective: '#b48cff', horten: '#ffb020', schwung: '#6c7a8c', lane: '#3fd08a', cs_loch: '#4aa3ff' };
 let P = null, stamm = null, t = 0, spielt = false, letzterTakt = 0;
 
 async function json(url, opt) { const r = await fetch(url, opt); return r.json(); }
@@ -118,12 +130,46 @@ async function liste() {
   $('liste').innerHTML = ps.map(p => `<div class="partie" data-stamm="${p.stamm}">
       ${p.id ? `<img src="/icon/${p.id}.png" alt="">` : '<span></span>'}
       <div><div>${p.champion ? `${p.champion} vs ${p.gegner || '?'}` : 'noch nicht ausgewertet'}
-        ${p.ergebnis ? `<span class="${p.ergebnis === 'Win' ? 'win' : 'lose'}">${p.ergebnis === 'Win' ? 'Sieg' : p.ergebnis === 'Lose' ? 'Niederlage' : p.ergebnis}</span>` : ''}</div>
+        ${p.ergebnis ? `<span class="${p.ergebnis === 'Win' ? 'win' : p.ergebnis === 'Lose' ? 'lose' : 'klein'}">${p.ergebnis === 'Win' ? 'Sieg' : p.ergebnis === 'Lose' ? 'Niederlage' : p.ergebnis}</span>` : ''}</div>
       <div class="klein">${p.datum} ${p.uhr}${p.kda ? ' · ' + p.kda : ''}${p.review ? ' · Review' : ''}</div></div></div>`).join('')
     || 'Noch keine Aufnahmen.';
-  document.querySelectorAll('.partie').forEach(e => e.onclick = () => oeffne(e.dataset.stamm));
+  document.querySelectorAll('#liste .partie').forEach(e => e.onclick = () => oeffne(e.dataset.stamm));
   const aus = new URLSearchParams(location.search).get('partie');
-  if (aus) oeffne(aus);
+  if (aus) oeffne(aus); else fortschritt();
+}
+
+// Fortschritt: Kennzahlen aller Partien - wirkt der Fokus? (Bot-Partien grau, zaehlen nicht im Schnitt)
+async function fortschritt() {
+  stamm = null; P = null; spielt = false;
+  document.querySelectorAll('.partie').forEach(e => e.classList.toggle('aktiv', e.id === 'zumFortschritt'));
+  const ks = await json('/api/profil');
+  if (!ks.length) { $('haupt').innerHTML = '<div class="leer">Noch keine Partie über 5 Minuten aufgenommen.</div>'; return; }
+  const echt = ks.filter(k => k.zaehlt), basis = echt.length ? echt : ks;
+  const mittel = f => { const w = basis.map(f).filter(v => v != null); return w.length ? w.reduce((a, b) => a + b, 0) / w.length : null; };
+  const kz = [
+    ['CS/min', k => k.cs_min, 1, true], ['CS bei 10:00', k => k.cs_10, 0, true],
+    ['Tode vor 14:00', k => k.tode_vor_14, 1, false], ['Gold gehortet', k => k.horten, 1, false],
+    ['Wardscore/min', k => k.ward_min, 2, true]];
+  const schnitt = kz.map(([n, f, st]) => { const m = mittel(f); return `<div><span class="klein">${n}</span><b>${m == null ? '–' : m.toFixed(st)}</b></div>`; }).join('')
+    + `<div><span class="klein">Siege</span><b>${basis.filter(k => k.ergebnis === 'Win').length}/${basis.length}</b></div>`;
+  // Farbe je Wert: besser/schlechter als der Schnitt (erst ab drei Partien sinnvoll)
+  const wertung = (k, [, f, st, hochGut]) => {
+    const v = f(k), m = mittel(f);
+    if (v == null) return '<td>–</td>';
+    const klasse = basis.length >= 3 && m != null && Math.abs(v - m) > 0.1 * Math.max(1, Math.abs(m))
+      ? ((v > m) === hochGut ? 'besser' : 'schlechter') : '';
+    return `<td class="${klasse}">${Number.isInteger(v) ? v : v.toFixed(st)}</td>`;
+  };
+  const zeilen = ks.map(k => `<tr data-stamm="${k.stamm}" class="${k.zaehlt ? '' : 'bots'}">
+      <td>${k.stamm.slice(8, 10)}.${k.stamm.slice(5, 7)}. ${k.stamm.slice(11, 13)}:${k.stamm.slice(13, 15)}</td>
+      <td>${esc(k.champion)} vs ${esc(k.gegner || '?')}${k.bots ? ' <span class="klein">(Bots)</span>' : ''}</td>
+      <td class="${k.ergebnis === 'Win' ? 'win' : k.ergebnis === 'Lose' ? 'lose' : ''}">${k.ergebnis === 'Win' ? 'Sieg' : k.ergebnis === 'Lose' ? 'Niederlage' : esc(k.ergebnis)}</td>
+      <td>${esc(k.kda)}</td>${kz.map(z => wertung(k, z)).join('')}
+      <td class="fokus">${k.fokus_umgesetzt ? '<b>Letzter Fokus:</b> ' + esc(k.fokus_umgesetzt) + '<br>' : ''}${k.fokus ? '<b>Danach:</b> ' + esc(k.fokus) : ''}</td></tr>`).join('');
+  $('haupt').innerHTML = `<div class="kasten"><h2>Schnitt ${echt.length ? `aus ${echt.length} echten Partien` : '(bisher nur Bot-Partien)'}</h2><div class="schnitt">${schnitt}</div></div>
+    <div class="kasten tabelle"><h2>Alle Partien · grün/rot: besser/schlechter als dein Schnitt · Klick öffnet die Partie</h2>
+    <table><tr><th>Datum</th><th>Partie</th><th>Ergebnis</th><th>KDA</th>${kz.map(([n]) => `<th>${n}</th>`).join('')}<th>Fokus aus dem Review</th></tr>${zeilen}</table></div>`;
+  document.querySelectorAll('tr[data-stamm]').forEach(e => e.onclick = () => oeffne(e.dataset.stamm));
 }
 
 async function oeffne(s) {
@@ -196,7 +242,7 @@ function zeitleiste() {
   let inhalt = `<line x1="0" x2="${B}" y1="${mid}" y2="${mid}" stroke="#223040"/>`
     + `<path d="${pfad}" fill="none" stroke="#4aa3ff" stroke-width="1.5" opacity=".8"/>`;
   for (let m = 5; m * 60 < P.dauer; m += 5) inhalt += `<text x="${x(m * 60)}" y="${H - 2}" fill="#8b9bb0" font-size="11" text-anchor="middle">${m}</text>`;
-  const reihe = { tod: 8, kampf: 20, objective: 32, horten: 44, schwung: 44, lane: 32 };
+  const reihe = { tod: 8, kampf: 20, objective: 32, horten: 44, schwung: 44, lane: 32, cs_loch: 56 };
   for (const m of P.momente) {
     const x0 = x(m.von), x1 = Math.max(x0 + 3, x(m.bis));
     inhalt += `<rect x="${x0}" y="${reihe[m.art] ?? 44}" width="${x1 - x0}" height="8" rx="2" fill="${FARBE[m.art] || '#888'}" opacity="${m.art === 'schwung' ? .5 : .9}"><title>${uhr(m.von)} ${esc(m.titel)}</title></rect>`;
@@ -303,6 +349,7 @@ function takt(jetzt) {
 }
 requestAnimationFrame(takt);
 window.onresize = () => P && (zeitleiste(), setze(t));
+$('zumFortschritt').onclick = fortschritt;
 liste();
 </script>
 </body>
