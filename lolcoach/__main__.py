@@ -113,6 +113,8 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
     return plan
 
 
+LIVE_TAKT = 0.25   # Sekunden zwischen zwei Abfragen der Live-API im Spiel
+
 STIMME = "de-DE-KillianNeural"  # Partie 3: "viel zu roboterhaft"; Carlos hat Killian aus sechs Proben gewaehlt
 
 
@@ -260,9 +262,11 @@ def live(args) -> None:
         sprecher.sage("Coach verbunden.")
         plan = None
         try:
-            plan = _verfolge(_live_quelle(args.basis), args.ich, takt=1.0, sprecher=sprecher,
+            # 4 Takte je Sekunde: Regeln + Bewertung kosten 0,4 ms (Camille-Partie gemessen) - mit 1 s Takt
+            # kam "Vi kommt auf dich zu" bis zu einer Sekunde spaet (Carlos: "moeglichst Richtung Echtzeit")
+            plan = _verfolge(_live_quelle(args.basis), args.ich, takt=LIVE_TAKT, sprecher=sprecher,
                              schreiber=schreiber, sicht=_LiveSicht(beobachter) if beobachter else None,
-                             anzeigen=anzeigen, gehirn=not args.ohne_gehirn,
+                             anzeigen=anzeigen, gehirn=not args.ohne_gehirn, alle=20,
                              gehirn_ablage=schreiber.pfad.with_name(
                                  schreiber.pfad.name.removesuffix(".jsonl.gz") + "_spielakte.md") if schreiber else None)
         finally:
