@@ -34,7 +34,7 @@ PORTRAET = 48 / REFERENZ_HOEHE     # ganzes Portraet auf der Minimap
 AUSSCHNITT = 40 / REFERENZ_HOEHE   # davon verglichen: die Mitte (Ring und Rand stoeren)
 SCHWELLE = 0.85
 SCHWELLE_TEIL = 0.88    # eine Haelfte allein muss besser passen als das ganze Portraet
-DECKUNG = 36 / REFERENZ_HOEHE     # so nah (Summe der Achsen) liegt ein anderes Icon darauf: verdeckt
+DECKUNG_EUKLID = 12 / REFERENZ_HOEHE   # so nah liegt ein anderes Icon darauf: verdeckt (ein Viertel des Icons)
 VERDECKT_MAX = 2.5      # Sekunden, die ein verdecktes Icon mit seiner Deckung mitlaeuft
 
 
@@ -324,7 +324,12 @@ class Verfolger:
         # 2b. Verdeckt: eben noch gesehen, jetzt nicht gefunden, aber ein gefundenes Icon liegt darauf
         # -> er steht darunter. Er laeuft mit seiner Deckung mit (fester Versatz), bis er wieder
         # auftaucht, die Deckung weiterzieht oder VERDECKT_MAX um ist (dann war es wohl Nebel).
-        deckung = DECKUNG * self.hoehe
+        # Partie 7 (2:30-2:38): Wukong hing als Geist mit festem Abstand (19 px, dann 3 px) acht Sekunden an
+        # Riven - der Abstand war zu grosszuegig (ein Icon 19 px daneben ist halb zu sehen, das findet die
+        # Haelften-Suche; ganz weg heisst dort Nebel/Busch), und nach VERDECKT_MAX begann das Mitfuehren von
+        # vorn (die Zeit der letzten Position war ja aufgefrischt). Jetzt: nur fast ganz verdeckt, und nach
+        # Ablauf ist die Position weg - die Vollsuche findet ihn, sobald er wieder zu sehen ist.
+        deckung = DECKUNG_EUKLID * self.hoehe
         for schl, (t, cx, cy, team) in list(self.pos.items()):
             if schl in gefunden:
                 self._verdeckt.pop(schl, None)
@@ -334,18 +339,22 @@ class Verfolger:
             alt_deckung = self._verdeckt.get(schl)
             if alt_deckung and alt_deckung[1] in gefunden:
                 k, (_, gx, gy, _) = alt_deckung[1], gefunden[alt_deckung[1]]
+            elif alt_deckung:   # die Deckung ist selbst weg: dann ist er es auch
+                self._verdeckt.pop(schl, None)
+                self.pos.pop(schl, None)
+                continue
             else:
-                naechst = min(((abs(g[1] - cx) + abs(g[2] - cy), k) for k, g in gefunden.items()
+                naechst = min(((((g[1] - cx) ** 2 + (g[2] - cy) ** 2) ** 0.5, k) for k, g in gefunden.items()
                                if k != schl and g[0] > 0), default=None)
                 if naechst is None or naechst[0] > deckung:
-                    self._verdeckt.pop(schl, None)
                     continue
                 k = naechst[1]
                 _, gx, gy, _ = gefunden[k]
                 alt_deckung = (zeit, k, cx - gx, cy - gy)
             seit, _, ox, oy = alt_deckung
-            if zeit - seit > VERDECKT_MAX or abs(ox) + abs(oy) > deckung:
+            if zeit - seit > VERDECKT_MAX:
                 self._verdeckt.pop(schl, None)
+                self.pos.pop(schl, None)   # kein Neubeginn: weg ist weg, bis die Vollsuche ihn wieder sieht
                 continue
             self._verdeckt[schl] = (seit, k, ox, oy)
             gefunden[schl] = (0.0, gx + ox, gy + oy, team)   # Guete 0 = erschlossen, nicht gesehen

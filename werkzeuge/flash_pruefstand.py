@@ -60,6 +60,7 @@ class Bahn:
         self.punkte = [(0.0, start)]
         t, (x, y) = 0.0, start
         self.flashes = []
+        self.weg_ab = None
         for s in schritte:
             if s[0] == "lauf":
                 _, dauer, (dx, dy) = s
@@ -79,6 +80,14 @@ class Bahn:
                 y += dy * 400 * E
                 self.punkte.append((t, (x, y)))
                 self.flashes.append(t)
+            elif s[0] == "weg":
+                # in den Nebel: ab jetzt nicht mehr auf der Karte (bleibt es bis zum Ende)
+                t += 0.001
+                self.punkte.append((t, (None, None)))
+                self.weg_ab = t
+                t += s[1]
+                self.punkte.append((t, (None, None)))
+                continue
             elif s[0] == "zuck":
                 # Fehlzuordnung wie Partie 4, 4:16 (Galio): sofort Flash-weit weg, in zwei Bildern zurueck
                 dx, dy = s[1]
@@ -126,6 +135,10 @@ def szenen():
                    Bahn((90 + 5 * 350 * E, 300), [("steh", 12)])],
         "halb verdeckt": [Bahn((90, 300), [("lauf", 5, r), ("steh", 2), ("lauf", 5, r)]),
                           Bahn((90 + 5 * 350 * E + 24, 300), [("steh", 12)])],
+        # Partie 7: Wukong ging 19 px neben Riven in den Nebel und hing danach als Geist an ihr
+        # (der im Nebel verschwindet, liegt oben - gezeichnet wird in dieser Reihenfolge)
+        "Nebel neben Icon": [Bahn((150 + 19, 300), [("lauf", 8, r)]),
+                             Bahn((150, 300), [("lauf", 2, r), ("weg", 6)])],
         "Gruppe mit Flash": [Bahn((200, 250), [("lauf", 1.5, u), ("flash", u), ("lauf", 1.5, u)]),
                              Bahn((230, 260), [("lauf", 3, u)]), Bahn((180, 280), [("lauf", 3, r)])],
     }
@@ -144,6 +157,7 @@ def pruefe(ausfall: float = 0.0, rausch: float = 0.0, samen: int = 1, takt: floa
         ende = max(b.ende for b in bahnen)
         t, gefunden = 0.0, []
         bilder = gesehen = 0          # Sichtbarkeit: Bilder, in denen JEDER Champion am richtigen Ort gemeldet ist
+        geister = 0                   # Bilder, in denen ein Champion im Nebel noch gemeldet wird (>0,5 s danach)
         while t <= ende + 0.5:
             t += takt
             if random.random() < ausfall:
@@ -158,9 +172,13 @@ def pruefe(ausfall: float = 0.0, rausch: float = 0.0, samen: int = 1, takt: floa
             aus = verfolger.bild(bild, t)
             if aus:
                 gefunden += aus[1]
-                bilder += len(bahnen)
                 for i, b in enumerate(bahnen):
                     wx, wy = b.bei(t)
+                    if wx is None:
+                        if b.weg_ab is not None and t - b.weg_ab > 0.5:
+                            geister += any(s.champion_id == namen[i] for s in aus[0])
+                        continue
+                    bilder += 1
                     gesehen += any(s.champion_id == namen[i] and abs(s.x * SEITE - wx) + abs(s.y * SEITE - wy) <= 14
                                    for s in aus[0])
         wahr = sum(len(b.flashes) for b in bahnen)
@@ -168,7 +186,7 @@ def pruefe(ausfall: float = 0.0, rausch: float = 0.0, samen: int = 1, takt: floa
         echte = [f for b in bahnen for f in b.flashes]
         treffer = sum(1 for f in echte if any(0 <= s.zeit - f <= 0.3 for s in gefunden))
         fehl = sum(1 for s in gefunden if not any(0 <= s.zeit - f <= 0.3 for f in echte))
-        ergebnis[name] = (wahr, treffer, fehl, gesehen / max(1, bilder))
+        ergebnis[name] = (wahr, treffer, fehl, gesehen / max(1, bilder), geister)
     return ergebnis
 
 
@@ -181,8 +199,10 @@ if __name__ == "__main__":
         tr = sum(e[1] for e in erg.values())
         fa = sum(e[2] for e in erg.values())
         print(f"== {titel}: {tr}/{w} Flashes gefunden, {fa} Fehlalarme")
-        for name, (wahr, treffer, fehl, sicht) in erg.items():
+        for name, (wahr, treffer, fehl, sicht, geister) in erg.items():
             if treffer != wahr or fehl:
                 print(f"   {name}: {treffer}/{wahr} gefunden, {fehl} Fehlalarme")
             if name in ("Stapel", "halb verdeckt", "Verdeckung"):
                 print(f"   {name}: alle am richtigen Ort in {sicht * 100:.0f} % der Bilder")
+            if name == "Nebel neben Icon":
+                print(f"   {name}: {geister} Geister-Bilder (im Nebel noch gemeldet)")
