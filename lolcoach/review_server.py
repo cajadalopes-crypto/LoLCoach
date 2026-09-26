@@ -24,6 +24,7 @@ SEITE = Path(__file__).resolve().parent.parent / "web" / "review.html"
 PORT = 8791
 
 _laufend: dict[str, str] = {}      # Stamm -> Status der Analyse ("laeuft", "fertig", "Fehler: ...")
+ansicht: dict = {"stamm": None, "zeit": None}   # was die Seite gerade zeigt (fuer Fragen per Sprache)
 _cache: dict[str, dict] = {}       # Stamm -> Partie-Daten fuer die Oberflaeche
 
 
@@ -120,6 +121,10 @@ class _Anfrage(BaseHTTPRequestHandler):
         try:
             if len(teile) == 5 and teile[1] == "api" and teile[2] == "partie" and teile[4] == "analyse":
                 self._json({"status": analyse_starten(teile[3], neu=bool(daten.get("neu")))})
+            elif pfad == "/api/ansicht":
+                ansicht["stamm"] = str(daten.get("stamm") or "") or None
+                ansicht["zeit"] = daten.get("zeit")
+                self._json({"ok": True})
             elif len(teile) == 5 and teile[1] == "api" and teile[2] == "partie" and teile[4] == "frage":
                 aufnahme = _aufnahme(teile[3])
                 if aufnahme is None:
@@ -150,6 +155,36 @@ class _Anfrage(BaseHTTPRequestHandler):
 
     def log_message(self, *a):
         pass
+
+
+class Sprachfragen:
+    """Push-to-Talk im Review: Frage ueber das Headset zur Partie und zum Zeitpunkt, die die
+    Seite gerade zeigt; Antwort mit der Coach-Stimme, beides im Gespraechsverlauf."""
+
+    def __init__(self, taste: str, sprecher):
+        from . import sprache
+        self.sprecher = sprecher
+        self.erkenner = sprache.Erkenner()
+        self.ptt = sprache.PushToTalk(taste, self._frage, beim_druecken=sprecher.pausiere)
+        self.ptt.start()
+
+    def _frage(self, audio) -> None:
+        try:
+            stamm = ansicht.get("stamm")
+            if not stamm or _aufnahme(stamm) is None:
+                self.sprecher.antworte("Oeffne zuerst eine Partie im Review.")
+                return
+            text = self.erkenner.text(audio)
+            if not text or len(text.split()) < 2:
+                self.sprecher.freigeben()
+                return
+            print(f"  Du: {text}", flush=True)
+            antwort = review.frage(_aufnahme(stamm), text, ansicht.get("zeit"))
+            print(f"  Coach: {antwort}", flush=True)
+            self.sprecher.antworte(antwort)
+        except Exception as e:
+            print(f"  Sprachfrage fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
+            self.sprecher.freigeben()
 
 
 def starte(port: int = PORT) -> ThreadingHTTPServer:

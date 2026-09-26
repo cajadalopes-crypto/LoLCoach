@@ -308,6 +308,12 @@ def review_befehl(args) -> None:
     if args.datei:
         url += f"?partie={args.datei.removesuffix('.jsonl.gz').split('/')[-1].split(chr(92))[-1]}"
     print(f"Review: {url}  (Strg+C beendet)")
+    if not args.ohne_sprache:
+        try:
+            review_server.Sprachfragen(args.ptt, _stimme(args.stimme))
+            print(f"Fragen per Sprache: Taste '{args.ptt}' halten - bezieht sich auf die Partie und den Zeitpunkt im Browser")
+        except Exception as e:
+            print(f"Sprachfragen aus ({type(e).__name__}: {e})")
     if not args.ohne_browser:
         import webbrowser
         webbrowser.open(url)
@@ -371,6 +377,9 @@ def main() -> None:
     rv = unter.add_parser("review", help="Review-Oberflaeche nach dem Spiel (Browser)")
     rv.add_argument("datei", nargs="?", help="Aufnahme, die gleich geoeffnet wird")
     rv.add_argument("--ohne-browser", action="store_true")
+    rv.add_argument("--ohne-sprache", action="store_true", help="keine Fragen per Headset")
+    rv.add_argument("--ptt", default="maus5")
+    rv.add_argument("--stimme", default=STIMME)
     unter.add_parser("status")
     lm = unter.add_parser("llm")
     lm.add_argument("frage")

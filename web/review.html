@@ -98,7 +98,7 @@
   </div>
   <div class="kasten"><h2>Mit dem Coach reden</h2>
     <div class="gespraech" id="gespraech"></div>
-    <div class="eingabe"><textarea id="frage" placeholder="z. B. Warum war der Tod bei 21:03 mein Fehler? (bezieht sich auch auf den gewählten Zeitpunkt)"></textarea>
+    <div class="eingabe"><textarea id="frage" placeholder="z. B. Warum war der Tod bei 21:03 mein Fehler? (bezieht sich auch auf den gewählten Zeitpunkt) - oder Push-to-Talk-Taste halten und fragen"></textarea>
       <button class="haupt" id="senden">Fragen</button></div>
   </div>
 </template>
@@ -210,9 +210,29 @@ function sekunde(z) {
   return s[lo];
 }
 
+let letzteMeldung = 0;
+function melde() {
+  const jetzt = Date.now(); if (jetzt - letzteMeldung < 800) return; letzteMeldung = jetzt;
+  fetch('/api/ansicht', { method: 'POST', body: JSON.stringify({ stamm, zeit: Math.round(t) }) }).catch(() => {});
+}
+
+async function gespraechNachladen() {
+  if (stamm && P && !document.hidden) {
+    try {
+      const d = await json(`/api/partie/${stamm}`);
+      if ((d.gespraech || []).length !== (P.gespraech || []).filter(e => e.text !== 'denkt nach …').length) {
+        P.gespraech = d.gespraech; zeigeGespraech();
+      }
+    } catch (e) {}
+  }
+  setTimeout(gespraechNachladen, 3000);
+}
+setTimeout(gespraechNachladen, 3000);
+
 function setze(z) {
   if (!P) return;
   t = Math.max(0, Math.min(P.dauer, z));
+  melde();
   $('uhr').textContent = uhr(t);
   const c = $('cursor'); if (c) { const X = t / P.dauer * ($('zeitleiste').clientWidth || 1000); c.setAttribute('x1', X); c.setAttribute('x2', X); }
   const s = sekunde(t);
