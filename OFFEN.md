@@ -17,51 +17,34 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
-- **Champion-Lexikon** (Agent): `wissen/lexikon/champions/*.md` - Riven, Camille,
-  Graves ausfuehrlich mit Matchups, dann die haeufigsten Top-Gegner.
+- **Champion-Lexikon fuer alle Champions** (Agent, fortgesetzt statt neu gestartet):
+  kompakte Eintraege fuer die restlichen ~144, blockweise Jungle/Mid/ADC/Support.
 
 ## Als Naechstes
 
-- **Die Partie genauestens verstehen + Review nach dem Spiel (Carlos, 26.09.,
-  hoechste Prioritaet)**: "Ich will nach einem Spiel mit dir reden koennen und
-  dass du mir sagst, wo ich was falsch gemacht habe - kein denkloser AI-Slop,
-  sondern was mich wirklich voranbringt." Umsetzung:
-  - Spielverstaendnis: aus Aufnahme + Sichtungen + Chat + HUD eine Zeitleiste
-    der Partie mit Momenten (Kaempfe, Tode, Objectives, Gold-Schwuenge,
-    Positionen aller zur jeweiligen Zeit, Wellen-/Lane-Zustand, Zauber-Timer).
-  - Momente mit Bild: Minimap-Bild und Lage zu jedem Schluesselmoment sichern
-    (auch ueber die 20-min-Grenze hinaus, nur diese Momente).
-  - Review-Oberflaeche: Zeitleiste + Minimap-Wiedergabe + Momentkarten; zu
-    jedem Fehler: was passiert ist, warum es falsch war, was stattdessen -
-    belegt mit Daten, nicht geraten.
-  - Gespraech nach dem Spiel: im Review Fragen stellen (Text oder Sprache),
-    Antworten mit Gehirn + Zeitleiste der Partie, auf Momente verweisen.
-  - Qualitaet: nur Aussagen, die die Daten stuetzen; jede Lektion mit
-    Spielzeit, Beleg und konkreter Alternative; wenige, dafuer wichtige Punkte.
-
-- **Gehirn weiter ausbauen**: Bericht (Post-Game-Analyse) mit Spielakte und
-  Lexikon; Regeln nutzen Fakten aus dem Gehirn (Ult-Cooldowns der Gegner,
-  Spikes: "Urgot hat Level 6 - seine Ult richtet unter 25 % hin"); weitere
-  Anlaesse situativ machen (Recall-Fenster, Lane-Gegner tot, Jungler gesehen),
-  sobald die erste Partie zeigt, wie lange Claude live braucht.
-- **Spielakte schneller**: 35 s gemessen (Quelle 17 000 Zeichen). Kuerzere Quelle,
-  oder schon in der Champion-Auswahl/im Ladebildschirm anfangen (Client-API
-  kennt die Champions frueher), damit das Briefing vor der ersten Welle (0:30) kommt.
-- **Leben der Mitspieler aus dem HUD** (Portraets ueber der Minimap): kein
-  "Baron jetzt", wenn die eigenen Leute kein Leben haben (Partie 3, 25:27).
+- **Generalprobe ohne Spiel**: nachgebauter Spielclient (Live-API aus einer
+  Aufnahme) + nachgebautes Spielfenster (Minimap-/HUD-Bilder an der echten
+  Stelle) -> der komplette Live-Weg laeuft einmal durch: Beobachter mit dxcam,
+  Verfolger, Mitspieler-Leiste, Regeln, Stratege, Dashboard, Ansagen,
+  Aufnahme, Review danach. Findet Verdrahtungsfehler, bevor Carlos spielt.
+- **Spielakte schneller**: 35 s gemessen (Quelle 17 000 Zeichen). Kuerzere Quelle
+  und knappere Akte, damit das Briefing vor der ersten Welle (0:30) kommt.
+- **Gehirn in die Regeln**: Spikes/Ults aus der Wissensbasis ("Urgot hat Level 6 -
+  seine Ult richtet unter 25 % hin"), Ult-Timer aus Chat-Pings ("Urgot R")
+  mit Cooldowns aus Data Dragon; weitere Anlaesse situativ (Recall-Fenster,
+  Lane-Gegner tot, Jungler gesehen), sobald eine Partie zeigt, wie lange Claude
+  live braucht.
 - **Anlauf-Warnungen Mid-/Lategame**: "Vex kommt von unten auf dich zu" beim
   Splitpushen (Richtung aus dem Verfolger).
 - **Ward-Vorschlaege**: "du laeufst gerade am Tri-Bush vorbei, setz ein Ward",
   passend zu Position, Laufweg, Spielstand (bestaetigt 26.09.). Faelight-Punkte
   (26.1) aus dem Lexikon beruecksichtigen.
 - **Wellen-Zustand** aus den Vasallen-Punkten der Minimap: wie genau die Welle
-  vorbereiten (freezen, slow push, crashen).
-- **Kampfanalyse im Bericht**: welcher Kampf hat das Spiel gedreht, warum.
-- **Ult-Timer** aus Chat-Pings und Cooldowns der Wissensbasis.
-- **Champion-Lexikon erweitern** auf alle Champions (blockweise, Agent).
+  vorbereiten (freezen, slow push, crashen) - auch fuers Review.
 - **Item-Namen absichern**: Claude-Antworten gegen die Ladenliste pruefen
   ("Schwarzer Fleischer" statt "Schwarzes Beil" kam trotz Liste vor).
-- **Bericht mit Minimap**: Jungler-Pfad, wo war der Jungler bei jedem Tod.
+- **Review per Sprache**: im Review mit dem Headset fragen (Push-to-Talk wie im
+  Spiel), Antwort auch gesprochen.
 - **Offene Fakten aus dem Lexikon klaeren**: Inhibitor-Respawn (5:00 in
   objektive.toml, Wiki-Auszug 3:00), TP-Abklingzeit mit Quest (300/390/420 s).
 
@@ -73,10 +56,17 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
   hat jede Position; Fehlalarme durch Dashes/Verdeckung zaehlen).
 - Briefing, Spielakte, situative Vorwarnungen live: rechtzeitig? passend?
 - Neue Stimme (Killian), Unterbrechen/Wiederholen, Notizen im Spiel pruefen.
-- Nachspielen aus `sichtungen.jsonl.gz` (15/s statt 1/s) - Sprung-Erkennung
-  offline wiederholbar machen, sobald die erste Partie so ein Protokoll hat.
+- Review der ersten Partie mit vollem Protokoll (15/s, Leiste, Chat) ansehen:
+  stimmen die Momente, sind die Lektionen belegt und hilfreich?
 
 ## Erledigt
+
+- Review nach dem Spiel: `verlauf.py` (Zeitleiste + Momente aus Daten),
+  `review.py` (Claude-Lektionen mit Beleg, Gespraech), Oberflaeche
+  `python -m lolcoach review` / :8791 mit Zeitleiste, Minimap-Wiedergabe,
+  Lektionen, Gespraech; automatisch nach jeder Partie - 87ebcda, 1327693
+- Mitspieler-Leiste (Leben + Ult) aus dem HUD, Objective-Calls nur mit genug
+  Leben, Ereignisprotokoll, Nachspielen aus dem Protokoll - 83c43d6
 
 - Gehirn (`gehirn.py`) + Stratege (`stratege.py`): Spielakte, Briefing,
   Midgame-Plan, situative Vorwarnungen (Claude aus der Lage, sonst Standardsatz
