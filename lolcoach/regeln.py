@@ -93,6 +93,7 @@ class Regelwerk:
         self._zauber_gesagt: dict[str, float] = {}      # Spielername -> zuletzt ein Verbrauch gemeldet
         self.entscheider = Entscheider()               # der Plan zwischen den Ereignissen (entscheider.py)
         self._gewarnt_vor: dict[str, float] = {}       # Spielername -> zuletzt eine Gefahr-Warnung zu ihm
+        self._matchup_box = [-1e9]                     # zuletzt die Matchup-Siegquote gesagt (denker.fenster_satz)
         self._fenster_box = [-1e9]                     # zuletzt ein Kampf-Urteil gegen den Lane-Gegner (denker.py) -
                                                        # geteilt mit komponist.chance ueber die Bewertung
         self._fenster_art: str | None = None           # ... welches
@@ -120,6 +121,7 @@ class Regelwerk:
                 if self.b is not None:
                     self.b.trade = self.trade_hinweis
                     self.b.fenster_box = self._fenster_box
+                    self.b.matchup_box = self._matchup_box
                     if not p.ich.tot:
                         self._b_lebend = self.b      # die letzte Lage vor einem Tod - fuer die Todesanalyse
             except Exception as e:   # die Bewertung darf keine Regel mitreissen - dann gelten die alten Saetze
@@ -313,6 +315,8 @@ class Regelwerk:
             return
         if self.b is not None and self.b.lane is not None:
             text = denker.lane_tot_plan(self.b, self.entscheider.jungle, int(g.respawn), self._platten_moeglich(p))
+            if "geh back" in text and (w := denker.rueckweg_hinweis(self.b, self.entscheider.jungle)):
+                yield Ansage(w, HINWEIS, "wardplan", gueltig=40, sperre=60)
         elif self.b is not None:
             text = komponist.lane_tot(self.b, g.champion, int(g.respawn), self._platten_moeglich(p))
         else:
@@ -375,9 +379,8 @@ class Regelwerk:
             gekauft, self._spikes = list(self._spikes), []
             if text := denker.aufbruch(self.b, self.entscheider.jungle, gekauft):
                 lane = self.b.lane
-                if lane is not None and len(text) < TIPP_BIS \
-                        and (t := denker.tipp(lane.s.champion_id, "items", self._tipps_gesagt)):
-                    text += f" Gegen {self.b.lane.champion}: {t}"
+                if lane is not None and (t := denker.tipp(lane.s.champion_id, "items", self._tipps_gesagt)):
+                    yield Ansage(f"Gegen {lane.champion}: {t}", HINWEIS, "tipp", gueltig=40, sperre=45)
                 self._kauf_bei = None       # das Kontroll-Auge sagt der Aufbruch-Satz nicht extra
                 yield Ansage(text, WICHTIG, "aufbruch:" + ",".join(gekauft), gueltig=20, sperre=30, thema="plan")
         if self._spikes and p.zeit - self._spike_bei >= 3 and (self.b is None or not self._ich_in_basis(p)):
@@ -530,9 +533,9 @@ class Regelwerk:
             return  # spaet und mittig: keine Kartenseite, die frei waere
         elif jl and p.zeit <= cfg["lane_phase_bis"]:
             text = komponist.jungler_gesehen(self.b, jl, "sicher", platten)
-            if len(text) < TIPP_BIS and (t := denker.tipp(j.champion_id, "jungler", self._tipps_gesagt)):
-                text += f" Gegen {j.champion}: {t}"      # ruhiger Moment - Zeit fuer Champion-Wissen
             yield Ansage(text, WICHTIG, "jungler_sicht", gueltig=5, sperre=40)
+            if t := denker.tipp(j.champion_id, "jungler", self._tipps_gesagt):
+                yield Ansage(f"Gegen {j.champion}: {t}", HINWEIS, "tipp", gueltig=40, sperre=45)
         elif jl and p.zeit > cfg["lane_phase_bis"]:
             yield Ansage(komponist.jungler_spaet(self.b, jl, seite), WICHTIG, "jungler_sicht", gueltig=5, sperre=40)
         elif text := cfg.get("sicher_spaet" if p.zeit > cfg["lane_phase_bis"] else f"sicher_{rolle}"):
@@ -971,14 +974,14 @@ class Regelwerk:
         anlass = denker.anlass_satz(b, anlass_f) if anlass_f is not None else ""
         text = denker.fenster_satz(b, u, anlass=anlass, ohne={anlass_f.art} if anlass_f is not None else set(),
                                    anlass_gut=anlass_f is None or anlass_f.wert > 0)
-        if u.art in ("turm", "halten", "weg", "trade") and len(text) < TIPP_BIS:
-            # das Champion-Wissen dazu: wie man gegen GENAU diesen Gegner in dieser Lage spielt
-            if t := denker.tipp(g.s.champion_id, "turm" if u.art == "turm" else "trade", self._tipps_gesagt):
-                text += f" Gegen {g.champion}: {t}"
         self._fenster_gesagt, self._fenster_art = p.zeit, u.art
         prio = SOFORT if u.art == "kill" and u.wert >= 5 else WICHTIG
         yield Ansage(text, prio, "fenster", gueltig=3 if rang >= 2 else 5, sperre=8,
                      thema="gefahr" if u.art == "weg" else "druck")
+        if u.art in ("turm", "halten", "weg", "trade"):
+            # das Champion-Wissen dazu, als eigener leiser Hinweis - kommt nur in einer Pause
+            if t := denker.tipp(g.s.champion_id, "turm" if u.art == "turm" else "trade", self._tipps_gesagt):
+                yield Ansage(f"Gegen {g.champion}: {t}", HINWEIS, "tipp", gueltig=40, sperre=45)
 
     def _plan(self, p: Partie, v: Partie):
         """Der Plan zwischen den Ereignissen - siehe entscheider.py."""

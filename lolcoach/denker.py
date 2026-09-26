@@ -179,7 +179,7 @@ def kampf_faktoren(b: Bewertung) -> list[Faktor]:
         if j.s.tot:
             f.append(Faktor(0.8, "jungler", j.champion, "ist", "tot"))
         elif j.seit is not None and j.seit <= 25 and j.ankunft is not None and j.ankunft >= 15:
-            f.append(Faktor(0.6, "jungler", j.champion, "ist", f"{j.ort}, zu weit weg, um zu helfen"))
+            f.append(Faktor(0.6, "jungler", j.champion, "ist", f"{j.ort}, weit weg"))
         elif j.seit is not None and j.seit <= 25 and j.ankunft is not None and j.ankunft < 8:
             f.append(Faktor(-3.0, "jungler_nah", j.champion, "ist", "ganz in der Nähe"))
         elif j.unbekannt or (j.seit or 0) > 25:
@@ -353,72 +353,70 @@ def anlass_satz(b: Bewertung, f: Faktor) -> str:
 
 
 HANDLUNG = {
-    "kill": "Also geh rein - das ist ein Kill.",
-    "kill_schnell": "Also rein, aber schnell, bevor {j} auftaucht.",
-    "turm": "Warte, bis {n} vom Turm weggeht, dann All-in.",
-    "trade": "Also trade hart, und All-in erst, wenn {n} unter der Hälfte ist.",
-    "halten": "Deshalb nur kurze Trades, kein All-in.",
-    "weg": "Also nicht traden, farm sicher.",
+    "kill": "geh rein, das ist ein Kill",
+    "kill_schnell": "geh rein, aber schnell, bevor {j} auftaucht",
+    "turm": "noch nicht rein, {n} steht an seinem Turm",
+    "trade": "trade hart, All-in erst, wenn {n} unter der Hälfte ist",
+    "halten": "nur kurze Trades, kein All-in",
+    "weg": "nicht traden, farm sicher",
 }
 
 
 def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = frozenset(),
-                 danach: bool = True, anlass_gut: bool = True) -> str:
-    """Zusammenhaengend gesprochen: Anlass. Kraft (Level, Ult, Items). Dazu Zustand (Leben, Flash, Zuenden,
-    Welle). Umfeld (Jungler, Hilfe). Aber: was dagegen spricht. Also: die Handlung. Danach: Gold und Kauf.
-    `ohne`: Faktor-Arten, die der Anlass schon sagt."""
+                 danach: bool = False, anlass_gut: bool = True) -> str:
+    """Handlung zuerst, dann die staerksten Gruende in einem Satz, dann das eine Aber:
+    'Du bist jetzt Level 6, Gragas erst 4 - geh rein, das ist ein Kill: Gragas hat kein Flash, du hast 700 Gold
+    mehr in Items und Tryndamere ist in seiner Basis.'
+    Live 26.09. 21:21: mit Anlass, Kraft-, Zustands- und Umfeld-Satz, Aber, Handlung und Danach waren es ~300 Zeichen
+    (25-30 s) - der Coach redete 74 % der Spielzeit, und alles Neue wartete ("die Ansagen kommen geisteskrank zu
+    spaet"). Das Danach (Gold, Kauf, Weg) sagt jetzt der Satz, wenn der Gegner wirklich tot ist (lane_tot_plan).
+    `ohne`: Faktor-Arten, die der Anlass schon sagt. `danach` bleibt fuer die Aufrufer, wird nicht mehr gesprochen."""
     n = b.lane.champion
     j = b.jungler.champion if b.jungler else "der Jungler"
     if "ult" in ohne:
         ohne = set(ohne) | {"level"}           # "Du bist jetzt Level 6, er erst 5" sagt beides
+    # das Matchup (Siegquote) einmal je 5 Minuten - Live 21:21 hing "schweres Matchup, 45,9 Prozent" an jeder
+    # Kampf-Ansage (60 Zeichen, fuenfmal)
+    box = getattr(b, "matchup_box", None)
+    if box is not None and b.zeit - box[0] < 300:
+        ohne = set(ohne) | {"matchup"}
     fs = [x for x in u.faktoren if x.art not in ohne and abs(x.wert) >= 0.3]
-    if u.art == "trade" and "kopfgeld" in u.arten_alle:
-        fuer = [x for x in fs if x.art == "kopfgeld"]
-        fs = [x for x in fs if x.art != "kopfgeld"] + fuer        # das Kopfgeld ist das "Aber"
     fuer_dich = u.art in ("kill", "kill_schnell", "turm", "trade") or (u.art == "halten" and u.wert >= TRADE_AB)
-    haupt = sorted((x for x in fs if (x.wert > 0) == fuer_dich and x.art != "turm"), key=lambda x: -abs(x.wert))
+    haupt = sorted((x for x in fs if (x.wert > 0) == fuer_dich and x.art not in ("turm", "kopfgeld")),
+                   key=lambda x: -abs(x.wert))
     gegen = sorted((x for x in fs if (x.wert > 0) != fuer_dich), key=lambda x: -abs(x.wert))
-    saetze = [anlass + "."] if anlass else []
     if any(x.art == "zuenden_kill" for x in haupt):
         haupt = [x for x in haupt if x.art != "leben"]      # "...hat nur noch etwa 100 Leben" sagt es schon
-    kraft = [x for x in haupt if x.art in KRAFT][:2]
-    zustand = [x for x in haupt if x.art in ZUSTAND][:2]
-    umfeld = [x for x in haupt if x.art in UMFELD][:1]
-    # "Du bist zuerst Level 2, Wukong noch 1. Aber du hast nur 49 Prozent Leben." - nicht "Dazu": der Anlass
-    # spricht fuer dich, die Gruende dagegen (zweite Riven-Partie, 1:45)
-    gegen_anlass = bool(anlass) and anlass_gut != fuer_dich
-    if kraft:
-        saetze.append(_haupt(kraft, dazu=False, aber=gegen_anlass))
-    if zustand:
-        saetze.append(_haupt(zustand, dazu=bool(kraft) or bool(anlass), aber=gegen_anlass and not kraft))
-    if umfeld:
-        saetze.append(_gross(umfeld[0].satz) + ".")
-    trotzdem = False
-    if fuer_dich:
-        # was dagegen spricht, gehoert dazu - der Turm immer, sonst nur, was wirklich zaehlt
-        aber = ([x for x in gegen if x.art in ("turm", "kopfgeld", "zone")]
-                or [x for x in gegen if abs(x.wert) >= 1.5 or x.art == "matchup"])
-        if u.art == "kill_schnell":
-            aber = [x for x in gegen if x.art == "jungler_weg"]
-        if aber:
-            saetze.append(f"Aber {aber[0].satz}.")
-            trotzdem = u.art == "kill"
+    gruende = haupt[:3]
+    aber = []
+    if fuer_dich and u.art != "kill_schnell":
+        # was dagegen spricht - der Turm steckt schon in der Handlung
+        aber = ([x for x in gegen if x.art in ("kopfgeld", "zone")]
+                or [x for x in gegen if (abs(x.wert) >= 1.5 or x.art == "matchup") and x.art != "turm"])
+    if u.art == "halten":
+        aber = [x for x in aber if x.art not in ("jungler_nah", "dritter")]    # die Handlung nennt sie schon
     handlung = HANDLUNG[u.art].format(n=n, j=j)
-    if trotzdem:
-        handlung = "Geh trotzdem rein - das ist ein Kill."
+    if u.art == "kill" and aber:
+        handlung = "geh trotzdem rein, das ist ein Kill"
     if u.art == "halten" and "jungler_nah" in u.arten_alle:
-        handlung = f"Deshalb kein All-in, solange {j} da ist - nur kurze Trades."
+        handlung = f"kein All-in, solange {j} in der Nähe ist"
     elif u.art == "halten" and (dritte := [x for x in u.faktoren if x.art == "dritter"]):
-        handlung = f"Deshalb kein All-in, bis du weißt, ob {dritte[0].subj} kommt."
+        handlung = f"kein All-in, bis du weißt, ob {dritte[0].subj} kommt"
     if u.art == "weg" and ((b.leben is not None and b.leben < 0.35) or {"jungler_nah", "dritter"} & u.arten_alle):
         from .komponist import _rueckzug
-        handlung = f"Also {_rueckzug(b)[:1].lower() + _rueckzug(b)[1:]}."
-    saetze.append(handlung)
+        handlung = _rueckzug(b)[:1].lower() + _rueckzug(b)[1:]
+    text = handlung + (": " + _liste([x.satz for x in gruende]) if gruende else "")
+    if aber:
+        text += f" - aber {aber[0].satz}"
+    if anlass:
+        # "Du bist zuerst Level 2, Wukong noch 1 - aber nur kurze Trades: du hast nur 49 Prozent Leben."
+        text = f"{anlass} - {'aber ' if anlass_gut != fuer_dich else ''}{text}"
+    satz = _gross(text) + "."
+    if box is not None and "Matchup" in satz:
+        box[0] = b.zeit
     if u.art == "turm" and (t := turm_satz(b)):
-        saetze.append(t)
-    if danach and u.art in ("kill", "kill_schnell") and (d := nach_dem_kill(b)):
-        saetze.append(d)
-    return " ".join(saetze)
+        satz += " " + t
+    return satz
 
 
 def turm_satz(b: Bewertung) -> str:
@@ -436,8 +434,7 @@ def turm_satz(b: Bewertung) -> str:
     schuss = rechnung.turm_schaden(stufe, b.zeit)
     n = rechnung.turm_schuesse(b.leben_abs, stufe, b.zeit)
     schuesse = "keinen Schuss" if n == 0 else ("einen Schuss" if n == 1 else f"{n} Schüsse")
-    return (f"Sein Turm trifft dich mit etwa {int(schuss) // 10 * 10} pro Schuss - mit deinen "
-            f"{b.leben_abs // 10 * 10} Leben hältst du {schuesse} aus.")
+    return f"Sein Turm trifft mit etwa {int(schuss) // 10 * 10}, du hältst {schuesse} aus."
 
 
 # --- danach: Gold, Kauf, Weg -------------------------------------------------------------------------
@@ -587,9 +584,7 @@ def lane_tot_plan(b: Bewertung, jungle, sekunden: int, platten: bool) -> str:
         # Rueckweg: Welle ~10 s, Recall 8 s, Weg ~27 s - er braucht seine Todeszeit plus ~27 s
         saetze[-1] += f", dann geh back und {_kauf_verb(was)}" + (
             f" - du bist zurück, bevor {n} wieder in der Lane ist." if sekunden >= 15 else ".")
-        vorn = b.kraft_gegen([b.lane], mit_verbuendeten=False) >= 1.3 if b.lane else False
-        if w := ward_plan(b, jungle, vorn):
-            saetze.append(f"Auf dem Rückweg setzt du {w}.")
+        # der Ward-Plan kommt als eigener, leiser Hinweis (rueckweg_hinweis) - sonst ~300 Zeichen am Stueck
     else:
         saetze[-1] += "."
         if andere:
@@ -597,6 +592,13 @@ def lane_tot_plan(b: Bewertung, jungle, sekunden: int, platten: bool) -> str:
             saetze.append(f"{x.champion} ist seit {sek(x.seit or b.zeit)} nicht zu sehen - sobald {x.champion} "
                           f"auftaucht, raus.")
     return " ".join(saetze)
+
+
+def rueckweg_hinweis(b: Bewertung, jungle) -> str:
+    """Wohin die Wards auf dem Rueckweg - als eigener Hinweis nach dem Lane-tot-Plan, gesprochen in einer Pause."""
+    vorn = b.lane is not None and b.kraft_gegen([b.lane], mit_verbuendeten=False) >= 1.3
+    w = ward_plan(b, jungle, vorn)
+    return f"Auf dem Rückweg setzt du {w}." if w else ""
 
 
 def aufbruch(b: Bewertung, jungle, gekauft: list[str]) -> str:

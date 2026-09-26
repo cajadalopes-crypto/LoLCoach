@@ -5,4 +5,6 @@
 stand = "Modellwissen 26.09.2026, ungeprueft gegen 26.19"
 ids = ["Ezreal", "Kassadin", "Shaco", "Katarina", "Zed", "Fizz", "MasterYi", "Kindred",
        "Leblanc", "Ekko", "Pyke", "Akali", "Kayn", "Elise", "Yuumi", "Vex", "Aurora", "Hwei",
-       "Lissandra"]   # E-Teleport: Live 26.09. 21:21 sechs Minimap-"Flashes" in 16 Minuten
+       "Lissandra",   # E-Teleport: Live 26.09. 21:21 sechs Minimap-"Flashes" in 16 Minuten
+       "TahmKench", "Zoe", "Bard", "RekSai"]   # Carlos 26.09.: Tahm W und Zoe R sehen auf der Minimap wie ein
+                                               # Teleport aus; Bard-Portal und Rek'Sai-Tunnel ebenso

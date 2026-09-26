@@ -442,8 +442,7 @@ def zauber_neu(b: Bewertung, g: GegnerLage, zauber: str, dauer: float, quelle: s
     if ult:
         satz = f"{g.champion} hat die Ult benutzt, sie ist bis {bis} weg"
     else:
-        woher = {"Minimap": " - das sehe ich auf der Minimap -", "Bildschirm": " - das sehe ich auf dem Bildschirm -"}
-        satz = f"{g.champion} hat {zauber} benutzt" + woher.get(quelle, ",") + f" bis {bis} hat {g.champion} keins"
+        satz = f"{g.champion} hat {zauber} benutzt, bis {bis}"
     ist_lane = b.lane is not None and g.s.name == b.lane.s.name
     if zauber == "Teleport":
         wo = f" und ist jetzt {g.ort}" if g.ort else ""
@@ -531,7 +530,7 @@ def vorwarnung(b: Bewertung, schl: str, rolle: str, seele: bool, meine_seite: bo
                else f"Dein Teleport ist erst in {sek(tp[1])} bereit, das ist zu spät - mach lieber Druck auf der "
                     f"anderen Seite.")
     else:
-        tun = "Für dich ist das zu weit - schieb deine Welle rein, hol dir die Platten und mach Druck auf deiner Seite."
+        tun = "Für dich zu weit - mach Druck auf deiner Seite."
     return f"{satz}. {tun}"
 
 
@@ -580,7 +579,7 @@ def obj_dazu(b: Bewertung, nah: bool, tp_moeglich: bool) -> str:
         return "Dein Teleport ist bereit: teleportier dich hinter die Grube."
     if b.zum_objective is not None and b.zum_objective <= 25:
         return f"Du brauchst {sek(b.zum_objective)} dorthin, also geh hin."
-    return "Für dich ist das zu weit - schieb deine Welle rein und mach Druck auf deiner Seite."
+    return "Für dich zu weit - mach Druck auf deiner Seite."
 
 
 def lane_recall(b: Bewertung, champion: str, platten: bool) -> str:

@@ -279,26 +279,27 @@ def denkkette():
     u = denker.urteil(b)
     assert u.art == "kill", (u.art, u.wert, [(x.art, x.wert) for x in u.faktoren])
     satz = denker.fenster_satz(b, u, anlass=f"Du bist jetzt Level 6, {g.champion} erst 5", ohne={"ult"})
-    assert satz.startswith(f"Du bist jetzt Level 6, {g.champion} erst 5.") and "Dazu hat" in satz, satz
-    assert "kein Flash" in satz and "Also geh rein - das ist ein Kill." in satz and "Mit dem Kill hast du" in satz, satz
+    # Handlung zuerst, Gruende in einem Satz (Live 21:21: ~300 Zeichen je Ansage, der Coach redete 74 % der Zeit)
+    assert satz.startswith(f"Du bist jetzt Level 6, {g.champion} erst 5 - geh rein, das ist ein Kill: "), satz
+    assert "kein Flash" in satz and len(satz) <= 190, (len(satz), satz)
     assert satz.count("Level 6") == 1, satz                      # der Anlass sagt das Level, nicht zweimal
     # am Turm: warten (kein Dive - Live 11:00/11:08), mit dem Jungler nah: kein All-in
     b.lane = gl(g, flash=200.0, pos=bewertung.TUERME[(zustand.gegenteam(p.mein_team), "Top", "aussen")])
     assert denker.urteil(b).art == "turm", denker.urteil(b).art
     b.leben_abs = 1200      # Turm in Zahlen (Wiki Turret): 5:30 aussen 248 pro Schuss, aufwaermend -> 3 Schuesse
     satz = denker.fenster_satz(b, denker.urteil(b))
-    assert "Sein Turm trifft dich mit etwa 240 pro Schuss - mit deinen 1200 Leben hältst du 3 Schüsse aus." in satz, satz
+    assert "Noch nicht rein" in satz and "Sein Turm trifft mit etwa 240, du hältst 3 Schüsse aus." in satz, satz
     # Zuenden allein toetet: sein Leben (Balken x Max-Leben) unter 90 % des Zuendschadens (Level 6: 175)
     from lolcoach import rechnung
     assert rechnung.zuenden_schaden(6) == 175 and rechnung.zuenden_schaden(18) == 475
     b.lane = gl(g, flash=200.0, leben=0.1)
     assert any(x.art == "zuenden_kill" for x in denker.urteil(b).faktoren), denker.urteil(b).faktoren
     satz = denker.fenster_satz(b, denker.urteil(b))
-    assert "tötet dein Zünden Shen allein, Shen hat nur noch etwa 100 Leben" in satz and "Prozent Leben" not in satz, satz
+    assert "dein Zünden tötet Shen allein, Shen hat nur noch etwa 100 Leben" in satz and "Prozent Leben" not in satz, satz
     b.jungler = gl(j, sichtbar=False, seit=3.0, ort="im oberen Fluss", abstand=1500.0, ankunft=4.0)
     b.gegner = [b.lane, b.jungler]
     u = denker.urteil(b)
-    assert u.art == "halten" and "kein All-in, solange" in denker.fenster_satz(b, u), denker.fenster_satz(b, u)
+    assert u.art == "halten" and "Kein All-in, solange" in denker.fenster_satz(b, u) and "aber" not in denker.fenster_satz(b, u), denker.fenster_satz(b, u)
     # Stimme: "Vi" als Name, erster Teilsatz frueh
     assert stimme.sprechbar("Vi ist oben, Kai'Sa unten.") == "Wai ist oben, Kaisa unten."
     assert stimme.teilsaetze("Du bist Level 6: geh rein. Danach back.") == ["Du bist Level 6:", "geh rein.", "Danach back."]

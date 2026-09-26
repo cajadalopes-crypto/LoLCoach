@@ -13,7 +13,7 @@ import threading
 
 from .regeln import HINWEIS, SOFORT, WICHTIG, Ansage
 
-ZEICHEN_PRO_SEKUNDE = 12.0   # Killian (edge-tts, +8 %) gemessen 26.09.: 11-12 Zeichen/s; live fragt der Plan die Stimme
+ZEICHEN_PRO_SEKUNDE = 13.0   # Killian (edge-tts, +8 %) gemessen 26.09.: 11-12 Zeichen/s; live fragt der Plan die Stimme
 PAUSE = 1.5                  # zwischen zwei Saetzen (2,0 bis 26.09.; die Schaetzung ist jetzt ehrlicher)
 RUHE_VOR_HINWEIS = 8.0       # Hinweise nur, wenn es so lange still war
 THEMA_SPERRE = 30.0          # zwei Ansagen zum selben Thema (back, druck, gefahr, objective) nicht so kurz hintereinander
@@ -32,8 +32,12 @@ NUR_LEBEND = ("lane_tot", "fenster", "plan:", "gold", "recallfenster", "anlauf",
               "lane_fehlt", "lane_recall", "ohneflash", "ward:", "aufbruch", "kontrollauge", "level")
 
 
+GESAGT_NACH = 4.0      # Sekunden: so lange laeuft eine Ansage mindestens, bevor eine gleich wichtige sie abbricht
+
+
 def unterbrechbar(a: Ansage) -> bool:
-    return a.unterbrechbar or a.schluessel.startswith(UNTERBRECHBAR)
+    """Lange Saetze (ueber ~14 s) duerfen immer von etwas Wichtigem abgebrochen werden - sonst wartet alles."""
+    return a.unterbrechbar or a.schluessel.startswith(UNTERBRECHBAR) or len(a.text) > 180 or a.prio == HINWEIS
 
 
 class Sprechplan:
@@ -81,8 +85,12 @@ class Sprechplan:
         # Live 26.09. 21:21: das Briefing (~50 s) hielt "Gragas hat Flash benutzt" 9 s und Vaynes Flash 16 s auf.
         # Laeuft etwas Unterbrechbares, darf eine wichtige Ansage es abbrechen.
         laeuft = self._laeuft
-        abbrechen = (laeuft is not None and unterbrechbar(laeuft) and zeit < self.frei_ab
-                     and a.prio >= WICHTIG and not unterbrechbar(a))
+        # Jede Ansage beginnt mit der Handlung - nach GESAGT_NACH Sekunden ist das Entscheidende heraus. Dann darf
+        # eine gleich wichtige Neuigkeit den Rest abbrechen (Live 21:21: Sonas Flash wartete 17 s hinter zwei Saetzen).
+        abbrechen = (laeuft is not None and zeit < self.frei_ab and a.prio >= WICHTIG and not unterbrechbar(a)
+                     and (unterbrechbar(laeuft)
+                          or (laeuft.gesprochen is not None and zeit - laeuft.gesprochen >= GESAGT_NACH
+                              and a.prio >= laeuft.prio)))
         if zeit < frei and a.prio < SOFORT and not abbrechen:
             return None
         if a.prio < SOFORT and getattr(self.sprecher, "beschaeftigt", False) and not abbrechen:
