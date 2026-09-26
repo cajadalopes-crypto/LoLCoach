@@ -397,7 +397,8 @@ class Regelwerk:
         plaetze = [i for i in p.ich.items if i in it and "Trinket" not in it[i].get("tags", [])]
         if cfg["item"] in p.ich.items or p.gold < 75 or len(plaetze) >= 6:
             return
-        yield Ansage(cfg["satz"], HINWEIS, "kontrollauge", gueltig=10, sperre=cfg["sperre"])
+        text = komponist.kontrollauge(self.b, p.ich.rolle) if self.b is not None else ""
+        yield Ansage(text or cfg["satz"], HINWEIS, "kontrollauge", gueltig=10, sperre=cfg["sperre"])
 
     def _inventar_voll(self, p: Partie) -> bool:
         """Sechs Plaetze belegt, ohne Trinket und Verbrauchsgueter (Partie 3, 30:25)."""

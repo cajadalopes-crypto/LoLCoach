@@ -545,3 +545,21 @@ def wiedereinstieg(b: Bewertung, sekunden: int, rolle: str) -> str:
 
 
 ZUM = {"drache": "zum Drachen", "baron": "zum Baron", "herold": "zum Herold", "larven": "zu den Larven"}
+
+
+def kontrollauge(b: Bewertung, rolle: str) -> str:
+    """Nach dem Einkauf ohne Kontroll-Auge: wofuer es JETZT zaehlt. '' = kein besonderer Grund (dann der
+    allgemeine Satz)."""
+    ob = b.objective
+    meine = (b.zeit >= 840 or rolle in ("MIDDLE", "JUNGLE")
+             or (ob is not None and (ob[0] == "drache") == (rolle in ("BOTTOM", "UTILITY"))))
+    if ob and 0 < ob[1] <= 150 and meine:
+        wo = "an die Drachengrube" if ob[0] == "drache" else "an die Baron-Grube"
+        return f"Nimm ein Kontroll-Auge mit, 75 Gold - {wo}, {OBJ_NAME[ob[0]]} in {sek(ob[1])}."
+    j = b.jungler
+    if b.zeit < 840 and j and not j.s.tot and (j.unbekannt or (j.seit or 0) >= 30) and rolle != "JUNGLE":
+        busch = {"TOP": "in den Fluss-Busch oben", "MIDDLE": "an deinen Seiten-Busch", "BOTTOM": "in den Tri-Busch",
+                 "UTILITY": "in den Tri-Busch"}.get(rolle, "an den Gank-Weg")
+        weg = "nicht zu sehen" if j.seit is None else f"seit {sek(j.seit)} weg"
+        return f"Nimm ein Kontroll-Auge mit, 75 Gold - {busch}, {j.champion} ist {weg}."
+    return ""
