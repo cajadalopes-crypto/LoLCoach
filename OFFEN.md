@@ -56,6 +56,11 @@ mit dem Ausgang, Teleport/globale Ults von der Minimap.
   Ereignissen, Jungler-Startseite, Trade-Hinweis aus der Akte, Sofort-Antwort "was soll ich
   jetzt machen". Nachgespielt an der Camille-Partie: 79 Ansagen, keine Widersprueche mehr.
   Live pruefen: Haeufigkeit, ob die Zahlen stimmen (Ankunftszeiten!), ob etwas fehlt.
+- NEU 26.09. (spaeter): 4 Takte/s live; Sprechplan fragt die Stimme "beschaeftigt" (keine veralteten
+  Saetze mehr?); Platten live alle 2 s aus dem Beobachter; Teleport/globale Ults als Fernsprung;
+  "2 gegen 1 hier - rein!"; Wiedereinstieg (Kauf + Ziel); Kanonenwelle vor dem Objective; Shutdown im
+  Todespreis; Jungle-Plaene (bei Graves). Nach der Partie: `python werkzeuge/ansagen_pruefen.py
+  aufnahmen/<neu>.jsonl.gz` und das Review (vergleicht jetzt Ansagen mit dem Ausgang).
 
 Alles hier ist vorbereitet und mit Aufnahmen/Generalprobe getestet - die echte
 Partie ist der letzte Schritt. Nach Carlos' naechster Partie: Log, Aufnahme,
