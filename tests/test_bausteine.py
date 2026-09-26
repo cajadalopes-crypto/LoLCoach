@@ -580,6 +580,42 @@ def satz_bricht_ab_wenn_er_nicht_mehr_stimmt():
         stimme._Sapi = alt
 
 
+def stimme_spielt_ab_dem_ersten_stueck():
+    """Die Synthese liefert MP3-Stuecke; gespielt wird ab dem ersten (27.09.: erster Ton im Median 0,27 statt
+    0,63 s). Haengt die erste Anfrage, gewinnt die zweite - und nur ihre Stuecke zaehlen, keine doppelten."""
+    import asyncio
+    import time
+    import edge_tts
+    from lolcoach import stimme
+    mp3 = (HIER / "satz.mp3").read_bytes()
+    anfragen = []
+
+    class Falsch:
+        def __init__(self, text, stimme_, rate=None):
+            anfragen.append(text)
+            self.nr = len(anfragen)
+
+        async def stream(self):
+            if self.nr == 1:
+                await asyncio.sleep(3.0)          # die erste haengt (wie jede vierte beim Dienst)
+            for i in range(0, len(mp3), 1500):
+                yield {"type": "audio", "data": mp3[i:i + 1500]}
+
+    alt = edge_tts.Communicate
+    edge_tts.Communicate = Falsch
+    try:
+        t0 = time.monotonic()
+        s = stimme._Strom("Der Drache kommt in einer Minute.", "x", "+0%", 1.0)
+        erstes = s.stueck(0, time.monotonic() + 5)
+        assert erstes is not None and erstes is not stimme.ENDE
+        assert time.monotonic() - t0 < 1.0, time.monotonic() - t0      # nicht erst nach den 3 s der ersten
+        audio, rate = s.ganz()
+        assert rate == 24000 and 1.5 < len(audio) / rate < 4.0, len(audio) / rate     # ~2,3 s, nicht doppelt
+        assert len(anfragen) == 2 and s.fehler is None
+    finally:
+        edge_tts.Communicate = alt
+
+
 def kein_zweites_geh_zurueck():
     """Nachlauf 194524: viermal "geh zurueck zu deinem Mid-Tier-1-Turm" in 37 s, und eine Gefahr brach die andere nach
     einer Sekunde ab. Ein eben gehoertes "geh zurueck" wird nicht wiederholt (ausser als Gefahr); eine Gefahr wartet,
@@ -790,6 +826,7 @@ if __name__ == "__main__":
                  aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121, combo_rechnung,
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr,
                  faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht,
-                 satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, sofort_back_und_objective):
+                 satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
+                 sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")

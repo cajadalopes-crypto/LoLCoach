@@ -23,7 +23,9 @@ import threading
 import time
 
 _ASYNC, _UNTERBRECHEN = 1, 2
-ZWEITE_ANFRAGE_NACH = 0.35   # Sekunden ohne Audio, bis eine zweite Synthese-Anfrage mitlaeuft
+ZWEITE_ANFRAGE_NACH = 0.25   # Sekunden ohne Audio, bis eine zweite Synthese-Anfrage mitlaeuft
+# (gemessen 27.09.: erstes Audio im Median 0,19 s, jede vierte Anfrage 0,6 s und mehr)
+ENDE = object()              # _Strom.stueck: es kommt kein Stueck mehr
 # Live 26.09., 23:06-23:16 (Practice Tool): die Stimme blieb nach einem Antippen der Sprechtaste minutenlang
 # angehalten; danach kam "Milio hat Flash benutzt" 154 s spaet - Carlos: "sowas von in der Vergangenheit".
 PAUSE_HOECHSTENS = 15.0      # so lange darf die Stimme fuer eine Frage angehalten sein, dann geht sie von selbst weiter
@@ -63,106 +65,211 @@ class _Sapi:
         return True
 
 
+class _Strom:
+    """Eine laufende Synthese: die PCM-Stuecke kommen an, waehrend der Dienst noch rechnet - gespielt wird ab dem
+    ersten. Gemessen 27.09. nachts: erstes MP3-Stueck im Median nach 0,19 s (0,11 davon Verbindungsaufbau), der
+    ganze Teilsatz 0,1-0,3 s spaeter; bisher klang er erst, wenn er ganz da war. Kommt nach ZWEITE_ANFRAGE_NACH
+    kein Audio, laeuft eine zweite Anfrage mit; die zuerst tonende gilt."""
+
+    def __init__(self, text: str, stimme: str, tempo: str, faktor: float):
+        self.text, self.stimme, self.tempo, self.faktor = text, stimme, tempo, faktor
+        self.stuecke: list = []          # float32-Arrays, in Reihenfolge
+        self.rate = 24000
+        self.fertig = False
+        self.fehler: BaseException | None = None
+        self._neu = threading.Condition()
+        threading.Thread(target=self._lauf, daemon=True).start()
+
+    def _lauf(self) -> None:
+        import asyncio
+        try:
+            asyncio.run(asyncio.wait_for(self._hole(), timeout=8))
+        except BaseException as e:   # noqa: BLE001 - auch Abbrueche des Dienstes: der Sprecher faellt zurueck
+            self.fehler = e
+        finally:
+            with self._neu:
+                self.fertig = True
+                self._neu.notify_all()
+
+    def _dazu(self, dek, daten) -> None:
+        import numpy as np
+        neu = []
+        for paket in dek.parse(daten):
+            for f in dek.decode(paket):
+                a = f.to_ndarray()
+                a = a[0] if a.ndim == 2 else a
+                a = a.astype(np.float32) / 32768.0 if a.dtype.kind == "i" else a.astype(np.float32)
+                self.rate = f.sample_rate
+                neu.append(a * self.faktor)
+        if neu:
+            with self._neu:
+                self.stuecke.extend(neu)
+                self._neu.notify_all()
+
+    async def _hole(self) -> None:
+        import asyncio
+        import av
+        import edge_tts
+        gewinner: list[int | None] = [None]
+        erstes = asyncio.Event()
+
+        async def anfrage(nr: int) -> None:
+            dek = av.CodecContext.create("mp3", "r")
+            async for teil in edge_tts.Communicate(self.text, self.stimme, rate=self.tempo).stream():
+                if teil["type"] != "audio":
+                    continue
+                if gewinner[0] is None:
+                    gewinner[0] = nr
+                    erstes.set()
+                if gewinner[0] != nr:
+                    return
+                self._dazu(dek, teil["data"])
+            if gewinner[0] is None:
+                raise RuntimeError("edge-tts: kein Audio")
+
+        laeufe = {1: asyncio.create_task(anfrage(1))}
+        warte = asyncio.create_task(erstes.wait())
+        await asyncio.wait({laeufe[1], warte}, timeout=ZWEITE_ANFRAGE_NACH, return_when=asyncio.FIRST_COMPLETED)
+        warte.cancel()
+        if gewinner[0] is None:
+            laeufe[2] = asyncio.create_task(anfrage(2))
+        while True:
+            offen = [t for t in laeufe.values() if not t.done()]
+            w = laeufe.get(gewinner[0]) if gewinner[0] is not None else None
+            if w is not None and w.done():
+                for t in offen:
+                    t.cancel()
+                if w.exception() is not None:
+                    raise w.exception()
+                return
+            if not offen:
+                fehler = next((t.exception() for t in laeufe.values() if t.exception()), None)
+                raise fehler or RuntimeError("edge-tts: kein Audio")
+            await asyncio.wait(offen, return_when=asyncio.FIRST_COMPLETED)
+
+    def stueck(self, i: int, bis: float):
+        """Das i-te PCM-Stueck; wartet hoechstens bis `bis` (monotonic). ENDE: es kommt keins mehr; None: Zeit um."""
+        with self._neu:
+            while len(self.stuecke) <= i and not self.fertig:
+                rest = bis - time.monotonic()
+                if rest <= 0:
+                    return None
+                self._neu.wait(min(rest, 0.05))
+            return self.stuecke[i] if i < len(self.stuecke) else ENDE
+
+    def ganz(self, timeout: float = 8.0):
+        """Das ganze Audio (fuer das Vorwaermen und Tests)."""
+        import numpy as np
+        with self._neu:
+            self._neu.wait_for(lambda: self.fertig, timeout)
+        if not self.stuecke:
+            raise self.fehler or RuntimeError("edge-tts: kein Audio")
+        return np.concatenate(self.stuecke), self.rate
+
+
 class _Neural:
-    """Microsofts neuronale Stimmen (wie "Vorlesen" in Edge), ueber edge-tts.
-    Gemessen 26.09.2026: Conrad/Katja 0,35-0,45 s bis zum ersten Ton. Braucht
-    Internet; faellt ein Satz aus, spricht ihn die Windows-Stimme."""
+    """Microsofts neuronale Stimmen (wie "Vorlesen" in Edge), ueber edge-tts. Braucht Internet; faellt ein Satz
+    aus, spricht ihn die Windows-Stimme. Gespielt wird ab dem ersten Stueck (_Strom), in einem durchgehenden
+    Ausgabestrom je Ansage; Teilsaetze entstehen parallel, hoechstens VORAUS Stueck voraus."""
+
+    VORAUS = 2
 
     def __init__(self, stimme: str, tempo: str, lautstaerke: int, ersatz: "_Sapi"):
         self.stimme, self.tempo, self.lautstaerke, self.ersatz = stimme, tempo, lautstaerke, ersatz
-        self._cache: dict[str, tuple] = {}
+        self._stroeme: dict[str, _Strom] = {}
+        self._schloss = threading.Lock()
+
+    def strom(self, text: str) -> _Strom:
+        """Die Synthese von `text`: laufend, fertig (Zwischenspeicher) oder neu gestartet."""
+        with self._schloss:
+            s = self._stroeme.get(text)
+            if s is None or (s.fertig and not s.stuecke):
+                s = _Strom(text, self.stimme, self.tempo, self.lautstaerke / 100.0)
+                self._stroeme[text] = s
+                if len(self._stroeme) > 150:
+                    for k in [k for k, v in self._stroeme.items() if v.fertig][:75]:
+                        del self._stroeme[k]
+            return s
+
+    def vorbereiten(self, text: str) -> None:
+        """Der Sprechplan weiss, was als naechstes kommt: der Anfang wird schon synthetisiert."""
+        for t in teilsaetze(text)[:self.VORAUS]:
+            self.strom(t)
 
     def _synthese(self, text: str):
-        if text in self._cache:
-            return self._cache[text]
-        import asyncio
-        import io
-        import av
-        import edge_tts
-        import numpy as np
-
-        async def hole_eins(erstes: asyncio.Event) -> bytes:
-            daten = bytearray()
-            async for teil in edge_tts.Communicate(text, self.stimme, rate=self.tempo).stream():
-                if teil["type"] == "audio":
-                    erstes.set()
-                    daten += teil["data"]
-            if not daten:
-                raise RuntimeError("edge-tts: kein Audio")
-            return bytes(daten)
-
-        async def hole() -> bytes:
-            """Gemessen 26.09. nachts, 15 Anfragen: erstes Audio im Median nach 0,17 s, aber jede zehnte erst nach
-            1,4-1,8 s (Ausreisser beim Dienst) - live 'Stimme' 1,5 s im Median, bis 2,5 s. Kommt nach
-            ZWEITE_ANFRAGE_NACH kein Audio, laeuft eine zweite Anfrage mit; die erste fertige gilt."""
-            e1 = asyncio.Event()
-            t1 = asyncio.create_task(hole_eins(e1))
-            try:
-                await asyncio.wait_for(e1.wait(), ZWEITE_ANFRAGE_NACH)
-                return await t1
-            except asyncio.TimeoutError:
-                pass
-            t2 = asyncio.create_task(hole_eins(asyncio.Event()))
-            offen = {t1, t2}
-            fehler = None
-            while offen:
-                fertig, offen = await asyncio.wait(offen, return_when=asyncio.FIRST_COMPLETED)
-                for t in fertig:
-                    if t.exception() is None:
-                        for rest in offen:
-                            rest.cancel()
-                        return t.result()
-                    fehler = t.exception()
-            raise fehler or RuntimeError("edge-tts: kein Audio")
-
-        mp3 = asyncio.run(asyncio.wait_for(hole(), timeout=6))
-        with av.open(io.BytesIO(mp3)) as c:
-            strom = c.streams.audio[0]
-            rate = strom.rate
-            teile = [f.to_ndarray() for f in c.decode(strom)]
-        audio = np.concatenate(teile, axis=1)[0]
-        if audio.dtype.kind == "i":
-            audio = audio.astype(np.float32) / 32768.0
-        audio = (audio.astype(np.float32) * (self.lautstaerke / 100.0))
-        if len(self._cache) > 200:
-            self._cache.clear()
-        self._cache[text] = (audio, rate)
-        return audio, rate
+        return self.strom(text).ganz()
 
     def spreche(self, text: str, stopp: threading.Event, beim_ton=None, gilt=None) -> bool:
-        """Satz fuer Satz: der erste klingt, sobald ER fertig ist, die weiteren entstehen parallel.
-        `gilt()`: stimmt der Satz noch? Alle PRUEFEN_ALLE Sekunden gefragt - wenn nicht, bricht er ab.
-        Gemessen 26.09.: ein 210-Zeichen-Satz brauchte 1,5 s bis zum ersten Ton (ganz synthetisiert),
-        der erste Teilsatz davon 0,4-0,7 s. `beim_ton`: wird beim ersten Ton gerufen (Messung)."""
-        import concurrent.futures as cf
+        """`gilt()`: stimmt der Satz noch? Alle PRUEFEN_ALLE Sekunden gefragt - wenn nicht, bricht er ab.
+        `beim_ton`: wird beim ersten Ton gerufen (Messung)."""
         import sounddevice as sd
         teile = teilsaetze(text)
-        with cf.ThreadPoolExecutor(max_workers=3) as pool:
-            laeufe = [pool.submit(self._synthese, t) for t in teile]
-            for i, lauf in enumerate(laeufe):
-                try:
-                    audio, rate = lauf.result(timeout=8)
-                except Exception:
-                    rest = " ".join(teile[i:])
-                    return self.ersatz.spreche(rest, stopp, beim_ton if i == 0 else None, gilt)
-                if stopp.is_set() or (gilt is not None and not gilt()):
-                    return False
-                if i == 0 and beim_ton:
-                    beim_ton()
-                sd.play(audio, rate)
-                ende = time.monotonic() + len(audio) / rate + (0.3 if i == len(laeufe) - 1 else 0.02)
+        stroeme: list[_Strom | None] = [None] * len(teile)
+
+        def los(i: int) -> _Strom:
+            if stroeme[i] is None:
+                stroeme[i] = self.strom(teile[i])
+            return stroeme[i]
+
+        for i in range(min(len(teile), self.VORAUS + 1)):
+            los(i)
+        aus = None
+        naechste = time.monotonic() + PRUEFEN_ALLE
+
+        def weiter() -> bool:
+            nonlocal naechste
+            if stopp.is_set():
+                return False
+            if gilt is not None and time.monotonic() >= naechste:
                 naechste = time.monotonic() + PRUEFEN_ALLE
-                while time.monotonic() < ende:
-                    if stopp.is_set():
-                        sd.stop()
-                        return False
-                    if gilt is not None and time.monotonic() >= naechste:
-                        naechste = time.monotonic() + PRUEFEN_ALLE
-                        if not gilt():
-                            sd.stop()
+                return bool(gilt())
+            return True
+
+        try:
+            for i in range(len(teile)):
+                s = los(i)
+                if i + self.VORAUS < len(teile):
+                    los(i + self.VORAUS)
+                n = 0
+                while True:
+                    bis = time.monotonic() + (8.0 if n == 0 else 3.0)
+                    st = None
+                    while st is None and time.monotonic() < bis:
+                        st = s.stueck(n, min(bis, time.monotonic() + PRUEFEN_ALLE))
+                        if not weiter():
+                            if aus is not None:
+                                aus.abort()
                             return False
-                    time.sleep(0.02)
-        return True
+                    if st is None or st is ENDE:
+                        break
+                    if aus is None:
+                        aus = sd.OutputStream(samplerate=s.rate, channels=1, dtype="float32")
+                        aus.start()
+                        if beim_ton:
+                            beim_ton()
+                    aus.write(st.reshape(-1, 1))
+                    n += 1
+                if n == 0:
+                    # kein Ton fuer diesen Teil: der Rest mit der Windows-Stimme
+                    if aus is not None:
+                        aus.stop()
+                        aus.close()
+                        aus = None
+                    return self.ersatz.spreche(" ".join(teile[i:]), stopp, beim_ton if i == 0 else None, gilt)
+            if aus is not None:
+                aus.stop()          # wartet, bis der Puffer ausgespielt ist
+            ende = time.monotonic() + 0.3
+            while time.monotonic() < ende:
+                if stopp.is_set():
+                    return False
+                time.sleep(0.02)
+            return True
+        finally:
+            if aus is not None:
+                try:
+                    aus.close()
+                except Exception:
+                    pass
 
 
 def _still(f, *a) -> None:
@@ -246,6 +353,7 @@ class Stimme:
             motor = _Neural(self.neural, self.tempo, self.lautstaerke, ersatz=motor)
             # einmal stumm vorwaermen (Module, Verbindung): kalt kam der erste Ton nach 1,9 s, warm nach 0,6-0,75 s
             threading.Thread(target=lambda: _still(motor._synthese, "Los."), daemon=True).start()
+        self._motor = motor
         self._bereit.set()
         while True:
             try:
@@ -328,6 +436,12 @@ class Stimme:
         if fertig:
             fertig.wait(timeout=60)
 
+    def vorbereiten(self, text: str) -> None:
+        """Der Satz kommt gleich dran: seinen Anfang schon synthetisieren (nur die neuronale Stimme)."""
+        m = getattr(self, "_motor", None)
+        if hasattr(m, "vorbereiten"):
+            _still(m.vorbereiten, sprechbar(text))
+
     def pausiere(self) -> None:
         self._pausiert_seit = time.monotonic()
         self._frei.clear()
@@ -363,6 +477,9 @@ class Stimme:
 
 class Stumm:
     def sage(self, text: str, dringend: bool = False, melde=None, noch_wahr=None) -> None:
+        pass
+
+    def vorbereiten(self, text: str) -> None:
         pass
 
     def antworte_teil(self, text: str) -> None:

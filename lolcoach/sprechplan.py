@@ -104,6 +104,18 @@ class Sprechplan:
                 self._widerruf = (time.monotonic(), a.thema, a.schluessel.split(":")[0])
         return melde
 
+    def _vorbereiten(self, a: Ansage) -> None:
+        """Sie kommt als naechste dran: die Stimme synthetisiert ihren Anfang schon (einmal je Ansage) - dann klingt
+        sie ohne die 0,2-0,6 s des Dienstes."""
+        if getattr(a, "_vorbereitet", False):
+            return
+        a._vorbereitet = True
+        if f := getattr(self.sprecher, "vorbereiten", None):
+            try:
+                f(a.text)
+            except Exception:
+                pass
+
     def _noch_wahr(self, a: Ansage):
         return lambda: _stimmt(a) and not (self._ich_tot and a.schluessel.startswith(NUR_LEBEND))
 
@@ -164,14 +176,17 @@ class Sprechplan:
                           or (laeuft.gesprochen is not None and zeit - laeuft.gesprochen >= GESAGT_NACH
                               and a.prio >= laeuft.prio)))
         if zeit < frei and a.prio < SOFORT and not abbrechen:
+            self._vorbereiten(a)
             return None
         # Eine Gefahr bricht die andere nicht nach einer Sekunde ab (Nachlauf 194524, 17:22/17:23: "Vi ist oben und kann
         # in 7 Sekunden ..." - weg, bevor ihr "geh zurueck" kam, fuer "Braum und Warwick sind tot"): erst ihre Handlung
         if (a.prio == SOFORT and laeuft is not None and laeuft.prio == SOFORT and not unterbrechbar(laeuft)
                 and zeit < self.frei_ab and getattr(self.sprecher, "beschaeftigt", True)
                 and laeuft.gesprochen is not None and zeit - laeuft.gesprochen < GESAGT_NACH):
+            self._vorbereiten(a)
             return None
         if a.prio < SOFORT and getattr(self.sprecher, "beschaeftigt", False) and not abbrechen:
+            self._vorbereiten(a)
             return None     # die Stimme spricht noch (live exakt statt geschaetzt)
         self.warte.remove(a)
         # "Ach nee - Ekko ist beim Drachen": der Satz davor wurde mitten drin widerrufen (Carlos' Wunsch 26.09.)
