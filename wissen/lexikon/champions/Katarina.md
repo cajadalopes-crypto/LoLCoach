@@ -8,7 +8,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Faehigkeiten-Kniffe
 - Passiv Unersättlichkeit: Takedown an einem Champion, dem sie kürzlich Schaden zugefügt hat → Grund-CDs stark gesenkt (Wert ungeprüft, ~15 s). Dolch aufheben = Schnitt um sie herum (magischer Schaden, löst On-Hit aus).
-- Q Tanzende Klinge: gezielt 625, CD 11/10/9/8/7. Springt auf bis zu 2 weitere Gegner; der Dolch landet HINTER dem ersten Ziel (Abstand ungeprüft, ~350).
+- Q Tanzende Klinge: gezielt 625, CD 11/10/9/8/7. Springt auf bis zu 2 weitere Gegner (Anzahl ungeprüft); der Dolch landet HINTER dem ersten Ziel (Abstand ungeprüft, ~350).
 - W Vorbereitung: CD 15/14/13/12/11. Dolch senkrecht nach oben, Tempo-Schub; landet nach ~1,25 s (ungeprüft) auf ihrer ALTEN Position.
 - E Blitzschritt: Blink 725 zu jeder Einheit (auch Verbündete, Vasallen, Warden) oder Dolch, CD 12/11/10/9/8. Aufgehobener Dolch senkt die E-CD stark (ungeprüft) – das ist ihr zweiter E.
 - R Todes-Lotus: Kanalisierung (~2,5 s, ungeprüft), Radius 550, trifft die 3 nächsten Champions wiederholt, verursacht Heilungsreduktion. CD 75/60/45. E während R bricht R ab – gewollt, wenn das Ziel fällt oder sie fliehen muss.
@@ -39,8 +39,8 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Keine Resets schenken: im Teamfight niedrige Verbündete nicht vor ihr stehen lassen; ein Kill gibt ihr fast alle CDs zurück.
 - Hauptschaden ist magisch: Merkurs Schuhe, Zhonyas Stundenglas (lässt ihren R ins Leere laufen), Schlund von Malmortius als AD.
 - R hat Heilungsreduktion: Heilung während ihres R ist fast wertlos – Schild statt Heilung.
-- Vor Level 3 poken: Sie hat nur Q, und Q allein tötet nicht.
-- Eigene Warden und Vasallen nahe ihr sind Sprungziele – nicht als Fluchtweg einplanen, dass sie keinen Weg hat.
+- Vor Level 3 poken: Ohne alle drei Grundfähigkeiten fehlt ihr die Dolch-Combo.
+- Eigene Warden und Vasallen nahe ihr sind Sprungziele – nie davon ausgehen, dass sie keinen Fluchtweg hat.
 
 ## Makro/Teamfight
 - Job: Seiten-Roams, Aufräumen, Kampf nach dem ersten CC des Gegners.

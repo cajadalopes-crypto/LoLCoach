@@ -47,7 +47,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Objectives: mittel; stark in Engstellen.
 
 ## Build 26.19
-- Richtung (ungeprüft): Klinge der Unendlichkeit oder Flimmerklingen der Navori → Blutdürster → Lord Dominiks Grüße.
+- Richtung (ungeprüft): Klinge der Unendlichkeit oder Flimmerklinge der Navori → Blutdürster → Lord Dominiks Grüße.
 - Situativ: Schlund von Malmortius gegen AP; Schutzengel spät; Tanz des Todes gegen AD-Dive.
-- Stiefel: Berserkerbeinschienen (ungeprüft).
+- Stiefel: Beinschienen des Berserkers (ungeprüft).
 - Runen-Richtung (ungeprüft): Eroberer oder Tödliches Tempo; Beschwörer Blitz + Heilen/Entzünden.

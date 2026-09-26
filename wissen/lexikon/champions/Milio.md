@@ -46,6 +46,6 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Build 26.19
 - Richtung (ungeprüft): Support-Item → Mondstein-Erneuerer → Echos von Helia → Stab des fließenden Wassers.
-- Situativ: Mikaels Segen gegen Unterdrückung/harten CC; Dämmerkern; Shurelyas Kampfhymne für Tempo-Engage.
+- Situativ: Mikaels Segen gegen harten CC (nicht gegen Unterdrückung/Hochschleudern); Dämmerkern; Shurelyas Kampfhymne für Tempo-Engage.
 - Stiefel: Ionische Stiefel der Deutlichkeit (ungeprüft).
-- Runen-Richtung (ungeprüft): Sommerfrischler; Beschwörer Blitz + Erschöpfung oder Entzünden.
+- Runen-Richtung (ungeprüft): Benefee-Beschwörung; Beschwörer Blitz + Erschöpfung oder Entzünden.

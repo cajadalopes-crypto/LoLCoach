@@ -4,11 +4,11 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Kopf
 - Name: Qiyana, Gebieterin der Elemente. Rollen: Mid, Dschungel. Klasse: Assassine (Data Dragon: Assassin). Ressource: Mana.
-- Spielidee: AD-Assassine, die Elemente aus der Umgebung nimmt (W): Gras = Tarnung, Fluss = Wurzel, Wand/Terrain = Stun. Ult (R) stößt zurück und explodiert an Wänden, Gras und Fluss entlang – Flächen-Stun.
+- Spielidee: AD-Assassine, die Elemente aus der Umgebung nimmt (W): Gras = Tarnung, Fluss = Wurzel, Wand/Terrain = Zusatzschaden gegen angeschlagene Ziele. Ult (R) stößt zurück und explodiert an Wänden, Gras und Fluss entlang – Flächen-Stun.
 
 ## Faehigkeiten-Kniffe
 - Passiv Kaiserliches Vorrecht: Erster AA oder erste Grundfähigkeit gegen jeden Gegner = Bonusschaden (CD je Ziel, ungeprüft).
-- Q Elementarer Zorn / Klinge von Ixtal: 525, CD 7, 35 Mana. Ohne Element: kleiner Schlag. Mit Element: Gras = Tarnung + Tempo, Fluss = Wurzel dann Slow, Terrain = Bonusschaden gegen niedrige Ziele (Stun-Zusatz, ungeprüft). Verbraucht das Element.
+- Q Elementarer Zorn / Klinge von Ixtal: 525, CD 7, 35 Mana. Ohne Element: kleiner Schlag. Mit Element: Gras = Tarnung + Tempo, Fluss = Wurzel dann Slow, Terrain = Bonusschaden gegen niedrige Ziele (kein Stun – betäuben tut nur R). Verbraucht das Element.
 - W Terraformung: Sprung 1100 (zu Terrain/Gras/Fluss, kurze Strecke), CD 7, Mana 25–45. Nimmt das Element, setzt die Q-CD zurück (ungeprüft); verzaubert: AAs/Fähigkeiten Bonusschaden, Tempo außer Kampf.
 - E Unbescheidenheit: Sprung 650 auf einen Gegner (durch ihn), CD 11/10/9/8/7, Mana 40–60.
 - R Elementares Supertalent: 950, CD 120, 100 Mana. Rückstoß-Welle; trifft sie Terrain, Gras oder Fluss, explodiert das ganze Element entlang (Stun + Schaden).

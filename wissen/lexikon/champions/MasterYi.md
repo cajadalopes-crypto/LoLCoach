@@ -47,6 +47,6 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. 26.19
 
 ## Build 26.19
 - Richtung (ungeprüft): Klinge des gestürzten Königs → Guinsoos Wutklinge → Ende der Weisheit oder Tanz des Todes → Schutzengel.
-- Situativ: Schlund von Malmortius gegen AP-Burst; Tanz des Todes gegen AD-Burst; Dämmerung von Silbersee gegen CC (ungeprüft).
-- Stiefel: Berserkerbeinschienen (ungeprüft).
+- Situativ: Schlund von Malmortius gegen AP-Burst; Tanz des Todes gegen AD-Burst; Quecksilberschärpe gegen CC (ungeprüft).
+- Stiefel: Beinschienen des Berserkers (ungeprüft).
 - Runen-Richtung (ungeprüft): Tödliches Tempo oder Eroberer; Beschwörer Zerschmettern + Blitz oder Geist.

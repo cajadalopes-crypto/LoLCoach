@@ -24,7 +24,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 ## Powerspikes
 - Level 2 (W+Q): stärkster Level-2-Engage im Spiel. Level 3 E-Stun. Level 6 R = Dives unter den Turm.
 - Items: erstes Support-Tank-Item (Amulett der eisernen Solari oder Zekes Konvergenz) → Ritterschwur/Randuins Omen.
-- Schwächephasen: Mana auf Level 1–5 (maximal 2 Engages bis Recall); gegen Disengage (Janna, Braum-W) und gegen Poke-Supports, die ihn vor Level 2 zermürben.
+- Schwächephasen: Mana auf Level 1–5 (maximal 2 Engages bis Recall); gegen Disengage (Janna, Braum-R) und gegen Poke-Supports, die ihn vor Level 2 zermürben.
 
 ## Lane-Plan
 - Level-2-Fenster: erste Welle + 1 Vasall der zweiten Welle; dann W → Q auf den Schützen, der nach Lasthits vorne steht.

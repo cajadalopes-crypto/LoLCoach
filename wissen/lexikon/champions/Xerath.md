@@ -41,7 +41,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Mana: nach mehreren Q/W ist er leer (Passiv hilft nur über AAs).
 - Im Teamfight von der Seite angehen: er steht weit hinten, oft ohne Peel.
 - Ohne Blitz ist er ein leichtes Dive-Ziel.
-- Magieresistenz früh gegen Poke (Merkurs Schuhe, Abendschleier-Linie).
+- Magieresistenz früh gegen Poke (Merkurs Schuhe, Schleier der Todesfee).
 
 ## Makro/Teamfight
 - Belagerung, Poke vor Objectives, R zum Aufräumen.

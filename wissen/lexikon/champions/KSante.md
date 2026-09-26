@@ -50,7 +50,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 Quelle: op.gg K'Sante Top Patch 16.19, abgerufen 26.09.2026 (aus dem vorigen Eintrag übernommen).
 - Start: Dorans Helm + Heiltrank.
 - Kern: Eisgeborenen-Handschuh → Endlose Verzweiflung → Jak'Sho, der Proteaner; Alternative Kaenischer Rookern → Eisgeborenen-Handschuh → Jak'Sho.
-- Situativ (ungeprüft): Dornenpanzer gegen Heilung/AA; Adaptiver Helm oder Schild aus Vulkangestein gegen AP; Herzstahl für Stapel.
+- Situativ (ungeprüft): Dornenpanzer gegen Heilung/AA; Schild aus Vulkangestein gegen AP; Herzstahl für Stapel.
 - Stiefel: Beschichtete Stahlkappen (69 %).
 - Runen: Entschlossenheit – Umklammerung der Untoten (74 %), Schildschlag, Aufschwung, Zuwachs; sekundär Präzision – Letztes Gefecht, Legende: Hast.
 - Beschwörer: Blitz + Teleportation (77 %).

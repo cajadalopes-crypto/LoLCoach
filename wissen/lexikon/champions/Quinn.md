@@ -4,7 +4,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Kopf
 - Name: Quinn, Demacias Schwingen. Rollen: Top, Bot. Klasse: Schützin/Assassine (Data Dragon: Marksman, Assassin). Ressource: Mana. AA-Reichweite 525.
-- Spielidee: Ranged-Top-Bully. Blendet (Q), springt ab (E, stößt zurück), markiert über Valor (Passiv). Ult (R) = Valor-Form mit riesigem Tempo für Roams. Gewinnt die Lane über Reichweite, die Karte über Roams.
+- Spielidee: Ranged-Top-Bully. Blendet (Q), springt ab (E, unterbricht kurz), markiert über Valor (Passiv). Ult (R) = Valor-Form mit riesigem Tempo für Roams. Gewinnt die Lane über Reichweite, die Karte über Roams.
 
 ## Faehigkeiten-Kniffe
 - Passiv Adleraugen: Valor markiert regelmäßig einen nahen Gegner; Quinns erster AA auf ein markiertes Ziel = Bonusschaden. Q und E markieren ebenfalls.
@@ -13,7 +13,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - E Anspringen: 675 auf Ziel, CD 12/11/10/9/8, 50 Mana. Springt auf das Ziel, Schaden, Slow, markiert; springt fast bis zur AA-Reichweite zurück und unterbricht das Ziel kurz (Anti-Dash).
 - R Hinter feindlichen Linien: CD 3, Mana 50/25/0. Valor-Form nach Kanalisierung (~2 s, ungeprüft): hohes Tempo, keine AAs; Angriff/Fähigkeit/erneutes R beendet sie mit Himmelsschlag (Flächenschaden, markiert).
 - Combos:
-  - Trade: Q (Blind + Mark) → AA → E (Mark, Rückstoß, Slow) → AA.
+  - Trade: Q (Blind + Mark) → AA → E (Mark, Unterbrechung, Slow) → AA.
   - Anti-Dive: E auf den Diver, der gerade springt (Unterbrechung) → AA.
   - Roam: R → Tempo zum Ziel → R2 Himmelsschlag → Q → E → AA.
 - Zeichen im Spiel: Valor-Form auf der Karte = Roam/Gank kommt. Markierung (Adler-Symbol) auf dir = nächster AA trifft härter. Blind auf dir = AAs verfehlen, nur Fähigkeiten.
@@ -49,5 +49,5 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 ## Build 26.19
 - Richtung (ungeprüft): Youmus Geistklinge → Der Sammler → Saum der Nacht; Krit-Variante mit Sturmschneide.
 - Situativ: Schutzengel; Lord Dominiks Grüße gegen Tanks; Blutdürster gegen Burst.
-- Stiefel: Stiefel der Schnelligkeit oder Berserkerbeinschienen (ungeprüft).
-- Runen-Richtung (ungeprüft): Druckwelle oder Erstschlag; Beschwörer Blitz + Entzünden/Teleportation.
+- Stiefel: Stiefel der Wendigkeit oder Beinschienen des Berserkers (ungeprüft).
+- Runen-Richtung (ungeprüft): Fokussierter Angriff oder Erstschlag; Beschwörer Blitz + Entzünden/Teleportation.

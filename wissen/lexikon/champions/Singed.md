@@ -18,7 +18,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
   - Engage: W vor dich → E-Wurf hinein (Wurzel) → Q-Spur um das Ziel laufen.
   - Flip unter Turm: Blitz hinter das Ziel → E Richtung Turm.
   - Teamfight: R → durch das Team laufen (Passiv-Tempo) → E auf den Carry.
-- Zeichen im Spiel: grüne Spur = Q aktiv. Singed läuft auf dich zu mit W bereit = Kleber + Wurf kommt. R aktiv (Aura/Größe) = 100 s, danach ist er langsamer.
+- Zeichen im Spiel: grüne Spur = Q aktiv. Singed läuft auf dich zu mit W bereit = Kleber + Wurf kommt. R aktiv (Aura/Größe) = ~25 s Werte-Schub (ungeprüft), danach 100 s CD – dann ist er langsamer.
 
 ## Powerspikes
 - Level 3: W+E-Setup für den Jungler. Level 6: R macht ihn in Kämpfen schwer zu fangen.
@@ -39,7 +39,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Proxy: Welle einfrieren nahe dem eigenen Turm, Jungler rufen – er hat keinen Dash, nur Tempo. Kontroll-Auge hinter dem Turm.
 - R-Timer (100 s) mitzählen: ohne R ist er in Kämpfen langsam und leicht zu fangen.
 - %-Schaden gegen ihn (Liandrys Qual, Königsmord, Klinge des gestürzten Königs) und Magieresistenz (Gift = magisch).
-- Klaffende Wunden in R: eigene Heilung ist halbiert – nicht in seine Spur bei R.
+- Klaffende Wunden in R: eigene Heilung ist stark reduziert – nicht in seine Spur bei R.
 
 ## Makro/Teamfight
 - Job: Seitenlane-Druck und Chaos. Er zieht zwei Gegner, der Rest nimmt Drache/Baron.

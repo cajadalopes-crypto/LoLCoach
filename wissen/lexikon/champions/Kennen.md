@@ -39,7 +39,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Magieresistenz früh: Merkurs Schuhe, Dorans Schild gegen den Poke.
 - Welle nahe deinem Turm halten (Freeze): Er muss nach vorn, dein Jungler kann kommen.
 - Teleport in der Lane: Er gewinnt die Lane oft, aber nicht die Karte – mit TP bei Drachen gleichziehen.
-- Teamfight: Flash-R + Zhonyas → nicht gebündelt stehen; R dauert kurz, wer ihn beim Eintritt stunnt, verhindert alle 3 Treffer.
+- Teamfight: Flash-R + Zhonyas → nicht gebündelt stehen; R ist keine Kanalisierung (~3 s, wandert mit ihm, CC bricht ihn nicht ab) – wer ihn VOR dem R stunnt (im E-Anlauf), verhindert ihn; danach nur Abstand.
 
 ## Makro/Teamfight
 - Job: Flanke mit Flash-R, Roams nach 6. Splitpush mittel (Turm-Poke auf Distanz).

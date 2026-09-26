@@ -10,11 +10,11 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Passiv Sterblicher Wille: 5 Stapel (AAs/Fähigkeiten) → nächste Fähigkeit verstärkt: Q mehr Schaden + Slow, W 3 Stöße, E danach Tempo/Resistenzen (ungeprüft).
 - Q Kometenspeer: CD 11/10,25/9,5/8,75/8, 25 Mana. Tippen = Stich (575), halten = Wurf (weiter, ungeprüft). Gegen Ziele unter ~20 % Leben mehr Schaden (ungeprüft). Nach Treffer CD-Rückerstattung (ungeprüft).
 - W Schildsprung: gezielt 600, CD 13/12/11/10/9, 55 Mana. Schaden + Stun (~1 s, ungeprüft). Verstärkt: 3 Stöße.
-- E Ansturm der Ägide: 400, CD 22/21/20/19/18, 80 Mana. ~1,5 s Schild nach vorn – blockt allen frontalen Schaden (auch Turm), stößt zu; danach Schild-Schlag mit Slow.
+- E Ansturm der Ägide: 400, CD 22/21/20/19/18, 80 Mana. ~1,5 s Schild nach vorn – blockt allen frontalen Schaden außer Turmschaden, stößt zu; danach Schild-Schlag mit Slow.
 - R Astraler Kollisionskurs: Sprung 5500, CD 180/165/150, 100 Mana. Vorwarnkreis am Ziel, Flächenschaden bei Landung (Mitte stärker). Kann durch Unterbrechen während der Kanalisierung abgebrochen werden (ungeprüft).
 - Combos:
   - All-in bei 5 Stapeln: W (verstärkt, 3 Stöße) → AA → Q-Stich (verstärkt) → E beim Rückschlag → Q-Wurf beim Wegrennen.
-  - Turm-Dive: W → AA → E Richtung Turm (blockt Turmschüsse) → Q.
+  - Turm-Dive: W → AA → Q; E blockt den Laner, aber NICHT die Turmschüsse.
   - Gank über R: R hinter die Lane → W → Q.
 - Zeichen im Spiel: 5 Stapel sichtbar = verstärkte W/Q kommen. W verbraucht = 9–13 s ohne Stun. R-Kreis auf der Karte = er landet dort in ~2 s.
 
@@ -25,7 +25,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Lane-Plan
 - Level 1: Q (Q > E > W). Q-Poke, Stapel sammeln.
-- Bis 6: verstärkter W-All-in bei 5 Stapeln; Dive mit Jungler (E blockt den Turm).
+- Bis 6: verstärkter W-All-in bei 5 Stapeln; Dive mit Jungler (E blockt keinen Turmschaden).
 - Nach 6: R auf Bot-/Mid-Kämpfe, Top-Welle vorher pushen.
 - Gank-Anfälligkeit: mittel (E blockt Frontalschaden; W-Sprung auf Vasallen als Flucht – ungeprüft).
 - Recall: Eklipse-Bauteile.

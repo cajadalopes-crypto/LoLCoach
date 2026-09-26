@@ -16,7 +16,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. 26.19
   - Lane: Q → AA → Axt fangen → Q (zweite Axt) → AAs; W bei jedem Fang.
   - All-in: 2 Äxte → E (Slow) → AAs → R (hin + zurück) als Finisher.
   - Flucht: W → E auf den Verfolger → Äxte fallen lassen.
-- Zeichen im Spiel: Axt-Landepunkte am Boden (kleine Kreise) = dort muss er hinlaufen. Keine Äxte in der Hand = Schaden halbiert. Riesige Äxte über die Karte = R.
+- Zeichen im Spiel: Axt-Landepunkte am Boden (kleine Kreise) = dort muss er hinlaufen. Keine Äxte in der Hand = deutlich weniger Schaden. Riesige Äxte über die Karte = R.
 
 ## Powerspikes
 - Level 1–3 extrem stark. Erstes Item (Blutdürster oder Klinge der Unendlichkeit) = Kill-Druck auf jeden Schützen.

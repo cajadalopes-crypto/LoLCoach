@@ -8,7 +8,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Faehigkeiten-Kniffe
 - Passiv Erleuchtung: Schadenszauber markieren einige Sekunden; der nächste AA oder R zündet die Markierung (Zusatzschaden nach Stufe). Nach jedem Zauber einen AA einbauen.
-- Q Lichtfessel: Skillshot 1175, CD 10, 50 Mana. Wurzelt bis zu 2 Einheiten (~2 s, ungeprüft; die zweite kürzer).
+- Q Lichtfessel: Skillshot 1175, CD 10, 50 Mana. Wurzelt die ersten 2 getroffenen Einheiten, beide gleich lang und mit vollem Schaden (~2 s, ungeprüft).
 - W Prismatische Barriere: Stab 1150 hin und zurück, CD 12/11,5/11/10,5/10, Mana 60–80. Schildet alle Verbündeten auf dem Weg, zweimal.
 - E Schillernde Singularität: Zone 1100, CD 10/9,5/9/8,5/8, Mana 70–110. Slow in der Zone, Reaktivierung = Explosion (sonst explodiert sie nach Ablauf). Deckt auf.
 - R Finales Funkeln: Laser 3340 nach Aufladung (~1 s, ungeprüft), CD 60/50/40, 100 Mana. Zündet und erneuert Erleuchtung. Kill auf Fliehende über die halbe Karte.
@@ -31,7 +31,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Gank-Anfälligkeit: hoch – nur Blitz und W-Schild.
 
 ## Gegen diesen Champion
-- Hinter Vasallen: Q wurzelt max. 2 Ziele – ein Vasall davor bedeutet nur einen Treffer mit kurzer Wurzel für dich.
+- Hinter Vasallen: Q wurzelt max. 2 Ziele voll – ein einzelner Vasall davor schützt dich nicht, erst zwei.
 - Q-Fenster: Q verbraucht (10 s) → All-in/Dive. Sie hat dann nur E-Slow und Blitz.
 - R-Laser: Aufladung sichtbar, seitlich raus; R-CD ist kurz (60/50/40 s) – nach R sofort den nächsten Timer ansagen.
 - E-Zone meiden: Slow, danach Explosion – aus dem Kreis, bevor sie zündet.

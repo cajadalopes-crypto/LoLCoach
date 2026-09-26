@@ -33,7 +33,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Gegen diesen Champion
 - Gras mit Setzlingen meiden oder Setzlinge mit AAs zerstören (wenige Treffer).
-- W ist gezielt: Blitz/Dash VOR dem W nutzt nichts; nach der Wurzel Dash aus dem Q-Rückstoß heraus. W-Reichweite 525 einschätzen und außerhalb bleiben.
+- W ist gezielt: Blitz/Dash WÄHREND seines Anflugs nutzt nichts, er folgt dir (ungeprüft); nach der Wurzel Dash aus dem Q-Rückstoß heraus. W-Reichweite 525 einschätzen und außerhalb bleiben.
 - R-Welle: seitlich ausweichen; frühe Treffer = kurze Wurzel, späte = lange. Beim Ansehen der Welle nicht in Richtung ihres Endes flüchten.
 - Er ist ein Tank: %-Schaden (Schwarzes Beil, Lord Dominiks Grüße, Liandrys Qual) und Heilungsreduktion gegen sein Passiv.
 - Nicht zu lange mit ihm kämpfen: jede Fähigkeit, die ihn trifft, lädt seine Heilung.

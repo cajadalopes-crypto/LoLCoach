@@ -33,8 +33,8 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Gegen diesen Champion
 - Passiv-Schild zuerst brechen (AA, günstiger Poke), dann Engage oder den teuren Skillshot. Der Schild lädt sich nach einer Weile ohne Schaden wieder auf – Druck halten.
-- R ist gezielt und eine Kanalisierung: Quecksilber-Aktiv (Quecksilberschärpe, Name ungeprüft) entfernt die Unterdrückung, Reinigen nicht; ein Verbündeter kann ihn mit CC unterbrechen.
-- R-Reichweite 700: Außerhalb bleiben, wenn der Jungler fehlt. Blitz erst benutzen, wenn er R ansetzt – nicht vorher.
+- R ist gezielt und eine Kanalisierung: Quecksilber-Aktiv (Quecksilberschärpe) entfernt die Unterdrückung, Reinigen nicht; ein Verbündeter kann ihn mit CC unterbrechen.
+- R-Reichweite 700: Außerhalb bleiben, wenn der Jungler fehlt. Blitz nicht vorschnell verbrauchen – ist das R erst gewirkt, hilft Blitz nicht mehr (Unterdrückung); nur Abstand vorher zählt.
 - R-Timer mitzählen (140/110/80 s) – ohne R ist er im Gank ungefährlich.
 - Nach R nicht in der Zone bleiben: sie macht noch Schaden.
 - Q-Schweigen: aus der Linie zwischen den Portalen gehen.
@@ -51,4 +51,4 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Richtung (ungeprüft): Liandrys Qual oder Bösartigkeit → Rylais Kristallzepter → Rabadons Todeshaube/Leerenstab.
 - Situativ: Zhonyas Stundenglas gegen Assassinen; Morellonomikon gegen Heilung.
 - Stiefel: Zaubererschuhe (ungeprüft).
-- Runen-Richtung (ungeprüft): Arkaner Komet oder Tempo; Beschwörer Blitz + Teleportation/Entzünden.
+- Runen-Richtung (ungeprüft): Arkaner Komet; Beschwörer Blitz + Teleportation/Entzünden.

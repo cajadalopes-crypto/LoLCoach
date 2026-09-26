@@ -39,7 +39,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Blitz-Timer: Blitz-W mit geladenem Passiv = Flächen-Furcht.
 - Ohne Dash spielen gegen sie: Poke-Champions haben leichteres Spiel als Diver.
 - Mana: nach mehreren Q/E-Pokes leer.
-- Magieresistenz (Merkurs Schuhe, Schlund von Malmortius), Abendschleier/Quecksilber gegen Furcht (ungeprüft).
+- Magieresistenz (Merkurs Schuhe, Schlund von Malmortius), Schleier der Todesfee/Quecksilberschärpe gegen Furcht (ungeprüft).
 - Stirbt ein von R getroffenes Ziel, kann sie erneut springen: niedrige Verbündete nicht in ihrer R-Reichweite lassen.
 - Sie ist langsam und ohne Dash außer R: Kiten und Poke aus über 1200 schlagen sie.
 

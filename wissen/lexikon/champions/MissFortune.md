@@ -48,5 +48,5 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 ## Build 26.19
 - Richtung (ungeprüft): Tödlichkeit – Youmus Geistklinge → Der Sammler → Lord Dominiks Grüße; Krit – Sturmschneide → Klinge der Unendlichkeit.
 - Situativ: Schutzengel; Blutdürster gegen Burst; Schlund von Malmortius gegen AP.
-- Stiefel: Berserkerbeinschienen oder Stiefel der Schnelligkeit (ungeprüft).
-- Runen-Richtung (ungeprüft): Ernte oder Erstschlag; Beschwörer Blitz + Heilen.
+- Stiefel: Beinschienen des Berserkers oder Stiefel der Wendigkeit (ungeprüft).
+- Runen-Richtung (ungeprüft): Dunkle Seelenernte oder Erstschlag; Beschwörer Blitz + Heilen.

@@ -11,7 +11,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. 26.19
 - Q Hammerschock: Linie 430, CD 8/7/6/5/4, Mana 35–55. Schaden (+% max. Leben) + Slow-Zone, die verzögert ein zweites Mal explodiert.
 - W Unerschütterliche Präsenz: 400, CD 20/18/16/14/12, 50 Mana. Passiv Rüstung/MR (mehr bei wenig Leben). Aktiv: Tempo und eine Zone, die gegnerische Dashes/Sprünge stoppt (Knockdown, Schaden, Slow).
 - E Heroischer Ansturm: Sprung 475 auf ein Ziel, schiebt es mit; trifft es Terrain = Stun (~1,6 s, ungeprüft). CD 14/13/12/11/10, 70 Mana.
-- R Richtspruch der Hüterin: 500, CD 140/120/100, 100 Mana. Kurz gedrückt = kleiner Knockup; aufgeladen (Kanalisierung) = schleudert Ziele weit weg (Richtung ihrer Basis, ungeprüft). Halbe CD-Rückerstattung bei Abbruch (ungeprüft).
+- R Richtspruch der Hüterin: 500, CD 140/120/100, 100 Mana. Kurz gedrückt = kleiner Knockup; aufgeladen (Kanalisierung) = schleudert Ziele weit weg (Richtung der eigenen Basis der Getroffenen; in der Luft nicht anvisierbar). Halbe CD-Rückerstattung bei Abbruch (ungeprüft).
 - Combos:
   - Wand-Stun: E gegen die Wand → Q → AA → Passiv-Schild aufheben.
   - Anti-Dive: W, sobald der Diver ansetzt → E → Q.

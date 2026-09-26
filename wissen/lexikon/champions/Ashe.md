@@ -11,7 +11,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Q Fokus der Waldläuferin: AAs bauen Fokus auf; voll = aktivierbar: Angriffstempo + Mehrfachpfeile. CD 0 (stapelbasiert), Kosten 30. Trick: Q erst drücken, wenn der Trade beginnt, nicht auf Vasallen.
 - W Salve: Kegel mit Pfeilen, Reichweite 1200, Slow. CD 18/14,5/11/7,5/4, Kosten 75–55. Trick: an Vasallen vorbei zielen – jeder Pfeil trifft den ersten Gegner.
 - E Habicht-Schuss: Habicht fliegt über die Karte (globale Reichweite), deckt Gebiete auf. CD 5 (Ladungen). Trick: vor Drache/Baron in die Grube; bei Gank-Verdacht in Tribush/Fluss.
-- R Verzauberter Kristallpfeil: Pfeil in gerader Linie über die Karte; betäubt den ersten Champion, Dauer wächst mit Flugstrecke (existierender Eintrag: 1–3,5 s, ungeprüft); Umstehende nehmen Schaden + Slow. CD 100/80/60, Kosten 100.
+- R Verzauberter Kristallpfeil: Pfeil in gerader Linie über die Karte; betäubt den ersten Champion, Dauer wächst mit Flugstrecke (1–3,5 s); Umstehende nehmen Schaden + Slow. CD 100/80/60, Kosten 100.
 - Combos (Tastenfolgen):
   - Lane-Poke: AA → W → AA (Slow hält das Ziel in Reichweite).
   - All-in: R aus kurzer Distanz → W → Q → AAs.

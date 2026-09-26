@@ -37,7 +37,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Q-Kanal: aus der Linie gehen, er dreht langsam.
 - E-Loch: sofort aus der Mitte laufen; Leben über der Hinrichtungsschwelle halten.
 - W verbraucht (22–14 s) = keine Flucht, langsamer Magier → Engage.
-- Ab ~Level 11 fliegt er mit W über die Karte: Abwesenheit auf Mid sofort ansagen.
+- Mit vielen Stapeln fliegt er mit W über die Karte: Abwesenheit auf Mid sofort ansagen.
 - R-Timer 120/110/100 s mitzählen; großer Leuchtkreis = raus.
 - Items: Magieresistenz, Merkurs Schuhe; Dashes auf ihn.
 - Je größer E/R, desto höher Hinrichtung und Knockup-Fläche: späte Kämpfe gegen ihn nur mit Engage auf ihn, nicht gegen seine Zone.

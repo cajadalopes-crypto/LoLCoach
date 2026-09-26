@@ -50,6 +50,6 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. 26.19
 
 ## Build 26.19
 - Richtung (ungeprüft): Liandrys Qual → Zhonyas Stundenglas → Schattenflamme/Rylais Kristallzepter.
-- Situativ: Leerenstab gegen Magieresistenz; Dämonische Umarmung gegen Tanks; Kosmischer Antrieb.
+- Situativ: Leerenstab gegen Magieresistenz; Kosmischer Antrieb.
 - Stiefel: Zaubererschuhe (ungeprüft).
-- Runen-Richtung (ungeprüft): Phasenrausch oder Arkaner Komet; Beschwörer Blitz + Teleportation/Entzünden.
+- Runen-Richtung (ungeprüft): Woge des Sturmräubers oder Arkaner Komet; Beschwörer Blitz + Teleportation/Entzünden.

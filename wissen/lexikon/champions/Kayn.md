@@ -16,7 +16,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
   - Gank: E durch die Seitenwand → W (Slow/Knockup) → Q → AA → R.
   - Rhaast-Kampf: W → Q → R zum Ausweichen eines Burst und zum Heilen → W/Q.
   - Schatten-Burst: E über Wand → W → Q → AA → R → Q.
-- Zeichen im Spiel: Violetter Umriss in der Wand = E aktiv, Gank kommt aus dem Terrain. Kayn verschwindet im Verbündeten = R, Austritt folgt in ~2,5 s. Leiste über ihm = wie weit die Verwandlung ist.
+- Zeichen im Spiel: Violetter Umriss in der Wand = E aktiv, Gank kommt aus dem Terrain. Kayn verschwindet im Gegner = R, Austritt folgt in ~2,5 s. Leiste über ihm = wie weit die Verwandlung ist.
 
 ## Powerspikes
 - Verwandlung (Rhaast oder Schatten) ist der Hauptspike – vorher ein durchschnittlicher Jungler mit Wandlaufen.
@@ -47,7 +47,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Splitpush: mittel; er bevorzugt Seitenpicks aus dem Dschungel.
 
 ## Build 26.19
-- Richtung (ungeprüft): Rhaast – Eklipse, Schwarzes Beil, Tanz des Todes oder Steraks Pegel; Schatten – Youmus Geistklinge, Voltaisches Zykloschwert, Saum der Nacht, Klaue des Meuchlers.
+- Richtung (ungeprüft): Rhaast – Eklipse, Schwarzes Beil, Tanz des Todes oder Steraks Pegel; Schatten – Youmus Geistklinge, Voltaisches Zykloschwert, Saum der Nacht.
 - Situativ: Schutzengel spät; Schwarzes Beil gegen viele Tanks als Rhaast.
 - Stiefel: Ionische Stiefel der Deutlichkeit oder Beschichtete Stahlkappen (ungeprüft).
-- Runen-Richtung (ungeprüft): Rhaast Eroberer; Schatten Ernte oder Erstschlag. Beschwörer: Zerschmettern + Blitz.
+- Runen-Richtung (ungeprüft): Rhaast Eroberer; Schatten Dunkle Seelenernte oder Erstschlag. Beschwörer: Zerschmettern + Blitz.

@@ -51,5 +51,5 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 ## Build 26.19
 - Richtung (ungeprüft): Support-Item → Shurelyas Kampfhymne oder Zekes Konvergenz → Mondstein-Erneuerer/Ritterschwur.
 - Situativ: Amulett der eisernen Solari gegen Burst; Mikaels Segen gegen CC.
-- Stiefel: Ionische Stiefel der Deutlichkeit oder Stiefel der Schnelligkeit (ungeprüft).
-- Runen-Richtung (ungeprüft): Nachbeben oder Gletscherzuwachs; Beschwörer Blitz + Entzünden/Erschöpfung.
+- Stiefel: Ionische Stiefel der Deutlichkeit oder Stiefel der Wendigkeit (ungeprüft).
+- Runen-Richtung (ungeprüft): Nachbeben oder Eiszeit; Beschwörer Blitz + Entzünden/Erschöpfung.

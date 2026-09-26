@@ -16,7 +16,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Combos (Tastenfolgen):
   - Gank: E aus dem Fluss → W → AA (Rückstoß Richtung Lane-Partner) → Q-Spam.
   - Teamfight: E → R in die Backline (Furcht) → W → Q-Spam → E-Stoß auf den Carry.
-  - Blitz-R: R-Sprung ist kanalisiert kurz; Blitz vor dem R verlängert den Einstieg.
+  - Blitz-R: Blitz vor dem R verlängert den Einstieg.
 - Zeichen im Spiel: Staubwolke/Anlauf = E aktiv, er kommt mit Tempo. E verbraucht = 20–16 s ohne Rückstoß. Geisterreiter-Linie = R.
 
 ## Powerspikes

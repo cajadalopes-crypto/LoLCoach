@@ -37,7 +37,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. Neuer
 - E-Fenster: Nach E ohne Kill (CD 10 s) hat er keinen Blink. CC unterbindet den Ansturm (Wurzel/Bodenhaftung).
 - Leben hoch halten: Passiv und R werden stärker, je mehr dir fehlt. Unter der Hinrichtungsschwelle (≥10 %) nicht in seiner Nähe bleiben, solange die R-Markierung läuft (5 s).
 - R-Totem: 0,25 s Verzögerung – Dash/Blitz beim Wurf. Keine Hinrichtungen zulassen: jede Seele senkt seine R-CD und hebt die Schwelle dauerhaft.
-- Magieresistenz (Merkurs Schuhe, Schlund von Malmortius), Zhonyas Stundenglas gegen die R-Markierung.
+- Magieresistenz (Merkurs Schuhe, Schlund von Malmortius), Zhonyas Stundenglas gegen die R-Markierung (ungeprüft – Markierung 5 s, Stasis 2,5 s).
 - Heilung: Heilungsreduktion schwächt sein W-Recast.
 
 ## Makro/Teamfight

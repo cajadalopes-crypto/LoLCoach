@@ -32,7 +32,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Konter-Invade: stark im 1v1 früh.
 
 ## Gegen diesen Champion
-- Kiten: er hat nur E-Tempo als Gap-Closer; Slows und Knockbacks nehmen ihm den Anlauf.
+- Kiten: er hat nur E-Tempo als Gap-Closer (E-Angriffe springen kurz zum Ziel); Slows und Knockbacks nehmen ihm den Anlauf.
 - E-Stun kommt beim ersten AA auf dich: Abstand halten, bis E verbraucht ist, dann zurückschlagen.
 - Erweckte E: für einige Sekunden immun gegen Bewegungsunfähigkeit – CC nicht in diesen Sekunden verschwenden.
 - Nicht lange Nahkampf-Duelle früh; spät gewinnen Skalierer.

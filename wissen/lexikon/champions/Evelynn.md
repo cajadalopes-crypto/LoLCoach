@@ -10,7 +10,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Passiv Dämonenschatten: außerhalb des Kampfes Dämonenschatten – heilt bei wenig Leben, ab Stufe 6 Camouflage (nahe Gegner sehen sie; Warnsymbol erscheint, ungeprüft Reichweite).
 - Q Hassausbruch: Linie 800, trifft erste Einheit; danach mehrere Stachel-Stöße auf nahe Gegner. CD 4, Kosten 40–60.
 - W Tödliche Verlockung: Fluch auf ein Ziel, Reichweite 1200/1300/1400/1500/1600. Ihr nächster Angriff/ihre nächste Fähigkeit nach einer Verzögerung bezaubert das Ziel und senkt Magieresistenz. CD 15/14/13/12/11, Kosten 60–100. Trick: Fluch aus der Camouflage, dann in Ruhe die Verzögerung abwarten.
-- E Peitschenschlag: Schlag (210), Schaden + kurzes Tempo. CD 8, Kosten 40–60. Nach dem W-Fluch mit Sprung zum Ziel (ungeprüft Details).
+- E Peitschenschlag: Schlag (210), Schaden + kurzes Tempo. CD 8, Kosten 40–60. Beim Betreten des Dämonenschattens verstärkt: Sprung zum Ziel + mehr Schaden (ungeprüft Details).
 - R Letzte Liebkosung: kurz nicht anvisierbar, Schaden im Bereich vor ihr, dann Teleport weit nach hinten. Mehr Schaden auf Ziele mit wenig Leben (ungeprüft Schwelle ~30 %). CD 120/100/80, Kosten 100.
 - Combos (Tastenfolgen):
   - Gank ab 6: W aus Camouflage → Verzögerung abwarten → E (bezaubert) → Q → Q-Stöße → AAs → R (Hinrichtung + Flucht).

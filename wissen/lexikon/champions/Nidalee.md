@@ -52,4 +52,4 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Richtung (ungeprüft): Fluch des Lichs → Schattenflamme → Rabadons Todeshaube/Leerenstab.
 - Situativ: Zhonyas Stundenglas gegen Dive; Hextech-Raketengürtel für Engage.
 - Stiefel: Zaubererschuhe (ungeprüft).
-- Runen-Richtung (ungeprüft): Dunkle Ernte oder Erstschlag; Beschwörer Zerschmettern + Blitz.
+- Runen-Richtung (ungeprüft): Dunkle Seelenernte oder Erstschlag; Beschwörer Zerschmettern + Blitz.

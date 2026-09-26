@@ -20,7 +20,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Zeichen im Spiel: W-Leine auf dir = aus 675 laufen bricht die Wurzel. Glühende Hände = Mantra aktiv, nächste Fähigkeit verstärkt.
 
 ## Powerspikes
-- Level 1–3 Poke-Bully (Mantra von Beginn). Mitte des Spiels mit Support-Items stark; Level 13+ Mantra-CD 34 s.
+- Level 1–3 Poke-Bully (Mantra von Beginn). Mitte des Spiels mit Support-Items stark; Level 16 Mantra-CD 34 s.
 - Items: Imperiale Verfügung oder Mondstein-Erneuerer → Echos von Helia → Stab des fließenden Wassers (Richtung).
 - Schwächephasen: spät weniger Schaden; gegen Engage, wenn Mantra gerade verbraucht ist.
 

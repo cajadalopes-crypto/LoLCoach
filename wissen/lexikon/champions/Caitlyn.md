@@ -7,7 +7,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Spielidee: Reichweiten-Bully mit AA-Reichweite 650. Falle (W) + Netz (E) = verstärkte Kopfschüsse; dominiert Lane und Belagerung, braucht Vorsprung vor dem Mid-Game.
 
 ## Faehigkeiten-Kniffe
-- Passiv Kopfschuss: alle paar AAs (im Gras schneller aufgeladen) ein Kopfschuss; gegen Ziele in Falle oder Netz immer Kopfschuss, bei Fallen mit doppelter Reichweite (ungeprüft Reichweite).
+- Passiv Kopfschuss: alle paar AAs (im Gras schneller aufgeladen) ein Kopfschuss; gegen Ziele in Falle oder Netz immer Kopfschuss, dabei mit doppelter Kopfschuss-Reichweite (Falle und Netz).
 - Q Piltover-Friedensstifter: 1 s Anlegen, durchdringender Schuss 1250 (weitere Ziele weniger Schaden). CD 10/9/8/7/6, Kosten 55–75.
 - W Yordle-Schlagfalle: Falle (800); Champion wird 1,5 s aufgedeckt und festgehalten + Kopfschuss-Freigabe. Ladungen, CD 0,5 zwischen Fallen, Kosten 20.
   - Trick: Falle unter ein gewurzeltes/betäubtes Ziel (Support-CC) = garantiert.
@@ -33,7 +33,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Belagerung: Fallen vor den Turm, dann Welle schieben.
 
 ## Gegen diesen Champion
-- Fallen meiden: Wege um sie herum, bekannte Fallen mit AAs räumen oder bewusst Vasallen durchlaufen lassen (nur Champions lösen aus).
+- Fallen meiden: Wege um sie herum, bekannte Fallen mit AAs räumen (ungeprüft); Vasallen räumen sie nicht (nur Champions lösen aus).
 - E verbraucht (16–8 s) → All-in, sie hat nur Blitz.
 - R: Tank/Verbündeten in die Schusslinie stellen; R-CD 90 s mitzählen.
 - Lane: Level 2–3 All-in mit Engage-Support, bevor ihr Poke dich zermürbt.
@@ -41,7 +41,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Blitz-Timer ansagen: ohne Blitz stirbt sie beim Dive.
 - Nie unter ihrem Turm in eine Falle rennen – Dive nur mit Tank vorne.
 - Items: Rüstung, Randuins Omen.
-- Q hat 1 s Anlegen (Laser sichtbar): seitlich ausweichen, besonders direkt nach einem Netz-Treffer (E → Q).
+- Q hat 1 s Anlegen (Anlege-Animation sichtbar): seitlich ausweichen, besonders direkt nach einem Netz-Treffer (E → Q).
 - Im Gras lädt ihr Kopfschuss schneller: nicht im Gras vor ihr stehen bleiben.
 
 ## Makro/Teamfight

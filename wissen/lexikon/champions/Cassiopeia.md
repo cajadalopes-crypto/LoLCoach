@@ -7,7 +7,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Spielidee: Dauerschaden-Magierin. Vergiftet mit Q/W und spammt E (CD 0,75) auf vergiftete Ziele; R versteinert alle, die ihr zugewandt sind. Früh schwach, ab 2 Items einer der höchsten DPS-Magier.
 
 ## Faehigkeiten-Kniffe
-- Passiv Schlangengrazie: Lauftempo-Boni wirken bei ihr stärker. Keine Stiefel kaufbar (ungeprüft für 26.19).
+- Passiv Schlangengrazie: Lauftempo-Boni wirken bei ihr stärker. Seit 26.01 kann sie Stiefel kaufen (Stiefel-Sperre entfernt).
 - Q Giftexplosion: Fläche 850 nach kurzer Verzögerung, Gift; Champion-Treffer = Tempo. CD 3,5, Kosten 50–70. Trick: Q auf den Laufweg zielen, nicht auf den Standpunkt.
 - W Miasma: Giftwolken (700), Slow + Hemmen – keine Dashes/Sprünge darin. CD 24/22/20/18/16, Kosten 70–90. Trick: W gegen Dash-Champions VOR ihrem Engage.
 - E Doppelzahn: gezielt 700, mehr Schaden + Heilung gegen vergiftete Ziele, Mana zurück bei Kill. CD 0,75, Kosten 45. Trick: Vasallen-Lasthits mit E.
@@ -55,6 +55,6 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 ## Build 26.19
 - Kern (Richtung, ungeprüft): Stab der Zeitalter → Rylais Kristallzepter → Liandrys Qual.
 - Situativ: Zhonyas Stundenglas, Rabadons Todeshaube, Leerenstab (MR), Morellonomikon (Heilung).
-- Stiefel: keine (Passiv, ungeprüft).
+- Stiefel: seit 26.01 kaufbar; Wahl ungeprüft (naheliegend Zaubererschuhe).
 - Beschwörer: Blitz + Teleportation oder Entzünden.
 - Skill: Q > E > W, R auf 6/11/16.

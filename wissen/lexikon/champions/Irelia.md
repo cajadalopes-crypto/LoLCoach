@@ -38,7 +38,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - E ausweichen: die zweite Klinge fliegt zur ersten – senkrecht zur Verbindungslinie laufen. Ohne Markierung kein Q-Reset.
 - E verbraucht (16–10 s) → ohne Markierung nur ein Q; dann All-in.
 - Kämpfen, wenn ihr Passiv <4 Stapel hat (Klingen sichtbar).
-- Nicht in ihr W bursten (normaler Schaden stark reduziert) – warten, bis sie loslässt. Magischer Schaden wird nicht reduziert.
+- Nicht in ihr W bursten (normaler Schaden stark reduziert) – warten, bis sie loslässt. Magischer Schaden wird nur etwa halb so stark reduziert.
 - Nach E + R verbraucht: deutlich schwächer → All-in. R-Timer 125/105/85 s.
 - R-Klingenwand nicht durchlaufen – außen herum.
 - Heilungsreduktion gegen Q-Heilung und Lebensraub der Klinge des gestürzten Königs.

@@ -35,7 +35,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 ## Gegen diesen Champion
 - Nicht mit dem Rücken zur Wand stehen (E-Betäubung).
 - Früh aggressiv: vor Items ist sie schwach und hat 23 Grund-Rüstung.
-- Punkt-CC nach ihrer Rolle; R-Unsichtbarkeit → Kontroll-Auge/Flächenfähigkeiten.
+- Punkt-CC nach ihrer Rolle; R-Unsichtbarkeit (Kontroll-Auge deckt sie NICHT auf) → Flächenfähigkeiten, Position vor der Rolle merken.
 - Tanks verlieren gegen sie (absoluter %-Schaden) – nicht auf Resistenzen verlassen, sondern auf CC/Burst.
 - E-CD (20–12 s) nutzen für Engage.
 - Blitz-Timer ansagen: ohne Blitz tötet ein Stun sie.

@@ -11,7 +11,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Q Tentakelschlag: passiv mehr Tentakel-Schaden; aktiv Tentakel-Hieb in einer Linie (850). CD 10/9/8/7/6, Kosten 40–60.
 - W Harte Lektion: AA-Reset-Sprung aufs Ziel (400), nahe Tentakel schlagen mit. CD 4, Kosten 30.
 - E Seelenprüfung: Skillshot 900, stoppt am ersten Ziel (Vasallen blocken!). Zieht die Seele heraus; ein Teil des Schadens an der Seele trifft dich. Stirbt die Seele oder entfernst du dich zu weit → du wirst Gefäß (Tentakel entstehen um dich und greifen dich an). CD 16/15/14/13/12, Kosten 35–55.
-- R Erschütternder Glaube: Flächenschaden (450), pro getroffenem Champion ein Tentakel; danach W ohne CD, Tentakel schneller für einige Sekunden. CD 120/95/70, Kosten 100.
+- R Erschütternder Glaube: Flächenschaden (450), pro getroffenem Champion ein Tentakel; danach W mit halbem CD, Tentakel schneller und nicht angreifbar für einige Sekunden. CD 120/95/70, Kosten 100.
 - Combos (Tastenfolgen):
   - Lane-Trade: E (Seele) → Tentakel auf die Seele → W → AA → Q.
   - All-in ab 6: E → R neben dem Gefäß/in der Gruppe → W-W-W → Q.
@@ -35,7 +35,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Seele gezogen: Seele meist nicht bekämpfen, sondern aus ihrer Reichweite laufen, bis die Seele zurückkehrt – aber nicht so weit, dass du Gefäß wirst, wenn sie noch Tentakel an Wänden hat. Tentakel seitlich ausweichen.
 - Kämpfe weg von Wänden (Tentakel entstehen an Terrain) – Lane-Mitte.
 - R: sofort raus und die Dauer abwarten, dann zurück. Nie in ihrer R-Zone mit Tentakeln bleiben. R-Timer 120/95/70 s.
-- Tentakel zerstören geht nicht – aber sie haben eine Lebensdauer; Kampf verlegen.
+- Tentakel lassen sich mit AAs zerstören (nicht während ihrer R); sonst Kampf verlegen.
 - Heilungsreduktion (Tentakel heilen). Kurze Trades ohne E-Treffer gewinnen die meisten Kämpfer.
 - Ranged-Tops: Q-Linie (850) und E respektieren, dann kiten.
 

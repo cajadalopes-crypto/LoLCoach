@@ -7,8 +7,8 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Spielidee: Reset-Skirmisher. Jeder Kill, an dem er beteiligt ist, hinterlässt einen Geist, den er übernehmen kann (Heilung + dessen Fähigkeiten). Gewinnt chaotische Kämpfe durch Ketten von Übernahmen und R-Hinrichtungen.
 
 ## Faehigkeiten-Kniffe
-- Passiv Verfügung des Herrschers: mit seiner Hilfe getötete Gegner werden Geister. AA auf den Geist = Übernahme: heilt einen Teil des max. Lebens des Ziels, nutzt dessen Grundfähigkeiten und Ult (ungeprüft Dauer), behält dessen Items.
-  - Regel: in der Übernahme sofort die stärkste Fähigkeit (oft die Ult) nutzen.
+- Passiv Verfügung des Herrschers: mit seiner Hilfe getötete Gegner werden Geister. AA auf den Geist = Übernahme: heilt einen Teil des max. Lebens des Ziels, nutzt dessen Grundfähigkeiten und Gegenstände (ungeprüft Dauer); die fremde Ult bekommt er NICHT – auf R liegt eine kostenlose eigene R.
+  - Regel: in der Übernahme sofort die stärkste Grundfähigkeit nutzen; die kostenlose R als Finisher.
 - Q Klinge des gestürzten Königs: passiv Bonusschaden nach aktuellem Leben; nach einer Fähigkeit trifft der nächste AA doppelt und raubt Leben. Aktiv: Stich (600). CD 5/4,5/4/3,5/3 s.
 - W Spektralschleier: aufladen, Dash nach vorn, Kugel betäubt den ersten Gegner. CD 8 s.
   - Regel: W aus dem E-Nebel = Gegner sieht die Aufladung nicht.
@@ -32,10 +32,10 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Gegen diesen Champion
 - In Teamfights: ihn zuerst fokussieren oder CC bereithalten – jeder Kill gibt ihm Reset + Leben.
-- Nach Übernahme: er hat die Fähigkeiten des Toten (z. B. dessen Ult) – ansagen, was er jetzt kann.
+- Nach Übernahme: er hat die Grundfähigkeiten und Items des Toten (nicht dessen Ult, dafür eine kostenlose eigene R) – ansagen, was er jetzt kann.
 - W-Aufladung seitlich ausweichen; W verbraucht = 8 s ohne Stun.
 - Nebel mit Kontroll-Augen/Linse des Orakels aufdecken.
-- Heilungsreduktion (Chempunk-Kettenschwert, Dornenpanzer); Leben über R-Hinrichtungsschwelle halten.
+- Heilungsreduktion (Chempunk-Kettenschwert, Dornenpanzer); Leben hoch halten (R-Schaden steigt mit fehlendem Leben, trifft das Ziel mit dem niedrigsten Leben-Anteil).
 - Geist deines Verbündeten: Viego braucht einen AA darauf – CC in diesem Moment verhindert die Übernahme.
 - Rüstung: er ist ein AD-Duellant, Beschichtete Stahlkappen/Dornenpanzer.
 

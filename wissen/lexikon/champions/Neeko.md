@@ -36,8 +36,8 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - R-Aufladung: sofort raus aus 600 (Blitz/Dash) – der Stun trifft die ganze Fläche.
 - Nicht klumpen im Teamfight.
 - R-Timer (120/105/90 s) mitzählen.
-- Klon (W) macht keinen Schaden – nicht darauf zielen; der Klon läuft stur geradeaus.
-- Magieresistenz; Zhonyas-Timer mitzählen (nach Zhonyas ist ihr R-Engage gefährlicher).
+- Klon (W) macht keinen Schaden – nicht darauf zielen; sie kann ihn per Reaktivierung umlenken, die Laufrichtung verrät ihn also nicht.
+- Magieresistenz; Zhonyas-Timer mitzählen (ist Zhonyas verbraucht, steht sie nach dem R-Engage ungeschützt in deinem Team).
 - Ohne Blitz muss sie mit R allein anlaufen – dann ist die Aufladung leichter zu sehen.
 - Punkt-CC nach dem R: Sie landet mitten in deinem Team ohne Flucht.
 

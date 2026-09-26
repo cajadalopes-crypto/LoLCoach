@@ -35,7 +35,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Gegen diesen Champion
 - Früh: Linse des Orakels oder Kontroll-Augen im eigenen Dschungel – Boxen sichtbar machen und zerstören, Invades gemeinsam abwehren.
-- Q-Unsichtbarkeit: bei Kontroll-Auge in Reichweite ist er sichtbar. Q weg (11–13 s) = er kann nicht fliehen → CC + Burst.
+- Q-Unsichtbarkeit: Kontroll-Auge und Linse decken ihn NICHT auf (sie zeigen nur seine Boxen). Q weg (11–13 s) = er kann nicht fliehen → CC + Burst.
 - Klon vs. echter Shaco: der Klon zaubert keine Fähigkeiten; im Zweifel das Ziel treffen, das E/W nutzt. Klon stirbt schnell und explodiert (Mini-Boxen) – nicht mit dem ganzen Team auf den Klon.
 - Leben über 30 % halten: sein E macht darunter Bonusschaden.
 - Rüstung früh (Zhonyas Stundenglas, Beschichtete Stahlkappen, Dornenpanzer) – er one-shottet nur Squishies.
@@ -52,5 +52,5 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 Richtung (ungeprüft, keine Build-Quelle abgerufen):
 - AD-Dschungel: Überheblichkeit oder Youmus Geistklinge → Saum der Nacht → Gelegenheit/Lord Dominiks Grüße → Schutzengel. Stiefel: Beschichtete Stahlkappen oder Ionische Stiefel der Deutlichkeit.
 - AP-Support/Dschungel: Schattenflamme, Rabadons Todeshaube, Zhonyas Stundenglas, Leerenstab.
-- Situativ: Saum der Nacht gegen Zielfähigkeiten (Soraka/Lulu-Polymorph).
+- Situativ: Saum der Nacht gegen Zielfähigkeiten (z. B. Lulu-Polymorph).
 - Skill: AD: Q > E > W, auf 1 W für Box-Clear. R auf 6/11/16. Beschwörer: Zerschmettern + Entzünden (ungeprüft).

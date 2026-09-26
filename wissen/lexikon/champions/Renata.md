@@ -49,4 +49,4 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. Data-
 - Richtung (ungeprüft): Support-Item → Imperiale Verfügung oder Mondstein-Erneuerer → Stab des fließenden Wassers/Echos von Helia.
 - Situativ: Mikaels Segen gegen CC; Amulett der eisernen Solari gegen Burst.
 - Stiefel: Ionische Stiefel der Deutlichkeit (ungeprüft).
-- Runen-Richtung (ungeprüft): Gletscherzuwachs oder Sommerfrischler; Beschwörer Blitz + Erschöpfung/Entzünden.
+- Runen-Richtung (ungeprüft): Eiszeit oder Benefee-Beschwörung; Beschwörer Blitz + Erschöpfung/Entzünden.

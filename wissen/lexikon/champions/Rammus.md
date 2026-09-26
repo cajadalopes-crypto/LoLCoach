@@ -11,7 +11,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Q Dornenwalze: 300 Aufprall-Radius, CD 12/10,5/9/7,5/6, 60 Mana. Rollt mit steigendem Tempo; erster Treffer = Schaden, Knockback + Slow. Gankweg über große Distanz.
 - W Eingerollte Abwehrhaltung: CD 7, 40 Mana. Viel Rüstung und MR; reflektiert Schaden an AA-Angreifer. Verbessert Dornen durch Treffer (ungeprüft).
 - E Provokation: gezielt 325, CD 12, 50 Mana. Spott (~1,2–2 s, ungeprüft): Ziel muss ihn angreifen – in sein W, mit Reflexion.
-- R Aufsteigender Schlag: globale Zielwahl (Reichweite hängt vom Tempo ab, ungeprüft), CD 120/105/90, 100 Mana. Sprung, Schaden und Slow im Bereich; während Q aktiv: Knockup im Zentrum.
+- R Aufsteigender Schlag: Sprung an einen Zielort, nicht global (Reichweite wächst mit seinem Lauftempo, ungeprüft), CD 120/105/90, 100 Mana. Sprung, Schaden und Slow im Bereich; während Q aktiv: Knockup im Zentrum.
 - Combos:
   - Gank: Q-Rollen (Tempo aufbauen) → R während Q (Knockup) → E (Spott) → W.
   - Duell: E → W (Gegner schlägt in die Reflexion) → AA.
@@ -51,4 +51,4 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Richtung (ungeprüft): Dornenpanzer → Randuins Omen → Sonnenfeuer-Ägide/Gefrorenes Herz.
 - Situativ: Schild aus Vulkangestein oder Kaenischer Rookern gegen AP; Jak'Sho, der Proteaner gegen gemischten Schaden.
 - Stiefel: Beschichtete Stahlkappen (ungeprüft).
-- Runen-Richtung (ungeprüft): Phasenrausch oder Nachbeben; Beschwörer Zerschmettern + Blitz.
+- Runen-Richtung (ungeprüft): Woge des Sturmräubers oder Nachbeben; Beschwörer Zerschmettern + Blitz.

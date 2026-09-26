@@ -15,7 +15,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Combos (Tastenfolgen):
   - Kurz-Trade: E rein → AA → AA → Q (4 Stapel, Zentrum auf Ziel) → raus.
   - All-in ab 6: R1 → E → AAs → R2 → Q → W gegen Burst/Turm → R3.
-  - Tower-Dive: W unter dem Turm – Turmschüsse von außen treffen sie nicht (ungeprüft, Turm steht meist außerhalb des Nebels).
+  - Tower-Dive: W schützt NICHT vor dem Turm – Türme (und Monster) greifen sie auch im Nebel an; W nur gegen Champions außerhalb.
 - Zeichen im Spiel: Nebel-Kreis = drinnen gegen sie kämpfen oder warten. Q-Stapel am Schwert/UI. Leuchtende Schere = Q voll geladen.
 
 ## Powerspikes
@@ -34,7 +34,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 ## Gegen diesen Champion
 - FRÜH bestrafen: Level 1–5 All-ins, Freeze, Plates – bevor sie Items hat.
 - Q-Zentrum meiden (absoluter Schaden): nicht direkt vor ihr stehen, wenn sie 4 Stapel hat. Q-CD 6,5–3,5 s – nach dem Q kurzes Fenster.
-- W-Nebel: hineinlaufen und kämpfen oder die Dauer abwarten. Von außen treffen AAs/gezielte Fähigkeiten nicht. W-CD 22–18 s – nach dem Nebel All-in.
+- W-Nebel: hineinlaufen und kämpfen oder die Dauer abwarten. Von außen treffen AAs/gezielte Fähigkeiten nicht (Türme schon). W-CD 22–18 s – nach dem Nebel All-in.
 - E verbraucht (13–11 s, bei Treffer kürzer) → kein Gapclose.
 - R-Timer 120/100/80 s mitzählen – die Nadeln verlangsamen, ohne R ist sie kitebar.
 - Magieresistenz (Merkurs Schuhe, Schlund von Malmortius) + Heilungsreduktion gegen Passiv-Heilung.

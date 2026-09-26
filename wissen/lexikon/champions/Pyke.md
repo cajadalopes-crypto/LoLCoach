@@ -50,4 +50,4 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Richtung (ungeprüft): Support-Item → Youmus Geistklinge → Saum der Nacht → Schattengleve/Sterbliche Mahnung.
 - Situativ: Umbral-Sicht (Schattengleve) zum Warden-Räumen; Schutzengel spät.
 - Stiefel: Ionische Stiefel der Deutlichkeit oder Beschichtete Stahlkappen (ungeprüft).
-- Runen-Richtung (ungeprüft): Nachbeben oder Gletscherzuwachs; Beschwörer Blitz + Entzünden.
+- Runen-Richtung (ungeprüft): Nachbeben oder Eiszeit; Beschwörer Blitz + Entzünden.

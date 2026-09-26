@@ -8,7 +8,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. 26.19
 
 ## Faehigkeiten-Kniffe
 - Passiv Arkane Meisterschaft: Zauber machen Bonusschaden nach Bonus-Mana; AP erhöht sein max. Mana. Mana-Items sind Schadens-Items.
-- Q Überladung: Skillshot 1000, CD 5, Mana 40–32. Stoppt am ersten Ziel. Passiv: W und E setzen die Q-CD zurück und laden eine Rune; Q mit 2 Runen = Tempo-Schub (Schild ungeprüft). Mehr Schaden gegen E-markierte Ziele (mit R-Rängen stärker).
+- Q Überladung: Skillshot 1000, CD 5, Mana 40–32. Stoppt am ersten Ziel. Passiv: W und E setzen die Q-CD zurück und laden eine Rune; Q mit 2 Runen = Tempo-Schub (kein Schild). Mehr Schaden gegen E-markierte Ziele (mit R-Rängen stärker).
 - W Runenkäfig: gezielt 615, CD 11/10,5/10/9,5/9, Mana 50–90. Schaden + Slow; auf E-markierte Ziele Wurzel.
 - E Zauberkaskade: gezielt 615, CD 3,5/3,25/3/2,75/2,5, Mana 40–80. Markiert (Zauberkaskade); springt auf nahe Gegner über, wenn das Ziel markiert ist oder stirbt. Q auf Markierte springt ebenfalls über (ungeprüft).
 - R Weltentor: Portal-Reichweite 3000, CD 180/160/140, 100 Mana. Nach ein paar Sekunden werden Verbündete nahe Ryze zum Portal teleportiert.
@@ -50,4 +50,4 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. 26.19
 - Richtung (ungeprüft): Stab des Erzengels → Rylais Kristallzepter oder Kosmischer Antrieb → Rabadons Todeshaube.
 - Situativ: Zhonyas Stundenglas gegen Dive; Leerenstab gegen Magieresistenz; Stab der Zeitalter als Alternative.
 - Stiefel: Zaubererschuhe oder Ionische Stiefel der Deutlichkeit (ungeprüft).
-- Runen-Richtung (ungeprüft): Phasenrausch oder Eroberer; Beschwörer Blitz + Teleportation.
+- Runen-Richtung (ungeprüft): Woge des Sturmräubers oder Eroberer; Beschwörer Blitz + Teleportation.

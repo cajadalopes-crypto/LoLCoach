@@ -4,7 +4,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Kopf
 - Name: Twitch, die Seuchenratte. Rollen: Bot, Dschungel, Support. Klasse: Schütze/Assassine (Data Dragon: Marksman, Assassin). Ressource: Mana. Grundwerte: 630 Leben (+98/Level), 27 Rüstung, Reichweite 550, 330 Lauftempo.
-- Spielidee: Tarnungs-Schütze. Hinterhalt (Q) macht unsichtbar, Gift stapelt mit jedem AA, E reißt es heraus, R gibt Reichweite und durchdringende Bolzen. Flankt Teamfights aus der Tarnung.
+- Spielidee: Tarnungs-Schütze. Hinterhalt (Q) tarnt ihn (Camouflage, kein echtes Unsichtbar), Gift stapelt mit jedem AA, E reißt es heraus, R gibt Reichweite und durchdringende Bolzen. Flankt Teamfights aus der Tarnung.
 
 ## Faehigkeiten-Kniffe
 - Passiv Tödliches Gift: AAs vergiften (Stapel, absoluter Schaden pro Sekunde).
@@ -16,7 +16,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - R Feuern und beten!: mehr Reichweite, Bolzen durchdringen alle Gegner in der Linie. CD 90 s, Kosten 100.
   - Regel: R so stellen, dass die Linie durch die Frontlinie in die Backline geht.
 - Combos:
-  - Level 2–3 Gank: Q (unsichtbar mit Jungler) → W → AAs → E.
+  - Level 2–3 Gank: Q (getarnt mit Jungler) → W → AAs → E.
   - Teamfight: Q von der Seite → R → W → AAs → E.
 - Zeichen im Spiel: Twitch verschwindet = Q (16 s CD, Reset bei Kill). Ausruf-Zeichen/Schimmer bei Nähe (Camouflage zeigt nahe Gegner an, ungeprüft). R aktiv = Bolzen durch mehrere Ziele.
 

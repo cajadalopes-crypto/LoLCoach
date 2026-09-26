@@ -10,7 +10,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Passiv Essenzdieb: nach 9 Vasallen-/Monster-Kills Heilung, nach Champion-Takedown größere Heilung. Hält sie in der Lane ohne Recall.
 - Q Kugel der Täuschung: Reichweite 970, hin magischer, zurück absoluter Schaden. CD 7, Kosten 55–95 Mana. Trick: nach dem Wurf rückwärts laufen – die Kugel trifft auf dem Rückweg ein zweites Mal. Zwei Treffer in einer Vasallenreihe = Wellenräumung.
 - W Fuchsfeuer: 3 Flammen suchen nahe Ziele (Champions bevorzugt), kurzer Tempo-Schub. CD 9/8/7/6/5, Kosten 30. Trick: erst in AA-Reichweite zünden, sonst gehen die Flammen auf Vasallen.
-- E Bezaubern: Skillshot 975, stoppt am ersten Ziel, bricht Dashes ab, Ziel läuft wehrlos auf sie zu. CD 12, Kosten 60. Getroffene nehmen danach mehr Schaden von ihr (ungeprüft).
+- E Bezaubern: Skillshot 975, stoppt am ersten Ziel, bricht Dashes ab, Ziel läuft wehrlos auf sie zu. CD 12, Kosten 60.
 - R Geisterhast: Dash 450, feuert auf bis zu 3 Nahe; bis zu 3 Aktivierungen, Takedown = weitere Ladung. CD 140/120/100, Kosten 100.
 - Combos (Tastenfolgen):
   - Pick: E → Q (Hin + Rück treffen, weil das Ziel auf sie zuläuft) → W → AA.

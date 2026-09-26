@@ -37,7 +37,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - R-Wellen: nicht 3 Treffer fressen (seitlich).
 - Den Wirt töten = Yuumi fällt aus dem Buch in die Mitte deines Teams.
 - Poke/Burst auf den Wirt statt lange Trades – ihre Heilung gewinnt lange Kämpfe.
-- Türme können Yuumi auch angehängt treffen: taucht ihr Team unter deinen Turm, trifft der Turm auch sie.
+- Türme können Yuumi auch angehängt treffen: taucht ihr Team unter deinen Turm, kann der Turm auch sie anvisieren (ungeprüft Zielwahl).
 
 ## Makro/Teamfight
 - Heilung am Carry; Objectives: lange Kämpfe.

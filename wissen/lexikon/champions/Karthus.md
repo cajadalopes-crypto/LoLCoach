@@ -39,7 +39,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - R-Timer 200/180/160 s mitzählen; ohne R ist sein Druck auf andere Lanes weg.
 - Q seitlich ausweichen (Verzögerung); nicht isoliert stehen (Isolations-Bonus).
 - W-Wand: nicht hindurch laufen, wenn nötig nach dem Abklingen.
-- Items: Magieresistenz, Merkurs Schuhe; Schleier der Todesfee hilft nicht gegen R (kein Ziel-Zauber, ungeprüft).
+- Items: Magieresistenz, Merkurs Schuhe; Schleier der Todesfee blockt R (Zauberschild).
 - Gegen früh aggressive Jungler ist er hilflos: Level-2/3-Invade auf seine Start-Seite.
 - Nach seinem Tod läuft Requiem trotzdem: Schild/Heilung bereithalten, sobald er stirbt.
 

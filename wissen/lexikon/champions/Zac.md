@@ -32,7 +32,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Gegen diesen Champion
 - E-Landezone: sofort raus (seitlich/Blitz). Aufladung kann durch CC unterbrochen werden.
-- Nach seinem Tod: Klumpen zerstören (daraufstellen/angreifen), sonst steht er wieder auf. Passiv-Timer mitzählen – danach stirbt er endgültig.
+- Nach seinem Tod: Klumpen zerstören (angreifen/Flächenschaden), sonst steht er wieder auf. Passiv-Timer mitzählen – danach stirbt er endgültig.
 - Klumpen während des Kampfes wegnehmen (drüberlaufen) = weniger Heilung.
 - Heilungsreduktion + %-Schaden.
 - E-CD (21–9 s) nutzen: ohne E kein Engage.

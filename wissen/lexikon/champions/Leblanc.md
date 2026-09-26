@@ -16,7 +16,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. Data-
   - Standard-Burst: Q → R(Q) → W → E (zündet beide Siegel).
   - Aus Distanz: W rein → Q → R(W) → E → W-Rücksprung.
   - Doppel-Kette: E → R(E) für sichere Wurzel auf Fliehende.
-  - Lane-Poke Level 2–5: W → Q → W zurück (Siegel durch W gezündet, wenn Q zuerst trifft).
+  - Lane-Poke Level 2–5: Q → W (zündet das Siegel) → W zurück.
 - Zeichen im Spiel: Leuchtender Kreis am Startpunkt = sie kann zurückspringen (4 s). Siegel über dir = nächster Treffer zündet. Unter 40 % verschwindet sie 1 s – der Weiterlaufende kann der Klon sein.
 
 ## Powerspikes
@@ -37,7 +37,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. Data-
 - Rücksprungpunkt kennen: Sie springt dorthin zurück – dort Skillshot/CC hinlegen.
 - E-Kette: aus der Reichweite laufen (1,5 s) = keine Wurzel. Hinter Vasallen stehen blockt die Kette.
 - Siegel auf dir (3,5 s): Die nächste Fähigkeit zündet es – Abstand, Schild oder Zhonyas.
-- Klon bei <40 %: Der Klon zaubert nicht und läuft stur geradeaus. Den, der zaubert oder abbiegt, verfolgen.
+- Klon bei <40 %: Der Klon zaubert nicht und macht keinen Schaden (Laufweg ungeprüft – sie kann ihn steuern). Den, der zaubert, verfolgen.
 - Magieresistenz früh (Merkurs Schuhe, Hextrinker-Bauteil), Zhonyas Stundenglas für Magier.
 - Roams ansagen: Sie verlässt Mid früh (Level 3–6); Mid pushen und Plates nehmen, Seitenlanen warnen.
 - Spät ist sie schwach gegen Gruppen: zusammenbleiben, dann trifft ihr Burst nur einen und stirbt danach.

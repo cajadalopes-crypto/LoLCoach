@@ -11,7 +11,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Q Wanderdüne: schickt alle Soldaten an einen Ort (740), Schaden + Slow 1 s. CD 14/12/10/8/6, Kosten 70–110.
 - W Erhebe dich!: Soldat beschwören (525), Ladungen; AAs gegen Ziele in Soldaten-Reichweite werden zu Soldaten-Stichen in einer Linie. CD 1,5 zwischen Beschwörungen, Aufladung länger (ungeprüft). Kosten 40–20.
 - E Sandläufer: kurzer Schild, Sprung zu einem Soldaten (1100); trifft er einen Champion, stoppt er und bekommt sofort eine neue Soldaten-Ladung. CD 22/20,5/19/17,5/16, Kosten 60.
-- R Imperiale Phalanx: Soldatenwand (Breite ~250 Reichweite), stürmt vorwärts, stößt zurück, blockiert danach Gegner. CD 120/105/90, Kosten 100.
+- R Imperiale Phalanx: Soldatenwand, stürmt vorwärts, stößt zurück, blockiert danach Gegner. CD 120/105/90, Kosten 100.
 - Combos (Tastenfolgen):
   - Lane-Poke: W neben das Ziel → AA-Stiche → zurück.
   - Shuffle: W hinter/neben das Ziel → E zum Soldaten → Q während E weiter hinter das Ziel → R schiebt es ins eigene Team.

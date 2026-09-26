@@ -3,7 +3,7 @@
 Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Kopf
-- Name: Vladimir, der blutrote Schnitter. Rollen: Mid, Top. Klasse: Magier/Kämpfer (Data Dragon: Mage, Fighter). Ressource: Blutroter Rausch – Fähigkeiten kosten Leben statt Mana (Q/W/E ohne Manakosten). Grundwerte: 600 Leben (+110/Level), 24 Rüstung, Reichweite 450, 330 Lauftempo.
+- Name: Vladimir, der blutrote Schnitter. Rollen: Mid, Top. Klasse: Magier/Kämpfer (Data Dragon: Mage, Fighter). Ressource: keine – W und E kosten Leben, Q ist kostenlos (Blutroter Rausch ist das verstärkte Q). Grundwerte: 600 Leben (+110/Level), 24 Rüstung, Reichweite 450, 330 Lauftempo.
 - Spielidee: Skalierender Sustain-Magier. Früh schwach, heilt sich mit Q durch die Lane, W macht ihn 2 s unantastbar. Spät Flanke mit R in Gruppen und Flächen-Burst.
 
 ## Faehigkeiten-Kniffe

@@ -8,8 +8,8 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Faehigkeiten-Kniffe
 - Passiv Felsensurfer: Tempo nahe Wänden. Regel: Laufwege an Wänden entlang.
-- Q Steinsplitterhagel: Steinsalve in Richtung (1000), sie kann sich dabei bewegen; erzeugt bearbeiteten Boden. Auf bearbeitetem Boden: nur ein Stein (weniger Schaden), Boden wird verbraucht. CD 7/6/5/4/3 s, Kosten 55–75.
-  - Regel: Kämpfe auf frischem Boden führen, nicht auf eigenem bearbeiteten Boden.
+- Q Steinsplitterhagel: Steinsalve in Richtung (1000), sie kann sich dabei bewegen; erzeugt bearbeiteten Boden. Auf bearbeitetem Boden: ein einzelner stärkerer Felsbrocken mit Slow (weniger Abklingzeit/Mana), Boden wird verbraucht. CD 7/6/5/4/3 s, Kosten 55–75.
+  - Regel: voller Steinhagel nur auf frischem Boden; auf bearbeitetem Boden gibt Q den Slow-Brocken (Schadensvergleich ungeprüft).
 - W Seismischer Stoß: Bereich (900), nach kurzer Verzögerung Knockup in eine gewählte Richtung. CD 14/12,5/11/9,5/8 s, Kosten 40–0.
 - E Aufgetrennte Erde: Minenfeld (950), Slow; wer darin dasht oder gestoßen wird, löst Minen aus und wird betäubt. CD 14 s, Kosten 90.
   - Combo-Kern: E → W (Gegner durch die Minen gestoßen) = Betäubung + Minen-Schaden.
@@ -37,7 +37,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - R-Wand: Timer (180/150/120 s) mitzählen; Wand bei einer Lane = Gank. Wand trennt Teams – vor Objectives Position nicht an ihrer möglichen Wandlinie.
 - Dive auf sie: kaum Flucht außer R. 550 Leben, 18 Grund-Rüstung.
 - Früh invaden (Dschungel) – sie verliert Duelle.
-- Auf ihrem bearbeiteten Boden ist ihr Q schwach: dort kämpfen.
+- Auf ihrem bearbeiteten Boden wirft Q statt der Salve einen verlangsamenden Brocken (Schadensvergleich ungeprüft).
 - Magieresistenz (Merkurs Schuhe, Schlund von Malmortius).
 - Im Dschungel: ihre Camps sind früh schnell gecleart – Konter-Invade auf der Seite ihres ersten Ganks.
 

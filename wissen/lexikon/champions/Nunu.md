@@ -31,7 +31,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. Data-
 - Tempo: Schneeball zum Rotieren über lange Wege (schneller als Laufen).
 
 ## Gegen diesen Champion
-- Schneeball: seitlich ausweichen oder eine Einheit/Wand davor bringen (er stoppt beim ersten Aufprall – Vasallen, Monster).
+- Schneeball: seitlich ausweichen oder eine Wand/ein großes Monster davor bringen (er zerschellt nur an Champion, großem Monster oder Wand – Vasallen stoppen ihn nicht).
 - R-Kreis: sofort raus oder mit CC unterbrechen (dann kaum Schaden). Nicht in Engstellen kämpfen, wenn R bereit ist.
 - E-Salven: nicht in allen Salven stehen bleiben – die Wurzel trifft nur Getroffene.
 - Beim Objective: Q + Zerschmettern = sehr hoher Smite-Schaden → nicht auf den Klau warten; Monster erst runter, wenn er nicht in der Nähe ist, oder Grube vorher kontrollieren.
@@ -49,4 +49,4 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. Data-
 - Richtung (ungeprüft): Tank – Hohler Glanz → Jak'Sho, der Proteaner; AP – Liandrys Qual → Zhonyas Stundenglas.
 - Situativ: Dornenpanzer gegen Heilung; Schild aus Vulkangestein gegen AP; Kosmischer Antrieb für AP-Tempo.
 - Stiefel: Beschichtete Stahlkappen oder Merkurs Schuhe (ungeprüft).
-- Runen-Richtung (ungeprüft): Phasenrausch oder Sommerfrischler; Beschwörer Zerschmettern + Blitz.
+- Runen-Richtung (ungeprüft): Woge des Sturmräubers oder Benefee-Beschwörung; Beschwörer Zerschmettern + Blitz.

@@ -48,6 +48,6 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Build 26.19
 - Richtung (ungeprüft): Klinge des gestürzten Königs → Guinsoos Wutklinge → Ende der Weisheit/Nashors Zahn (On-Hit-Hybrid).
-- Situativ: Schutzengel spät; Dämmerung von Silbersee oder Merkurs Schuhe gegen CC; Hurrikan-Variante Runaans Wirbelsturm (ungeprüft).
-- Stiefel: Berserkerbeinschienen (ungeprüft).
+- Situativ: Schutzengel spät; Quecksilberschärpe oder Merkurs Schuhe gegen CC; Hurrikan-Variante Runaans Wirbelsturm (ungeprüft).
+- Stiefel: Beinschienen des Berserkers (ungeprüft).
 - Runen-Richtung (ungeprüft): Präzision – Tödliches Tempo; Beschwörer Blitz + Heilen oder Barriere.

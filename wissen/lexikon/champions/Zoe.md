@@ -33,7 +33,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Gegen diesen Champion
 - Hinter Vasallen: Q/E stoppen am ersten Ziel (E fliegt über Wände weiter!).
-- Schläfrig → Verbündete sollen dich NICHT wecken; Zhonyas bei Schlaf und kommendem Q.
+- Schläfrig → Zhonyas noch VOR dem Einschlafen (im Schlaf ist nur Quecksilber/Reinigung nutzbar, ungeprüft); der erste Treffer weckt mit doppeltem Schaden.
 - E verbraucht (18–14 s) → Dive.
 - Magieresistenz früh.
 - Nach R kehrt sie an den Startpunkt zurück – dort CC hinlegen.

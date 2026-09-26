@@ -38,7 +38,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Ranged-Kiten: er ist langsam, W ist sein einziger Engage (CD 21–17 s).
 - E-Schild (grauer Balken) vor dem Burst abwarten oder erst den Balken brechen, dann All-in.
 - %-Schaden gegen sein Leben (Klinge des gestürzten Königs, Liandrys Qual, Schwarzes Beil).
-- Wird ein Carry geschluckt: nicht verfolgen – er trägt ihn nur weg; Kontrolle auf Tahm stoppt ihn nicht (ungeprüft).
+- Wird ein Carry geschluckt: nicht verfolgen – er trägt ihn nur weg; Kontrolle hält Tahm an, befreit den Geschluckten aber nicht (ungeprüft).
 - W-Landung: bei Blasen-Anzeige aus dem Kreis.
 
 ## Makro/Teamfight

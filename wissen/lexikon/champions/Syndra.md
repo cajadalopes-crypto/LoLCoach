@@ -38,7 +38,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - E verbraucht (15 s) → All-in; sie hat keinen Dash.
 - Sphären zählen: viele Sphären = R tödlich → Zhonyas Stundenglas/Schild bereithalten; Gegen-R-Items (Quecksilber hilft nicht gegen den Schaden).
 - Kein Dash in ihr Gesicht, solange E bereit ist.
-- Magieresistenz früh (Merkurs Schuhe, Schlund von Malmortius, Abendschleier gegen R/Stun).
+- Magieresistenz früh (Merkurs Schuhe, Schlund von Malmortius, Schleier der Todesfee gegen R/Stun).
 - R-Timer mitzählen (120/100/80 s).
 - Blitz-Timer: Blitz-E ist ihr Standard-Pick.
 - Mana früh knapp: nach mehreren Q-W-Pokes ist sie leer – dann traden.

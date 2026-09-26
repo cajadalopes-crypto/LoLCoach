@@ -7,7 +7,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Spielidee: Extrem-Skalierer. Level 1–5 schwach und nahkampfgebunden, ab 6 Fernkampf, ab 11 Flächen-AAs, ab 16 volle Form. Ihr R macht einen Verbündeten unverwundbar und dreht Teamfights.
 
 ## Faehigkeiten-Kniffe
-- Passiv Göttlicher Aufstieg: AAs/Fähigkeiten geben Eifer-Stapel (Angriffs- und Lauftempo; bei vollen Stapeln Feuerwellen). Stufen: Level 6 = Fernkampf (Reichweite ungeprüft, ~525), Level 11 = Feuerwellen bei jedem AA (Flächenschaden), Level 16 = dauerhaft volle Form, mehr Reichweite (Details ungeprüft).
+- Passiv Göttlicher Aufstieg: AAs/Fähigkeiten geben Eifer-Stapel (Angriffstempo; bei vollen Stapeln Lauftempo, ab Level 11 Feuerwellen). Stufen: Level 6 = Fernkampf (Reichweite ungeprüft, ~525), Level 11 = Feuerwellen bei AAs mit vollen Stapeln (Flächenschaden), Level 16 = dauerhaft volle Form, mehr Reichweite (Details ungeprüft).
 - Q Strahlende Gewalt: Skillshot 900, CD 12/11/10/9/8, Mana 60–100. Schaden, Verlangsamung, senkt Rüstung und Magieresistenz. Ihr einziges Mittel gegen Kiting.
 - W Himmlischer Segen: CD 15, Mana 70–90, Reichweite 900. Heilt sie und den nächsten Verbündeten, beide erhalten Tempo – ihre einzige Flucht.
 - E Sternenfeuer-Zauberklinge: CD 8/7,5/7/6,5/6, keine Kosten. Passiv magischer On-Hit-Schaden. Aktiv: nächster AA mit Zusatzschaden nach fehlendem Leben des Ziels (Hinrichtungs-Werkzeug); vor 6 verlängert er ihre Reichweite für einen AA (ungeprüft).
@@ -51,5 +51,5 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 ## Build 26.19
 - Richtung (ungeprüft): Nashors Zahn → Rabadons Todeshaube → Schattenflamme/Leerenstab; On-Hit-Variante mit Guinsoos Wutklinge.
 - Situativ: Zhonyas Stundenglas gegen Dive; Schleier der Todesfee gegen Pick-CC; Schutzengel spät (ungeprüft).
-- Stiefel: Berserkerbeinschienen oder Zaubererschuhe (ungeprüft).
+- Stiefel: Beinschienen des Berserkers oder Zaubererschuhe (ungeprüft).
 - Runen-Richtung (ungeprüft): Präzision – Eroberer oder Tödliches Tempo; Beschwörer Blitz + Teleportation.

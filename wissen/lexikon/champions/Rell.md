@@ -50,4 +50,4 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Richtung (ungeprüft): Support-Item → Amulett der eisernen Solari oder Zekes Konvergenz → Ritterschwur → Tank-Item.
 - Situativ: Schild aus Vulkangestein gegen AP; Dornenpanzer gegen Heilung; Mikaels Segen gegen CC.
 - Stiefel: Beschichtete Stahlkappen oder Merkurs Schuhe (ungeprüft).
-- Runen-Richtung (ungeprüft): Nachbeben oder Gletscherzuwachs; Beschwörer Blitz + Entzünden.
+- Runen-Richtung (ungeprüft): Nachbeben oder Eiszeit; Beschwörer Blitz + Entzünden.

@@ -34,7 +34,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Nicht 4 Passiv-Stapel ansammeln: bei 2–3 raus aus der AA-Reichweite.
 - Projektile nicht in sein Schild: seitlich umgehen oder warten (E 16–8 s). Haken/Ults erst nach E.
 - R-Linie seitlich ausweichen; R-Timer 130/115/100 s mitzählen.
-- Magie-/Flächen-Schaden (nicht Projektil) umgeht das Schild: Brand, Zyra, Lux-E, Morgana-W.
+- Magie-/Flächen-Schaden (nicht Projektil) umgeht das Schild: Brand, Zyra, Lux-E (ungeprüft), Morgana-W.
 - W landet beim Verbündeten: Engage auf den Schützen, bevor Braum per W da sein kann – Abstand zwischen beiden ausnutzen.
 - Früh aggressiv mit Poke-Magier: er hat keinen Sustain.
 - W geht auch auf Vasallen: er springt ohne Verbündeten in der Nähe zu einem vorderen Vasallen – Engage auch aus der Lane-Mitte möglich.

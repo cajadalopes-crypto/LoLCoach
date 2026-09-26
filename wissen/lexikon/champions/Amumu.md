@@ -37,7 +37,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Invade früh: vor 6 verliert er fast jedes 1v1; seine Camps sind langsam.
 - Wenn er W an hat und Mana leer, ist er harmlos – Mana-Stand beobachten.
 - Magieschaden: Magieresistenz (Merkurs Schuhe, Naturgewalt für Tanks).
-- Reinigen/Merkurs Schuhe helfen gegen den Q-Stun; gegen die R-Betäubung kaum.
+- Reinigen löst Q- und R-Betäubung, Merkurs Schuhe verkürzen beide.
 - Nach verfehlter erster Bandage sofort seitlich aus der Linie gehen – die zweite Ladung kommt meist direkt hinterher.
 
 ## Makro/Teamfight

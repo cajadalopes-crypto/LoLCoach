@@ -7,7 +7,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Spielidee: Entführer-Tank. Stürmt mit E durch Wände, packt einen Gegner und wirft ihn gegen die nächste Wand (Betäubung); R unterdrückt bis zu drei Champions und zieht sie mit. Picks und Engage, keine eigene Carry-Rolle.
 
 ## Faehigkeiten-Kniffe
-- Passiv Echos der Vibrationen: AAs, Q, W-Sekundäres und R stapeln Beben. Maximale Stapel = magischer Schaden über Zeit nach max. Leben des Ziels.
+- Passiv Echos der Vibrationen: AAs, Q (Brocken-AAs und Wurf) und R stapeln Beben (W nicht). Maximale Stapel = magischer Schaden über Zeit nach max. Leben des Ziels.
 - Q Gesplitterte Erde / Umbruch: reißt einen Felsbrocken aus dem Boden, verstärkt die nächsten AAs; Reaktivierung wirft den Brocken als Geschoss (Schaden + Beben). CD 8/6,75/5,5/4,25/3 s, Kosten 30.
   - Regel: Brocken werfen, wenn das Ziel aus AA-Reichweite läuft; sonst die verstärkten AAs nutzen.
 - W Seismische Bastion: Schild + Erdbeben um ihn, Schaden + Slow. CD 10/9/8/7/6 s, Kosten 60–80.

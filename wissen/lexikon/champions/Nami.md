@@ -28,7 +28,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 ## Lane-Plan
 - Level-2-Fenster: nach erster Welle + 3 Nahkämpfern der zweiten (ungeprüft). E + W auf den Gegner, der zum Lasthit vorn steht.
 - Bis 6: W-Poke mit Rücksprung, E für jeden Schützen-Trade. Q nur auf festgesetzte oder vorhersehbare Ziele.
-- Ab 6: R für Drachen-Kämpfe und zum Abbrechen gegnerischer Engages (Welle stößt Gegner zurück, ungeprüft).
+- Ab 6: R für Drachen-Kämpfe und zum Abbrechen gegnerischer Engages (Welle schleudert hoch und verlangsamt, stößt aber nicht zurück).
 - Roams: selten; Sicht um Drachen.
 
 ## Gegen diesen Champion
@@ -49,4 +49,4 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Richtung (ungeprüft): Support-Item → Mondstein-Erneuerer oder Imperiale Verfügung → Echos von Helia → Stab des fließenden Wassers.
 - Situativ: Mikaels Segen gegen CC; Dämmerkern; Rüstungs-Variante gegen AD-Dive.
 - Stiefel: Ionische Stiefel der Deutlichkeit (ungeprüft).
-- Runen-Richtung (ungeprüft): Sommerfrischler oder Arkaner Komet; Beschwörer Blitz + Entzünden/Erschöpfung.
+- Runen-Richtung (ungeprüft): Benefee-Beschwörung oder Arkaner Komet; Beschwörer Blitz + Entzünden/Erschöpfung.

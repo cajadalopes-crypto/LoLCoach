@@ -54,4 +54,4 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Richtung (ungeprüft): Ludens Echo oder Bösartigkeit → Schattenflamme → Rabadons Todeshaube.
 - Situativ: Zhonyas Stundenglas gegen Dive; Leerenstab gegen Magieresistenz; Morellonomikon gegen Heilung.
 - Stiefel: Zaubererschuhe (ungeprüft).
-- Runen-Richtung (ungeprüft): Tempo oder Arkaner Komet; Beschwörer Blitz + Teleportation/Barriere.
+- Runen-Richtung (ungeprüft): Arkaner Komet; Beschwörer Blitz + Teleportation/Barriere.

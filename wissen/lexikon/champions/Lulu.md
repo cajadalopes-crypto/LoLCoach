@@ -9,7 +9,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 ## Faehigkeiten-Kniffe
 - Passiv Pix, Feenbegleiter: Pix folgt Lulu oder dem mit E verstärkten Verbündeten und schießt bei AAs mit (Geschosse zielsuchend, von Einheiten abfangbar).
 - Q Glitterlanze: Linie 925, CD 7, Mana 50–70. Zwei Geschosse – eins von Lulu, eins von Pix (auf dem Gegner, wenn E auf ihm sitzt). Starker Slow (abklingend).
-- W Laune: 650, CD 18, 65 Mana. Auf Verbündete: Tempo + Angriffstempo. Auf Gegner: Polymorph (~1,2–2 s, ungeprüft) – keine AAs, keine Fähigkeiten, langsam. Dashes sind danach gebrochen.
+- W Laune: 650, CD 18, 65 Mana. Auf Verbündete: Tempo + Angriffstempo. Auf Gegner: Polymorph (~1,2–2 s, ungeprüft) – keine AAs, keine Fähigkeiten, langsam. Währenddessen keine Dashes möglich.
 - E Hilf, Pix!: 650, CD 10/9,5/9/8,5/8, Mana 60–80. Auf Verbündete: Schild; Pix folgt ihm. Auf Gegner: Schaden, Pix folgt ihm und gibt Sicht.
 - R Wildwuchs: 900, CD 120/100/80, 100 Mana. Verbündeter wächst, erhält viel Bonus-Leben, Gegner nahe ihm werden hochgeworfen; danach Slow-Aura für einige Sekunden.
 - Combos:
@@ -50,4 +50,4 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Richtung (ungeprüft): Mondstein-Erneuerer oder Shurelyas Kampfhymne → Stab des fließenden Wassers → Echos von Helia.
 - Situativ: Mikaels Segen gegen CC auf den Carry; Dämmerkern (ungeprüft).
 - Stiefel: Ionische Stiefel der Deutlichkeit (ungeprüft).
-- Runen-Richtung (ungeprüft): Sommerfrischler/Arkaner Komet; Beschwörer Blitz + Entzünden oder Erschöpfung.
+- Runen-Richtung (ungeprüft): Benefee-Beschwörung/Arkaner Komet; Beschwörer Blitz + Entzünden oder Erschöpfung.

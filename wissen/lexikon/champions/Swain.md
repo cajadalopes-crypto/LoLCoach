@@ -51,5 +51,5 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 Richtung (ungeprüft, keine Build-Quelle abgerufen):
 - Kern: Liandrys Qual → Rylais Kristallzepter → Zhonyas Stundenglas. Stiefel: Merkurs Schuhe oder Beschichtete Stahlkappen.
 - Support: Support-Item → Liandrys Qual oder Imperiale Verfügung → Tank-Magier (Kaenischer Rookern, Stab der Zeitalter).
-- Situativ: Morellonomikon gegen Heilung, Abendschleier/Kaenischer Rookern gegen Burst.
+- Situativ: Morellonomikon gegen Heilung, Schleier der Todesfee/Kaenischer Rookern gegen Burst.
 - Skill: Q > E > W, R auf 6/11/16. Beschwörer: Blitz + Entzünden (Support/Mid), Teleportation (Top).

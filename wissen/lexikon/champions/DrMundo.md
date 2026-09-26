@@ -32,7 +32,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. Data-
 ## Gegen diesen Champion
 - Passiv-Kanister: ersten harten CC mit etwas Kleinem "verschwenden" oder die Kombo planen: CC 1 bricht den Kanister, CC 2 hält ihn fest. Kanister durch Drüberlaufen zerstören.
 - R: Heilungsreduktion ist Pflicht (Chempunk-Kettenschwert, Dornenpanzer, Morellonomikon, Sterbliche Mahnung). R-Dauer abwarten oder vorher bursten.
-- %-Schaden: Lord Dominiks Grüße, Klinge des gestürzten Königs, Liandrys Qual, Schwarzes Beil.
+- %-Leben-/Anti-Tank-Schaden: Lord Dominiks Grüße, Klinge des gestürzten Königs, Liandrys Qual, Schwarzes Beil.
 - Hinter Vasallen stehen: Q stoppt an der ersten Einheit.
 - Früh Druck (Level 1–5): vor 6 und Items fehlt ihm der Sustain.
 - R-Timer 120 s: ohne R kann man ihn in Kämpfen ignorieren oder ausspielen.

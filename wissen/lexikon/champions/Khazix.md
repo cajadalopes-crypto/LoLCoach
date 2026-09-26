@@ -47,7 +47,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. 26.19
 - Objectives: Picks vor Drache/Baron schaffen den Vorteil; beim Kampf selbst zweite Welle.
 
 ## Build 26.19
-- Richtung (ungeprüft): Tödlichkeit – Youmus Geistklinge oder Klaue des Meuchlers → Überheblichkeit → Saum der Nacht → Sterbliche Mahnung/Seryldas Bitterkeit.
+- Richtung (ungeprüft): Tödlichkeit – Youmus Geistklinge oder Gottlose Hydra → Überheblichkeit → Saum der Nacht → Sterbliche Mahnung/Seryldas Bitterkeit.
 - Situativ: Schutzengel spät; Saum der Nacht gegen Pick-CC; Gottlose Hydra für Clear.
 - Stiefel: Ionische Stiefel der Deutlichkeit oder Beschichtete Stahlkappen (ungeprüft).
-- Runen-Richtung (ungeprüft): Dominanz – Dunkle Ernte oder Erstschlag; Beschwörer Zerschmettern + Blitz.
+- Runen-Richtung (ungeprüft): Dominanz – Dunkle Seelenernte oder Erstschlag; Beschwörer Zerschmettern + Blitz.

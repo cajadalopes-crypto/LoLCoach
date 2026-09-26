@@ -9,7 +9,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 ## Faehigkeiten-Kniffe
 - Passiv Zorn des Nordens: Außer Kampf Frostrüstung (Rüstung, MR, Slow-Immunität), die kurz nach dem ersten Treffer bleibt. Weiterer Teil: Schaden an betäubten Zielen (Detail ungeprüft).
 - Q Arktischer Ansturm: Dash 650, CD 18/16,5/15/13,5/12, Mana 60–80. Knockup für alle auf dem Weg; endet beim ersten getroffenen Champion. Über dünne Wände (ungeprüft).
-- W Zorn des Winters: 600, CD 9/8/7/6/5, 60 Mana. Zwei Hiebe (Schlag + Kegel), Schaden, Slow, Frost-Stapel. Ob Nahkampf-AAs von Verbündeten ebenfalls Frost stapeln: ungeprüft (früher ja).
+- W Zorn des Winters: 600, CD 9/8/7/6/5, 60 Mana. Zwei Hiebe (Schlag + Kegel), Schaden, Slow, Frost-Stapel. Nahe verbündete Nahkampf-Champions stapeln mit ihren Treffern ebenfalls Frost; E braucht 4 Stapel.
 - E Permafrost: 560, CD 1,5, 20 Mana. Stun + Einfrieren eines Champions mit maximalen Frost-Stapeln (echte CD nach Stun länger, ungeprüft).
 - R Eisgefängnis: Bola 1300, CD 120/105/90, 100 Mana. Betäubt den ersten Champion (weiter geworfen = länger, ungeprüft); Eissturm verlangsamt Umstehende.
 - Combos:
@@ -31,7 +31,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Top-Variante: Tank-Lane, Teleport für Teamkämpfe.
 
 ## Gegen diesen Champion
-- R-Bola ausweichen (seitlich); weit geworfen = längerer Stun. Nicht zwei Champions in einer Linie hinter dem Ziel (Eissturm).
+- R-Bola ausweichen (seitlich); weit geworfen = längerer Stun. Nicht gebündelt um das Ziel stehen (Eissturm am Einschlag).
 - Frost-Stapel beobachten: Bei vollen Stapeln kommt der E-Stun → rausgehen, bevor sie voll sind.
 - Q-Fenster: Q verbraucht (18–12 s) → kein Engage außer R.
 - R-Timer (120/105/90 s) und Blitz mitzählen: ohne R fehlt der Fern-Engage.
@@ -48,6 +48,6 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Build 26.19
 - Richtung (ungeprüft): Hohler Glanz oder Sonnenfeuer-Ägide → Jak'Sho, der Proteaner → Dornenpanzer.
-- Situativ: Schild aus Vulkangestein oder Kaenischer Rookern gegen AP; Randuins Omen gegen Krits; Wille der Uralten (ungeprüft) für Team-Unterstützung.
+- Situativ: Schild aus Vulkangestein oder Kaenischer Rookern gegen AP; Randuins Omen gegen Krits.
 - Stiefel: Beschichtete Stahlkappen oder Merkurs Schuhe (ungeprüft).
 - Runen-Richtung (ungeprüft): Nachbeben oder Umklammerung der Untoten; Beschwörer Zerschmettern + Blitz.

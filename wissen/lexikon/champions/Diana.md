@@ -16,7 +16,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
   - Gank: Q aus dem Nebel → E (Reset) → W → AAs → E erneut (neu, wenn Q erneut trifft).
   - Burst: Q → E → R → W → AA → Q → E.
   - Teamfight: Blitz → R in 3+ Gegner → W → Q → E auf markierten Carry.
-  - Doppel-E: Q trifft zwei Ziele → E auf das erste → E auf das zweite (beide markiert, ungeprüft ob Reset beide Marken entfernt – DD: Mondlicht wird von ALLEN entfernt, also nur ein Reset).
+  - Kein Doppel-E: trifft Q zwei Ziele, entfernt E auf das erste das Mondlicht von ALLEN – nur ein Reset pro Q.
 - Zeichen im Spiel: Mondlicht-Markierung auf dir = E kommt ohne CD. E ohne Markierung verbraucht = 22–14 s ohne Sprung. Kreisende Sphären = W aktiv.
 
 ## Powerspikes

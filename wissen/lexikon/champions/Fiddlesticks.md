@@ -12,7 +12,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - W Ertragreiche Ernte: Kanalisierung (650), entzieht nahen Gegnern Leben; am Ende Exekutionsschaden. CD 10/9,5/9/8,5/8, Kosten 60–80. Bricht ab, wenn Gegner aus der Reichweite gehen.
 - E Jetzt ist Sense: Sichel (850), Slow; Gegner in der Mitte werden verstummt. CD 10/9/8/7/6, Kosten 40–60.
 - R Krähensturm: Kanalisierung (ungeprüft ~1,5 s), dann Sprung (800) und Krähenschwarm um ihn – Schaden pro Sekunde an allen Nahen. CD 140/110/80, Kosten 100.
-  - Trick: Blitz während der Kanalisierung = Landepunkt 800 + Blitz-Reichweite, ohne Vorwarnung am Zielort.
+  - Trick: Blitz während der Kanalisierung = Landepunkt 800 + Blitz-Reichweite, ohne Vorwarnung am Zielort (ungeprüft, ob sich der Landepunkt mit Blitz verschiebt).
 - Combos (Tastenfolgen):
   - Teamfight: R aus dem Nebel → Blitz in der Kanalisierung → Zhonyas Stundenglas → Q auf den Carry → W → E-Mitte.
   - Gank: E (Verstummen) → Q (Furcht) → W.

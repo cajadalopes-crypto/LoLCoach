@@ -36,7 +36,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - R: Stase trifft beide Teams. Nicht in die Fläche hineinkämpfen; Position am Ausgang wählen, Fähigkeiten auf das Ende timen.
 - R-Timer 110/95/80 s mitzählen.
 - Portale kannst du auch nutzen – zum Verfolgen oder Fliehen.
-- Schreine zerstören geht nicht, aber Laufen durch seinen Schrein heilt nur Verbündete: sein Laufweg ist vorhersehbar.
+- Schreine zerstören: einfach darüberlaufen – das nimmt ihm und seinem Team die Heilung.
 - Items: Merkurs Schuhe gegen Stun.
 - Glocken-Wege laufen über den eigenen Dschungel: der Jungler kann ihn beim Roam abfangen.
 

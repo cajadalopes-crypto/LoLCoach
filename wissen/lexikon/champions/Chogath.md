@@ -33,7 +33,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - W verbraucht (11–9 s) → Fähigkeits-Champions können ihre Combo spielen.
 - Nicht mit wenig Leben in 175 Reichweite stehen – R ist absoluter Schaden.
 - Objectives: Zerschmettern + R zusammen im Blick. Nicht bis zum Schluss warten; ihn vorher aus der Grube drängen oder Objective schneller schlagen.
-- %-Schaden gegen seine Leben-Stapel: Klinge des gestürzten Königs, Liandrys Qual, Lord Dominiks Grüße, Schwarzes Beil.
+- %-Leben-/Anti-Tank-Schaden gegen seine Leben-Stapel: Klinge des gestürzten Königs, Liandrys Qual, Lord Dominiks Grüße, Schwarzes Beil.
 - Er hat keinen Dash: kiten, Flucht mit Blitz nach dem Q.
 - Früh Druck: seine Stapel sind vor 6 null.
 - Kein Dash, Q ist sein einziger Engage: Q-Kreis ausweichen = er kommt nicht ran.

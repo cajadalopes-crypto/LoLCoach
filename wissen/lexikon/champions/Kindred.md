@@ -47,6 +47,6 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Build 26.19
 - Richtung (ungeprüft): Klinge des gestürzten Königs oder Krakenbezwinger → Guinsoos Wutklinge → Lord Dominiks Grüße/Sterbliche Mahnung.
-- Situativ: Schutzengel spät; Schwarzes Beil gegen Tanks; Dämmerung von Silbersee gegen viel CC (ungeprüft).
-- Stiefel: Berserkerbeinschienen (ungeprüft).
-- Runen-Richtung (ungeprüft): Präzision – Tödliches Tempo oder Druckwelle; Beschwörer Zerschmettern + Blitz.
+- Situativ: Schutzengel spät; Schwarzes Beil gegen Tanks; Quecksilberschärpe gegen viel CC (ungeprüft).
+- Stiefel: Beinschienen des Berserkers (ungeprüft).
+- Runen-Richtung (ungeprüft): Präzision – Tödliches Tempo oder Fokussierter Angriff; Beschwörer Zerschmettern + Blitz.

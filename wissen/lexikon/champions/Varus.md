@@ -7,7 +7,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Spielidee: Zwei Spielweisen. Poke-Varus (Tödlichkeit) zermürbt mit aufgeladenem Q; Treffer-Varus (On-Hit) stapelt Verderbnis mit AAs und sprengt sie mit Fähigkeiten. R-Kette fängt und breitet sich aus.
 
 ## Faehigkeiten-Kniffe
-- Passiv Lebende Vergeltung: nach Kill/Assist kurz Angriffstempo/-schaden; bei Champions mehr.
+- Passiv Lebende Vergeltung: nach Kill/Assist kurz Angriffsschaden und Fähigkeitsstärke; bei Champions mehr.
 - Q Durchdringender Pfeil: aufladen (Reichweite 925 → mehr, ungeprüft bis ~1600), Schaden steigt mit Ladezeit; durchdringt Einheiten (Schaden sinkt pro Ziel). CD 16/15/14/13/12 s, Kosten 50–70.
   - Regel: Q beim Aufladen hinter Wand/Sichtgrenze starten, Gegner sieht die Linie spät.
 - W Verdorbener Köcher: passiv AAs magischer Bonusschaden + Verderbnis-Stapel (max 3). Andere Fähigkeiten zünden die Stapel (Schaden nach max. Leben). Aktiv: nächstes Q macht Bonusschaden nach fehlendem Leben. CD 40 s.

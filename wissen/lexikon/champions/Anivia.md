@@ -35,11 +35,11 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Gegen diesen Champion
 - Q ausweichen: langsam, seitlich laufen. Q verfehlt → 11–7 s kein Stun: dann All-in.
-- Ei fokussieren: nur Champion-Treffer zählen, Passiv-Timer (lang) ansagen – danach stirbt sie normal.
+- Ei fokussieren: nur Champion-Treffer zählen (ungeprüft), Passiv-Timer (lang) ansagen – danach stirbt sie normal.
 - Nicht in schmalen Wegen kämpfen: W trennt dich vom Team oder sperrt dich ein.
 - Level 1–5 ist ihre Schwäche: Dash-Champions spielen hier All-in.
 - R-Kreis verlassen, nicht darin kämpfen; ohne Mana kann sie R nicht halten.
-- Nach dem Wandcast (17 s CD) hat sie keinen Weg, dich aufzuhalten, außer Q.
+- Nach dem Wandcast (17 s CD) hat sie keinen Weg, dich aufzuhalten, außer Q und dem R-Slow.
 - Items: Merkurs Schuhe (Slows/Stun kürzer), Magieresistenz; gegen Rylais-Slow Tempo (Geist/Schnellmarsch-Effekte).
 
 ## Makro/Teamfight

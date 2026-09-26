@@ -35,7 +35,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. Gamep
 ## Gegen diesen Champion
 - Haken auf dir: nicht weglaufen, sondern aus der Seil-Reichweite (Blitz/Dash) oder zu ihm hin – hält das Seil, wirst du gezogen und nimmst Zusatzschaden. Hinter Vasallen stehen, sein Q trifft das erste Ziel.
 - Skaarl brechen und Kled zu Fuß sofort bestrafen, bevor die Mut-Leiste voll ist. Zu Fuß macht er kaum Schaden.
-- Nicht auf Vasallen stehen, während er abgesessen ist: Vasallen füllen seine Mut-Leiste.
+- Abgesessen nicht in Ruhe Vasallen schlagen lassen: Vasallen füllen seine Mut-Leiste.
 - E-Fenster: nach E2 (CD 13–9 s) hat er keinen Gap-Closer.
 - W-Fenster: sein W (4 schnelle AAs) nicht mit Stehen beantworten – Abstand nehmen und nach den 4 AAs zurück.
 - R-Ansturm: aus der Laufrichtung gehen, Skaarl rammt den ERSTEN Champion. Die Tempo-Spur hilft seinem Team – nach dem R zurückziehen statt in die Spur.

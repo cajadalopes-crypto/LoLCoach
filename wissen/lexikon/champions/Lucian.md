@@ -46,7 +46,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. 26.19
 - Objectives: früh stark (Drache mit Bot-Priorität).
 
 ## Build 26.19
-- Richtung (ungeprüft): Sturmschneide oder Stärke der Dreieinigkeit → Flimmerklingen der Navori → Klinge der Unendlichkeit → Lord Dominiks Grüße.
+- Richtung (ungeprüft): Sturmschneide oder Stärke der Dreieinigkeit → Flimmerklinge der Navori → Klinge der Unendlichkeit → Lord Dominiks Grüße.
 - Situativ: Blutdürster gegen Burst; Schlund von Malmortius gegen AP; Schutzengel spät.
-- Stiefel: Ionische Stiefel der Deutlichkeit oder Berserkerbeinschienen (ungeprüft).
-- Runen-Richtung (ungeprüft): Druckwelle oder Tödliches Tempo; Beschwörer Blitz + Heilen/Barriere.
+- Stiefel: Ionische Stiefel der Deutlichkeit oder Beinschienen des Berserkers (ungeprüft).
+- Runen-Richtung (ungeprüft): Fokussierter Angriff oder Tödliches Tempo; Beschwörer Blitz + Heilen/Barriere.
