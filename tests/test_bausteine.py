@@ -479,7 +479,7 @@ def stimme_haengt_nicht():
         def __init__(self, *a):
             pass
 
-        def spreche(self, text, stopp, beim_ton=None):
+        def spreche(self, text, stopp, beim_ton=None, gilt=None):
             if beim_ton:
                 beim_ton()
             gesprochen.append(text)
@@ -505,6 +505,58 @@ def stimme_haengt_nicht():
         assert "alt" not in gesprochen and meldungen == ["verworfen"], (gesprochen, meldungen)
     finally:
         stimme._Sapi, stimme.PAUSE_HOECHSTENS, stimme.VERALTET = alt
+
+
+def satz_bricht_ab_wenn_er_nicht_mehr_stimmt():
+    """Carlos, Live 26.09. 23:20: "Wenn er mitten im Satz sieht, dass Ekko beim Drachen ist, muss er abbrechen und
+    sagen: Ekko, ach nee, Ekko ist gerade beim Drachen." Die Stimme fragt waehrend des Sprechens, ob der Satz noch
+    stimmt; tut er es nicht, bricht sie ab, die Sperren fallen, der neue Satz zum Thema beginnt mit 'Ach nee'.
+    Was schon vor dem ersten Ton nicht mehr stimmt, wird gar nicht gesagt."""
+    import time
+    from lolcoach import regeln, sprechplan, stimme
+    gesprochen = []
+
+    class Lang:
+        def __init__(self, *a):
+            pass
+
+        def spreche(self, text, stopp, beim_ton=None, gilt=None):
+            if beim_ton:
+                beim_ton()
+            ende = time.monotonic() + 2.0
+            while time.monotonic() < ende:
+                if stopp.is_set() or (gilt is not None and not gilt()):
+                    gesprochen.append(("abgebrochen", text))
+                    return False
+                time.sleep(0.02)
+            gesprochen.append(("ganz", text))
+            return True
+
+    alt = stimme._Sapi
+    stimme._Sapi = Lang
+    try:
+        st = stimme.Stimme(lautstaerke=0)
+        plan = sprechplan.Sprechplan(st)
+        ekko_oben = [True]
+        a = regeln.Ansage("Ekko ist oben und kann in 9 Sekunden bei dir sein.", regeln.SOFORT, "jungler_sicht",
+                          zeit=100.0, sperre=30, thema="gefahr", pruefe=lambda: ekko_oben[0])
+        plan.neu([a])
+        plan.takt(100.0)
+        time.sleep(0.3)
+        ekko_oben[0] = False                     # mitten im Satz: Ekko taucht am Drachen auf
+        time.sleep(0.5)
+        assert gesprochen and gesprochen[0][0] == "abgebrochen" and a.ganz is False, (gesprochen, a.ganz)
+        neu = regeln.Ansage("Ekko ist gerade beim Drachen.", regeln.SOFORT, "jungler_sicht", zeit=101.0,
+                            sperre=30, thema="gefahr")
+        plan.neu([neu])                          # die Sperre (30 s) ist mit dem Widerruf gefallen
+        plan.takt(101.0)
+        assert neu.text == "Ach nee - Ekko ist gerade beim Drachen.", neu.text
+        # stimmt schon vor dem ersten Ton nicht mehr: kommt gar nicht
+        weg = regeln.Ansage("Du hast 1300 Gold, geh back.", regeln.WICHTIG, "gold", zeit=102.0, pruefe=lambda: False)
+        plan.neu([weg])
+        assert plan.takt(110.0) is None and not plan.warte
+    finally:
+        stimme._Sapi = alt
 
 
 def icon_in_der_brunnen_ecke():
@@ -614,7 +666,7 @@ def verzoegerung_bis_zum_ohr():
         def __init__(self, *a):
             pass
 
-        def spreche(self, text, stopp, beim_ton=None):
+        def spreche(self, text, stopp, beim_ton=None, gilt=None):
             time.sleep(0.1)
             if beim_ton:
                 beim_ton()
@@ -647,6 +699,7 @@ if __name__ == "__main__":
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
                  aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121, combo_rechnung,
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr,
-                 faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht):
+                 faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht,
+                 satz_bricht_ab_wenn_er_nicht_mehr_stimmt):
         test()
         print(f"{test.__name__} OK")

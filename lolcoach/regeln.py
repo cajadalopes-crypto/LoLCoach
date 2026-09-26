@@ -10,7 +10,7 @@ sondern der Sprechplan (Vorrang, Pausen, keine Wiederholung).
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from . import bewertung, ddragon, denker, komponist, wissen
 from .entscheider import Entscheider
@@ -38,6 +38,9 @@ class Ansage:
     thema: str = ""         # gleiche Themen sperren sich im Sprechplan (sprechplan.THEMA_SPERRE): back, druck, ...
     unterbrechbar: bool = False   # lang und nicht eilig (Briefing, CS): eine wichtige Ansage darf sie abbrechen
     ton: float | None = None      # live: Spielzeit des ersten Tons (Entstehung -> Ohr, die echte Verzoegerung)
+    # () -> bool: stimmt die Ansage JETZT noch? Geprueft vor der Abgabe und waehrend des Sprechens (Carlos 26.09.:
+    # "jeder Satz muss waehrenddessen pruefen, ob das noch zutrifft - wenn nicht, abbrechen")
+    pruefe: object = field(default=None, repr=False, compare=False)
     ganz: bool | None = None      # live: zu Ende gesprochen (False = abgebrochen)
 
 
@@ -146,6 +149,11 @@ class Regelwerk:
                       self._objective_start, self._fenster, self._plan, self._wiedereinstieg):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
+                if a.pruefe is None:
+                    try:
+                        a.pruefe = self._noch_wahr(a, p)
+                    except Exception:   # die Pruefung darf keine Ansage verhindern
+                        a.pruefe = None
                 ansagen.append(a)
                 if BACK.search(a.text):
                     self._back_box[0] = p.zeit
@@ -154,6 +162,76 @@ class Regelwerk:
         return ansagen
 
     # --- Hilfen ---------------------------------------------------------------
+
+    def _noch_wahr(self, a: Ansage, p: Partie):
+        """'Stimmt das noch?' je Art der Ansage, gegen den Zustand bei ihrer Entstehung - gerufen vor der Abgabe und
+        waehrend des Sprechens (sprechplan/stimme). Carlos, Live 26.09. 23:20: "Ich bin in der Base, bin schon lange
+        draussen, habe mein Item geholt - und nach einer Minute sagt er: hol dir Caulfields Hammer. Wenn er mitten im
+        Satz sieht, dass Ekko beim Drachen ist, muss er abbrechen." None = gilt, solange sie gueltig ist."""
+        s = a.schluessel
+        lage = self.lage if self.lage is not None and getattr(self.lage, "aktiv", False) else None
+        gold0 = int(p.gold or 0)
+        genannt = {x.name for x in p.gegner() if x.champion in a.text}
+        tot0 = {x.name for x in p.gegner() if x.tot}
+        unsichtbar0 = {x.name for x in p.gegner() if lage is not None and not lage.sichtbar(x)}
+        j = p.jungler(gegenteam(p.mein_team))
+        j_pos0 = lage.gesehen(j) if lage is not None and j is not None else None
+        lane = p.gegenueber()
+        u0 = None
+        if s.startswith(("fenster", "level")) and self.b is not None and self.b.lane is not None:
+            u = denker.urteil(self.b)
+            u0 = u.art if u is not None else None
+
+        def jetzt() -> Partie:
+            return self.vorher if self.vorher is not None else p
+
+        def gegner(q: Partie, namen: set[str]):
+            return [x for x in q.gegner() if x.name in namen]
+
+        def ich_weg(q: Partie) -> bool:
+            return q.ich is None or q.ich.tot or self._ich_in_basis(q)
+
+        if s.startswith(("gold", "plan:back", "recallfenster")):
+            # Rat zum Recall: vorbei, sobald du in der Basis bist, tot bist oder gekauft hast
+            return lambda: not ich_weg(jetzt()) and int(jetzt().gold or 0) >= gold0 - 250
+        if s.startswith("wiedereinstieg"):
+            return lambda: jetzt().ich.tot or self._ich_in_basis(jetzt())      # "Kauf X" nur, solange du dort bist
+        if s.startswith(("jetzt:", "zahlen")):
+            return lambda: not any(not x.tot for x in gegner(jetzt(), tot0))  # "X ist tot - nehmt jetzt ..."
+        if s.startswith("jungler_tot"):
+            return lambda: j is None or all(x.tot for x in gegner(jetzt(), {j.name}))
+        if s.startswith("lane_tot"):
+            return lambda: lane is None or all(x.tot for x in gegner(jetzt(), {lane.name}))
+        if s.startswith(("lane_fehlt", "tief")) and lage is not None:
+            # "X fehlt / ist seit 30 s nicht zu sehen": ueberholt, sobald einer der Genannten auftaucht
+            fehlend = (genannt & unsichtbar0) or ({lane.name} if s.startswith("lane_fehlt") and lane else set())
+            return lambda: not ich_weg(jetzt()) and not any(lage.sichtbar(x) for x in gegner(jetzt(), fehlend))
+        if s.startswith("jungler_sicht") and j is not None and lage is not None:
+            def jungler_noch_dort() -> bool:
+                q = jetzt()
+                jj = gegner(q, {j.name})
+                if not jj or jj[0].tot:
+                    return False
+                g = lage.gesehen(jj[0])
+                if g is None or j_pos0 is None:
+                    return True
+                return abs(g[1] - j_pos0[1]) + abs(g[2] - j_pos0[2]) <= 0.15   # "Ekko ist oben" - er ist jetzt Drache
+            return jungler_noch_dort
+        if s.startswith("anlauf") and lage is not None and genannt:
+            return lambda: not ich_weg(jetzt()) and all(not x.tot and lage.sichtbar(x) for x in gegner(jetzt(), genannt))
+        if s.startswith("leben"):
+            return lambda: not ich_weg(jetzt()) and (self.b is None or self.b.leben is None or self.b.leben < 0.45)
+        if s.startswith("plan:zurueck"):
+            return lambda: not ich_weg(jetzt()) and not (self.b is not None and self.b.unter_eigenem_turm)
+        if s.startswith(("fenster", "level")) and u0 is not None and lane is not None:
+            def urteil_gilt() -> bool:
+                q = jetzt()
+                if all(x.tot for x in gegner(q, {lane.name})) or ich_weg(q):
+                    return False
+                u = denker.urteil(self.b) if self.b is not None and self.b.lane is not None else None
+                return u is None or u.art == u0          # das Urteil ist gekippt: der alte Satz ist falsch
+            return urteil_gilt
+        return None
 
     def _satz(self, abschnitt: dict, p: Partie) -> str:
         """Satz fuer die eigene Rolle. Wer tot oder in der Basis ist, bekommt den

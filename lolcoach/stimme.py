@@ -27,7 +27,8 @@ ZWEITE_ANFRAGE_NACH = 0.35   # Sekunden ohne Audio, bis eine zweite Synthese-Anf
 # Live 26.09., 23:06-23:16 (Practice Tool): die Stimme blieb nach einem Antippen der Sprechtaste minutenlang
 # angehalten; danach kam "Milio hat Flash benutzt" 154 s spaet - Carlos: "sowas von in der Vergangenheit".
 PAUSE_HOECHSTENS = 15.0      # so lange darf die Stimme fuer eine Frage angehalten sein, dann geht sie von selbst weiter
-VERALTET = 10.0              # so lange darf eine Ansage in der Schlange der Stimme warten - danach ist sie ueberholt
+VERALTET = 5.0               # so lange darf eine Ansage in der Schlange der Stimme warten - danach ist sie ueberholt
+PRUEFEN_ALLE = 0.25          # Sekunden: so oft fragt die Stimme waehrend eines Satzes, ob er noch stimmt
 NOCH_AKTUELL = 25.0   # so alt darf ein unterbrochener Satz sein, um wiederholt zu werden
 
 
@@ -47,12 +48,16 @@ class _Sapi:
         self.v.Rate = 1
         self.v.Volume = lautstaerke
 
-    def spreche(self, text: str, stopp: threading.Event, beim_ton=None) -> bool:
+    def spreche(self, text: str, stopp: threading.Event, beim_ton=None, gilt=None) -> bool:
         if beim_ton:
             beim_ton()
         self.v.Speak(text, _ASYNC)
+        naechste = time.monotonic() + PRUEFEN_ALLE
         while not self.v.WaitUntilDone(40):
-            if stopp.is_set():
+            pruefen = gilt is not None and time.monotonic() >= naechste
+            if pruefen:
+                naechste = time.monotonic() + PRUEFEN_ALLE
+            if stopp.is_set() or (pruefen and not gilt()):
                 self.v.Speak("", _ASYNC | _UNTERBRECHEN)
                 return False
         return True
@@ -124,8 +129,9 @@ class _Neural:
         self._cache[text] = (audio, rate)
         return audio, rate
 
-    def spreche(self, text: str, stopp: threading.Event, beim_ton=None) -> bool:
+    def spreche(self, text: str, stopp: threading.Event, beim_ton=None, gilt=None) -> bool:
         """Satz fuer Satz: der erste klingt, sobald ER fertig ist, die weiteren entstehen parallel.
+        `gilt()`: stimmt der Satz noch? Alle PRUEFEN_ALLE Sekunden gefragt - wenn nicht, bricht er ab.
         Gemessen 26.09.: ein 210-Zeichen-Satz brauchte 1,5 s bis zum ersten Ton (ganz synthetisiert),
         der erste Teilsatz davon 0,4-0,7 s. `beim_ton`: wird beim ersten Ton gerufen (Messung)."""
         import concurrent.futures as cf
@@ -138,17 +144,23 @@ class _Neural:
                     audio, rate = lauf.result(timeout=8)
                 except Exception:
                     rest = " ".join(teile[i:])
-                    return self.ersatz.spreche(rest, stopp, beim_ton if i == 0 else None)
-                if stopp.is_set():
+                    return self.ersatz.spreche(rest, stopp, beim_ton if i == 0 else None, gilt)
+                if stopp.is_set() or (gilt is not None and not gilt()):
                     return False
                 if i == 0 and beim_ton:
                     beim_ton()
                 sd.play(audio, rate)
                 ende = time.monotonic() + len(audio) / rate + (0.3 if i == len(laeufe) - 1 else 0.02)
+                naechste = time.monotonic() + PRUEFEN_ALLE
                 while time.monotonic() < ende:
                     if stopp.is_set():
                         sd.stop()
                         return False
+                    if gilt is not None and time.monotonic() >= naechste:
+                        naechste = time.monotonic() + PRUEFEN_ALLE
+                        if not gilt():
+                            sd.stop()
+                            return False
                     time.sleep(0.02)
         return True
 
@@ -237,7 +249,7 @@ class Stimme:
         self._bereit.set()
         while True:
             try:
-                text, fertig, melde = self._vorrang.get_nowait()
+                text, fertig, melde, noch_wahr = self._vorrang.get_nowait()
             except queue.Empty:
                 if not self._frei.is_set():
                     if time.monotonic() - self._pausiert_seit > PAUSE_HOECHSTENS:
@@ -257,24 +269,41 @@ class Stimme:
                     # ohne diese Pruefung sprach der naechste Satz in Carlos' Frage hinein
                     self._gehalten = eintrag
                     continue
-                text, fertig, melde, rein = eintrag
+                text, fertig, melde, rein, noch_wahr = eintrag
                 if fertig is None and time.monotonic() - rein > VERALTET:
                     if melde:
                         _still(melde, "verworfen", time.monotonic())
                     continue
+            widerrufen = [False]
+
+            def gilt(nw=noch_wahr, w=widerrufen) -> bool:
+                try:
+                    ok = nw() if nw is not None else True
+                except Exception:
+                    ok = True
+                if not ok:
+                    w[0] = True
+                return ok
+            if noch_wahr is not None and not gilt():
+                if melde:
+                    _still(melde, "verworfen", time.monotonic())   # stimmt schon vor dem ersten Ton nicht mehr
+                if fertig is not None:
+                    fertig.set()
+                continue
             self._stopp.clear()
             self.protokoll.append(text)
             self._spricht = True
             ganz = False
             try:
                 ton = (lambda m=melde: _still(m, "ton", time.monotonic())) if melde else None
-                ganz = motor.spreche(sprechbar(text), self._stopp, ton)
-                if not ganz:
+                ganz = motor.spreche(sprechbar(text), self._stopp, ton, gilt if noch_wahr is not None else None)
+                if not ganz and not widerrufen[0]:
                     self._unterbrochen = (text, time.monotonic())
             finally:
                 self._spricht = False
                 if melde:
-                    _still(melde, "ende" if ganz else "abgebrochen", time.monotonic())
+                    art = "ende" if ganz else ("widerrufen" if widerrufen[0] else "abgebrochen")
+                    _still(melde, art, time.monotonic())
             if fertig is not None:
                 fertig.set()
 
@@ -286,16 +315,16 @@ class Stimme:
         return (self._spricht or self._gehalten is not None or not self._schlange.empty()
                 or not self._vorrang.empty())
 
-    def sage(self, text: str, dringend: bool = False, melde=None) -> None:
-        """`dringend`: vor alle wartenden Saetze, der laufende wird abgebrochen (nicht wiederholt).
+    def sage(self, text: str, dringend: bool = False, melde=None, noch_wahr=None) -> None:
+        """`noch_wahr()`: stimmt der Satz noch (vor und waehrend des Sprechens gefragt)? `dringend`: vor alle wartenden Saetze, der laufende wird abgebrochen (nicht wiederholt).
         `melde(art, monotonic)`: "ton" beim ersten Ton, dann "ende" oder "abgebrochen" - die echte Verzoegerung."""
         fertig = threading.Event() if self.warten else None
         if dringend:
-            self._vorrang.put((text, fertig, melde))
+            self._vorrang.put((text, fertig, melde, noch_wahr))
             if self._frei.is_set():
                 self._stopp.set()
         else:
-            self._schlange.put((text, fertig, melde, time.monotonic()))
+            self._schlange.put((text, fertig, melde, time.monotonic(), noch_wahr))
         if fertig:
             fertig.wait(timeout=60)
 
@@ -306,13 +335,13 @@ class Stimme:
         self._stopp.set()
 
     def antworte(self, text: str) -> None:
-        self._vorrang.put((text, None, None))
+        self._vorrang.put((text, None, None, None))
         self._wieder_und_frei()
 
     def antworte_teil(self, text: str) -> None:
         """Ein Satz einer gestreamten Antwort: sofort vor alles andere - der unterbrochene Satz kommt erst
         mit `antworte_ende` wieder (sonst stuende er zwischen zwei Saetzen der Antwort)."""
-        self._vorrang.put((text, None, None))
+        self._vorrang.put((text, None, None, None))
         self._frei.set()
 
     def antworte_ende(self) -> None:
@@ -324,7 +353,7 @@ class Stimme:
     def _wieder_und_frei(self) -> None:
         u, self._unterbrochen = self._unterbrochen, None
         if u and time.monotonic() - u[1] < NOCH_AKTUELL:
-            self._vorrang.put((u[0], None, None))
+            self._vorrang.put((u[0], None, None, None))
         self._frei.set()
 
     # alter Name, wird noch von aussen benutzt
@@ -333,7 +362,7 @@ class Stimme:
 
 
 class Stumm:
-    def sage(self, text: str, dringend: bool = False, melde=None) -> None:
+    def sage(self, text: str, dringend: bool = False, melde=None, noch_wahr=None) -> None:
         pass
 
     def antworte_teil(self, text: str) -> None:

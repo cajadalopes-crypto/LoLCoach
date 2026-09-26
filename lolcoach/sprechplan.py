@@ -50,14 +50,20 @@ def unterbrechbar(a: Ansage) -> bool:
     return a.unterbrechbar or a.schluessel.startswith(UNTERBRECHBAR) or len(a.text) > 180 or a.prio == HINWEIS
 
 
-def _melder(a: Ansage, ab: float):
-    """Die Stimme meldet ersten Ton und Ende in Wanduhr; umgerechnet auf Spielzeit ab dem Moment der Abgabe."""
-    def melde(art: str, jetzt: float) -> None:
-        if art == "ton":
-            a.ton = round(a.gesprochen + (jetzt - ab), 2)
-        else:
-            a.ganz = art == "ende"
-    return melde
+def _stimmt(a: Ansage) -> bool:
+    """Stimmt die Ansage noch (regeln.Regelwerk._noch_wahr)? Eine kaputte Pruefung laesst sie gelten."""
+    if a.pruefe is None:
+        return True
+    try:
+        return bool(a.pruefe())
+    except Exception:
+        return True
+
+
+# Frisch statt vollstaendig (Carlos, Live 26.09. 23:20: "die Top-Aktualitaet ist das Wichtigste ueberhaupt"): so
+# lange darf eine Ansage hoechstens warten, egal was die Regel wollte - das Briefing ausgenommen.
+WARTEN_HOECHSTENS = {SOFORT: 6.0, WICHTIG: 10.0, HINWEIS: 20.0}
+ACH_NEE = 8.0     # Sekunden: so lange nach einem widerrufenen Satz beginnt der neue zum selben Thema mit "Ach nee"
 
 
 class Sprechplan:
@@ -72,6 +78,26 @@ class Sprechplan:
         self._schloss = threading.Lock()
         self._laeuft: Ansage | None = None      # was gerade gesprochen wird (bis frei_ab)
         self._reden: list[tuple[float, float]] = []   # (Beginn, geschaetzte Dauer) - fuer das Sprechbudget
+        self._ich_tot = False
+        self._widerruf: tuple[float, str, str] | None = None   # (Wanduhr, Thema, Schluessel-Art) des abgebrochenen
+
+    def _melder(self, a: Ansage, ab: float):
+        """Die Stimme meldet ersten Ton und Ende in Wanduhr; umgerechnet auf Spielzeit ab dem Moment der Abgabe.
+        'widerrufen': mitten im Satz stimmte er nicht mehr - die Sperren fallen, damit das Neue gleich kommt."""
+        def melde(art: str, jetzt: float) -> None:
+            if art == "ton":
+                a.ton = round(a.gesprochen + (jetzt - ab), 2)
+                return
+            a.ganz = art == "ende"
+            if art == "widerrufen":
+                self.zuletzt.pop(a.schluessel, None)
+                if a.thema:
+                    self.thema_zuletzt.pop(a.thema, None)
+                self._widerruf = (time.monotonic(), a.thema, a.schluessel.split(":")[0])
+        return melde
+
+    def _noch_wahr(self, a: Ansage):
+        return lambda: _stimmt(a) and not (self._ich_tot and a.schluessel.startswith(NUR_LEBEND))
 
     def geredet(self, zeit: float) -> float:
         """Sekunden Sprechzeit in den letzten BUDGET_FENSTER Sekunden (abgebrochene zaehlen bis zum Abbruch)."""
@@ -90,6 +116,8 @@ class Sprechplan:
         for a in [*eingeworfen, *ansagen]:
             if a.zeit - self.zuletzt.get(a.schluessel, -1e9) < a.sperre:
                 continue
+            if a.schluessel != "briefing":
+                a.gueltig = min(a.gueltig, WARTEN_HOECHSTENS.get(a.prio, 10.0))
             self.warte = [w for w in self.warte if w.schluessel != a.schluessel]  # die neuere gilt
             self.warte.append(a)
 
@@ -101,8 +129,10 @@ class Sprechplan:
                                and zeit - self.thema_zuletzt.get(a.thema, -1e9) < THEMA_SPERRE_JE.get(a.thema, THEMA_SPERRE))
                       and not (a.thema in WIDERSPRUCH
                                and zeit - self.thema_zuletzt.get(WIDERSPRUCH[a.thema][0], -1e9) < WIDERSPRUCH[a.thema][1])]
+        self._ich_tot = ich_tot
         if ich_tot:
             self.warte = [a for a in self.warte if not a.schluessel.startswith(NUR_LEBEND)]
+        self.warte = [a for a in self.warte if _stimmt(a)]     # was nicht mehr stimmt, faellt weg
         if not self.warte:
             return None
         kandidaten = self.warte
@@ -128,6 +158,12 @@ class Sprechplan:
         if a.prio < SOFORT and getattr(self.sprecher, "beschaeftigt", False) and not abbrechen:
             return None     # die Stimme spricht noch (live exakt statt geschaetzt)
         self.warte.remove(a)
+        # "Ach nee - Ekko ist beim Drachen": der Satz davor wurde mitten drin widerrufen (Carlos' Wunsch 26.09.)
+        w = self._widerruf
+        if w is not None and time.monotonic() - w[0] <= ACH_NEE and (
+                (a.thema and a.thema == w[1]) or a.schluessel.split(":")[0] == w[2]):
+            a.text = "Ach nee - " + a.text      # Grossschreibung bleibt: meist beginnt der Satz mit einem Champion
+            self._widerruf = None
         a.gesprochen = zeit
         self.zuletzt[a.schluessel] = zeit
         if a.thema:
@@ -137,7 +173,8 @@ class Sprechplan:
             t0, _ = self._reden[-1]
             self._reden[-1] = (t0, max(0.0, zeit - t0))
         self._reden.append((zeit, len(a.text) / ZEICHEN_PRO_SEKUNDE))
-        self.sprecher.sage(a.text, dringend=a.prio == SOFORT or abbrechen, melde=_melder(a, time.monotonic()))
+        self.sprecher.sage(a.text, dringend=a.prio == SOFORT or abbrechen, melde=self._melder(a, time.monotonic()),
+                           noch_wahr=self._noch_wahr(a))
         self._laeuft = a
         self.gesagt.append(a)
         return a

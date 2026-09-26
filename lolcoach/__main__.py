@@ -185,7 +185,8 @@ _ANSAGEN_VORHER: dict = {}   # fortgesetzte Aufnahme -> Ansagen vor dem Neustart
 
 def _ansagen_speichern(pfad, plan: sprechplan.Sprechplan) -> None:
     ziel = pfad.with_name(pfad.name.removesuffix(".jsonl.gz") + "_ansagen.json")
-    alle = _ANSAGEN_VORHER.get(pfad, []) + [asdict(a) for a in plan.gesagt]
+    alle = _ANSAGEN_VORHER.get(pfad, []) + [{k: v for k, v in asdict(a).items() if k != "pruefe"}
+                                            for a in plan.gesagt]
     ziel.write_text(json.dumps(alle, ensure_ascii=False, indent=0), encoding="utf-8")
 
 
