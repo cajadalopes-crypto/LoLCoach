@@ -317,6 +317,10 @@ def urteil(b: Bewertung) -> Urteil | None:
     # erst unter der Haelfte" (Nachlauf 21:21, 2:44: "dein Combo macht 510, Gragas hat noch 450 - trade hart")
     if "combo_kill" in arten and art in ("trade", "halten") and not bedroht:
         art = "kill_schnell" if "jungler_weg" in arten else "kill"
+    # ... und umgekehrt: sagt die Rechnung "reicht nicht", ist es kein Kill, egal wie gut der Rest aussieht
+    # (Nachlauf 194524, 10:59: combo_zu_wenig und trotzdem "kill" - 9 s vor Rivens Tod an Heimerdinger)
+    if "combo_zu_wenig" in arten and art in ("kill", "kill_schnell"):
+        art = "trade"
     # Risiko gegen Ertrag (Reasoning #27/#28): ein Kill, der zu 80 % aufgeht, ist trotzdem falsch, wenn dein Tod
     # (Kopfgeld + Todeszeit) mehr kostet, als der Kill bringt - "play not to throw".
     if art in ("kill", "kill_schnell") and ev is not None and ev[0] < 0:
