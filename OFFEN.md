@@ -52,6 +52,9 @@ Notizen und Review durchsehen und nachschaerfen.
 
 ## Erledigt
 
+- Dashboard-Kasten "Dein Fokus heute" - e10873b; Kontroll-Auge nach dem Einkauf - e38bb00;
+  nach der Partie gesprochen: "Review fertig, wichtigster Punkt, Fokus" + alles Gesprochene
+  sprechbar ("30 bis 40 Sekunden" statt "30-40 s") - fca9ecb
 - Live: "Du stehst tief, und Warwick und Swain sind seit 30 s weg" - die Hauptlektion aus
   dem Review von Partie 3 als Regel (tief = an/hinter seinem Aussenturm oder weit in
   seinem Jungle; nur Gegner, die dich seit der letzten Sichtung erreichen koennen; einmal
