@@ -337,7 +337,7 @@ def anlauf(b: Bewertung, kommen: list[tuple[GegnerLage, str]]) -> str:
     if r >= KLAR_STAERKER and (b.leben is None or b.leben >= 0.4):
         return f"{kommt_satz}. Nimm den Kampf an: {b.ueberlegen_satz(gruppe)}."
     if r >= STAERKER and (b.leben is None or b.leben >= 0.5) and not viele:
-        return f"{kommt_satz}. Du bist stärker - {b.ueberlegen_satz(gruppe)} -, also halte deine Stellung."
+        return f"{kommt_satz}. Du bist stärker: {b.ueberlegen_satz(gruppe)}. Halte deine Stellung."
     if viele:
         return f"{kommt_satz}. {_rueckzug(b)}."
     satz = kommt_satz + "."
@@ -427,7 +427,7 @@ def recall(b: Bewertung, grund: str) -> str:
                 f"{_wann(andere[0])}, also geh erst zurück zu deinem Turm und recall dort.")
     ob = b.objective
     if ob and 45 <= ob[1] <= 150:
-        return satz + f" - {OBJ_NOM[ob[0]]} {kommt(ob[0])} in {sek(ob[1])}, bis dahin bist du zurück."
+        return satz + f". {_gross(OBJ_NOM[ob[0]])} {kommt(ob[0])} in {sek(ob[1])}, bis dahin bist du zurück."
     if b.leben is not None and b.leben < 0.5:
         return satz + f", du hast auch nur {int(b.leben * 100)} Prozent Leben."
     return satz + "."

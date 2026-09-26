@@ -331,6 +331,7 @@ class Regelwerk:
                 if g.level >= stufe > g_alt.level and ich.level < stufe:
                     if u is not None:
                         text = denker.fenster_satz(self.b, u, anlass=f"{g.champion} ist zuerst Level {stufe}",
+                                                   anlass_gut=False,
                                                    ohne={"level"}, danach=False)
                         self._fenster_gesagt, self._fenster_art = p.zeit, u.art
                     else:
@@ -950,7 +951,8 @@ class Regelwerk:
         if not sagen:
             return
         anlass = denker.anlass_satz(b, anlass_f) if anlass_f is not None else ""
-        text = denker.fenster_satz(b, u, anlass=anlass, ohne={anlass_f.art} if anlass_f is not None else set())
+        text = denker.fenster_satz(b, u, anlass=anlass, ohne={anlass_f.art} if anlass_f is not None else set(),
+                                   anlass_gut=anlass_f is None or anlass_f.wert > 0)
         if u.art in ("turm", "halten", "weg", "trade") and len(text) < TIPP_BIS:
             # das Champion-Wissen dazu: wie man gegen GENAU diesen Gegner in dieser Lage spielt
             if t := denker.tipp(g.s.champion_id, "turm" if u.art == "turm" else "trade", self._tipps_gesagt):

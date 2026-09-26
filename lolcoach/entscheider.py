@@ -218,6 +218,10 @@ class Entscheider:
                 satz = (f"{grund}, aber seine Welle mit {welle[1]} Vasallen läuft auf deinen Turm. Farm sie erst ab und "
                         f"geh dann back - sonst frisst der Turm dein Gold.")
                 aus.append(Option("back_warten", satz, 70, 3))
+            elif b.leben is not None and b.leben < 0.35:
+                # zweite Riven-Partie 1:36: mit 23 Prozent "schieb erst die Welle" - so stirbt man beim Schieben
+                aus.append(Option("back_plan", f"{grund}. Geh jetzt back - mit so wenig Leben schiebst du keine "
+                                               f"Welle mehr.", 85, 2))
             elif schiebt_ihr:
                 satz = f"{grund}. Schieb die Welle in seinen Turm und geh dann back"
                 if ob and 45 <= ob[1] <= 150:

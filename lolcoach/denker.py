@@ -305,13 +305,13 @@ def _liste(teile: list[str]) -> str:
     return teile[0] if len(teile) == 1 else ", ".join(teile[:-1]) + " und " + teile[-1]
 
 
-def _haupt(fs: list[Faktor], dazu: bool) -> str:
+def _haupt(fs: list[Faktor], dazu: bool, aber: bool = False) -> str:
     """Bis zu zwei Faktoren als ein Satz. `dazu`: nicht der erste Satz - "Dazu hat Heimerdinger kein Flash,
     und dein Zuenden ist bereit." Level und Ult gehoeren zusammen: "Du bist Level 6, Heimerdinger erst 5 -
     deine Ult ist da, seine noch nicht." """
     if not fs:
         return ""
-    erst = ("Dazu " + fs[0].invers) if dazu else _gross(fs[0].satz)
+    erst = ("Aber " + fs[0].satz) if aber else ("Dazu " + fs[0].invers) if dazu else _gross(fs[0].satz)
     if len(fs) == 1:
         return erst + "."
     verbinder = " - " if fs[0].art == "level" and fs[1].art == "ult" else ", und "
@@ -342,7 +342,7 @@ HANDLUNG = {
 
 
 def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = frozenset(),
-                 danach: bool = True) -> str:
+                 danach: bool = True, anlass_gut: bool = True) -> str:
     """Zusammenhaengend gesprochen: Anlass. Kraft (Level, Ult, Items). Dazu Zustand (Leben, Flash, Zuenden,
     Welle). Umfeld (Jungler, Hilfe). Aber: was dagegen spricht. Also: die Handlung. Danach: Gold und Kauf.
     `ohne`: Faktor-Arten, die der Anlass schon sagt."""
@@ -363,10 +363,13 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
     kraft = [x for x in haupt if x.art in KRAFT][:2]
     zustand = [x for x in haupt if x.art in ZUSTAND][:2]
     umfeld = [x for x in haupt if x.art in UMFELD][:1]
+    # "Du bist zuerst Level 2, Wukong noch 1. Aber du hast nur 49 Prozent Leben." - nicht "Dazu": der Anlass
+    # spricht fuer dich, die Gruende dagegen (zweite Riven-Partie, 1:45)
+    gegen_anlass = bool(anlass) and anlass_gut != fuer_dich
     if kraft:
-        saetze.append(_haupt(kraft, dazu=False))
+        saetze.append(_haupt(kraft, dazu=False, aber=gegen_anlass))
     if zustand:
-        saetze.append(_haupt(zustand, dazu=bool(kraft) or bool(anlass)))
+        saetze.append(_haupt(zustand, dazu=bool(kraft) or bool(anlass), aber=gegen_anlass and not kraft))
     if umfeld:
         saetze.append(_gross(umfeld[0].satz) + ".")
     trotzdem = False
@@ -523,10 +526,13 @@ def ward_plan(b: Bewertung, jungle, vorn: bool) -> str:
         teile.append(f"ein Ward an die {grube}, denn {'die ' if ob[0] == 'larven' else 'der '}"
                      f"{OBJ_NAME[ob[0]]} {'kommen' if ob[0] == 'larven' else 'kommt'} in {sek(ob[1])}")
     buff = (BUFF_OBEN if seite == "oben" else BUFF_UNTEN)[feind]
-    ziel = f"an seinen {buff}" if vorn else ("in den Pixel-Busch" if seite == "oben" else "in den Tri-Busch")
+    prog, bis = jungler_prognose(b, jungle)
+    # sein Jungler war eben auf deiner Seite: nicht tief an seinen Buff (zweite Riven-Partie, 4:21 - "Ward an seinen
+    # Rot-Buff: Vi war vor 1 Sekunde auf deiner Seite")
+    tief_ok = vorn and not (bis == 0.0 and "auf deiner Seite" in prog)
+    ziel = f"an seinen {buff}" if tief_ok else ("in den Pixel-Busch" if seite == "oben" else "in den Tri-Busch")
     teile.append(("eins " if teile else "ein Ward ") + ziel)
     satz = ", und ".join(teile)
-    prog, bis = jungler_prognose(b, jungle)
     if prog and bis is not None and bis <= 60:
         satz += f": {prog}"
     return satz

@@ -141,6 +141,7 @@ _SPRECHBAR = [
     (re.compile(r"(\d+)\s?[-–]\s?(\d+)"), r"\1 bis \2"),        # "30-40" -> "30 bis 40"
     (re.compile(r"(\d+)\s?s\b"), r"\1 Sekunden"),              # "30 s" -> "30 Sekunden"
     (re.compile(r"(\d+)\+"), r"mehr als \1"),                  # "2500+" -> "mehr als 2500"
+    (re.compile(r"\s*→\s*"), ": "),                             # Lexikon-Pfeil: "E verbraucht -> er hat ..."
     (re.compile(r"(?<=[^\W\d])\s?/\s?(?=[^\W\d])"), " oder "),  # "Recall/Kauf" -> "Recall oder Kauf" (KDA 27/6/4 bleibt)
 ]
 
@@ -155,6 +156,8 @@ AUSSPRACHE = {
     "Dr. Mundo": "Doktor Mundo", "Jarvan IV.": "Jarvan", "Jarvan IV": "Jarvan", "LeBlanc": "Leblank",
     "Xin Zhao": "Schin Dschau", "Renata Glasc": "Renata", "Miss Fortune": "Miss Fortschun",
     "Twisted Fate": "Twisted Fäit", "CS": "C S",
+    # Kuerzel aus dem Lexikon (Konter-Tipps): die Stimme las "AAs" und "CD" buchstabiert
+    "AAs": "Auto-Angriffe", "AA": "Auto-Angriff", "CD": "Abklingzeit", "CDs": "Abklingzeiten",
 }
 _AUSSPRACHE = re.compile(r"(?<![\w'])(" + "|".join(re.escape(k) for k in sorted(AUSSPRACHE, key=len, reverse=True))
                          + r")(?![\w'])")

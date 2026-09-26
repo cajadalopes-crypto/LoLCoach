@@ -95,7 +95,8 @@ class Kauf:
 
     def satz(self) -> str:
         if self.kaufen:
-            return "reicht für " + " und ".join(_akk(n) for n in self.kaufen)
+            namen = [_akk(n) for n in self.kaufen]
+            return "reicht für " + (namen[0] if len(namen) == 1 else ", ".join(namen[:-1]) + " und " + namen[-1])
         if self.naechstes:
             return f"noch {self.naechstes[1]} bis {_dat(self.naechstes[0])}"
         return ""
