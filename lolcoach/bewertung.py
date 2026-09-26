@@ -69,6 +69,13 @@ def tempo(s: Spieler) -> float:
     return (basis + flach) * (1 + prozent)
 
 
+def shutdown(s: Spieler) -> bool:
+    """Liegt (sicher) ein Shutdown auf ihm? Das Kopfgeld 2026 waechst mit Gold aus Kills/Farm (Wiki Champion_
+    gold_bounties), die API liefert das Gold der Gegner nicht - belastbar ist: ab 3 Kills und 3 mehr als Tode
+    ist es ueber der Shutdown-Schwelle (Basis + 100)."""
+    return s.kills >= 3 and s.kills - s.tode >= 3
+
+
 def todeszeit(level: int, zeit: float) -> float:
     """Sekunden tot, wenn man jetzt stirbt (Wiki Death, wissen/mechanik.toml [tod])."""
     import math
@@ -106,6 +113,7 @@ class GegnerLage:
     gold_vorsprung: int          # seine Items minus deine (Gold)
     kommt_naeher: bool = False   # sichtbar und laeuft auf dich zu
     pos: tuple[float, float] | None = None   # zuletzt gesehen (Spiel-Einheiten)
+    shutdown: bool = False       # auf ihm liegt ein Shutdown (K/D)
 
     @property
     def champion(self) -> str:
@@ -145,6 +153,7 @@ class Bewertung:
     mitspieler: list[tuple] = field(default_factory=list)   # (Spieler, Spiel-Einheiten, Leben 0..1|None, Ort) - frisch gesehen
     partie: "Partie | None" = None   # der Zustand dieses Takts (fuer Plaene, die alle Lanes brauchen)
     tode_kurz: list[float] = field(default_factory=list)   # Spielzeiten deiner Tode der letzten 4 Minuten
+    shutdown_ich: bool = False  # auf dir liegt ein Shutdown
     trade: str = ""             # aus der Spielakte: worauf beim All-in gegen den Lane-Gegner achten
     platten_gegner: int | None = None   # Platten am vordersten stehenden Gegnerturm deiner Lane (Minimap)
     platten_eigen: int | None = None    # ... an deinem vordersten Turm
@@ -259,6 +268,8 @@ class Bewertung:
             ich.append(f"Lane-Position {self.tiefe:.2f} (0 eigene Basis, 1 gegnerische)")
         if self.tod_kostet:
             ich.append(f"ein Tod jetzt = {int(self.tod_kostet)} s grau")
+        if self.shutdown_ich:
+            ich.append(f"auf dir liegt ein Shutdown ({self.ich.kills}/{self.ich.tode})")
         if len(self.tode_kurz) >= 2:
             ich.append(f"{len(self.tode_kurz)} Tode in den letzten 4 Minuten - jetzt sicher spielen")
         if self.kauf is not None and self.kauf.satz():
@@ -284,6 +295,8 @@ class Bewertung:
                 extra.append(f"ohne Ult noch {int(g.ult)} s")
             if g.level_vorsprung:
                 extra.append(f"{abs(g.level_vorsprung)} Level {'ueber' if g.level_vorsprung > 0 else 'unter'} dir")
+            if g.shutdown:
+                extra.append(f"Shutdown auf ihm ({g.s.kills}/{g.s.tode})")
             z.append(f"- {g.champion} ({g.s.rolle or '?'}): {wo}{an}" + (f"; {', '.join(extra)}" if extra else ""))
         wert, gruende = self.kraefte()
         if self.lane and not self.lane.s.tot:
@@ -318,6 +331,7 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
     if not p.ich:
         return None
     b = Bewertung(zeit=p.zeit, ich=p.ich, gold=int(p.gold or 0), partie=p)
+    b.shutdown_ich = shutdown(p.ich)
     b.tode_kurz = [e.zeit for e in p.ereignisse
                    if e.art == "ChampionKill" and e.opfer is p.ich and p.zeit - e.zeit <= 240]
     m = p.werte.get("maxHealth")
@@ -482,7 +496,8 @@ def _gegner_lage(s: Spieler, p: Partie, lb, ich_pos) -> GegnerLage:
     pos = einheiten(g[1], g[2]) if lb is not None and not s.tot and (g := lb.gesehen(s)) else None
     return GegnerLage(s=s, sichtbar=sichtbar, seit=seit, ort=ort or "", abstand=ab, ankunft=ankunft, tempo=ms,
                       flash=flash, ult=ult, level_vorsprung=s.level - p.ich.level,
-                      gold_vorsprung=s.item_gold - p.ich.item_gold, kommt_naeher=naeher, pos=pos)
+                      gold_vorsprung=s.item_gold - p.ich.item_gold, kommt_naeher=naeher, pos=pos,
+                      shutdown=shutdown(s))
 
 
 # --- Kampf um ein Objective --------------------------------------------------------

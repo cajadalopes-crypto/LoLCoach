@@ -68,13 +68,18 @@ def _ist(g: GegnerLage) -> str:
 
 
 def todespreis(b: Bewertung) -> str:
-    """Ab ~30 s Todeszeit (Reasoning #27 "Death Value"): was ein Tod JETZT kostet - mit dem
-    Objective, das in dieser Zeit kommt. '' wenn es nicht zaehlt."""
-    if b.tod_kostet < 30:
+    """Was ein Tod JETZT kostet (Reasoning #27 "Death Value"): Todeszeit ab 30 s, dein Shutdown, und das
+    Objective, das in dieser Zeit kommt. '' wenn nichts davon zaehlt."""
+    teile = []
+    if b.tod_kostet >= 30:
+        teile.append(f"ein Tod kostet {sek(b.tod_kostet)}")
+    if b.shutdown_ich:
+        teile.append("deinen Shutdown" if teile else "ein Tod gibt ihnen deinen Shutdown")
+    if not teile:
         return ""
-    satz = f"ein Tod kostet {sek(b.tod_kostet)}"
+    satz = " und ".join(teile)
     ob = b.objective
-    if ob and ob[1] <= b.tod_kostet + 10:
+    if b.tod_kostet >= 30 and ob and ob[1] <= b.tod_kostet + 10:
         satz += f", {OBJ_NAME[ob[0]]} " + (lebt(ob[0]) if ob[1] <= 0 else f"in {sek(ob[1])}")
     return satz
 
@@ -171,7 +176,8 @@ def chance(b: Bewertung, platten: bool) -> str | None:
     leben_ok = b.leben is None or b.leben >= 0.5
     lebt = g is not None and not g.s.tot
     if lebt and leben_ok and wert >= 1 and g.seit is not None and g.seit < 3:
-        return f"Geh auf {g.champion}, {b.vorsprung_satz()}" + (f" - {b.trade}" if b.trade else "")
+        return (f"Geh auf {g.champion}, {b.vorsprung_satz()}" + (", Shutdown auf ihm" if g.shutdown else "")
+                + (f" - {b.trade}" if b.trade else ""))
     if lebt and leben_ok and g.flash and g.flash > 30 and wert > -1:
         return f"Spiel aggressiv, {g.champion} ohne Flash"
     if ob := _objective_erreichbar(b):
