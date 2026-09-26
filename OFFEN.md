@@ -21,10 +21,7 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## Als Naechstes
 
-- Bildschirm-Momente fuer das Review (Carlos' Ziel: "Momente notieren, die du durch Screenshot
-  siehst"): alle 5 s ein Spielbild auf die Platte, rund um jeden Tod die Bilder davor; das Review
-  bekommt die Bilder der wichtigsten Momente, das Gespraech das Bild zum gefragten Zeitpunkt, die
-  Review-Seite zeigt es neben der Minimap.
+- (leer - neue Wuensche von Carlos kommen hierher)
 
 ## Braucht eine Partie
 
@@ -58,9 +55,17 @@ Notizen und Review durchsehen und nachschaerfen.
   Bildschirm-Aufnahme und HUD-Lesen liefen noch nie live (Beobachter meldet Fehler am Ende).
 - (geklaert, Partie 7: Pings sind Carlos' eigene, nicht Maus 5) Pings von Carlos' Konto ("Rumble hat Blitz benutzt" 2:13, 7:17):
   <Partie>_sprechtaste.log gegen die Chatzeilen legen - liegt Maus 5 im Spiel auf Pingen?
+- Bildschirm-Momente (99c97da): werden live alle 5 s und vor jedem Tod Bilder gesichert? Nutzt
+  das Review sie sinnvoll ("Bild 19:40: ...")? Echt geprueft bisher nur mit einem Bild (Partie 6, 2:37).
+- Sprechtaste nach der Partie -> Review (c920f0a): im echten Ablauf pruefen.
 - Verdeckte Icons (700b52c): Pruefstand 80-87 % statt 71-72 % - im Spiel mit Stapeln pruefen.
 
 ## Erledigt
+
+- Review mit Bildschirm-Momenten: Spielbild alle 5 s + 12 s vor jedem Tod auf der Platte; Review
+  bekommt die Bilder der wichtigsten Momente, das Gespraech das Bild zur gefragten Zeit, die
+  Review-Seite zeigt es neben der Minimap; Aufraeumen der Minimap-Bilder lief seit Partie 4 nicht
+  (int("chat_...")) - 99c97da
 
 - Partie 7 ausgewertet: Strich-Pings zaehlen wieder (4916472); Objective-Warnungen kamen
   nicht (einmal je Spawn, Naehe schaltete Gegner-Warnung ab, zu kurz gueltig) und HUD-Flackern
