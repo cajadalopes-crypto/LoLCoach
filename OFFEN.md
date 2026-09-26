@@ -17,13 +17,11 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
-- **Offene Fakten klaeren**: Inhibitor-Respawn (5:00 in objektive.toml, Wiki-Auszug
-  3:00), TP-Abklingzeit mit Quest (300/390/420 s).
+- (nichts - alles ohne echte Partie Machbare ist erledigt)
 
 ## Als Naechstes
 
-- **Review per Sprache**: im Review mit dem Headset fragen (Push-to-Talk wie im
-  Spiel), Antwort auch gesprochen.
+- (leer - neue Wuensche von Carlos kommen hierher)
 
 ## Braucht eine Partie
 
@@ -44,6 +42,10 @@ Notizen und Review durchsehen und nachschaerfen.
   stimmen die Momente, sind die Lektionen belegt und hilfreich?
 
 ## Erledigt
+
+- Review per Sprache (Push-to-Talk im Review, Antwort gesprochen) - 54f7e40
+- Offene Fakten: Inhibitor 5:00, Teleport-Abklingzeit nach Zeit/Level/Quest - bca57f3
+- Tests fuer die Bausteine + tests/alle.py - 0eb3a7f; Doku + ANLEITUNG.md - 37cc39c
 
 - Wellen-Zustand aus Vasallen-Punkten, Recall-Fenster, Wellen im Review - 87ccd7d
 - Ward-Vorschlaege (Stelle + Anlass) - bd96a61

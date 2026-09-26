@@ -58,6 +58,8 @@
     <div class="kasten"><h2>Objectives</h2><div class="obj" id="obj"></div><div class="klein" id="drachen"></div></div>
     <div class="kasten"><h2 id="lanekopf">Lane</h2><div id="lane" class="zahl"></div></div>
     <div class="kasten"><h2>Gegner</h2><div class="gegner" id="gegner"></div></div>
+    <div class="kasten"><h2>Dein Team</h2><div class="gegner" id="team"></div></div>
+    <div class="kasten" id="wellenkasten" hidden><h2>Wellen</h2><div id="wellen" class="klein"></div></div>
     <div class="kasten"><h2>Coach</h2><ul class="ansagen" id="ansagen"></ul></div>
   </div>
 </main>
@@ -129,6 +131,18 @@ function zeige(z) {
     return `<div class="zeile ${s.tot ? 'tot' : ''}"><img src="/icon/${s.id}.png" alt="">
       <span>${s.champion} <span class="klein">${s.rolle} · L${s.level} · ${s.kda}</span> ${weg}</span>${wo}</div>`;
   }).join('');
+  $('team').innerHTML = z.spieler.filter(s => s.freund && !s.ich).map(s => {
+    const l = s.leben == null ? null : Math.round(s.leben * 100);
+    const balken = l == null ? '' : `<span style="display:inline-block;width:60px;height:8px;background:#222;border-radius:3px;vertical-align:middle">
+      <span style="display:block;height:8px;width:${l * 0.6}px;background:${l < 35 ? 'var(--feind)' : 'var(--gut)'};border-radius:3px"></span></span> ${l} %`;
+    const ult = s.ult == null ? '' : s.ult ? ' <span class="plus">Ult</span>' : ' <span class="klein">Ult –</span>';
+    return `<div class="zeile ${s.tot ? 'tot' : ''}"><img src="/icon/${s.id}.png" alt="" style="border-color:var(--freund)">
+      <span>${s.champion} <span class="klein">${s.rolle} · L${s.level}</span></span>
+      <span>${s.tot ? `<span class="minus">tot ${s.respawn}s</span>` : balken + ult}</span></div>`;
+  }).join('');
+  const w = Object.entries(z.wellen || {});
+  $('wellenkasten').hidden = !w.length;
+  $('wellen').innerHTML = w.map(([l, t]) => `<div><b style="color:var(--text)">${l}:</b> ${t}</div>`).join('');
   $('ansagen').innerHTML = z.ansagen.map(a => `<li class="p${a.prio}"><span class="klein">${a.zeit}</span> ${a.text}</li>`).join('');
   zeichne(z);
 }

@@ -38,6 +38,9 @@ def zustand_json(p: Partie, lagebild=None, ansagen=()) -> dict:
         if lagebild is not None and (g := lagebild.gesehen(s)) and not s.tot:
             eintrag["gesehen"] = {"vor": round(max(0.0, p.zeit - g[0]), 1), "x": g[1], "y": g[2],
                                   "jetzt": lagebild.sichtbar(s), "ort": minimap.ort(g[1], g[2], wir)}
+        if lagebild is not None and hasattr(lagebild, "leben") and s.team == wir and s is not p.ich:
+            eintrag["leben"] = lagebild.leben(s, p.zeit)
+            eintrag["ult"] = lagebild.ult_bereit(s, p.zeit)
         timer = getattr(lagebild, "zauber", None)
         eintrag["zauber_weg"] = [{"name": NAME_DE.get(z, z), "rest": round(r)}
                                  for z in s.zauber if timer and (r := timer.fehlt(s, z, p.zeit))]
@@ -63,6 +66,8 @@ def zustand_json(p: Partie, lagebild=None, ansagen=()) -> dict:
         "lane": None if not (g and p.ich) else {
             "gegner": g.champion, "cs": [p.ich.cs, g.cs], "level": [p.ich.level, g.level],
             "itemgold": p.ich.item_gold - g.item_gold},
+        "wellen": {l: z.worte(wir) for l in ("Top", "Mid", "Bot")
+                   if lagebild is not None and hasattr(lagebild, "welle") and (z := lagebild.welle(l, p.zeit))} if wir else {},
         "ansagen": [{"zeit": uhr(a.gesprochen or a.zeit), "text": a.text, "prio": a.prio} for a in list(ansagen)[-7:]][::-1],
     }
 
