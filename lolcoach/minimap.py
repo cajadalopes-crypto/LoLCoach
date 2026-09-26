@@ -160,6 +160,51 @@ def _grobvorlage(champion_id: str, hoehe: int) -> np.ndarray | None:
     return cv2.resize(v[0][o:o + q, o:o + q], (q // 2, q // 2), interpolation=cv2.INTER_AREA)
 
 
+@lru_cache(maxsize=16)
+def _viertel(d: int) -> tuple[np.ndarray, np.ndarray]:
+    """Kreismaske, nur das Viertel oben rechts bzw. unten links (Icon in der Brunnen-Ecke)."""
+    ganz = np.zeros((d, d), np.uint8)
+    cv2.circle(ganz, (d // 2, d // 2), d // 2 - 1, 255, -1)
+    oben_rechts, unten_links = ganz.copy(), ganz.copy()
+    oben_rechts[:, :d // 2] = 0
+    oben_rechts[d // 2:, :] = 0
+    unten_links[:, d // 2:] = 0
+    unten_links[:d // 2, :] = 0
+    return oben_rechts, unten_links
+
+
+def ecke(karte: np.ndarray, champion_id: str, hoehe: int = REFERENZ_HOEHE,
+         team: str | None = None) -> tuple[float, int, int] | None:
+    """Ein Icon in einer Brunnen-Ecke, vom Kartenrand abgeschnitten (Partie 19:45: Riven 2,5 min im Brunnen
+    ungesehen - der Coach wusste nicht, dass sie in der Basis war; 21:21 die ersten 10 s). Verglichen wird nur,
+    was sichtbar sein kann: die innere Haelfte bzw. das innere Viertel - und nur in den zwei Ecken, sonst waere
+    eine Teilvorlage zu beliebig. (Guete, x, y) in Kartenpixeln, die Mitte ggf. knapp ausserhalb der Karte."""
+    v = _vorlage(champion_id, hoehe)
+    if v is None:
+        return None
+    vorlage, _ = v
+    d, seite = vorlage.shape[0], karte.shape[0]
+    rechts, links, unten, oben = _teilmasken(d)     # behaelt: rechte, linke, untere, obere Haelfte
+    oben_rechts, unten_links = _viertel(d)
+    rand, f = d // 2, 2 * d
+    bestes = None
+    # unten links (Brunnen ORDER): sichtbar ist, was rechts/oben liegt; oben rechts (CHAOS) umgekehrt
+    ecken = []
+    if team in (None, "ORDER"):
+        ecken.append((karte[seite - f:, :f], 0, rand, rand, 0, 0, seite - f, (rechts, oben, oben_rechts)))
+    if team in (None, "CHAOS"):
+        ecken.append((karte[:f, seite - f:], rand, 0, 0, rand, seite - f, 0, (links, unten, unten_links)))
+    for teil, oben_pad, unten_pad, links_pad, rechts_pad, x0, y0, masken in ecken:
+        feld = cv2.copyMakeBorder(teil, oben_pad, unten_pad, links_pad, rechts_pad, cv2.BORDER_CONSTANT, value=0)
+        for m in masken:
+            erg = np.nan_to_num(cv2.matchTemplate(feld, vorlage, cv2.TM_CCOEFF_NORMED, mask=m),
+                                nan=-1.0, posinf=-1.0, neginf=-1.0)
+            _, g, _, (fx, fy) = cv2.minMaxLoc(erg)
+            if g >= SCHWELLE_TEIL and (bestes is None or g > bestes[0]):
+                bestes = (g, x0 - links_pad + fx + d // 2, y0 - oben_pad + fy + d // 2)
+    return bestes
+
+
 GROB_SCHWELLE = 0.45
 KANDIDATEN = 3
 
@@ -208,7 +253,8 @@ def finde(karte: np.ndarray, champions: list[tuple[str, str]], hoehe: int = REFE
                 continue
             genommen.append((cx, cy))
             team = _ringfarbe(karte, cx, cy, round(PORTRAET * hoehe / 2) + 2) if n > 1 else None
-            sichtungen.append(Sichtung(cid, team, cx / seite, cy / seite, float(guete)))
+            sichtungen.append(Sichtung(cid, team, min(1.0, max(0.0, cx / seite)), min(1.0, max(0.0, cy / seite)),
+                                       float(guete)))
     return sichtungen
 
 
@@ -414,6 +460,20 @@ class Verfolger:
                     while schl in gefunden:
                         schl = (schl[0], schl[1] + 1)
                     gefunden[schl] = (beste[0], beste[1], beste[2], None)
+            # 2b'. Brunnen-Ecke: vom Kartenrand halb abgeschnitten (ecke) - nur alle 2 s, je Team nur sein Brunnen
+            #      (~3 ms je Champion; Gegner im eigenen Brunnen sind ohnehin im Nebel und kosten nur die Suche)
+            if alle:
+                # das eigene Team ist immer zu sehen: das Team mit den meisten je gesehenen Champions
+                gesehen_je = {}
+                for cid, team in self.champions:
+                    gesehen_je[team] = gesehen_je.get(team, 0) + any(k[0] == cid for k in self.verlauf)
+                eigen = max(gesehen_je, key=gesehen_je.get) if len(set(gesehen_je.values())) > 1 else None
+                for cid, team in self.champions:
+                    if cid in doppelt or any(k[0] == cid for k in gefunden) or (eigen and team != eigen):
+                        continue
+                    if tr := ecke(karte, cid, self.hoehe, team):
+                        schl = next((k for k in self.pos if k[0] == cid), (cid, 0))
+                        gefunden[schl] = (tr[0], tr[1], tr[2], team)
         # 2b. Verdeckt: eben noch gesehen, jetzt nicht gefunden, aber ein gefundenes Icon liegt darauf
         # -> er steht darunter. Er laeuft mit seiner Deckung mit (fester Versatz), bis er wieder
         # auftaucht, die Deckung weiterzieht oder VERDECKT_MAX um ist (dann war es wohl Nebel).

@@ -56,9 +56,11 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
 - Minimap, gemessen 26.09. abends (eigene Flashes aus dem HUD als Wahrheit): von 12 eigenen Flashes
   erkannte die Minimap 1, Fehlalarme 0 - im Kampf liegt das Icon unter anderen (physikalische Grenze).
   Verbuendete galten nur in 57-94 % der Takte als sichtbar; mit "verdeckt/Brunnen/Tod/Recall" jetzt 88-100 %.
-  Offen: (1) Icons am Kartenrand (Brunnen-Ecke) im Verfolger mit dem sichtbaren Teil suchen; (2) Verwechslung
-  im Klumpen (13:07: Riven unten "gesehen", stand oben unter Heimerdinger) - nur an 60-Bilder/s-Live-Daten
-  nachstellbar, nicht an den 1-Bild/s-Aufnahmen.
+  Erledigt 26.09. nachts: Icons in der Brunnen-Ecke (`minimap.ecke`, sichtbarer Teil) - 19:45 war Riven 2,5 min
+  im Brunnen ungesehen; eigenes Icon gegen den Kamerarahmen geprueft (`werkzeuge/kamera_rahmen.py`: 99,3-99,7 %
+  im Rahmen, Ausreisser = Kameraschwenks). Offen: Verwechslung im Klumpen (13:07: Riven unten "gesehen", stand
+  oben unter Heimerdinger) - nur an 60-Bilder/s-Live-Daten nachstellbar; im Klumpen koennte der Kamerarahmen
+  die eigene Position liefern (bei gesperrter Kamera: Rahmenmitte +0,018 nach unten).
 
 - Camp-/Buff-Timer des gegnerischen Junglers (Camp-Icons der Minimap) fuer die Jungler-Prognose.
 - Fragen per Maustaste: Claude braucht ueber die Kommandozeile ~2,5 s bis zum ersten Satz. Ein

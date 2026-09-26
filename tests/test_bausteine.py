@@ -467,6 +467,23 @@ def faehigkeiten_aus_spieldaten():
     assert 350 <= ohne < mit <= 1600, (ohne, mit)
 
 
+def icon_in_der_brunnen_ecke():
+    """Partie 19:45, 12:50: Riven steht im Brunnen, ihr Icon ist vom Kartenrand zu einem Drittel abgeschnitten - die
+    ganze Vorlage fand sie 2,5 min lang nicht. Die Eckensuche vergleicht nur den sichtbaren Teil, nur im Brunnen
+    ihres Teams, und findet dort niemand anderen."""
+    img = cv2.imread(str(HIER / "minimap_brunnen.jpg"))
+    assert not [s for s in minimap.finde(img, [("Riven", "ORDER")]) if s.champion_id == "Riven"]
+    g, x, y = minimap.ecke(img, "Riven", 2160, "ORDER")
+    assert g >= minimap.SCHWELLE_TEIL and x < 25 and y > 540, (g, x, y)
+    assert minimap.ecke(img, "Riven", 2160, "CHAOS") is None
+    for c in ("Heimerdinger", "Vi", "Caitlyn", "Ahri", "Garen"):
+        assert minimap.ecke(img, c, 2160) is None, c
+    v = minimap.Verfolger([("Riven", "ORDER"), ("Heimerdinger", "CHAOS")], hoehe=2160)
+    sichtungen, _ = v.bild(img, 100.0)
+    riven = [s for s in sichtungen if s.champion_id == "Riven"]
+    assert riven and 0.0 <= riven[0].x < 0.05 and riven[0].y > 0.94, sichtungen
+
+
 def platten_lesen():
     """Platten-Ziffern der Turm-Icons (Camille-Partie, ~10:40): oben 2, Mitte 4, unten 4 bei ihm, deine
     Mitte 4; Teemos Icon verdeckt deinen inneren Mid-Turm -> keine Zahl statt einer falschen."""
@@ -590,6 +607,6 @@ if __name__ == "__main__":
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
                  aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121, combo_rechnung,
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr,
-                 faehigkeiten_aus_spieldaten):
+                 faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke):
         test()
         print(f"{test.__name__} OK")
