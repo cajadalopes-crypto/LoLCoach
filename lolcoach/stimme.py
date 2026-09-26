@@ -221,7 +221,7 @@ def sprechbar(text: str) -> str:
 
 class Stimme:
     def __init__(self, sprache: str = "German", warten: bool = False, lautstaerke: int = 100,
-                 neural: str | None = None, tempo: str = "+15%"):
+                 neural: str | None = None, tempo: str = "+25%"):   # Carlos 26.09.: "viel peppiger" (vorher +15 %)
         """`warten`: jeder Satz blockiert, bis er gesprochen ist - zum Anhoeren
         einer Aufnahme im Zeitraffer. `lautstaerke` 0 fuer Tests. `neural`: Name
         einer neuronalen Stimme (z. B. "de-DE-ConradNeural"), sonst die Windows-Stimme."""
