@@ -467,13 +467,19 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
     if u.art == "weg" and ((b.leben is not None and b.leben < 0.35) or {"jungler_nah", "dritter"} & u.arten_alle):
         from .komponist import _rueckzug
         handlung = _rueckzug(b)[:1].lower() + _rueckzug(b)[1:]
+    bedroht_halten = u.art == "halten" and bool({"jungler_nah", "dritter"} & u.arten_alle) and u.wert >= TRADE_AB
     if u.art == "turm":
         # Die Gruende FUER den Kampf erklaeren das Warten nicht ("noch nicht rein: du hast 1700 Gold mehr ..." -
         # Nachlauf 21:21, 8:05). Gesagt wird, was gilt, sobald er den Turm verlaesst.
         text = handlung + f" - kommt {n} raus, " + ("geh rein" if u.wert >= KILL_AB else "trade hart")
+    elif bedroht_halten:
+        # dasselbe beim Jungler in der Naehe (Camille-Partie 5:21: "kein All-in, solange Gragas in der Naehe ist:
+        # deine Ult ist da, seine noch nicht"): was gilt, sobald er weg ist
+        wer = j if "jungler_nah" in u.arten_alle else next(x.subj for x in u.faktoren if x.art == "dritter")
+        text = handlung + f" - ohne {wer} " + ("wäre es ein Kill" if u.wert >= KILL_AB else "tradest du hart")
     else:
         text = handlung + (": " + _liste([x.satz for x in gruende]) if gruende else "")
-    if aber and u.art != "turm":
+    if aber and u.art != "turm" and not bedroht_halten:
         text += f" - aber {aber[0].satz}"
     if anlass:
         # "Du bist zuerst Level 2, Wukong noch 1 - aber nur kurze Trades: du hast nur 49 Prozent Leben."

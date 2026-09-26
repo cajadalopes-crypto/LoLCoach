@@ -352,6 +352,8 @@ def jungler_gesehen(b: Bewertung, j: GegnerLage, art: str, platten: bool) -> str
         # Geh zurueck zu deinem Turm, das sind 22 Sekunden" waren 260)
         grund = b.ueberlegen_satz(gruppe).split(", ")[0]
         if r >= KLAR_STAERKER and (b.leben is None or b.leben >= 0.4):
+            if an is not None and an > 10:     # "in 31 Sekunden bei dir - nimm den Kampf an" klang nach jetzt
+                return f"{vorn}. Kommt {j.champion}, nimm den Kampf an" + (f": {grund}." if grund else ".")
             return f"{vorn} - nimm den Kampf an" + (f", {grund}." if grund else ".")
         if r >= STAERKER and (b.leben is None or b.leben >= 0.5):
             return f"{vorn}. Bleib an deiner Welle, du bist stärker - nur nicht zu tief."
