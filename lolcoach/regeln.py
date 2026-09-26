@@ -99,6 +99,7 @@ class Regelwerk:
         self.entscheider = Entscheider()               # der Plan zwischen den Ereignissen (entscheider.py)
         self._gewarnt_vor: dict[str, float] = {}       # Spielername -> zuletzt eine Gefahr-Warnung zu ihm
         self._matchup_box = [-1e9]                     # zuletzt die Matchup-Siegquote gesagt (denker.fenster_satz)
+        self._flash_box = [-1e9]                       # zuletzt "X hat kein Flash - spiel aggressiv" (komponist.chance)
         self._back_box = [-1e9]                        # zuletzt "geh back" gesagt (komponist.back_eben)
         self._fenster_box = [-1e9]                     # zuletzt ein Kampf-Urteil gegen den Lane-Gegner (denker.py) -
                                                        # geteilt mit komponist.chance ueber die Bewertung
@@ -129,6 +130,7 @@ class Regelwerk:
                     self.b.fenster_box = self._fenster_box
                     self.b.matchup_box = self._matchup_box
                     self.b.back_box = self._back_box
+                    self.b.flash_box = self._flash_box
                     if not p.ich.tot:
                         self._b_lebend = self.b      # die letzte Lage vor einem Tod - fuer die Todesanalyse
             except Exception as e:   # die Bewertung darf keine Regel mitreissen - dann gelten die alten Saetze
@@ -992,9 +994,10 @@ class Regelwerk:
         # Anlass - und die Gruende von eben werden nicht wiederholt (Nachlauf Wukong-Partie 12:12: "Vi ist tot -
         # trade hart ..." und Sekunden spaeter "Geh rein, das ist ein Kill" mit denselben zwei Gruenden)
         eben = getattr(self, "_fenster_werte", {}) if seit < 30 else {}
-        ohne = set()
+        # "Heimerdinger hat kein Flash - spiel aggressiv" eben erst gesagt (Nachlauf 19:45, 5:18/5:19)
+        ohne = {"flash"} if p.zeit - self._flash_box[0] < 20 else set()
         if eben:
-            ohne = set(eben)
+            ohne |= set(eben)
             if anlass_f is None:
                 zuwachs = max(u.faktoren, key=lambda x: x.wert - eben.get(x.art, 0.0), default=None)
                 if zuwachs is not None and zuwachs.wert - eben.get(zuwachs.art, 0.0) >= 0.5 and zuwachs.wert > 0:

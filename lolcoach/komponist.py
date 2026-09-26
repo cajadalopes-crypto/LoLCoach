@@ -297,7 +297,13 @@ def chance(b: Bewertung, platten: bool) -> str | None:
                     box[0] = b.zeit
                 # der Jungler-Satz davor sagt schon, wo er ist
                 return denker.fenster_satz(b, u, ohne={"jungler"}, danach=False).rstrip(".")
-    if lebt and leben_ok and g.flash and g.flash > 30 and wert > -1:
+    # einmal je Flash-Abklingzeit, und nicht direkt nach einem Kampf-Urteil, das "kein Flash" schon sagt (Nachlauf
+    # 19:45: 5:18, 9:41 und 10:12 "Heimerdinger hat kein Flash - spiel aggressiv", dazwischen die Fenster-Saetze)
+    fbox, box = getattr(b, "flash_box", None), getattr(b, "fenster_box", None)
+    if (lebt and leben_ok and g.flash and g.flash > 30 and wert > -1
+            and (fbox is None or b.zeit - fbox[0] >= 150) and (box is None or b.zeit - box[0] >= 30)):
+        if fbox is not None:
+            fbox[0] = b.zeit
         return f"{g.champion} hat kein Flash - spiel aggressiv"
     if ob := _objective_erreichbar(b):
         return (f"Schieb die Welle rein und geh dann {ZUM[ob[0]]}"
