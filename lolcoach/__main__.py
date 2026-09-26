@@ -18,7 +18,8 @@ import threading
 import time
 from dataclasses import asdict
 
-from . import ansicht, aufzeichnung, bericht, lage, liveapi, llm, profil, regeln, sprechplan, stimme, zustand
+from . import (ansicht, aufzeichnung, bericht, komponist, lage, liveapi, llm, profil, regeln, sprechplan, stimme,
+               zustand)
 
 
 def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, sicht=None,
@@ -94,6 +95,8 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
         if p is None:
             continue
         if not rollen_gezeigt and p.spieler:
+            if p.ich and hasattr(sprecher, "vorwaermen"):
+                sicher("Vorwaermen", lambda: sprecher.vorwaermen(komponist.anfaenge(p)))
             print(ansicht.rollen_tabelle(p))
             if p.zuschauer and not p.ich:
                 print("(Zuschauer ohne --ich: Sicht Blau/Rot, der Coach schweigt)")

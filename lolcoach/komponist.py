@@ -80,6 +80,29 @@ def _ist(g: GegnerLage) -> str:
     return f"{g.champion} ist {g.ort}" if g.ort else g.champion
 
 
+ORTE = ("oben", "unten", "in der Flussmitte", "im oberen Fluss", "im unteren Fluss", "auf der Mid-Lane",
+        "in eurem oberen Jungle", "in eurem unteren Jungle", "in seinem oberen Jungle", "in seinem unteren Jungle")
+
+
+def anfaenge(p) -> list[str]:
+    """Satzanfaenge, die in dieser Partie oft kommen - genau so, wie stimme.teilsaetze sie abtrennt. Zu Spielbeginn
+    vorgewaermt, klingen sie ohne die ~0,45 s des Sprachdienstes. Zuerst der gegnerische Jungler (die haeufigsten
+    Saetze: 21 % der Sprechzeit)."""
+    if not p.ich:
+        return []
+    feind = gegenteam(p.mein_team)
+    aus = ["Geh rein,", "das ist ein Kill:", "Noch nicht rein,", "Trade hart,", "Du stehst tief,", "Recall-Fenster:"]
+    if (j := p.jungler(feind)) is not None:
+        aus += [f"{j.champion} ist {o}," for o in ORTE]
+    lane = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}.get(p.ich.rolle)
+    for turm in ([f"{lane}-Tier-1", f"{lane}-Tier-2"] if lane else []) + (["Mid-Tier-1"] if lane != "Mid" else []):
+        aus += [f"Geh jetzt zurück zu deinem {turm}-Turm,", f"Geh erst zurück zu deinem {turm}-Turm und recall dort:"]
+    aus += [f"{s.champion} hat Flash benutzt," for s in p.gegner()]
+    if (g := p.gegenueber()) is not None:
+        aus += [f"{g.champion} ist {o}," for o in ORTE[:6]]
+    return aus
+
+
 def _gross(s: str) -> str:
     return s[:1].upper() + s[1:] if s else s
 

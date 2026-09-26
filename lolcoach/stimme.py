@@ -184,19 +184,31 @@ class _Neural:
     def __init__(self, stimme: str, tempo: str, lautstaerke: int, ersatz: "_Sapi"):
         self.stimme, self.tempo, self.lautstaerke, self.ersatz = stimme, tempo, lautstaerke, ersatz
         self._stroeme: dict[str, _Strom] = {}
+        self._fest: set[str] = set()
         self._schloss = threading.Lock()
 
-    def strom(self, text: str) -> _Strom:
-        """Die Synthese von `text`: laufend, fertig (Zwischenspeicher) oder neu gestartet."""
+    def strom(self, text: str, fest: bool = False) -> _Strom:
+        """Die Synthese von `text`: laufend, fertig (Zwischenspeicher) oder neu gestartet. `fest`: vorgewaermt,
+        wird nie verdraengt."""
         with self._schloss:
+            if fest:
+                self._fest.add(text)
             s = self._stroeme.get(text)
             if s is None or (s.fertig and not s.stuecke):
                 s = _Strom(text, self.stimme, self.tempo, self.lautstaerke / 100.0)
                 self._stroeme[text] = s
-                if len(self._stroeme) > 150:
-                    for k in [k for k, v in self._stroeme.items() if v.fertig][:75]:
+                if len(self._stroeme) > 150 + len(self._fest):
+                    for k in [k for k, v in self._stroeme.items() if v.fertig and k not in self._fest][:75]:
                         del self._stroeme[k]
             return s
+
+    def vorwaermen(self, texte: list[str]) -> None:
+        """Haeufige Satzanfaenge der Partie im Hintergrund synthetisieren, einer nach dem anderen (kein Gedraenge
+        mit den gesprochenen Saetzen)."""
+        def lauf():
+            for t in texte:
+                _still(lambda: self.strom(t, fest=True).ganz(8))
+        threading.Thread(target=lauf, daemon=True).start()
 
     def vorbereiten(self, text: str) -> None:
         """Der Sprechplan weiss, was als naechstes kommt: der Anfang wird schon synthetisiert."""
@@ -308,13 +320,16 @@ def _still(f, *a) -> None:
         pass
 
 
-def teilsaetze(text: str, erster_hoechstens: int = 90) -> list[str]:
-    """In Saetze teilen (nach . ! ? und nach dem Doppelpunkt, an dem die Stimme ohnehin absetzt); ist der erste
-    laenger als `erster_hoechstens`, auch am ersten Komma dahinter - damit der erste Ton frueh kommt."""
+def teilsaetze(text: str) -> list[str]:
+    """In Saetze teilen (nach . ! ? und nach dem Doppelpunkt, an dem die Stimme ohnehin absetzt), den ersten dazu am
+    ersten Komma: der Anfang ("Geh rein,", "Vi ist im oberen Fluss,") wiederholt sich und liegt dann schon im
+    Zwischenspeicher (vorgewaermt oder eben gesagt) - der erste Ton kommt sofort, waehrend der Rest entsteht.
+    Gemessen 27.09.: neuer Text braucht beim Dienst ~0,45 s bis zum ersten Audio, egal wie lang; ein Viertel der
+    Satzanfaenge einer Partie war am Komma schon einmal gesagt worden (heute ohne Teilung: ein Zehntel)."""
     teile = [t.strip() for t in re.split(r"(?<=[.!?:])\s+", text) if t.strip()]
-    if teile and len(teile[0]) > erster_hoechstens:
-        k = teile[0].find(", ", 30)
-        if 0 < k < len(teile[0]) - 15:
+    if teile:
+        k = teile[0].find(", ")
+        if k >= 8 and len(teile[0]) - k > 15:
             teile[0:1] = [teile[0][:k + 1], teile[0][k + 2:]]
     return teile or [text]
 
@@ -470,6 +485,12 @@ class Stimme:
         if fertig:
             fertig.wait(timeout=60)
 
+    def vorwaermen(self, texte: list[str]) -> None:
+        """Satzanfaenge, die in dieser Partie oft kommen (komponist.anfaenge), schon zu Spielbeginn synthetisieren."""
+        m = getattr(self, "_motor", None)
+        if hasattr(m, "vorwaermen"):
+            _still(m.vorwaermen, [sprechbar(t) for t in texte])
+
     def vorbereiten(self, text: str) -> None:
         """Der Satz kommt gleich dran: seinen Anfang schon synthetisieren (nur die neuronale Stimme)."""
         m = getattr(self, "_motor", None)
@@ -514,6 +535,9 @@ class Stumm:
         pass
 
     def vorbereiten(self, text: str) -> None:
+        pass
+
+    def vorwaermen(self, texte: list[str]) -> None:
         pass
 
     def antworte_teil(self, text: str) -> None:
