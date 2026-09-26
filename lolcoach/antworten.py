@@ -257,6 +257,9 @@ def lage_text(p: Partie, lagebild=None) -> str:
                 zeilen.append(b.text())
             if (jt := getattr(lagebild, "jungle", None)) and (jtext := jt.text(p.zeit, p.ich.rolle)):
                 zeilen.append(jtext)
+            if (e := getattr(lagebild, "entscheider", None)) is not None and e.aktuell is not None:
+                zeilen.append(f"GERECHNETER PLAN JETZT (so hat der Coach entschieden; nur mit klarem Grund aus Bild "
+                              f"oder Frage davon abweichen): {e.aktuell.satz}")
         except Exception as e:
             print(f"  Bewertung fuer Claude fehlgeschlagen: {e}", flush=True)
     # "Warum bin ich gestorben?" - die Fakten der Todesanalyse, drei Minuten lang
