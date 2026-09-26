@@ -82,7 +82,7 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
                 stratege_.veredle(a)
             ansagen = [a for a in ansagen if not a.situativ]
         plan.neu(ansagen)
-        if a := plan.takt(p.zeit):
+        if a := plan.takt(p.zeit, ich_tot=bool(p.ich and p.ich.tot)):
             print(f"{ansicht.uhr(p.zeit)}  >> {a.text}", flush=True)
 
     for n, (w, daten) in enumerate(quelle):

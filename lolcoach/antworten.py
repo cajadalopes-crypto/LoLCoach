@@ -163,6 +163,13 @@ def sofort(frage: str, p: Partie, lagebild=None) -> str | None:
         return e.aktuell.satz
     if menge & ENTSCHEIDUNG:
         return None  # "soll ich ...", "lieber ...", "warum ...": das ist eine Abwaegung, keine Nachschau
+    # Eine Aussage ("Ich bin tot.", "Du weisst schon, dass ich Level 12 bin ...") ist keine Nachschau-Frage:
+    # Live 21:21 bekam sie "Gragas noch 10 Sekunden" und "Sona ist Level 8, du bist Level 12" - Claude antwortet
+    # im Zusammenhang.
+    roh = frage.strip().lower()
+    if roh.startswith(("ich bin", "ich habe", "ich hab ", "ich war", "nein", "doch", "du weißt", "du weisst", "ja,",
+                       "ja ", "ich bringe", "ich hatte")) or len(w) > 12:
+        return None
     ziel = _ziel(w, p)
 
     if menge & {"ult", "ulti", "ultimate"}:

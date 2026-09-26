@@ -22,6 +22,18 @@ THEMA_SPERRE_JE = {"gefahr": 12.0,   # Gefahr aendert sich schnell: eine neue Wa
 # Nach einer Warnung kein "geh rein" (Camille-Partie 15:37/15:39: "rein" und "zurueck" in 2 s). Umgekehrt
 # nicht: eine Gefahr darf immer kommen, auch direkt nach einem Druck-Satz.
 WIDERSPRUCH = {"druck": ("gefahr", 15.0), "seite": ("gefahr", 15.0)}
+# Live 26.09. 21:21: Flash-Meldungen warteten 9-17 s hinter langen Plaenen. Diese Ansagen sind lang und nicht eilig -
+# eine wichtige, die es nicht ist (Flash, Gefahr, Jungler), darf sie abbrechen.
+UNTERBRECHBAR = ("briefing", "midgame", "cs", "lane_tot", "aufbruch", "plan:back", "gold", "recallfenster",
+                 "vorwarnung", "spike", "wiedereinstieg", "kontrollauge", "ward:")
+# ... und bist du tot, ist jede Lane-Anweisung ueberholt (Live 21:21, 6:11: "Schieb die Welle in seinen Turm" -
+# Carlos: "Warum sagst du mir das, obwohl ich selber tot war?")
+NUR_LEBEND = ("lane_tot", "fenster", "plan:", "gold", "recallfenster", "anlauf", "jungler_sicht", "tief", "leben",
+              "lane_fehlt", "lane_recall", "ohneflash", "ward:", "aufbruch", "kontrollauge", "level")
+
+
+def unterbrechbar(a: Ansage) -> bool:
+    return a.unterbrechbar or a.schluessel.startswith(UNTERBRECHBAR)
 
 
 class Sprechplan:
@@ -50,7 +62,7 @@ class Sprechplan:
             self.warte = [w for w in self.warte if w.schluessel != a.schluessel]  # die neuere gilt
             self.warte.append(a)
 
-    def takt(self, zeit: float) -> Ansage | None:
+    def takt(self, zeit: float, ich_tot: bool = False) -> Ansage | None:
         # Dasselbe Thema eben erst gesagt ("2000 Gold: ... back" 9:47 und 9:53, Camille-Partie 26.09.):
         # die zweite faellt weg - ausser sie ist SOFORT (Gefahr darf immer)
         self.warte = [a for a in self.warte if zeit - a.zeit <= a.gueltig
@@ -58,6 +70,8 @@ class Sprechplan:
                                and zeit - self.thema_zuletzt.get(a.thema, -1e9) < THEMA_SPERRE_JE.get(a.thema, THEMA_SPERRE))
                       and not (a.thema in WIDERSPRUCH
                                and zeit - self.thema_zuletzt.get(WIDERSPRUCH[a.thema][0], -1e9) < WIDERSPRUCH[a.thema][1])]
+        if ich_tot:
+            self.warte = [a for a in self.warte if not a.schluessel.startswith(NUR_LEBEND)]
         if not self.warte:
             return None
         # bei gleichem Vorrang geht eine Gefahr vor (Pruefpartie 2, 19:39: "Du hast 5900 Gold ... recall" verdraengte
@@ -67,8 +81,8 @@ class Sprechplan:
         # Live 26.09. 21:21: das Briefing (~50 s) hielt "Gragas hat Flash benutzt" 9 s und Vaynes Flash 16 s auf.
         # Laeuft etwas Unterbrechbares, darf eine wichtige Ansage es abbrechen.
         laeuft = self._laeuft
-        abbrechen = (laeuft is not None and laeuft.unterbrechbar and zeit < self.frei_ab
-                     and a.prio >= WICHTIG and not a.unterbrechbar)
+        abbrechen = (laeuft is not None and unterbrechbar(laeuft) and zeit < self.frei_ab
+                     and a.prio >= WICHTIG and not unterbrechbar(a))
         if zeit < frei and a.prio < SOFORT and not abbrechen:
             return None
         if a.prio < SOFORT and getattr(self.sprecher, "beschaeftigt", False) and not abbrechen:

@@ -205,7 +205,9 @@ def chance(b: Bewertung, platten: bool) -> str | None:
     wert, _ = b.kraefte()
     leben_ok = b.leben is None or b.leben >= 0.5
     lebt = g is not None and not g.s.tot
-    if lebt and leben_ok and g.seit is not None and g.seit < 3:
+    # nur, wenn er nah ist: Live 21:21, 15:11 "Also geh rein - das ist ein Kill" - Carlos: "Wo soll ich reingehen?
+    # Auf welcher Lane?"
+    if lebt and leben_ok and g.seit is not None and g.seit < 3 and g.abstand is not None and g.abstand <= 1800:
         from . import denker
         u = denker.urteil(b)
         box = getattr(b, "fenster_box", None)
@@ -479,12 +481,20 @@ def kein_flash_nah(b: Bewertung, g: GegnerLage, rest: float) -> str:
 def tief(b: Bewertung, namen: str, sind: str, sekunden: int, sie: str, fehlende: list | None = None) -> str:
     """'' = keine Warnung: du bist den Fehlenden zusammen klar ueberlegen (Live-Partie 26.09.: 'Du stehst tief,
     zurueck' an Riven Level 12 gegen Vi Level 6)."""
-    if fehlende:
-        gl = [g for g in b.gegner if g.s.name in {s.name for s in fehlende}]
-        if gl and b.kraft_gegen(gl, mit_verbuendeten=False) >= KLAR_STAERKER and (b.leben is None or b.leben >= 0.5):
-            return ""
     weg = "noch nie zu sehen gewesen" if sekunden >= b.zeit - 5 else f"seit {sek(sekunden)} nicht zu sehen"
     satz = f"Du stehst tief, und {namen} {sind} {weg}."
+    if fehlende:
+        gl = [g for g in b.gegner if g.s.name in {s.name for s in fehlende}]
+        r = b.kraft_gegen(gl, mit_verbuendeten=False) if gl else 0.0
+        if gl and r >= KLAR_STAERKER and (b.leben is None or b.leben >= 0.5):
+            return ""
+        if gl and r >= STAERKER and (b.leben is None or b.leben >= 0.5):
+            # Live 21:21, 14:30 - Carlos: "ich bin Level 12, Tryndamere 7, Sona 8 - ich nehme die beiden
+            # auseinander". Stimmt: dann ist der Grund fuer Vorsicht das Kopfgeld, nicht der Kampf.
+            preis = todespreis(b)
+            wer = "schlägt dich" if len(gl) == 1 else "schlagen dich auch zusammen"
+            return (satz + f" {namen} {wer} nicht"
+                    + (f", aber {preis}" if preis else "") + " - geh nicht tiefer, bleib an deiner Welle.")
     gruende = [x for x in verwundbar(b) if "weit vorn" not in x and "Turm" not in x]
     preis = todespreis(b)
     if preis:

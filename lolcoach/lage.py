@@ -99,8 +99,12 @@ class Lagebild:
                 sp_von = balken_zuordnen(name_von, p.gegner()) if name_von else None
                 sp_nach = balken_zuordnen(name_nach, p.gegner()) if name_nach else None
                 sp = sp_nach or sp_von
+                from .champions import hat_blink_oder_dash
+                # nur ohne eigenen Dash: Live 21:21, 9:18 sprangen Gragas und Tryndamere zugleich - ein Engage mit
+                # beiden E, kein Flash. Bei Dash-Champions bleibt es beim Protokoll (zum Nachpruefen).
                 if sp is not None and (sp_von is None or sp_nach is None or sp_von.name == sp_nach.name) \
-                        and "SummonerFlash" in sp.zauber and sp.champion_id not in blinks and not sp.tot:
+                        and "SummonerFlash" in sp.zauber and sp.champion_id not in blinks and not sp.tot \
+                        and not hat_blink_oder_dash(sp.champion_id):
                     if t := self.zauber.benutzt(sp, "SummonerFlash", zeit_von_wand(e[1]), "Bildschirm"):
                         neu.append(t)
             elif e[0] == "balken":

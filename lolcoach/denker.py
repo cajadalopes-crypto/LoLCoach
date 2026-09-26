@@ -564,6 +564,18 @@ def lane_tot_plan(b: Bewertung, jungle, sekunden: int, platten: bool) -> str:
     zurueck bist, und die Wards auf dem Rueckweg - oder, wer dich stattdessen erwischen kann."""
     n = b.lane.champion if b.lane else "Er"
     satz = f"{n} ist {sek(sekunden)} tot."
+    if b.tiefe is None and b.pos is not None and b.partie is not None:
+        # du bist nicht in deiner Lane (Live 21:21, 6:11: Carlos war mid) - lohnt der Weg zu deiner Welle?
+        from .bewertung import LANE_DER_ROLLE, WEGFAKTOR
+        lane = LANE_DER_ROLLE.get(b.ich.rolle)
+        tuerme = stehende_tuerme(b.partie)
+        eigene = [v for (t, l, _), v in tuerme.items() if t == b.partie.mein_team and l == lane]
+        if lane and eigene:
+            weg = min(abstand(b.pos, v) for v in eigene) * WEGFAKTOR / b.mein_tempo
+            if weg > sekunden:
+                return (f"{satz} Du bist {b.ort} - bis zu deiner Welle brauchst du {sek(weg)}, länger als er tot "
+                        f"ist. Nutz die Zeit dort, wo du bist.")
+            return f"{satz} Du bist {b.ort}: in {sek(weg)} bist du an deiner Welle - geh hin und schieb sie in seinen Turm."
     andere = gefahr(b)
     frisch = [x for x in andere if x.seit is not None and x.seit <= 15]
     if frisch:

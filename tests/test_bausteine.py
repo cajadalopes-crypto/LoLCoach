@@ -331,8 +331,9 @@ def flash_auf_dem_bildschirm():
     assert not lauf([[ich, er(900, 400)], [ich, er(1200, 420, 0.95)], [ich, er(1200, 420, 0.95)]])   # anderes Leben
     assert not lauf([[ich, er(900, 400)], [ich, er(1200, 420)], [ich, er(900, 400)]])    # zurueck: Fehlzuordnung
     p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.zeit > 400)
-    g = p.gegenueber()
-    adc = next(s for s in p.gegner() if s.rolle == "BOTTOM")
+    g = next(s for s in p.gegner() if s.champion_id == "Brand")      # ohne eigenen Dash
+    adc = next(s for s in p.gegner() if s.champion_id == "Varus")
+    shen = p.gegenueber()                                            # E ist ein Dash
     lb = lage.Lagebild()
     neu = lb.ereignisse(lambda w: 400.0, [("schirm_sprung", 0.0, ["feind", 0.5, 900, 400, 1200, 420, 0.19,
                                                                    g.champion, g.champion])], p)
@@ -340,6 +341,10 @@ def flash_auf_dem_bildschirm():
     lb = lage.Lagebild()
     assert not lb.ereignisse(lambda w: 400.0, [("schirm_sprung", 0.0, ["feind", 0.5, 900, 400, 1200, 420, 0.19,
                                                                        g.champion, adc.champion])], p)   # zwei Namen
+    # Live 21:21, 9:18: Gragas und Tryndamere "flashten" zugleich - ein Engage mit ihren E. Dash-Champions: stumm
+    lb = lage.Lagebild()
+    assert not lb.ereignisse(lambda w: 400.0, [("schirm_sprung", 0.0, ["feind", 0.5, 900, 400, 1200, 420, 0.19,
+                                                                       shen.champion, shen.champion])], p)
 
 
 def brunnen_nach_recall_und_tod():

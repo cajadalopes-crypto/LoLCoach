@@ -66,6 +66,14 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
 
 ## Braucht eine Partie
 
+- LIVE GEPRUEFT 26.09. 21:21 (Riven gegen Gragas, 11/1/2, Stand bis 0148c93): Denkkette spricht zusammenhaengend,
+  Kill-Urteile trafen (4:12 -> Kill 4:20, 15:11 -> Kill 15:17), Verbuendete 92-100 % sichtbar, Minimap 32 Bilder/s
+  (vorher 33,6-34,4 - die Balkenspur kostet ~5 %), Verzoegerung Median 0 s. Behoben (dieser Commit): Flash-
+  Meldungen warteten 9-17 s hinter langen Saetzen (jetzt unterbrechbar), Lane-Anweisung waehrend Carlos tot war,
+  "du bist frueh staerker" gegen die Siegquote (45,9 %), Schnellantwort auf Aussagen, "geh rein" ohne Ort,
+  Bildschirm-Flash bei Dash-Champions (9:18 Gragas + Tryndamere zugleich = Engage), Lissandra-E als "Flash".
+  Offen: Bildschirm-Flash bei Champions ohne Dash hat noch keinen echten Treffer - naechste Partie pruefen.
+
 - NEU 26.09. spaet: Flash auf dem Spielbild (`lebensbalken.Balkenspur`, ~10 Bilder/s im eigenen Thread): ein
   Gegner-Balken springt in einem Bild 250-600 px mit demselben Leben, ein zweiter Balken bleibt ruhig, Namen an
   Absprung und Landung stimmen -> Flash-Timer "das sehe ich auf dem Bildschirm". Generalprobe: laeuft, Minimap
