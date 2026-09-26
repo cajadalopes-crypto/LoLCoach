@@ -47,6 +47,8 @@ Notizen und Review durchsehen und nachschaerfen.
 
 ## Erledigt
 
+- Live: Partie endet erst nach Spielende (10 s Stille) oder 2 min Stille ohne Spielende -
+  ein Reconnect beendet sie nicht mehr mittendrin
 - Review per Sprache (Push-to-Talk im Review, Antwort gesprochen) - 54f7e40
 - Offene Fakten: Inhibitor 5:00, Teleport-Abklingzeit nach Zeit/Level/Quest - bca57f3
 - Tests fuer die Bausteine + tests/alle.py - 0eb3a7f; Doku + ANLEITUNG.md - 37cc39c

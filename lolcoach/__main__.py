@@ -125,18 +125,22 @@ def _dashboard():
     return d
 
 
-def _live_quelle(basis: str, aus_nach: float = 10.0):
-    """Liefert (Wanduhr, Schnappschuss), solange die Partie laeuft; endet, wenn
-    die API `aus_nach` Sekunden lang nicht antwortet."""
+def _live_quelle(basis: str, nach_spielende: float = 10.0, ohne_spielende: float = 120.0):
+    """Liefert (Wanduhr, Schnappschuss), solange die Partie laeuft. Schweigt die API,
+    endet die Partie nach `nach_spielende` Sekunden, wenn das Spiel wirklich vorbei war
+    (GameEnd), sonst erst nach `ohne_spielende` - ein Reconnect oder Haenger darf die
+    Partie nicht mittendrin beenden (Bericht, Review und neue Aufnahme waeren falsch)."""
     stumm_seit = None
+    vorbei = False
     while True:
         try:
             daten = liveapi.alles(basis)
+            vorbei = any(e.get("EventName") == "GameEnd" for e in (daten.get("events") or {}).get("Events", []))
             yield time.time(), daten
             stumm_seit = None
         except liveapi.KeinSpiel:
             stumm_seit = stumm_seit or time.monotonic()
-            if time.monotonic() - stumm_seit > aus_nach:
+            if time.monotonic() - stumm_seit > (nach_spielende if vorbei else ohne_spielende):
                 return
             time.sleep(1)
 
