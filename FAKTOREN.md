@@ -147,3 +147,6 @@ nach dem Play?") beantwortet das Kampf-Urteil (`denker.urteil` + `fenster_satz`)
 | Ruestung / Magieresistenz | eigene Werte | Median 1,00 | - |
 | Todeszeit | respawnTimer | Median -0,2 s | - |
 | Kampf-Urteil | Kill/Tod in 20 s | kill 22 -> 9 Kills, 0 Tode; kill_schnell 7 -> 5, 0 Tode | (scratchpad) |
+| Minimap: Position des Taeters | Ereignisse (Drache/Larven/Turm: Ort; Kill: beim Opfer) | 10 Partien, 174 Ereignisse mit Sichtung: 3 falsch - alle mit Code vor 17:42 am 26.09. (Geister-Icon klebte an Teemo, heute nicht mehr: `minimap.finde` findet dort nichts); seit 19:45 0 falsch | `minimap_ereignisprobe.py` |
+| Minimap: eigene Position | lebend, ausserhalb der ersten Minute | 194524 8,2 %, 212105 4,9 % der Takte ohne (Brunnen, vor 0fdab75); 235433 0,6 % | (scratchpad) |
+| Stimme: erster Ton | Wanduhr ab Abgabe | live 0,63 s -> stumm gemessen 0,19-0,29 s (Streaming, WASAPI), 0,01 s vorbereitet | `stimmprobe.py`, `verzoegerung_live.py` |
