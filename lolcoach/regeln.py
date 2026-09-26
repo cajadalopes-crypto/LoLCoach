@@ -17,6 +17,7 @@ from .entscheider import Entscheider
 from .zustand import Partie, Spieler, gegenteam, struktur
 
 BACK = re.compile(r"\bback\b|\brecall\b", re.I)   # eine Ansage rät zum Recall (komponist.back_eben)
+RUECKZUG = re.compile(r"geh (sofort |jetzt |lieber )?zurück|raus da", re.I)   # eine Ansage rät zum Rueckzug
 
 SOFORT, WICHTIG, HINWEIS = 3, 2, 1
 TIPP_BIS = 280      # Zeichen: nur so kurze Ansagen bekommen einen Konter-Tipp dazu (sonst > 25 s Sprechzeit)
@@ -100,6 +101,7 @@ class Regelwerk:
         self._gewarnt_vor: dict[str, float] = {}       # Spielername -> zuletzt eine Gefahr-Warnung zu ihm
         self._matchup_box = [-1e9]                     # zuletzt die Matchup-Siegquote gesagt (denker.fenster_satz)
         self._flash_box = [-1e9]                       # zuletzt "X hat kein Flash - spiel aggressiv" (komponist.chance)
+        self._rueckzug_zuletzt = -1e9                  # zuletzt zum Rueckzug geraten (_anlauf: kein Hin und Her)
         self._back_box = [-1e9]                        # zuletzt "geh back" gesagt (komponist.back_eben)
         self._fenster_box = [-1e9]                     # zuletzt ein Kampf-Urteil gegen den Lane-Gegner (denker.py) -
                                                        # geteilt mit komponist.chance ueber die Bewertung
@@ -147,6 +149,8 @@ class Regelwerk:
                 ansagen.append(a)
                 if BACK.search(a.text):
                     self._back_box[0] = p.zeit
+                if RUECKZUG.search(a.text):
+                    self._rueckzug_zuletzt = p.zeit
         return ansagen
 
     # --- Hilfen ---------------------------------------------------------------
@@ -698,6 +702,12 @@ class Regelwerk:
         mit_lage = [(gl, o) for s, o in kommen if (gl := self._gl(s))]
         if kommen and len(mit_lage) == len(kommen):
             text = komponist.anlauf(self.b, mit_lage)
+            # Kein Hin und Her im Kampf (Nachlauf Wukong 25:26-25:48: "Nimm den Kampf an" - "geh zurueck" - "Halte
+            # deine Stellung" - dreimal "geh zurueck" in 22 s): nach einem Rat zum Rueckzug 12 s kein "halte" und
+            # 8 s kein weiteres "geh zurueck" fuer den naechsten, der kommt - du bist schon auf dem Weg
+            seit = p.zeit - self._rueckzug_zuletzt
+            if seit < (8 if RUECKZUG.search(text) else 12):
+                return
             schl = "anlauf" if len(kommen) >= 2 else f"anlauf:{kommen[0][0].name}"
             if self._beruhigung_frei(kommen[0][0].name, text, p.zeit):
                 yield Ansage(text, SOFORT, schl, gueltig=3, sperre=cfg["sperre"],

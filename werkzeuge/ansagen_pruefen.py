@@ -2,6 +2,8 @@
 
 Was geprueft wird (26.09.2026, beim Gegenlesen von Hand gefunden - jetzt maschinell):
   - Widerspruch: ein "geh rein"/Druck-Satz bis 15 s nach einer Warnung,
+  - Hin und Her: "geh zurueck" und bis 12 s danach "halte deine Stellung"/"nimm den Kampf an"/"geh rein"
+    (Nachlauf Wukong 25:26-25:48, 26.09. nachts),
   - Doppelung: zweimal dasselbe Thema in 10 s,
   - Vorlage: ein Satz, der woertlich in wissen/makro.toml steht (also nicht gerechnet ist),
   - zu lang: ueber 300 Zeichen (~25 s Sprechzeit; seit 26.09. spricht der Coach zusammenhaengend - Carlos:
@@ -21,6 +23,8 @@ AUFNAHMEN = Path(__file__).resolve().parent.parent / "aufnahmen"
 SPRACHE = [(r"\bin 1 Sekunden\b", "in 1 Sekunden"), (r"Larven lebt\b", "Larven lebt"),
            (r"\bfür Der\b", "für Der"), (r"  ", "doppeltes Leerzeichen"), (r"\bNone\b", "None"),
            (r"\.\.", "zwei Punkte"), (r" ,", "Leerzeichen vor Komma")]
+# eigenes Muster, nicht regeln.RUECKZUG: die Pruefung muss auch gegen einen alten Stand laufen (Gegenprobe)
+RUECKZUG = re.compile(r"geh (sofort |jetzt |lieber )?zurück|raus da", re.I)
 
 
 def vorlagen() -> set[str]:
@@ -57,9 +61,14 @@ def ansagen(pfad: Path):
 def pruefe(pfad: Path) -> dict:
     gesagt = ansagen(pfad)
     feste = vorlagen()
-    befunde = {"widerspruch": [], "doppelt": [], "vorlage": [], "lang": [], "sprache": []}
+    befunde = {"widerspruch": [], "hinundher": [], "doppelt": [], "vorlage": [], "lang": [], "sprache": []}
     for i, a in enumerate(gesagt):
         t = a.gesprochen or a.zeit
+        if re.search(r"Halte deine Stellung|Nimm den Kampf an|nimm den Kampf an|[Gg]eh rein", a.text):
+            for b in gesagt[max(0, i - 6):i]:
+                if RUECKZUG.search(b.text) and 0 <= t - (b.gesprochen or b.zeit) <= 12:
+                    befunde["hinundher"].append((t, b.text, a.text))
+                    break
         if a.thema == "druck":
             for b in gesagt[max(0, i - 6):i]:
                 if b.thema == "gefahr" and 0 <= t - (b.gesprochen or b.zeit) <= 15:
@@ -97,7 +106,7 @@ if __name__ == "__main__":
         je_min = b["anzahl"] / max(1.0, b["minuten"])
         print(f"== {pfad.name}: {b['anzahl']} Ansagen in {b['minuten']:.0f} min ({je_min:.1f}/min); "
               + ", ".join(f"{k} {len(v)}" for k, v in b.items() if isinstance(v, list)))
-        for k in ("widerspruch", "doppelt", "sprache"):
+        for k in ("widerspruch", "hinundher", "doppelt", "sprache"):
             for x in b[k][:4]:
                 print(f"   {k} {uhr(x[0])}: " + " | ".join(x[1:]))
         vorl = {}
