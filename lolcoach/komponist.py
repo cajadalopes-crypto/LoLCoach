@@ -519,3 +519,29 @@ def spike(b: Bewertung, items: str) -> str:
     if wert <= -1:
         return satz + (f", aber {v}" if v else "") + ": noch kein All-in, erst mit dem nächsten Item."
     return satz + (f", {v}" if v else "") + f": jetzt gewinnst du kurze Trades gegen {g.champion}."
+
+
+def wiedereinstieg(b: Bewertung, sekunden: int, rolle: str) -> str:
+    """Tot, gleich wieder da: Kauf (aus dem Kaufplan) und das erste Ziel danach - Objective, das bald
+    kommt (ein lebendes nur, wenn die Kampflage 'nehmen' sagt), sonst die eigene Welle (drueckt sie auf
+    deinen Turm, zuerst dorthin)."""
+    from .kaufplan import _akk
+    kauf = ("kauf " + " und ".join(_akk(x) for x in b.kauf.kaufen)) if b.kauf is not None and b.kauf.kaufen else ""
+    ob = b.objective
+    lane = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}.get(rolle)
+    lohnt = ob is not None and (0 < ob[1] <= 60 or (ob[1] <= 0 and b.kampf is not None
+                                                     and b.kampf.urteil()[0] == "nehmen"))
+    if lohnt and not (rolle == "TOP" and ob[0] == "drache" and ob[1] > 0):
+        ziel = f"direkt {ZUM[ob[0]]}" + (", dein Team ist dort" if ob[1] <= 0 else f", {OBJ_NAME[ob[0]]} in {sek(ob[1])}")
+    elif lane and b.prio.get(lane) == "er":
+        ziel = f"sofort {lane}, seine Welle drückt auf deinen Turm"
+    elif rolle == "JUNGLE":
+        ziel = "die Camps auf der Seite des nächsten Objectives"
+    else:
+        ziel = "zurück in die Lane"
+        if not kauf:
+            return ""      # nichts, was er nicht selbst weiss - schweigen
+    return f"Noch {sekunden} Sekunden: " + (f"{kauf}, dann {ziel}." if kauf else f"{ziel}.")
+
+
+ZUM = {"drache": "zum Drachen", "baron": "zum Baron", "herold": "zum Herold", "larven": "zu den Larven"}

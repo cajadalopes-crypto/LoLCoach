@@ -120,7 +120,7 @@ class Regelwerk:
                       self._level, self._items, self._gold, self._cs, self._tod,
                       self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf,
                       self._ward, self._recall_fenster, self._tief_ohne_sicht, self._kontrollauge,
-                      self._objective_start, self._plan):
+                      self._objective_start, self._plan, self._wiedereinstieg):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 ansagen.append(a)
@@ -836,6 +836,18 @@ class Regelwerk:
             text = (komponist.recall(self.b, "welle") if self.b is not None
                     else cfg["satz"].format(gold=int((p.gold or 0) // 100 * 100)))
             yield Ansage(text, WICHTIG, "recallfenster", gueltig=6, sperre=cfg["erneut_nach"], thema="back")
+
+    def _wiedereinstieg(self, p: Partie, v: Partie):
+        """Kurz vor dem Wiedereinstieg (du stehst im Shop): was du kaufst und wohin du danach gehst."""
+        if not p.ich.tot or self.b is None or not (3 < p.ich.respawn <= 8):
+            return
+        schl = ("wiedereinstieg", round(p.zeit - (p.ich.respawn or 0)))   # je Tod einmal
+        if any(k[0] == "wiedereinstieg" and abs(k[1] - schl[1]) < 60 for k in self._gemeldet
+               if isinstance(k, tuple) and len(k) == 2):
+            return
+        self._gemeldet.add(schl)
+        if text := komponist.wiedereinstieg(self.b, int(p.ich.respawn), p.ich.rolle):
+            yield Ansage(text, WICHTIG, "wiedereinstieg", gueltig=8, sperre=30, thema="plan")
 
     def _plan(self, p: Partie, v: Partie):
         """Der Plan zwischen den Ereignissen - siehe entscheider.py."""
