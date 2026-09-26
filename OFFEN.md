@@ -66,6 +66,12 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
 
 ## Braucht eine Partie
 
+- NEU 26.09. spaet: Flash auf dem Spielbild (`lebensbalken.Balkenspur`, ~10 Bilder/s im eigenen Thread): ein
+  Gegner-Balken springt in einem Bild 250-600 px mit demselben Leben, ein zweiter Balken bleibt ruhig, Namen an
+  Absprung und Landung stimmen -> Flash-Timer "das sehe ich auf dem Bildschirm". Generalprobe: laeuft, Minimap
+  unverlangsamt. Nach der Partie: `balkenspur`/`schirm_sprung` im Protokoll gegen Carlos' Pings und die eigenen
+  HUD-Flashes pruefen (Treffer, Fehlalarme); bei Fehlalarmen stummschalten.
+
 - NEU 26.09. abends: Denkkette und ganze Saetze (91968eb .. df9205e). Live pruefen: stimmen die
   Kill-/Trade-Urteile (Level, Items, Leben, Flash, Jungler, Matchup, Zone)? Sind die Saetze zu lang
   waehrend eines Kampfs (bis ~25 s Sprechzeit; SOFORT unterbricht)? Kommt die Ansage jetzt ohne

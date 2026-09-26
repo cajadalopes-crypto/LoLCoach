@@ -90,6 +90,18 @@ class Lagebild:
                 self.wellen_zeit = zeit_von_wand(e[1])
             elif e[0] == "platten":
                 self.platten.update(e[2])
+            elif e[0] == "schirm_sprung":
+                # Flash auf dem Spielbild (lebensbalken.Balkenspur): nur mit gelesenem Namen, und sind beide Namen
+                # (Absprung, Landung) lesbar, muessen sie derselbe Spieler sein
+                from .lebensbalken import zuordnen as balken_zuordnen
+                team, anteil, x0, y0, x1, y1, weite, name_von, name_nach = e[2]
+                sp_von = balken_zuordnen(name_von, p.gegner()) if name_von else None
+                sp_nach = balken_zuordnen(name_nach, p.gegner()) if name_nach else None
+                sp = sp_nach or sp_von
+                if sp is not None and (sp_von is None or sp_nach is None or sp_von.name == sp_nach.name) \
+                        and "SummonerFlash" in sp.zauber and sp.champion_id not in blinks and not sp.tot:
+                    if t := self.zauber.benutzt(sp, "SummonerFlash", zeit_von_wand(e[1]), "Bildschirm"):
+                        neu.append(t)
             elif e[0] == "balken":
                 # Lebensbalken ueber den Koepfen (Spielbild): nur mit gelesenem Namen zugeordnet
                 from .lebensbalken import zuordnen as balken_zuordnen
@@ -381,6 +393,7 @@ class _Kamera:
 CHAT = (0.0, 0.70, 0.32, 0.95)
 BILDSCHIRM_BREITE = 1600   # fuer Claude: Lebensbalken und Namen noch lesbar, ~150 KB je Bild
 SCHIRM_ALLE = 5.0          # Sekunden: so oft ein Spielbild auf die Platte (Review), ~45 MB je 30-min-Partie
+SPUR_ALLE = 0.08           # Sekunden: so oft sucht die Balkenspur Flash-Spruenge auf dem Spielbild (~12/s)
 BILDER_BEHALTEN = 20 * 60     # Sekunden: aeltere Minimap-Bilder der laufenden Partie werden entfernt
 
 
@@ -430,6 +443,10 @@ class Beobachter(threading.Thread):
             leser = Leser()
         except Exception as e:
             self.fehler = f"Chat: {e}"
+        self._spur_bild: tuple[float, np.ndarray] | None = None
+        self._spur_signal = threading.Event()
+        threading.Thread(target=self._spur_lauf, args=(leser,), daemon=True).start()
+        letzte_spur = 0.0
         if self.ordner:   # fortgesetzte Partie: abgebrochene Protokolle erst saeubern, sonst ist das Angehaengte unlesbar
             from .aufzeichnung import gz_saeubern
             gz_saeubern(self.ordner / "sichtungen.jsonl.gz")
@@ -474,6 +491,17 @@ class Beobachter(threading.Thread):
                                 while gespeichert and int(gespeichert[0].stem) / 1000 < start - BILDER_BEHALTEN:
                                     gespeichert.pop(0).unlink(missing_ok=True)
                             self.anzahl += 1
+                        if start - letzte_spur >= SPUR_ALLE and not self._spur_signal.is_set():
+                            letzte_spur = start
+                            try:
+                                spiel = kamera.hole((l, o, r, u))
+                                if spiel is not None:
+                                    self._spur_bild = (start, cv2.resize(
+                                        spiel, (BILDSCHIRM_BREITE, round(BILDSCHIRM_BREITE * hoehe / breite)),
+                                        interpolation=cv2.INTER_AREA))
+                                    self._spur_signal.set()
+                            except Exception as e:
+                                self.fehler = f"Spur: {type(e).__name__}: {e}"
                         if start - letzter_chat >= 1.0:  # Chat, Mitspieler-Leiste, Bildschirm einmal je Sekunde
                             letzter_chat = start
                             try:   # eigener Schutz: ein Fehler hier darf Chat und Leiste nicht mitreissen
@@ -535,6 +563,41 @@ class Beobachter(threading.Thread):
                 protokoll.close()
             if self._ereignis_datei:
                 self._ereignis_datei.close()
+
+    def _spur_lauf(self, leser) -> None:
+        """Arbeits-Thread der Balkenspur (lebensbalken.Balkenspur): ~12 Spielbilder/s, Balken finden (~13 ms),
+        Spruenge pruefen; bei einem Sprung die Namen am Absprung (Bild davor) und am Landepunkt lesen. Die Spur
+        selbst geht ins Protokoll - Material, um die Erkennung nach einer Partie nachzupruefen."""
+        from collections import deque
+        from . import lebensbalken
+        spur = lebensbalken.Balkenspur()
+        bilder: deque = deque(maxlen=4)
+        while not self._halt.is_set():
+            if not self._spur_signal.wait(0.5):
+                continue
+            t, klein = self._spur_bild
+            self._spur_signal.clear()
+            try:
+                balken = lebensbalken.finde(klein)
+                bilder.append((t, klein))
+                spruenge = spur.neu(t, balken, klein.shape[1])
+                with self._schloss:
+                    self._ereignisse.append(("balkenspur", t, [[b.x, b.y, b.team, b.anteil] for b in balken]))
+                for s in spruenge:
+                    davor = next((k for zt, k in reversed(bilder) if zt < s.zeit), None)
+                    landung = next((k for zt, k in bilder if zt >= s.zeit), klein)
+                    name_von = name_nach = ""
+                    if leser is not None:
+                        b_von = lebensbalken.Balken(s.von[0], s.von[1], s.anteil, s.team)
+                        b_nach = lebensbalken.Balken(s.nach[0], s.nach[1], s.anteil, s.team)
+                        if davor is not None:
+                            name_von = lebensbalken.namen_lesen(davor, [b_von], leser)[0][1]
+                        name_nach = lebensbalken.namen_lesen(landung, [b_nach], leser)[0][1]
+                    with self._schloss:
+                        self._ereignisse.append(("schirm_sprung", s.zeit, [s.team, s.anteil, *s.von, *s.nach, s.weite,
+                                                                          name_von, name_nach]))
+            except Exception as e:
+                self.fehler = f"Spur: {type(e).__name__}: {e}"
 
     def _balken_pruefen(self, start: float, klein, leser) -> None:
         """Gegnerische Lebensbalken im Spielbild finden (schnell, hier) und ihre Namen lesen (Texterkennung,

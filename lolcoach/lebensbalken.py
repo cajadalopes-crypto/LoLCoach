@@ -166,3 +166,66 @@ def zuordnen(text: str, spieler) -> object | None:
             namen[n.lower().replace(" ", "").replace("'", "")] = s
     treffer = difflib.get_close_matches(wort, list(namen), n=1, cutoff=0.7)
     return namen[treffer[0]] if treffer else None
+
+
+# --- Flash auf dem Spielbild ---------------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class SchirmSprung:
+    zeit: float             # Wanduhr des Bildes, in dem er gelandet war
+    team: str
+    anteil: float           # sein Leben (erkennt ihn vor und nach dem Sprung wieder)
+    von: tuple[int, int]
+    nach: tuple[int, int]
+    weite: float            # Anteil der Bildbreite
+
+
+class Balkenspur:
+    """Flash auf dem Spielbild: der Lebensbalken eines Gegners verschwindet an einer Stelle und steht im naechsten
+    Bild (~80 ms spaeter) 250-600 px weiter - mit demselben Leben. So schnell ist kein Dash (die laufen ueber
+    mehrere Bilder), und die Minimap sieht es im Kampf nicht: dort liegen die Icons uebereinander (gemessen 26.09.:
+    von 12 eigenen Flashes erkannte die Minimap 1). Eine Kameradrehung verschiebt ALLE Balken - deshalb braucht
+    es einen zweiten Balken, der ruhig bleibt (meist dein eigener). Bestaetigt, wenn er im Folgebild am Landepunkt
+    bleibt und am Absprung keiner mehr steht."""
+
+    SPRUNG_MIN = 0.16      # Anteil der Bildbreite in einem Bild (~250 px bei 1600)
+    SPRUNG_MAX = 0.40
+    RUHIG = 0.03           # so weit darf sich ein Bezugsbalken zwischen zwei Bildern bewegen
+    LEBEN_TOL = 0.06
+    BILD_MAX = 0.15        # Sekunden zwischen zwei Bildern, sonst kein Vergleich
+
+    def __init__(self):
+        self._vorher: tuple[float, list[Balken]] | None = None
+        self._kandidat: list[tuple[float, str, float, tuple[int, int], tuple[int, int], float]] = []
+
+    def neu(self, zeit: float, balken: list[Balken], breite: int) -> list[SchirmSprung]:
+        aus = []
+        for t0, team, anteil, von, nach, weite in self._kandidat:
+            da = any(b.team == team and abs(b.x - nach[0]) + abs(b.y - nach[1]) <= 1.5 * self.RUHIG * breite
+                     and abs(b.anteil - anteil) <= self.LEBEN_TOL for b in balken)
+            zurueck = any(b.team == team and abs(b.x - von[0]) + abs(b.y - von[1]) <= self.RUHIG * breite
+                          and abs(b.anteil - anteil) <= self.LEBEN_TOL for b in balken)
+            if da and not zurueck:
+                aus.append(SchirmSprung(t0, team, anteil, von, nach, weite))
+        self._kandidat = []
+        vor, self._vorher = self._vorher, (zeit, list(balken))
+        if vor is None or not (0 < zeit - vor[0] <= self.BILD_MAX):
+            return aus
+        frei_alt, frei_neu, ruhig = list(vor[1]), list(balken), 0
+        for a in vor[1]:
+            b = min((b for b in frei_neu if b.team == a.team and abs(b.anteil - a.anteil) <= self.LEBEN_TOL),
+                    key=lambda b: abs(b.x - a.x) + abs(b.y - a.y), default=None)
+            if b is not None and abs(b.x - a.x) + abs(b.y - a.y) <= self.RUHIG * breite:
+                frei_alt.remove(a)
+                frei_neu.remove(b)
+                ruhig += 1
+        if not ruhig:
+            return aus      # ohne ruhigen Bezug ist ein Sprung nicht von einer Kameradrehung zu trennen
+        for a in (x for x in frei_alt if x.team == "feind"):
+            kand = [b for b in frei_neu if b.team == "feind" and abs(b.anteil - a.anteil) <= self.LEBEN_TOL
+                    and self.SPRUNG_MIN * breite <= ((b.x - a.x) ** 2 + (b.y - a.y) ** 2) ** 0.5 <= self.SPRUNG_MAX * breite]
+            if len(kand) == 1:
+                b = kand[0]
+                weite = ((b.x - a.x) ** 2 + (b.y - a.y) ** 2) ** 0.5 / breite
+                self._kandidat.append((zeit, "feind", b.anteil, (a.x, a.y), (b.x, b.y), round(weite, 3)))
+        return aus

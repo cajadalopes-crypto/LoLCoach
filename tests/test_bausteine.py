@@ -299,6 +299,39 @@ def denkkette():
     assert t.benutzt(replace(g, level=2), "R", 107, "Chat") is None
 
 
+def flash_auf_dem_bildschirm():
+    """Balkenspur: ein Gegner-Balken springt in einem Bild ~300 px mit demselben Leben, dein Balken bleibt ruhig ->
+    Flash (bestaetigt im Folgebild). Kein Flash: Kamera dreht (alle springen), Laufen, anderes Leben, Ruecksprung.
+    Dazu das Lagebild: gelesener Name -> Flash-Timer mit Quelle 'Bildschirm'."""
+    from lolcoach import lage
+    from lolcoach.lebensbalken import Balken as B, Balkenspur
+
+    def lauf(bilder):
+        s, aus = Balkenspur(), []
+        for i, balken in enumerate(bilder):
+            aus += s.neu(1.0 + 0.08 * i, balken, 1600)
+        return aus
+    ich = B(800, 450, 0.9, "ich")
+    er = lambda x, y, a=0.55: B(x, y, a, "feind")        # noqa: E731
+    flash = lauf([[ich, er(900, 400)], [ich, er(1200, 420)], [ich, er(1205, 421)]])
+    assert len(flash) == 1 and flash[0].von == (900, 400) and flash[0].nach == (1200, 420), flash
+    kamera = [[ich, er(900, 400)], [B(1100, 450, 0.9, "ich"), er(1200, 400)], [B(1100, 450, 0.9, "ich"), er(1200, 400)]]
+    assert not lauf(kamera)                                              # ohne ruhigen Bezug kein Sprung
+    assert not lauf([[ich, er(900, 400)], [ich, er(925, 405)], [ich, er(950, 410)]])     # Laufen
+    assert not lauf([[ich, er(900, 400)], [ich, er(1200, 420, 0.95)], [ich, er(1200, 420, 0.95)]])   # anderes Leben
+    assert not lauf([[ich, er(900, 400)], [ich, er(1200, 420)], [ich, er(900, 400)]])    # zurueck: Fehlzuordnung
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.zeit > 400)
+    g = p.gegenueber()
+    adc = next(s for s in p.gegner() if s.rolle == "BOTTOM")
+    lb = lage.Lagebild()
+    neu = lb.ereignisse(lambda w: 400.0, [("schirm_sprung", 0.0, ["feind", 0.5, 900, 400, 1200, 420, 0.19,
+                                                                   g.champion, g.champion])], p)
+    assert len(neu) == 1 and neu[0].quelle == "Bildschirm" and lb.zauber.fehlt(g, "SummonerFlash", 401) > 250, neu
+    lb = lage.Lagebild()
+    assert not lb.ereignisse(lambda w: 400.0, [("schirm_sprung", 0.0, ["feind", 0.5, 900, 400, 1200, 420, 0.19,
+                                                                       g.champion, adc.champion])], p)   # zwei Namen
+
+
 def platten_lesen():
     """Platten-Ziffern der Turm-Icons (Camille-Partie, ~10:40): oben 2, Mitte 4, unten 4 bei ihm, deine
     Mitte 4; Teemos Icon verdeckt deinen inneren Mid-Turm -> keine Zahl statt einer falschen."""
@@ -383,6 +416,6 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
-                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, platten_lesen, teleport_von_der_minimap, lebensbalken_lesen):
+                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, platten_lesen, teleport_von_der_minimap, lebensbalken_lesen):
         test()
         print(f"{test.__name__} OK")

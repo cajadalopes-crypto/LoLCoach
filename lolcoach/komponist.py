@@ -440,8 +440,8 @@ def zauber_neu(b: Bewertung, g: GegnerLage, zauber: str, dauer: float, quelle: s
     if ult:
         satz = f"{g.champion} hat die Ult benutzt, sie ist bis {bis} weg"
     else:
-        satz = (f"{g.champion} hat {zauber} benutzt" + (" - das sehe ich auf der Minimap -" if quelle == "Minimap"
-                                                         else ",") + f" bis {bis} hat {g.champion} keins")
+        woher = {"Minimap": " - das sehe ich auf der Minimap -", "Bildschirm": " - das sehe ich auf dem Bildschirm -"}
+        satz = f"{g.champion} hat {zauber} benutzt" + woher.get(quelle, ",") + f" bis {bis} hat {g.champion} keins"
     ist_lane = b.lane is not None and g.s.name == b.lane.s.name
     if zauber == "Teleport":
         wo = f" und ist jetzt {g.ort}" if g.ort else ""

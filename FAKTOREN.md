@@ -38,7 +38,7 @@ Sicherheit), `komponist.py` (Saetze je Anlass), `regeln.py` (wann).
 | Level, Items, Kills/Tode, Kopfgeld | rechnet | API; `bewertung.kopfgeld`, `kill_gold` |
 | Leben | teilweise | Lebensbalken im Spielbild, nur wenn er auf deinem Bildschirm ist (`lebensbalken.py`) |
 | Goldschaetzung / ungenutztes Gold | rechnet | `bewertung.gold_offen` (+-300), Faktor "gold_offen" |
-| Flash, Teleport, globale Ults | rechnet | Minimap-Spruenge + Chat-Pings (`zauber.py`, `lage._fernsprung`) |
+| Flash, Teleport, globale Ults | rechnet | Minimap-Spruenge + Chat-Pings (`zauber.py`, `lage._fernsprung`); im Kampf dazu das Spielbild (`lebensbalken.Balkenspur`) - braucht eine Partie zur Pruefung |
 | andere Beschwoererzauber, Ult | teilweise | nur, wenn gepingt; Ult erst ab Level 6 |
 | Mana | rechnet | Manabalken unter seinem Lebensbalken (`lebensbalken.mana`), Faktor "mana_er" bei Mana-Champions |
 | Q/W/E-Abklingzeiten | nicht messbar | das Spiel zeigt fremde Abklingzeiten nicht |
