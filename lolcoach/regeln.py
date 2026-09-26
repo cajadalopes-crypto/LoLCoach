@@ -1015,7 +1015,11 @@ class Regelwerk:
                 if self.b is not None:
                     tp = "SummonerTeleport" in p.ich.zauber or (
                         p.ich.rolle == "TOP" and p.zeit >= self.m["rollenquest"]["top_teleport_spaetestens"])
-                    dazu = komponist.obj_dazu(self.b, ich_weit <= cfg["hin_bis"], tp)
+                    try:
+                        kl = bewertung.kampf_um(p, self.lage, schl)
+                    except Exception:
+                        kl = None
+                    dazu = komponist.obj_dazu(self.b, ich_weit <= cfg["hin_bis"], tp, kl)
                 yield Ansage(f"{text} {dazu}".strip(), WICHTIG, f"objstart:{schl}", gueltig=15, sperre=20,
                              thema="objective")
 

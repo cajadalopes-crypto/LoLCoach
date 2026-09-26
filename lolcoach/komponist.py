@@ -20,6 +20,7 @@ wird keine Chance angesagt, die dich nach vorn schickt.
 from __future__ import annotations
 
 from .bewertung import GEGNER_TEMPO_RESERVE, Bewertung, GegnerLage
+from .zustand import gegenteam
 
 GEFAHR_SEKUNDEN = 8.0        # so schnell bei dir = akute Gefahr
 RUHE_SEKUNDEN = 20.0         # so lange mindestens weg = ein Fenster, das sich lohnt
@@ -314,6 +315,9 @@ def chance(b: Bewertung, platten: bool) -> str | None:
     schiebt_ihr = welle is not None and welle[0] >= welle[1] + 2
     if b.gold >= RECALL_GOLD and (schiebt_ihr or not lebt) and not back_eben(b):
         return f"Schieb die Welle in den Turm und geh back, du hast {b.gold // 100 * 100} Gold"
+    if b.gold >= RECALL_GOLD and back_eben(b):
+        # "geh back" steht noch (er hat das Gold noch): nicht dagegen "hol dir die Platten" (Nachlauf 194524, 14:02)
+        return None
     if platten and (schiebt_ihr or not lebt):
         return f"Schieb die Welle in den Turm und hol dir {_platten(b)}"
     if b.gold >= RECALL_GOLD + 300 and not back_eben(b):
@@ -666,10 +670,21 @@ def zahlen_nachteil(b: Bewertung, tote: list[str], sekunden: int) -> str:
     return satz + f". Nimm keinen Kampf an, bis sie wieder da sind - {_rueckzug(b)[:1].lower() + _rueckzug(b)[1:]}."
 
 
-def obj_dazu(b: Bewertung, nah: bool, tp_moeglich: bool) -> str:
-    """Dein Team faengt ein Objective an - was du tust."""
+def obj_dazu(b: Bewertung, nah: bool, tp_moeglich: bool, kl=None) -> str:
+    """Dein Team faengt ein Objective an - was du tust. `kl`: bewertung.Kampflage an der Grube."""
     if nah:
         return "Du bist nah genug, geh hin" + (f" - das sind {sek(b.zum_objective)}." if b.zum_objective and b.zum_objective >= 5 else ".")
+    # Kann keiner von ihnen es streitig machen, braucht das Team deinen Teleport nicht (Nachlauf 194524, 13:58:
+    # "teleportier dich hinter die Grube" - Vi war seit 24 s tot, und 4 s spaeter hiess es "hol dir die Platten")
+    if kl is not None:
+        art, _ = kl.urteil()
+        wir, die, offen = kl.zahlen()
+        p = b.partie
+        j = p.jungler(gegenteam(p.mein_team)) if p is not None and p.mein_team else None    # tot: nicht in b.gegner
+        j_tot = j is not None and j.tot
+        if art == "nehmen" and (j_tot or die + offen == 0):
+            warum = f"{j.champion} ist tot" if j_tot else "keiner von ihnen ist rechtzeitig dort"
+            return f"Das schafft dein Team ohne dich - {warum}. Mach du Druck auf deiner Seite."
     tp = b.zweiter if b.zweiter is not None and b.zweiter[0] == "SummonerTeleport" else None
     if tp is None and tp_moeglich:
         tp = ("SummonerTeleport", 0.0)
