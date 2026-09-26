@@ -24,17 +24,21 @@ man mit ihm redet. Anforderungen: `ANFORDERUNGEN.md`. Bedienung fuer Carlos:
 | `liveapi.py` | Live Client Data API (127.0.0.1:2999) |
 | `zustand.py` | Rohdaten -> Spielzustand (reine Funktion eines Schnappschusses) |
 | `aufzeichnung.py` | jede Partie nach `aufnahmen/` (+ `_bilder/` mit Protokollen, `_ansagen.json`, `_notizen.md`, `_spielakte.md`) |
-| `bild.py`, `lage.py` | Spielfenster finden; Beobachter-Thread (dxcam, 15 Bilder/s): Minimap, Mitspieler-Leiste, Chat, Wellen; Lagebild (wer zuletzt wo, Timer, Leben, Wellen); Nachspielen aus Protokoll/Bildern |
-| `minimap.py` | Champions erkennen + Verfolger (Umkreis, 6 ms/Bild), Flash-Spruenge, Orte in Worten |
-| `hud.py` | Mitspieler-Leiste ueber der Minimap: Leben, Ult bereit |
+| `bild.py`, `lage.py` | Spielfenster finden; Beobachter-Thread (dxcam, 60 Bilder/s): Minimap, HUD, Mitspieler-Leiste, Chat, Wellen, Platten, Spielbild; Lagebild (wer zuletzt wo, Timer, Leben, Wellen, Platten); Nachspielen aus Protokoll/Bildern |
+| `minimap.py` | Champions erkennen (Kreis-Icons von CommunityDragon) + Verfolger (Umkreis, Halbmasken, Verdeckung, 6 ms/Bild), Flash-Spruenge mit Bestaetigung, Orte in Worten |
+| `platten.py` | Platten-Ziffer in den Turm-Icons der Minimap (Vorlagen `wissen/platten_ziffern.png`) |
+| `hud.py` | Mitspieler-Leiste ueber der Minimap: Leben, Ult bereit; eigene Q W E R D F bereit (gelbe Tastenbuchstaben) |
 | `welle.py` | Vasallen-Punkte -> Wellenstand je Lane |
 | `texterkennung.py`, `zauber.py` | Windows-OCR fuer den Chat; Zauber-/Ult-Timer (Chat-Pings, Minimap-Spruenge) |
-| `regeln.py` + `wissen/makro.toml` | Regelwerk: WANN der Coach etwas sagt (Saetze und Schwellen in der toml) |
-| `sprechplan.py`, `stimme.py` | wer redet wann; Stimme Killian (neuronal, edge-tts), Pause/Wiederholen bei Fragen |
+| `regeln.py` + `wissen/makro.toml` | Regelwerk: WANN der Coach etwas sagt (Schwellen in der toml; die toml-Saetze nur noch ohne Minimap) |
+| `bewertung.py` | Lagebewertung je Takt: alles verrechnet (Leben, Flash/TP/Ult aus dem HUD, Ankunftszeit jedes Gegners, Tiefe, Turmnaehe, Kraefte, Welle, Prio aller Lanes, Platten, naechstes Objective); `text()` fuer Claude |
+| `komponist.py` | baut aus der Bewertung jede Ansage (Lage -> Handlung -> entscheidender Grund); Gefahr vor Chance |
+| `entscheider.py`, `jungle.py` | der Plan zwischen den Ereignissen (Optionen, Sicherheit, Wert, Reihenfolge; nach Carlos' `Reasoning/LoL Reasoning.txt`); Jungler-Startseite und wahrscheinliche Kartenseite |
+| `sprechplan.py`, `stimme.py` | wer redet wann (Vorrang, Themen-Sperre, kein "geh rein" direkt nach einer Warnung); Stimme Killian (neuronal, edge-tts) |
 | `gehirn.py`, `stratege.py` | Spielakte + Briefing, Midgame-Plan, situative Anweisungen (Claude formuliert WAS) |
 | `todesanalyse.py` | Rueckblick der letzten 45 s; beim Tod die Fakten fuer "warum und was naechstes Mal" |
 | `profil.py` | Gedaechtnis ueber Partien: Kennzahlen je Aufnahme (Cache `aufnahmen/profil.json`), Fokus aus dem letzten Review -> Briefing, fruehere Partien -> Review |
-| `champions.py`, `wissen/lexikon/` | Wissensbasis: Steckbriefe aus Data Dragon; Lexikon (Grundlagen, Saison 2026, alle 173 Champions) |
+| `champions.py`, `wissen/lexikon/` | Wissensbasis: Steckbriefe aus Data Dragon; Lexikon (Grundlagen, Mechaniken mit Zahlen, Saison 2026, alle 173 Champions in voller Tiefe); `wissen/mechanik.toml` maschinenlesbar |
 | `sprache.py`, `antworten.py` | Push-to-Talk, faster-whisper (RTX 4070), Sofort-Antworten oder Claude |
 | `itemnamen.py` | fast richtige Item-Namen in Claude-Saetzen korrigieren |
 | `dashboard.py` + `web/dashboard.html` | Live-Dashboard :8790 |
