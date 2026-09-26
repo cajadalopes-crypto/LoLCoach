@@ -26,10 +26,11 @@ NOCH_AKTUELL = 25.0   # so alt darf ein unterbrochener Satz sein, um wiederholt 
 
 
 class Stimme:
-    def __init__(self, sprache: str = "German", warten: bool = False):
+    def __init__(self, sprache: str = "German", warten: bool = False, lautstaerke: int = 100):
         """`warten`: jeder Satz blockiert, bis er gesprochen ist - zum Anhoeren
-        einer Aufnahme im Zeitraffer."""
-        self.warten = warten
+        einer Aufnahme im Zeitraffer. `lautstaerke` 0 fuer Tests."""
+        self.warten, self.lautstaerke = warten, lautstaerke
+        self.protokoll: list[str] = []   # was angefangen wurde, in Reihenfolge
         self._schlange: queue.Queue = queue.Queue()   # (text, fertig)
         self._vorrang: queue.Queue = queue.Queue()     # Antworten
         self._frei = threading.Event()
@@ -51,6 +52,7 @@ class Stimme:
                 v.Voice = stimmen.Item(i)
                 break
         v.Rate = 1
+        v.Volume = self.lautstaerke
         self._bereit.set()
         while True:
             try:
@@ -64,6 +66,7 @@ class Stimme:
                 except queue.Empty:
                     continue
             self._stopp.clear()
+            self.protokoll.append(text)
             v.Speak(text, _ASYNC)
             while not v.WaitUntilDone(40):
                 if self._stopp.is_set():

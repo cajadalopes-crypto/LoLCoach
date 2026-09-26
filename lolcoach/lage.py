@@ -82,7 +82,7 @@ class Beobachter(threading.Thread):
     legt (Wanduhr, Sichtungen) bereit. Jedes `speichere_jedes`-te Bild landet
     zusaetzlich im Bilderordner der Aufnahme (Material fuers Nachspielen)."""
 
-    def __init__(self, ordner: Path | None, takt: float = 0.5, speichere_jedes: int = 2):
+    def __init__(self, ordner: Path | None, takt: float = 0.25, speichere_jedes: int = 4):
         super().__init__(daemon=True)
         self.ordner, self.takt, self.speichere_jedes = ordner, takt, speichere_jedes
         if ordner:
@@ -142,6 +142,43 @@ def karte_aus_bild(pfad: Path, hoehe: int = minimap.REFERENZ_HOEHE) -> np.ndarra
     x0 = ecke - round(minimap.RAND_RECHTS * hoehe) - s
     y0 = ecke - round(minimap.RAND_UNTEN * hoehe) - s
     return bild[y0:y0 + s, x0:x0 + s]
+
+
+def sicht_fuer(pfad) -> "SichtAusBildern | None":
+    """Sichtungen einer Aufnahme: aus den Bildern, oder - wenn die schon
+    aufgeraeumt sind - aus der gespeicherten sichtungen.json."""
+    from . import aufzeichnung
+    if bilder := aufzeichnung.bilder(pfad):
+        return SichtAusBildern(bilder)
+    ordner = Path(pfad).with_name(Path(pfad).name.removesuffix(".jsonl.gz") + "_bilder")
+    if (ordner / "sichtungen.json").exists():
+        return SichtAusBildern.aus_cache(ordner)
+    return None
+
+
+def bilder_aufraeumen(behalte: int = 3) -> float:
+    """Minimap-Bilder brauchen 120-180 MB je Partie. Nach der Auswertung reicht
+    `sichtungen.json` (~1 MB) zum Nachspielen. Die Bilder der letzten `behalte`
+    Partien bleiben (fuer neue Erkennungsstaende), aelteren bleibt nur die
+    Sichtungsdatei. Gibt die freigegebenen MB zurueck."""
+    from . import aufzeichnung, zustand
+    aufnahmen = sorted(aufzeichnung.ORDNER.glob("*.jsonl.gz"))
+    frei = 0.0
+    for pfad in aufnahmen[:-behalte] if behalte else aufnahmen:
+        bilder = aufzeichnung.bilder(pfad)
+        if not bilder:
+            continue
+        champions_ = next((champions(p) for p in map(zustand.partie, aufzeichnung.lies(pfad)) if p.spieler), None)
+        if not champions_:
+            continue
+        sicht = SichtAusBildern(bilder)
+        sicht._berechne(champions_)  # stellt sicher, dass sichtungen.json vollstaendig ist
+        if len(sicht._ergebnis or {}) < len(bilder):
+            continue
+        for _, b in bilder:
+            frei += b.stat().st_size
+            b.unlink()
+    return frei / 1e6
 
 
 class SichtAusBildern:

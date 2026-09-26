@@ -126,6 +126,9 @@ def live(args) -> None:
         if not args.ohne_aufnahme:
             schreiber = aufzeichnung.Schreiber()
             print(f"Partie erkannt - Aufnahme: {schreiber.pfad}")
+            for a in anzeigen:
+                if hasattr(a, "notizen"):  # Sprachnotizen landen neben der Aufnahme
+                    a.notizen = schreiber.pfad.with_name(schreiber.pfad.name.removesuffix(".jsonl.gz") + "_notizen.md")
         if not args.ohne_bilder:
             ordner = schreiber.bilderordner if schreiber else None
             beobachter = lage.Beobachter(ordner)
@@ -157,6 +160,11 @@ def _bericht_im_hintergrund(pfad, ich) -> None:
         print(f"Bericht: {ziel}", flush=True)
     except Exception as e:  # der Bericht darf den Coach nie beenden
         print(f"Bericht fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
+    try:
+        if (frei := lage.bilder_aufraeumen(behalte=3)) > 0:
+            print(f"Alte Minimap-Bilder aufgeraeumt: {frei:.0f} MB frei (Sichtungen bleiben)", flush=True)
+    except Exception as e:
+        print(f"Aufraeumen fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
 
 
 def bericht_befehl(args) -> None:
@@ -174,11 +182,11 @@ def abspielen(args) -> None:
         sys.exit("Keine Aufnahme gefunden.")
     print(f"Aufnahme: {pfad}")
     sprecher = stimme.Stimme(warten=True) if args.laut else stimme.Stumm()
-    bilder = [] if args.ohne_bilder else aufzeichnung.bilder(pfad)
-    if bilder:
-        print(f"Minimap: {len(bilder)} Bilder")
+    sicht = None if args.ohne_bilder else lage.sicht_fuer(pfad)
+    if sicht:
+        print(f"Minimap: {len(sicht.bilder)} Bilder")
     plan = _verfolge(aufzeichnung.lies_mit_zeit(pfad), args.ich, takt=args.takt, sprecher=sprecher,
-                     sicht=lage.SichtAusBildern(bilder) if bilder else None,
+                     sicht=sicht,
                      anzeigen=[d for d in [_dashboard() if args.dashboard else None] if d],
                      alle=args.alle, nur_coach=args.nur_coach)
     print(f"\n{len(plan.gesagt)} Ansagen.")
@@ -188,8 +196,7 @@ def frage_an_aufnahme(args) -> None:
     """Eine Frage wie per Mikrofon, aber als Text und gegen eine Aufnahme (mit Minimap)."""
     from . import antworten
     pfad = args.datei or aufzeichnung.neueste()
-    bilder = aufzeichnung.bilder(pfad)
-    sicht, lagebild, p = (lage.SichtAusBildern(bilder) if bilder else None), lage.Lagebild(), None
+    sicht, lagebild, p = lage.sicht_fuer(pfad), lage.Lagebild(), None
     for w, d in aufzeichnung.lies_mit_zeit(pfad):
         p = zustand.partie(d, args.ich)
         if sicht:
@@ -215,9 +222,9 @@ def mikrotest(args) -> None:
         t = time.monotonic()
         text = erkenner.text(audio)
         print(f"  erkannt ({time.monotonic() - t:.2f} s, {erkenner.beschreibung}): {text}", flush=True)
-        sprecher.sage(f"Verstanden: {text}" if text else "Nichts verstanden.", dringend=True)
+        sprecher.antworte(f"Verstanden: {text}" if text else "Nichts verstanden.")
 
-    ptt = sprache.PushToTalk(args.ptt, gehoert, beim_druecken=sprecher.verstumme)
+    ptt = sprache.PushToTalk(args.ptt, gehoert, beim_druecken=sprecher.pausiere)
     print(f"Mikrofon: {ptt.geraet} bei {ptt.geraet_rate} Hz. Taste '{args.ptt}' halten, sprechen, loslassen. Strg+C beendet.")
     ptt.start()
     while True:
@@ -255,7 +262,7 @@ def main() -> None:
     lv.add_argument("--ohne-dashboard", action="store_true")
     lv.add_argument("--ohne-sprache", action="store_true", help="keine Fragen per Mikrofon")
     lv.add_argument("--ptt", default="maus5", help="Push-to-Talk-Taste (maus4, maus5, f9, ...)")
-    lv.add_argument("--modell-frage", default="haiku", help="Claude-Modell fuer freie Fragen")
+    lv.add_argument("--modell-frage", default="sonnet", help="Claude-Modell fuer freie Fragen")
     ab = unter.add_parser("abspielen")
     ab.add_argument("datei", nargs="?")
     ab.add_argument("--takt", type=float, default=0.0, help="Sekunden je Schnappschuss (0 = so schnell es geht)")
