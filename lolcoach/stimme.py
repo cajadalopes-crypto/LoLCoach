@@ -127,12 +127,19 @@ class _Strom:
             if gewinner[0] is None:
                 raise RuntimeError("edge-tts: kein Audio")
 
+        def ruhig(t) -> None:
+            # die verworfene Anfrage darf scheitern ("No audio received" unter Last) - ohne Konsolen-Warnung
+            if not t.cancelled():
+                t.exception()
+
         laeufe = {1: asyncio.create_task(anfrage(1))}
+        laeufe[1].add_done_callback(ruhig)
         warte = asyncio.create_task(erstes.wait())
         await asyncio.wait({laeufe[1], warte}, timeout=ZWEITE_ANFRAGE_NACH, return_when=asyncio.FIRST_COMPLETED)
         warte.cancel()
         if gewinner[0] is None:
             laeufe[2] = asyncio.create_task(anfrage(2))
+            laeufe[2].add_done_callback(ruhig)
         while True:
             offen = [t for t in laeufe.values() if not t.done()]
             w = laeufe.get(gewinner[0]) if gewinner[0] is not None else None
