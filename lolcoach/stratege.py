@@ -20,6 +20,7 @@ from . import antworten, gehirn
 from .regeln import WICHTIG, Ansage
 
 VEREDELN_HOECHSTENS = 12.0   # Sekunden: laenger wartet der Standardsatz nicht
+SPAET_EINGESTIEGEN = 180.0   # Spielzeit: danach kein Briefing mehr (Coach mitten in der Partie gestartet)
 SYSTEM_JE_SCHLUESSEL = {"tod": gehirn.TOD_SYSTEM}
 
 
@@ -37,16 +38,22 @@ class Stratege:
             return
         if not self._briefing and p.spieler:
             self._briefing = True
-            self.gehirn.akte_anlegen(p, fertig=lambda akte: self._briefing_sprechen())
+            # Mitten in der Partie gestartet (Neustart, Reconnect): Akte ja - fuer Fragen und Vorwarnungen -,
+            # aber kein Lane-Guide in Minute 19 (Partie 6, 16:42)
+            spaet = p.zeit > SPAET_EINGESTIEGEN
+            self.gehirn.akte_anlegen(p, fertig=lambda akte: self._briefing_sprechen(sprechen=not spaet))
         if not self._midgame and p.zeit >= self.lane_phase_bis and self.gehirn.akte:
             self._midgame = True
             self._im_hintergrund(lambda: self._sprich(gehirn.MIDGAME_SYSTEM, "Ende der Lane-Phase: sein Job ab jetzt",
                                                       "midgame"))
 
-    def _briefing_sprechen(self) -> None:
-        """Das Briefing kommt mit der Spielakte; nur wenn es fehlt, eigener Aufruf."""
+    def _briefing_sprechen(self, sprechen: bool = True) -> None:
+        """Das Briefing kommt mit der Spielakte; nur wenn es fehlt, eigener Aufruf.
+        `sprechen=False`: spaet eingestiegen - nur die Ult-Warnungen uebernehmen."""
         if self.werk is not None:
             self.werk.ult_warnungen = dict(self.gehirn.ult_warnungen)
+        if not sprechen:
+            return
         if self.gehirn.briefing and self.p is not None:
             self.plan.einwerfen(Ansage(self.gehirn.briefing, WICHTIG, "briefing", zeit=self.p.zeit,
                                        gueltig=90, sperre=600))

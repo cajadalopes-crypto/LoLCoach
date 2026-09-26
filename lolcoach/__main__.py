@@ -169,7 +169,32 @@ def _ansagen_speichern(pfad, plan: sprechplan.Sprechplan) -> None:
     ziel.write_text(json.dumps([asdict(a) for a in plan.gesagt], ensure_ascii=False, indent=0), encoding="utf-8")
 
 
+_SPERRE = None   # haelt den Sperr-Port, solange der Coach laeuft
+
+
+def _nur_einmal(port: int = 8789) -> bool:
+    """Genau ein Coach zur Zeit: zwei sprechen doppelt, schreiben in dieselbe Aufnahme und nur einer
+    bekommt das Dashboard (26.09., 16:42 - ein alter Coach lief unbemerkt weiter)."""
+    import socket
+    global _SPERRE
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    if hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+    try:
+        s.bind(("127.0.0.1", port))
+    except OSError:
+        s.close()
+        return False
+    _SPERRE = s
+    return True
+
+
 def live(args) -> None:
+    if not _nur_einmal():
+        print("Der Coach laeuft schon in einem anderen Fenster (Dashboard http://127.0.0.1:8790).\n"
+              "Dieses Fenster wird nicht gebraucht - es schliesst sich in 10 Sekunden.")
+        time.sleep(10)
+        return
     sprecher = stimme.Stumm() if args.stumm else _stimme(args.stimme)
     anzeigen = [] if args.ohne_dashboard else [d for d in [_dashboard()] if d]
     try:
