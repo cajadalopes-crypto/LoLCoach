@@ -80,7 +80,7 @@ class Regelwerk:
         for regel in (self._vorwarnung, self._zahlen, self._jungler_tot, self._lane_tot,
                       self._level, self._items, self._gold, self._cs, self._tod,
                       self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf,
-                      self._ward):
+                      self._ward, self._recall_fenster):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 ansagen.append(a)
@@ -266,7 +266,8 @@ class Regelwerk:
 
     def _gold(self, p: Partie, v: Partie):
         cfg = self.m["gold"]
-        if p.gold is None or v.gold is None or self._ich_weg(p) or self._inventar_voll(p):
+        if p.gold is None or v.gold is None or self._ich_weg(p) or self._inventar_voll(p) \
+                or p.zeit - getattr(self, "_recallfenster_bei", -1e9) < 120:
             return  # im Brunnen kauft er gerade; mit sechs fertigen Items gibt es nichts zu kaufen
         # Solange das Gold liegen bleibt, jede Sekunde anbieten - der Sprechplan
         # laesst es nur alle `erneut_nach` Sekunden durch.
@@ -509,6 +510,30 @@ class Regelwerk:
             yield Ansage(cfg["satz"].format(ort=ort, grund=anlaesse[zweck]), HINWEIS,
                          f"ward:{st['name']}:{st['seite']}", gueltig=6, sperre=cfg["erneut_nach"])
             return
+
+    def _recall_fenster(self, p: Partie, v: Partie):
+        """Deine Welle laeuft in seinen Turm und du hast Gold oder wenig Leben: jetzt zurueck,
+        dann verlierst du keine Vasallen (Carlos: "wie ich die Welle genau vorbereite")."""
+        if not self.lage or not hasattr(self.lage, "welle") or self._ich_weg(p) or p.ich.rolle == "JUNGLE":
+            return
+        from .welle import LANE_DER_ROLLE, _projektion
+        cfg = self.m["recall"]
+        lane = LANE_DER_ROLLE.get(p.ich.rolle)
+        z = self.lage.welle(lane, p.zeit) if lane else None
+        if not z or z.front is None:
+            return
+        blau = p.mein_team == "ORDER"
+        wir, die = (z.blau, z.rot) if blau else (z.rot, z.blau)
+        s = z.front if blau else 1 - z.front
+        ich = self.lage.gesehen(p.ich)
+        in_lane = bool(ich and p.zeit - ich[0] < 2 and (pr := _projektion(ich[1], ich[2])) and pr[0] == lane)
+        m = p.werte.get("maxHealth")
+        leben = p.werte.get("currentHealth", 0) / m if m else 1.0
+        grund = (p.gold or 0) >= cfg["gold_ab"] or leben < cfg["leben_unter"]
+        if in_lane and grund and wir >= cfg["welle_ab"] and die <= 1 and s >= cfg["front_ab"]:
+            self._recallfenster_bei = p.zeit  # die allgemeine Gold-Erinnerung schweigt dann
+            yield Ansage(cfg["satz"].format(gold=int((p.gold or 0) // 100 * 100)), WICHTIG, "recallfenster",
+                         gueltig=6, sperre=cfg["erneut_nach"])
 
     def _tod(self, p: Partie, v: Partie):
         if not (p.ich.tot and not v.ich.tot):

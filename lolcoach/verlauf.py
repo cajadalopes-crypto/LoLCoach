@@ -45,6 +45,7 @@ class Sekunde:
     kills: tuple[int, int]
     positionen: dict[str, tuple[float, float, float, bool]]  # Name -> (x, y, Alter s, sichtbar)
     tot: list[str]
+    wellen: dict[str, str] = field(default_factory=dict)   # Lane -> Stand in Worten (aus Sicht des Spielers)
 
 
 @dataclass
@@ -90,9 +91,10 @@ def baue(pfad: str | Path, ich: str | None = None) -> Verlauf:
                 pos[s.name] = (round(g[1], 4), round(g[2], 4), round(p.zeit - g[0], 1), lb.sichtbar(s))
         m = p.werte.get("maxHealth")
         wir, die = p.mein_team, gegenteam(p.mein_team)
+        wellen = {l: z.worte(wir) for l in ("Top", "Mid", "Bot") if (z := lb.welle(l, p.zeit))}
         sekunden.append(Sekunde(p.zeit, p.gold, round(p.werte.get("currentHealth", 0) / m, 2) if m else None,
                                 p.item_gold(wir) - p.item_gold(die), (p.kills(wir), p.kills(die)), pos,
-                                [s.name for s in p.spieler if s.tot]))
+                                [s.name for s in p.spieler if s.tot], wellen))
         partien.append(p)
     if not partien:
         raise ValueError(f"{pfad.name}: keine Partie mit eigenem Spieler")
@@ -211,6 +213,9 @@ def _tode(partien: list[Partie], sekunden: list[Sekunde], lb) -> list[Moment]:
                 ort = _eigene_position(sek, p)
                 if ort:
                     teile.append("du warst " + minimap.ort(*ort, p.mein_team))
+                lane = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}.get(p.ich.rolle)
+                if lane and sek.wellen.get(lane):
+                    teile.append(f"deine Lane-Welle: {sek.wellen[lane]}")
                 fakten.append(" ".join(teile))
         sek5 = _sekunde(sekunden, p.zeit - 5)
         fakten += _lage_worte(sek5, p, _eigene_position(sek5, p))

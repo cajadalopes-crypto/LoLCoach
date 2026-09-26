@@ -189,3 +189,12 @@ erneut_nach = 120             # dieselbe Stelle frueheste wieder
 satz = "Du bist {ort} - guter Moment für ein Ward: {grund}"
 satz_objective = "{objective} kommt in {sekunden} Sekunden, so siehst du, wer sich dort sammelt."
 satz_gank = "{champion} ist seit {sekunden} Sekunden weg, so siehst du den Gank kommen."
+
+[recall]
+# Recall-Fenster aus dem Wellenstand (Minimap): deine Welle crasht gerade in seinen Turm.
+gold_ab = 1100
+leben_unter = 0.5
+welle_ab = 3                  # so viele eigene Vasallen laufen auf seinen Turm
+front_ab = 0.62               # Front (0 deine Basis, 1 seine) an bzw. hinter seinem aeusseren Turm
+erneut_nach = 90
+satz = "Deine Welle läuft gerade in seinen Turm - perfektes Recall-Fenster, du verlierst keine Vasallen."

@@ -189,6 +189,10 @@ def lage_text(p: Partie, lagebild=None) -> str:
             elif lagebild is not None and (g := lagebild.gesehen(s)):
                 teile.append(f"zuletzt vor {int(p.zeit - g[0])} s {minimap.ort(g[1], g[2], p.mein_team)}")
             zeilen.append(", ".join(teile))
+    if lagebild is not None and hasattr(lagebild, "welle"):
+        teile = [f"{l}: {z.worte(p.mein_team)}" for l in ("Top", "Mid", "Bot") if (z := lagebild.welle(l, p.zeit))]
+        if teile:
+            zeilen.append("Wellen (Minimap): " + "; ".join(teile))
     obj = [_timer(k, p) for k in ("drache", "larven", "herold", "baron")]
     zeilen.append("Objectives: " + " ".join(obj))
     zeilen.append(f"Drachen: wir {len(p.drachen(p.mein_team))}, Gegner {len(p.drachen(gegenteam(p.mein_team)))}.")

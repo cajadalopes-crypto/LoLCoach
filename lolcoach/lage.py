@@ -33,6 +33,8 @@ class Lagebild:
         self.zauber = Zaubertimer()
         self.chat: list[tuple[float, str]] = []   # (Spielzeit, Zeile) - alles, was im Chat stand
         self.mitspieler: dict[str, tuple[float, float, bool | None]] = {}  # Name -> (Zeit, Leben 0..1, Ult bereit)
+        self.wellen: dict = {}            # Lane -> welle.LaneZustand
+        self.wellen_zeit: float | None = None
 
     def ereignisse(self, zeit_von_wand, liste, p: Partie) -> list:
         """Spruenge und Chatzeilen des Beobachters -> Zauber-Timer. Gibt die neuen Timer zurueck."""
@@ -47,6 +49,10 @@ class Lagebild:
                         and sp.champion_id not in blinks and not sp.tot):
                     if t := self.zauber.benutzt(sp, "SummonerFlash", zeit_von_wand(s.zeit), "Minimap"):
                         neu.append(t)
+            elif e[0] == "wellen":
+                from . import welle
+                self.wellen = welle.zustaende(e[2])
+                self.wellen_zeit = zeit_von_wand(e[1])
             elif e[0] == "hud":
                 # Reihenfolge der Leiste = Reihenfolge des Teams ohne dich (geprueft an Partie 2)
                 andere = [s for s in p.team(p.mein_team) if s is not p.ich] if p.ich else []
@@ -105,6 +111,12 @@ class Lagebild:
         m = self.mitspieler.get(sp.name)
         return m[2] if m and jetzt - m[0] < 3 else None
 
+    def welle(self, lane: str, jetzt: float):
+        """Wellenstand einer Lane, wenn frisch (< 4 s)."""
+        if self.wellen_zeit is None or jetzt - self.wellen_zeit > 4:
+            return None
+        return self.wellen.get(lane)
+
     def gesehen(self, sp: Spieler) -> tuple[float, float, float] | None:
         return self.zuletzt.get((sp.name, sp.team))
 
@@ -136,6 +148,8 @@ def ereignis_als_json(e: tuple) -> dict:
         return {"art": "sprung", "w": e[1].zeit, **asdict(e[1])}
     if e[0] == "hud":
         return {"art": "hud", "w": e[1], "m": [[m.leben, m.ult_bereit] for m in e[2]]}
+    if e[0] == "wellen":
+        return {"art": "wellen", "w": e[1], "p": [[t, round(x, 4), round(y, 4)] for t, x, y in e[2]]}
     return {"art": e[0], "w": e[1], "text": e[2]}
 
 
@@ -146,6 +160,8 @@ def ereignis_aus_json(d: dict) -> tuple:
         return ("sprung", minimap.Sprung(**felder))
     if d["art"] == "hud":
         return ("hud", d["w"], [hud.Mitspieler(le, ul) for le, ul in d["m"]])
+    if d["art"] == "wellen":
+        return ("wellen", d["w"], [tuple(q) for q in d["p"]])
     return (d["art"], d["w"], d["text"])
 
 
@@ -209,6 +225,9 @@ class Beobachter(threading.Thread):
         from . import bild
         kamera = _Kamera()
         verfolger = None
+        from .welle import Wellenleser
+        wellenleser = Wellenleser()
+        letzte_sichtungen: list = []
         leser = None
         try:
             from .texterkennung import Leser
@@ -235,6 +254,7 @@ class Beobachter(threading.Thread):
                         ergebnis = verfolger.bild(karte, start) if karte is not None else None
                         if ergebnis is not None:
                             sichtungen, spruenge = ergebnis
+                            letzte_sichtungen = sichtungen
                             with self._schloss:
                                 self._neu.append((start, sichtungen))
                                 self._ereignisse += [("sprung", s) for s in spruenge]
@@ -257,6 +277,11 @@ class Beobachter(threading.Thread):
                             if leiste is not None:
                                 with self._schloss:
                                     self._ereignisse.append(("hud", start, hud.lies(leiste, hoehe)))
+                            if karte is not None:
+                                punkte = wellenleser.punkte(karte, [(s.x, s.y) for s in letzte_sichtungen])
+                                if wellenleser.bereit:
+                                    with self._schloss:
+                                        self._ereignisse.append(("wellen", start, punkte))
                         if leser and letzter_chat == start:
                             a, b, c, d = CHAT
                             box = (l + int(a * breite), o + int(b * hoehe), l + int(c * breite), o + int(d * hoehe))
@@ -466,15 +491,42 @@ class SichtAusBildern:
                 k: [asdict(s) for s in v] for k, v in self._ergebnis.items()}}), encoding="utf-8")
 
     def ereignisse(self) -> list:
-        return []
+        aus, self._offen = getattr(self, "_offen", []), []
+        return aus
+
+    def _wellen_berechnen(self) -> None:
+        """Wellen je Bild (der Reihe nach - die Icon-Maske lernt ueber die Zeit); im Cache
+        neben den Sichtungen. Ohne Bilder (nur sichtungen.json) gibt es keine Wellen."""
+        import json
+        from .welle import Wellenleser
+        cache = self.bilder[0][1].parent / "wellen.json" if self.bilder else None
+        if cache and cache.exists():
+            self._wellen = json.loads(cache.read_text(encoding="utf-8"))
+            return
+        self._wellen = {}
+        if not self.bilder or not self.bilder[0][1].exists():
+            return
+        leser = Wellenleser()
+        for _, pfad in self.bilder:
+            karte = karte_aus_bild(pfad)
+            if karte is None:
+                continue
+            champs = [(s.x, s.y) for s in (self._ergebnis or {}).get(pfad.name, [])]
+            punkte = leser.punkte(karte, champs)
+            if leser.bereit:
+                self._wellen[pfad.name] = [[t, round(x, 4), round(y, 4)] for t, x, y in punkte]
+        cache.write_text(json.dumps(self._wellen), encoding="utf-8")
 
     def zwischen(self, bis: float, champions_: list[tuple[str, str]]) -> list[tuple[float, list[minimap.Sichtung]]]:
         if self._ergebnis is None and champions_:
             self._berechne(champions_)
+            self._wellen_berechnen()
         aus = []
         while self.i < len(self.bilder) and self.bilder[self.i][0] <= bis:
             w, pfad = self.bilder[self.i]
             self.i += 1
             if self._ergebnis is not None:
                 aus.append((w, self._ergebnis.get(pfad.name, [])))
+            if (punkte := getattr(self, "_wellen", {}).get(pfad.name)) is not None:
+                self._offen = getattr(self, "_offen", []) + [("wellen", w, [tuple(q) for q in punkte])]
         return aus
