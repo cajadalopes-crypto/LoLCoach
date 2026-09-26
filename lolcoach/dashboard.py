@@ -118,7 +118,14 @@ class Dashboard:
         self.url = f"http://127.0.0.1:{port}/"
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
 
+    def gehirn_setzen(self, gehirn) -> None:
+        self._gehirn = gehirn
+
     def aktualisiere(self, p: Partie, lagebild=None, ansagen=()) -> None:
-        daten = json.dumps(zustand_json(p, lagebild, ansagen), ensure_ascii=False).encode("utf-8")
+        z = zustand_json(p, lagebild, ansagen)
+        # der Fokus aus dem letzten Review - die ganze Partie sichtbar, wie ein Zettel am Monitor
+        if g := getattr(self, "_gehirn", None):
+            z["fokus"] = g.fokus
+        daten = json.dumps(z, ensure_ascii=False).encode("utf-8")
         with self._schloss:
             self._json = daten

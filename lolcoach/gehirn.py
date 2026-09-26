@@ -199,6 +199,7 @@ class Gehirn:
         self.briefing: str | None = None   # kommt mit der Akte (ein Aufruf statt zwei)
         self.ult_warnungen: dict[str, str] = {}  # Champion -> ein Satz zu seiner Ult (kommt mit der Akte)
         self.fokus_satz: str | None = None       # der Fokus aus dem letzten Review, auf diese Partie bezogen
+        self.fokus: str | None = None            # derselbe Fokus im Wortlaut des Reviews (Dashboard)
         self._akte_laeuft = False
         self.ablage: Path | None = None    # je Partie: hier wird die Akte gespeichert
 
@@ -218,6 +219,7 @@ class Gehirn:
                     fokus = profil.fokus(self.ablage.parent, vor=self.ablage.name.removesuffix("_spielakte.md"))
                 except Exception as e:  # das Profil ist Zugabe - ohne es geht die Akte trotzdem
                     print(f"  Profil nicht lesbar: {e}", flush=True)
+            self.fokus = fokus
             try:
                 roh = llm.frage(akte_quelle(p, fokus), system=AKTE_SYSTEM, modell=self.modell,
                                 timeout=90, aufwand="low").strip()

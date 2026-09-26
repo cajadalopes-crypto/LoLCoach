@@ -55,6 +55,7 @@
       <span>Items <b class="zahl" id="itemgold">±0</b></span>
       <span>Gold <b class="zahl" id="gold">–</b></span>
     </div>
+    <div class="kasten" id="fokuskasten" hidden style="border-color: var(--warn)"><h2>Dein Fokus heute</h2><div id="fokus"></div></div>
     <div class="kasten"><h2>Objectives</h2><div class="obj" id="obj"></div><div class="klein" id="drachen"></div></div>
     <div class="kasten"><h2 id="lanekopf">Lane</h2><div id="lane" class="zahl"></div></div>
     <div class="kasten"><h2>Gegner</h2><div class="gegner" id="gegner"></div></div>
@@ -143,6 +144,8 @@ function zeige(z) {
   const w = Object.entries(z.wellen || {});
   $('wellenkasten').hidden = !w.length;
   $('wellen').innerHTML = w.map(([l, t]) => `<div><b style="color:var(--text)">${l}:</b> ${t}</div>`).join('');
+  $('fokuskasten').hidden = !z.fokus;               // aus dem Review der letzten Partie
+  if (z.fokus) $('fokus').textContent = z.fokus;
   $('ansagen').innerHTML = z.ansagen.map(a => `<li class="p${a.prio}"><span class="klein">${a.zeit}</span> ${a.text}</li>`).join('');
   zeichne(z);
 }
