@@ -33,6 +33,7 @@ STAERKER_ALS = 1.5      # Kampfkraft-Verhaeltnis, ab dem ein Rueckzug-Plan entfa
 HALTEN = 3.0            # so lange muss eine neue beste Option halten, bevor sie gesagt wird
 ABSTAND = 25.0          # mindestens so viele Sekunden zwischen zwei Plaenen
 GLEICH_SPERRE = 75.0    # derselbe Plan kommt fruehestens nach so vielen Sekunden wieder
+WECHSEL_NACH = 12.0     # so lange bleibt ein gesagter Plan, solange er noch gilt (ausser Rueckzug)
 LAUF_ZUR_LANE = {"TOP": 27.0, "MIDDLE": 20.0, "BOTTOM": 27.0, "UTILITY": 27.0}   # Spawn -> Lane-Mitte [Schaetzung]
 
 
@@ -456,8 +457,17 @@ class Entscheider:
             return None
         if b.zeit - self._zuletzt < ABSTAND and not beste.dringend:
             return None
+        # Kein Hin und Her zwischen zwei dringenden Plaenen (Nachlauf 194524, 4:00/4:04: "Du und Warwick gegen Vi -
+        # geht zusammen rein!" und 4 s spaeter "Vayne kaempft mid - geh sofort hin!"): solange der gesagte Plan
+        # noch eine Option ist, bleibt er - ausser der neue ist der Rueckzug
+        letzter = getattr(self, "_letzter", None)
+        if (b.zeit - self._zuletzt < WECHSEL_NACH and beste.name not in ("zurueck", "reset") and letzter is not None
+                and letzter != beste.name and letzter in {o.name for o in opts}):
+            self.aktuell = next(o for o in opts if o.name == letzter)   # auch "was soll ich machen?" bleibt dabei
+            return None
         if b.zeit - self._gesagt.get(beste.name, -1e9) < GLEICH_SPERRE:
             return None
+        self._letzter = beste.name
         self._zuletzt = b.zeit
         self._gesagt[beste.name] = b.zeit
         if einmal:
