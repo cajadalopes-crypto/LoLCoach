@@ -363,6 +363,20 @@ def flash_auf_dem_bildschirm():
     lb = lage.Lagebild()
     assert not lb.ereignisse(lambda w: 400.0, [("schirm_sprung", 0.0, ["feind", 0.5, 900, 400, 1200, 420, 0.19,
                                                                        shen.champion, shen.champion])], p)
+    # Minimap: der Kamerarahmen sagt, wer im Bild sein kann (Live 26.09. 23:06: zwei Spruenge ohne Namen, im Rahmen
+    # nur Graves - kein Flash). Rahmen oben links; Brand steht darin, Varus unten rechts.
+    rahmen, groesse = [0.30, 0.20, 0.57, 0.35], [1600, 900]
+
+    def mit_minimap(brand_pos, name=""):
+        lb = lage.Lagebild()
+        lb.neu(399.5, [minimap.Sichtung("Brand", g.team, *brand_pos, 0.95),
+                       minimap.Sichtung("Varus", adc.team, 0.8, 0.8, 0.95)], p)
+        return lb.ereignisse(lambda w: 400.0, [("schirm_sprung", 0.0, ["feind", 0.5, 900, 400, 1200, 420, 0.19,
+                                                                       name, name, rahmen, groesse])], p)
+    neu = mit_minimap((0.52, 0.30))                  # ohne Namen: Brand ist im Rahmen, nah am Landepunkt -> er
+    assert len(neu) == 1 and neu[0].champion == "Brand", neu
+    assert not mit_minimap((0.10, 0.90))             # ohne Namen, kein Gegner im Rahmen -> kein Flash
+    assert not mit_minimap((0.10, 0.90), g.champion)  # Name gelesen, aber Brand ist gar nicht im Bild -> Veto
 
 
 def brunnen_nach_recall_und_tod():

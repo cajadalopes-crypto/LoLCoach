@@ -95,10 +95,25 @@ class Lagebild:
                 # Flash auf dem Spielbild (lebensbalken.Balkenspur): nur mit gelesenem Namen, und sind beide Namen
                 # (Absprung, Landung) lesbar, muessen sie derselbe Spieler sein
                 from .lebensbalken import zuordnen as balken_zuordnen
-                team, anteil, x0, y0, x1, y1, weite, name_von, name_nach = e[2]
+                team, anteil, x0, y0, x1, y1, weite, name_von, name_nach, *mehr = e[2]
                 sp_von = balken_zuordnen(name_von, p.gegner()) if name_von else None
                 sp_nach = balken_zuordnen(name_nach, p.gegner()) if name_nach else None
                 sp = sp_nach or sp_von
+                # Die Minimap weiss, wer im Bild sein kann (Kamerarahmen): ohne lesbaren Namen nennt sie ihn, mit
+                # Namen muss er drin sein. Live 26.09. 23:06: zwei 'Spruenge' ohne Namen - im Rahmen stand nur
+                # Graves, kein Gegner (zwei verschiedene rote Balken, kein Flash).
+                rahmen, groesse = (mehr + [None, None])[:2]
+                if rahmen and groesse:
+                    im_bild = self._im_rahmen(p, rahmen, zeit_von_wand(e[1]))
+                    if sp is not None and sp.name not in {s.name for s in im_bild}:
+                        sp = None
+                    elif sp is None and im_bild:
+                        lx = rahmen[0] + x1 / groesse[0] * (rahmen[2] - rahmen[0])
+                        ly = rahmen[1] + y1 / groesse[1] * (rahmen[3] - rahmen[1])
+                        abst = sorted((abs(g[1] - lx) + abs(g[2] - ly), s.name, s) for s in im_bild
+                                      if (g := self.gesehen(s)) is not None)
+                        if abst and abst[0][0] <= 0.08 and (len(abst) == 1 or abst[1][0] - abst[0][0] >= 0.05):
+                            sp = abst[0][2]
                 from .champions import hat_blink_oder_dash
                 # nur ohne eigenen Dash: Live 21:21, 9:18 sprangen Gragas und Tryndamere zugleich - ein Engage mit
                 # beiden E, kein Flash. Bei Dash-Champions bleibt es beim Protokoll (zum Nachpruefen).
@@ -235,6 +250,17 @@ class Lagebild:
             elif zeit - t0 <= 3 and self.stand_still(sp):
                 bx, by = BRUNNEN.get(sp.team, (x0, y0))
                 self.zuletzt[schl] = (zeit, bx, by)     # stand 5,5 s still und ist weg: Recall, jetzt im Brunnen
+
+    def _im_rahmen(self, p: Partie, rahmen, zeit: float, rand: float = 0.03) -> list[Spieler]:
+        """Lebende Gegner, die auf der Minimap gerade im Kamerarahmen stehen (frisch gesehen, <= 1,5 s)."""
+        aus = []
+        for s in p.gegner():
+            g = self.gesehen(s)
+            if s.tot or g is None or zeit - g[0] > 1.5:
+                continue
+            if rahmen[0] - rand <= g[1] <= rahmen[2] + rand and rahmen[1] - rand <= g[2] <= rahmen[3] + rand:
+                aus.append(s)
+        return aus
 
     def _fernsprung(self, sp: Spieler, alt: tuple[float, float, float], zeit: float, x: float, y: float,
                     p: Partie) -> None:
@@ -503,6 +529,7 @@ class Beobachter(threading.Thread):
                             verfolger = minimap.Verfolger(list(self.champions), hoehe=hoehe)
                         kl, ko, kr, ku = minimap.kartenrechteck(breite, hoehe)
                         karte = kamera.hole((l + kl, o + ko, l + kr, o + ku))
+                        self._letzte_karte = karte          # fuer die Balkenspur: wer ist gerade im Bild?
                         ergebnis = verfolger.bild(karte, start) if karte is not None else None
                         if ergebnis is not None:
                             sichtungen, spruenge = ergebnis
@@ -631,9 +658,12 @@ class Beobachter(threading.Thread):
                         if davor is not None:
                             name_von = lebensbalken.namen_lesen(davor, [b_von], leser)[0][1]
                         name_nach = lebensbalken.namen_lesen(landung, [b_nach], leser)[0][1]
+                    rahmen = minimap.kamerarahmen(getattr(self, "_letzte_karte", None))
                     with self._schloss:
                         self._ereignisse.append(("schirm_sprung", s.zeit, [s.team, s.anteil, *s.von, *s.nach, s.weite,
-                                                                          name_von, name_nach]))
+                                                                          name_von, name_nach,
+                                                                          list(rahmen) if rahmen else None,
+                                                                          [klein.shape[1], klein.shape[0]]]))
             except Exception as e:
                 self.fehler = f"Spur: {type(e).__name__}: {e}"
 

@@ -205,6 +205,27 @@ def ecke(karte: np.ndarray, champion_id: str, hoehe: int = REFERENZ_HOEHE,
     return bestes
 
 
+def kamerarahmen(karte: np.ndarray) -> tuple[float, float, float, float] | None:
+    """Der weisse Kamerarahmen der Minimap (was gerade auf dem Bildschirm ist) als Kartenanteile (x0, y0, x1, y1),
+    oder None. Geprueft an 3 Partien (werkzeuge/kamera_rahmen.py): das eigene Icon steht zu 99,3-99,7 % darin."""
+    if karte is None:
+        return None
+    h, w = karte.shape[:2]
+    hsv = cv2.cvtColor(karte, cv2.COLOR_BGR2HSV)
+    weiss = ((hsv[..., 1] < 40) & (hsv[..., 2] > 200)).astype(np.uint8) * 255
+    waag = cv2.morphologyEx(weiss, cv2.MORPH_OPEN, np.ones((1, max(8, w // 12)), np.uint8))
+    senk = cv2.morphologyEx(weiss, cv2.MORPH_OPEN, np.ones((max(6, h // 20), 1), np.uint8))
+    ys, xs = np.nonzero(waag)
+    ys2, xs2 = np.nonzero(senk)
+    if len(xs) < 20 or len(ys2) < 10:
+        return None
+    x0, x1 = min(xs.min(), xs2.min()), max(xs.max(), xs2.max())
+    y0, y1 = min(ys.min(), ys2.min()), max(ys.max(), ys2.max())
+    if (x1 - x0) < w * 0.1 or (y1 - y0) < h * 0.05 or (x1 - x0) > w * 0.5:
+        return None
+    return x0 / w, y0 / h, x1 / w, y1 / h
+
+
 GROB_SCHWELLE = 0.45
 KANDIDATEN = 3
 
