@@ -24,6 +24,9 @@ ROLLEN_WORTE = {"jungler": "JUNGLE", "jungle": "JUNGLE", "dschungel": "JUNGLE", 
                 "supporter": "UTILITY", "supp": "UTILITY"}
 ENTSCHEIDUNG = {"soll", "sollte", "sollen", "sollten", "lieber", "besser", "warum", "wieso", "weshalb",
                 "kaufen", "bauen", "kauf", "mache", "machen", "tun", "spielen", "gehen", "empfiehlst"}
+# "Kann ich ihn killen?", "Soll ich reingehen?": die Denkkette hat das Urteil schon - sofort statt ~3 s Claude
+KAMPF_WORTE = {"killen", "töten", "toeten", "umhauen", "reingehen", "reingehn", "kämpfen", "kaempfen", "fighten",
+               "traden", "tradeen", "trade", "allin", "diven", "dive", "kill"}
 ZAUBER_DE = {"SummonerFlash": "Flash", "SummonerTeleport": "Teleport", "SummonerDot": "Zünden",
              "SummonerHeal": "Heilen", "SummonerExhaust": "Erschöpfen", "SummonerBarrier": "Barriere",
              "SummonerSmite": "Zerschmettern", "SummonerHaste": "Geist", "SummonerBoost": "Reinigen"}
@@ -149,6 +152,29 @@ def _items(s: Spieler) -> str:
     return f"{s.champion} hat {', '.join(fertig)}."
 
 
+def _kampf(w: list[str], roh: str, p: Partie, lagebild) -> str | None:
+    """'Kann ich ihn killen?' / 'Soll ich reingehen?' gegen den Lane-Gegner: das Kampf-Urteil der Denkkette mit
+    seinen Gruenden (Leben, Combo-Rechnung, Flash, Jungler, Turm ...), in unter 10 ms. Ein anderer Champion als
+    der Lane-Gegner und jedes "warum" gehen an Claude."""
+    menge = set(w)
+    if not (menge & KAMPF_WORTE or re.search(r"\ball[\s-]?in\b", roh)) or menge & {"warum", "wieso", "weshalb"}:
+        return None
+    # "Wo soll ich reingehen? Auf welcher Lane?" (Live 21:21) fragt nach dem Ort, nicht nach dem Lane-Gegner
+    if menge & {"wo", "wohin", "welche", "welcher", "welchem", "lane", "wen"}:
+        return None
+    if lagebild is None or not getattr(lagebild, "aktiv", False):
+        return None
+    ziel = _champion_im_text(w, p)
+    from . import bewertung, denker
+    b = bewertung.bewerte(p, lagebild)
+    if b is None or b.lane is None or (ziel is not None and ziel.name != b.lane.s.name):
+        return None
+    if b.lane.s.tot:
+        return f"{b.lane.champion} ist tot, noch {_dauer(b.lane.s.respawn)}."
+    u = denker.urteil(b)
+    return denker.fenster_satz(b, u) if u is not None else None
+
+
 def sofort(frage: str, p: Partie, lagebild=None) -> str | None:
     """Antwort aus dem Zustand, oder None, wenn das Claude beantworten soll."""
     w = _woerter(frage)
@@ -161,14 +187,17 @@ def sofort(frage: str, p: Partie, lagebild=None) -> str | None:
             and not menge & (KAUF_WORTE | {"warum", "wieso"}) and _champion_im_text(w, p) is None
             and (e := getattr(lagebild, "entscheider", None)) is not None and e.aktuell is not None):
         return e.aktuell.satz
-    if menge & ENTSCHEIDUNG:
-        return None  # "soll ich ...", "lieber ...", "warum ...": das ist eine Abwaegung, keine Nachschau
     # Eine Aussage ("Ich bin tot.", "Du weisst schon, dass ich Level 12 bin ...") ist keine Nachschau-Frage:
     # Live 21:21 bekam sie "Gragas noch 10 Sekunden" und "Sona ist Level 8, du bist Level 12" - Claude antwortet
     # im Zusammenhang.
     roh = frage.strip().lower()
-    if roh.startswith(("ich bin", "ich habe", "ich hab ", "ich war", "nein", "doch", "du weißt", "du weisst", "ja,",
-                       "ja ", "ich bringe", "ich hatte")) or len(w) > 12:
+    aussage = roh.startswith(("ich bin", "ich habe", "ich hab ", "ich war", "nein", "doch", "du weißt", "du weisst",
+                              "ja,", "ja ", "ich bringe", "ich hatte")) or len(w) > 12
+    if not aussage and (antwort := _kampf(w, roh, p, lagebild)):
+        return antwort
+    if menge & ENTSCHEIDUNG:
+        return None  # "soll ich ...", "lieber ...", "warum ...": das ist eine Abwaegung, keine Nachschau
+    if aussage:
         return None
     ziel = _ziel(w, p)
 

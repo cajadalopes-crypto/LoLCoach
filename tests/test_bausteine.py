@@ -283,6 +283,20 @@ def denkkette():
     assert satz.startswith(f"Du bist jetzt Level 6, {g.champion} erst 5 - geh rein, das ist ein Kill: "), satz
     assert "kein Flash" in satz and len(satz) <= 190, (len(satz), satz)
     assert satz.count("Level 6") == 1, satz                      # der Anlass sagt das Level, nicht zweimal
+    # dieselbe Lage als Frage per Sprechtaste: sofort aus dem Urteil, nicht ~3 s ueber Claude
+    from types import SimpleNamespace
+    from lolcoach import antworten
+    alt, bewertung.bewerte = bewertung.bewerte, lambda *a, **k: b
+    try:
+        lb = SimpleNamespace(aktiv=True)
+        assert antworten.sofort("Kann ich ihn killen?", p, lb).startswith("Geh rein, das ist ein Kill: ")
+        assert antworten.sofort("Soll ich all in gehen?", p, lb).startswith("Geh rein")
+        assert antworten.sofort("Warum kann ich ihn killen?", p, lb) is None          # Begruendung: Claude
+        assert antworten.sofort("Wo soll ich reingehen? Auf welcher Lane?", p, lb) is None   # Ort: Claude
+        andere = next(s for s in p.gegner() if s.name not in (g.name, j.name))
+        assert antworten.sofort(f"Kann ich {andere.champion} killen?", p, lb) is None   # nicht der Lane-Gegner
+    finally:
+        bewertung.bewerte = alt
     # am Turm: warten (kein Dive - Live 11:00/11:08), mit dem Jungler nah: kein All-in
     b.lane = gl(g, flash=200.0, pos=bewertung.TUERME[(zustand.gegenteam(p.mein_team), "Top", "aussen")])
     assert denker.urteil(b).art == "turm", denker.urteil(b).art
