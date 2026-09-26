@@ -527,6 +527,7 @@ class Beobachter(threading.Thread):
                         breite, hoehe = r - l, u - o
                         if verfolger is None or verfolger.champions != self.champions:
                             verfolger = minimap.Verfolger(list(self.champions), hoehe=hoehe)
+                        verfolger.eigenes_team = (getattr(self, "ich", None) or (None, None))[1]
                         kl, ko, kr, ku = minimap.kartenrechteck(breite, hoehe)
                         karte = kamera.hole((l + kl, o + ko, l + kr, o + ku))
                         self._letzte_karte = karte          # fuer die Balkenspur: wer ist gerade im Bild?

@@ -36,6 +36,9 @@ SCHWELLE = 0.85
 SCHWELLE_TEIL = 0.88    # eine Haelfte allein muss besser passen als das ganze Portraet
 DECKUNG_EUKLID = 12 / REFERENZ_HOEHE   # so nah liegt ein anderes Icon darauf: verdeckt (ein Viertel des Icons)
 VERDECKT_MAX = 2.5      # Sekunden, die ein verdecktes Icon mit seiner Deckung mitlaeuft
+# ... ein Verbuendeter laenger: er verschwindet nie im Nebel - fehlt sein Icon, liegt es unter einem anderen
+# (Ereignisprobe 27.09.: Verbuendete bei ihren Kills 2-3 s nicht gesehen, im Getuemmel unter den Gegnern)
+VERDECKT_MAX_EIGEN = 6.0
 
 
 @dataclass(frozen=True)
@@ -566,7 +569,10 @@ class Verfolger:
                 _, gx, gy, _ = gefunden[k]
                 alt_deckung = (zeit, k, cx - gx, cy - gy)
             seit, _, ox, oy = alt_deckung
-            if zeit - seit > VERDECKT_MAX:
+            eigen = getattr(self, "eigenes_team", None)
+            grenze = VERDECKT_MAX_EIGEN if eigen and schl[0] not in doppelt and dict(self.champions).get(schl[0]) == eigen \
+                else VERDECKT_MAX
+            if zeit - seit > grenze:
                 self._verdeckt.pop(schl, None)
                 self.pos.pop(schl, None)   # kein Neubeginn: weg ist weg, bis die Vollsuche ihn wieder sieht
                 continue
