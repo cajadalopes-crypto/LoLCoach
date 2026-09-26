@@ -29,29 +29,47 @@ def _lokale_versionen() -> list[str]:
                   key=lambda v: [int(x) if x.isdigit() else 0 for x in v.split(".")])
 
 
+# championFull: Faehigkeiten samt Cooldowns (champions.py); runesReforged: Runen.
+DATEIEN = ("item.json", "champion.json", "summoner.json", "championFull.json", "runesReforged.json")
+
+
+def _nachladen(v: str) -> None:
+    """Holt, was fuer Version v noch fehlt (auch Dateien, die spaeter dazukamen)."""
+    ordner = ABLAGE / v
+    ordner.mkdir(parents=True, exist_ok=True)
+    for datei in DATEIEN:
+        if not (ordner / datei).exists():
+            daten = _json_holen(f"{CDN}/cdn/{v}/data/{SPRACHE}/{datei}")
+            (ordner / datei).write_text(json.dumps(daten, ensure_ascii=False), encoding="utf-8")
+
+
 @lru_cache(maxsize=1)
 def version() -> str | None:
     """Neueste Version; laedt sie nach, wenn noch nicht auf der Platte."""
     try:
         neu = _json_holen(f"{CDN}/api/versions.json")[0]
-        ordner = ABLAGE / neu
-        if not (ordner / "item.json").exists():
-            ordner.mkdir(parents=True, exist_ok=True)
-            for datei in ("item.json", "champion.json", "summoner.json"):
-                daten = _json_holen(f"{CDN}/cdn/{neu}/data/{SPRACHE}/{datei}")
-                (ordner / datei).write_text(json.dumps(daten, ensure_ascii=False), encoding="utf-8")
+        _nachladen(neu)
         return neu
     except OSError:
         lokal = _lokale_versionen()
         return lokal[-1] if lokal else None
 
 
-def _lade(datei: str) -> dict:
+def roh(datei: str):
+    """Ganze Datei der aktuellen Version (runesReforged.json ist eine Liste, kein "data")."""
     v = version()
     if v is None:
-        return {}
+        return None
     pfad = ABLAGE / v / datei
-    return json.loads(pfad.read_text(encoding="utf-8"))["data"] if pfad.exists() else {}
+    if not pfad.exists():  # Stand ohne diese Datei (offline) -> juengste Version, die sie hat
+        pfad = next((ABLAGE / w / datei for w in reversed(_lokale_versionen())
+                     if (ABLAGE / w / datei).exists()), pfad)
+    return json.loads(pfad.read_text(encoding="utf-8")) if pfad.exists() else None
+
+
+def _lade(datei: str) -> dict:
+    daten = roh(datei)
+    return daten["data"] if daten else {}
 
 
 @lru_cache(maxsize=1)
