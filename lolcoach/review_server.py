@@ -71,14 +71,28 @@ def fortschritt() -> list[dict]:
     return aus
 
 
+_verlaeufe: dict[str, verlauf.Verlauf] = {}
+
+
+def bildschirm(stamm: str, zeit: float) -> Path | None:
+    pfad = _aufnahme(stamm)
+    if pfad is None:
+        return None
+    if stamm not in _verlaeufe:
+        _verlaeufe[stamm] = verlauf.baue(pfad)
+    return verlauf.bildschirm_bei(pfad, _verlaeufe[stamm], zeit, toleranz=4.0)
+
+
 def partie(stamm: str) -> dict:
     pfad = _aufnahme(stamm)
     if pfad is None:
         raise FileNotFoundError(stamm)
     if stamm not in _cache:
         v = verlauf.baue(pfad)
+        _verlaeufe[stamm] = v
         verlauf.speichern(v, review.pfade(pfad)["verlauf"])
         daten = asdict(v)
+        daten["schirme"] = bool(aufzeichnung.bildschirme(pfad))
         # Positionen fuer die Wiedergabe: jede Sekunde, gerundet
         daten["sekunden"] = [{"t": round(s.zeit), "g": s.gold, "l": s.leben, "d": s.itemgold_diff, "k": s.kills,
                               "p": s.positionen, "x": s.tot} for s in v.sekunden]
@@ -120,6 +134,14 @@ class _Anfrage(BaseHTTPRequestHandler):
                 self._json(partien())
             elif pfad == "/api/profil":
                 self._json(fortschritt())
+            elif pfad.startswith("/schirm/"):
+                # /schirm/<stamm>/<spielzeit>: der gesicherte Spielbildschirm, der der Zeit am naechsten liegt
+                _, _, stamm, zeit = pfad.split("/", 3)
+                bild = bildschirm(stamm, float(zeit))
+                if bild is None:
+                    self.send_error(404)
+                else:
+                    self._datei(bild, "image/jpeg")
             elif pfad.startswith("/api/partie/"):
                 self._json(partie(pfad.split("/")[3]))
             elif pfad == "/karte.png":

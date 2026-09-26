@@ -104,6 +104,8 @@
       <div class="werte" id="werte"></div>
     </div>
     <div>
+      <div class="kasten" id="schirmkasten" hidden style="margin-bottom:12px"><h2 id="schirmkopf">Dein Bildschirm</h2>
+        <img id="schirm" alt="Spielbildschirm" style="width:100%;border-radius:8px;display:block"></div>
       <div class="kasten" id="lektionen"><h2>Lektionen</h2><div class="klein">Noch kein Review.</div></div>
       <div class="kasten" style="margin-top:12px"><h2>Was hier passierte</h2><div id="momente" class="klein"></div></div>
     </div>
@@ -177,6 +179,7 @@ async function oeffne(s) {
   document.querySelectorAll('.partie').forEach(e => e.classList.toggle('aktiv', e.dataset.stamm === s));
   $('haupt').innerHTML = '<div class="leer">Partie wird ausgewertet …</div>';
   P = await json(`/api/partie/${s}`);
+  schirmTakt = null;
   if (P.fehler) { $('haupt').innerHTML = `<div class="leer">${P.fehler}</div>`; return; }
   $('haupt').innerHTML = ''; $('haupt').append($('vorlage').content.cloneNode(true));
   const ich = P.spieler.find(x => x.ich);
@@ -283,7 +286,21 @@ function setze(z) {
   $('uhr').textContent = uhr(t);
   const c = $('cursor'); if (c) { const X = t / P.dauer * ($('zeitleiste').clientWidth || 1000); c.setAttribute('x1', X); c.setAttribute('x2', X); }
   const s = sekunde(t);
-  zeichne(s); werte(s); momente();
+  zeichne(s); werte(s); momente(); schirm();
+}
+
+// Der gesicherte Spielbildschirm zum Zeitpunkt (alle 5 s einer, dichter vor Toden) - nur nachladen,
+// wenn sich der 2-s-Takt aendert, damit die Wiedergabe nicht jede Sekunde ein Bild holt
+let schirmTakt = null;
+function schirm() {
+  if (!P || !P.schirme) { $('schirmkasten').hidden = true; return; }
+  const takt = Math.round(t / 2);
+  if (takt === schirmTakt) return;
+  schirmTakt = takt;
+  const img = $('schirm');
+  img.onload = () => { $('schirmkasten').hidden = false; $('schirmkopf').textContent = `Dein Bildschirm um ${uhr(takt * 2)}`; };
+  img.onerror = () => { $('schirmkopf').textContent = `Dein Bildschirm - um ${uhr(takt * 2)} keiner gesichert`; };
+  img.src = `/schirm/${stamm}/${takt * 2}`;
 }
 
 function zeichne(s) {

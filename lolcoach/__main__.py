@@ -75,6 +75,8 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
 
     def schritt_coach(p):
         ansagen = werk.pruefe(p, lagebild)
+        if any(a.schluessel == "tod" for a in ansagen) and getattr(sicht, "b", None) is not None:
+            sicht.b.puffer_sichern()   # die Sekunden vor dem Tod als Bilder fuers Review
         if stratege_:
             for a in [a for a in ansagen if a.situativ]:
                 stratege_.veredle(a)

@@ -36,6 +36,9 @@ Regeln, ohne Ausnahme:
   Zeitleiste)? Kehrt ein Fehler wieder, sag es ("wie schon am 26.09.") - ein wiederkehrender Fehler wiegt
   schwerer als ein einmaliger, und der Fokus fuer die naechste Partie gilt dann ihm. Vergleiche Kennzahlen
   nur mit dem, was dort steht.
+- Liegen BILDER bei (sein Spielbildschirm in Schluesselmomenten, Liste am Ende), nutze sie fuer das, was die
+  Zeitleiste nicht hat: Leben ueber den Koepfen, wer wirklich im Kampf war, Position im Kampf, Vasallen, seine
+  Faehigkeiten/Zauber unten (Zahl = Abklingzeit). Beleg dann als "Bild 19:40: ...". Nur, was zu sehen ist.
 - Deutsch, direkt, wie im Voice-Chat nach dem Spiel - aber praezise. Sprich den Spieler mit "du" an,
   auch in der Zusammenfassung (nicht "Riven hat ...", sondern "du hast ...").
 
@@ -56,7 +59,8 @@ zeigen, sagst du offen. Tode, Kills und Objectives NUR aus der Liste EREIGNISSE 
 nie aus Positionen erschliessen (in der Basis sein heisst nicht gestorben sein). Ob der Spieler lebte,
 steht in jeder DETAIL-Zeile ("du lebst" / "du bist TOT"). Keine Allgemeinplaetze - wenn er
 fragt, was er haette tun sollen, nenn die konkrete Handlung und warum. Wenn er widerspricht und recht hat,
-gib es zu."""
+gib es zu. Liegt ein BILD bei, ist es sein Spielbildschirm in dem Moment, nach dem er fragt: lies daraus
+Leben, wer da war, Vasallen, seine Faehigkeiten und Zauber - nur, was zu sehen ist."""
 
 
 def pfade(aufnahme: Path) -> dict[str, Path]:
@@ -99,7 +103,12 @@ def erstelle(aufnahme: str | Path, neu: bool = False, modell: str = "sonnet") ->
     v = verlauf.baue(aufnahme)
     verlauf.speichern(v, p["verlauf"])
     inhalt = f"{_wissen(v, aufnahme.parent)}\n\nZEITLEISTE DER PARTIE:\n{verlauf.als_text(v, hoechstens=60)}"
-    antwort = llm.frage(inhalt, system=REVIEW_SYSTEM, modell=modell, timeout=240)
+    bilder = moment_bilder(aufnahme, v)
+    if bilder:
+        inhalt += "\n\nBILDER (sein Spielbildschirm, in dieser Reihenfolge):\n" + "\n".join(
+            f"{i}. {text}" for i, (text, _) in enumerate(bilder, 1))
+    antwort = llm.frage(inhalt, system=REVIEW_SYSTEM, modell=modell, timeout=300,
+                        bilder=[b for _, b in bilder] or None)
     try:
         review = _json_aus(antwort)
     except (ValueError, json.JSONDecodeError):
@@ -115,6 +124,28 @@ def erstelle(aufnahme: str | Path, neu: bool = False, modell: str = "sonnet") ->
     review["_modell"] = modell
     p["review"].write_text(json.dumps(review, ensure_ascii=False, indent=1), encoding="utf-8")
     return review
+
+
+def moment_bilder(aufnahme: Path, v: verlauf.Verlauf, hoechstens: int = 6) -> list[tuple[str, bytes]]:
+    """Die Spielbildschirme der wichtigsten Momente: 3 s vor jedem Tod, die Mitte schwerer Kaempfe,
+    verlorene Objectives - die schwersten zuerst ausgewaehlt, dann nach Zeit."""
+    kandidaten = []
+    for m in v.momente:
+        if m.art == "tod":
+            kandidaten.append((m.gewicht + 2, m.bis - 3, f"{uhr(m.bis - 3)} - 3 s vor deinem Tod ({m.titel})"))
+        elif m.art == "kampf" and m.gewicht >= 3:
+            mitte = (m.von + m.bis) / 2
+            kandidaten.append((m.gewicht, mitte, f"{uhr(mitte)} - mitten im {m.titel}"))
+        elif m.art == "objective" and "Gegner" in m.titel:
+            kandidaten.append((m.gewicht, m.von, f"{uhr(m.von)} - {m.titel}"))
+    aus, zeiten = [], []
+    for _, zeit, text in sorted(kandidaten, key=lambda k: -k[0]):
+        if len(aus) >= hoechstens or any(abs(zeit - z) < 8 for z in zeiten):
+            continue
+        if (pfad := verlauf.bildschirm_bei(aufnahme, v, zeit)) is not None:
+            aus.append((zeit, text, pfad.read_bytes()))
+            zeiten.append(zeit)
+    return [(text, b) for _, text, b in sorted(aus)]
 
 
 _ZEIT = re.compile(r"\b(\d{1,2})[:.](\d{2})\b")
@@ -163,14 +194,18 @@ def frage(aufnahme: str | Path, text: str, zeit: float | None = None, modell: st
     teile = [_wissen(v, aufnahme.parent), "ZEITLEISTE DER PARTIE:\n" + verlauf.als_text(v, hoechstens=45)]
     if review:
         teile.append("DEIN REVIEW:\n" + json.dumps(review, ensure_ascii=False))
+    bilder = []
     for z in zeiten[:2]:
         teile.append(_detail(v, z))
+        if (pfad := verlauf.bildschirm_bei(aufnahme, v, z)) is not None:   # sein Bildschirm in dem Moment
+            bilder.append(pfad.read_bytes())
+            teile.append(f"BILD {len(bilder)}: sein Spielbildschirm um {uhr(z)}")
     if verlauf_gespraech:
         teile.append("BISHERIGES GESPRAECH:\n" + "\n".join(f"{e['wer']}: {e['text']}" for e in verlauf_gespraech[-8:]))
     hinweis = ("\n(Die Antwort wird vorgelesen: hoechstens 4 kurze Saetze, keine Aufzaehlungen - das "
                "Wichtigste zuerst; Details kann er nachfragen.)") if gesprochen else ""
     antwort = llm.frage("\n\n".join(teile) + f"\n\nFRAGE DES SPIELERS: {text}{hinweis}", system=GESPRAECH_SYSTEM,
-                        modell=modell, timeout=120, aufwand="medium").strip()
+                        modell=modell, timeout=120, aufwand="medium", bilder=bilder or None).strip()
     from .itemnamen import absichern
     antwort = absichern(antwort)[0]
     verlauf_gespraech += [{"wer": "Spieler", "text": text, "zeit": zeit}, {"wer": "Coach", "text": antwort}]

@@ -251,6 +251,7 @@ class _Kamera:
 # Spielwelt mit Namensschildern als Rauschen).
 CHAT = (0.0, 0.70, 0.32, 0.95)
 BILDSCHIRM_BREITE = 1600   # fuer Claude: Lebensbalken und Namen noch lesbar, ~150 KB je Bild
+SCHIRM_ALLE = 5.0          # Sekunden: so oft ein Spielbild auf die Platte (Review), ~45 MB je 30-min-Partie
 BILDER_BEHALTEN = 20 * 60     # Sekunden: aeltere Minimap-Bilder der laufenden Partie werden entfernt
 
 
@@ -355,6 +356,10 @@ class Beobachter(threading.Thread):
                                     ok, jpg = cv2.imencode(".jpg", klein, [cv2.IMWRITE_JPEG_QUALITY, 70])
                                     if ok:
                                         self._bildschirme.append((start, jpg.tobytes()))
+                                        # alle SCHIRM_ALLE s eins auf die Platte: Material fuers Review
+                                        if self.ordner and start - getattr(self, "_schirm_gesichert", 0.0) >= SCHIRM_ALLE:
+                                            self._schirm_gesichert = start
+                                            self._schirm_schreiben(start, jpg.tobytes())
                             except Exception as e:
                                 self.fehler = f"Bildschirm: {type(e).__name__}: {e}"
                             hx0, hy0, hx1, hy1 = hud.bereich(breite, hoehe)
@@ -391,6 +396,18 @@ class Beobachter(threading.Thread):
                 protokoll.close()
             if self._ereignis_datei:
                 self._ereignis_datei.close()
+
+    def _schirm_schreiben(self, wand: float, jpg: bytes) -> None:
+        ziel = self.ordner / f"schirm_{int(wand * 1000)}.jpg"
+        if not ziel.exists():
+            ziel.write_bytes(jpg)
+
+    def puffer_sichern(self) -> None:
+        """Alle Bildschirme der letzten 12 s auf die Platte - beim Tod: die Sekunden davor, jede einzeln
+        (Carlos: 'Momente notieren, die du durch Screenshot siehst')."""
+        if self.ordner:
+            for wand, jpg in list(self._bildschirme):
+                self._schirm_schreiben(wand, jpg)
 
     def bildschirm(self, vor: float = 0.0) -> bytes | None:
         """Der Spielbildschirm (JPEG) etwa `vor` Sekunden vor jetzt - None, wenn keiner da ist
@@ -526,6 +543,14 @@ def bilder_aufraeumen(behalte: int = 3) -> float:
     for pfad in aufnahmen[:-behalte] if behalte else aufnahmen:
         bilder = aufzeichnung.bilder(pfad)
         if not bilder:
+            continue
+        protokoll = pfad.with_name(pfad.name.removesuffix(".jsonl.gz") + "_bilder") / "sichtungen.jsonl.gz"
+        if protokoll.exists():
+            # neue Partien: das Minimap-Protokoll (15-60/s) hat alles - die Bilder werden nicht mehr gebraucht.
+            # Spielbildschirme (schirm_*) und Chat-Bilder bleiben fuers Review.
+            for _, b in bilder:
+                frei += b.stat().st_size
+                b.unlink()
             continue
         champions_ = next((champions(p) for p in map(zustand.partie, aufzeichnung.lies(pfad)) if p.spieler), None)
         if not champions_:

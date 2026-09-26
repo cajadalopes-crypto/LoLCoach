@@ -66,6 +66,17 @@ class Verlauf:
     notizen: list[str]
     spielakte: str | None
     ereignisse: list[tuple[float, str]] = field(default_factory=list)   # (Spielzeit, Satz) aus der API
+    wand0: float = 0.0            # Wanduhr bei Spielzeit 0 - verknuepft die Zeitleiste mit den Bildschirmen
+
+
+def bildschirm_bei(aufnahme: str | Path, v: Verlauf, zeit: float, toleranz: float = 3.0) -> Path | None:
+    """Der gesicherte Spielbildschirm, der `zeit` (Spielzeit) am naechsten liegt - hoechstens `toleranz` s daneben."""
+    schirme = aufzeichnung.bildschirme(aufnahme)
+    if not schirme or not v.wand0:
+        return None
+    ziel = v.wand0 + zeit
+    w, pfad = min(schirme, key=lambda s: abs(s[0] - ziel))
+    return pfad if abs(w - ziel) <= toleranz else None
 
 
 def _abstand(a, b) -> float:
@@ -98,6 +109,7 @@ def baue(pfad: str | Path, ich: str | None = None) -> Verlauf:
                                 p.item_gold(wir) - p.item_gold(die), (p.kills(wir), p.kills(die)), pos,
                                 [s.name for s in p.spieler if s.tot], wellen))
         partien.append(p)
+        wand0 = w - p.zeit     # die letzte Messung zaehlt (nach einem Neustart laeuft die Uhr gleich weiter)
     if not partien:
         raise ValueError(f"{pfad.name}: keine Partie mit eigenem Spieler")
     ende = partien[-1]
@@ -132,6 +144,7 @@ def baue(pfad: str | Path, ich: str | None = None) -> Verlauf:
         spielakte=akte_datei.read_text(encoding="utf-8") if akte_datei.exists() else None,
         ereignisse=[(e.zeit, satz.split("  ", 1)[-1]) for e in ende.ereignisse
                     if (satz := ansicht.ereignis(ende, e))],
+        wand0=wand0,
     )
 
 

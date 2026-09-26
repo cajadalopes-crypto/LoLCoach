@@ -156,6 +156,26 @@ def aufnahme_fortsetzen():
         assert weiter.pfad == s.pfad and len(list(aufzeichnung.lies(s.pfad))) == 60
 
 
+def bildschirm_momente():
+    """Gesicherte Spielbildschirme finden ihren Moment: 3 s vor dem Tod 19:55 (Testpartie 2) -> im Review."""
+    import shutil
+    import tempfile
+    from lolcoach import review, verlauf
+    with tempfile.TemporaryDirectory() as tmp:
+        ordner = Path(tmp)
+        aufnahme = ordner / "2026-09-26_100000.jsonl.gz"
+        shutil.copy(HIER / "botspiel_riven_2.jsonl.gz", aufnahme)
+        shutil.copytree(HIER / "botspiel_riven_2_bilder", ordner / "2026-09-26_100000_bilder")
+        v = verlauf.baue(aufnahme)
+        tod = next(m.bis for m in v.momente if m.art == "tod" and m.bis > 1100)
+        wand = v.wand0 + tod - 3
+        (ordner / "2026-09-26_100000_bilder" / f"schirm_{int(wand * 1000)}.jpg").write_bytes(b"\xff\xd8bild")
+        assert verlauf.bildschirm_bei(aufnahme, v, tod - 2.5) is not None
+        assert verlauf.bildschirm_bei(aufnahme, v, tod - 30) is None          # nichts in der Naehe
+        bilder = review.moment_bilder(aufnahme, v)
+        assert len(bilder) == 1 and "vor deinem Tod" in bilder[0][0] and bilder[0][1] == b"\xff\xd8bild", bilder
+
+
 def eigene_tasten():
     """Q W E R D F bereit? Echter HUD-Streifen aus Partie 6 (4K, ab Fenster 1075/1944): Q, W, D (Zuenden)
     bereit - E, R und F (Flash, 1:30) nicht. Gelber Tasten-Buchstabe = bereit."""
@@ -197,6 +217,6 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
-                 aufnahme_fortsetzen):
+                 aufnahme_fortsetzen, bildschirm_momente):
         test()
         print(f"{test.__name__} OK")

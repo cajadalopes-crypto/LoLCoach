@@ -128,11 +128,21 @@ def lies_mit_zeit(pfad: str | Path) -> Iterator[tuple[float, dict]]:
 
 
 def bilder(pfad: str | Path) -> list[tuple[float, Path]]:
-    """Die Minimap-Bilder einer Aufnahme als (Wanduhr, Datei), zeitlich sortiert."""
+    """Die Minimap-Bilder einer Aufnahme als (Wanduhr, Datei), zeitlich sortiert. Nur die mit reiner Zahl
+    als Namen - chat_*.jpg und schirm_*.jpg liegen daneben (int("chat_...") liess das Aufraeumen seit
+    Partie 4 still scheitern)."""
     ordner = Path(pfad).with_name(Path(pfad).name.removesuffix(".jsonl.gz") + "_bilder")
     if not ordner.exists():
         return []
-    return sorted((int(b.stem) / 1000, b) for b in ordner.glob("*.jpg"))
+    return sorted((int(b.stem) / 1000, b) for b in ordner.glob("*.jpg") if b.stem.isdigit())
+
+
+def bildschirme(pfad: str | Path) -> list[tuple[float, Path]]:
+    """Die gesicherten Spielbildschirme einer Aufnahme (schirm_<Wanduhr ms>.jpg), zeitlich sortiert."""
+    ordner = Path(pfad).with_name(Path(pfad).name.removesuffix(".jsonl.gz") + "_bilder")
+    if not ordner.exists():
+        return []
+    return sorted((int(b.stem[7:]) / 1000, b) for b in ordner.glob("schirm_*.jpg") if b.stem[7:].isdigit())
 
 
 def neueste() -> Path | None:
