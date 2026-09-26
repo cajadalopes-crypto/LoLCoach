@@ -18,7 +18,7 @@ import threading
 import time
 from dataclasses import asdict
 
-from . import ansicht, aufzeichnung, bericht, lage, liveapi, llm, regeln, sprechplan, stimme, zustand
+from . import ansicht, aufzeichnung, bericht, lage, liveapi, llm, profil, regeln, sprechplan, stimme, zustand
 
 
 def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, sicht=None,
@@ -140,10 +140,22 @@ def _live_quelle(basis: str, nach_spielende: float = 10.0, ohne_spielende: float
     Partie nicht mittendrin beenden (Bericht, Review und neue Aufnahme waeren falsch)."""
     stumm_seit = None
     vorbei = False
+    spieler, uhr = None, None
     while True:
         try:
             daten = liveapi.alles(basis)
             vorbei = any(e.get("EventName") == "GameEnd" for e in (daten.get("events") or {}).get("Events", []))
+            # Eine andere Partie ist keine Fortsetzung: Live 26.09., 23:05-23:06 (Practice Tool neu gestartet) lief
+            # die API nur kurz nicht - der Coach behielt Briefing, Rolle ("du bist Jungler", Smite aus der ersten
+            # Partie) und Aufnahme der alten. Andere Spieler/Champions oder eine zurueckgesprungene Spieluhr = Ende.
+            jetzt_spieler = aufzeichnung._spieler(daten)
+            jetzt_uhr = float((daten.get("gameData") or {}).get("gameTime") or 0.0)
+            if jetzt_spieler:
+                if spieler is not None and (jetzt_spieler != spieler or (uhr is not None and jetzt_uhr < uhr - 30)):
+                    print("Neue Partie erkannt (andere Spieler oder Spieluhr von vorn) - die alte endet hier.",
+                          flush=True)
+                    return
+                spieler, uhr = jetzt_spieler, jetzt_uhr
             yield time.time(), daten
             stumm_seit = None
         except liveapi.KeinSpiel:
@@ -283,7 +295,8 @@ def live(args) -> None:
                     _ansagen_speichern(schreiber.pfad, plan)
         if schreiber:
             # im Hintergrund: Claude braucht bis zu zwei Minuten, die naechste Partie nicht
-            if plan and len(plan.gesagt) >= 3:   # nur nach einer echten Partie, nicht nach einem Test
+            # nur nach einer echten Partie, nicht nach einem Test oder einem Wechsel nach Sekunden (Practice Tool)
+            if plan and len(plan.gesagt) >= 3 and plan.gesagt[-1].zeit >= profil.KURZ:
                 sprecher.sage("Partie vorbei. Ich schreibe jetzt das Review, das dauert ein, zwei Minuten.")
             threading.Thread(target=_bericht_im_hintergrund, args=(schreiber.pfad, args.ich, sprecher, args.basis),
                              daemon=False).start()
@@ -323,6 +336,16 @@ def _review_ansage(review: dict) -> str:
     return " ".join(teile)
 
 
+def _spieldauer(pfad) -> float:
+    """Spielzeit der letzten Zeile einer Aufnahme (Sekunden)."""
+    for zeile in reversed(aufzeichnung.gz_text(pfad).splitlines()):
+        try:
+            return float((json.loads(zeile)["d"].get("gameData") or {}).get("gameTime") or 0.0)
+        except (ValueError, KeyError, AttributeError):
+            continue
+    return 0.0
+
+
 def _bericht_im_hintergrund(pfad, ich, sprecher=None, basis: str = liveapi.BASIS) -> None:
     try:
         ziel = bericht.schreibe(pfad, ich, mit_llm=False)  # die Claude-Analyse steckt im Review
@@ -331,6 +354,9 @@ def _bericht_im_hintergrund(pfad, ich, sprecher=None, basis: str = liveapi.BASIS
         print(f"Bericht fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
     try:
         from . import review
+        if _spieldauer(pfad) < profil.KURZ:
+            print("Kurze Partie (Test, Wechsel, Remake) - kein Review.", flush=True)
+            return
         print("Review wird geschrieben (1-3 Minuten) ...", flush=True)
         r = review.erstelle(pfad)
         stamm = pfad.name.removesuffix(".jsonl.gz")
