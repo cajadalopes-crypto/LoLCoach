@@ -130,6 +130,18 @@ def chat_zeitstempel():
     assert zauber.chat_zeit("Ille): Rumble- Blitz", 339.0) is None                                 # ohne Stempel
 
 
+def eigene_tasten():
+    """Q W E R D F bereit? Echter HUD-Streifen aus Partie 6 (4K, ab Fenster 1075/1944): Q, W, D (Zuenden)
+    bereit - E, R und F (Flash, 1:30) nicht. Gelber Tasten-Buchstabe = bereit."""
+    import numpy as np
+    streifen = cv2.imread(str(HIER / "hud_unten.png"))
+    fenster = np.zeros((2160, 3840, 3), np.uint8)
+    fenster[1944:1944 + streifen.shape[0], 1075:1075 + streifen.shape[1]] = streifen
+    wahr = {"Q": True, "W": True, "E": False, "R": False, "D": True, "F": False}
+    assert hud.eigene(fenster) == wahr, hud.eigene(fenster)
+    assert hud.eigene(cv2.resize(fenster, (1920, 1080), interpolation=cv2.INTER_AREA)) == wahr   # skaliert mit
+
+
 def chat_pings():
     """Partie 6: nur eindeutige Pings setzen Timer - der Strich-Ping "Rumble — Blitz" nicht."""
     p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.spieler)
@@ -159,6 +171,6 @@ def zauber_im_briefing():
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
-                 zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings):
+                 zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten):
         test()
         print(f"{test.__name__} OK")

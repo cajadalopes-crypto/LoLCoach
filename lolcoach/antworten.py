@@ -178,6 +178,14 @@ def lage_text(p: Partie, lagebild=None) -> str:
     zeilen = [f"Spielzeit {int(p.zeit // 60)}:{int(p.zeit % 60):02d}. Ich: {p.ich.champion} "
               f"({ROLLE_DE.get(p.ich.rolle, '?')}), {leben}Gold {int(p.gold or 0)}, Beschwoererzauber: {', '.join(zauber)}."
               + (" Bot-Partie (Gegner sind Bots)." if any(s.bot for s in p.gegner()) else "")]
+    # eigene Zauber und Faehigkeiten aus dem HUD - die Live-API kennt keine Abklingzeiten
+    if lagebild is not None and hasattr(lagebild, "eigene_zauber"):
+        if ez := lagebild.eigene_zauber(p, p.zeit):
+            zeilen.append("Meine Beschwoererzauber jetzt (HUD): " + ", ".join(
+                f"{ZAUBER_DE.get(z, z)} " + ("bereit" if r <= 0 else f"weg, noch ~{int(r)} s") for z, r in ez.items()))
+        if ef := lagebild.eigene_faehigkeiten(p.zeit):
+            zeilen.append("Meine Faehigkeiten jetzt (HUD): " + ", ".join(
+                f"{t} {'bereit' if b else 'nicht bereit'}" for t, b in ef.items()))
     for team, wer in ((p.mein_team, "Mein Team"), (gegenteam(p.mein_team), "Gegner")):
         zeilen.append(f"{wer}:")
         for s in p.team(team):

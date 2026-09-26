@@ -161,6 +161,12 @@ def fakten(p: Partie, kill, rb: Rueckblick, lb=None) -> str:
                    if (r := lb.zauber.fehlt(s, z, zeit))]
             if weg:
                 zeilen.append(f"Bekannt: {s.champion} hatte kein {', kein '.join(weg)}.")
+    if lb is not None and hasattr(lb, "eigene_zauber") and (ez := lb.eigene_zauber(p, zeit)):
+        # aus dem HUD: mit Flash gestorben, oder ohne Flash zu weit vorne?
+        from .zauber import NAME_DE
+        zeilen.append("Deine Beschwoererzauber beim Tod (HUD): " + ", ".join(
+            f"{NAME_DE.get(z, z)} " + ("noch bereit - nicht benutzt" if r <= 0 else f"weg (noch {int(r)} s)")
+            for z, r in ez.items()))
     for schl, name in (("drache", "Drache"), ("baron", "Baron"), ("herold", "Herold"), ("larven", "Larven")):
         n = p.naechster_spawn(schl)
         if n is not None and 0 <= n - zeit <= p.ich.respawn + 45:

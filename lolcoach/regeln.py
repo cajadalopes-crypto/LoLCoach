@@ -675,6 +675,9 @@ class Regelwerk:
         text = cfg["satz"].format(namen=" und ".join([", ".join(namen[:-1]), namen[-1]] if len(namen) > 1 else namen),
                                   sind="sind" if len(namen) > 1 else "ist", sie="sie" if len(namen) > 1 else "ihn",
                                   sekunden=int(min(w for _, w in fehlend[:3])))
+        if hasattr(self.lage, "eigene_zauber") and (ez := self.lage.eigene_zauber(p, p.zeit)) \
+                and ez.get("SummonerFlash", 0) > 0:
+            text += " " + cfg["ohne_flash"]   # aus dem HUD: ohne Flash ist tief doppelt gefaehrlich
         self._tief_gewarnt = p.zeit
         # 10 s gueltig: solange er tief steht, stimmt der Satz (mit 4 s fiel er 20:53 hinter
         # einer anderen Ansage weg - 25 s vor dem Tod)

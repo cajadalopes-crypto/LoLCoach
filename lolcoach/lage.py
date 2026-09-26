@@ -15,7 +15,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from . import minimap
+from . import hud, minimap
 from .zustand import Partie, Spieler
 
 SICHTBAR_TOLERANZ = 1.6   # Sekunden: so alt darf eine Sichtung sein und gilt noch als "jetzt sichtbar"
@@ -36,6 +36,28 @@ class Lagebild:
         self.wellen: dict = {}            # Lane -> welle.LaneZustand
         self.wellen_zeit: float | None = None
         self.letzter_tod: tuple[float, str] | None = None   # (Spielzeit, Fakten der Todesanalyse)
+        self.eigene: dict[str, tuple[bool, float]] = {}     # Taste -> (bereit, seit Spielzeit), aus dem HUD
+        self.eigene_zeit: float | None = None
+
+    def eigene_zauber(self, p: Partie, jetzt: float) -> dict[str, float] | None:
+        """Beschwoererzauber des Spielers -> Sekunden bis bereit (0 = bereit), aus dem HUD (frisch, < 3 s).
+        Die Restzeit rechnet ab dem Moment, in dem der Buchstabe von gelb auf weiss sprang."""
+        if self.eigene_zeit is None or jetzt - self.eigene_zeit > 3 or not p.ich:
+            return None
+        from .zauber import cooldown
+        aus = {}
+        for taste, schl in zip(("D", "F"), p.ich.zauber):
+            if (z := self.eigene.get(taste)) is None:
+                continue
+            bereit, seit = z
+            aus[schl] = 0.0 if bereit else max(1.0, cooldown(schl, p.ich, seit) - (jetzt - seit))
+        return aus
+
+    def eigene_faehigkeiten(self, jetzt: float) -> dict[str, bool] | None:
+        """Q W E R bereit? (aus dem HUD, frisch)"""
+        if self.eigene_zeit is None or jetzt - self.eigene_zeit > 3:
+            return None
+        return {t: self.eigene[t][0] for t in "QWER" if t in self.eigene}
 
     def ereignisse(self, zeit_von_wand, liste, p: Partie) -> list:
         """Spruenge und Chatzeilen des Beobachters -> Zauber-Timer. Gibt die neuen Timer zurueck."""
@@ -54,6 +76,14 @@ class Lagebild:
                 from . import welle
                 self.wellen = welle.zustaende(e[2])
                 self.wellen_zeit = zeit_von_wand(e[1])
+            elif e[0] == "eigene":
+                # eigene Faehigkeiten/Zauber aus dem HUD: Wechsel bereit -> weg ist der Moment der Nutzung
+                zeit = zeit_von_wand(e[1])
+                for taste, bereit in e[2].items():
+                    alt = self.eigene.get(taste)
+                    if alt is None or alt[0] != bereit:
+                        self.eigene[taste] = (bereit, zeit)
+                self.eigene_zeit = zeit
             elif e[0] == "hud":
                 # Reihenfolge der Leiste = Reihenfolge des Teams ohne dich (geprueft an Partie 2)
                 andere = [s for s in p.team(p.mein_team) if s is not p.ich] if p.ich else []
@@ -157,6 +187,8 @@ def ereignis_als_json(e: tuple) -> dict:
         return {"art": "hud", "w": e[1], "m": [[m.leben, m.ult_bereit] for m in e[2]]}
     if e[0] == "wellen":
         return {"art": "wellen", "w": e[1], "p": [[t, round(x, 4), round(y, 4)] for t, x, y in e[2]]}
+    if e[0] == "eigene":
+        return {"art": "eigene", "w": e[1], "b": e[2]}
     return {"art": e[0], "w": e[1], "text": e[2]}
 
 
@@ -169,6 +201,8 @@ def ereignis_aus_json(d: dict) -> tuple:
         return ("hud", d["w"], [hud.Mitspieler(le, ul) for le, ul in d["m"]])
     if d["art"] == "wellen":
         return ("wellen", d["w"], [tuple(q) for q in d["p"]])
+    if d["art"] == "eigene":
+        return ("eigene", d["w"], d["b"])
     return (d["art"], d["w"], d["text"])
 
 
@@ -297,6 +331,9 @@ class Beobachter(threading.Thread):
                             try:   # eigener Schutz: ein Fehler hier darf Chat und Leiste nicht mitreissen
                                 ganz = kamera.hole((l, o, r, u))
                                 if ganz is not None:
+                                    if (eig := hud.eigene(ganz)) is not None:   # Q W E R D F bereit?
+                                        with self._schloss:
+                                            self._ereignisse.append(("eigene", start, eig))
                                     klein = cv2.resize(ganz, (BILDSCHIRM_BREITE, round(BILDSCHIRM_BREITE * hoehe / breite)),
                                                        interpolation=cv2.INTER_AREA)
                                     ok, jpg = cv2.imencode(".jpg", klein, [cv2.IMWRITE_JPEG_QUALITY, 70])
@@ -304,7 +341,6 @@ class Beobachter(threading.Thread):
                                         self._bildschirme.append((start, jpg.tobytes()))
                             except Exception as e:
                                 self.fehler = f"Bildschirm: {type(e).__name__}: {e}"
-                            from . import hud
                             hx0, hy0, hx1, hy1 = hud.bereich(breite, hoehe)
                             leiste = kamera.hole((l + hx0, o + hy0, l + hx1, o + hy1))
                             if leiste is not None:

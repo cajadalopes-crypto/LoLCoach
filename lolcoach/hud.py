@@ -39,6 +39,30 @@ def bereich(breite: int, hoehe: int) -> tuple[int, int, int, int]:
     return x0, y0, x1, y1
 
 
+# Eigene Faehigkeiten und Beschwoererzauber (Partie 6, Carlos' HUD bei 4K vermessen): unter jedem Feld
+# steht der Tasten-Buchstabe - GELB, wenn bereit, weiss/grau, wenn in Abklingzeit oder nicht gelernt.
+# (links-oben-x relativ zur Fenstermitte, Oberkante als Abstand vom unteren Rand, Breite, Hoehe) bei 2160.
+TASTEN = {"Q": (-318, 116, 26, 24), "W": (-230, 116, 26, 24), "E": (-142, 116, 26, 24), "R": (-42, 116, 26, 24),
+          "D": (55, 130, 22, 22), "F": (118, 130, 22, 22)}
+GELB_AB = 8          # so viele gelbe Pixel im Buchstaben: bereit (gemessen: bereit 20-30, weg 0)
+
+
+def eigene(fenster: np.ndarray) -> dict[str, bool] | None:
+    """Q W E R D F: bereit (True) oder nicht (False), aus dem ganzen Spielfenster (BGR).
+    None, wenn keiner der Buchstaben zu finden ist (z. B. HUD ausgeblendet)."""
+    h, b = fenster.shape[:2]
+    s = h / REF
+    aus = {}
+    for taste, (dx, oben, w, hh) in TASTEN.items():
+        x0, y0 = round(b / 2 + dx * s), round(h - oben * s)
+        feld = fenster[y0:y0 + round(hh * s), x0:x0 + round(w * s)].astype(int)
+        if feld.size == 0:
+            return None
+        gelb = int(((feld[..., 2] > 170) & (feld[..., 1] > 130) & (feld[..., 0] < 110)).sum())
+        aus[taste] = gelb >= GELB_AB * s * s
+    return aus
+
+
 def lies(leiste: np.ndarray, hoehe: int = REF) -> list[Mitspieler]:
     """`leiste`: BGR-Ausschnitt genau `bereich(...)`. Gibt vier Mitspieler von links nach rechts."""
     s = hoehe / REF

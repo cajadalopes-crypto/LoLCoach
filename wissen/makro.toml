@@ -183,6 +183,7 @@ gruppe_ab = 3        # so viele Mitspieler in deiner Naehe: ihr seid als Gruppe 
 sperre = 45
 erneut_nach = 90     # im selben Vorstoss erst nach so vielen Sekunden wieder
 satz = "Du stehst tief, und {namen} {sind} seit {sekunden} Sekunden weg. Zurück, bis du {sie} siehst."
+ohne_flash = "Und dein Flash ist weg."
 
 [kontrollauge]
 # Nach dem Einkauf ohne Kontroll-Auge (Item 2055, 75 Gold) im Inventar
