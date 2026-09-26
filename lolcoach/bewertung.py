@@ -141,6 +141,7 @@ class Bewertung:
     objective: tuple[str, float] | None = None  # (Schluessel, Sekunden bis Spawn; <= 0 lebt)
     zum_objective: float | None = None          # deine Laufzeit zur Grube (Sekunden)
     mitspieler_nah: list[Spieler] = field(default_factory=list)   # innerhalb ~1500 Einheiten
+    partie: "Partie | None" = None   # der Zustand dieses Takts (fuer Plaene, die alle Lanes brauchen)
     trade: str = ""             # aus der Spielakte: worauf beim All-in gegen den Lane-Gegner achten
     platten_gegner: int | None = None   # Platten am vordersten stehenden Gegnerturm deiner Lane (Minimap)
     platten_eigen: int | None = None    # ... an deinem vordersten Turm
@@ -311,7 +312,7 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
     """Die Bewertung dieses Takts. `lagebild`: lage.Lagebild (ohne: nur API-Werte)."""
     if not p.ich:
         return None
-    b = Bewertung(zeit=p.zeit, ich=p.ich, gold=int(p.gold or 0))
+    b = Bewertung(zeit=p.zeit, ich=p.ich, gold=int(p.gold or 0), partie=p)
     m = p.werte.get("maxHealth")
     if m:
         b.leben_abs = int(p.werte.get("currentHealth", 0))

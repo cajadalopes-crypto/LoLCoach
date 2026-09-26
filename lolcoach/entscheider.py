@@ -85,7 +85,8 @@ class Option:
     @property
     def thema(self) -> str:
         return {"zurueck": "gefahr", "druck": "druck", "freeze": "gefahr", "gruppe": "objective",
-                "obj_plan": "objective", "seite": "seite", "seite_nicht": "seite"}.get(
+                "obj_plan": "objective", "seite": "seite", "seite_nicht": "seite", "gank": "druck",
+                "invade": "druck"}.get(
             self.name, "back" if self.name.startswith("back") else "")
 
 
@@ -102,8 +103,10 @@ class Entscheider:
 
     def optionen(self, b: Bewertung, platten: bool) -> list[Option]:
         rolle = b.ich.rolle
-        if rolle == "JUNGLE" or b.ich.tot or b.pos is None:
+        if b.ich.tot or b.pos is None:
             return []
+        if rolle == "JUNGLE":
+            return self._jungle(b)
         aus: list[Option] = []
         lane_phase = b.zeit < LANE_PHASE_BIS
         g = b.lane
@@ -252,6 +255,73 @@ class Entscheider:
                 elif len(sichtbar) >= 3:
                     aus.append(Option("seite", f"{len(sichtbar)} Gegner sichtbar weg von dir: Seitenwelle drücken, "
                                                f"Platten und Turm, bis sich einer zeigt{tp_satz}.", 70, 2 + tp))
+        return aus
+
+    # --- Jungle ---------------------------------------------------------------------------
+
+    GANK_PUNKT = {"Top": (0.17, 0.17), "Mid": (0.5, 0.5), "Bot": (0.83, 0.83)}   # Minimap: Flusseingang je Lane
+    ROLLEN_DER_LANE = {"Top": ("TOP",), "Mid": ("MIDDLE",), "Bot": ("BOTTOM", "UTILITY")}
+
+    def _jungle(self, b: Bewertung) -> list[Option]:
+        """Jungle: wohin gankst du (welche Lane ist verwundbar), und wann ist ein Invade frei.
+        Je Lane zaehlt: gegnerischer Flash weg, seine Welle drueckt auf eure Seite (er steht vorn),
+        Level/Items eurer Laner gegen seine, wo der gegnerische Jungler ist, dein Weg dorthin."""
+        from .bewertung import abstand, einheiten
+        p = b.partie
+        if p is None or b.zeit < 150:
+            return []
+        aus: list[Option] = []
+        gefahr = komponist.gefahr(b)
+        if gefahr and b.leben is not None and b.leben < 0.4:
+            return []    # erst sicher werden - die Regeln warnen schon
+        feind_j = b.jungler
+        j_seite = None
+        if feind_j and not feind_j.s.tot and feind_j.seit is not None and feind_j.seit <= 20 and feind_j.ort:
+            j_seite = "oben" if any(w in feind_j.ort for w in ("oben", "oberen")) else                 "unten" if any(w in feind_j.ort for w in ("unten", "unteren")) else "mitte"
+        beste = None
+        for lane, rollen in self.ROLLEN_DER_LANE.items():
+            gegner = [g for g in b.gegner if g.s.rolle in rollen and not g.s.tot]
+            freunde = [s for s in p.team(p.mein_team) if s.rolle in rollen and not s.tot]
+            if not gegner or not freunde:
+                continue
+            wert, gruende = 0.0, []
+            ohne = [g.champion for g in gegner if g.flash and g.flash > 30]
+            if ohne:
+                wert += 1.2
+                gruende.append(f"{' und '.join(ohne)} ohne Flash")
+            prio = b.prio.get(lane)
+            if prio == "er":
+                wert += 0.8
+                gruende.append("seine Welle drückt, er steht vorn")
+            elif prio == "ihr":
+                wert -= 1.0
+            lv = sum(s.level for s in freunde) - sum(g.s.level for g in gegner)
+            gd = sum(s.item_gold for s in freunde) - sum(g.s.item_gold for g in gegner)
+            wert += 0.4 * lv + gd / 1500
+            if lv >= 1 or gd >= 700:
+                gruende.append(f"euer {'Laner' if len(freunde) == 1 else 'Duo'} ist vorn")
+            seite = {"Top": "oben", "Bot": "unten", "Mid": "mitte"}[lane]
+            if j_seite == seite:
+                wert -= 1.5          # sein Jungler steht dort: Konter-Gank
+            elif j_seite is not None and lane != "Mid":
+                wert += 0.4
+                gruende.append(f"{feind_j.champion} ist auf der anderen Seite")
+            punkt = einheiten(*self.GANK_PUNKT[lane])
+            weg = abstand(b.pos, punkt) * 1.15 / b.mein_tempo
+            wert -= weg / 25
+            if gruende and (beste is None or wert > beste[0]):
+                beste = (wert, lane, gruende, weg)
+        if beste is not None and beste[0] >= 1.0:
+            wert, lane, gruende, weg = beste
+            aus.append(Option("gank", f"Gank {lane}: {', '.join(gruende[:3])} - {sek(weg)} Weg.",
+                              60 + 20 * wert, len(gruende) + 1))
+        # Invade: sein Jungler eben auf der einen Seite gesehen -> seine Camps auf der anderen sind frei
+        if j_seite in ("oben", "unten") and (b.leben or 1) >= 0.6 and not gefahr:
+            frei = "unten" if j_seite == "oben" else "oben"
+            lane = "Bot" if frei == "unten" else "Top"
+            if b.prio.get(lane) != "er":        # ohne Prio dort laufen dir seine Laner in den Invade
+                aus.append(Option("invade", f"{feind_j.champion} ist {j_seite} gesehen: seine Camps {frei} sind frei "
+                                            f"- klauen, solange er drüben ist.", 55, 2))
         return aus
 
     # --- Sprechen ----------------------------------------------------------------------
