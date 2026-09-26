@@ -22,6 +22,23 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## Als Naechstes
 
+- **Die Partie genauestens verstehen + Review nach dem Spiel (Carlos, 26.09.,
+  hoechste Prioritaet)**: "Ich will nach einem Spiel mit dir reden koennen und
+  dass du mir sagst, wo ich was falsch gemacht habe - kein denkloser AI-Slop,
+  sondern was mich wirklich voranbringt." Umsetzung:
+  - Spielverstaendnis: aus Aufnahme + Sichtungen + Chat + HUD eine Zeitleiste
+    der Partie mit Momenten (Kaempfe, Tode, Objectives, Gold-Schwuenge,
+    Positionen aller zur jeweiligen Zeit, Wellen-/Lane-Zustand, Zauber-Timer).
+  - Momente mit Bild: Minimap-Bild und Lage zu jedem Schluesselmoment sichern
+    (auch ueber die 20-min-Grenze hinaus, nur diese Momente).
+  - Review-Oberflaeche: Zeitleiste + Minimap-Wiedergabe + Momentkarten; zu
+    jedem Fehler: was passiert ist, warum es falsch war, was stattdessen -
+    belegt mit Daten, nicht geraten.
+  - Gespraech nach dem Spiel: im Review Fragen stellen (Text oder Sprache),
+    Antworten mit Gehirn + Zeitleiste der Partie, auf Momente verweisen.
+  - Qualitaet: nur Aussagen, die die Daten stuetzen; jede Lektion mit
+    Spielzeit, Beleg und konkreter Alternative; wenige, dafuer wichtige Punkte.
+
 - **Gehirn weiter ausbauen**: Bericht (Post-Game-Analyse) mit Spielakte und
   Lexikon; Regeln nutzen Fakten aus dem Gehirn (Ult-Cooldowns der Gegner,
   Spikes: "Urgot hat Level 6 - seine Ult richtet unter 25 % hin"); weitere

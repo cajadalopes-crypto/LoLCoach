@@ -170,6 +170,9 @@ def lage_text(p: Partie, lagebild=None) -> str:
                      f"CS {s.cs}, Items: {', '.join(fertig) or 'keine grossen'}"]
             if s.tot:
                 teile.append(f"TOT noch {int(s.respawn)} s")
+            elif lagebild is not None and hasattr(lagebild, "leben") and (lb := lagebild.leben(s, p.zeit)) is not None:
+                ult = lagebild.ult_bereit(s, p.zeit)
+                teile.append(f"Leben {int(lb * 100)} %" + ("" if ult is None else (", Ult bereit" if ult else ", Ult nicht bereit")))
             elif lagebild is not None and (g := lagebild.gesehen(s)):
                 teile.append(f"zuletzt vor {int(p.zeit - g[0])} s {minimap.ort(g[1], g[2], p.mein_team)}")
             zeilen.append(", ".join(teile))

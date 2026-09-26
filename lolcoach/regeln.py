@@ -130,7 +130,23 @@ class Regelwerk:
     def _objective_machbar(self, p: Partie, schl: str, vorsprung: int) -> bool:
         wir, die = self._lebend(p)
         noetig = self.m["zahlen"]["lebend_baron" if schl == "baron" else "lebend_drache"]
-        return wir - die >= vorsprung and wir >= noetig
+        if wir - die < vorsprung or wir < noetig:
+            return False
+        fit = self._fit(p)
+        return fit is None or fit >= noetig  # ohne HUD-Daten zaehlt nur, wer lebt
+
+    def _fit(self, p: Partie) -> int | None:
+        """Wie viele von euch leben UND haben genug Leben (HUD-Leiste + eigene Werte)?
+        None, wenn die Leiste gerade nicht gelesen werden konnte."""
+        if not self.lage or not hasattr(self.lage, "leben"):
+            return None
+        schwelle = self.m["zahlen"]["fit_ab"]
+        werte = [self.lage.leben(s, p.zeit) for s in p.team(p.mein_team) if s is not p.ich and not s.tot]
+        if any(w is None for w in werte):
+            return None
+        m = p.werte.get("maxHealth")
+        ich_fit = not p.ich.tot and (not m or p.werte.get("currentHealth", 0) / m >= schwelle)
+        return sum(1 for w in werte if w >= schwelle) + (1 if ich_fit else 0)
 
     # --- einzelne Regeln ------------------------------------------------------
 

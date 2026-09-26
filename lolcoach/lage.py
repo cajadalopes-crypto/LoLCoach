@@ -6,6 +6,7 @@ API-Schnappschuss in Spielzeit um - so laufen Live und Aufnahme gleich.
 """
 from __future__ import annotations
 
+import json
 import threading
 import time
 from collections import deque
@@ -31,6 +32,7 @@ class Lagebild:
         self.letztes_bild: float | None = None
         self.zauber = Zaubertimer()
         self.chat: list[tuple[float, str]] = []   # (Spielzeit, Zeile) - alles, was im Chat stand
+        self.mitspieler: dict[str, tuple[float, float, bool | None]] = {}  # Name -> (Zeit, Leben 0..1, Ult bereit)
 
     def ereignisse(self, zeit_von_wand, liste, p: Partie) -> list:
         """Spruenge und Chatzeilen des Beobachters -> Zauber-Timer. Gibt die neuen Timer zurueck."""
@@ -45,6 +47,11 @@ class Lagebild:
                         and sp.champion_id not in blinks and not sp.tot):
                     if t := self.zauber.benutzt(sp, "SummonerFlash", zeit_von_wand(s.zeit), "Minimap"):
                         neu.append(t)
+            elif e[0] == "hud":
+                # Reihenfolge der Leiste = Reihenfolge des Teams ohne dich (geprueft an Partie 2)
+                andere = [s for s in p.team(p.mein_team) if s is not p.ich] if p.ich else []
+                for sp, m in zip(andere, e[2]):
+                    self.mitspieler[sp.name] = (zeit_von_wand(e[1]), m.leben, m.ult_bereit)
             elif e[0] == "chat":
                 zeit = zeit_von_wand(e[1])
                 self.chat.append((zeit, e[2]))
@@ -76,6 +83,15 @@ class Lagebild:
         return (ende - punkte[0][0] >= dauer
                 and all(abs(x - ex) + abs(y - ey) <= toleranz for _, x, y in punkte))
 
+    def leben(self, sp: Spieler, jetzt: float) -> float | None:
+        """Leben eines Mitspielers (0..1) aus der HUD-Leiste, wenn frisch (< 3 s)."""
+        m = self.mitspieler.get(sp.name)
+        return m[1] if m and jetzt - m[0] < 3 else None
+
+    def ult_bereit(self, sp: Spieler, jetzt: float) -> bool | None:
+        m = self.mitspieler.get(sp.name)
+        return m[2] if m and jetzt - m[0] < 3 else None
+
     def gesehen(self, sp: Spieler) -> tuple[float, float, float] | None:
         return self.zuletzt.get((sp.name, sp.team))
 
@@ -100,6 +116,25 @@ def champions(p: Partie) -> list[tuple[str, str]]:
 
 
 # --- live: der Beobachter ---------------------------------------------------------
+
+def ereignis_als_json(e: tuple) -> dict:
+    from dataclasses import asdict
+    if e[0] == "sprung":
+        return {"art": "sprung", "w": e[1].zeit, **asdict(e[1])}
+    if e[0] == "hud":
+        return {"art": "hud", "w": e[1], "m": [[m.leben, m.ult_bereit] for m in e[2]]}
+    return {"art": e[0], "w": e[1], "text": e[2]}
+
+
+def ereignis_aus_json(d: dict) -> tuple:
+    from . import hud
+    if d["art"] == "sprung":
+        felder = {k: d[k] for k in ("champion_id", "team", "zeit", "weite", "x", "y")}
+        return ("sprung", minimap.Sprung(**felder))
+    if d["art"] == "hud":
+        return ("hud", d["w"], [hud.Mitspieler(le, ul) for le, ul in d["m"]])
+    return (d["art"], d["w"], d["text"])
+
 
 class _Kamera:
     """Bildschirmausschnitte: Desktop-Duplizierung (dxcam, 2-5 ms), sonst GDI (~110 ms)."""
@@ -168,6 +203,7 @@ class Beobachter(threading.Thread):
         except Exception as e:
             self.fehler = f"Chat: {e}"
         protokoll = gzip.open(self.ordner / "sichtungen.jsonl.gz", "at", encoding="utf-8") if self.ordner else None
+        self._ereignis_datei = gzip.open(self.ordner / "ereignisse.jsonl.gz", "at", encoding="utf-8") if self.ordner else None
         gespeichert: list[Path] = []
         letztes_bild = letzter_chat = 0.0
         chat_zeilen: set[str] = set()
@@ -199,8 +235,15 @@ class Beobachter(threading.Thread):
                                 while gespeichert and int(gespeichert[0].stem) / 1000 < start - BILDER_BEHALTEN:
                                     gespeichert.pop(0).unlink(missing_ok=True)
                             self.anzahl += 1
-                        if leser and start - letzter_chat >= 1.0:  # Chat einmal je Sekunde
+                        if start - letzter_chat >= 1.0:  # Chat und Mitspieler-Leiste einmal je Sekunde
                             letzter_chat = start
+                            from . import hud
+                            hx0, hy0, hx1, hy1 = hud.bereich(breite, hoehe)
+                            leiste = kamera.hole((l + hx0, o + hy0, l + hx1, o + hy1))
+                            if leiste is not None:
+                                with self._schloss:
+                                    self._ereignisse.append(("hud", start, hud.lies(leiste, hoehe)))
+                        if leser and letzter_chat == start:
                             a, b, c, d = CHAT
                             box = (l + int(a * breite), o + int(b * hoehe), l + int(c * breite), o + int(d * hoehe))
                             chatbild = kamera.hole(box)
@@ -222,6 +265,8 @@ class Beobachter(threading.Thread):
         finally:
             if protokoll:
                 protokoll.close()
+            if self._ereignis_datei:
+                self._ereignis_datei.close()
 
     def abholen(self) -> list[tuple[float, list[minimap.Sichtung]]]:
         with self._schloss:
@@ -231,6 +276,10 @@ class Beobachter(threading.Thread):
     def ereignisse(self) -> list[tuple]:
         with self._schloss:
             neu, self._ereignisse = self._ereignisse, []
+        if getattr(self, "_ereignis_datei", None) and not self._ereignis_datei.closed:
+            for e in neu:
+                self._ereignis_datei.write(json.dumps(ereignis_als_json(e), ensure_ascii=False) + "\n")
+            self._ereignis_datei.flush()
         return neu
 
     def halt(self) -> None:
@@ -255,10 +304,69 @@ def karte_aus_bild(pfad: Path, hoehe: int = minimap.REFERENZ_HOEHE) -> np.ndarra
     return bild[y0:y0 + s, x0:x0 + s]
 
 
-def sicht_fuer(pfad) -> "SichtAusBildern | None":
-    """Sichtungen einer Aufnahme: aus den Bildern, oder - wenn die schon
-    aufgeraeumt sind - aus der gespeicherten sichtungen.json."""
+class SichtAusProtokoll:
+    """Nachspielen aus dem Protokoll des Beobachters: jede Position (15/s) und
+    jedes Ereignis (Spruenge, Chat, Mitspieler-Leiste) - genau was live ankam."""
+
+    def __init__(self, ordner: Path):
+        import gzip
+        self.bilder = []  # fuer die Anzeige "Minimap: n Bilder"
+        self._s = []
+        with gzip.open(ordner / "sichtungen.jsonl.gz", "rt", encoding="utf-8") as f:
+            try:
+                for zeile in f:
+                    try:
+                        d = json.loads(zeile)
+                    except json.JSONDecodeError:
+                        continue
+                    self._s.append((d["w"], [minimap.Sichtung(c, t, x, y, 1.0) for c, t, x, y in d["s"]]))
+            except EOFError:
+                pass
+        self._e = []
+        pfad = ordner / "ereignisse.jsonl.gz"
+        if pfad.exists():
+            with gzip.open(pfad, "rt", encoding="utf-8") as f:
+                try:
+                    for zeile in f:
+                        try:
+                            self._e.append(ereignis_aus_json(json.loads(zeile)))
+                        except (json.JSONDecodeError, KeyError, TypeError):
+                            continue
+                except EOFError:
+                    pass
+        self._e.sort(key=lambda e: e[1].zeit if e[0] == "sprung" else e[1])
+        self.bilder = self._s
+        self.i = self.j = 0
+        self._bis = -1e18
+
+    def zwischen(self, bis: float, champions_=None):
+        aus = []
+        while self.i < len(self._s) and self._s[self.i][0] <= bis:
+            aus.append(self._s[self.i])
+            self.i += 1
+        self._bis = bis
+        return aus
+
+    def ereignisse(self) -> list:
+        aus = []
+        while self.j < len(self._e):
+            e = self._e[self.j]
+            w = e[1].zeit if e[0] == "sprung" else e[1]
+            if w > self._bis:
+                break
+            aus.append(e)
+            self.j += 1
+        return aus
+
+
+def sicht_fuer(pfad):
+    """Sichtungen einer Aufnahme: aus dem Protokoll (live mitgeschrieben, am
+    dichtesten), aus den Bildern, oder - wenn die schon aufgeraeumt sind - aus der
+    gespeicherten sichtungen.json."""
     from . import aufzeichnung
+    ordner = Path(pfad).with_name(Path(pfad).name.removesuffix(".jsonl.gz") + "_bilder")
+    if (ordner / "sichtungen.jsonl.gz").exists():
+        return SichtAusProtokoll(ordner)
     if bilder := aufzeichnung.bilder(pfad):
         return SichtAusBildern(bilder)
     ordner = Path(pfad).with_name(Path(pfad).name.removesuffix(".jsonl.gz") + "_bilder")

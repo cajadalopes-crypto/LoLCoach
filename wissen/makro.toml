@@ -81,6 +81,7 @@ min_sekunden = 12             # nur Gegner zaehlen, die mindestens so lange tot 
 vorsprung_mindestens = 2      # lebende eigene minus lebende Gegner
 lebend_baron = 4              # so viele von euch muessen fuer Baron leben
 lebend_drache = 3
+fit_ab = 0.4                  # Anteil Leben: darunter zaehlt ein Mitspieler fuer ein Objective nicht (HUD-Leiste)
 vorteil_objective = "{anzahl} Gegner tot für {sekunden} Sekunden. {objective} jetzt - sie können nicht verteidigen."
 vorteil_turm = "{anzahl} Gegner tot für {sekunden} Sekunden. Jetzt Türme drücken, solange sie fehlen."
 nachteil = "Ihr seid {sekunden} Sekunden lang zu {anzahl}. Nicht kämpfen - Objective lieber abgeben als noch jemanden verlieren."
