@@ -57,7 +57,8 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
   erkannte die Minimap 1, Fehlalarme 0 - im Kampf liegt das Icon unter anderen (physikalische Grenze).
   Verbuendete galten nur in 57-94 % der Takte als sichtbar; mit "verdeckt/Brunnen/Tod/Recall" jetzt 88-100 %.
   Erledigt 26.09. nachts: Icons in der Brunnen-Ecke (`minimap.ecke`, sichtbarer Teil) - 19:45 war Riven 2,5 min
-  im Brunnen ungesehen; eigenes Icon gegen den Kamerarahmen geprueft (`werkzeuge/kamera_rahmen.py`: 99,3-99,7 %
+  im Brunnen ungesehen (das Lagebild hielt sie dort schon per "zuletzt in der Basis"; neu ist der Spielbeginn ohne
+  erste Sichtung und eine echte statt einer gehaltenen Position - Korrektur zu 0fdab75); eigenes Icon gegen den Kamerarahmen geprueft (`werkzeuge/kamera_rahmen.py`: 99,3-99,7 %
   im Rahmen, Ausreisser = Kameraschwenks). Offen: Verwechslung im Klumpen (13:07: Riven unten "gesehen", stand
   oben unter Heimerdinger) - nur an 60-Bilder/s-Live-Daten nachstellbar; im Klumpen koennte der Kamerarahmen
   die eigene Position liefern (bei gesperrter Kamera: Rahmenmitte +0,018 nach unten).
