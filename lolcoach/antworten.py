@@ -243,12 +243,16 @@ KAUF_WORTE = {"kaufen", "kauf", "item", "items", "build", "bauen", "baue", "shop
 
 
 def laden_liste() -> str:
-    """Alle fertigen Items des Patches, deutsch - damit Claude keine Namen erfindet."""
+    """Fertige Items und Bauteile des Patches, deutsch, MIT PREIS - damit Claude keine Namen erfindet und
+    nicht behauptet, 1331 Gold reichten fuer Endlosen Hunger (Partie 7, 17:12)."""
     it = ddragon.items()
-    namen = sorted({v["name"] for v in it.values()
-                    if v.get("gold", {}).get("purchasable") and v.get("maps", {}).get("11")
-                    and not v.get("into") and v["gold"]["total"] >= 2200 and not v.get("requiredChampion")})
-    return ", ".join(namen)
+    kaufbar = {v["name"]: v for v in it.values() if v.get("gold", {}).get("purchasable") and v.get("maps", {}).get("11")
+               and not v.get("requiredChampion")}
+    fertig = sorted(f"{n} {v['gold']['total']}" for n, v in kaufbar.items()
+                    if not v.get("into") and v["gold"]["total"] >= 2200)
+    bauteile = sorted(f"{n} {v['gold']['total']}" for n, v in kaufbar.items()
+                      if v.get("into") and 700 <= v["gold"]["total"] < 2200)
+    return f"FERTIG: {', '.join(fertig)}\nBAUTEILE: {', '.join(bauteile)}"
 
 
 def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", letzte=(), gehirn=None,
@@ -260,7 +264,9 @@ def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", let
         zusatz += "\n\nDeine letzten Ansagen: " + " | ".join(
             f"{int((a.gesprochen or a.zeit) // 60)}:{int((a.gesprochen or a.zeit) % 60):02d} {a.text}" for a in letzte)
     if set(_woerter(frage)) & KAUF_WORTE:
-        zusatz += f"\n\nItems im Laden (Patch {ddragon.version()}, nur diese Namen verwenden): {laden_liste()}"
+        zusatz += (f"\n\nItems im Laden (Patch {ddragon.version()}, Name Preis - nur diese Namen verwenden; "
+                   f"reicht sein Gold nicht fuer das Item, nenn das passende Bauteil, das er JETZT kaufen kann, "
+                   f"und was spaeter dazukommt):\n{laden_liste()}")
     lage = lage_text(p, lagebild) + zusatz
     inhalt = gehirn.kontext(frage, p, lage) if gehirn else f"Lage:\n{lage}"
     try:
