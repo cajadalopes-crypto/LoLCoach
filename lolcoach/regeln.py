@@ -244,6 +244,13 @@ class Regelwerk:
         if s.startswith(("gold", "plan:back", "recallfenster")):
             # Rat zum Recall: vorbei, sobald du in der Basis bist, tot bist oder gekauft hast
             return lambda: not ich_weg(jetzt()) and int(jetzt().gold or 0) >= gold0 - 250
+        if s.startswith(("objstart:", "objgegner:", "vorwarnung:")):
+            # "Dein Team faengt den Drachen an ..." nach 10 s Warten - und der Drache ist laengst tot
+            art = {"drache": "DragonKill", "baron": "BaronKill", "herold": "HeraldKill", "larven": "HordeKill"}.get(
+                s.split(":")[1].split(",")[0])
+            if art:
+                n0 = len(p.kills_von(art))
+                return lambda: len(jetzt().kills_von(art)) == n0
         if s.startswith("wiedereinstieg"):
             return lambda: jetzt().ich.tot or self._ich_in_basis(jetzt())      # "Kauf X" nur, solange du dort bist
         if s.startswith(("jetzt:", "zahlen")):
