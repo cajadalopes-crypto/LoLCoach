@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import threading
 
-from .regeln import HINWEIS, SOFORT, Ansage
+from .regeln import HINWEIS, SOFORT, WICHTIG, Ansage
 
 ZEICHEN_PRO_SEKUNDE = 12.0   # Killian (edge-tts, +8 %) gemessen 26.09.: 11-12 Zeichen/s; live fragt der Plan die Stimme
 PAUSE = 1.5                  # zwischen zwei Saetzen (2,0 bis 26.09.; die Schaetzung ist jetzt ehrlicher)
@@ -34,6 +34,7 @@ class Sprechplan:
         self._einwurf: list[Ansage] = []
         self.thema_zuletzt: dict[str, float] = {}
         self._schloss = threading.Lock()
+        self._laeuft: Ansage | None = None      # was gerade gesprochen wird (bis frei_ab)
 
     def einwerfen(self, a: Ansage) -> None:
         """Aus einem anderen Thread (Stratege, Briefing): kommt beim naechsten Takt dran."""
@@ -63,9 +64,14 @@ class Sprechplan:
         # "Du stehst tief, Varus und Rakan seit 32 s weg" - 16 s vor dem Tod)
         a = max(self.warte, key=lambda a: (a.prio, a.thema == "gefahr", a.zeit))
         frei = self.frei_ab + (RUHE_VOR_HINWEIS if a.prio == HINWEIS else 0.0)
-        if zeit < frei and a.prio < SOFORT:
+        # Live 26.09. 21:21: das Briefing (~50 s) hielt "Gragas hat Flash benutzt" 9 s und Vaynes Flash 16 s auf.
+        # Laeuft etwas Unterbrechbares, darf eine wichtige Ansage es abbrechen.
+        laeuft = self._laeuft
+        abbrechen = (laeuft is not None and laeuft.unterbrechbar and zeit < self.frei_ab
+                     and a.prio >= WICHTIG and not a.unterbrechbar)
+        if zeit < frei and a.prio < SOFORT and not abbrechen:
             return None
-        if a.prio < SOFORT and getattr(self.sprecher, "beschaeftigt", False):
+        if a.prio < SOFORT and getattr(self.sprecher, "beschaeftigt", False) and not abbrechen:
             return None     # die Stimme spricht noch (live exakt statt geschaetzt)
         self.warte.remove(a)
         a.gesprochen = zeit
@@ -73,6 +79,7 @@ class Sprechplan:
         if a.thema:
             self.thema_zuletzt[a.thema] = zeit
         self.frei_ab = zeit + len(a.text) / ZEICHEN_PRO_SEKUNDE + PAUSE
-        self.sprecher.sage(a.text, dringend=a.prio == SOFORT)
+        self.sprecher.sage(a.text, dringend=a.prio == SOFORT or abbrechen)
+        self._laeuft = a
         self.gesagt.append(a)
         return a

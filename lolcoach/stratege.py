@@ -57,7 +57,7 @@ class Stratege:
             return
         if self.gehirn.briefing and self.p is not None:
             self.plan.einwerfen(Ansage(self.gehirn.briefing, WICHTIG, "briefing", zeit=self.p.zeit,
-                                       gueltig=90, sperre=600))
+                                       gueltig=90, sperre=600, unterbrechbar=True))
         else:
             self._sprich(gehirn.BRIEFING_SYSTEM, "Spielbeginn: Briefing fuer den Spieler", "briefing")
 
@@ -75,7 +75,8 @@ class Stratege:
             return
         from .itemnamen import absichern
         text = absichern(gehirn.kuerzen(text, 6 if schluessel == "briefing" else 3))[0]
-        self.plan.einwerfen(Ansage(text, WICHTIG, schluessel, zeit=self.p.zeit, gueltig=90, sperre=600))
+        self.plan.einwerfen(Ansage(text, WICHTIG, schluessel, zeit=self.p.zeit, gueltig=90, sperre=600,
+                                   unterbrechbar=True))
 
     def _bilder(self, a: Ansage) -> list[bytes] | None:
         """Der Spielbildschirm fuer Claude: beim Tod zwei Bilder davor (6 und 3 s - danach ist der

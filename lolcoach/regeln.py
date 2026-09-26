@@ -32,6 +32,7 @@ class Ansage:
     kontext: str = ""       # Fakten fuer den Strategen statt der Lage (z. B. Todesanalyse)
     frist: float | None = None  # so lange darf der Stratege formulieren (sonst VEREDELN_HOECHSTENS)
     thema: str = ""         # gleiche Themen sperren sich im Sprechplan (sprechplan.THEMA_SPERRE): back, druck, ...
+    unterbrechbar: bool = False   # lang und nicht eilig (Briefing, CS): eine wichtige Ansage darf sie abbrechen
 
 
 def _objective_name(schl: str, p: Partie) -> str:
@@ -473,7 +474,7 @@ class Regelwerk:
                         else cfg["satz_ohne_gegner"].format(**kw))
                 if cspm < cfg["ziel_pro_minute"]:
                     text += cfg["unter_ziel"]
-                yield Ansage(text, HINWEIS, f"cs{minute}", gueltig=40)
+                yield Ansage(text, HINWEIS, f"cs{minute}", gueltig=40, unterbrechbar=True)
 
     # --- Regeln aus der Minimap ------------------------------------------------
 

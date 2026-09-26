@@ -209,6 +209,17 @@ def _matchup(b: Bewertung, g: GegnerLage) -> list[Faktor]:
     kurve = daten.get("kurve", {})
     ich, er = kurve.get(b.ich.champion_id), kurve.get(g.s.champion_id)
     aus: list[Faktor] = []
+    wr = siegquote(b.ich.champion_id, g.s)
+    if wr is not None:
+        # das konkrete Duell schlaegt die allgemeine Kurve (Live 26.09. 21:22: "dein Champion ist bis Level 5 der
+        # staerkere gegen Gragas" - das Lexikon sagt Riven gegen Gragas 45,9 %, schwer; das Briefing sagte dasselbe)
+        w = max(-1.5, min(1.5, (wr - 50) * 0.25))
+        text = f"{wr:.1f}".replace(".", ",")
+        if wr <= 48:
+            aus.append(Faktor(w, "matchup", g.champion, "ist", f"ein schweres Matchup für dich, {text} Prozent Siegquote"))
+        elif wr >= 52:
+            aus.append(Faktor(w, "matchup", "das Matchup", "liegt", f"dir, {text} Prozent Siegquote"))
+        ich = er = None             # die Kurve nicht zusaetzlich
     if ich and er:
         hoch, tief = max(b.ich.level, g.s.level), min(b.ich.level, g.s.level)
         if hoch <= 5:
@@ -227,6 +238,16 @@ def _matchup(b: Bewertung, g: GegnerLage) -> list[Faktor]:
         aus.append(Faktor(-1.2, "zone", "du", "kämpfst", f"in seiner Zone, dort stehen seine "
                                                         f"{ZONE_NAME.get(g.s.champion_id, 'Fallen')}"))
     return aus
+
+
+def siegquote(champion_id: str, gegner) -> float | None:
+    """Siegquote deines Champions gegen genau diesen Gegner aus dem Lexikon (Abschnitt Matchups, lolalytics
+    Emerald+ - fuer Carlos' Champions Riven, Camille, Graves). None, wenn es keine Zeile gibt."""
+    import re
+    from .gehirn import matchup
+    zeile = matchup(champion_id, gegner)
+    m = re.search(r"\((\d+),(\d) %", zeile)
+    return float(f"{m.group(1)}.{m.group(2)}") if m else None
 
 
 def _hat_mana(champion_id: str) -> bool:

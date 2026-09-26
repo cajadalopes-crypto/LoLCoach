@@ -367,6 +367,34 @@ def brunnen_nach_recall_und_tod():
     assert lb.brunnen_seit(j, 406)[3] == "Tod"
 
 
+def live_partie_2121():
+    """Aus der Live-Partie 26.09. 21:21 (Riven gegen Gragas): Briefing unterbrechbar, Siegquote statt Kurve,
+    Jungler-Frage mit Schluss aus der Spielzeit."""
+    from lolcoach import antworten, denker, lage, regeln, sprechplan, stimme
+    # 1) ein langes Briefing haelt eine Flash-Meldung nicht mehr auf
+    plan = sprechplan.Sprechplan(stimme.Stumm())
+    plan.neu([regeln.Ansage("B" * 600, regeln.WICHTIG, "briefing", zeit=26.0, gueltig=90, sperre=600,
+                            unterbrechbar=True)])
+    assert plan.takt(26.0).schluessel == "briefing"
+    plan.neu([regeln.Ansage("Gragas hat Flash benutzt.", regeln.WICHTIG, "zauber:x", zeit=67.0, gueltig=20)])
+    a = plan.takt(67.0)
+    assert a is not None and a.schluessel == "zauber:x", "die Flash-Meldung wartet nicht ~50 s auf das Briefing"
+    plan.neu([regeln.Ansage("C" * 200, regeln.WICHTIG, "cs5", zeit=70.0, gueltig=40)])
+    assert plan.takt(70.0) is None, "was nicht unterbrechbar ist, wird auch nicht unterbrochen"
+    # 2) die Siegquote des konkreten Duells (Lexikon, lolalytics) statt der allgemeinen Kurve
+    class Gragas:
+        champion = champion_id = "Gragas"
+    assert denker.siegquote("Riven", Gragas) == 45.9
+    # 3) Jungler nie gesehen: was er JETZT tun kann (Clear-Zeiten)
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.zeit > 400)
+    j = p.jungler(zustand.gegenteam(p.mein_team))
+    lb = lage.Lagebild()
+    lb.neu(p.zeit, [], p)
+    p.zeit = 205
+    satz = antworten._wo(j, p, lb)
+    assert "Full Clear ist etwa jetzt fertig" in satz and "Scuttle oder der erste Gank" in satz, satz
+
+
 def platten_lesen():
     """Platten-Ziffern der Turm-Icons (Camille-Partie, ~10:40): oben 2, Mitte 4, unten 4 bei ihm, deine
     Mitte 4; Teemos Icon verdeckt deinen inneren Mid-Turm -> keine Zahl statt einer falschen."""
@@ -451,7 +479,7 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
-                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod,
+                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121,
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen):
         test()
         print(f"{test.__name__} OK")

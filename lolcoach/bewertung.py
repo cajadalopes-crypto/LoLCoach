@@ -412,8 +412,13 @@ class Bewertung:
             z.append("Offene Fenster: " + "; ".join(f"{t} ({int(s)} s)" for s, t in f))
         if self.objective:
             schl, s = self.objective
+            tp = self.zweiter is not None and self.zweiter[0] == "SummonerTeleport" and self.zweiter[1] <= 0
+            zu_weit = (self.zum_objective is not None and self.zum_objective > 25 and not tp
+                       and self.ich.rolle not in ("JUNGLE", "MIDDLE"))
             z.append(f"Naechstes Objective: {schl} " + ("lebt" if s <= 0 else f"in {int(s)} s")
-                     + (f", du brauchst ~{int(self.zum_objective)} s dorthin" if self.zum_objective else ""))
+                     + (f", du brauchst ~{int(self.zum_objective)} s dorthin" if self.zum_objective else "")
+                     # Live 26.09., 3:41: Claude schickte Riven (Top, ohne TP, 37 s Weg) "zum Drachen"
+                     + (" - FUER DICH ZU WEIT: nicht hingehen, Druck auf deiner Seite" if zu_weit else ""))
         if self.mitspieler_nah:
             z.append("Mitspieler bei dir: " + ", ".join(s.champion for s in self.mitspieler_nah))
         if self.kampf is not None:

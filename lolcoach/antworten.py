@@ -76,6 +76,8 @@ def _wo(s: Spieler, p: Partie, lagebild) -> str:
     if lagebild is None or not lagebild.aktiv:
         return "Ich sehe die Minimap gerade nicht."
     g = lagebild.gesehen(s)
+    if not g and s.rolle == "JUNGLE":
+        return _jungler_ungesehen(s, p, lagebild)
     if not g:
         return f"{s.champion} habe ich noch nicht gesehen."
     ort = minimap.ort(g[1], g[2], p.mein_team)
@@ -99,6 +101,34 @@ def _wo(s: Spieler, p: Partie, lagebild) -> str:
     if lagebild.sichtbar(s):
         return f"{s.champion} ist {ort}, gerade zu sehen.{zusatz}"
     return f"{s.champion} war vor {_dauer(p.zeit - g[0])} {ort}.{zusatz}"
+
+
+def _jungler_ungesehen(s: Spieler, p: Partie, lagebild) -> str:
+    """Nie gesehen heisst nicht "keine Ahnung": aus Spielzeit, Clear-Zeiten 2026 und Startseite folgt, was er
+    gerade tun kann (Live 26.09., 3:29: "Wo ist Tryndamere jetzt wohl?" - "habe ich noch nicht gesehen")."""
+    from .jungle import DREI_CAMPS, FULL_CLEAR, anders
+    jt = getattr(lagebild, "jungle", None)
+    start = jt.start if jt is not None else None
+    grund = f" Er hat {start} angefangen ({jt.start_grund})." if start else ""
+    t = p.zeit
+    if t < DREI_CAMPS[0]:
+        return f"{s.champion} habe ich noch nicht gesehen - er räumt seine ersten Camps.{grund}"
+    if t < FULL_CLEAR[0]:
+        gank = f" {anders(start)}" if start else ""
+        return (f"{s.champion} habe ich noch nicht gesehen. Nach drei Camps kann er jetzt schon ganken, mit Level 3"
+                f"{gank} - oder er räumt weiter bis zum Full Clear gegen Minute drei.{grund}")
+    if t < FULL_CLEAR[1] + 30:
+        seite = f", wahrscheinlich {anders(start)}" if start else ""
+        return (f"{s.champion} habe ich noch nicht gesehen. Sein Full Clear ist etwa jetzt fertig: als Nächstes "
+                f"Scuttle oder der erste Gank{seite}. Lass deine Welle nicht über die Mitte laufen, bis er "
+                f"auftaucht.{grund}")
+    w = jt.wahrscheinlich(t) if jt is not None else {}
+    lage = ""
+    if w:
+        seite, anteil = max(w.items(), key=lambda x: x[1])
+        lage = f" Am ehesten {seite}, {int(anteil * 100)} Prozent."
+    return (f"{s.champion} habe ich seit Spielbeginn nie gesehen - der Clear ist durch, er kann überall sein."
+            f"{lage} Geh nicht tief, bis er sich zeigt.")
 
 
 def _timer(schl: str, p: Partie) -> str:
