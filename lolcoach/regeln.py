@@ -26,7 +26,8 @@ def _kampf_thema(text: str) -> str:
     """Ein Jungler-Satz, der zum Kampf raet, ist Druck, nicht Gefahr - dann gilt der Widerspruchs-Waechter
     (Nachlauf 125902, 23:20: "ihr seid nur zu dritt, geh zurueck" und gleich darauf "Warwick ist oben - nimm den
     Kampf an")."""
-    return "druck" if re.search(r"nimm den Kampf an|Bleib an deiner Welle", text, re.I) else "gefahr"
+    return "druck" if re.search(r"nimm den Kampf an|Bleib an deiner Welle|Halte deine Stellung", text, re.I) \
+        else "gefahr"
 
 
 def _und(*pruefungen):

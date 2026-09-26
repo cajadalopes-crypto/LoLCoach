@@ -357,7 +357,9 @@ def jungler_gesehen(b: Bewertung, j: GegnerLage, art: str, platten: bool) -> str
                 return f"{vorn}. Kommt {j.champion}, nimm den Kampf an" + (f": {grund}." if grund else ".")
             return f"{vorn} - nimm den Kampf an" + (f", {grund}." if grund else ".")
         if r >= STAERKER and (b.leben is None or b.leben >= 0.5):
-            return f"{vorn}. Bleib an deiner Welle" + (f", {grund}" if grund else ", du bist stärker") + " - nur nicht zu tief."
+            # "Bleib an deiner Welle", waehrend du in seinem Jungle stehst (Nachlauf 230520, 17:50)
+            bleib = "Bleib an deiner Welle" if "Jungle" not in (b.ort or "") else "Halte deine Stellung"
+            return f"{vorn}. {bleib}" + (f", {grund}" if grund else ", du bist stärker") + " - nur nicht zu tief."
         if len(gruppe) > 1 and r_allein >= STAERKER and (b.leben is None or b.leben >= 0.5):
             andere = [x.champion for x in gruppe[1:]]
             return f"{vorn}. {_rueckzug(b)} - mit {_namen(andere)} zusammen ist {j.champion} zu stark."
