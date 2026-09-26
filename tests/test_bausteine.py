@@ -93,7 +93,8 @@ def sprechbar():
     from lolcoach.stimme import sprechbar as s
     assert s("Jungler/Laner seit 30-40 s weg, ab 2500+ Gold") == \
         "Jungler oder Laner seit 30 bis 40 Sekunden weg, ab mehr als 2500 Gold"
-    for gleich in ("Mid-Lane", "Level 6", "5:00", "Tri-Bush", "80 %", "KDA 27/6/4", "5 sind weg"):
+    assert s("Gank zwischen 2:45 und 3:30, Drache um 5:00") == "Gank zwischen 2 45 und 3 30, Drache um Minute 5"
+    for gleich in ("Mid-Lane", "Level 6", "Tri-Bush", "80 %", "KDA 27/6/4", "5 sind weg"):
         assert s(gleich) == gleich, s(gleich)
 
 
@@ -108,6 +109,18 @@ def recalls_im_verlauf():
     # Kaempfe nach Zeit UND Ort: der Kampf unten ohne dich ist einer, und er sagt, wie weit weg du warst
     k = next(m for m in v.momente if m.art == "kampf" and verlauf.uhr(m.von) == "7:44")
     assert k.titel == "Kampf 2:0 (ohne dich)" and any("0.99 Kartenbreiten entfernt" in f for f in k.fakten), k
+
+
+def akte_teile():
+    roh = ("**AKTE:**\n- Trynd frueh stark\nBRIEFING:\nSpiel die Lane aggressiv.\n"
+           "LANEPLAN:\n- **Spielweise:** Aggressiv traden\nLevel 1–3: Level 2 traden\nErster Back: 1300 Gold\n"
+           "Unsinn: weg\nULTS:\nTryndamere: 5 s unsterblich\nFOKUS:\nHeute zurueck bei zwei Fehlenden.")
+    t = gehirn.akte_teile(roh)
+    assert t["AKTE"].startswith("- Trynd") and t["BRIEFING"] == "Spiel die Lane aggressiv."
+    assert t["ULTS"].startswith("Tryndamere:") and t["FOKUS"].startswith("Heute")
+    assert gehirn.laneplan_zeilen(t["LANEPLAN"]) == ["Spielweise: Aggressiv traden", "Level 1-3: Level 2 traden",
+                                                     "Erster Back: 1300 Gold"]
+    assert gehirn.akte_teile("nur Text ohne Marker")["AKTE"] == "nur Text ohne Marker"   # alte Antworten
 
 
 def chat_zeitstempel():
@@ -137,6 +150,6 @@ def zauber_im_briefing():
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
-                 zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel):
+                 zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile):
         test()
         print(f"{test.__name__} OK")

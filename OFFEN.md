@@ -21,7 +21,16 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## Als Naechstes
 
-- (leer - neue Wuensche von Carlos kommen hierher)
+- Coach-Fenster zu = nichts verloren: Aufnahme und Protokolle laufend sichern, Ansagen
+  laufend speichern, fehlende Reviews beim naechsten Start nachholen (Partie 4 und 5:
+  Fenster geschlossen, keine Ansagen, kein Review).
+- Lane-Guide zu Spielbeginn (Carlos 26.09.): wie spiele ich die Lane - aggressiv,
+  defensiv/farmen, freezen, push+roamen, Proxy -, Level 1-3, erste Wellen, erster Back,
+  Gefahr; gesprochen kurz, auf dem Dashboard als Zettel.
+- Den Bildschirm verstehen (Carlos: "wie ein echter Challenger-Coach jede Situation auf
+  der Karte UND auf meinem Screen bewerten"): die letzten Sekunden des Spielbilds
+  mitfuehren; Fragen per Sprache und Todesanalyse bekommen das echte Bild (Leben der
+  Gegner, wer im Kampf ist, Welle vor dir) - Claude kann Bilder lesen.
 
 ## Braucht eine Partie
 

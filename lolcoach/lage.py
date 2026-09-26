@@ -270,6 +270,10 @@ class Beobachter(threading.Thread):
                             if protokoll:
                                 protokoll.write(json.dumps({"w": round(start, 3), "s": [
                                     [s.champion_id, s.team, round(s.x, 4), round(s.y, 4)] for s in sichtungen]}) + "\n")
+                                if start - getattr(self, "_gesichert", 0.0) >= 2.0:
+                                    # Fenster zu = nichts verloren (Partie 4/5: Coach geschlossen, Protokoll-Ende fehlte)
+                                    self._gesichert = start
+                                    protokoll.flush()
                             if self.ordner and start - letztes_bild >= self.bild_alle:
                                 letztes_bild = start
                                 ziel = self.ordner / f"{int(start * 1000)}.jpg"

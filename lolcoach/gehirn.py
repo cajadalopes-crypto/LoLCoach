@@ -136,20 +136,27 @@ def akte_quelle(p: Partie, fokus: str | None = None) -> str:
 
 AKTE_SYSTEM = (
     "Du bist ein Challenger-Coach fuer League of Legends und bereitest dich auf die Partie deines "
-    "Schuelers vor (Ziel Diamond+). Schreib zwei Teile, genau mit diesen Markern:\n"
+    "Schuelers vor (Ziel Diamond+). Schreib diese Teile, genau mit diesen Markern:\n"
     "AKTE:\n(fuer dich selbst, stichpunktartig, hoechstens 220 Woerter) Lane-Matchup (Trade-Fenster, welche "
     "gegnerische Faehigkeit abwarten, Spikes beider Seiten), gegnerischer Jungler (Gefahr, Gank-Zeiten), "
     "Win-Conditions beider Teams, gefaehrlichste Ults, Build-Richtung gegen dieses Team, Plan fuer "
     "Lane-Phase und danach.\n"
-    "BRIEFING:\n(fuer den Spieler, ueber Headset gesprochen, 4-6 kurze Saetze, zusammen hoechstens 70 Woerter, "
-    "kein Markdown) das Matchup und "
-    "wann er traden kann, die groesste Gefahr, die Win-Condition, die Build-Richtung.\n"
+    "BRIEFING:\n(fuer den Spieler, ueber Headset gesprochen, der Lane-Guide fuer die ersten Minuten: genau 5 "
+    "kurze Saetze, zusammen hoechstens 70 Woerter, kein Markdown, keine Doppelpunkt-Etiketten. 1. 'Spiel die Lane "
+    "...' mit der SPIELWEISE - genau eine von: aggressiv traden, Level-2-All-in, sicher farmen und skalieren, Welle "
+    "freezen, pushen und roamen, Proxy-Farmen - und warum genau in diesem Matchup. 2. Level 1 bis 3 in EINEM Satz "
+    "(wann traden, welche gegnerische Faehigkeit abwarten). 3. die ersten Wellen. 4. der erste Back (ab wie viel "
+    "Gold, welches Item). 5. die groesste Gefahr mit Zeit (z. B. Jungler-Gank ab 3:15).)\n"
+    "LANEPLAN:\n(fuer den Bildschirm, zum Ablesen im Spiel: genau diese sechs Zeilen, je hoechstens 12 Woerter, "
+    "ohne Markdown-Zeichen:\nSpielweise: ...\nLevel 1-3: ...\nWellen: ...\nErster Back: ...\nGefahr: ...\n"
+    "Danach: ... (Plan nach der Lane-Phase))\n"
     "ULTS:\n(je gegnerischer Champion eine Zeile 'Name: Satz', hoechstens 15 Woerter, gesprochen: was seine Ult "
     "fuer den Spieler bedeutet und worauf er achten muss)\n"
-    "FOKUS:\n(nur wenn das Material einen FOKUS DES SPIELERS nennt: EIN gesprochener Satz, hoechstens 25 "
+    "FOKUS:\n(nur wenn das Material einen FOKUS DES SPIELERS nennt: EIN kurzer gesprochener Satz, hoechstens 20 "
     "Woerter, der diesen Fokus auf genau diese Partie anwendet - wann und wogegen er heute darauf achten muss; "
     "ohne Zeichen wie / oder +. Das BRIEFING selbst erwaehnt den Fokus nicht, dieser Satz wird danach gesprochen)\n"
-    "Nur was das Material stuetzt; Item-Namen nur aus dem Material; Unsicheres als unsicher.")
+    "Zahlen immer als Ziffern (1300 Gold, 3:15), nie ausgeschrieben - BRIEFING und LANEPLAN nennen dieselben "
+    "Zahlen. Nur was das Material stuetzt; Item-Namen nur aus dem Material; Unsicheres als unsicher.")
 
 
 BRIEFING_SYSTEM = (
@@ -188,6 +195,31 @@ TOD_SYSTEM = (
     "tun sollte. Kommentiere nie die Daten, sprich nur zum Spieler.")
 
 
+_MARKER = re.compile(r"(?m)^[#*\s]*(AKTE|BRIEFING|LANEPLAN|ULTS|FOKUS)[*\s]*:[*]*")
+LANEPLAN_FELDER = ("Spielweise", "Level 1-3", "Wellen", "Erster Back", "Gefahr", "Danach")
+
+
+def akte_teile(roh: str) -> dict[str, str]:
+    """Die Antwort auf AKTE_SYSTEM in ihre Teile - robust gegen Markdown um die Marker und gegen
+    fehlende Teile (vorher: partition-Kette; fehlte ein Marker, verrutschte alles danach)."""
+    stuecke = _MARKER.split(roh)
+    teile = {stuecke[i]: stuecke[i + 1].strip() for i in range(1, len(stuecke) - 1, 2)}
+    if "AKTE" not in teile and stuecke[0].strip():
+        teile["AKTE"] = stuecke[0].strip()
+    return teile
+
+
+def laneplan_zeilen(text: str) -> list[str]:
+    """Nur die sechs erwarteten Zeilen, in fester Reihenfolge, ohne Aufzaehlungszeichen."""
+    gefunden = {}
+    for zeile in text.splitlines():
+        z = zeile.strip().lstrip("-*• ").replace("**", "").replace("–", "-").replace("—", "-")
+        for feld in LANEPLAN_FELDER:
+            if z.lower().startswith(feld.lower()) and ":" in z:
+                gefunden.setdefault(feld, f"{feld}: {z.split(':', 1)[1].strip()}")
+    return [gefunden[f] for f in LANEPLAN_FELDER if f in gefunden]
+
+
 def kuerzen(text: str, saetze: int, woerter: int | None = None) -> str:
     """Hoechstens `saetze` Saetze - im Spiel zaehlt jede Sekunde Sprechzeit
     (Generalprobe 26.09.: ein "3-4 Saetze"-Plan kam mit acht Saetzen). `woerter`: dazu eine
@@ -214,6 +246,7 @@ class Gehirn:
         self.ult_warnungen: dict[str, str] = {}  # Champion -> ein Satz zu seiner Ult (kommt mit der Akte)
         self.fokus_satz: str | None = None       # der Fokus aus dem letzten Review, auf diese Partie bezogen
         self.fokus: str | None = None            # derselbe Fokus im Wortlaut des Reviews (Dashboard)
+        self.laneplan: list[str] = []            # "Spielweise: ...", "Level 1-3: ..." (Dashboard-Zettel)
         self._akte_laeuft = False
         self.ablage: Path | None = None    # je Partie: hier wird die Akte gespeichert
 
@@ -237,10 +270,13 @@ class Gehirn:
             try:
                 roh = llm.frage(akte_quelle(p, fokus), system=AKTE_SYSTEM, modell=self.modell,
                                 timeout=90, aufwand="low").strip()
-                akte, _, rest = roh.partition("BRIEFING:")
-                briefing, _, rest = rest.partition("ULTS:")
-                ults, _, fokus_satz = rest.partition("FOKUS:")
-                self.akte = akte.replace("AKTE:", "", 1).strip()
+                teile = akte_teile(roh)
+                akte, briefing = teile.get("AKTE", ""), teile.get("BRIEFING", "")
+                ults, fokus_satz = teile.get("ULTS", ""), teile.get("FOKUS", "")
+                self.laneplan = laneplan_zeilen(teile.get("LANEPLAN", ""))
+                self.akte = akte.strip()
+                if self.laneplan:
+                    self.akte += "\nLANE-PLAN (so hast du es ihm gesagt):\n" + "\n".join(self.laneplan)
                 if fokus:
                     self.akte += f"\nFOKUS HEUTE (aus dem Review der letzten Partie): {fokus}"
                 self.ult_warnungen = {}

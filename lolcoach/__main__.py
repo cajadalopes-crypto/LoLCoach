@@ -102,6 +102,9 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
             sicher(type(anzeige).__name__, anzeige.aktualisiere, p, lagebild, plan.gesagt)
         if n % alle == 0 and not nur_coach:
             sicher("Uebersicht", lambda: print(ansicht.uebersicht(p)))
+        if schreiber and n % 20 == 0:
+            # laufend sichern: wird das Fenster geschlossen, bleibt, was der Coach gesagt hat (Partie 4/5)
+            sicher("Ansagen", _ansagen_speichern, schreiber.pfad, plan)
         if takt:
             time.sleep(takt)
     return plan
@@ -181,6 +184,7 @@ def live(args) -> None:
             print(f"Fragen an den Coach: Taste '{args.ptt}' gedrueckt halten und sprechen")
         except Exception as e:
             print(f"Sprachsteuerung aus ({type(e).__name__}: {e})")
+    threading.Thread(target=_reviews_nachholen, daemon=True).start()
     print("Warte auf eine Partie (Strg+C beendet) ...")
     while True:
         if not liveapi.laeuft(args.basis):
@@ -227,6 +231,21 @@ def live(args) -> None:
             threading.Thread(target=_bericht_im_hintergrund, args=(schreiber.pfad, args.ich, sprecher, args.basis),
                              daemon=False).start()
         print("Partie vorbei. Bericht wird geschrieben. Warte auf die naechste ...")
+
+
+def _reviews_nachholen(hoechstens: int = 3) -> None:
+    """Partien ohne Review (Fenster waehrend des Reviews geschlossen - Partie 4 und 5) beim Start
+    nachholen: die juengsten `hoechstens`, nur echte Partien ab 5 Minuten, still im Hintergrund."""
+    try:
+        from . import profil, review
+        offen = [k for k in profil.partien(aufzeichnung.ORDNER) if k.dauer >= profil.KURZ
+                 and not review.pfade(aufzeichnung.ORDNER / f"{k.stamm}.jsonl.gz")["review"].exists()][:hoechstens]
+        for k in reversed(offen):   # aelteste zuerst: jedes Review sieht die frueheren
+            print(f"Review wird nachgeholt: {k.stamm} ({k.champion} gegen {k.gegner}) ...", flush=True)
+            review.erstelle(aufzeichnung.ORDNER / f"{k.stamm}.jsonl.gz")
+            print(f"Review fertig: http://127.0.0.1:8791/?partie={k.stamm}", flush=True)
+    except Exception as e:  # darf den Coach nie stoeren
+        print(f"Review nachholen fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
 
 
 def _review_ansage(review: dict) -> str:
