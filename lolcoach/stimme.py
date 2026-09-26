@@ -140,6 +140,7 @@ class Stimme:
         self._frei.set()
         self._stopp = threading.Event()
         self._unterbrochen: tuple[str, float] | None = None
+        self._spricht = False
         self._bereit = threading.Event()
         threading.Thread(target=self._lauf, args=(sprache,), daemon=True).start()
         self._bereit.wait(timeout=5)
@@ -162,10 +163,21 @@ class Stimme:
                     continue
             self._stopp.clear()
             self.protokoll.append(text)
-            if not motor.spreche(sprechbar(text), self._stopp):
-                self._unterbrochen = (text, time.monotonic())
+            self._spricht = True
+            try:
+                if not motor.spreche(sprechbar(text), self._stopp):
+                    self._unterbrochen = (text, time.monotonic())
+            finally:
+                self._spricht = False
             if fertig is not None:
                 fertig.set()
+
+    @property
+    def beschaeftigt(self) -> bool:
+        """Spricht gerade oder hat noch etwas in der Schlange - der Sprechplan gibt dann nichts Neues ab
+        (gemessen 26.09.: Killian spricht 11-12 Zeichen/s, der Plan schaetzte 14 - Saetze stauten sich
+        in der Schlange und kamen veraltet an)."""
+        return self._spricht or not self._schlange.empty() or not self._vorrang.empty()
 
     def sage(self, text: str, dringend: bool = False) -> None:
         """`dringend`: vor alle wartenden Saetze, der laufende wird abgebrochen (nicht wiederholt)."""

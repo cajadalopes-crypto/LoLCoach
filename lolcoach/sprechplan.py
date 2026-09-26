@@ -13,8 +13,8 @@ import threading
 
 from .regeln import HINWEIS, SOFORT, Ansage
 
-ZEICHEN_PRO_SEKUNDE = 14.0   # Windows-Stimme bei Rate 1, grob gemessen
-PAUSE = 2.0                  # zwischen zwei Saetzen
+ZEICHEN_PRO_SEKUNDE = 12.0   # Killian (edge-tts, +8 %) gemessen 26.09.: 11-12 Zeichen/s; live fragt der Plan die Stimme
+PAUSE = 1.5                  # zwischen zwei Saetzen (2,0 bis 26.09.; die Schaetzung ist jetzt ehrlicher)
 RUHE_VOR_HINWEIS = 8.0       # Hinweise nur, wenn es so lange still war
 THEMA_SPERRE = 30.0          # zwei Ansagen zum selben Thema (back, druck, gefahr, objective) nicht so kurz hintereinander
 THEMA_SPERRE_JE = {"gefahr": 12.0}   # Gefahr aendert sich schnell: eine neue Warnung darf eher kommen
@@ -62,6 +62,8 @@ class Sprechplan:
         frei = self.frei_ab + (RUHE_VOR_HINWEIS if a.prio == HINWEIS else 0.0)
         if zeit < frei and a.prio < SOFORT:
             return None
+        if a.prio < SOFORT and getattr(self.sprecher, "beschaeftigt", False):
+            return None     # die Stimme spricht noch (live exakt statt geschaetzt)
         self.warte.remove(a)
         a.gesprochen = zeit
         self.zuletzt[a.schluessel] = zeit
