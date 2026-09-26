@@ -86,7 +86,7 @@ class Option:
     def thema(self) -> str:
         return {"zurueck": "gefahr", "druck": "druck", "freeze": "gefahr", "gruppe": "objective",
                 "obj_plan": "objective", "seite": "seite", "seite_nicht": "seite", "gank": "druck",
-                "invade": "druck"}.get(
+                "invade": "druck", "hilfe": "hilfe", "hilfe_fern": "seite"}.get(
             self.name, "back" if self.name.startswith("back") else "")
 
 
@@ -220,6 +220,33 @@ class Entscheider:
                 satz = (f"{name} in {sek(ob[1])}: {tun}spätestens {uhr(b.zeit + ob[1] - 30)} an der Grube sein"
                         + (f" - {prio}." if prio else "."))
                 aus.append(Option("obj_plan", satz, 90, 2 + reset + bool(prio)))
+
+        # 5b) Ein Mitspieler wird angegriffen: zwei Gegner sichtbar bei ihm (oder einer und er hat wenig Leben).
+        #     Wer kann zuerst helfen? Du, wenn du rechtzeitig da bist - sonst die Gegenseite nutzen.
+        if (b.leben is None or b.leben >= 0.5) and not gefahr:
+            from .bewertung import abstand as _ab
+            for s, wo, leben, ort in b.mitspieler:
+                bei = [g for g in b.gegner if not g.s.tot and g.sichtbar and g.pos and _ab(g.pos, wo) <= 1400]
+                bedraengt = len(bei) >= 2 or (len(bei) == 1 and leben is not None and leben < 0.4)
+                if not bedraengt:
+                    continue
+                weg = _ab(b.pos, wo) * 1.15 / b.mein_tempo
+                namen = _namen_kurz(bei)
+                lz = f" ({int(leben * 100)} Prozent)" if leben is not None else ""
+                if weg <= 10:
+                    aus.append(Option("hilfe", f"{s.champion}{lz} kämpft {ort} gegen {namen} - du bist {sek(weg)} "
+                                               f"weg: hin!", 160, 3, dringend=True))
+                elif weg <= 25 and not lane_phase and (leben is None or leben >= 0.35):
+                    # mit 6 Prozent ist er tot, bevor du nach 20 s ankommst (Camille-Partie 17:27)
+                    aus.append(Option("hilfe", f"{s.champion}{lz} kämpft {ort} gegen {namen}, {sek(weg)} von dir: "
+                                               f"hin, wenn der Kampf noch läuft.", 110, 3))
+                elif g is not None and g.s.name not in {x.s.name for x in bei} and not g.s.tot:
+                    continue    # dein Lane-Gegner ist nicht dabei - nichts gewonnen
+                elif len(bei) >= 2:
+                    aus.append(Option("hilfe_fern", f"{namen} sind bei {s.champion} {ort}, zu weit für dich "
+                                                    f"({sek(weg)}): nutz es auf deiner Seite - Welle, Turm, Camps.",
+                                      65, 3))
+                break
 
         # 6) Freeze/Sicherheit: Jungler wahrscheinlich bei dir, Welle vor deinem Turm, du schiebst nicht
         if lane_phase and j and not j.s.tot and j_bei_mir >= 0.6 and (j.seit is None or j.seit >= 20) \

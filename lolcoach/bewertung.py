@@ -105,6 +105,7 @@ class GegnerLage:
     level_vorsprung: int         # sein Level minus deins
     gold_vorsprung: int          # seine Items minus deine (Gold)
     kommt_naeher: bool = False   # sichtbar und laeuft auf dich zu
+    pos: tuple[float, float] | None = None   # zuletzt gesehen (Spiel-Einheiten)
 
     @property
     def champion(self) -> str:
@@ -141,6 +142,7 @@ class Bewertung:
     objective: tuple[str, float] | None = None  # (Schluessel, Sekunden bis Spawn; <= 0 lebt)
     zum_objective: float | None = None          # deine Laufzeit zur Grube (Sekunden)
     mitspieler_nah: list[Spieler] = field(default_factory=list)   # innerhalb ~1500 Einheiten
+    mitspieler: list[tuple] = field(default_factory=list)   # (Spieler, Spiel-Einheiten, Leben 0..1|None, Ort) - frisch gesehen
     partie: "Partie | None" = None   # der Zustand dieses Takts (fuer Plaene, die alle Lanes brauchen)
     trade: str = ""             # aus der Spielakte: worauf beim All-in gegen den Lane-Gegner achten
     platten_gegner: int | None = None   # Platten am vordersten stehenden Gegnerturm deiner Lane (Minimap)
@@ -358,8 +360,12 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
         for s in p.team(mein):
             if s is p.ich or s.name == p.ich.name or s.tot or lb is None:
                 continue
-            if (g := lb.gesehen(s)) and p.zeit - g[0] < 3 and abstand(b.pos, einheiten(g[1], g[2])) <= 1500:
-                b.mitspieler_nah.append(s)
+            if (g := lb.gesehen(s)) and p.zeit - g[0] < 3:
+                wo = einheiten(g[1], g[2])
+                b.mitspieler.append((s, wo, lb.leben(s, p.zeit) if hasattr(lb, "leben") else None,
+                                     minimap.ort(g[1], g[2], mein)))
+                if abstand(b.pos, wo) <= 1500:
+                    b.mitspieler_nah.append(s)
 
     for s in p.gegner():
         gl = _gegner_lage(s, p, lb, b.pos)
@@ -468,9 +474,10 @@ def _gegner_lage(s: Spieler, p: Partie, lb, ich_pos) -> GegnerLage:
     if lb is not None and hasattr(lb, "zauber"):
         flash = lb.zauber.fehlt(s, "SummonerFlash", p.zeit)
         ult = lb.zauber.fehlt(s, "R", p.zeit)
+    pos = einheiten(g[1], g[2]) if lb is not None and not s.tot and (g := lb.gesehen(s)) else None
     return GegnerLage(s=s, sichtbar=sichtbar, seit=seit, ort=ort or "", abstand=ab, ankunft=ankunft, tempo=ms,
                       flash=flash, ult=ult, level_vorsprung=s.level - p.ich.level,
-                      gold_vorsprung=s.item_gold - p.ich.item_gold, kommt_naeher=naeher)
+                      gold_vorsprung=s.item_gold - p.ich.item_gold, kommt_naeher=naeher, pos=pos)
 
 
 # --- Kampf um ein Objective --------------------------------------------------------
