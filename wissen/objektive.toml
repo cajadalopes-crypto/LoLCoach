@@ -7,7 +7,7 @@
 #   - Larven 8:00, einmal drei Stueck, verschwinden 14:45 (Suche, mehrere Quellen)
 #   - Drache 5:00/5:00, Aeltester 5:00 nach dem 4. Drachen, dann 6:00
 #     (wiki.leagueoflegends.com/Dragon)
-# Ungeprueft: Baron-Respawn 6:00 und Inhibitor 5:00 (seit Jahren so).
+# Inhibitor 5:00: Wiki Inhibitor, geprueft 26.09.2026. Ungeprueft: Baron-Respawn 6:00 (seit Jahren so).
 # EventNamen gegen eine echte Partie geprueft (Aufnahme 26.09.2026), ausser BaronKill.
 stand = "Patch 26.x, nachgeschlagen 26.09.2026"
 

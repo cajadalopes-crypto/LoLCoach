@@ -28,7 +28,7 @@ WOERTER = {"blitz": "SummonerFlash", "flash": "SummonerFlash", "flashlos": "Summ
            "cleanse": "SummonerBoost", "ult": "R", "ulti": "R", "ultimate": "R", "r": "R"}
 
 
-def cooldown(schluessel: str, spieler=None) -> float:
+def cooldown(schluessel: str, spieler=None, zeit: float | None = None) -> float:
     """Aus Data Dragon (champions.zauber_cooldown), sonst die Grundwerte oben.
     Zauber-Tempo aus Stiefeln/Runen ist nicht eingerechnet: eher zu lang als zu kurz.
     Die Ult ("R") nach Rang: Level 6-10 Rang 1, 11-15 Rang 2, ab 16 Rang 3."""
@@ -42,6 +42,15 @@ def cooldown(schluessel: str, spieler=None) -> float:
         except Exception:
             pass
         return 100.0
+    if schluessel == "SummonerTeleport" and spieler is not None and zeit is not None:
+        # Wiki Teleport (geprueft 26.09.2026): bis 10:00 300 s, danach 330-240 s je Level;
+        # Top-Quest (spaetestens 13:35) mit eigenem TP: 30 s weniger.
+        if zeit < 600:
+            return 300.0
+        cd = 330.0 - (min(18, max(1, spieler.level)) - 1) * 90.0 / 17
+        if spieler.rolle == "TOP" and zeit >= 815:
+            cd -= 30.0
+        return cd
     try:
         from . import champions
         if wert := champions.zauber_cooldown(schluessel):
@@ -80,7 +89,7 @@ class Zaubertimer:
             if quelle == "Chat" and alt.quelle == "Minimap":
                 alt.quelle = "Chat"  # Chat bestaetigt die Minimap
             return None
-        t = Timer(spieler.name, spieler.champion, zauber, zurueck or zeit + cooldown(zauber, spieler), quelle, zeit)
+        t = Timer(spieler.name, spieler.champion, zauber, zurueck or zeit + cooldown(zauber, spieler, zeit), quelle, zeit)
         self.timer[schl] = t
         return t
 

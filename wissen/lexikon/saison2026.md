@@ -100,7 +100,9 @@ Q: Patch 26.1.
   (20 Zauber-Tempo), Chainlaced Crushers, Armored Advance, Spellslinger's Shoes. Q: Wiki Role_Quests.
 - Jungle: Smite 600/1000/1400; Jungler nehmen 50 % Schaden von normalen Monstern; Pet-DPS 20-150;
   Monster-Schadensverstaerkung 25 % -> 10 %. Q: Patch 26.1.
-- Teleport: bis 10:00 300 s, ab 10:00 Unleashed 330-240 s (Wiki Teleport; seit wann [ungeprueft]).
+- Teleport: bis 10:00 300 s, ab 10:00 Unleashed 330-240 s je Level (Wiki Teleport, geprueft 26.09.2026;
+  seit V13.10). Top-Quest mit eigenem TP: zusaetzlich -30 s (also ~300-210 s) + Schild; ohne eigenes TP:
+  Quest-TP 390 s.
 
 ## Ranked und Sonstiges
 

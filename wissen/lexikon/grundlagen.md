@@ -29,7 +29,7 @@ Spielzeit -> Ereignis (Quelle: Patch 26.1, Wiki Minion, objektive.toml):
 - 15:00 Herold, weg 19:45. 20:00 Baron (Respawn 6:00 [ungeprueft]).
 - 25:00 Kanone in jeder Welle. 30:00 Wellen alle 20 s, 1 Fernkaempfer weniger.
 - Aeltester: 5:00 nach dem Seelen-Drachen, Respawn 6:00. Nexustuerme: Respawn mit 40 % HP (Patch 26.1).
-  Inhibitor-Respawn: objektive.toml 5:00, Wiki-Auszug nannte 3:00 [Widerspruch, ungeprueft].
+  Inhibitor-Respawn: 5:00 (Wiki Inhibitor, geprueft 26.09.2026: "Destroyed inhibitors respawn after 5 minutes", seit V4.20).
 
 ## Wellenmanagement
 
