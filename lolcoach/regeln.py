@@ -189,9 +189,12 @@ class Regelwerk:
         cfg = self.m["gold"]
         if p.gold is None or v.gold is None or p.ich.tot:
             return
-        if p.gold >= cfg["schwelle"] > v.gold:
-            yield Ansage(cfg["satz"].format(gold=int(p.gold // 100 * 100)), HINWEIS, "gold",
-                         gueltig=20, sperre=cfg["erneut_nach"])
+        # Solange das Gold liegen bleibt, jede Sekunde anbieten - der Sprechplan
+        # laesst es nur alle `erneut_nach` Sekunden durch.
+        if p.gold >= cfg["schwelle"]:
+            viel = p.gold >= cfg["viel"]
+            yield Ansage(cfg["satz_viel" if viel else "satz"].format(gold=int(p.gold // 100 * 100)),
+                         WICHTIG if viel else HINWEIS, "gold", gueltig=5, sperre=cfg["erneut_nach"])
 
     def _cs(self, p: Partie, v: Partie):
         cfg = self.m["cs"]

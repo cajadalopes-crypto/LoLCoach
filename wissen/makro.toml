@@ -97,8 +97,10 @@ fertig = "{champion} hat {item} fertig."
 
 [gold]
 schwelle = 1300               # ab hier lohnt ein Recall fuer ein Kernteil
-erneut_nach = 150             # Sekunden, bis dieselbe Erinnerung wiederkommt
+erneut_nach = 90              # Sekunden, bis die Erinnerung wiederkommt, solange das Gold liegen bleibt
 satz = "Du hast {gold} Gold. Bei der nächsten ruhigen Welle zurück - ungenutztes Gold ist verschenkte Stärke."
+viel = 3000                   # ab hier deutlicher
+satz_viel = "Du trägst {gold} Gold mit dir herum - das ist mehr als ein ganzes Item. Welle reinschieben und sofort zurück."
 
 [cs]
 minuten = [5, 10, 15, 20]
