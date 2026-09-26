@@ -17,13 +17,30 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
-- (nichts - alles ohne echte Partie Machbare ist erledigt)
+Carlos' Ziel 26.09. (/goal): Challenger-Coach, individuelle Ansagen aus vielen Faktoren, keine
+Standardsaetze; Grundlage `Reasoning/LoL Reasoning.txt` (Entscheidungskette Zustand -> Welle ->
+Prio -> Tempo -> Information -> Gegner-Vorhersage -> Aktionen -> Gegenantwort -> Wert).
+
+- Gegner-Leben vom Bildschirm (Lebensbalken ueber den Koepfen) -> Kill-Rechnung mit echten
+  Zahlen (Ruestung/MR aus Items+Level, Zuenden, eigener Combo-Schaden; mechaniken.md).
+- Platten-Ziffer der Turm-Icons auf der Minimap lesen ("noch 2 Platten") - die Icons zeigen sie.
+- Prio aller Lanes (Wellen Mid/Bot/Top aus der Minimap) als Faktor fuer Objectives:
+  "Mid hat Prio, Bot nicht - Drache nur, wenn ...".
+- Nach der Lane-Phase: Seitenwelle vs. Gruppe genauer (welche Seite, wer kann zuerst da sein,
+  Baron/Drache-Tausch), Kampf-Vorhersage (Zahlen, Ults, Leben der Mitspieler aus der HUD-Leiste).
+- Minimap: gleiche Champions in beiden Teams (Ringfarbe in der lokalen Suche).
 
 ## Als Naechstes
 
 - (leer - neue Wuensche von Carlos kommen hierher)
 
 ## Braucht eine Partie
+
+- NEU 26.09. Lagebewertung + Komponist + Entscheider (e434179, 189a636, 74d01b0): jede Ansage
+  gerechnet (Laufzeiten, Leben, Flash, Tiefe, Kraefte, Welle, Objective), Plaene zwischen den
+  Ereignissen, Jungler-Startseite, Trade-Hinweis aus der Akte, Sofort-Antwort "was soll ich
+  jetzt machen". Nachgespielt an der Camille-Partie: 79 Ansagen, keine Widersprueche mehr.
+  Live pruefen: Haeufigkeit, ob die Zahlen stimmen (Ankunftszeiten!), ob etwas fehlt.
 
 Alles hier ist vorbereitet und mit Aufnahmen/Generalprobe getestet - die echte
 Partie ist der letzte Schritt. Nach Carlos' naechster Partie: Log, Aufnahme,
