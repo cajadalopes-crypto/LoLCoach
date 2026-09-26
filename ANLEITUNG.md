@@ -12,11 +12,20 @@ nach etwa 20 Sekunden kommt das Briefing - am Ende mit deinem Fokus aus dem Revi
 der letzten Partie. Stirbst du, sagt er dir, während du auf den Wiedereinstieg
 wartest, warum und was du nächstes Mal tust.
 
-- **Dashboard** (für den Platz neben dem Spielfenster): http://127.0.0.1:8790
+- **Was der Coach rechnet:** Jede Ansage ist aus der Lage gerechnet, nicht vorgefertigt -
+  wie schnell jeder Gegner frühestens bei dir sein kann (letzte Sichtung + Lauftempo), dein
+  Leben und Flash (aus deinem HUD), wie tief du stehst, Level/Items gegen deinen Lane-Gegner,
+  Welle und Prio aller Lanes, Platten (aus den Turm-Icons), was dein Gold kauft, was ein Tod
+  gerade kostet, wer beim nächsten Objective zuerst da ist. Dazwischen sagt er den Plan
+  ("1100 Gold reicht für Phage: Welle in den Turm, dann back - rechtzeitig für Larven um 8:00").
+- **Dashboard** (für den Platz neben dem Spielfenster): http://127.0.0.1:8790 - oben der
+  Kasten **Jetzt** mit genau diesen Zahlen und dem aktuellen Plan.
 - **Fragen stellen:** vordere Maus-Seitentaste (Maus 5) halten, sprechen, loslassen.
   Andere Taste: `python -m lolcoach live --ptt f9`
-  - Sofort-Antworten: "Wo ist der Jungler?", "Wann kommt Drache?", "Wer ist tot?",
-    "Hat Urgot Flash?", "Hat Urgot Ult?", "Wie stehen wir?", "Was hat Vi für Items?"
+  - Sofort-Antworten (ohne Wartezeit): "Was soll ich jetzt machen?", "Wo ist der Jungler?"
+    (mit Ankunftszeit und wahrscheinlicher Seite), "Wie viele Platten?", "Wer hat Prio?",
+    "Wann kommt Drache?", "Wer ist tot?", "Hat Urgot Flash?", "Hat Urgot Ult?",
+    "Wie stehen wir?", "Was hat Vi für Items?"
   - Abwägungen gehen an Claude (ein paar Sekunden): "Soll ich Herold machen oder pushen?",
     "Was soll ich kaufen?", "Was meinst du damit?"
   - **Notiz für die Entwicklung:** mit "Notiz" anfangen - der Coach sagt nur "Notiert"
