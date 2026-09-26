@@ -377,6 +377,12 @@ def flash_auf_dem_bildschirm():
     assert len(neu) == 1 and neu[0].champion == "Brand", neu
     assert not mit_minimap((0.10, 0.90))             # ohne Namen, kein Gegner im Rahmen -> kein Flash
     assert not mit_minimap((0.10, 0.90), g.champion)  # Name gelesen, aber Brand ist gar nicht im Bild -> Veto
+    # so, wie der Beobachter es live baut, muss es als JSON ins Protokoll (np.float64 aus dem Rahmen scheiterte)
+    import json
+    echt = minimap.kamerarahmen(cv2.imread(str(HIER / "minimap_brunnen.jpg")))
+    e = ("schirm_sprung", 1.0, ["feind", 0.5, 900, 400, 1200, 420, 0.19, "", "", list(echt) if echt else None,
+                                [1600, 900]])
+    assert lage.ereignis_aus_json(json.loads(json.dumps(lage.ereignis_als_json(e))))[2] == e[2]
 
 
 def brunnen_nach_recall_und_tod():
