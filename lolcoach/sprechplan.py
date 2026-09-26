@@ -17,6 +17,10 @@ ZEICHEN_PRO_SEKUNDE = 14.0   # Windows-Stimme bei Rate 1, grob gemessen
 PAUSE = 2.0                  # zwischen zwei Saetzen
 RUHE_VOR_HINWEIS = 8.0       # Hinweise nur, wenn es so lange still war
 THEMA_SPERRE = 30.0          # zwei Ansagen zum selben Thema (back, druck, gefahr, objective) nicht so kurz hintereinander
+THEMA_SPERRE_JE = {"gefahr": 12.0}   # Gefahr aendert sich schnell: eine neue Warnung darf eher kommen
+# Nach einer Warnung kein "geh rein" (Camille-Partie 15:37/15:39: "rein" und "zurueck" in 2 s). Umgekehrt
+# nicht: eine Gefahr darf immer kommen, auch direkt nach einem Druck-Satz.
+WIDERSPRUCH = {"druck": ("gefahr", 15.0), "seite": ("gefahr", 15.0)}
 
 
 class Sprechplan:
@@ -49,7 +53,9 @@ class Sprechplan:
         # die zweite faellt weg - ausser sie ist SOFORT (Gefahr darf immer)
         self.warte = [a for a in self.warte if zeit - a.zeit <= a.gueltig
                       and not (a.thema and a.prio < SOFORT
-                               and zeit - self.thema_zuletzt.get(a.thema, -1e9) < THEMA_SPERRE)]
+                               and zeit - self.thema_zuletzt.get(a.thema, -1e9) < THEMA_SPERRE_JE.get(a.thema, THEMA_SPERRE))
+                      and not (a.thema in WIDERSPRUCH
+                               and zeit - self.thema_zuletzt.get(WIDERSPRUCH[a.thema][0], -1e9) < WIDERSPRUCH[a.thema][1])]
         if not self.warte:
             return None
         a = max(self.warte, key=lambda a: (a.prio, a.zeit))

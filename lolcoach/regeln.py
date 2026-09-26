@@ -415,7 +415,7 @@ class Regelwerk:
         if p.zeit - self._wenig_leben_seit >= cfg["dauer"]:
             prozent = max(1, int(anteil * 100))
             text = komponist.leben(self.b, prozent) if self.b is not None else cfg["satz"].format(prozent=prozent)
-            yield Ansage(text, WICHTIG, "leben", gueltig=4, sperre=cfg["erneut_nach"])
+            yield Ansage(text, WICHTIG, "leben", gueltig=4, sperre=cfg["erneut_nach"], thema="gefahr")
 
     def _cs(self, p: Partie, v: Partie):
         cfg = self.m["cs"]
@@ -475,7 +475,7 @@ class Regelwerk:
         if nah or (meine_seite and not in_seinem_jungle and rolle != "JUNGLE"):
             text = (komponist.jungler_gesehen(self.b, jl, "gefahr", platten) if jl
                     else cfg["gefahr"].format(champion=j.champion, ort=ort))
-            yield Ansage(text, SOFORT, "jungler_sicht", gueltig=3, sperre=15)
+            yield Ansage(text, SOFORT, "jungler_sicht", gueltig=3, sperre=15, thema="gefahr")
         elif meine_seite and rolle != "JUNGLE":
             text = (komponist.jungler_gesehen(self.b, jl, "seite", platten) if jl
                     else cfg["seine_seite"].format(champion=j.champion, ort=ort))
@@ -612,7 +612,8 @@ class Regelwerk:
         if kommen and len(mit_lage) == len(kommen):
             text = komponist.anlauf(self.b, mit_lage)
             schl = "anlauf" if len(kommen) >= 2 else f"anlauf:{kommen[0][0].name}"
-            yield Ansage(text, SOFORT, schl, gueltig=3, sperre=cfg["sperre"])
+            yield Ansage(text, SOFORT, schl, gueltig=3, sperre=cfg["sperre"],
+                         thema="druck" if "Nimm den Kampf" in text else "gefahr")
         elif len(kommen) >= 2:
             yield Ansage(cfg["mehrere"].format(anzahl=len(kommen), namen=", ".join(s.champion for s, _ in kommen)),
                          SOFORT, "anlauf", gueltig=3, sperre=cfg["sperre"])

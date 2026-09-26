@@ -178,7 +178,11 @@ def jungler_gesehen(b: Bewertung, j: GegnerLage, art: str, platten: bool) -> str
         an = j.ankunft
         wann = "direkt bei dir" if an is not None and an < 2 else (f"{sek(an)} zu dir" if an is not None else "")
         gruende = verwundbar(b)
-        if art == "gefahr" or gruende:
+        if an is not None and an < 2 and b.zum_turm is not None and b.zum_turm >= 12:
+            # direkt bei dir, der Turm ist weit: der Weg dorthin rettet nicht - raus, mit dem, was du hast
+            tun = ("Raus da, Flash bereit halten" if b.flash is not None and b.flash <= 0
+                   else "Raus da, dein Flash ist weg - nicht in ihn laufen" if b.flash else "Raus da")
+        elif art == "gefahr" or gruende:
             tun = _rueckzug(b) + (f", {gruende[0]}" if gruende else "")
         else:
             tun = "Bleib hinter deiner Welle"
@@ -219,8 +223,11 @@ def anlauf(b: Bewertung, kommen: list[tuple[GegnerLage, str]]) -> str:
         return satz + f" {_namen(n)} {'ist' if len(n) == 1 else 'sind'} bei dir - zusammen bleiben."
     ist_lane = b.lane is not None and erster.s.name == b.lane.s.name
     wert = b.kraefte()[0] if ist_lane else None
-    if wert is not None and wert >= 1.5 and not gefahr(b, ausser=erster) and (b.leben or 1) >= 0.6:
+    andere = gefahr(b, ausser=erster)
+    if wert is not None and wert >= 1.5 and not andere and (b.leben or 1) >= 0.6:
         return satz + f" Nimm den Kampf, {b.vorsprung_satz()}."
+    if wert is not None and wert >= 1.5 and andere:
+        return satz + f" Du bist stärker, aber {andere[0].champion} {_wann(andere[0])}: {_rueckzug(b)}."
     gruende = verwundbar(b)
     return satz + f" {_rueckzug(b)}" + (f", {gruende[0]}." if gruende else ".")
 
@@ -323,6 +330,8 @@ def zauber_neu(b: Bewertung, g: GegnerLage, zauber: str, dauer: float, quelle: s
 
 def kein_flash_nah(b: Bewertung, g: GegnerLage, rest: float) -> str:
     satz = f"{g.champion} ohne Flash, noch {sek(rest)}"
+    if andere := gefahr(b, ausser=g):   # zuerst: wer sonst dazukommen kann (Camille-Partie 15:37/15:39)
+        return satz + f", aber {andere[0].champion} {_wann(andere[0])} - nicht reinlaufen."
     if b.lane and g.s.name == b.lane.s.name:
         wert, _ = b.kraefte()
         v = b.vorsprung_satz()
@@ -330,8 +339,6 @@ def kein_flash_nah(b: Bewertung, g: GegnerLage, rest: float) -> str:
             return satz + (f", {v}: rein, wenn er in Reichweite kommt." if v else ": rein, wenn er in Reichweite kommt.")
         if wert <= -1:
             return satz + (f", aber {v}: nur traden." if v else ": nur traden.")
-    if andere := gefahr(b, ausser=g):
-        return satz + f", aber {andere[0].champion} kann gleich da sein."
     return satz + ". Nutz das Fenster."
 
 

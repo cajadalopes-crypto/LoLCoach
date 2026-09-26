@@ -84,7 +84,8 @@ class Option:
     @property
     def thema(self) -> str:
         return {"zurueck": "gefahr", "druck": "druck", "freeze": "gefahr", "gruppe": "objective",
-                "obj_plan": "objective"}.get(self.name, "back" if self.name.startswith("back") else "")
+                "obj_plan": "objective", "seite": "seite", "seite_nicht": "seite"}.get(
+            self.name, "back" if self.name.startswith("back") else "")
 
 
 @dataclass
@@ -184,19 +185,23 @@ class Entscheider:
                 aus.append(Option("back_kanone", f"{grund}: Kanonenwelle kommt {uhr(k)} - die in den Turm schieben, "
                                                  f"dann back.", 75 + b.gold / 50, 3))
 
-        # 5) Objective-Vorlauf 60-120 s: Reihenfolge planen (Welle, Reset, Weg)
+        # 5) Objective-Vorlauf 60-120 s: Reihenfolge planen (Welle, Reset, Weg). In der Lane-Phase nur fuer die
+        #    Seite des Objectives; danach fuer alle - dann kaempfen alle fuenf darum.
         ob = b.objective
         if ob and 60 <= ob[1] <= 120 and meine is not None:
             name = OBJ_NAME[ob[0]]
-            nah = (ob[0] == "drache" and meine == "unten") or (ob[0] != "drache" and meine == "oben") \
-                or rolle == "MIDDLE"
-            if nah:
+            nah = (ob[0] == "drache" and meine == "unten") or (ob[0] != "drache" and meine == "oben")                 or rolle == "MIDDLE"
+            if nah or not lane_phase:
                 reset = b.gold >= 900 or (b.leben is not None and b.leben < 0.6)
                 seite = ("Mid", "Bot") if ob[0] == "drache" else ("Mid", "Top")
-                prio = komponist._prio_satz(b, tuple(l for l in seite if l != {"TOP": "Top", "BOTTOM": "Bot",
-                                                                                   "UTILITY": "Bot", "MIDDLE": "Mid"}.get(rolle)))
-                satz = (f"{name} in {sek(ob[1])}: " + ("jetzt Welle rein und back, " if reset else "Welle langsam aufbauen, ")
-                        + f"spätestens {uhr(b.zeit + ob[1] - 30)} an der Grube sein" + (f" - {prio}." if prio else "."))
+                eigene_lane = {"TOP": "Top", "BOTTOM": "Bot", "UTILITY": "Bot", "MIDDLE": "Mid"}.get(rolle)
+                prio = komponist._prio_satz(b, tuple(l for l in seite if l != eigene_lane))
+                if lane_phase:
+                    tun = "jetzt Welle rein und back, " if reset else "Welle langsam aufbauen, "
+                else:
+                    tun = (f"Seitenwelle bis {uhr(b.zeit + ob[1] - 45)} rausschieben, " + ("dazwischen back, " if reset else ""))
+                satz = (f"{name} in {sek(ob[1])}: {tun}spätestens {uhr(b.zeit + ob[1] - 30)} an der Grube sein"
+                        + (f" - {prio}." if prio else "."))
                 aus.append(Option("obj_plan", satz, 90, 2 + reset + bool(prio)))
 
         # 6) Freeze/Sicherheit: Jungler wahrscheinlich bei dir, Welle vor deinem Turm, du schiebst nicht
@@ -206,17 +211,30 @@ class Entscheider:
                                         f"({int(j_bei_mir * 100)} Prozent), seit {sek(j.seit or b.zeit)} nicht gesehen.",
                               55, 3))
 
-        # 7) Nach der Lane-Phase: Seitenwelle oder Gruppe
+        # 7) Nach der Lane-Phase: Gruppe vor dem Objective, sonst Seitenwelle - mit dem, der antworten kann
         if not lane_phase and rolle in ("TOP", "MIDDLE", "BOTTOM"):
             if ob and 5 <= ob[1] <= 60:
                 weg = f", {sek(b.zum_objective)} Weg" if b.zum_objective else ""
                 aus.append(Option("gruppe", f"{OBJ_NAME[ob[0]]} in {sek(ob[1])}: Welle crashen und zum Team{weg}.",
                                   100, 2))
-            elif not gefahr:
+            elif not gefahr and not (ob and ob[1] <= 75):
+                tp = b.zweiter is not None and b.zweiter[0] == "SummonerTeleport" and b.zweiter[1] <= 0
+                tp_satz = ", Teleport bereit für den Kampf" if tp else ""
                 sichtbar = [x for x in b.gegner if not x.s.tot and x.sichtbar]
-                if len(sichtbar) >= 3:
+                if g and (g.s.tot or (g.sichtbar and (g.ankunft or 0) >= 20)):
+                    wo = "tot" if g.s.tot else g.ort
+                    aus.append(Option("seite", f"Seite frei, {g.champion} {'ist ' if wo in ('tot', 'oben', 'unten') else ''}"
+                                               f"{wo}: Welle drücken, Turm{tp_satz}.", 75, 2 + tp))
+                elif g and g.seit is not None and g.seit < 3 and wert_kraefte >= 0.5 and (b.leben or 1) >= 0.6                         and len(sichtbar) >= 3:
+                    aus.append(Option("seite", f"Split: nur {g.champion} kann antworten, {vorsprung} - das 1 gegen 1 "
+                                               f"nimmst du{tp_satz}.", 80, 3 + tp))
+                elif g and wert_kraefte <= -1 and len(sichtbar) < 3:
+                    aus.append(Option("seite_nicht", f"Nicht allein splitten: {vorsprung}, und "
+                                                     f"{5 - len(sichtbar) - len(b.tote_gegner)} Gegner siehst du nicht. "
+                                                     f"Mit dem Team gehen.", 65, 3))
+                elif len(sichtbar) >= 3:
                     aus.append(Option("seite", f"{len(sichtbar)} Gegner sichtbar weg von dir: Seitenwelle drücken, "
-                                               f"Platten und Turm, bis sich einer zeigt.", 70, 2))
+                                               f"Platten und Turm, bis sich einer zeigt{tp_satz}.", 70, 2 + tp))
         return aus
 
     # --- Sprechen ----------------------------------------------------------------------
