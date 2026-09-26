@@ -154,7 +154,11 @@ def _champion_id(roh: dict) -> str:
 
 
 def _spieler(roh: dict) -> Spieler:
-    namen = frozenset(roh[k] for k in ("summonerName", "riotId", "riotIdGameName") if roh.get(k))
+    namen = {roh[k] for k in ("summonerName", "riotId", "riotIdGameName") if roh.get(k)}
+    if roh.get("isBot") or not namen:
+        # Bots haben keinen Riot-Namen; Ereignisse nennen sie vermutlich beim Champion
+        namen |= {roh[k] for k in ("championName", "rawChampionName") if roh.get(k)}
+    namen = frozenset(namen)
     sc = roh.get("scores", {})
     zauber = tuple(_zauber_schluessel(z) for z in (roh.get("summonerSpells") or {}).values())
     items = roh.get("items", [])
