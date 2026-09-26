@@ -1,0 +1,154 @@
+"""Review-Oberflaeche nach dem Spiel: http://127.0.0.1:8791
+
+Partie waehlen, Zeitleiste durchklicken, Minimap-Wiedergabe jedes Moments (aus den
+gespeicherten Positionen), Momentkarten und Lektionen - und mit dem Coach reden.
+
+    python -m lolcoach review
+"""
+from __future__ import annotations
+
+import json
+import threading
+from dataclasses import asdict
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import unquote
+
+from . import aufzeichnung, ddragon, minimap, review, verlauf
+
+SEITE = Path(__file__).resolve().parent.parent / "web" / "review.html"
+PORT = 8791
+
+_laufend: dict[str, str] = {}      # Stamm -> Status der Analyse ("laeuft", "fertig", "Fehler: ...")
+_cache: dict[str, dict] = {}       # Stamm -> Partie-Daten fuer die Oberflaeche
+
+
+def _aufnahme(stamm: str) -> Path | None:
+    pfad = aufzeichnung.ORDNER / f"{stamm}.jsonl.gz"
+    return pfad if pfad.exists() and "/" not in stamm and "\\" not in stamm else None
+
+
+def partien() -> list[dict]:
+    aus = []
+    for pfad in sorted(aufzeichnung.ORDNER.glob("*.jsonl.gz"), reverse=True):
+        stamm = pfad.name.removesuffix(".jsonl.gz")
+        eintrag = {"stamm": stamm, "datum": stamm[:10], "uhr": stamm[11:13] + ":" + stamm[13:15]}
+        v = review.pfade(pfad)["verlauf"]
+        if v.exists():
+            try:
+                d = json.loads(v.read_text(encoding="utf-8"))
+                ich = next((s for s in d["spieler"] if s["ich"]), {})
+                eintrag.update(champion=d["champion"], gegner=d["gegner"], ergebnis=d["ergebnis"],
+                               dauer=d["dauer"], kda=ich.get("kda"), id=ich.get("id"))
+            except (ValueError, KeyError):
+                pass
+        eintrag["review"] = review.pfade(pfad)["review"].exists()
+        aus.append(eintrag)
+    return aus
+
+
+def partie(stamm: str) -> dict:
+    pfad = _aufnahme(stamm)
+    if pfad is None:
+        raise FileNotFoundError(stamm)
+    if stamm not in _cache:
+        v = verlauf.baue(pfad)
+        verlauf.speichern(v, review.pfade(pfad)["verlauf"])
+        daten = asdict(v)
+        # Positionen fuer die Wiedergabe: jede Sekunde, gerundet
+        daten["sekunden"] = [{"t": round(s.zeit), "g": s.gold, "l": s.leben, "d": s.itemgold_diff, "k": s.kills,
+                              "p": s.positionen, "x": s.tot} for s in v.sekunden]
+        _cache[stamm] = daten
+    daten = dict(_cache[stamm])
+    p = review.pfade(pfad)
+    daten["review"] = json.loads(p["review"].read_text(encoding="utf-8")) if p["review"].exists() else None
+    daten["gespraech"] = json.loads(p["gespraech"].read_text(encoding="utf-8")) if p["gespraech"].exists() else []
+    daten["status"] = _laufend.get(stamm)
+    return daten
+
+
+def analyse_starten(stamm: str, neu: bool = False) -> str:
+    pfad = _aufnahme(stamm)
+    if pfad is None:
+        return "unbekannt"
+    if _laufend.get(stamm) == "laeuft":
+        return "laeuft"
+    _laufend[stamm] = "laeuft"
+
+    def lauf():
+        try:
+            review.erstelle(pfad, neu=neu)
+            _laufend[stamm] = "fertig"
+        except Exception as e:
+            _laufend[stamm] = f"Fehler: {type(e).__name__}: {e}"
+
+    threading.Thread(target=lauf, daemon=True).start()
+    return "laeuft"
+
+
+class _Anfrage(BaseHTTPRequestHandler):
+    def do_GET(self):
+        pfad = unquote(self.path.split("?")[0])
+        try:
+            if pfad == "/":
+                self._sende(SEITE.read_bytes(), "text/html; charset=utf-8")
+            elif pfad == "/api/partien":
+                self._json(partien())
+            elif pfad.startswith("/api/partie/"):
+                self._json(partie(pfad.split("/")[3]))
+            elif pfad == "/karte.png":
+                self._datei(ddragon.ABLAGE / str(ddragon.version()) / "map11.png", "image/png")
+            elif pfad.startswith("/icon/") and pfad.endswith(".png") and pfad[6:-4].isalnum():
+                minimap._champion_bild(pfad[6:-4])
+                self._datei(ddragon.ABLAGE / str(ddragon.version()) / "champion" / pfad[6:], "image/png")
+            else:
+                self.send_error(404)
+        except FileNotFoundError:
+            self.send_error(404)
+        except Exception as e:
+            self._json({"fehler": f"{type(e).__name__}: {e}"}, 500)
+
+    def do_POST(self):
+        pfad = unquote(self.path.split("?")[0])
+        laenge = int(self.headers.get("Content-Length", 0) or 0)
+        daten = json.loads(self.rfile.read(laenge) or b"{}") if laenge else {}
+        teile = pfad.split("/")
+        try:
+            if len(teile) == 5 and teile[1] == "api" and teile[2] == "partie" and teile[4] == "analyse":
+                self._json({"status": analyse_starten(teile[3], neu=bool(daten.get("neu")))})
+            elif len(teile) == 5 and teile[1] == "api" and teile[2] == "partie" and teile[4] == "frage":
+                aufnahme = _aufnahme(teile[3])
+                if aufnahme is None:
+                    self.send_error(404)
+                    return
+                antwort = review.frage(aufnahme, str(daten.get("text", ""))[:2000], daten.get("zeit"))
+                self._json({"antwort": antwort})
+            else:
+                self.send_error(404)
+        except Exception as e:
+            self._json({"fehler": f"{type(e).__name__}: {e}"}, 500)
+
+    def _datei(self, pfad: Path, art: str):
+        if pfad.exists():
+            self._sende(pfad.read_bytes(), art, cache=True)
+        else:
+            self.send_error(404)
+
+    def _json(self, daten, code: int = 200):
+        self._sende(json.dumps(daten, ensure_ascii=False).encode("utf-8"), "application/json", code=code)
+
+    def _sende(self, koerper: bytes, art: str, cache: bool = False, code: int = 200):
+        self.send_response(code)
+        self.send_header("Content-Type", art)
+        self.send_header("Cache-Control", "max-age=3600" if cache else "no-store")
+        self.end_headers()
+        self.wfile.write(koerper)
+
+    def log_message(self, *a):
+        pass
+
+
+def starte(port: int = PORT) -> ThreadingHTTPServer:
+    server = ThreadingHTTPServer(("127.0.0.1", port), _Anfrage)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return server

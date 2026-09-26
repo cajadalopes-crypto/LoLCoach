@@ -15,7 +15,7 @@ import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from . import aufzeichnung, lage, minimap, regeln
+from . import ansicht, aufzeichnung, lage, minimap, regeln
 from .ansicht import uhr
 from .zustand import DRACHE_DE, Partie, gegenteam, partie as baue_partie, struktur
 
@@ -62,6 +62,7 @@ class Verlauf:
     ansagen: list[dict]
     notizen: list[str]
     spielakte: str | None
+    ereignisse: list[tuple[float, str]] = field(default_factory=list)   # (Spielzeit, Satz) aus der API
 
 
 def _abstand(a, b) -> float:
@@ -123,6 +124,8 @@ def baue(pfad: str | Path, ich: str | None = None) -> Verlauf:
         ansagen=json.loads(ansagen_datei.read_text(encoding="utf-8")) if ansagen_datei.exists() else [],
         notizen=notiz_datei.read_text(encoding="utf-8").splitlines() if notiz_datei.exists() else [],
         spielakte=akte_datei.read_text(encoding="utf-8") if akte_datei.exists() else None,
+        ereignisse=[(e.zeit, satz.split("  ", 1)[-1]) for e in ende.ereignisse
+                    if (satz := ansicht.ereignis(ende, e))],
     )
 
 

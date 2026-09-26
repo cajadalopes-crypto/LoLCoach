@@ -12,7 +12,7 @@ import json
 import re
 from pathlib import Path
 
-from . import champions, gehirn, llm, verlauf
+from . import champions, gehirn, llm, minimap, verlauf
 from .ansicht import uhr
 
 REVIEW_SYSTEM = """Du bist ein Challenger-Coach fuer League of Legends und machst mit deinem Schueler
@@ -43,7 +43,10 @@ Antworte NUR mit JSON in genau dieser Form:
 GESPRAECH_SYSTEM = """Du bist ein Challenger-Coach fuer League of Legends im Gespraech nach der Partie mit
 deinem Schueler. Du kennst die Zeitleiste der Partie (aus Spieldaten und Minimap, nicht geraten), dein
 Review und Auszuege aus deinem Wissen. Antworte auf Deutsch, direkt, 3-8 Saetze. Beziehe dich auf
-Spielzeiten und Fakten. Was die Daten nicht zeigen, sagst du offen. Keine Allgemeinplaetze - wenn er
+Spielzeiten und Fakten; Orte mit Worten ("im oberen Fluss"), nie als Zahlen. Was die Daten nicht
+zeigen, sagst du offen. Tode, Kills und Objectives NUR aus der Liste EREIGNISSE bzw. der Zeitleiste -
+nie aus Positionen erschliessen (in der Basis sein heisst nicht gestorben sein). Ob der Spieler lebte,
+steht in jeder DETAIL-Zeile ("du lebst" / "du bist TOT"). Keine Allgemeinplaetze - wenn er
 fragt, was er haette tun sollen, nenn die konkrete Handlung und warum. Wenn er widerspricht und recht hat,
 gib es zu."""
 
@@ -102,24 +105,36 @@ _ZEIT = re.compile(r"\b(\d{1,2})[:.](\d{2})\b")
 def _detail(v: verlauf.Verlauf, zeit: float, spanne: float = 45) -> str:
     """Sekunde fuer Sekunde (alle 5 s) um einen Zeitpunkt: Leben, Gold, Positionen."""
     namen = {s["name"]: s["champion"] for s in v.spieler}
-    zeilen = [f"DETAIL {uhr(zeit - spanne)}-{uhr(zeit + 15)} (alle 5 s; Positionen nur Gesehenes):"]
+    zeilen = [f"EREIGNISSE {uhr(zeit - spanne)}-{uhr(zeit + 15)} (aus der Spiel-API, sicher):"]
+    zeilen += [f"  {uhr(z)} {satz}" for z, satz in v.ereignisse if zeit - spanne <= z <= zeit + 15] or ["  keine"]
+    zeilen.append(f"DETAIL {uhr(zeit - spanne)}-{uhr(zeit + 15)} (alle 5 s; 'du' = der Spieler; Positionen nur Gesehenes):")
     letzte = -1e9
     for s in v.sekunden:
         if zeit - spanne <= s.zeit <= zeit + 15 and s.zeit - letzte >= 5:
             letzte = s.zeit
-            pos = "; ".join(f"{namen.get(n, n)} {'jetzt' if sicht else f'vor {int(alter)}s'} "
-                            f"({x:.2f},{y:.2f})" for n, (x, y, alter, sicht) in s.positionen.items() if alter < 30)
-            zeilen.append(f"{uhr(s.zeit)} Leben {int((s.leben or 0) * 100)} % Gold {int(s.gold or 0)} "
-                          f"Kills {s.kills[0]}:{s.kills[1]} tot: {', '.join(namen.get(n, n) for n in s.tot) or '-'} | {pos}")
-    zeilen.append("(Kartenkoordinaten 0..1, (0,0) oben links; blaue Basis unten links.)")
+            ich_tot = v.ich in s.tot
+            ich_pos = s.positionen.get(v.ich)
+            ich_ort = minimap.ort(ich_pos[0], ich_pos[1], v.team) if ich_pos and ich_pos[2] < 5 else "Ort unbekannt"
+            du = (f"du bist TOT" if ich_tot else
+                  f"du lebst, {int((s.leben or 0) * 100)} % Leben, {int(s.gold or 0)} Gold, {ich_ort}")
+            andere = "; ".join(f"{namen.get(n, n)} {'jetzt' if sicht else f'vor {int(alter)} s'} "
+                               f"{minimap.ort(x, y, v.team)}" for n, (x, y, alter, sicht) in s.positionen.items()
+                               if alter < 30 and n != v.ich)
+            tote = ", ".join(namen.get(n, n) for n in s.tot if n != v.ich) or "-"
+            zeilen.append(f"{uhr(s.zeit)} {du} | Kills {s.kills[0]}:{s.kills[1]} | andere tot: {tote} | gesehen: {andere}")
     return "\n".join(zeilen)
+
+
+_verlaeufe: dict[str, verlauf.Verlauf] = {}
 
 
 def frage(aufnahme: str | Path, text: str, zeit: float | None = None, modell: str = "sonnet") -> str:
     """Eine Frage im Gespraech nach der Partie. `zeit`: Moment, den der Spieler gerade ansieht."""
     aufnahme = Path(aufnahme)
     p = pfade(aufnahme)
-    v = verlauf.baue(aufnahme)
+    if aufnahme.name not in _verlaeufe:
+        _verlaeufe[aufnahme.name] = verlauf.baue(aufnahme)
+    v = _verlaeufe[aufnahme.name]
     review = json.loads(p["review"].read_text(encoding="utf-8")) if p["review"].exists() else None
     verlauf_gespraech = json.loads(p["gespraech"].read_text(encoding="utf-8")) if p["gespraech"].exists() else []
     zeiten = [int(m.group(1)) * 60 + int(m.group(2)) for m in _ZEIT.finditer(text)]
@@ -133,7 +148,7 @@ def frage(aufnahme: str | Path, text: str, zeit: float | None = None, modell: st
     if verlauf_gespraech:
         teile.append("BISHERIGES GESPRAECH:\n" + "\n".join(f"{e['wer']}: {e['text']}" for e in verlauf_gespraech[-8:]))
     antwort = llm.frage("\n\n".join(teile) + f"\n\nFRAGE DES SPIELERS: {text}", system=GESPRAECH_SYSTEM,
-                        modell=modell, timeout=120).strip()
+                        modell=modell, timeout=120, aufwand="medium").strip()
     verlauf_gespraech += [{"wer": "Spieler", "text": text, "zeit": zeit}, {"wer": "Coach", "text": antwort}]
     p["gespraech"].write_text(json.dumps(verlauf_gespraech, ensure_ascii=False, indent=1), encoding="utf-8")
     return antwort

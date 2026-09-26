@@ -1,8 +1,9 @@
-"""python -m lolcoach [live|abspielen|bericht|status|llm] ...
+"""python -m lolcoach [live|abspielen|bericht|review|status|llm|frage|mikrotest] ...
 
   live (Standard)       wartet auf eine Partie, coacht sie, schreibt sie mit (Daten + Minimap)
   abspielen [DATEI]     spielt eine Aufnahme durch denselben Code (Standard: die neueste)
-  bericht [DATEI]       Post-Game-Bericht einer Aufnahme
+  bericht [DATEI]       Post-Game-Bericht einer Aufnahme (Text)
+  review [DATEI]        Review-Oberflaeche: Zeitleiste, Minimap-Wiedergabe, Lektionen, Gespraech
   status                ein Schnappschuss, sofort
   llm "Frage"           prueft die Claude-Anbindung
 
@@ -137,6 +138,12 @@ def _ansagen_speichern(pfad, plan: sprechplan.Sprechplan) -> None:
 def live(args) -> None:
     sprecher = stimme.Stumm() if args.stumm else _stimme(args.stimme)
     anzeigen = [] if args.ohne_dashboard else [d for d in [_dashboard()] if d]
+    try:
+        from . import review_server
+        review_server.starte()
+        print(f"Review-Oberflaeche: http://127.0.0.1:{review_server.PORT}")
+    except OSError as e:
+        print(f"Review-Oberflaeche nicht gestartet ({e})")
     if not args.ohne_sprache:
         from . import sprache
         try:
@@ -185,10 +192,18 @@ def live(args) -> None:
 
 def _bericht_im_hintergrund(pfad, ich) -> None:
     try:
-        ziel = bericht.schreibe(pfad, ich)
+        ziel = bericht.schreibe(pfad, ich, mit_llm=False)  # die Claude-Analyse steckt im Review
         print(f"Bericht: {ziel}", flush=True)
     except Exception as e:  # der Bericht darf den Coach nie beenden
         print(f"Bericht fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
+    try:
+        from . import review
+        print("Review wird geschrieben (1-3 Minuten) ...", flush=True)
+        review.erstelle(pfad)
+        stamm = pfad.name.removesuffix(".jsonl.gz")
+        print(f"Review fertig: http://127.0.0.1:8791/?partie={stamm}", flush=True)
+    except Exception as e:
+        print(f"Review fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
     try:
         if (frei := lage.bilder_aufraeumen(behalte=3)) > 0:
             print(f"Alte Minimap-Bilder aufgeraeumt: {frei:.0f} MB frei (Sichtungen bleiben)", flush=True)
@@ -260,6 +275,20 @@ def mikrotest(args) -> None:
         time.sleep(1)
 
 
+def review_befehl(args) -> None:
+    from . import review_server
+    review_server.starte()
+    url = f"http://127.0.0.1:{review_server.PORT}/"
+    if args.datei:
+        url += f"?partie={args.datei.removesuffix('.jsonl.gz').split('/')[-1].split(chr(92))[-1]}"
+    print(f"Review: {url}  (Strg+C beendet)")
+    if not args.ohne_browser:
+        import webbrowser
+        webbrowser.open(url)
+    while True:
+        time.sleep(1)
+
+
 def status(args) -> None:
     try:
         p = zustand.partie(liveapi.alles(args.basis), args.ich)
@@ -313,6 +342,9 @@ def main() -> None:
     mt = unter.add_parser("mikrotest", help="Push-to-Talk und Spracherkennung ohne Partie pruefen")
     mt.add_argument("--ptt", default="maus5")
     mt.add_argument("--stimme", default=STIMME, help="neuronale Stimme (de-DE-KatjaNeural, ...) oder windows")
+    rv = unter.add_parser("review", help="Review-Oberflaeche nach dem Spiel (Browser)")
+    rv.add_argument("datei", nargs="?", help="Aufnahme, die gleich geoeffnet wird")
+    rv.add_argument("--ohne-browser", action="store_true")
     unter.add_parser("status")
     lm = unter.add_parser("llm")
     lm.add_argument("frage")
@@ -321,7 +353,7 @@ def main() -> None:
     if args.befehl is None:
         args = ap.parse_args(sys.argv[1:] + ["live"])  # ohne Befehl: live mit allen Voreinstellungen
     {"live": live, "abspielen": abspielen, "bericht": bericht_befehl, "status": status,
-     "llm": frage_llm, "frage": frage_an_aufnahme, "mikrotest": mikrotest}[args.befehl](args)
+     "llm": frage_llm, "frage": frage_an_aufnahme, "mikrotest": mikrotest, "review": review_befehl}[args.befehl](args)
 
 
 if __name__ == "__main__":
