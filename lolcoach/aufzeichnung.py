@@ -47,7 +47,9 @@ def gz_saeubern(pfad: Path) -> bool:
         return True
     text = gz_text(pfad)
     neu = pfad.with_name(pfad.name + ".neu")
-    with gzip.open(neu, "wt", encoding="utf-8") as f:
+    # newline="": der Text hat schon die Zeilenenden der Aufnahme - sonst macht Windows aus \r\n ein \r\r\n,
+    # und jede zweite Zeile ist leer (Aufnahme 230520: 555 Leerzeilen nach dem Neustart)
+    with gzip.open(neu, "wt", encoding="utf-8", newline="") as f:
         f.write(text)
     for _ in range(20):          # bis ~6 s: eine kurze Sperre (Scan, Sync) geht vorbei
         try:
