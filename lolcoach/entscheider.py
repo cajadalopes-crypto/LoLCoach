@@ -25,6 +25,7 @@ from dataclasses import dataclass, field
 from . import komponist
 from .bewertung import Bewertung
 from .jungle import LANE_SEITE, Jungletracker, anders
+from .kaufplan import _dat as kaufplan_dat
 from .komponist import OBJ_NAME, sek
 
 LANE_PHASE_BIS = 840
@@ -170,7 +171,9 @@ class Entscheider:
         braucht_back = b.gold >= 1100 or (b.leben is not None and b.leben < 0.45)
         if braucht_back and not gefahr:
             ob = b.objective
-            grund = (f"{b.gold // 100 * 100} Gold" if b.gold >= 1100 else f"{int(b.leben * 100)} Prozent Leben")
+            kauf = b.kauf.satz() if b.kauf is not None and b.kauf.kaufen else ""
+            grund = (f"{b.gold // 100 * 100} Gold" + (f" {kauf}" if kauf else "") if b.gold >= 1100
+                     else f"{int(b.leben * 100)} Prozent Leben")
             if schiebt_er and welle[2] is not None and welle[2] <= 0.45:
                 satz = (f"{grund}, aber seine Welle mit {welle[1]} läuft auf deinen Turm: erst abfarmen, "
                         f"dann back - sonst frisst der Turm dein Gold.")
@@ -185,6 +188,16 @@ class Entscheider:
             elif (k := naechste_kanone(b.zeit, b.ich.rolle)) and k - b.zeit <= 45:
                 aus.append(Option("back_kanone", f"{grund}: Kanonenwelle kommt {uhr(k)} - die in den Turm schieben, "
                                                  f"dann back.", 75 + b.gold / 50, 3))
+
+        # 4b) Knapp vor einem Bauteil: noch eine Welle mitnehmen, dann mit dem Bauteil zurueck
+        k = b.kauf
+        if (k is not None and not k.kaufen and k.naechstes and k.naechstes[1] <= 200 and b.gold >= 700
+                and not gefahr and lane_phase and b.zeit >= 180):   # vor 3:00 ist kein Back-Fenster
+            kanone = naechste_kanone(b.zeit, b.ich.rolle)
+            welle_satz = (f"die Kanone {uhr(kanone)} mitnehmen" if kanone and kanone - b.zeit <= 40
+                          else "noch eine Welle mitnehmen")
+            aus.append(Option("back_knapp", f"Noch {k.naechstes[1]} Gold bis {kaufplan_dat(k.naechstes[0])}: "
+                                            f"{welle_satz}, dann back.", 72, 2))
 
         # 5) Objective-Vorlauf 60-120 s: Reihenfolge planen (Welle, Reset, Weg). In der Lane-Phase nur fuer die
         #    Seite des Objectives; danach fuer alle - dann kaempfen alle fuenf darum.

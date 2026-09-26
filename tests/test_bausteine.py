@@ -248,6 +248,11 @@ def bewertung_und_plan():
     assert round(bewertung.todeszeit(9, 1200), 1) == 29.2 and round(bewertung.todeszeit(18, 3300), 2) == 78.75
     b.tod_kostet, b.objective = 45.0, ("baron", 30.0)
     assert komponist.todespreis(b) == "ein Tod kostet jetzt 45 Sekunden, Baron in 30 Sekunden"
+    # Kaufplan aus dem Lexikon-Build: Riven Kern Stiefel -> Axiombogen -> Endloser Hunger -> Tanz des Todes
+    from lolcoach import kaufplan
+    assert kaufplan.plan("Riven", (1055,), 1400).satz() == "reicht für den Brutalisierer"
+    assert kaufplan.plan("Riven", (1055, 3158), 2800).satz() == "reicht für Axiombogen"
+    assert kaufplan.plan("Riven", (1055, 3158), 1000).satz() == "noch 50 bis Caulfields Kriegshammer"
 
 
 def platten_lesen():

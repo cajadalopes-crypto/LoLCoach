@@ -311,7 +311,8 @@ def recall(b: Bewertung, grund: str) -> str:
     elif grund == "viel":
         satz = f"{b.gold // 100 * 100} Gold ungenutzt, mehr als ein Item: Welle rein und sofort back"
     else:
-        satz = f"{b.gold // 100 * 100} Gold: nächste Welle in den Turm, dann back"
+        kauf = b.kauf.satz() if b.kauf is not None and b.kauf.kaufen else ""
+        satz = f"{b.gold // 100 * 100} Gold" + (f" {kauf}" if kauf else "") + ": nächste Welle in den Turm, dann back"
     if (andere := gefahr(b)) and grund != "welle":
         return satz + f", aber {andere[0].champion} {_wann(andere[0])}."
     ob = b.objective

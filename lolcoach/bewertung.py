@@ -147,6 +147,7 @@ class Bewertung:
     prio: dict[str, str | None] = field(default_factory=dict)   # Lane -> "ihr" / "er" / None (Welle steht)
     kampf: "Kampflage | None" = None    # Kampf um das naechste Objective (wenn es in <= 90 s kommt oder lebt)
     tod_kostet: float = 0.0     # so lange waerst du tot, wenn du jetzt stirbst
+    kauf: "object | None" = None   # kaufplan.Kauf: was dein Gold jetzt kauft / was bis zum naechsten Bauteil fehlt
 
     # --- Ableitungen -------------------------------------------------------------
 
@@ -254,6 +255,8 @@ class Bewertung:
             ich.append(f"Lane-Position {self.tiefe:.2f} (0 eigene Basis, 1 gegnerische)")
         if self.tod_kostet:
             ich.append(f"ein Tod jetzt = {int(self.tod_kostet)} s grau")
+        if self.kauf is not None and self.kauf.satz():
+            ich.append(f"Gold {self.gold}: {self.kauf.satz()} (Weg zu {self.kauf.item})")
         if ich:
             z.append("Du: " + ", ".join(ich) + (f", {self.ort}" if self.ort else "") + ".")
         for g in sorted(self.gegner, key=lambda g: (g.ankunft is None, g.ankunft or 0)):
@@ -318,6 +321,11 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
         b.tod_kostet = todeszeit(p.ich.level, p.zeit)
     except (KeyError, IndexError, TypeError):
         pass
+    try:
+        from . import kaufplan
+        b.kauf = kaufplan.plan(p.ich.champion_id, p.ich.items, b.gold)
+    except Exception:
+        b.kauf = None
     feind, mein = gegenteam(p.mein_team), p.mein_team
     tuerme = stehende_tuerme(p)
     lb = lagebild if lagebild is not None and getattr(lagebild, "aktiv", False) else None
