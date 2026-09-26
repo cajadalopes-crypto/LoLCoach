@@ -39,6 +39,10 @@ Regeln, ohne Ausnahme:
 - Liegen BILDER bei (sein Spielbildschirm in Schluesselmomenten, Liste am Ende), nutze sie fuer das, was die
   Zeitleiste nicht hat: Leben ueber den Koepfen, wer wirklich im Kampf war, Position im Kampf, Vasallen, seine
   Faehigkeiten/Zauber unten (Zahl = Abklingzeit). Beleg dann als "Bild 19:40: ...". Nur, was zu sehen ist.
+- Kennst du WAS DER COACH LIVE GESAGT HAT (gerechnete Warnungen und Plaene mit Spielzeit): vergleiche mit dem,
+  was danach passiert ist. Ist er einer Warnung oder einem Plan nicht gefolgt und hat es gekostet (Tod, Objective,
+  verpasstes Fenster), ist das ein starker Beleg ("12:32 sagte ich: Swain und Alistar koennen da sein, zurueck -
+  12:40 gestorben"). Lag der Coach falsch oder zu spaet, sag das ehrlich in einem Satz - daran wird der Coach besser.
 - Deutsch, direkt, wie im Voice-Chat nach dem Spiel - aber praezise. Sprich den Spieler mit "du" an,
   auch in der Zusammenfassung (nicht "Riven hat ...", sondern "du hast ...").
 
@@ -94,6 +98,20 @@ def _json_aus(text: str) -> dict:
     return json.loads(text[start:ende + 1])
 
 
+def _gesagt_text(v, hoechstens: int = 70) -> str:
+    """Die gesprochenen Ansagen (Warnungen, Plaene) mit Spielzeit - ohne Statistik-Saetze (CS)."""
+    zeilen = []
+    for a in v.ansagen:
+        t = a.get("gesprochen") or a.get("zeit")
+        if t is None or str(a.get("schluessel", "")).startswith("cs"):
+            continue
+        zeilen.append(f"{int(t // 60)}:{int(t % 60):02d} {a.get('text', '')}")
+    if len(zeilen) > hoechstens:        # gleichmaessig ausduennen, die Reihenfolge bleibt
+        schritt = len(zeilen) / hoechstens
+        zeilen = [zeilen[int(i * schritt)] for i in range(hoechstens)]
+    return "\n".join(zeilen)
+
+
 def erstelle(aufnahme: str | Path, neu: bool = False, modell: str = "sonnet") -> dict:
     """Zeitleiste bauen, Claude das Review schreiben lassen, beides speichern."""
     aufnahme = Path(aufnahme)
@@ -103,6 +121,8 @@ def erstelle(aufnahme: str | Path, neu: bool = False, modell: str = "sonnet") ->
     v = verlauf.baue(aufnahme)
     verlauf.speichern(v, p["verlauf"])
     inhalt = f"{_wissen(v, aufnahme.parent)}\n\nZEITLEISTE DER PARTIE:\n{verlauf.als_text(v, hoechstens=60)}"
+    if gesagt := _gesagt_text(v):
+        inhalt += "\n\nWAS DER COACH LIVE GESAGT HAT:\n" + gesagt
     bilder = moment_bilder(aufnahme, v)
     if bilder:
         inhalt += "\n\nBILDER (sein Spielbildschirm, in dieser Reihenfolge):\n" + "\n".join(
