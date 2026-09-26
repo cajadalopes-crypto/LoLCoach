@@ -139,7 +139,8 @@ AKTE_SYSTEM = (
     "gegnerische Faehigkeit abwarten, Spikes beider Seiten), gegnerischer Jungler (Gefahr, Gank-Zeiten), "
     "Win-Conditions beider Teams, gefaehrlichste Ults, Build-Richtung gegen dieses Team, Plan fuer "
     "Lane-Phase und danach.\n"
-    "BRIEFING:\n(fuer den Spieler, ueber Headset gesprochen, 4-6 kurze Saetze, kein Markdown) das Matchup und "
+    "BRIEFING:\n(fuer den Spieler, ueber Headset gesprochen, 4-6 kurze Saetze, zusammen hoechstens 70 Woerter, "
+    "kein Markdown) das Matchup und "
     "wann er traden kann, die groesste Gefahr, die Win-Condition, die Build-Richtung.\n"
     "ULTS:\n(je gegnerischer Champion eine Zeile 'Name: Satz', hoechstens 15 Woerter, gesprochen: was seine Ult "
     "fuer den Spieler bedeutet und worauf er achten muss)\n"
@@ -172,6 +173,8 @@ SITUATIV_SYSTEM = (
     "eingedeutschten Verben wie 'all-inen'.")
 
 
+BRIEFING_WOERTER = 75   # ~25 s Sprechzeit; der Fokus-Satz kommt dazu (Partie 4: 120 Woerter = 45 s)
+
 TOD_SYSTEM = (
     "Du bist ein Challenger-Coach und sprichst live ueber Headset. Dein Schueler ist gerade gestorben und "
     "wartet auf den Wiedereinstieg. Sag ihm in hoechstens zwei kurzen gesprochenen Saetzen (zusammen unter 35 "
@@ -183,11 +186,20 @@ TOD_SYSTEM = (
     "tun sollte. Kommentiere nie die Daten, sprich nur zum Spieler.")
 
 
-def kuerzen(text: str, saetze: int) -> str:
+def kuerzen(text: str, saetze: int, woerter: int | None = None) -> str:
     """Hoechstens `saetze` Saetze - im Spiel zaehlt jede Sekunde Sprechzeit
-    (Generalprobe 26.09.: ein "3-4 Saetze"-Plan kam mit acht Saetzen)."""
-    teile = re.split(r"(?<=[.!?])\s+", text.strip())
-    return " ".join(teile[:saetze]).strip()
+    (Generalprobe 26.09.: ein "3-4 Saetze"-Plan kam mit acht Saetzen). `woerter`: dazu eine
+    Obergrenze an ganzen Saetzen entlang (Partie 4: sechs Saetze waren 120 Woerter, 45 s)."""
+    teile = re.split(r"(?<=[.!?])\s+", text.strip())[:saetze]
+    if woerter:
+        aus, n = [], 0
+        for t in teile:
+            n += len(t.split())
+            if aus and n > woerter:
+                break
+            aus.append(t)
+        teile = aus
+    return " ".join(teile).strip()
 
 
 class Gehirn:
@@ -235,7 +247,7 @@ class Gehirn:
                     if name and satz.strip():
                         self.ult_warnungen[name.strip()] = kuerzen(satz.strip(), 1)
                 from .itemnamen import absichern
-                briefing = kuerzen(briefing, 6)
+                briefing = kuerzen(briefing, 6, woerter=BRIEFING_WOERTER)
                 if fokus and (fokus_satz := kuerzen(fokus_satz.strip(), 1)):
                     briefing += " " + fokus_satz
                 self.fokus_satz = fokus_satz if fokus else None
