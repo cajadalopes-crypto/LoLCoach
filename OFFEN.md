@@ -21,16 +21,7 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## Als Naechstes
 
-- Coach-Fenster zu = nichts verloren: Aufnahme und Protokolle laufend sichern, Ansagen
-  laufend speichern, fehlende Reviews beim naechsten Start nachholen (Partie 4 und 5:
-  Fenster geschlossen, keine Ansagen, kein Review).
-- Lane-Guide zu Spielbeginn (Carlos 26.09.): wie spiele ich die Lane - aggressiv,
-  defensiv/farmen, freezen, push+roamen, Proxy -, Level 1-3, erste Wellen, erster Back,
-  Gefahr; gesprochen kurz, auf dem Dashboard als Zettel.
-- Den Bildschirm verstehen (Carlos: "wie ein echter Challenger-Coach jede Situation auf
-  der Karte UND auf meinem Screen bewerten"): die letzten Sekunden des Spielbilds
-  mitfuehren; Fragen per Sprache und Todesanalyse bekommen das echte Bild (Leben der
-  Gegner, wer im Kampf ist, Welle vor dir) - Claude kann Bilder lesen.
+- (leer - neue Wuensche von Carlos kommen hierher)
 
 ## Braucht eine Partie
 
@@ -52,9 +43,21 @@ Notizen und Review durchsehen und nachschaerfen.
 - Fokus im Briefing: kam in Partie 4 als letzter Satz an. Offen: passt er, wirkt er?
 - "Du stehst tief": Partie 4 einmal in 6 min (4:32 - Amumu flashte 5:16 oben auf ihn),
   Partie 3 nachgespielt 15 in 35 min. Offen: stoert die Haeufigkeit in einer ganzen Partie?
-- Dashboard-Minimap mit 10/s (94ef3f5): im Spiel ansehen, ob sie fluessig laeuft.
+- Dashboard-Minimap mit 25/s aus 60 Bildern/s, Icons auf einem Fleck gefaechert: fluessig?
+- Bildschirm fuer Claude (320f58f): Sprachfrage, Todesanalyse, situative Saetze mit Bild -
+  liest Claude Lebensbalken und Kampflage richtig, bleibt es unter der Frist?
+- Lane-Guide + Zettel (442e2fb): kommt er an, hilft er in den ersten Minuten?
+- Verdeckte Icons (700b52c): Pruefstand 80-87 % statt 71-72 % - im Spiel mit Stapeln pruefen.
 
 ## Erledigt
+
+- Bildschirm verstehen: Spielbild je Sekunde (12 s im Speicher) geht mit Sprachfragen,
+  Todesanalyse (6 und 3 s davor) und situativen Saetzen an Claude - 320f58f
+- Lane-Guide zu Spielbeginn (Spielweise, Level 1-3, Wellen, erster Back, Gefahr, danach)
+  gesprochen und als Zettel auf dem Dashboard; Fenster zu = nichts verloren (Protokoll
+  alle 2 s, Ansagen alle 20 s, fehlende Reviews beim Start) - 442e2fb
+- Minimap 60 Bilder/s, halb/ganz verdeckte Icons, Flash nach Zeit bestaetigt - 700b52c;
+  Chat-Pings bis 58 s zu spaet (neueste Zeile unter dem Ausschnitt) - ee82672
 
 - Echte Partie 4 ausgewertet: Chat-Fenster an 46 Bildern geeicht (0.70-0.93), Chat-Ping
   "Tryndamere hat Blitz benutzt" kam trotz OCR-Rauschen an, Timer jetzt ab dem Zeitstempel
