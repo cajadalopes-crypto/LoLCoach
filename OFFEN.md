@@ -69,6 +69,14 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
 
 ## Braucht eine Partie
 
+- LIVE 26.09. 23:05 (Practice Tool, Graves top gegen Sion): erste Live-Verzoegerung gemessen - 'Stimme' (Abgabe
+  bis erster Ton) Median 1,5 s, bis 2,5 s; Ursache: jede zehnte edge-tts-Anfrage haengt 1,4-1,8 s -> zweite Anfrage
+  nach 0,35 s (891f246, 90 % jetzt 0,45 s). Zwei Absturz-/Zustandsfehler behoben: Neustart mitten in der Partie
+  brach an einer gesperrten Aufnahme ab (18d970b); Practice-Tool-Neustart galt als Reconnect - Briefing und Rolle
+  ("Voll-Clear", Smite) aus der ersten Partie blieben (3da384b). Aufnahme 2026-09-26_230520 enthaelt deshalb zwei
+  Partien (74 Schnappschuesse Nasus/Rumble-Partie, dann Sion/Ekko) - fuer Auswertungen die ersten 74 abschneiden.
+  Nach der naechsten Partie: `python werkzeuge/verzoegerung_live.py` - kommt die Stimme jetzt unter 0,5 s?
+
 - NEU 26.09. nachts: (1) jede Ansage protokolliert live ihren ersten Ton und ob sie abgebrochen wurde - nach der
   Partie `python werkzeuge/verzoegerung_live.py` (Warten im Plan vs. Stimme, je Vorrang; das Mass fuer "geisteskrank
   zu spaet"). (2) "Kann ich ihn killen?" / "Soll ich reingehen?" per Sprechtaste antwortet sofort aus dem
