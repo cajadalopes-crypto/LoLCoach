@@ -192,9 +192,12 @@ class Entscheider:
                 or rolle == "MIDDLE"
             if nah:
                 reset = b.gold >= 900 or (b.leben is not None and b.leben < 0.6)
+                seite = ("Mid", "Bot") if ob[0] == "drache" else ("Mid", "Top")
+                prio = komponist._prio_satz(b, tuple(l for l in seite if l != {"TOP": "Top", "BOTTOM": "Bot",
+                                                                                   "UTILITY": "Bot", "MIDDLE": "Mid"}.get(rolle)))
                 satz = (f"{name} in {sek(ob[1])}: " + ("jetzt Welle rein und back, " if reset else "Welle langsam aufbauen, ")
-                        + f"spätestens {uhr(b.zeit + ob[1] - 30)} an der Grube sein.")
-                aus.append(Option("obj_plan", satz, 90, 2 + reset))
+                        + f"spätestens {uhr(b.zeit + ob[1] - 30)} an der Grube sein" + (f" - {prio}." if prio else "."))
+                aus.append(Option("obj_plan", satz, 90, 2 + reset + bool(prio)))
 
         # 6) Freeze/Sicherheit: Jungler wahrscheinlich bei dir, Welle vor deinem Turm, du schiebst nicht
         if lane_phase and j and not j.s.tot and j_bei_mir >= 0.6 and (j.seit is None or j.seit >= 20) \

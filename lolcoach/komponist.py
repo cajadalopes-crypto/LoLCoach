@@ -106,6 +106,22 @@ def _platten(b: Bewertung) -> str:
     return "Platten" if n is None else ("letzte Platte" if n == 1 else f"Platten, noch {n}")
 
 
+def _prio_satz(b: Bewertung, lanes: tuple[str, ...]) -> str:
+    """'Mid und Bot haben Prio' / 'Mid hat Prio, Bot nicht' / '' (unbekannt)."""
+    bekannt = [(l, b.prio.get(l)) for l in lanes if l in b.prio]
+    if not bekannt:
+        return ""
+    ja = [l for l, v in bekannt if v == "ihr"]
+    nein = [l for l, v in bekannt if v == "er"]
+    if ja and not nein:
+        return f"{_namen(ja)} {'hat' if len(ja) == 1 else 'haben'} Prio"
+    if nein and not ja:
+        return f"{_namen(nein)} {'hat' if len(nein) == 1 else 'haben'} keine Prio"
+    if ja and nein:
+        return f"{_namen(ja)} hat Prio, {_namen(nein)} nicht"
+    return ""
+
+
 def _rueckzug(b: Bewertung) -> str:
     if b.leben is not None and b.leben < 0.2:
         return "Hinter den Turm und back"      # mit 5 Prozent "bleib am Turm" hilft nichts (Camille-Partie 13:21)
@@ -334,7 +350,8 @@ def vorwarnung(b: Bewertung, schl: str, rolle: str, seele: bool, meine_seite: bo
     name = OBJ_NAME[schl]
     satz = f"{name} in einer Minute" + (" - er entscheidet die Seele" if seele else "")
     if rolle == "JUNGLE":
-        return satz + ". Prio von Mid und " + ("Bot" if schl == "drache" else "Top") + " prüfen, Sicht an die Grube."
+        seite = "Bot" if schl == "drache" else "Top"
+        return satz + ". " + (_prio_satz(b, ("Mid", seite)) or f"Prio von Mid und {seite} prüfen") + ", Sicht an die Grube."
     tp = b.zweiter if b.zweiter is not None and b.zweiter[0] == "SummonerTeleport" else None
     if tp is None and tp_moeglich:
         tp = ("SummonerTeleport", 0.0)     # Abklingzeit unbekannt (kein HUD): als bereit rechnen

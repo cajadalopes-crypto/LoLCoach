@@ -130,6 +130,7 @@ class Bewertung:
     trade: str = ""             # aus der Spielakte: worauf beim All-in gegen den Lane-Gegner achten
     platten_gegner: int | None = None   # Platten am vordersten stehenden Gegnerturm deiner Lane (Minimap)
     platten_eigen: int | None = None    # ... an deinem vordersten Turm
+    prio: dict[str, str | None] = field(default_factory=dict)   # Lane -> "ihr" / "er" / None (Welle steht)
 
     # --- Ableitungen -------------------------------------------------------------
 
@@ -250,9 +251,9 @@ class Bewertung:
             an = ("" if g.ankunft is None or g.unbekannt
                   else f", fruehestens in {g.ankunft:.0f} s bei dir" if g.ankunft > 0 else ", KANN SCHON BEI DIR SEIN")
             extra = []
-            if g.flash:
+            if g.flash and g.flash >= 1:
                 extra.append(f"ohne Flash noch {int(g.flash)} s")
-            if g.ult:
+            if g.ult and g.ult >= 1:
                 extra.append(f"ohne Ult noch {int(g.ult)} s")
             if g.level_vorsprung:
                 extra.append(f"{abs(g.level_vorsprung)} Level {'ueber' if g.level_vorsprung > 0 else 'unter'} dir")
@@ -269,6 +270,9 @@ class Bewertung:
             wir, die, front, schiebt = self.welle
             z.append(f"Deine Welle: {wir} eigene gegen {die}, Front {front if front is None else round(front, 2)}"
                      + (f", {schiebt} schiebt" if schiebt else ""))
+        if self.prio:
+            z.append("Lane-Prio (Minimap-Wellen): " + ", ".join(
+                f"{l} {'ihr' if v == 'ihr' else 'Gegner' if v == 'er' else 'offen'}" for l, v in self.prio.items()))
         if f := self.fenster():
             z.append("Offene Fenster: " + "; ".join(f"{t} ({int(s)} s)" for s, t in f))
         if self.objective:
@@ -335,6 +339,11 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
             b.jungler = gl
     b.tote_eigene = [s for s in p.team(mein) if s.tot]
 
+    if lb is not None and hasattr(lb, "welle"):
+        for l in ("Top", "Mid", "Bot"):
+            if (w := lb.welle(l, p.zeit)) is not None:
+                b.prio[l] = prio_aus_welle(w, mein)
+
     if lb is not None and (lane := LANE_DER_ROLLE.get(p.ich.rolle)) and (w := lb.welle(lane, p.zeit)):
         blau = mein == BLAU
         wir, die = (w.blau, w.rot) if blau else (w.rot, w.blau)
@@ -357,6 +366,21 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
 
 
 OBEN = ("larven", "herold", "baron")
+
+
+def prio_aus_welle(w, mein: str) -> str | None:
+    """Wer hat Prio in dieser Lane? Die Seite, deren Welle auf der gegnerischen Haelfte steht und
+    nicht kleiner ist - deren Laner kann gehen, der andere muss unter seinem Turm farmen."""
+    if w.front is None:
+        return None
+    blau = mein == BLAU
+    wir, die = (w.blau, w.rot) if blau else (w.rot, w.blau)
+    front = w.front if blau else 1 - w.front
+    if front >= 0.52 and wir >= die:
+        return "ihr"
+    if front <= 0.48 and die >= wir:
+        return "er"
+    return None
 
 
 def naechstes_objective(p: Partie, bis: float = 150) -> tuple[str, float] | None:
