@@ -513,7 +513,10 @@ class Beobachter(threading.Thread):
                                 self._ereignisse += [("sprung", s) for s in spruenge]
                             if protokoll:
                                 protokoll.write(json.dumps({"w": round(start, 3), "s": [
-                                    [s.champion_id, s.team, round(s.x, 4), round(s.y, 4)] for s in sichtungen]}) + "\n")
+                                    # Guete dazu: 0 = unter einem Icon mitgefuehrt (erschlossen), nicht gesehen -
+                                    # ohne sie hielt die Nachpruefung erschlossene Stellen fuer Fehlerkennungen
+                                    [s.champion_id, s.team, round(s.x, 4), round(s.y, 4), round(s.guete, 2)]
+                                    for s in sichtungen]}) + "\n")
                                 if start - getattr(self, "_gesichert", 0.0) >= 2.0:
                                     # Fenster zu = nichts verloren (Partie 4/5: Coach geschlossen, Protokoll-Ende fehlte)
                                     self._gesichert = start
@@ -738,7 +741,8 @@ class SichtAusProtokoll:
                         d = json.loads(zeile)
                     except json.JSONDecodeError:
                         continue
-                    self._s.append((d["w"], [minimap.Sichtung(c, t, x, y, 1.0) for c, t, x, y in d["s"]]))
+                    self._s.append((d["w"], [minimap.Sichtung(c, t, x, y, float(rest[0]) if rest else 1.0)
+                                             for c, t, x, y, *rest in d["s"]]))
             except EOFError:
                 pass
         self._e = []
