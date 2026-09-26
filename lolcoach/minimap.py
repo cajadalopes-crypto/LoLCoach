@@ -25,7 +25,7 @@ import numpy as np
 
 from . import ddragon
 
-STAND = 1                          # erhoehen, wenn sich die Erkennung aendert (verwirft Caches)
+STAND = 2                          # erhoehen, wenn sich die Erkennung aendert (verwirft Caches)
 REFERENZ_HOEHE = 2160
 KARTE = 570 / REFERENZ_HOEHE
 RAND_RECHTS = 27 / REFERENZ_HOEHE
@@ -70,9 +70,45 @@ def _champion_bild(champion_id: str) -> np.ndarray | None:
     return cv2.imread(str(pfad))
 
 
+KREIS_QUELLE = "https://raw.communitydragon.org/latest/game/assets/characters/{c}/hud/"
+
+
+def _kreis_bild(champion_id: str) -> np.ndarray | None:
+    """Das echte Minimap-Icon (Kreis) aus den Spieldateien (CommunityDragon), zwischengespeichert.
+    Partie 7: Zaahen passte mit dem quadratischen Data-Dragon-Portraet nie (hoechstens 0,65, Schwelle 0,85)
+    - mit dem Kreis-Icon 0,93; bei allen anderen gleich gut. Kein Netz / kein Icon: None."""
+    import re
+    import urllib.request
+    pfad = ddragon.ABLAGE / "kreis" / f"{champion_id}.png"
+    fehlt = pfad.with_suffix(".fehlt")
+    if not pfad.exists() and not fehlt.exists():
+        pfad.parent.mkdir(parents=True, exist_ok=True)
+        ordner = KREIS_QUELLE.format(c=champion_id.lower())
+        kopf = {"User-Agent": "Mozilla/5.0 LoLCoach"}
+        try:
+            liste = urllib.request.urlopen(urllib.request.Request(ordner, headers=kopf), timeout=10).read().decode(
+                "utf-8", "replace")
+            namen = set(re.findall(r'href="([^"]+_circle(?:_0)?\.png)"', liste))
+            name = next((n for n in (f"{champion_id.lower()}_circle.png", f"{champion_id.lower()}_circle_0.png")
+                         if n in namen), None)
+            if name is None:
+                fehlt.write_text("kein Kreis-Icon", encoding="utf-8")
+                return None
+            pfad.write_bytes(urllib.request.urlopen(urllib.request.Request(ordner + name, headers=kopf),
+                                                    timeout=10).read())
+        except OSError:
+            return None   # offline: beim naechsten Mal wieder versuchen
+    if not pfad.exists():
+        return None
+    bild = cv2.imread(str(pfad), cv2.IMREAD_UNCHANGED)
+    return bild[..., :3] if bild is not None and bild.ndim == 3 and bild.shape[2] == 4 else bild
+
+
 @lru_cache(maxsize=64)
 def _vorlage(champion_id: str, hoehe: int) -> tuple[np.ndarray, np.ndarray] | None:
-    bild = _champion_bild(champion_id)
+    bild = _kreis_bild(champion_id)
+    if bild is None:
+        bild = _champion_bild(champion_id)   # Rueckfall: quadratisches Portraet
     if bild is None:
         return None
     ganz, d = round(PORTRAET * hoehe), round(AUSSCHNITT * hoehe)

@@ -594,9 +594,14 @@ class SichtAusBildern:
         self._ergebnis = {}
         if cache and cache.exists():
             gespeichert = json.loads(cache.read_text(encoding="utf-8"))
+            alt = {k: [minimap.Sichtung(**s) for s in v] for k, v in gespeichert["bilder"].items()}
             if gespeichert.get("kennung") == kennung:
-                self._ergebnis = {k: [minimap.Sichtung(**s) for s in v] for k, v in gespeichert["bilder"].items()}
-        fehlend = [p for _, p in self.bilder if p.name not in self._ergebnis]
+                self._ergebnis = alt
+            else:
+                # Neuer Erkennungsstand: neu rechnen - aber nur, wo das Bild noch da ist. Sonst gilt das Alte
+                # (vorher: leer gerechnet und die Datei damit ueberschrieben - Testpartie 2 verlor so alles)
+                self._ergebnis = {k: v for k, v in alt.items() if not (self.bilder[0][1].parent / k).exists()}
+        fehlend = [p for _, p in self.bilder if p.name not in self._ergebnis and p.exists()]
         if not fehlend:
             return
 
