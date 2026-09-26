@@ -671,23 +671,23 @@ def lane_tot_plan(b: Bewertung, jungle, sekunden: int, platten: bool) -> str:
             return f"{satz} Du bist {b.ort}: in {sek(weg)} bist du an deiner Welle - geh hin und schieb sie in seinen Turm."
     andere = gefahr(b)
     frisch = [x for x in andere if x.seit is not None and x.seit <= 15]
+    # die Handlung zuerst - ihr Anfang wiederholt sich und klingt vorgewaermt sofort (komponist.anfaenge)
+    tot = satz.rstrip(".")
     if frisch:
         x = frisch[0]
-        return f"{satz} Aber {x.champion} {_wann(x)}: schieb die Welle nur bis zum Turm."
-    saetze = [satz, "Schieb die Welle in seinen Turm" + (" und nimm die Platte mit" if platten else "")]
+        return f"Schieb die Welle nur bis zum Turm: {tot}, aber {x.champion} {_wann(x)}."
+    tun = "Schieb die Welle in seinen Turm" + (" und nimm die Platte mit" if platten else "")
     was, lohnt = kauf(b, b.gold)
     if lohnt:
         # Rueckweg: Welle ~10 s, Recall 8 s, Weg ~27 s - er braucht seine Todeszeit plus ~27 s
-        saetze[-1] += f", dann geh back und {_kauf_verb(was)}" + (
-            f" - du bist zurück, bevor {n} wieder in der Lane ist." if sekunden >= 15 else ".")
-        # der Ward-Plan kommt als eigener, leiser Hinweis (rueckweg_hinweis) - sonst ~300 Zeichen am Stueck
-    else:
-        saetze[-1] += "."
-        if andere:
-            x = andere[0]
-            saetze.append(f"{x.champion} ist seit {sek(x.seit or b.zeit)} nicht zu sehen - sobald {x.champion} "
-                          f"auftaucht, raus.")
-    return " ".join(saetze)
+        # (der Ward-Plan kommt als eigener, leiser Hinweis - rueckweg_hinweis - sonst ~300 Zeichen am Stueck)
+        return (f"{tun}, dann geh back und {_kauf_verb(was)}: {tot}"
+                + (f" - du bist zurück, bevor {n} wieder in der Lane ist." if sekunden >= 15 else "."))
+    text = f"{tun}: {tot}."
+    if andere:
+        x = andere[0]
+        text += f" {x.champion} ist seit {sek(x.seit or b.zeit)} nicht zu sehen - sobald {x.champion} auftaucht, raus."
+    return text
 
 
 def rueckweg_hinweis(b: Bewertung, jungle) -> str:

@@ -618,6 +618,21 @@ def stimme_spielt_ab_dem_ersten_stueck():
         edge_tts.Communicate = alt
 
 
+def satzanfaenge_vorgewaermt():
+    """Die zu Spielbeginn vorgewaermten Anfaenge (komponist.anfaenge) muessen genau die sein, die stimme.teilsaetze
+    von echten Saetzen abtrennt - sonst liegt nichts im Speicher. (27.09.: ein unbelegtes `j` liess die Liste
+    abstuerzen, und `sicher()` haette es live verschluckt.)"""
+    from lolcoach import komponist, stimme
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.ich)
+    anf = {stimme.sprechbar(t) for t in komponist.anfaenge(p)}
+    j = p.jungler("CHAOS" if p.mein_team == "ORDER" else "ORDER")
+    for satz in (f"{j.champion} ist im oberen Fluss, in 14 Sekunden bei dir. Geh zurück.",
+                 "Geh rein, das ist ein Kill: dein Combo macht etwa 810, Heimerdinger hat nur 730 Leben.",
+                 f"{j.champion} hat Flash benutzt, bis 6 45.",
+                 "Nehmt jetzt den Drachen, ihr seid 5 gegen 3: Vi und Sion sind für 13 Sekunden tot."):
+        assert stimme.teilsaetze(stimme.sprechbar(satz))[0] in anf, (stimme.teilsaetze(stimme.sprechbar(satz)), satz)
+
+
 def eigene_position_aus_dem_kamerarahmen():
     """235433, 6:33: Riven liegt unter Poppy (davor unter Twisted Fate), 6,8 s ohne erkanntes Icon. Der
     Kamerarahmen sagt, wo sie ist: 3,6 s spaeter taucht sie bei (0,100, 0,168) wieder auf. Ein frei geschwenkter
@@ -897,6 +912,7 @@ if __name__ == "__main__":
                  faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht,
                  satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
                  konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler, eigene_position_aus_dem_kamerarahmen,
+                 satzanfaenge_vorgewaermt,
                  sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")

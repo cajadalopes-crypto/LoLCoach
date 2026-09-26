@@ -329,7 +329,7 @@ def teilsaetze(text: str) -> list[str]:
     teile = [t.strip() for t in re.split(r"(?<=[.!?:])\s+", text) if t.strip()]
     if teile:
         k = teile[0].find(", ")
-        if k >= 8 and len(teile[0]) - k > 15:
+        if k >= 8 and len(teile[0]) - k > 6:      # auch "Heimerdinger hat Flash benutzt," / "bis 6 45."
             teile[0:1] = [teile[0][:k + 1], teile[0][k + 2:]]
     return teile or [text]
 

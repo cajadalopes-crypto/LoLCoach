@@ -91,10 +91,27 @@ def anfaenge(p) -> list[str]:
     if not p.ich:
         return []
     feind = gegenteam(p.mein_team)
+    j = p.jungler(feind)
     aus = ["Geh rein,", "das ist ein Kill:", "Noch nicht rein,", "Trade hart,", "Du stehst tief,", "Recall-Fenster:",
            "Nimm keinen Kampf an,", "Drückt jetzt die Türme,", "Kein Gank möglich,"]
     aus += [f"Nehmt jetzt {a}," for a in OBJ_AKK.values()] + [f"Ping {a} für dein Team," for a in OBJ_AKK.values()]
-    if (j := p.jungler(feind)) is not None:
+    aus += ["Schieb die Welle in seinen Turm und geh dann back,", "Schieb die nächste Welle in den Turm und geh dann back,",
+            "Schieb die Welle rein und geh sofort back,", "Geh jetzt back,", "Farm erst seine Welle ab und geh dann back,",
+            "Schieb noch die Kanonenwelle in seinen Turm und geh dann back,", "Schieb die Welle nur bis zum Turm,",
+            "Schieb die Welle in seinen Turm:", "Schieb die Welle in seinen Turm und nimm die Platte mit:",
+            "Schieb die Welle in seinen Turm und nimm die Platte mit,", "Schieb die Welle nur bis zum Turm:",
+            "Vom Turm erwischt:", "Geht zusammen rein,", "Geh sofort hin,"]
+    aus += [f"{n} kommt in einer Minute." for n in ("Der Drache", "Der Herold", "Baron Nashor")]
+    aus += ["Die Larven kommen in einer Minute.", "Drache in einer Minute."]
+    aus += [f"Minute {m}:" for m in (5, 10, 15, 20)]
+    aus += [f"Dein Team fängt {a} an," for a in OBJ_AKK.values()]
+    for s in p.gegner():
+        aus += [f"{s.champion} hat kein Flash,", f"{s.champion} hat Flash wieder - das Fenster ist zu.",
+                f"{s.champion} kommt auf dich zu,"]
+    if j is not None:
+        aus += [f"Gegen {j.champion}:", f"{j.champion} ist tot,", f"Gank von {j.champion}:"]
+        aus += [f"{j.champion} ist {o}." for o in ORTE]
+    if j is not None:
         aus += [f"{j.champion} ist {o}," for o in ORTE]
     lane = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}.get(p.ich.rolle)
     for turm in ([f"{lane}-Tier-1", f"{lane}-Tier-2"] if lane else []) + (["Mid-Tier-1"] if lane != "Mid" else []):
@@ -102,6 +119,8 @@ def anfaenge(p) -> list[str]:
     aus += [f"{s.champion} hat Flash benutzt," for s in p.gegner()]
     if (g := p.gegenueber()) is not None:
         aus += [f"{g.champion} ist {o}," for o in ORTE[:6]]
+        aus += [f"Gegen {g.champion}:", f"{g.champion} fehlt seit 8 Sekunden in deiner Lane,",
+                f"{g.champion} fehlt seit 8 Sekunden in deiner Lane."]
     return aus
 
 
@@ -445,12 +464,13 @@ def anlauf(b: Bewertung, kommen: list[tuple[GegnerLage, str]]) -> str:
     erster, woher = kommen[0]
     an = min((g.ankunft for g, _ in kommen if g.ankunft is not None), default=None)
     viele = len(kommen) > 1
-    wann = (f" und {'sind' if viele else 'ist'} in {sek(an)} da") if an is not None and an >= 2 else ""
+    wann = f", in {sek(an)} bei dir" if an is not None and an >= 2 else ""
     # der Kampf entscheidet: die Kommenden plus wer sonst rechtzeitig da sein kann
     gruppe = [g for g, _ in kommen] + [x for x in gefahr(b) if x.s.name not in {g.s.name for g, _ in kommen}]
     r = b.kraft_gegen(gruppe)
     wer = _namen([g.champion for g, _ in kommen])
-    kommt_satz = f"{wer} {'kommen' if viele else 'kommt'}{'' if viele else ' ' + woher} auf dich zu{wann}"
+    # "Vex kommt auf dich zu, aus seinem oberen Jungle, in 5 Sekunden bei dir" - der Anfang je Gegner vorgewaermt
+    kommt_satz = f"{wer} {'kommen' if viele else 'kommt'} auf dich zu{'' if viele else ', ' + woher}{wann}"
     if r >= KLAR_STAERKER and (b.leben is None or b.leben >= 0.4):
         return f"{kommt_satz}. Nimm den Kampf an: {b.ueberlegen_satz(gruppe).split(', ')[0]}."
     if r >= STAERKER and (b.leben is None or b.leben >= 0.5) and not viele:
@@ -490,22 +510,23 @@ def leben(b: Bewertung, prozent: int) -> str:
 
 
 def lane_tot(b: Bewertung, champion: str, sekunden: int, platten: bool) -> str:
+    # die Handlung zuerst ("Schieb die Welle in seinen Turm," wiederholt sich und klingt vorgewaermt sofort)
     satz = f"{champion} ist {sekunden} Sekunden tot"
     andere = gefahr(b)
     frisch = [x for x in andere if x.seit is not None and x.seit <= 15]
     if frisch:   # eben erst nah gesehen: der kommt wirklich
-        return satz + f", aber {frisch[0].champion} {_wann(frisch[0])}. Schieb die Welle nur bis zum Turm."
+        return f"Schieb die Welle nur bis zum Turm, {satz} - aber {frisch[0].champion} {_wann(frisch[0])}."
     if andere:   # nur Worst Case (lange nicht gesehen): Platten ja, aber mit Blick auf den Fluss
         x = andere[0]
-        return (satz + ". Schieb die Welle rein" + (f" und hol dir {_platten(b)}" if platten else "")
-                + f" - aber {x.champion} ist seit {sek(x.seit or b.zeit)} nicht zu sehen, also raus, sobald "
+        return ("Schieb die Welle rein" + (f" und hol dir {_platten(b)}" if platten else "")
+                + f", {satz} - aber {x.champion} ist seit {sek(x.seit or b.zeit)} nicht zu sehen, also raus, sobald "
                   f"{x.champion} auftaucht.")
     tun = "Schieb die Welle in seinen Turm" + (f" und hol dir {_platten(b)}" if platten else "")
     if ob := _objective_erreichbar(b):
         tun += f", dann geh {ZUM[ob[0]]}"
     elif b.gold >= RECALL_GOLD and not back_eben(b):
-        tun += f", dann geh back, du hast {b.gold // 100 * 100} Gold"
-    return f"{satz}. {tun}."
+        tun += f", dann geh back - du hast {b.gold // 100 * 100} Gold"
+    return f"{tun}: {satz}."
 
 
 def level(b: Bewertung, stufe: int, ich_zuerst: bool, g: GegnerLage) -> str:
@@ -534,10 +555,10 @@ def recall(b: Bewertung, grund: str) -> str:
     if grund == "welle":
         satz = "Recall-Fenster: deine Welle läuft in seinen Turm" + (f", und {gold} Gold {kauf}" if kauf else "")
     elif grund == "viel":
-        satz = f"{gold} Gold in der Tasche, mehr als ein ganzes Item - schieb die Welle rein und geh sofort back"
+        satz = f"Schieb die Welle rein und geh sofort back, du trägst {gold} Gold - mehr als ein ganzes Item"
     else:
-        satz = f"Du hast {gold} Gold" + (f", das {kauf}" if kauf else "") + \
-               ". Schieb die nächste Welle in den Turm und geh dann back"
+        satz = f"Schieb die nächste Welle in den Turm und geh dann back, du hast {gold} Gold" + \
+               (f", das {kauf}" if kauf else "")
     if (andere := gefahr(b)) and grund != "welle":
         # die Handlung zuerst: "geh erst zurueck" stand nach 130 Zeichen (Nachlauf 194524, 8:52)
         return (f"Geh erst zurück zu {b.turm_name} und recall dort: {andere[0].champion} {_wann(andere[0])}. "

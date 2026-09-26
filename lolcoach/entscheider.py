@@ -214,26 +214,26 @@ class Entscheider:
         if braucht_back and not gefahr:
             ob = b.objective
             kauf = b.kauf.satz() if b.kauf is not None and b.kauf.kaufen else ""
-            grund = (f"Du hast {b.gold // 100 * 100} Gold" + (f", das {kauf}" if kauf else "") if b.gold >= 1100
-                     else f"Du hast nur {int(b.leben * 100)} Prozent Leben")
+            # die Handlung zuerst, mit einem Anfang, der sich wiederholt (vorgewaermt: komponist.anfaenge)
+            grund = (f"du hast {b.gold // 100 * 100} Gold" + (f", das {kauf}" if kauf else "") if b.gold >= 1100
+                     else f"du hast nur {int(b.leben * 100)} Prozent Leben")
             if schiebt_er and welle[2] is not None and welle[2] <= 0.45:
-                satz = (f"{grund}, aber seine Welle mit {welle[1]} Vasallen läuft auf deinen Turm. Farm sie erst ab und "
-                        f"geh dann back - sonst frisst der Turm dein Gold.")
+                satz = (f"Farm erst seine Welle ab und geh dann back, {grund} - seine {welle[1]} Vasallen laufen auf "
+                        f"deinen Turm, und der frisst sonst dein Gold.")
                 aus.append(Option("back_warten", satz, 70, 3))
             elif b.leben is not None and b.leben < 0.35:
                 # zweite Riven-Partie 1:36: mit 23 Prozent "schieb erst die Welle" - so stirbt man beim Schieben
-                aus.append(Option("back_plan", f"{grund}. Geh jetzt back - mit so wenig Leben schiebst du keine "
-                                               f"Welle mehr.", 85, 2))
+                aus.append(Option("back_plan", f"Geh jetzt back, {grund} - damit schiebst du keine Welle mehr.", 85, 2))
             elif schiebt_ihr:
-                satz = f"{grund}. Schieb die Welle in seinen Turm und geh dann back"
+                satz = f"Schieb die Welle in seinen Turm und geh dann back, {grund}"
                 if ob and 45 <= ob[1] <= 150:
                     satz += f" - so bist du rechtzeitig zurück für {OBJ_AKK[ob[0]]} um {uhr(b.zeit + ob[1])}."
                 else:
                     satz += "."
                 aus.append(Option("back_plan", satz, 80 + b.gold / 50, 2 + bool(ob)))
             elif (k := naechste_kanone(b.zeit, b.ich.rolle)) and k - b.zeit <= 45:
-                aus.append(Option("back_kanone", f"{grund}. Die Kanonenwelle kommt um {uhr(k)} - schieb die noch in "
-                                                 f"seinen Turm und geh dann back.", 75 + b.gold / 50, 3))
+                aus.append(Option("back_kanone", f"Schieb noch die Kanonenwelle in seinen Turm und geh dann back, "
+                                                 f"{grund}: sie kommt um {uhr(k)}.", 75 + b.gold / 50, 3))
 
         # 4b) Knapp vor einem Bauteil: noch eine Welle mitnehmen, dann mit dem Bauteil zurueck
         k = b.kauf
