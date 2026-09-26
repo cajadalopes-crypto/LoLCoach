@@ -12,12 +12,13 @@ behaupten, was hier steht.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from . import ansicht, aufzeichnung, lage, minimap, regeln
+from . import ansicht, aufzeichnung, ddragon, lage, minimap, regeln
 from .ansicht import uhr
-from .welle import LANE_DER_ROLLE
+from .welle import LANE_DER_ROLLE, _projektion
 from .zustand import DRACHE_DE, Partie, gegenteam, partie as baue_partie, struktur
 
 KAMPF_LUECKE = 12.0      # Kills mit hoechstens so viel Abstand gehoeren zu einem Kampf
@@ -111,6 +112,7 @@ def baue(pfad: str | Path, ich: str | None = None) -> Verlauf:
     momente += _lane(partien)
     momente += _verschenkt(partien)
     momente += _cs_loecher(partien, sekunden)
+    momente += _recalls(partien, sekunden)
     momente.sort(key=lambda m: m.von)
 
     stamm = pfad.name.removesuffix(".jsonl.gz")
@@ -444,6 +446,99 @@ def _cs_loecher(partien: list[Partie], sekunden: list[Sekunde]) -> list[Moment]:
         dauer = bis.zeit - von.zeit
         aus.append(Moment("cs_loch", von.zeit, bis.zeit, f"Farm-Loch: {cs} CS in {uhr(dauer)}", fakten,
                           gewicht=2 + (1 if dauer >= 300 else 0) + (1 if not objectives and tk == 0 else 0)))
+    return aus
+
+
+_WELLE = re.compile(r"eure (\d+) gegen seine (\d+), (.+)")
+_BEI_DIR = ("auf deiner Haelfte", "an deinem Turm", "tief bei deinem Turm", "in der Mitte der Lane")
+_BEI_IHM = ("an seinem Turm", "tief bei seinem Turm")
+
+
+def _recalls(partien: list[Partie], sekunden: list[Sekunde]) -> list[Moment]:
+    """Jeder Besuch im Laden (ohne Kaeufe nach einem Tod): wann weg, mit wie viel Gold und
+    Leben, wo die eigene Welle stand, was gekauft wurde, wie lange weg aus der Lane - und
+    was der Lane-Gegner in der Zeit farmte. Die Welle entscheidet ueber gut oder schlecht:
+    laeuft sie in seinen Turm, verlierst du nichts; laeuft sie auf dich zu, sterben deine
+    Vasallen an deinem Turm."""
+    if not partien or partien[0].ich.rolle == "JUNGLE":
+        return []
+    lane = LANE_DER_ROLLE.get(partien[0].ich.rolle)
+    it = ddragon.items()
+    kaeufe = [i for i in range(1, len(partien)) if not partien[i].ich.tot and partien[i].gold is not None
+              and partien[i - 1].gold is not None and partien[i - 1].gold - partien[i].gold >= 250]
+    besuche: list[list[int]] = []
+    for i in kaeufe:
+        if besuche and partien[i].zeit - partien[besuche[-1][-1]].zeit <= 25:
+            besuche[-1].append(i)
+        else:
+            besuche.append([i])
+    tot_zeiten = [p.zeit for p in partien if p.ich.tot]
+
+    def eigene(s):
+        pos = s.positionen.get(partien[0].ich.name)
+        return (pos[0], pos[1]) if pos and pos[2] < 5 else None
+
+    aus = []
+    for besuch in besuche:
+        a, b = besuch[0], besuch[-1]
+        kauf = partien[a].zeit
+        if any(kauf - 45 <= t <= kauf for t in tot_zeiten) or kauf < 90:
+            continue                     # Einkauf nach dem Tod oder beim Start
+        vorher, nachher = partien[a - 1], partien[b]
+        # zuletzt FRISCH ausserhalb der Basis gesehen (die Minimap haelt das Icon noch ein paar
+        # Sekunden am Recall-Ort), dann zurueck bis zum Beginn des Stillstands = Recall-Beginn
+        # (gemessen an Partie 3, 4:01: 229-238 still im Fluss, 245 in der Basis)
+        frisch = [s for s in sekunden if kauf - 45 <= s.zeit < kauf and (pos := s.positionen.get(vorher.ich.name))
+                  and pos[2] < 2 and "Basis" not in minimap.ort(pos[0], pos[1])]
+        weg = frisch[-1] if frisch else None
+        if weg:
+            ox, oy = eigene(weg)
+            for s in reversed(frisch[:-1]):
+                if (o := eigene(s)) and abs(o[0] - ox) + abs(o[1] - oy) < 0.01 and weg.zeit - s.zeit <= 12:
+                    weg = s
+                else:
+                    break
+        start = weg.zeit if weg else None
+        neu = []
+        rest = list(vorher.ich.items)
+        for item in nachher.ich.items:
+            if item in rest:
+                rest.remove(item)
+            elif (e := it.get(item)) and "Consumable" not in e.get("tags", []) and "Trinket" not in e.get("tags", []):
+                neu.append(e["name"])
+        fakten = [f"Recall {'um ' + uhr(start) if start else 'kurz vor ' + uhr(kauf)} mit {int(vorher.gold)} Gold"
+                  + (f" und {int(weg.leben * 100)} % Leben" if weg and weg.leben is not None else "")]
+        if neu:
+            fakten.append("Gekauft: " + ", ".join(neu))
+        urteil, titel, gewicht = None, "Recall", 1
+        welle = (weg or _sekunde(sekunden, kauf - 10) or Sekunde(0, None, None, 0, (0, 0), {}, [])).wellen.get(lane or "")
+        if welle:
+            fakten.append(f"Deine Welle beim Recall: {welle}")
+            if m := _WELLE.match(welle):
+                wir, die, ort = int(m.group(1)), int(m.group(2)), m.group(3)
+                if die >= wir + 2 and ort in _BEI_DIR:
+                    urteil, titel, gewicht = "schlecht", "Recall, waehrend die Welle auf dich zulief", 3
+                elif wir >= die and ort in _BEI_IHM:
+                    urteil, titel = "gut", "Sauberer Recall - Welle lief in seinen Turm"
+        if urteil is None and vorher.gold < 700 and weg and weg.leben is not None and weg.leben >= 0.5:
+            titel, gewicht = f"Recall mit nur {int(vorher.gold)} Gold", 2
+        if lane and start:
+            # zurueck = wieder auf Hoehe des eigenen Aussenturms (die Lane beginnt in der Basis)
+            blau = vorher.mein_team == "ORDER"
+            zurueck = next((s for s in sekunden if kauf < s.zeit <= kauf + 150 and (o := eigene(s))
+                            and (pr := _projektion(*o)) and pr[0] == lane
+                            and (pr[1] if blau else 1 - pr[1]) >= 0.3), None)
+            if zurueck:
+                fakten.append(f"Wieder in der Lane um {uhr(zurueck.zeit)} ({int(zurueck.zeit - start)} s weg)")
+                g0 = next((p.gegenueber() for p in partien if p.zeit >= start), None)
+                g1 = next((p.gegenueber() for p in partien if p.zeit >= zurueck.zeit), None)
+                if g0 and g1 and g1.champion == g0.champion:
+                    fakten.append(f"{g1.champion} farmte in der Zeit {g1.cs - g0.cs} CS")
+        for schl, name in (("drache", "Drache"), ("baron", "Baron"), ("herold", "Herold"), ("larven", "Larven")):
+            n = vorher.naechster_spawn(schl)
+            if n is not None and kauf <= n <= kauf + 60:
+                fakten.append(f"{name} spawnte {int(n - kauf)} s nach dem Einkauf")
+        aus.append(Moment("recall", start or kauf - 10, kauf, titel, fakten, gewicht=gewicht))
     return aus
 
 

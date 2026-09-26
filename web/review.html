@@ -92,7 +92,7 @@
   </div>
   <div class="kasten" id="zusammenfassung" hidden></div>
   <div class="kasten"><h2>Zeitleiste · Itemgold-Vorsprung · Momente</h2><svg id="zeitleiste"></svg>
-    <div class="klein">Rot: deine Tode · Orange: Kämpfe · Lila: Objectives · Gelb: gehortetes Gold · Blau: Farm-Loch · Grau: Gold-Schwung · Klick springt hin</div></div>
+    <div class="klein">Rot: deine Tode · Orange: Kämpfe · Lila: Objectives · Gelb: gehortetes Gold · Blau: Farm-Loch · Türkis: Recall · Grau: Gold-Schwung · Klick springt hin</div></div>
   <div class="mitte">
     <div class="kasten">
       <div class="karte"><canvas id="karte" width="900" height="900"></canvas></div>
@@ -120,7 +120,7 @@ const uhr = s => { s = Math.max(0, Math.round(s)); return `${Math.floor(s / 60)}
 const bilder = {};
 const bild = src => { if (!bilder[src]) { const i = new Image(); i.onload = neuZeichnen; i.src = src; bilder[src] = i; } return bilder[src]; };
 const karte = bild('/karte.png');
-const FARBE = { tod: '#ff5a5a', kampf: '#ff8a3d', objective: '#b48cff', horten: '#ffb020', schwung: '#6c7a8c', lane: '#3fd08a', cs_loch: '#4aa3ff' };
+const FARBE = { tod: '#ff5a5a', kampf: '#ff8a3d', objective: '#b48cff', horten: '#ffb020', schwung: '#6c7a8c', lane: '#3fd08a', cs_loch: '#4aa3ff', recall: '#2bb3a3' };
 let P = null, stamm = null, t = 0, spielt = false, letzterTakt = 0;
 
 async function json(url, opt) { const r = await fetch(url, opt); return r.json(); }
@@ -242,7 +242,7 @@ function zeitleiste() {
   let inhalt = `<line x1="0" x2="${B}" y1="${mid}" y2="${mid}" stroke="#223040"/>`
     + `<path d="${pfad}" fill="none" stroke="#4aa3ff" stroke-width="1.5" opacity=".8"/>`;
   for (let m = 5; m * 60 < P.dauer; m += 5) inhalt += `<text x="${x(m * 60)}" y="${H - 2}" fill="#8b9bb0" font-size="11" text-anchor="middle">${m}</text>`;
-  const reihe = { tod: 8, kampf: 20, objective: 32, horten: 44, schwung: 44, lane: 32, cs_loch: 56 };
+  const reihe = { tod: 8, kampf: 20, objective: 32, horten: 44, schwung: 44, lane: 32, cs_loch: 56, recall: 56 };
   for (const m of P.momente) {
     const x0 = x(m.von), x1 = Math.max(x0 + 3, x(m.bis));
     inhalt += `<rect x="${x0}" y="${reihe[m.art] ?? 44}" width="${x1 - x0}" height="8" rx="2" fill="${FARBE[m.art] || '#888'}" opacity="${m.art === 'schwung' ? .5 : .9}"><title>${uhr(m.von)} ${esc(m.titel)}</title></rect>`;

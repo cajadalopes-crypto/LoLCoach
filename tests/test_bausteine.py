@@ -89,6 +89,16 @@ def profil_ueber_partien():
         assert (ordner / profil.CACHE).exists()
 
 
+def recalls_im_verlauf():
+    """Recall-Beginn = Beginn des Stillstands vor dem Teleport, zurueck = am eigenen Aussenturm
+    (vorher: 8-12 s 'weg', weil ein veraltetes Icon und der Lane-Anfang in der Basis zaehlten)."""
+    from lolcoach import verlauf
+    v = verlauf.baue(HIER / "botspiel_riven_2.jsonl.gz")
+    r = [m for m in v.momente if m.art == "recall"]
+    assert [verlauf.uhr(m.von) for m in r] == ["6:53", "10:01", "12:50"], [m.von for m in r]
+    assert "Wieder in der Lane um 7:23 (30 s weg)" in r[0].fakten and "Gekauft: Caulfields Kriegshammer" in r[0].fakten
+
+
 def zauber_im_briefing():
     p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.spieler)
     quelle = gehirn.akte_quelle(p, fokus="Frueher kaufen.")
@@ -100,6 +110,6 @@ def zauber_im_briefing():
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
-                 zauber_im_briefing):
+                 zauber_im_briefing, recalls_im_verlauf):
         test()
         print(f"{test.__name__} OK")
