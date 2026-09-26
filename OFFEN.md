@@ -9,10 +9,11 @@
 > dem laufenden Gespraech braucht oder Dateien anderer beruehrt: selbst machen.
 > Ein laufender Agent wird fortgesetzt (SendMessage), nicht neu gestartet.
 
-Arbeitsweise: Jeder Wunsch aus Carlos' Rueckmeldungen (Chat, Sprachnotizen im
-Spiel, `aufnahmen/*_notizen.md`) landet hier. Abgearbeitet wird von oben nach
-unten, allein oder mit Agenten nach obigem Grundsatz. Erledigtes wandert mit
-Commit nach unten. Was eine echte Partie braucht, steht unter "Braucht Partie".
+Lebendes Dokument (Carlos: "flexibel, im Flow"): jeder Wunsch aus Carlos'
+Rueckmeldungen (Chat, Sprachnotizen im Spiel, `aufnahmen/*_notizen.md`) landet
+sofort hier. Kein Zeitdruck - sauber und funktionsfaehig vor schnell.
+Abgearbeitet wird von oben nach unten, allein oder mit Agenten nach obigem
+Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
@@ -21,27 +22,21 @@ Commit nach unten. Was eine echte Partie braucht, steht unter "Braucht Partie".
 
 ## Als Naechstes
 
-- **Das Gehirn (hoechste Prioritaet nach dem Lexikon)**: "Es ist dein Gehirn -
-  ein absoluter Top-Challenger. Extrem wichtig: das Wissen jederzeit flexibel
-  nutzen." `lolcoach/gehirn.py`:
-  - Spielakte zu Spielbeginn: aus Lexikon + Steckbriefen der zehn Champions
-    verdichtet Claude einmal, was in DIESER Partie zaehlt (Matchup, Spikes,
-    Cooldowns, Win-Conditions, Gefahren) - ~1500 Tokens, liegt im Speicher.
-  - Bei jeder Claude-Anfrage (Frage, situative Anweisung, Briefing, Bericht):
-    Spielakte + passende Lexikon-Abschnitte (nach Stichworten der Lage/Frage)
-    + Live-Lage (Positionen, Timer, Leben, Gold, Items).
-  - Regeln duerfen Fakten daraus nutzen (Ult-Cooldowns, Spikes, Blinks).
-- **Situative Anweisungen statt Standardsaetze**: Regel entscheidet WANN,
-  Claude formuliert WAS aus der echten Lage (Position, Leben, Gold, Welle,
-  Jungler, Timer) - fuer alles mit Vorlauf. "Sehr viel Individualitaet."
-- **Briefing zu Spielbeginn** (Win-Condition, Matchup, Build gegen Lane und Team,
-  Plan) und nach der Lane-Phase ("was ist ab jetzt mein Job").
+- **Gehirn weiter ausbauen**: Bericht (Post-Game-Analyse) mit Spielakte und
+  Lexikon; Regeln nutzen Fakten aus dem Gehirn (Ult-Cooldowns der Gegner,
+  Spikes: "Urgot hat Level 6 - seine Ult richtet unter 25 % hin"); weitere
+  Anlaesse situativ machen (Recall-Fenster, Lane-Gegner tot, Jungler gesehen),
+  sobald die erste Partie zeigt, wie lange Claude live braucht.
+- **Spielakte schneller**: 35 s gemessen (Quelle 17 000 Zeichen). Kuerzere Quelle,
+  oder schon in der Champion-Auswahl/im Ladebildschirm anfangen (Client-API
+  kennt die Champions frueher), damit das Briefing vor der ersten Welle (0:30) kommt.
 - **Leben der Mitspieler aus dem HUD** (Portraets ueber der Minimap): kein
   "Baron jetzt", wenn die eigenen Leute kein Leben haben (Partie 3, 25:27).
 - **Anlauf-Warnungen Mid-/Lategame**: "Vex kommt von unten auf dich zu" beim
   Splitpushen (Richtung aus dem Verfolger).
 - **Ward-Vorschlaege**: "du laeufst gerade am Tri-Bush vorbei, setz ein Ward",
-  passend zu Position, Laufweg, Spielstand (bestaetigt 26.09.).
+  passend zu Position, Laufweg, Spielstand (bestaetigt 26.09.). Faelight-Punkte
+  (26.1) aus dem Lexikon beruecksichtigen.
 - **Wellen-Zustand** aus den Vasallen-Punkten der Minimap: wie genau die Welle
   vorbereiten (freezen, slow push, crashen).
 - **Kampfanalyse im Bericht**: welcher Kampf hat das Spiel gedreht, warum.
@@ -50,6 +45,8 @@ Commit nach unten. Was eine echte Partie braucht, steht unter "Braucht Partie".
 - **Item-Namen absichern**: Claude-Antworten gegen die Ladenliste pruefen
   ("Schwarzer Fleischer" statt "Schwarzes Beil" kam trotz Liste vor).
 - **Bericht mit Minimap**: Jungler-Pfad, wo war der Jungler bei jedem Tod.
+- **Offene Fakten aus dem Lexikon klaeren**: Inhibitor-Respawn (5:00 in
+  objektive.toml, Wiki-Auszug 3:00), TP-Abklingzeit mit Quest (300/390/420 s).
 
 ## Braucht eine Partie
 
@@ -57,23 +54,20 @@ Commit nach unten. Was eine echte Partie braucht, steht unter "Braucht Partie".
   neuer Text erscheint) und Chat-Bereich + Leser daran eichen (`lage.CHAT`).
 - Flash-Erkennung an echten 15-Bilder/s-Daten pruefen (`sichtungen.jsonl.gz`
   hat jede Position; Fehlalarme durch Dashes/Verdeckung zaehlen).
+- Briefing, Spielakte, situative Vorwarnungen live: rechtzeitig? passend?
 - Neue Stimme (Killian), Unterbrechen/Wiederholen, Notizen im Spiel pruefen.
 - Nachspielen aus `sichtungen.jsonl.gz` (15/s statt 1/s) - Sprung-Erkennung
   offline wiederholbar machen, sobald die erste Partie so ein Protokoll hat.
 
 ## Erledigt
 
-- Gehirn (`gehirn.py`) + Stratege (`stratege.py`): Spielakte zu Spielbeginn,
-  gesprochenes Briefing, Midgame-Plan nach der Lane-Phase, situative
-  Vorwarnungen (Claude formuliert aus der Lage, sonst Standardsatz nach 12 s),
-  Fragen mit Spielakte + Lexikon. Platten bis zum Turmfall (26.1). - siehe Commit "Gehirn"
+- Gehirn (`gehirn.py`) + Stratege (`stratege.py`): Spielakte, Briefing,
+  Midgame-Plan, situative Vorwarnungen (Claude aus der Lage, sonst Standardsatz
+  nach 12 s), Fragen mit Spielakte + Lexikon; Platten bis zum Turmfall - 5d59197
 - Grundlagen-Lexikon `wissen/lexikon/grundlagen.md` + `saison2026.md` - 32934eb
-
-- Minimap 15 Bilder/s (dxcam, Verfolger im Umkreis 6 ms/Bild), Flash an
-  Spruengen, Chat lesen (Windows-OCR), Zauber-Timer mit Ansagen/Antworten/
-  Dashboard, Bilder nur 20 min - siehe Commit "Flash-Timer"
+- Minimap 15 Bilder/s, Flash an Spruengen, Chat lesen (Windows-OCR),
+  Zauber-Timer mit Ansagen/Antworten/Dashboard, Bilder nur 20 min - 7bee474
 - Wissensbasis Stufe 1: `lolcoach/champions.py` (173 Champions) - bf43408
-
 - Stimme Killian (Carlos' Wahl) - 202f354; neuronale Stimmen - 9afaec7
 - Unterbrechen ohne Verlust, Notizen, Teleport-Quest, Team-Zustand, Basis,
   volles Inventar, wenig Leben, Mid-Lane/Fluss - 32954ac
