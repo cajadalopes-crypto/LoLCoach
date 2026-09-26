@@ -166,12 +166,9 @@ def aus_chat(zeile: str, p) -> list[tuple[object, str, float | None]]:
     import difflib
     rest = re.sub(r"^\s*\[?\d{1,2}\s?[:.]\s?\d{2}\]?\s*", "", zeile)   # Zeitstempel vorn (Chat-Einstellung)
     nachricht = rest.split(":", 1)[1] if ":" in rest else rest
-    # Der Spiel-Ping "Rumble — Blitz" (Strich, kein "benutzt", keine Uhrzeit) sagt nicht, dass der Zauber
-    # verbraucht ist - nur "hat Blitz benutzt" (binnen 15 s gesehen) oder eine Rueckkehrzeit sagen das
-    # (Partie 6, 1:31: Flash-Timer fuer Rumble, der nie geflasht hatte).
-    if (re.search(r"[—–]|\w\s*-\s+\w", nachricht) and not re.search(r"benutz|used", nachricht.lower())
-            and not _ZEIT.search(nachricht)):
-        return []
+    # "Wukong — Blitz" (Strich) ist Carlos' Art, einen verbrauchten Zauber zu pingen - er zaehlt wie
+    # "hat Blitz benutzt" (Partie 7: alle Pings so; kurz ignoriert, reagierte der Coach "extrem spaet").
+    # Der Rumble-Fehler aus Partie 6 waren wieder eingeblendete ALTE Zeilen (chat_zeit), nicht das Format.
     woerter = re.findall(r"[a-zäöüß']+", nachricht.lower())
     woerterbuch = _woerter()
     zauber = [woerterbuch[w] for w in woerter if w in woerterbuch and (w != "r" or len(woerter) <= 3)]

@@ -143,11 +143,10 @@ def eigene_tasten():
 
 
 def chat_pings():
-    """Partie 6: nur eindeutige Pings setzen Timer - der Strich-Ping "Rumble — Blitz" nicht."""
+    """Partie 7: Carlos pingt verbrauchte Zauber als "Wukong — Blitz" - das zaehlt, genau wie "hat benutzt"."""
     p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.spieler)
     g = p.gegenueber().champion                    # Shen
-    assert zauber.aus_chat(f"01:31 Camille (Camille): {g} — Blitz", p) == []
-    assert zauber.aus_chat(f"01:31 Camille (Camille): {g}- Blitz", p) == []
+    assert [z for _, z, _ in zauber.aus_chat(f"02:38 Riven (Riven): {g} — Blitz", p)] == ["SummonerFlash"]
     assert [z for _, z, _ in zauber.aus_chat(f"02:13 Camille (Camille): {g} hat Blitz benutzt", p)] == ["SummonerFlash"]
     assert [z for _, z, _ in zauber.aus_chat(f"02:13 Lee Sin (Lee Sin): {g.lower()} flash", p)] == ["SummonerFlash"]
 
