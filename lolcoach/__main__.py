@@ -21,7 +21,7 @@ from . import ansicht, aufzeichnung, bericht, lage, liveapi, llm, regeln, sprech
 
 
 def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, sicht=None,
-              anzeige=None, alle: int = 5, nur_coach: bool = False) -> sprechplan.Sprechplan:
+              anzeigen=(), alle: int = 5, nur_coach: bool = False) -> sprechplan.Sprechplan:
     """Gemeinsamer Kern fuer Live und Aufnahme.
 
     `quelle` liefert (Wanduhr, Rohdaten); `sicht` hat `zwischen(bis, champions)`
@@ -54,7 +54,7 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
         plan.neu(werk.pruefe(p, lagebild))
         if a := plan.takt(p.zeit):
             print(f"{ansicht.uhr(p.zeit)}  >> {a.text}", flush=True)
-        if anzeige:
+        for anzeige in anzeigen:
             anzeige.aktualisiere(p, lagebild, plan.gesagt)
         if n % alle == 0 and not nur_coach:
             print(ansicht.uebersicht(p))
@@ -109,7 +109,14 @@ def _ansagen_speichern(pfad, plan: sprechplan.Sprechplan) -> None:
 
 def live(args) -> None:
     sprecher = stimme.Stumm() if args.stumm else stimme.Stimme()
-    anzeige = None if args.ohne_dashboard else _dashboard()
+    anzeigen = [] if args.ohne_dashboard else [d for d in [_dashboard()] if d]
+    if not args.ohne_sprache:
+        from . import sprache
+        try:
+            anzeigen.append(sprache.Gespraech(sprecher, args.ptt, args.modell_frage))
+            print(f"Fragen an den Coach: Taste '{args.ptt}' gedrueckt halten und sprechen")
+        except Exception as e:
+            print(f"Sprachsteuerung aus ({type(e).__name__}: {e})")
     print("Warte auf eine Partie (Strg+C beendet) ...")
     while True:
         if not liveapi.laeuft(args.basis):
@@ -128,7 +135,7 @@ def live(args) -> None:
         try:
             plan = _verfolge(_live_quelle(args.basis), args.ich, takt=1.0, sprecher=sprecher,
                              schreiber=schreiber, sicht=_LiveSicht(beobachter) if beobachter else None,
-                             anzeige=anzeige)
+                             anzeigen=anzeigen)
         finally:
             if beobachter:
                 beobachter.halt()
@@ -172,9 +179,49 @@ def abspielen(args) -> None:
         print(f"Minimap: {len(bilder)} Bilder")
     plan = _verfolge(aufzeichnung.lies_mit_zeit(pfad), args.ich, takt=args.takt, sprecher=sprecher,
                      sicht=lage.SichtAusBildern(bilder) if bilder else None,
-                     anzeige=_dashboard() if args.dashboard else None,
+                     anzeigen=[d for d in [_dashboard() if args.dashboard else None] if d],
                      alle=args.alle, nur_coach=args.nur_coach)
     print(f"\n{len(plan.gesagt)} Ansagen.")
+
+
+def frage_an_aufnahme(args) -> None:
+    """Eine Frage wie per Mikrofon, aber als Text und gegen eine Aufnahme (mit Minimap)."""
+    from . import antworten
+    pfad = args.datei or aufzeichnung.neueste()
+    bilder = aufzeichnung.bilder(pfad)
+    sicht, lagebild, p = (lage.SichtAusBildern(bilder) if bilder else None), lage.Lagebild(), None
+    for w, d in aufzeichnung.lies_mit_zeit(pfad):
+        p = zustand.partie(d, args.ich)
+        if sicht:
+            for wb, s in sicht.zwischen(w, lage.champions(p)):
+                lagebild.neu(p.zeit - (w - wb), s, p)
+        if p.zeit >= args.minute * 60:
+            break
+    print(f"{ansicht.uhr(p.zeit)}  Du: {args.frage}")
+    t = time.monotonic()
+    antwort = antworten.sofort(args.frage, p, lagebild if sicht else None)
+    quelle = "sofort"
+    if antwort is None:
+        antwort, quelle = antworten.mit_claude(args.frage, p, lagebild if sicht else None), "Claude"
+    print(f"       Coach ({quelle}, {time.monotonic() - t:.2f} s): {antwort}")
+
+
+def mikrotest(args) -> None:
+    from . import sprache
+    sprecher = stimme.Stimme()
+    erkenner = sprache.Erkenner()
+
+    def gehoert(audio):
+        t = time.monotonic()
+        text = erkenner.text(audio)
+        print(f"  erkannt ({time.monotonic() - t:.2f} s, {erkenner.beschreibung}): {text}", flush=True)
+        sprecher.sage(f"Verstanden: {text}" if text else "Nichts verstanden.", dringend=True)
+
+    ptt = sprache.PushToTalk(args.ptt, gehoert, beim_druecken=sprecher.verstumme)
+    print(f"Mikrofon: {ptt.geraet} bei {ptt.geraet_rate} Hz. Taste '{args.ptt}' halten, sprechen, loslassen. Strg+C beendet.")
+    ptt.start()
+    while True:
+        time.sleep(1)
 
 
 def status(args) -> None:
@@ -206,6 +253,9 @@ def main() -> None:
     lv.add_argument("--ohne-bilder", action="store_true", help="keine Minimap (weder Erkennung noch Bilder)")
     lv.add_argument("--stumm", action="store_true")
     lv.add_argument("--ohne-dashboard", action="store_true")
+    lv.add_argument("--ohne-sprache", action="store_true", help="keine Fragen per Mikrofon")
+    lv.add_argument("--ptt", default="maus5", help="Push-to-Talk-Taste (maus4, maus5, f9, ...)")
+    lv.add_argument("--modell-frage", default="haiku", help="Claude-Modell fuer freie Fragen")
     ab = unter.add_parser("abspielen")
     ab.add_argument("datei", nargs="?")
     ab.add_argument("--takt", type=float, default=0.0, help="Sekunden je Schnappschuss (0 = so schnell es geht)")
@@ -217,15 +267,21 @@ def main() -> None:
     be = unter.add_parser("bericht")
     be.add_argument("datei", nargs="?")
     be.add_argument("--ohne-llm", action="store_true")
+    fr = unter.add_parser("frage", help="eine Frage als Text an eine Aufnahme stellen")
+    fr.add_argument("frage")
+    fr.add_argument("datei", nargs="?")
+    fr.add_argument("--minute", type=float, default=10.0)
+    mt = unter.add_parser("mikrotest", help="Push-to-Talk und Spracherkennung ohne Partie pruefen")
+    mt.add_argument("--ptt", default="maus5")
     unter.add_parser("status")
     lm = unter.add_parser("llm")
     lm.add_argument("frage")
     lm.add_argument("--modell", default="haiku")
     args = ap.parse_args()
     if args.befehl is None:
-        args.befehl, args.ohne_aufnahme, args.ohne_bilder, args.stumm, args.ohne_dashboard = "live", False, False, False, False
+        args = ap.parse_args(sys.argv[1:] + ["live"])  # ohne Befehl: live mit allen Voreinstellungen
     {"live": live, "abspielen": abspielen, "bericht": bericht_befehl, "status": status,
-     "llm": frage_llm}[args.befehl](args)
+     "llm": frage_llm, "frage": frage_an_aufnahme, "mikrotest": mikrotest}[args.befehl](args)
 
 
 if __name__ == "__main__":
