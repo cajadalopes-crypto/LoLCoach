@@ -200,6 +200,15 @@ class Stimme:
         self._vorrang.put((text, None))
         self._wieder_und_frei()
 
+    def antworte_teil(self, text: str) -> None:
+        """Ein Satz einer gestreamten Antwort: sofort vor alles andere - der unterbrochene Satz kommt erst
+        mit `antworte_ende` wieder (sonst stuende er zwischen zwei Saetzen der Antwort)."""
+        self._vorrang.put((text, None))
+        self._frei.set()
+
+    def antworte_ende(self) -> None:
+        self._wieder_und_frei()
+
     def freigeben(self) -> None:
         self._wieder_und_frei()
 
@@ -216,6 +225,12 @@ class Stimme:
 
 class Stumm:
     def sage(self, text: str, dringend: bool = False) -> None:
+        pass
+
+    def antworte_teil(self, text: str) -> None:
+        pass
+
+    def antworte_ende(self) -> None:
         pass
 
     def pausiere(self) -> None:

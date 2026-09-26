@@ -87,3 +87,79 @@ def frage(prompt: str, system: str | None = None, modell: str = "sonnet", timeou
             text += "  ->  einmal im Terminal `claude` starten und /login ausfuehren"
         raise LLMFehler(text)
     return antwort.get("result", "")
+
+
+_SATZENDE = __import__("re").compile(r"(?<=[.!?])\s+(?=[A-ZÄÖÜ\"„])")
+
+
+def saetze(text: str) -> tuple[list[str], str]:
+    """(fertige Saetze, Rest). Abkuerzungen wie "z. B." trennen keinen Satz."""
+    import re
+    teile = _SATZENDE.split(text)
+    fertig, rest = [], teile[-1]
+    stueck = ""
+    for t in teile[:-1]:
+        stueck = f"{stueck} {t}".strip() if stueck else t.strip()
+        if re.search(r"(^|\s)\w{1,2}\.$", stueck):
+            continue          # endet auf "z." oder "B." - gehoert zum naechsten Stueck
+        if stueck:
+            fertig.append(stueck)
+        stueck = ""
+    if stueck:
+        rest = f"{stueck} {rest}"
+    return fertig, rest
+
+
+def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = "sonnet", timeout: float = 60,
+                aufwand: str | None = None, bilder: list[bytes] | None = None) -> str:
+    """Wie `frage`, aber gestreamt: jeder fertige Satz geht sofort an `bei_satz(satz)` - der Coach kann den
+    ersten Satz sprechen, waehrend der Rest noch entsteht (gemessen 26.09.: erster Satz nach 2,7-3,1 s,
+    ganze Antwort nach 5,1-5,2 s). Gibt die ganze Antwort zurueck."""
+    import threading
+    befehl = [_programm(), "-p", "--model", modell, "--tools", "", "--no-session-persistence",
+              "--strict-mcp-config", "--disable-slash-commands", "--output-format", "stream-json", "--verbose",
+              "--include-partial-messages"]
+    if bilder:
+        import base64
+        inhalt = [{"type": "image", "source": {"type": "base64", "media_type": "image/jpeg",
+                                                "data": base64.b64encode(b).decode()}} for b in bilder]
+        eingabe = json.dumps({"type": "user", "message": {"role": "user", "content": inhalt + [
+            {"type": "text", "text": prompt}]}}) + "\n"
+        befehl += ["--input-format", "stream-json"]
+    else:
+        eingabe = prompt
+    if system:
+        befehl += ["--system-prompt", system]
+    if aufwand:
+        befehl += ["--effort", aufwand]
+    lauf = subprocess.Popen(befehl, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            text=True, encoding="utf-8", cwd=tempfile.gettempdir())
+    uhr = threading.Timer(timeout, lauf.kill)
+    uhr.start()
+    try:
+        lauf.stdin.write(eingabe)
+        lauf.stdin.close()
+        puffer, ergebnis, fehler = "", None, None
+        for zeile in lauf.stdout:
+            e = _json_oder_nichts(zeile)
+            if not e:
+                continue
+            if e.get("type") == "stream_event":
+                ev = e.get("event", {})
+                if ev.get("type") == "content_block_delta" and ev.get("delta", {}).get("type") == "text_delta":
+                    puffer += ev["delta"]["text"]
+                    fertige, puffer = saetze(puffer)
+                    for satz in fertige:
+                        bei_satz(satz)
+            elif e.get("type") == "result":
+                ergebnis = e
+        lauf.wait(timeout=5)
+    finally:
+        uhr.cancel()
+    if ergebnis is None:
+        raise LLMFehler(f"keine Antwort (Rueckgabe {lauf.returncode})")
+    if ergebnis.get("is_error"):
+        raise LLMFehler(ergebnis.get("result", ""))
+    if puffer.strip():
+        bei_satz(puffer.strip())
+    return ergebnis.get("result", "")

@@ -310,7 +310,7 @@ def laden_liste() -> str:
 
 
 def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", letzte=(), gehirn=None,
-               bilder: list[bytes] | None = None) -> str:
+               bilder: list[bytes] | None = None, bei_satz=None) -> str:
     """`gehirn`: wenn da, bekommt Claude Spielakte + passende Lexikon-Abschnitte dazu.
     `bilder`: der Spielbildschirm im Moment der Frage (JPEG)."""
     zusatz = ""
@@ -325,6 +325,10 @@ def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", let
     inhalt = gehirn.kontext(frage, p, lage) if gehirn else f"Lage:\n{lage}"
     try:
         from .itemnamen import absichern
+        if bei_satz is not None:   # Satz fuer Satz sprechen, sobald er fertig ist
+            return absichern(llm.frage_strom(f"{inhalt}\n\nFrage des Spielers: {frage}",
+                                             lambda s: bei_satz(absichern(s)[0]), system=SYSTEM, modell=modell,
+                                             timeout=40, aufwand="low", bilder=bilder).strip())[0]
         return absichern(llm.frage(f"{inhalt}\n\nFrage des Spielers: {frage}",
                                    system=SYSTEM, modell=modell, timeout=40, aufwand="low", bilder=bilder).strip())[0]
     except llm.LLMFehler as e:

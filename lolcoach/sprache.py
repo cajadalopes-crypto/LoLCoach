@@ -227,8 +227,33 @@ class Gespraech:
                 letzte = [a for a in (self.gesagt or []) if a.schluessel != "antwort"][-3:]
                 b = getattr(self, "beobachter", None)
                 bild = b.bildschirm() if b is not None else None   # der Bildschirm, als er fragte
+                gesprochen = []
+
+                def satz_fertig(satz: str) -> None:
+                    # Satz fuer Satz sprechen (2 s frueher als die ganze Antwort) - ausser der Coach will die Kamera
+                    # oder erkennt eine Rueckmeldung ("Notiert"): das entscheidet der erste Satz
+                    if not gesprochen and (satz.upper().startswith("KAMERA") or
+                                           satz.strip().rstrip(".").lower() == "notiert"):
+                        gesprochen.append(None)
+                        return
+                    if gesprochen and gesprochen[0] is None:
+                        return
+                    gesprochen.append(satz)
+                    if hasattr(self.sprecher, "antworte_teil"):
+                        self.sprecher.antworte_teil(satz)
+
+                strom = hasattr(self.sprecher, "antworte_teil")
                 antwort = self.antworten.mit_claude(text, self.p, self.lagebild, self.modell, letzte,
-                                                    getattr(self, "gehirn", None), [bild] if bild else None)
+                                                    getattr(self, "gehirn", None), [bild] if bild else None,
+                                                    bei_satz=satz_fertig if strom else None)
+                if strom and gesprochen and gesprochen[0] is not None:
+                    self.sprecher.antworte_ende()
+                    print(f"  Coach: {antwort}", flush=True)
+                    if self.gesagt is not None:
+                        from .regeln import WICHTIG, Ansage
+                        self.gesagt.append(Ansage(f"„{text}“ – {antwort}", WICHTIG, "antwort", zeit=p.zeit,
+                                                  gesprochen=p.zeit))
+                    return
                 if antwort.upper().startswith("KAMERA:") and b is not None:
                     # Der Coach braucht einen Blick: "Schwenk kurz zum Drachen" - dann mit dem neuen Bild
                     # (Carlos: "er kann mir sagen, dass ich die Kamera verschieben soll - er ist ja mein Coach")
