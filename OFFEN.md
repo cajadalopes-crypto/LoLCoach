@@ -71,7 +71,9 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
 
 - NEU 27.09. ~00:50 (Coach NEU STARTEN): Stimme gebaut auf Tempo - spielt ab dem ersten MP3-Stueck (e4b360d), der
   naechste wartende Satz wird vorab synthetisiert, Ausgabe ueber WASAPI statt MME (e35083c, 60 statt 182 ms Puffer).
-  Stumm gemessen: erster Ton Median 0,19 s kalt (live vorher 0,63 s), 0,01 s vorbereitet. LIVE PRUEFEN: klingt die
+  Stumm gemessen (Coach-Weg, stimmprobe): erster Ton Median 0,10 s mit vorgewaermten Satzanfaengen (1b7fbf1; live
+  vorher 0,63 s); neuer Text ~0,45 s beim Dienst. Eigene Position aus dem Kamerarahmen, wenn das Icon verdeckt ist
+  (5004a96), Verbuendete unter Icons 6 s (1bfb9cd). LIVE PRUEFEN: klingt die
   Stimme auf beiden Ohren, ohne Knacken/Aussetzer, und nicht abgeschnitten am Satzende? Sonst `_Neural._wasapi = False`
   setzen (MME) und melden. Danach `python werkzeuge/verzoegerung_live.py`.
   Satzlogik aus dem Nachlauf aller drei Partien (83e8923): kein zweites "geh zurueck" 12 s nach dem ersten (ausser
