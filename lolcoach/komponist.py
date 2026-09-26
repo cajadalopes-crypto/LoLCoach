@@ -560,7 +560,17 @@ def kein_flash_nah(b: Bewertung, g: GegnerLage, rest: float) -> str:
                            else f": geh rein, sobald {g.champion} in Reichweite ist.")
         if wert <= -1:
             return satz + (f". Aber {v}, also nur kurze Trades." if v else ". Trotzdem nur kurze Trades.")
-    return satz + " - nutz das Fenster."
+        return satz + " - nutz das Fenster."
+    # nicht der Lane-Gegner (Nachlauf 194524, 10:50: "Vi hat kein Flash - nutz das Fenster" - welches?): der Kampf
+    # gegen genau ihn, gerechnet
+    r = b.kraft_gegen([g])
+    grund = b.ueberlegen_satz([g]).split(", ")[0]
+    if r >= STAERKER and (b.leben is None or b.leben >= 0.5):
+        return satz + f" - kommt {g.champion}, nimm den Kampf an, entkommen kann {g.champion} nicht" \
+            + (f": {grund}." if grund else ".")
+    if r <= 1 / STAERKER:
+        return satz + ", ist aber stärker als du - auch ohne Flash kein Kampf."
+    return satz + f" - {g.champion} kann dir ohne Flash schlechter folgen."
 
 
 def tief(b: Bewertung, namen: str, sind: str, sekunden: int, sie: str, fehlende: list | None = None) -> str:
