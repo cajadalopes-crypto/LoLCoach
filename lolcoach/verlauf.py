@@ -17,6 +17,7 @@ from pathlib import Path
 
 from . import ansicht, aufzeichnung, lage, minimap, regeln
 from .ansicht import uhr
+from .welle import LANE_DER_ROLLE
 from .zustand import DRACHE_DE, Partie, gegenteam, partie as baue_partie, struktur
 
 KAMPF_LUECKE = 12.0      # Kills mit hoechstens so viel Abstand gehoeren zu einem Kampf
@@ -109,6 +110,7 @@ def baue(pfad: str | Path, ich: str | None = None) -> Verlauf:
     momente += _schwuenge(sekunden)
     momente += _lane(partien)
     momente += _verschenkt(partien)
+    momente += _cs_loecher(partien, sekunden)
     momente.sort(key=lambda m: m.von)
 
     stamm = pfad.name.removesuffix(".jsonl.gz")
@@ -374,6 +376,74 @@ def _lane(partien: list[Partie]) -> list[Moment]:
             f"Itemgold: du {p.ich.item_gold}, {g.champion} {g.item_gold}",
             f"KDA: du {p.ich.kills}/{p.ich.tode}/{p.ich.assists}, {g.champion} {g.kills}/{g.tode}/{g.assists}"],
             gewicht=1))
+    return aus
+
+
+CS_FENSTER = 180.0        # Sekunden je Pruefstueck
+CS_LANE_MIN = 5.0         # CS je lebendiger Minute, darunter ist es ein Loch (Lane-Phase bis 14:00)
+CS_SPAET_MIN = 4.0        # danach (Wellen kommen seltener an, Kaempfe zaehlen mit)
+
+
+def _cs_loecher(partien: list[Partie], sekunden: list[Sekunde]) -> list[Moment]:
+    """Farm-Loecher: 3-Minuten-Stuecke, in denen der Spieler lebte, aber kaum farmte -
+    der haeufigste stille Goldverlust unter Diamond (niemand stirbt, und trotzdem fehlen
+    500 Gold). Mit dem, was er stattdessen tat: wo er war, ob gekaempft wurde, die Welle."""
+    if not partien or partien[0].ich.rolle in ("JUNGLE", "UTILITY"):
+        return []
+    lane = LANE_DER_ROLLE.get(partien[0].ich.rolle)
+    loecher: list[tuple[int, int]] = []          # Indizes in `partien` (von, bis)
+    i = 0
+    while i < len(partien):
+        p = partien[i]
+        if p.zeit < 180:                         # vor 3:00 zaehlt die erste Welle noch nicht
+            i += 1
+            continue
+        j = next((k for k in range(i, len(partien)) if partien[k].zeit >= p.zeit + CS_FENSTER), None)
+        if j is None:
+            break
+        lebend = sum(1 for q in partien[i:j] if not q.ich.tot) * CS_FENSTER / max(1, j - i)
+        rate = (partien[j].ich.cs - p.ich.cs) / (lebend / 60) if lebend >= 120 else None
+        grenze = CS_LANE_MIN if p.zeit < 840 else CS_SPAET_MIN
+        if rate is not None and rate < grenze:
+            if loecher and i <= loecher[-1][1]:
+                loecher[-1] = (loecher[-1][0], j)
+            else:
+                loecher.append((i, j))
+        i = next((k for k in range(i, len(partien)) if partien[k].zeit >= p.zeit + 60), len(partien))
+    aus = []
+    for a, b in loecher:
+        von, bis = partien[a], partien[b]
+        lebend = sum(1 for q in partien[a:b] if not q.ich.tot) * (bis.zeit - von.zeit) / max(1, b - a)
+        cs = bis.ich.cs - von.ich.cs
+        vorher = von.ich.cs / (von.zeit / 60) if von.zeit else 0
+        fakten = [f"{cs} CS in {lebend / 60:.1f} lebendigen Minuten ({cs / (lebend / 60):.1f} je Minute; "
+                  f"bis dahin {vorher:.1f} je Minute)"]
+        orte: dict[str, int] = {}
+        for s in sekunden:
+            if von.zeit <= s.zeit <= bis.zeit and (pos := s.positionen.get(von.ich.name)) and pos[2] < 5:
+                o = {"oben": "auf der Top-Lane", "unten": "auf der Bot-Lane"}.get(o := minimap.ort(pos[0], pos[1], von.mein_team), o)
+                orte[o] = orte.get(o, 0) + 1
+        if orte:
+            gesamt = sum(orte.values())
+            fakten.append("Wo du warst: " + ", ".join(f"{o} {n * 100 // gesamt} %" for o, n in
+                                                      sorted(orte.items(), key=lambda x: -x[1])[:4]))
+        tk = (bis.ich.kills + bis.ich.assists) - (von.ich.kills + von.ich.assists)
+        fakten.append(f"Kills/Assists in der Zeit: {tk}, Tode: {bis.ich.tode - von.ich.tode}")
+        wir, die = von.mein_team, gegenteam(von.mein_team)
+        objectives = [e for e in bis.ereignisse if von.zeit <= e.zeit <= bis.zeit and e.art in
+                      ("TurretKilled", "DragonKill", "BaronKill", "HeraldKill", "HordeKill", "InhibKilled")]
+        if objectives:
+            fakten.append("Objectives in der Zeit: " + ", ".join(
+                f"{'ihr' if e.team == wir else 'Gegner'}: {_objective_name(e)}" for e in objectives))
+        if lane:
+            for s, wann in ((_sekunde(sekunden, von.zeit), "zu Beginn"), (_sekunde(sekunden, bis.zeit), "am Ende")):
+                if s and s.wellen.get(lane):
+                    fakten.append(f"deine Lane-Welle {wann}: {s.wellen[lane]}")
+        if (g := bis.gegenueber()) and (g0 := von.gegenueber()):
+            fakten.append(f"{g.champion} farmte in derselben Zeit {g.cs - g0.cs} CS")
+        dauer = bis.zeit - von.zeit
+        aus.append(Moment("cs_loch", von.zeit, bis.zeit, f"Farm-Loch: {cs} CS in {uhr(dauer)}", fakten,
+                          gewicht=2 + (1 if dauer >= 300 else 0) + (1 if not objectives and tk == 0 else 0)))
     return aus
 
 

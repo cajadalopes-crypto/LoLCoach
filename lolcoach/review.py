@@ -27,7 +27,8 @@ Regeln, ohne Ausnahme:
   gewesen waere - so konkret, dass er es naechstes Mal tun kann.
 - Was die Daten nicht zeigen (Wellenstand, Cooldowns ohne Ping, Leben der Gegner), nennst du als
   unbekannt, statt es zu erfinden. Lieber eine vorsichtige Aussage als eine falsche.
-- Priorisiere nach Auswirkung auf die Partie (Tode mit Folgen, verlorene Objectives, gehortetes Gold).
+- Priorisiere nach Auswirkung auf die Partie (Tode mit Folgen, verlorene Objectives, gehortetes Gold,
+  Farm-Loecher ohne Gegenwert - ein Farm-Loch mit Kills oder Objectives in der Zeit kann richtig gewesen sein).
   Hoechstens 5 Lektionen. Auch 1-2 echte Staerken, damit er weiss, was er beibehalten soll.
 - Bot-Partie: sag knapp, was davon gegen echte Gegner gilt.
 - Kennst du BISHERIGE PARTIEN: hat der Spieler den Fokus der letzten Partie umgesetzt (Beleg aus DIESER
