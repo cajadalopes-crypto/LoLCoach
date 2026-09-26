@@ -20,6 +20,7 @@ from . import antworten, gehirn
 from .regeln import WICHTIG, Ansage
 
 VEREDELN_HOECHSTENS = 12.0   # Sekunden: laenger wartet der Standardsatz nicht
+SYSTEM_JE_SCHLUESSEL = {"tod": gehirn.TOD_SYSTEM}
 
 
 class Stratege:
@@ -70,17 +71,21 @@ class Stratege:
 
     def veredle(self, a: Ansage) -> None:
         """Ersetzt den Standardsatz durch eine situative Anweisung. Gibt nach
-        `VEREDELN_HOECHSTENS` Sekunden auf und laesst den Standardsatz sprechen."""
+        `a.frist` (sonst `VEREDELN_HOECHSTENS`) Sekunden auf und laesst den Standardsatz
+        sprechen. Bringt die Ansage eigene Fakten mit (`a.kontext`, z. B. die Todesanalyse),
+        stehen die statt der Lage im Auftrag."""
         p, lb = self.p, self.lagebild
         if p is None or not p.ich:
             self.plan.einwerfen(a)
             return
         erledigt = threading.Event()
+        frist = a.frist or VEREDELN_HOECHSTENS
+        system = SYSTEM_JE_SCHLUESSEL.get(a.schluessel, gehirn.SITUATIV_SYSTEM)
 
         def lauf():
             try:
-                text = self.gehirn.frage(gehirn.SITUATIV_SYSTEM, f"{a.text} (Standardsatz der Regel)", p,
-                                         antworten.lage_text(p, lb), timeout=VEREDELN_HOECHSTENS + 5)
+                lage = ("FAKTEN:\n" + a.kontext) if a.kontext else antworten.lage_text(p, lb)
+                text = self.gehirn.frage(system, f"{a.text} (Standardsatz der Regel)", p, lage, timeout=frist + 5)
             except Exception:
                 text = None
             if not erledigt.is_set():
@@ -91,7 +96,7 @@ class Stratege:
                 self.plan.einwerfen(a)
 
         def notbremse():
-            time.sleep(VEREDELN_HOECHSTENS)
+            time.sleep(frist)
             if not erledigt.is_set():
                 erledigt.set()
                 self.plan.einwerfen(a)

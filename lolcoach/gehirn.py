@@ -170,6 +170,17 @@ SITUATIV_SYSTEM = (
     "kommentiere nie die Daten oder was fehlt ('nicht erwaehnt', 'laut Lage'), sprich nur zum Spieler.")
 
 
+TOD_SYSTEM = (
+    "Du bist ein Challenger-Coach und sprichst live ueber Headset. Dein Schueler ist gerade gestorben und "
+    "wartet auf den Wiedereinstieg. Sag ihm in hoechstens zwei kurzen gesprochenen Saetzen (zusammen unter 35 "
+    "Woertern; Deutsch, kein Markdown): den eigentlichen Grund - nur aus den FAKTEN, nichts dazuerfinden; steht "
+    "dort, dass die Minimap nicht gelesen wurde, sag nichts ueber Sicht oder wer zu sehen war - und "
+    "was er in genau so einer Lage naechstes Mal tut. Kein Trost, kein Vorwurf, keine Allgemeinplaetze. Zeigen "
+    "die Fakten keinen Fehler (fairer Tausch, Objective dafuer bekommen), sag das in einem Satz. Hat der Tod mit "
+    "seinem FOKUS HEUTE zu tun, sag es. Spawnt gleich ein Objective, das er verpasst, sag, was das Team jetzt "
+    "tun sollte. Kommentiere nie die Daten, sprich nur zum Spieler.")
+
+
 def kuerzen(text: str, saetze: int) -> str:
     """Hoechstens `saetze` Saetze - im Spiel zaehlt jede Sekunde Sprechzeit
     (Generalprobe 26.09.: ein "3-4 Saetze"-Plan kam mit acht Saetzen)."""

@@ -145,6 +145,12 @@ solo_nachteil = "Solo gegen {champion} verloren - er war {grund}. Erst nachziehe
 solo = "Solo gegen {champion} verloren. Denk an seine Cooldowns - trade, wenn seine wichtigste Fähigkeit weg ist."
 turm = "Vom Turm erwischt. Unter seinen Turm nur mit genug Leben - und wenn deine Vasallen die Schüsse nehmen."
 
+[todesanalyse]
+# Ab so viel Todeszeit sagt der Coach statt des Standardsatzes den Grund (Claude, ~10 s).
+ab_sekunden = 14
+puffer = 3          # so viele Sekunden vor dem Wiedereinstieg muss der Satz fertig sein
+hoechstens = 25     # laenger wartet der Standardsatz nie
+
 [rollenquest]
 # Saison 2026: Die Top-Quest gibt Teleport (auch wer es nicht genommen hat: "Entfesselter
 # Teleport"), passiv spaetestens bei 13:35, mit guter Leistung frueher. Die Live-API zeigt

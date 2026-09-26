@@ -44,9 +44,18 @@ Notizen und Review durchsehen und nachschaerfen.
 - Stimme Killian, Unterbrechen/Wiederholen, Notizen, Fragen im Spiel pruefen.
 - Review der ersten Partie mit vollem Protokoll (15/s, Leiste, Chat, Wellen) ansehen:
   stimmen die Momente, sind die Lektionen belegt und hilfreich?
+- Todesanalyse live: kommt der Satz vor dem Wiedereinstieg, trifft er den Grund? An
+  Partie 3 nachgespielt: 5 von 6 Toden mit konkretem Grund in ~6 s.
+- Fokus im Briefing: kommt der Satz an, passt er zur Partie?
 
 ## Erledigt
 
+- Todesanalyse live (`todesanalyse.py`): Rueckblick der letzten 45 s (Leben, Gold, Ort,
+  Welle, wer zu sehen war); beim Tod mit >= 14 s Todeszeit sagt Claude statt des
+  Standardsatzes den Grund und was naechstes Mal zu tun ist; ohne Minimap-Daten keine
+  Aussage ueber Sicht
+- Review: Farm-Loecher (lebendig, kaum gefarmt) - 41b864d; Fortschritt ueber alle
+  Partien als Startansicht der Review-Seite - 844ba7a
 - Gedaechtnis ueber Partien (`profil.py`): Kennzahlen je Partie (CS bei 10:00, Tode vor
   14:00, Gold gehortet, ...), der Fokus aus dem letzten Review geht als eigener Satz ins
   Briefing und in die Spielakte, das Review benennt Wiederholungen und ob der Fokus

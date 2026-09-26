@@ -27,6 +27,8 @@ class Ansage:
     sperre: float = 60.0   # so lange kommt derselbe Schluessel nicht wieder
     gesprochen: float | None = None  # Spielzeit, zu der der Sprechplan sie sagte
     situativ: bool = False  # hat Vorlauf: der Stratege darf sie aus der Lage neu formulieren
+    kontext: str = ""       # Fakten fuer den Strategen statt der Lage (z. B. Todesanalyse)
+    frist: float | None = None  # so lange darf der Stratege formulieren (sonst VEREDELN_HOECHSTENS)
 
 
 def _objective_name(schl: str, p: Partie) -> str:
@@ -69,6 +71,8 @@ class Regelwerk:
         self._weg_seit: dict[str, float | None] = {}  # Spielername -> seit wann unsichtbar (lebendig)
         self._tot_bei: dict[str, float] = {}           # Spielername -> zuletzt tot gesehen (Spielzeit)
         self.ult_warnungen: dict[str, str] = {}        # Champion -> ein Satz, was seine Ult bedeutet (Spielakte)
+        from .todesanalyse import Rueckblick
+        self.rueckblick = Rueckblick()                 # die letzten 45 s - fuer die Todesanalyse
 
     def pruefe(self, p: Partie, lage=None) -> list[Ansage]:
         """`lage`: Lagebild aus der Minimap (lage.Lagebild) oder None ohne Bild."""
@@ -77,6 +81,8 @@ class Regelwerk:
         if not p.ich or v is None or not v.ich or p.zeit < v.zeit:
             return []
         ansagen: list[Ansage] = []
+        if not p.ich.tot:
+            self.rueckblick.merke(p, lage)
         for regel in (self._vorwarnung, self._zahlen, self._jungler_tot, self._lane_tot,
                       self._level, self._items, self._gold, self._cs, self._tod,
                       self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf,
@@ -562,4 +568,13 @@ class Regelwerk:
                     else cfg["solo"].format(champion=t.champion))
         else:
             return
-        yield Ansage(text, WICHTIG, "tod", gueltig=15, sperre=5)
+        # Lange genug tot: der Stratege sagt statt des Standardsatzes den eigentlichen Grund
+        # (todesanalyse.py) - Zeit dafuer ist die Todeszeit selbst.
+        cfg_a = self.m["todesanalyse"]
+        if p.ich.respawn >= cfg_a["ab_sekunden"]:
+            from .todesanalyse import fakten
+            yield Ansage(text, WICHTIG, "tod", gueltig=p.ich.respawn, sperre=5, situativ=True,
+                         kontext=fakten(p, kill, self.rueckblick, self.lage),
+                         frist=min(p.ich.respawn - cfg_a["puffer"], cfg_a["hoechstens"]))
+        else:
+            yield Ansage(text, WICHTIG, "tod", gueltig=15, sperre=5)
