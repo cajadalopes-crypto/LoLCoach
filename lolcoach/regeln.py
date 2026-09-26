@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from . import bewertung, ddragon, komponist, wissen
+from . import bewertung, ddragon, denker, komponist, wissen
 from .entscheider import Entscheider
 from .zustand import Partie, Spieler, gegenteam, struktur
 
@@ -91,6 +91,11 @@ class Regelwerk:
         self._zauber_gesagt: dict[str, float] = {}      # Spielername -> zuletzt ein Verbrauch gemeldet
         self.entscheider = Entscheider()               # der Plan zwischen den Ereignissen (entscheider.py)
         self._gewarnt_vor: dict[str, float] = {}       # Spielername -> zuletzt eine Gefahr-Warnung zu ihm
+        self._fenster_box = [-1e9]                     # zuletzt ein Kampf-Urteil gegen den Lane-Gegner (denker.py) -
+                                                       # geteilt mit komponist.chance ueber die Bewertung
+        self._fenster_art: str | None = None           # ... welches
+        self._fenster_vorher: tuple[str, set] | None = None   # Urteil und Faktoren des letzten Takts
+        self._brunnen_kauf: float | None = None        # Spielzeit des letzten Einkaufs im Brunnen
 
     def pruefe(self, p: Partie, lage=None) -> list[Ansage]:
         """`lage`: Lagebild aus der Minimap (lage.Lagebild) oder None ohne Bild."""
@@ -110,6 +115,7 @@ class Regelwerk:
                 self.b = bewertung.bewerte(p, lage)
                 if self.b is not None:
                     self.b.trade = self.trade_hinweis
+                    self.b.fenster_box = self._fenster_box
                     if not p.ich.tot:
                         self._b_lebend = self.b      # die letzte Lage vor einem Tod - fuer die Todesanalyse
             except Exception as e:   # die Bewertung darf keine Regel mitreissen - dann gelten die alten Saetze
@@ -120,7 +126,7 @@ class Regelwerk:
                       self._level, self._items, self._gold, self._cs, self._tod,
                       self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf,
                       self._ward, self._recall_fenster, self._tief_ohne_sicht, self._kontrollauge,
-                      self._objective_start, self._plan, self._wiedereinstieg):
+                      self._objective_start, self._fenster, self._plan, self._wiedereinstieg):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 ansagen.append(a)
@@ -233,7 +239,8 @@ class Regelwerk:
                 text = komponist.vorwarnung(self.b, schl, p.ich.rolle, abschnitt is self.m["vorwarnung"].get("drache_seele"),
                                             p.ich.rolle in self.m["seiten"][schl], tp)
             if text:
-                yield Ansage(text, WICHTIG, f"vorwarnung:{schl}", gueltig=25, situativ=True, thema="objective")
+                # gerechnet, nicht von Claude umformuliert: die Umformulierung kam live 5-21 s zu spaet (26.09.)
+                yield Ansage(text, WICHTIG, f"vorwarnung:{schl}", gueltig=25, thema="objective")
 
     def _objectives(self, p: Partie, bis: float = 0.0) -> list[str]:
         return _lebende_objectives(p, bis, self.m["seiten"]["nicht_mehr_vor_weg"])
@@ -300,7 +307,9 @@ class Regelwerk:
             return
         if len(self._gegner_tot(p, self.m["zahlen"]["min_sekunden"])) >= 2:
             return
-        if self.b is not None:
+        if self.b is not None and self.b.lane is not None:
+            text = denker.lane_tot_plan(self.b, self.entscheider.jungle, int(g.respawn), self._platten_moeglich(p))
+        elif self.b is not None:
             text = komponist.lane_tot(self.b, g.champion, int(g.respawn), self._platten_moeglich(p))
         else:
             satz = cfg["mit_platten"] if self._platten_moeglich(p) else cfg["ohne_platten"]
@@ -316,15 +325,26 @@ class Regelwerk:
                 if frueh and p.zeit > cfg["frueh_bis"]:
                     continue
                 gl = self._gl(g)
+                u = denker.urteil(self.b) if gl and self.b is not None and self.b.lane is not None else None
                 if g.level >= stufe > g_alt.level and ich.level < stufe:
-                    text = (komponist.level(self.b, stufe, False, gl) if gl
-                            else cfg[f"gegner_{stufe}"].format(champion=g.champion))
+                    if u is not None:
+                        text = denker.fenster_satz(self.b, u, anlass=f"{g.champion} ist zuerst Level {stufe}",
+                                                   ohne={"level"}, danach=False)
+                        self._fenster_gesagt, self._fenster_art = p.zeit, u.art
+                    else:
+                        text = (komponist.level(self.b, stufe, False, gl) if gl
+                                else cfg[f"gegner_{stufe}"].format(champion=g.champion))
                     if stufe == 6 and (warnung := self.ult_warnungen.get(g.champion)):
                         text += " " + warnung
                     yield Ansage(text, WICHTIG, f"level{stufe}", gueltig=8)
                 elif ich.level >= stufe > ich_alt.level and g.level < stufe:
-                    text = (komponist.level(self.b, stufe, True, gl) if gl
-                            else cfg[f"ich_{stufe}"].format(champion=g.champion))
+                    if u is not None:
+                        text = denker.fenster_satz(self.b, u, anlass=f"Du bist zuerst Level {stufe}, {g.champion} "
+                                                                     f"noch {g.level}", ohne={"level"})
+                        self._fenster_gesagt, self._fenster_art = p.zeit, u.art
+                    else:
+                        text = (komponist.level(self.b, stufe, True, gl) if gl
+                                else cfg[f"ich_{stufe}"].format(champion=g.champion))
                     yield Ansage(text, WICHTIG, f"level{stufe}", gueltig=8, thema="druck")
         j, j_alt = p.jungler(gegenteam(p.mein_team)), v.jungler(gegenteam(v.mein_team))
         if j and j_alt and j.level >= 6 > j_alt.level and p.ich.rolle != "JUNGLE":
@@ -342,11 +362,20 @@ class Regelwerk:
                 self._gemeldet.add(("spike", item))
                 self._spikes.append(ddragon.items().get(item, {}).get("name", str(item)))
                 self._spike_bei = p.zeit
-        if self._spikes and p.zeit - self._spike_bei >= 3:
+        if self._ich_in_basis(p) and p.gold is not None and v.gold is not None and v.gold - p.gold >= 250:
+            self._brunnen_kauf = p.zeit
+        if self.b is not None and self._brunnen_kauf is not None and p.zeit - self._brunnen_kauf >= 3 \
+                and (not self._spikes or p.zeit - self._spike_bei >= 3):
+            self._brunnen_kauf = None
+            gekauft, self._spikes = list(self._spikes), []
+            if text := denker.aufbruch(self.b, self.entscheider.jungle, gekauft):
+                self._kauf_bei = None       # das Kontroll-Auge sagt der Aufbruch-Satz nicht extra
+                yield Ansage(text, WICHTIG, "aufbruch:" + ",".join(gekauft), gueltig=20, sperre=30, thema="plan")
+        if self._spikes and p.zeit - self._spike_bei >= 3 and (self.b is None or not self._ich_in_basis(p)):
             namen, self._spikes = " und ".join(self._spikes), []
             text = (komponist.spike(self.b, namen) if self.b is not None
                     else self.m["items"]["ich_fertig"].format(item=namen))
-            yield Ansage(text, WICHTIG, f"spike:{namen}", gueltig=40, sperre=10_000, situativ=True)
+            yield Ansage(text, WICHTIG, f"spike:{namen}", gueltig=40, sperre=10_000)
         beobachtet = {s.name for s in (p.gegenueber(), p.jungler(gegenteam(p.mein_team))) if s}
         for s in p.gegner():
             alt = next((x for x in v.spieler if x.name == s.name and x.team == s.team), None)
@@ -557,10 +586,19 @@ class Regelwerk:
                 # Minimap-Spruenge sind weniger sicher als Carlos' Pings: laut nur fuer Lane-Gegner, Jungler und
                 # wer nah bei dir ist - die anderen laufen still mit (Dashboard, Fragen). Camille-Partie 26.09.:
                 # Anivia/Rakan-"Flashes" in Minute 2 fuellten die Sprechzeit.
-                if (t.quelle == "Minimap" and t.zauber == "SummonerFlash" and t.name not in wichtig and gl is not None
-                        and (gl.abstand is None or gl.abstand > 5000)):
-                    continue   # Teleport/globale Ult betrifft alle - die bleiben laut
-                if gl:
+                # alle Flashes laut (Carlos 26.09.: "er sagt nicht mal mehr Flashes") - das Stummschalten ferner
+                # Minimap-Flashes war gegen seinen Wunsch ("Flash-Timer sind Gold wert")
+                ist_lane = gl is not None and self.b is not None and self.b.lane is not None \
+                    and gl.s.name == self.b.lane.s.name
+                if ist_lane and t.zauber in ("SummonerFlash", "R") and not gl.s.tot \
+                        and (u := denker.urteil(self.b)) is not None and u.art != "halten":
+                    was = "Ult" if t.zauber == "R" else name
+                    text = denker.fenster_satz(self.b, u, anlass=f"{gl.champion} hat {was} benutzt, "
+                                                                 f"bis {komponist.uhr_gesprochen(t.zurueck)}",
+                                               ohne={"flash"} if t.zauber == "SummonerFlash" else {"ult"},
+                                               danach=False)
+                    self._fenster_gesagt, self._fenster_art = p.zeit, u.art
+                elif gl:
                     text = komponist.zauber_neu(self.b, gl, "Ult" if t.zauber == "R" else name,
                                                 t.zurueck - p.zeit, t.quelle)
                 else:
@@ -576,7 +614,9 @@ class Regelwerk:
                 rest = self.lage.zauber.fehlt(s, "SummonerFlash", p.zeit)
                 g = self.lage.gesehen(s)
                 nah = bool(g and self.lage.sichtbar(s) and abs(g[1] - ich[1]) + abs(g[2] - ich[2]) < cfg["nah"])
-                if rest and rest > 15 and nah:
+                if rest and rest > 15 and nah and not (self.b is not None and self.b.lane is not None
+                                                        and s.name == self.b.lane.s.name):
+                    # der Lane-Gegner ohne Flash steckt im Kampf-Urteil (_fenster) - dort mit allen Faktoren
                     gl = self._gl(s)
                     text = (komponist.kein_flash_nah(self.b, gl, rest) if gl
                             else cfg["kampf"].format(champion=s.champion, dauer=_minuten(rest)))
@@ -802,7 +842,10 @@ class Regelwerk:
                   sind="sind" if len(namen) > 1 else "ist", sie="sie" if len(namen) > 1 else "ihn",
                   sekunden=int(min(w for _, w in fehlend[:3])))
         if self.b is not None:
-            text = komponist.tief(self.b, **kw)   # mit Leben, Flash (HUD) und Weg zum Turm
+            text = komponist.tief(self.b, **kw, fehlende=[s for s, _ in fehlend[:3]])   # mit Kampfkraft, Leben, Flash
+            if not text:
+                self._tief_gewarnt = p.zeit
+                return
         else:
             text = cfg["satz"].format(**kw)
             if hasattr(self.lage, "eigene_zauber") and (ez := self.lage.eigene_zauber(p, p.zeit)) \
@@ -849,6 +892,59 @@ class Regelwerk:
         self._gemeldet.add(schl)
         if text := komponist.wiedereinstieg(self.b, int(p.ich.respawn), p.ich.rolle):
             yield Ansage(text, WICHTIG, "wiedereinstieg", gueltig=8, sperre=30, thema="plan")
+
+    @property
+    def _fenster_gesagt(self) -> float:
+        return self._fenster_box[0]
+
+    @_fenster_gesagt.setter
+    def _fenster_gesagt(self, t: float) -> None:
+        self._fenster_box[0] = t
+
+    RANG = {"weg": 0, "halten": 1, "turm": 2, "trade": 2, "kill_schnell": 3, "kill": 3, "dive": 3}
+
+    def _fenster(self, p: Partie, v: Partie):
+        """Kampf gegen den Lane-Gegner (denker.py): alle Faktoren zusammen - Level, Ult, Items, beider Leben,
+        Flash, Zuenden, Welle, Turm, Jungler, Dritte, Mitspieler. Gesagt wird, wenn das Urteil kippt oder ein
+        neuer Faktor dazukommt (der Anlass steht vorn: "Heimerdinger ist auf 40 Prozent: ..."), und nur,
+        wenn es zwei Takte haelt (der Lebensbalken flackert)."""
+        b = self.b
+        if b is None or self._ich_weg(p) or p.ich.rolle in ("JUNGLE", "") or p.zeit < 90:
+            self._fenster_vorher = None
+            return
+        g = b.lane
+        if g is None or g.s.tot or not g.sichtbar or g.abstand is None or g.abstand > 1800:
+            self._fenster_vorher = None
+            return
+        u = denker.urteil(b)
+        if u is None:
+            return
+        zeichen = {(x.art, x.wert > 0) for x in u.faktoren}
+        vorher, self._fenster_vorher = self._fenster_vorher, (u.art, zeichen)
+        if vorher is None or vorher[0] != u.art:
+            return      # erst, wenn das Urteil zwei Takte haelt
+        seit = p.zeit - self._fenster_gesagt
+        rang, rang_alt = self.RANG[u.art], self.RANG.get(self._fenster_art or "halten", 1)
+        neu = [x for x in u.faktoren if (x.art, x.wert > 0) not in getattr(self, "_fenster_basis", set())]
+        self._fenster_basis = zeichen
+        anlass_f = next((x for x in sorted(neu, key=lambda x: -abs(x.wert))
+                         if (x.wert > 0) == (rang >= 2) and abs(x.wert) >= 0.8), None)
+        if u.art in ("kill", "kill_schnell", "dive"):
+            sagen = seit >= 40 or (rang > rang_alt and seit >= 8) or (anlass_f is not None and seit >= 15)
+        elif u.art in ("trade", "turm"):
+            sagen = (anlass_f is not None and seit >= 30) or seit >= 90
+        elif u.art == "weg":
+            sagen = anlass_f is not None and seit >= 60
+        else:
+            sagen = False
+        if not sagen:
+            return
+        anlass = denker.anlass_satz(b, anlass_f) if anlass_f is not None else ""
+        text = denker.fenster_satz(b, u, anlass=anlass, ohne={anlass_f.art} if anlass_f is not None else set())
+        self._fenster_gesagt, self._fenster_art = p.zeit, u.art
+        prio = SOFORT if u.art == "kill" and u.wert >= 5 else WICHTIG
+        yield Ansage(text, prio, "fenster", gueltig=3 if rang >= 2 else 5, sperre=8,
+                     thema="gefahr" if u.art == "weg" else "druck")
 
     def _plan(self, p: Partie, v: Partie):
         """Der Plan zwischen den Ereignissen - siehe entscheider.py."""

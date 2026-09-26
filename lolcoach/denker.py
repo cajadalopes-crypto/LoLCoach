@@ -1,0 +1,483 @@
+"""Die Denkkette: aus allen Faktoren EINE zusammenhaengende Anweisung - Anlass, Gruende, Handlung, und was
+danach kommt (Gold -> Kauf -> Weg -> Sicht).
+
+Carlos, Live-Partie 26.09. gegen Heimerdinger ("eine Vollkatastrophe"): "Der muesste sowas sagen wie: du hast
+jetzt Level 6 erreicht, Heimerdinger ist noch Level 5, du hast noch deinen Beschwoererzauber, genug Leben, deine
+Ult, er nicht - geh rein, toete ihn, du kriegst 300 Gold, und mit dem Gold holst du den Brutalisierer; wenn du
+den Trank verkaufst, reicht es fuer Schuhe. Dann gehst du nicht direkt zurueck in die Lane, sondern Richtung
+Herold, wardest dort und am gegnerischen Red Buff, weil der Jungler da wahrscheinlich in einer Minute ist."
+Und: "Der Coach muss in der Lage sein, zusammenhaengende Saetze zu formulieren!"
+
+Deshalb zwei Schichten:
+  1. Rechnen: jeder Faktor mit Gewicht (grob: ein Punkt ~ ein Level frueh im Spiel), die Summe entscheidet.
+  2. Sprechen: die Faktoren werden nicht aufgezaehlt, sondern zu Saetzen gebaut - was sich geaendert hat,
+     warum du staerker bist ("Dazu hat Heimerdinger kein Flash ..."), was dagegen spricht ("Aber ..."),
+     was du tust ("Also ...") und was danach kommt ("Mit dem Kill hast du ...").
+
+Alles ohne Claude: eine Ansage ist nach Millisekunden fertig. (Dieselbe Partie: die von Claude umformulierten
+Saetze kamen 5 bis 21 Sekunden zu spaet - "die Ansagen kommen super, super spaet".)
+
+Was der Coach weiss und was nicht - er nennt nur, was er weiss:
+  - Level, Items, Gold, K/D (API); dein Leben (API), dein Flash, zweiter Zauber und Ult (HUD),
+  - sein Leben (Lebensbalken im Spielbild, wenn er zu sehen ist), sein Flash und seine Ult (Pings, Minimap),
+  - wo Jungler und die anderen zuletzt waren und wie schnell sie bei dir sein koennen (Minimap),
+  - NICHT seine Grundfaehigkeiten: die Abklingzeiten von Q/W/E eines Gegners zeigt das Spiel nicht.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from .bewertung import TURM_REICHWEITE, Bewertung, GegnerLage, abstand, stehende_tuerme
+from .komponist import OBJ_NAME, _wann, gefahr, sek
+from .zustand import BLAU, ROT, gegenteam
+
+KILL_AB = 3.5          # Summe der Faktoren: All-in
+TRADE_AB = 2.0         # harte Trades, All-in erst bei weniger Leben
+WEG_UNTER = -2.5       # er ist klar staerker: nicht traden
+TRAENKE = (2003, 2031, 2033)   # Heiltrank, Nachfuellbarer, Verderbender - verkaufbar fuer den naechsten Kauf
+KAUF_LOHNT_AB = 850    # so viel muss ein Einkauf wert sein, damit sich ein Recall dafuer lohnt (Langschwert: nein)
+KRAFT = ("level", "ult", "items")
+ZUSTAND = ("leben", "flash", "flash_ich", "zuenden", "welle")
+UMFELD = ("jungler", "jungler_nah", "jungler_weg", "dritter", "hilfe")
+
+
+@dataclass
+class Faktor:
+    wert: float      # > 0 spricht fuer dich
+    art: str         # "level", "ult", "items", "leben", "flash", "zuenden", "welle", "turm", "jungler", ...
+    subj: str        # Satzbau: Subjekt, Verb, Rest - damit "Dazu hat Heimerdinger kein Flash" geht
+    verb: str
+    rest: str
+
+    @property
+    def satz(self) -> str:
+        return f"{self.subj} {self.verb} {self.rest}".strip()
+
+    @property
+    def invers(self) -> str:
+        """Verb zuerst (nach "Dazu", "Ausserdem"): 'hat Heimerdinger kein Flash'."""
+        return f"{self.verb} {self.subj} {self.rest}".strip()
+
+
+@dataclass
+class Urteil:
+    art: str                  # "kill", "kill_schnell", "turm", "trade", "halten", "weg"
+    wert: float
+    faktoren: list[Faktor]
+
+    @property
+    def arten(self) -> set[str]:
+        return {f.art for f in self.faktoren if f.wert > 0}
+
+    @property
+    def arten_alle(self) -> set[str]:
+        return {f.art for f in self.faktoren}
+
+
+# --- Rechnen: der Kampf gegen den Lane-Gegner ----------------------------------------------------------
+
+def _gold(n: int) -> str:
+    return f"{abs(n) // 100 * 100} Gold"
+
+
+def kampf_faktoren(b: Bewertung) -> list[Faktor]:
+    """Alles, was ein 1-gegen-1 mit deinem Lane-Gegner JETZT entscheidet, mit Gewicht. Negativ = gegen dich.
+    Level und Items zaehlen relativ: 2 Level bei Level 3 sind mehr als bei Level 11, 1800 Gold bei 2400 mehr
+    als bei 8000 (Live 26.09., 12:44: "Kill" an Riven L11 gegen Heimerdinger L9 - absolut gerechnet zu viel)."""
+    g = b.lane
+    if g is None or g.s.tot:
+        return []
+    f: list[Faktor] = []
+    ich, er, n = b.ich, g.s, g.champion
+    d = ich.level - er.level
+    if d:
+        hoch = max(ich.level, er.level)
+        w = (1.2 if hoch <= 3 else 0.7) * d * 6 / max(6, hoch)
+        f.append(Faktor(w, "level", "du", "bist", f"Level {ich.level}, {n} erst {er.level}") if d > 0
+                 else Faktor(w, "level", n, "ist", f"Level {er.level}, du erst {ich.level}"))
+    if ich.level >= 6 > er.level:
+        if b.ult is not False:
+            f.append(Faktor(1.8, "ult", "deine Ult", "ist", "da, seine noch nicht"))
+        else:
+            f.append(Faktor(0.3, "ult", "deine Ult", "lädt", "noch"))
+    elif er.level >= 6 > ich.level:
+        f.append(Faktor(-1.8, "ult", n, "hat", "schon die Ult, du noch nicht"))
+    else:
+        if ich.level >= 6 and b.ult is False:
+            f.append(Faktor(-1.0, "ult", "deine Ult", "lädt", "noch"))
+        if er.level >= 6 and g.ult and g.ult > 5:
+            f.append(Faktor(1.2, "ult", "seine Ult", "ist", f"noch {sek(g.ult)} weg"))
+    gd = ich.item_gold - er.item_gold
+    if abs(gd) >= 400:
+        w = max(-3.0, min(3.0, 3.5 * gd / (max(ich.item_gold, er.item_gold) + 1500)))
+        f.append(Faktor(w, "items", "du", "hast", f"{_gold(gd)} mehr in Items") if gd > 0
+                 else Faktor(w, "items", n, "hat", f"{_gold(gd)} mehr in Items"))
+    # Leben: deins aus der API, seins aus dem Balken im Bild (nur frisch)
+    if b.leben is not None and b.leben < 0.35:
+        f.append(Faktor(-3.0, "leben", "du", "hast", f"nur {int(b.leben * 100)} Prozent Leben"))
+    elif g.leben is not None:
+        mein = b.leben if b.leben is not None else 0.8
+        w = (mein - g.leben) * 5
+        if g.leben <= 0.6:
+            f.append(Faktor(w, "leben", n, "hat", f"nur noch {int(g.leben * 100)} Prozent Leben"))
+        elif w <= -1:
+            f.append(Faktor(w, "leben", n, "hat", "mehr Leben als du"))
+        elif mein >= 0.85:
+            f.append(Faktor(max(w, 0.3), "leben", "du", "hast", "volles Leben"))
+    elif b.leben is not None and b.leben >= 0.85:
+        f.append(Faktor(0.3, "leben", "du", "hast", "volles Leben"))
+    elif b.leben is not None and b.leben < 0.55:
+        f.append(Faktor(-1.2, "leben", "du", "hast", f"nur {int(b.leben * 100)} Prozent Leben"))
+    if g.flash and g.flash > 10:
+        f.append(Faktor(1.0, "flash", n, "hat", "kein Flash"))
+    if b.flash is not None and b.flash > 10:
+        f.append(Faktor(-0.8, "flash_ich", "dein Flash", "ist", "weg"))
+    if b.zweiter and b.zweiter[0] == "SummonerDot" and b.zweiter[1] <= 0:
+        f.append(Faktor(0.8, "zuenden", "dein Zünden", "ist", "bereit"))
+    if b.welle:
+        wir, die = b.welle[0], b.welle[1]
+        if wir - die >= 3:
+            f.append(Faktor(0.6, "welle", "deine Welle", "ist", "größer"))
+        elif die - wir >= 3:
+            f.append(Faktor(-0.8, "welle", "seine Welle", "ist", "größer"))
+    # Turm: sperrt den Kampf (ein All-in dort ist ein Dive) - zaehlt nicht in die Summe, siehe urteil()
+    if g.pos is not None and b.partie is not None:
+        feind = gegenteam(b.partie.mein_team)
+        if any(abstand(g.pos, v) <= TURM_REICHWEITE + 250 for (t, _, _), v in stehende_tuerme(b.partie).items()
+               if t == feind):
+            f.append(Faktor(-2.5, "turm", n, "steht", "an seinem Turm"))
+    j = b.jungler
+    if j is not None and b.zeit >= 115:
+        if j.s.tot:
+            f.append(Faktor(0.8, "jungler", j.champion, "ist", "tot"))
+        elif j.seit is not None and j.seit <= 25 and j.ankunft is not None and j.ankunft >= 15:
+            f.append(Faktor(0.6, "jungler", j.champion, "ist", f"{j.ort}, zu weit weg, um zu helfen"))
+        elif j.seit is not None and j.seit <= 25 and j.ankunft is not None and j.ankunft < 8:
+            f.append(Faktor(-3.0, "jungler_nah", j.champion, "ist", "ganz in der Nähe"))
+        elif j.unbekannt or (j.seit or 0) > 25:
+            f.append(Faktor(-0.8, "jungler_weg", j.champion, "ist", f"seit {sek(j.seit or b.zeit)} nicht zu sehen"))
+    for x in b.bedrohung(8):
+        if x.s.name == g.s.name or (j is not None and x.s.name == j.s.name):
+            continue
+        wann = _wann(x)
+        f.append(Faktor(-2.0, "dritter", x.champion, wann.split(" ", 1)[0], wann.split(" ", 1)[1]
+                        if " " in wann else ""))
+    for s in b.mitspieler_nah:
+        f.append(Faktor(1.0, "hilfe", s.champion, "ist", "bei dir"))
+    return f
+
+
+def urteil(b: Bewertung) -> Urteil | None:
+    """Summe der Faktoren -> was du gegen deinen Lane-Gegner jetzt tust."""
+    f = kampf_faktoren(b)
+    if not f:
+        return None
+    # Sein Turm macht ihn nicht staerker - er sperrt nur den Kampf. Er zaehlt nicht in die Summe, sonst hiess
+    # "Shen steht an seinem Turm" = "Shen ist staerker, farm sicher". Einen Dive empfiehlt der Coach nicht:
+    # Live 26.09., 11:00 haette er ihn empfohlen - 11:08 starb Riven genau dort an Heimerdinger und Turm.
+    wert = sum(x.wert for x in f if x.art != "turm")
+    arten = {x.art for x in f}
+    bedroht = bool({"jungler_nah", "dritter"} & arten)
+    if "turm" in arten and wert >= TRADE_AB:
+        art = "halten" if bedroht else "turm"
+    elif wert >= KILL_AB:
+        if bedroht:
+            art = "halten"
+        elif "jungler_weg" in arten and wert < KILL_AB + 1.0:
+            art = "trade"
+        elif "jungler_weg" in arten:
+            art = "kill_schnell"
+        else:
+            art = "kill"
+    elif wert >= TRADE_AB:
+        art = "halten" if bedroht else "trade"
+    elif wert <= WEG_UNTER:
+        art = "weg"
+    else:
+        art = "halten"
+    return Urteil(art, wert, f)
+
+
+# --- Sprechen: aus Faktoren Saetze ------------------------------------------------------------------------
+
+def _gross(s: str) -> str:
+    return s[:1].upper() + s[1:] if s else s
+
+
+def _liste(teile: list[str]) -> str:
+    teile = [t for t in teile if t]
+    if not teile:
+        return ""
+    return teile[0] if len(teile) == 1 else ", ".join(teile[:-1]) + " und " + teile[-1]
+
+
+def _haupt(fs: list[Faktor], dazu: bool) -> str:
+    """Bis zu zwei Faktoren als ein Satz. `dazu`: nicht der erste Satz - "Dazu hat Heimerdinger kein Flash,
+    und dein Zuenden ist bereit." Level und Ult gehoeren zusammen: "Du bist Level 6, Heimerdinger erst 5 -
+    deine Ult ist da, seine noch nicht." """
+    if not fs:
+        return ""
+    erst = ("Dazu " + fs[0].invers) if dazu else _gross(fs[0].satz)
+    if len(fs) == 1:
+        return erst + "."
+    verbinder = " - " if fs[0].art == "level" and fs[1].art == "ult" else ", und "
+    return erst + verbinder + fs[1].satz + "."
+
+
+def anlass_satz(b: Bewertung, f: Faktor) -> str:
+    """Der Faktor, der eben dazukam, als erster Satz: 'Heimerdinger ist auf 40 Prozent', 'Vi ist tot'."""
+    g = b.lane
+    n = g.champion if g else ""
+    if f.art == "leben" and g is not None and g.leben is not None and g.leben <= 0.6:
+        return f"{n} ist auf {int(g.leben * 100)} Prozent"
+    if f.art == "ult" and f.wert > 0 and g is not None and b.ich.level >= 6 > g.s.level:
+        return f"Du bist jetzt Level {b.ich.level}, {n} erst {g.s.level}"
+    if f.art == "jungler" and b.jungler is not None:
+        return f"{b.jungler.champion} ist tot" if b.jungler.s.tot else f"{b.jungler.champion} zeigt sich {b.jungler.ort}"
+    return _gross(f.satz)
+
+
+HANDLUNG = {
+    "kill": "Also geh rein - das ist ein Kill.",
+    "kill_schnell": "Also rein, aber schnell, bevor {j} auftaucht.",
+    "turm": "Warte, bis {n} vom Turm weggeht, dann All-in.",
+    "trade": "Also trade hart, und All-in erst, wenn {n} unter der Hälfte ist.",
+    "halten": "Deshalb nur kurze Trades, kein All-in.",
+    "weg": "Also nicht traden, farm sicher.",
+}
+
+
+def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = frozenset(),
+                 danach: bool = True) -> str:
+    """Zusammenhaengend gesprochen: Anlass. Kraft (Level, Ult, Items). Dazu Zustand (Leben, Flash, Zuenden,
+    Welle). Umfeld (Jungler, Hilfe). Aber: was dagegen spricht. Also: die Handlung. Danach: Gold und Kauf.
+    `ohne`: Faktor-Arten, die der Anlass schon sagt."""
+    n = b.lane.champion
+    j = b.jungler.champion if b.jungler else "der Jungler"
+    if "ult" in ohne:
+        ohne = set(ohne) | {"level"}           # "Du bist jetzt Level 6, er erst 5" sagt beides
+    fs = [x for x in u.faktoren if x.art not in ohne and abs(x.wert) >= 0.3]
+    fuer_dich = u.art in ("kill", "kill_schnell", "turm", "trade") or (u.art == "halten" and u.wert >= TRADE_AB)
+    haupt = sorted((x for x in fs if (x.wert > 0) == fuer_dich and x.art != "turm"), key=lambda x: -abs(x.wert))
+    gegen = sorted((x for x in fs if (x.wert > 0) != fuer_dich), key=lambda x: -abs(x.wert))
+    saetze = [anlass + "."] if anlass else []
+    kraft = [x for x in haupt if x.art in KRAFT][:2]
+    zustand = [x for x in haupt if x.art in ZUSTAND][:2]
+    umfeld = [x for x in haupt if x.art in UMFELD][:1]
+    if kraft:
+        saetze.append(_haupt(kraft, dazu=False))
+    if zustand:
+        saetze.append(_haupt(zustand, dazu=bool(kraft) or bool(anlass)))
+    if umfeld:
+        saetze.append(_gross(umfeld[0].satz) + ".")
+    if fuer_dich:
+        # was dagegen spricht, gehoert dazu - der Turm immer, sonst nur, was wirklich zaehlt
+        aber = [x for x in gegen if x.art == "turm" or abs(x.wert) >= 1.5]
+        if u.art == "kill_schnell":
+            aber = [x for x in gegen if x.art == "jungler_weg"]
+        if aber:
+            saetze.append(f"Aber {aber[0].satz}.")
+    handlung = HANDLUNG[u.art].format(n=n, j=j)
+    if u.art == "halten" and "jungler_nah" in u.arten_alle:
+        handlung = f"Deshalb kein All-in, solange {j} da ist - nur kurze Trades."
+    elif u.art == "halten" and (dritte := [x for x in u.faktoren if x.art == "dritter"]):
+        handlung = f"Deshalb kein All-in, bis du weißt, ob {dritte[0].subj} kommt."
+    if u.art == "weg" and ((b.leben is not None and b.leben < 0.35) or {"jungler_nah", "dritter"} & u.arten_alle):
+        from .komponist import _rueckzug
+        handlung = f"Also {_rueckzug(b)[:1].lower() + _rueckzug(b)[1:]}."
+    saetze.append(handlung)
+    if danach and u.art in ("kill", "kill_schnell") and (d := nach_dem_kill(b)):
+        saetze.append(d)
+    return " ".join(saetze)
+
+
+# --- danach: Gold, Kauf, Weg -------------------------------------------------------------------------
+
+def kill_gold(b: Bewertung) -> int:
+    """Gold fuer den Kill an deinem Lane-Gegner: 300, das erste Blut 400 (ein Shutdown kommt obendrauf,
+    die Hoehe zeigt die API nicht)."""
+    p = b.partie
+    erstes_blut = p is not None and not any(e.art == "FirstBlood" for e in p.ereignisse)
+    return 400 if erstes_blut else 300
+
+
+def trank_wert(b: Bewertung) -> int:
+    from . import ddragon
+    it = ddragon.items()
+    return sum(it.get(i, {}).get("gold", {}).get("sell", 0) for i in b.ich.items if i in TRAENKE)
+
+
+def kauf(b: Bewertung, gold: int) -> tuple[str, bool]:
+    """(was du kaufst, ob sich ein Recall dafuer lohnt). Mit Trank: 'den Brutalisierer, und wenn du den Trank
+    verkaufst, auch Stiefel'. Ein Recall lohnt fuer ein fertiges Item oder Bauteile ab KAUF_LOHNT_AB."""
+    from . import kaufplan
+    from .kaufplan import _akk
+    try:
+        k = kaufplan.plan(b.ich.champion_id, b.ich.items, gold)
+        trank = trank_wert(b)
+        k2 = kaufplan.plan(b.ich.champion_id, b.ich.items, gold + trank) if trank else None
+    except Exception:
+        return "", False
+    if k is None:
+        return "", False
+    if k.kaufen:
+        satz = " und ".join(_akk(x) for x in k.kaufen)
+        if k2 is not None and len(k2.kaufen) > len(k.kaufen):
+            extra = [x for x in k2.kaufen if x not in k.kaufen]
+            satz += f", und wenn du den Trank verkaufst, auch {' und '.join(_akk(x) for x in extra)}"
+        return satz, k.item in k.kaufen or k.kosten >= KAUF_LOHNT_AB
+    if k2 is not None and k2.kaufen:
+        return (f"verkauf den Trank, dann reicht es für {' und '.join(_akk(x) for x in k2.kaufen)}",
+                k2.item in k2.kaufen or k2.kosten >= KAUF_LOHNT_AB)
+    return "", False
+
+
+def _kauf_verb(was: str) -> str:
+    """'den Brutalisierer' -> 'kauf den Brutalisierer'; 'verkauf den Trank, ...' bleibt."""
+    return was if was.startswith("verkauf") else f"kauf {was}"
+
+
+def nach_dem_kill(b: Bewertung) -> str:
+    """Der Satz nach dem Kill-Satz: 'Mit dem Kill hast du 1450 Gold: Welle in seinen Turm, dann back und
+    kauf den Brutalisierer.' Lohnt kein Recall, dann die Platten."""
+    gold = b.gold + kill_gold(b)
+    was, lohnt = kauf(b, gold)
+    shutdown = " plus Shutdown" if b.lane is not None and b.lane.shutdown else ""
+    if lohnt:
+        return f"Mit dem Kill hast du {gold // 50 * 50} Gold{shutdown}: Welle in seinen Turm, dann back und {_kauf_verb(was)}."
+    if b.platten_gegner:
+        return f"Danach die Welle in seinen Turm und die Platten holen, {b.platten_gegner} stehen noch."
+    return ""
+
+
+# --- Weg und Sicht --------------------------------------------------------------------------------------
+
+def meine_seite(b: Bewertung) -> str | None:
+    return {"TOP": "oben", "BOTTOM": "unten", "UTILITY": "unten"}.get(b.ich.rolle)
+
+
+def jungler_prognose(b: Bewertung, jungle) -> tuple[str, float | None]:
+    """(Satz, Sekunden bis er auf deiner Seite sein kann) - aus der letzten Sichtung. Ein Jungler raeumt seine
+    Seite und quert dann; ~40 s von einer Kartenseite zur anderen [Schaetzung aus Clear-Zeiten 2026]."""
+    j = b.jungler
+    seite = meine_seite(b)
+    if j is None or seite is None:
+        return "", None
+    if j.s.tot:
+        if j.s.respawn < 15:
+            return "", None
+        return f"{j.champion} ist noch {sek(j.s.respawn)} tot", j.s.respawn + 30
+    z = jungle.zuletzt() if jungle is not None else None
+    if z is None:
+        return "", None
+    from .jungle import seite as karten_seite
+    vor = b.zeit - z[0]
+    dort = karten_seite(z[1], z[2])
+    if vor > 90:
+        return f"{j.champion} ist seit {sek(vor)} nicht zu sehen", 0.0
+    if dort == seite:
+        return f"{j.champion} war vor {sek(vor)} auf deiner Seite", 0.0
+    bis = max(10.0, 40.0 - vor)
+    return f"{j.champion} war vor {sek(vor)} {dort} und kann in etwa {sek(bis)} {seite} sein", bis
+
+
+BUFF_OBEN = {BLAU: "Blau-Buff", ROT: "Rot-Buff"}      # der Buff eines Teams auf der oberen Kartenseite
+BUFF_UNTEN = {BLAU: "Rot-Buff", ROT: "Blau-Buff"}
+
+
+def ward_plan(b: Bewertung, jungle, vorn: bool) -> str:
+    """Wohin die Wards auf dem Weg, als Satzrest nach 'setzt du': an das Objective deiner Seite, wenn es bald
+    kommt, und - bist du vorn - tief an seinen Buff auf deiner Seite, sonst an den Gank-Weg (Pixel/Tri);
+    dazu, wann sein Jungler dort sein kann."""
+    seite = meine_seite(b)
+    if seite is None or b.partie is None:
+        return ""
+    feind = gegenteam(b.partie.mein_team)
+    teile = []
+    ob = b.objective
+    if ob and 0 < ob[1] <= 150 and ((ob[0] == "drache") == (seite == "unten")):
+        grube = "Drachengrube" if ob[0] == "drache" else "Baron-Grube"
+        teile.append(f"ein Ward an die {grube}, denn {'die ' if ob[0] == 'larven' else 'der '}"
+                     f"{OBJ_NAME[ob[0]]} {'kommen' if ob[0] == 'larven' else 'kommt'} in {sek(ob[1])}")
+    buff = (BUFF_OBEN if seite == "oben" else BUFF_UNTEN)[feind]
+    ziel = f"an seinen {buff}" if vorn else ("in den Pixel-Busch" if seite == "oben" else "in den Tri-Busch")
+    teile.append(("eins " if teile else "ein Ward ") + ziel)
+    satz = ", und ".join(teile)
+    prog, bis = jungler_prognose(b, jungle)
+    if prog and bis is not None and bis <= 60:
+        satz += f": {prog}"
+    return satz
+
+
+def lane_tot_plan(b: Bewertung, jungle, sekunden: int, platten: bool) -> str:
+    """Dein Lane-Gegner ist tot: Welle, Platten, back mit welchem Kauf (nur, wenn er sich lohnt), ob du vor ihm
+    zurueck bist, und die Wards auf dem Rueckweg - oder, wer dich stattdessen erwischen kann."""
+    n = b.lane.champion if b.lane else "Er"
+    satz = f"{n} ist {sek(sekunden)} tot."
+    andere = gefahr(b)
+    frisch = [x for x in andere if x.seit is not None and x.seit <= 15]
+    if frisch:
+        x = frisch[0]
+        return f"{satz} Aber {x.champion} {_wann(x)}: schieb die Welle nur bis zum Turm."
+    saetze = [satz, "Schieb die Welle in seinen Turm" + (" und nimm die Platte mit" if platten else "")]
+    was, lohnt = kauf(b, b.gold)
+    if lohnt:
+        # Rueckweg: Welle ~10 s, Recall 8 s, Weg ~27 s - er braucht seine Todeszeit plus ~27 s
+        saetze[-1] += f", dann geh back und {_kauf_verb(was)}" + (
+            f" - du bist zurück, bevor {n} wieder in der Lane ist." if sekunden >= 15 else ".")
+        vorn = b.kraft_gegen([b.lane], mit_verbuendeten=False) >= 1.3 if b.lane else False
+        if w := ward_plan(b, jungle, vorn):
+            saetze.append(f"Auf dem Rückweg setzt du {w}.")
+    else:
+        saetze[-1] += "."
+        if andere:
+            x = andere[0]
+            saetze.append(f"{x.champion} ist seit {sek(x.seit or b.zeit)} nicht zu sehen - sobald {x.champion} "
+                          f"auftaucht, raus.")
+    return " ".join(saetze)
+
+
+def aufbruch(b: Bewertung, jungle, gekauft: list[str]) -> str:
+    """Nach dem Einkauf im Brunnen: was die neuen Items gegen deinen Lane-Gegner bedeuten, das Kontroll-Auge,
+    und wohin du gehst - zusammenhaengend statt drei einzelner Ansagen."""
+    saetze = []
+    g = b.lane
+    if gekauft:
+        was = f"{_liste(gekauft)} {'ist' if len(gekauft) == 1 else 'sind'} fertig"
+        if g is not None and not g.s.tot:
+            r = b.kraft_gegen([g], mit_verbuendeten=False)
+            if r >= 1.6:
+                was += f" - damit bist du {g.champion} klar überlegen, {kampf_kurz(b, g)}"
+            elif r <= 0.75:
+                was += f", aber {g.champion} ist noch stärker, {kampf_kurz(b, g)}"
+        saetze.append(_gross(was) + ".")
+    if 2055 not in b.ich.items and b.gold >= 75 and b.zeit >= 240:
+        saetze.append("Nimm noch ein Kontroll-Auge mit.")
+    lane = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}.get(b.ich.rolle)
+    if lane and b.prio.get(lane) == "er":
+        saetze.append("Seine Welle läuft auf deinen Turm - geh direkt in die Lane.")
+    else:
+        vorn = g is not None and b.kraft_gegen([g], mit_verbuendeten=False) >= 1.3
+        if w := ward_plan(b, jungle, vorn):
+            saetze.append(f"Auf dem Weg setzt du {w}.")
+    if len(saetze) < 2 and not gekauft:
+        return ""
+    return " ".join(saetze)
+
+
+def kampf_kurz(b: Bewertung, g: GegnerLage) -> str:
+    """'2 Level und 3000 Gold vorn' / '1 Level hinten' aus Level und Item-Gold."""
+    lv = b.ich.level - g.s.level
+    gd = b.ich.item_gold - g.s.item_gold
+    vorn, hinten = [], []
+    if lv:
+        (vorn if lv > 0 else hinten).append(f"{abs(lv)} Level")
+    if abs(gd) >= 400:
+        (vorn if gd > 0 else hinten).append(_gold(gd))
+    if vorn and not hinten:
+        return f"{' und '.join(vorn)} vorn"
+    if hinten and not vorn:
+        return f"{' und '.join(hinten)} hinten"
+    if vorn and hinten:
+        return f"{' und '.join(vorn)} vorn, {' und '.join(hinten)} hinten"
+    return "gleichauf"

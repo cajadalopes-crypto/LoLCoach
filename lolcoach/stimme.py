@@ -91,21 +91,41 @@ class _Neural:
         return audio, rate
 
     def spreche(self, text: str, stopp: threading.Event) -> bool:
+        """Satz fuer Satz: der erste klingt, sobald ER fertig ist, die weiteren entstehen parallel.
+        Gemessen 26.09.: ein 210-Zeichen-Satz brauchte 1,5 s bis zum ersten Ton (ganz synthetisiert),
+        der erste Teilsatz davon 0,4-0,7 s."""
+        import concurrent.futures as cf
         import sounddevice as sd
-        try:
-            audio, rate = self._synthese(text)
-        except Exception:
-            return self.ersatz.spreche(text, stopp)
-        if stopp.is_set():
-            return False
-        sd.play(audio, rate)
-        ende = time.monotonic() + len(audio) / rate + 0.3
-        while time.monotonic() < ende:
-            if stopp.is_set():
-                sd.stop()
-                return False
-            time.sleep(0.02)
+        teile = teilsaetze(text)
+        with cf.ThreadPoolExecutor(max_workers=3) as pool:
+            laeufe = [pool.submit(self._synthese, t) for t in teile]
+            for i, lauf in enumerate(laeufe):
+                try:
+                    audio, rate = lauf.result(timeout=8)
+                except Exception:
+                    rest = " ".join(teile[i:])
+                    return self.ersatz.spreche(rest, stopp)
+                if stopp.is_set():
+                    return False
+                sd.play(audio, rate)
+                ende = time.monotonic() + len(audio) / rate + (0.3 if i == len(laeufe) - 1 else 0.02)
+                while time.monotonic() < ende:
+                    if stopp.is_set():
+                        sd.stop()
+                        return False
+                    time.sleep(0.02)
         return True
+
+
+def teilsaetze(text: str, erster_hoechstens: int = 90) -> list[str]:
+    """In Saetze teilen (nach . ! ? und nach dem Doppelpunkt, an dem die Stimme ohnehin absetzt); ist der erste
+    laenger als `erster_hoechstens`, auch am ersten Komma dahinter - damit der erste Ton frueh kommt."""
+    teile = [t.strip() for t in re.split(r"(?<=[.!?:])\s+", text) if t.strip()]
+    if teile and len(teile[0]) > erster_hoechstens:
+        k = teile[0].find(", ", 30)
+        if 0 < k < len(teile[0]) - 15:
+            teile[0:1] = [teile[0][:k + 1], teile[0][k + 2:]]
+    return teile or [text]
 
 
 _SPRECHBAR = [
@@ -118,12 +138,27 @@ _SPRECHBAR = [
 ]
 
 
+# Champion-Namen, die die deutsche Stimme falsch liest. Live 26.09.: "Vi" kam als "sechs" (roemische VI).
+# V am Anfang spricht die Community wie W ("Warus", nicht "Farus"); Apostrophe liest die Stimme als Pause.
+AUSSPRACHE = {
+    "Vi": "Wai", "Viego": "Wiego", "Vex": "Wex", "Varus": "Warus", "Vayne": "Wäjn", "Veigar": "Weigar",
+    "Vel'Koz": "Wel Kos", "Vladimir": "Wladimir", "Volibear": "Wolibär", "Kai'Sa": "Kaisa",
+    "Kha'Zix": "Ka Sicks", "Cho'Gath": "Tscho Gath", "Kog'Maw": "Kog Mau", "Rek'Sai": "Reck Sai",
+    "Bel'Veth": "Bell Weth", "K'Sante": "Ka Sante", "Nunu & Willump": "Nunu", "Nunu und Willump": "Nunu",
+    "Dr. Mundo": "Doktor Mundo", "Jarvan IV.": "Jarvan", "Jarvan IV": "Jarvan", "LeBlanc": "Leblank",
+    "Xin Zhao": "Schin Dschau", "Renata Glasc": "Renata", "Miss Fortune": "Miss Fortschun",
+    "Twisted Fate": "Twisted Fäit", "CS": "C S",
+}
+_AUSSPRACHE = re.compile(r"(?<![\w'])(" + "|".join(re.escape(k) for k in sorted(AUSSPRACHE, key=len, reverse=True))
+                         + r")(?![\w'])")
+
+
 def sprechbar(text: str) -> str:
     """Was Claude schreibt, ist nicht immer, was man sagt: die Stimme las 'Jungler/Laner' mit
     Schraegstrich und '30-40 s' als 'dreissig minus vierzig s' (Review-Ansage 26.09.)."""
     for muster, ersatz in _SPRECHBAR:
         text = muster.sub(ersatz, text)
-    return text
+    return _AUSSPRACHE.sub(lambda m: AUSSPRACHE[m.group(1)], text)
 
 
 class Stimme:

@@ -17,7 +17,8 @@ ZEICHEN_PRO_SEKUNDE = 12.0   # Killian (edge-tts, +8 %) gemessen 26.09.: 11-12 Z
 PAUSE = 1.5                  # zwischen zwei Saetzen (2,0 bis 26.09.; die Schaetzung ist jetzt ehrlicher)
 RUHE_VOR_HINWEIS = 8.0       # Hinweise nur, wenn es so lange still war
 THEMA_SPERRE = 30.0          # zwei Ansagen zum selben Thema (back, druck, gefahr, objective) nicht so kurz hintereinander
-THEMA_SPERRE_JE = {"gefahr": 12.0}   # Gefahr aendert sich schnell: eine neue Warnung darf eher kommen
+THEMA_SPERRE_JE = {"gefahr": 12.0,   # Gefahr aendert sich schnell: eine neue Warnung darf eher kommen
+                   "druck": 8.0}     # ein Kampf-Fenster auch: aus "trade hart" wird mit seinem Flash ein Kill
 # Nach einer Warnung kein "geh rein" (Camille-Partie 15:37/15:39: "rein" und "zurueck" in 2 s). Umgekehrt
 # nicht: eine Gefahr darf immer kommen, auch direkt nach einem Druck-Satz.
 WIDERSPRUCH = {"druck": ("gefahr", 15.0), "seite": ("gefahr", 15.0)}

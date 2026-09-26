@@ -43,6 +43,11 @@ def sek(s: float) -> str:
     return f"{m} Minute{'n' if m > 1 else ''}" + (f" {r}" if r else "")
 
 
+def uhr_gesprochen(t: float) -> str:
+    """Spielzeit fuer die Stimme: 6:45 -> '6 45' (die Stimme liest sonst 'sechs Uhr fuenfundvierzig')."""
+    return f"{int(t // 60)} {int(t % 60):02d}"
+
+
 def wohin(ort: str) -> str:
     """minimap.ort -> Richtung: 'im oberen Fluss' -> 'Richtung oberer Fluss'."""
     fest = {"im oberen Fluss": "Richtung oberer Fluss", "im unteren Fluss": "Richtung unterer Fluss",
@@ -175,11 +180,16 @@ def chance(b: Bewertung, platten: bool) -> str | None:
     wert, _ = b.kraefte()
     leben_ok = b.leben is None or b.leben >= 0.5
     lebt = g is not None and not g.s.tot
-    if lebt and leben_ok and wert >= 1 and g.seit is not None and g.seit < 3:
-        hp = f", {g.champion} hat {int(g.leben * 100)} Prozent Leben" if g.leben is not None and g.leben <= 0.6 else ""
-        v = b.vorsprung_satz()
-        return (f"Geh auf {g.champion}" + (f", {v}" if v else "") + hp + (", Shutdown auf ihm" if g.shutdown else "")
-                + (f" - {b.trade}" if b.trade else ""))
+    if lebt and leben_ok and g.seit is not None and g.seit < 3:
+        from . import denker
+        u = denker.urteil(b)
+        box = getattr(b, "fenster_box", None)
+        if u is not None and u.art in ("kill", "kill_schnell", "trade", "turm"):
+            if box is None or b.zeit - box[0] >= 60:     # sonst eben erst mit allen Gruenden gesagt
+                if box is not None:
+                    box[0] = b.zeit
+                # der Jungler-Satz davor sagt schon, wo er ist
+                return denker.fenster_satz(b, u, ohne={"jungler"}, danach=False).rstrip(".")
     if lebt and leben_ok and g.flash and g.flash > 30 and wert > -1:
         return f"Spiel aggressiv, {g.champion} ohne Flash"
     if ob := _objective_erreichbar(b):
@@ -198,11 +208,33 @@ def chance(b: Bewertung, platten: bool) -> str | None:
 
 # --- je Anlass ------------------------------------------------------------------
 
+KLAR_STAERKER = 2.0      # Kampfkraft-Verhaeltnis: er kann dich nicht toeten
+STAERKER = 1.3
+
+
 def jungler_gesehen(b: Bewertung, j: GegnerLage, art: str, platten: bool) -> str:
     """art: 'gefahr' (nah / auf deiner Seite), 'seite' (seine Seite, aber deine Kartenhaelfte), 'sicher'."""
     if art in ("gefahr", "seite"):
         an = j.ankunft
         wann = "direkt bei dir" if an is not None and an < 2 else (f"{sek(an)} zu dir" if an is not None else "")
+        # erst der Kampf: wer kommt mit (alle, die rechtzeitig da sein koennen - auch die sichtbaren, etwa
+        # dein Lane-Gegner), und wer ist staerker? (Live 26.09., 7:13: Vi allein 2,3-fach schwaecher, mit
+        # Heimerdinger und Kassadin zusammen staerker - der Satz muss beides sagen)
+        gruppe = [j] + [x for x in b.bedrohung(GEFAHR_SEKUNDEN) if x.s.name != j.s.name]
+        r = b.kraft_gegen(gruppe)
+        r_allein = b.kraft_gegen([j])
+        vorn = f"{_ist(j)}, {wann}" if wann else _ist(j)
+        if r >= KLAR_STAERKER and (b.leben is None or b.leben >= 0.4):
+            wer = j.champion if len(gruppe) == 1 else _namen([x.champion for x in gruppe])
+            return f"{vorn}. {wer} {'kann' if len(gruppe) == 1 else 'können'} dich nicht töten: " \
+                   f"{b.ueberlegen_satz(gruppe)}. Nimm den Kampf, wenn {'sie reinkommen' if len(gruppe) > 1 else j.champion + ' reinkommt'}."
+        if r >= STAERKER and (b.leben is None or b.leben >= 0.5):
+            return f"{vorn}. Du bist stärker, {b.ueberlegen_satz(gruppe)}: bleib an der Welle, nur nicht tief."
+        if len(gruppe) > 1 and r_allein >= STAERKER and (b.leben is None or b.leben >= 0.5):
+            from .denker import kampf_kurz
+            andere = _namen([x.champion for x in gruppe[1:]])
+            return (f"{vorn}. Allein schlägst du {j.champion}, {kampf_kurz(b, j)} - aber mit {andere} "
+                    f"{'wird' if len(gruppe) == 2 else 'werden'} es zu viel: {_rueckzug(b)}.")
         gruende = verwundbar(b)
         if an is not None and an < 2 and b.zum_turm is not None and b.zum_turm >= 12:
             # direkt bei dir, der Turm ist weit: der Weg dorthin rettet nicht - raus, mit dem, was du hast
@@ -241,6 +273,15 @@ def anlauf(b: Bewertung, kommen: list[tuple[GegnerLage, str]]) -> str:
     erster, woher = kommen[0]
     an = min((g.ankunft for g, _ in kommen if g.ankunft is not None), default=None)
     wann = f", {sek(an)}" if an is not None and an >= 2 else ""
+    # der Kampf entscheidet: die Kommenden plus wer sonst rechtzeitig da sein kann
+    gruppe = [g for g, _ in kommen] + [x for x in gefahr(b) if x.s.name not in {g.s.name for g, _ in kommen}]
+    r = b.kraft_gegen(gruppe)
+    wer = _namen([g.champion for g, _ in kommen])
+    if r >= KLAR_STAERKER and (b.leben is None or b.leben >= 0.4):
+        return f"{wer} {'kommt' if len(kommen) == 1 else 'kommen'} {woher if len(kommen) == 1 else ''} auf dich zu{wann}".replace("  ", " ") \
+            + f" - nimm den Kampf: {b.ueberlegen_satz(gruppe)}."
+    if r >= STAERKER and (b.leben is None or b.leben >= 0.5) and len(kommen) == 1:
+        return f"{wer} kommt {woher} auf dich zu{wann}. Du bist stärker, {b.ueberlegen_satz(gruppe)} - halte die Stellung."
     if len(kommen) >= 2:
         return f"{_namen([g.champion for g, _ in kommen])} kommen auf dich zu{wann}. {_rueckzug(b)}."
     satz = f"{erster.champion} kommt {woher} auf dich zu{wann}."
@@ -377,7 +418,13 @@ def kein_flash_nah(b: Bewertung, g: GegnerLage, rest: float) -> str:
     return satz + ". Nutz das Fenster."
 
 
-def tief(b: Bewertung, namen: str, sind: str, sekunden: int, sie: str) -> str:
+def tief(b: Bewertung, namen: str, sind: str, sekunden: int, sie: str, fehlende: list | None = None) -> str:
+    """'' = keine Warnung: du bist den Fehlenden zusammen klar ueberlegen (Live-Partie 26.09.: 'Du stehst tief,
+    zurueck' an Riven Level 12 gegen Vi Level 6)."""
+    if fehlende:
+        gl = [g for g in b.gegner if g.s.name in {s.name for s in fehlende}]
+        if gl and b.kraft_gegen(gl, mit_verbuendeten=False) >= KLAR_STAERKER and (b.leben is None or b.leben >= 0.5):
+            return ""
     weg = "noch nie gesehen" if sekunden >= b.zeit - 5 else f"seit {sek(sekunden)} weg"
     satz = f"Du stehst tief, {namen} {weg}."
     gruende = [x for x in verwundbar(b) if "weit vorn" not in x and "Turm" not in x]
@@ -431,7 +478,7 @@ def jungler_tot(b: Bewertung, sekunden: int, objective: str | None, nah: bool, p
             weg = f", du bist {sek(b.zum_objective)} weg" if b.zum_objective and b.zum_objective >= 8 else ""
             return f"{satz}: {name} jetzt, kein Konter möglich{weg}."
         tun = chance(b, platten)
-        return f"{satz}: ping {name}." + (f" Du: {tun}." if tun else "")
+        return f"{satz}: ping {name}." + (f" {tun}." if tun else "")
     tun = chance(b, platten)
     return f"{satz}: kein Gank möglich." + (f" {tun}." if tun else " Spiel nach vorn.")
 

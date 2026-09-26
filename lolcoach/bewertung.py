@@ -69,11 +69,26 @@ def tempo(s: Spieler) -> float:
     return (basis + flach) * (1 + prozent)
 
 
+def kraft(s: Spieler, leben: float | None) -> float:
+    """Kampfkraft grob, fuer den Vergleich zweier Seiten: Level (je Stufe ~ +10 %: Grundwerte und
+    Faehigkeitsraenge), Items (je 2500 Gold etwa eine Verdopplung), aktuelles Leben (unbekannt: 0,9).
+    Live-Partie 26.09., Carlos: "ich bin Level 12, Vi Level 6, volles Leben - und er sagt 'renn weg,
+    benutz Flash'". Ohne diese Zahl war jede Gefahr eine Laufzeit, nie ein Kampf."""
+    lv = 1.10 ** (max(1, s.level) - 1)
+    it = 1.0 + s.item_gold / 2500.0
+    hp = 0.9 if leben is None else max(0.05, min(1.0, leben))
+    return lv * it * hp
+
+
 def shutdown(s: Spieler) -> bool:
     """Liegt (sicher) ein Shutdown auf ihm? Das Kopfgeld 2026 waechst mit Gold aus Kills/Farm (Wiki Champion_
     gold_bounties), die API liefert das Gold der Gegner nicht - belastbar ist: ab 3 Kills und 3 mehr als Tode
     ist es ueber der Shutdown-Schwelle (Basis + 100)."""
     return s.kills >= 3 and s.kills - s.tode >= 3
+
+
+def _namen_liste(n: list[str]) -> str:
+    return n[0] if len(n) == 1 else ", ".join(n[:-1]) + " und " + n[-1]
 
 
 def todeszeit(level: int, zeit: float) -> float:
@@ -223,6 +238,42 @@ class Bewertung:
             wert += 1
             gruende.append(f"seine Ult ist weg")
         return wert, gruende
+
+    def kraft_gegen(self, gegen: list["GegnerLage"], mit_verbuendeten: bool = True) -> float:
+        """Kampfkraft deiner Seite geteilt durch die der Gegner (> 1: ihr gewinnt). Deine Seite: du (Leben aus
+        der API) und Mitspieler in 1500 Einheiten (Leben aus der HUD-Leiste, zu 80 % - nicht jeder steigt
+        voll ein). Gegner mit ihrem Leben aus dem Lebensbalken, sonst 0,9."""
+        wir = kraft(self.ich, self.leben)
+        if mit_verbuendeten and self.pos:
+            for s, wo, leben, _ in self.mitspieler:
+                if abstand(self.pos, wo) <= 1500:
+                    wir += 0.8 * kraft(s, leben)
+        die = sum(kraft(g.s, g.leben) for g in gegen)
+        return wir / die if die > 0 else 99.0
+
+    def ueberlegen_satz(self, gegen: list["GegnerLage"]) -> str:
+        """Gesprochen, warum du staerker bist: 'Vi ist 6 Level und 3000 Gold unter dir, du hast volles Leben'."""
+        if len(gegen) == 1:
+            g = gegen[0]
+            teile = []
+            lv = self.ich.level - g.s.level
+            gd = self.ich.item_gold - g.s.item_gold
+            if lv > 0:
+                teile.append(f"{lv} Level")
+            if gd >= 500:
+                teile.append(f"{gd // 100 * 100} Gold")
+            satz = f"{g.champion} ist {' und '.join(teile)} unter dir" if teile else ""
+            if g.leben is not None and g.leben <= 0.6:
+                satz += (", " if satz else "") + f"{g.champion} hat {int(g.leben * 100)} Prozent Leben"
+        else:
+            satz = f"{_namen_liste([g.champion for g in gegen])} zusammen sind schwächer als du"
+        if self.leben is not None and self.leben >= 0.85:
+            satz += (", " if satz else "") + "du hast volles Leben"
+        elif self.leben is not None:
+            satz += (", " if satz else "") + f"du hast {int(self.leben * 100)} Prozent Leben"
+        if any(abstand(self.pos, wo) <= 1500 for _, wo, _, _ in self.mitspieler) if self.pos else False:
+            satz += ", dein Team ist bei dir"
+        return satz
 
     def vorsprung_satz(self) -> str:
         """Gesprochen: 'du bist 2 Level und 500 Gold vorn', 'er ist 1 Level vorn', 'du 1 Level, er 800 Gold'."""

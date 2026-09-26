@@ -109,6 +109,8 @@ class Zaubertimer:
     def benutzt(self, spieler, zauber: str, zeit: float, quelle: str, zurueck: float | None = None) -> Timer | None:
         """Traegt einen Verbrauch ein. Gibt den Timer zurueck, wenn er neu ist
         (ein zweiter Ping fuer denselben Verbrauch aendert nichts)."""
+        if zauber == "R" and getattr(spieler, "level", 6) < 6:
+            return None   # vor Level 6 gibt es keine Ult (Live 26.09., 1:47: "Heimerd / r" gelesen = Ult weg)
         schl = (spieler.name, zauber)
         alt = self.timer.get(schl)
         if alt and alt.zurueck > zeit and abs(alt.seit - zeit) < 60:
@@ -184,8 +186,12 @@ def aus_chat(zeile: str, p) -> list[tuple[object, str, float | None]]:
             namen[n.replace(" ", "").replace("'", "")] = s
     kandidaten = woerter + [a + b for a, b in zip(woerter, woerter[1:])]
     gegner = None
+    # ein einzelnes "r" ist schnell falsch gelesen ("Heimerd / r" war "Heimerdinger - Blitz"): dann muss der
+    # Name sicher sein
+    nur_r = all(w == "r" for w in woerter if w in woerterbuch)
     for w in kandidaten:
-        if treffer := difflib.get_close_matches(w.replace("'", ""), list(namen), n=1, cutoff=0.8):
+        if treffer := difflib.get_close_matches(w.replace("'", ""), list(namen), n=1,
+                                                cutoff=0.95 if nur_r else 0.8):
             gegner = namen[treffer[0]]
             break
     if gegner is None:

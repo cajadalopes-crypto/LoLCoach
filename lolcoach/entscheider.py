@@ -29,6 +29,7 @@ from .kaufplan import _dat as kaufplan_dat
 from .komponist import OBJ_NAME, sek
 
 LANE_PHASE_BIS = 840
+STAERKER_ALS = 1.5      # Kampfkraft-Verhaeltnis, ab dem ein Rueckzug-Plan entfaellt
 HALTEN = 3.0            # so lange muss eine neue beste Option halten, bevor sie gesagt wird
 ABSTAND = 25.0          # mindestens so viele Sekunden zwischen zwei Plaenen
 GLEICH_SPERRE = 75.0    # derselbe Plan kommt fruehestens nach so vielen Sekunden wieder
@@ -135,6 +136,8 @@ class Entscheider:
             lane_allein = (not fremde and g is not None and any(x.s.name == g.s.name for x in gefahr)
                            and b.leben is not None and b.leben < 0.45 and wert_kraefte <= -0.5)
             ausgesetzt = bool(verwundbar) or len(knapp) >= 2 or (b.tiefe or 0) >= 0.5
+            if knapp and b.kraft_gegen(knapp) >= STAERKER_ALS and (b.leben is None or b.leben >= 0.5):
+                knapp, lane_allein = [], False      # du gewinnst den Kampf - kein Rueckzug
             if (knapp and ausgesetzt) or lane_allein:
                 x = knapp[0] if knapp else g
                 wer = _namen_kurz(knapp) if len(knapp) >= 2 else x.champion
@@ -187,14 +190,14 @@ class Entscheider:
         #    (Camille-Partie 26.09., 4:42/4:50: "Gragas 19 s zu dir, zurueck" und 8 s spaeter "Spiel auf Rumble")
         j_weit = j is None or j.s.tot or (not j.unbekannt and j.ankunft is not None and j.ankunft >= 25
                                           and j_bei_mir < 0.5)
+        #    Gesprochen wird das Kampf-Urteil von regeln._fenster (denker.py, alle Faktoren); hier steht es nur als
+        #    Option fuer die Frage "was soll ich jetzt machen?" (pruefe() spricht "druck" nicht selbst).
         if g and not g.s.tot and g.seit is not None and g.seit < 2 and not gefahr and not serie \
                 and (b.leben or 1) >= 0.6 and wert_kraefte >= 1 and j_weit:
-            grund = f"{j.champion} ist {'tot' if j.s.tot else j.ort}" if j and (j.s.tot or not j.unbekannt) else ""
-            hp = f", {g.champion} hat {int(g.leben * 100)} Prozent Leben" if g.leben is not None and g.leben <= 0.6 else ""
-            aus.append(Option("druck", f"Spiel auf {g.champion}: {vorsprung or 'du bist stärker'}{hp}"
-                              + (f", {grund}" if grund else "")
-                              + (f" - {b.trade}." if b.trade else "."),
-                              60 + 20 * wert_kraefte, 2 + bool(grund)))
+            from . import denker
+            u = denker.urteil(b)
+            if u is not None and u.art in ("kill", "kill_schnell", "trade", "turm"):
+                aus.append(Option("druck", denker.fenster_satz(b, u), 60 + 20 * wert_kraefte, 3))
 
         # 4) Recall-Planung mit Reihenfolge: Welle -> back -> Objective
         braucht_back = b.gold >= 1100 or (b.leben is not None and b.leben < 0.45)
@@ -420,6 +423,9 @@ class Entscheider:
                 return None
         if not beste.dringend and b.zeit - self._kandidat[1] < HALTEN:
             return None
+        if beste.name == "druck":
+            return None     # spricht regeln._fenster, mit Anlass und Sperre
+
         einmal = beste.name in ("gank_erwartet", "gank_weg")
         if beste.name == "reset":
             self._einmal.add(("reset", b.tode_kurz[-1]))   # je Todesserie einmal

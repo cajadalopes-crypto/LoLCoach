@@ -255,6 +255,50 @@ def bewertung_und_plan():
     assert kaufplan.plan("Riven", (1055, 3158), 1000).satz() == "noch 50 bis Caulfields Kriegshammer"
 
 
+def denkkette():
+    """Carlos' Beispiel (Live 26.09.): du Level 6, er 5, Ult und Zuenden bereit, er ohne Flash, Jungler weit weg
+    -> zusammenhaengend "geh rein, das ist ein Kill" mit Gold und Kauf danach. Am Turm: warten. Jungler nah: kein
+    All-in. Dazu die Stimme ("Vi" ist nicht "sechs") und die falsch gelesene Ult ("Heimerd / r" um 1:47)."""
+    from dataclasses import replace
+    from lolcoach import bewertung, denker, stimme
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.zeit > 400)
+    g, j = p.gegenueber(), p.jungler(zustand.gegenteam(p.mein_team))
+    ich = replace(p.ich, level=6, items=(1055, 2003), item_gold=1100)
+    g = replace(g, level=5, item_gold=900)
+
+    def gl(s, **kw):
+        a = dict(s=s, sichtbar=True, seit=0.0, ort="oben", abstand=700.0, ankunft=2.0, tempo=345.0, flash=None,
+                 ult=None, level_vorsprung=s.level - ich.level, gold_vorsprung=s.item_gold - ich.item_gold)
+        a.update(kw)
+        return bewertung.GegnerLage(**a)
+    b = bewertung.Bewertung(zeit=330, ich=ich, leben=0.95, gold=1150, pos=(1500, 12500), ult=True,
+                            zweiter=("SummonerDot", 0.0), partie=p)
+    b.lane = gl(g, flash=200.0)
+    b.jungler = gl(j, sichtbar=False, seit=5.0, ort="in seinem unteren Jungle", abstand=9000.0, ankunft=25.0)
+    b.gegner = [b.lane, b.jungler]
+    u = denker.urteil(b)
+    assert u.art == "kill", (u.art, u.wert, [(x.art, x.wert) for x in u.faktoren])
+    satz = denker.fenster_satz(b, u, anlass=f"Du bist jetzt Level 6, {g.champion} erst 5", ohne={"ult"})
+    assert satz.startswith(f"Du bist jetzt Level 6, {g.champion} erst 5.") and "Dazu hat" in satz, satz
+    assert "kein Flash" in satz and "Also geh rein - das ist ein Kill." in satz and "Mit dem Kill hast du" in satz, satz
+    assert satz.count("Level 6") == 1, satz                      # der Anlass sagt das Level, nicht zweimal
+    # am Turm: warten (kein Dive - Live 11:00/11:08), mit dem Jungler nah: kein All-in
+    b.lane = gl(g, flash=200.0, pos=bewertung.TUERME[(zustand.gegenteam(p.mein_team), "Top", "aussen")])
+    assert denker.urteil(b).art == "turm", denker.urteil(b).art
+    b.jungler = gl(j, sichtbar=False, seit=3.0, ort="im oberen Fluss", abstand=1500.0, ankunft=4.0)
+    b.gegner = [b.lane, b.jungler]
+    u = denker.urteil(b)
+    assert u.art == "halten" and "kein All-in, solange" in denker.fenster_satz(b, u), denker.fenster_satz(b, u)
+    # Stimme: "Vi" als Name, erster Teilsatz frueh
+    assert stimme.sprechbar("Vi ist oben, Kai'Sa unten.") == "Wai ist oben, Kaisa unten."
+    assert stimme.teilsaetze("Du bist Level 6: geh rein. Danach back.") == ["Du bist Level 6:", "geh rein.", "Danach back."]
+    # Ult erst ab Level 6; ein einzelnes "r" nur mit sicherem Namen
+    p.zeit = 110
+    assert not zauber.aus_chat("01:45 Riven (Riveh): Heimerd / r", p)
+    t = zauber.Zaubertimer()
+    assert t.benutzt(replace(g, level=2), "R", 107, "Chat") is None
+
+
 def platten_lesen():
     """Platten-Ziffern der Turm-Icons (Camille-Partie, ~10:40): oben 2, Mitte 4, unten 4 bei ihm, deine
     Mitte 4; Teemos Icon verdeckt deinen inneren Mid-Turm -> keine Zahl statt einer falschen."""
@@ -331,6 +375,6 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
-                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, platten_lesen, teleport_von_der_minimap, lebensbalken_lesen):
+                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, platten_lesen, teleport_von_der_minimap, lebensbalken_lesen):
         test()
         print(f"{test.__name__} OK")
