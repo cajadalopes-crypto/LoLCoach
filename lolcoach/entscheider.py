@@ -87,7 +87,7 @@ class Option:
         return {"zurueck": "gefahr", "druck": "druck", "freeze": "gefahr", "gruppe": "objective",
                 "obj_plan": "objective", "seite": "seite", "seite_nicht": "seite", "gank": "druck",
                 "invade": "druck", "hilfe": "hilfe", "hilfe_fern": "seite", "reset": "gefahr",
-                "muster": "gefahr"}.get(
+                "muster": "gefahr", "ueberzahl": "druck"}.get(
             self.name, "back" if self.name.startswith("back") else "")
 
 
@@ -255,6 +255,18 @@ class Entscheider:
                 satz = (f"{name} in {sek(ob[1])}: {tun}spätestens {uhr(b.zeit + ob[1] - 30)} an der Grube sein"
                         + (f" - {prio}." if prio else "."))
                 aus.append(Option("obj_plan", satz, 90, 2 + reset + bool(prio)))
+
+        # 5a) Lokale Ueberzahl (Reasoning #19): du und Mitspieler bei dir gegen weniger sichtbare Gegner, und niemand
+        #     Unbekanntes kann gleich dazukommen - das ist der Moment, nicht erst der naechste Plan.
+        nah_gegner = [x for x in b.gegner if not x.s.tot and x.sichtbar and x.abstand is not None and x.abstand <= 1300]
+        stark = any(x.level_vorsprung >= 2 or x.gold_vorsprung >= 2000 for x in nah_gegner)
+        if (b.mitspieler_nah and nah_gegner and len(b.mitspieler_nah) + 1 > len(nah_gegner) and not gefahr
+                and (b.leben is None or b.leben >= 0.5) and not serie and not stark):
+            wir_n, die_n = len(b.mitspieler_nah) + 1, len(nah_gegner)
+            ziel = min(nah_gegner, key=lambda x: x.abstand)
+            dazu = f", {ziel.champion} ohne Flash" if ziel.flash and ziel.flash > 20 else ""
+            aus.append(Option("ueberzahl", f"{wir_n} gegen {die_n} hier: {_namen_kurz(nah_gegner)}"
+                                           f"{' allein' if die_n == 1 else ''}{dazu} - rein!", 150, 3, dringend=True))
 
         # 5b) Ein Mitspieler wird angegriffen: zwei Gegner sichtbar bei ihm (oder einer und er hat wenig Leben).
         #     Wer kann zuerst helfen? Du, wenn du rechtzeitig da bist - sonst die Gegenseite nutzen.
