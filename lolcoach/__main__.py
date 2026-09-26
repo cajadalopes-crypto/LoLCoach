@@ -216,11 +216,27 @@ def live(args) -> None:
                     _ansagen_speichern(schreiber.pfad, plan)
         if schreiber:
             # im Hintergrund: Claude braucht bis zu zwei Minuten, die naechste Partie nicht
-            threading.Thread(target=_bericht_im_hintergrund, args=(schreiber.pfad, args.ich), daemon=False).start()
+            if plan and len(plan.gesagt) >= 3:   # nur nach einer echten Partie, nicht nach einem Test
+                sprecher.sage("Partie vorbei. Ich schreibe jetzt das Review, das dauert ein, zwei Minuten.")
+            threading.Thread(target=_bericht_im_hintergrund, args=(schreiber.pfad, args.ich, sprecher, args.basis),
+                             daemon=False).start()
         print("Partie vorbei. Bericht wird geschrieben. Warte auf die naechste ...")
 
 
-def _bericht_im_hintergrund(pfad, ich) -> None:
+def _review_ansage(review: dict) -> str:
+    """Nach dem Review gesprochen: der wichtigste Punkt und der Fokus fuer die naechste Partie."""
+    from .gehirn import kuerzen
+    teile = ["Review ist fertig."]
+    lektionen = sorted(review.get("lektionen") or [], key=lambda l: -int(l.get("wichtigkeit") or 0))
+    if lektionen and lektionen[0].get("titel"):
+        teile.append(f"Wichtigster Punkt: {lektionen[0]['titel'].rstrip('.')}.")
+    if fokus := (review.get("naechste_partie") or "").strip():
+        teile.append(f"Fokus für die nächste Partie: {kuerzen(fokus, 1)}")
+    teile.append("Alles Weitere auf der Review-Seite - frag mich dort.")
+    return " ".join(teile)
+
+
+def _bericht_im_hintergrund(pfad, ich, sprecher=None, basis: str = liveapi.BASIS) -> None:
     try:
         ziel = bericht.schreibe(pfad, ich, mit_llm=False)  # die Claude-Analyse steckt im Review
         print(f"Bericht: {ziel}", flush=True)
@@ -229,9 +245,11 @@ def _bericht_im_hintergrund(pfad, ich) -> None:
     try:
         from . import review
         print("Review wird geschrieben (1-3 Minuten) ...", flush=True)
-        review.erstelle(pfad)
+        r = review.erstelle(pfad)
         stamm = pfad.name.removesuffix(".jsonl.gz")
         print(f"Review fertig: http://127.0.0.1:8791/?partie={stamm}", flush=True)
+        if sprecher is not None and r.get("lektionen") and not liveapi.laeuft(basis):
+            sprecher.sage(_review_ansage(r))   # nicht mitten in die naechste Partie hinein
     except Exception as e:
         print(f"Review fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
     try:

@@ -89,6 +89,14 @@ def profil_ueber_partien():
         assert (ordner / profil.CACHE).exists()
 
 
+def sprechbar():
+    from lolcoach.stimme import sprechbar as s
+    assert s("Jungler/Laner seit 30-40 s weg, ab 2500+ Gold") == \
+        "Jungler oder Laner seit 30 bis 40 Sekunden weg, ab mehr als 2500 Gold"
+    for gleich in ("Mid-Lane", "Level 6", "5:00", "Tri-Bush", "80 %", "KDA 27/6/4", "5 sind weg"):
+        assert s(gleich) == gleich, s(gleich)
+
+
 def recalls_im_verlauf():
     """Recall-Beginn = Beginn des Stillstands vor dem Teleport, zurueck = am eigenen Aussenturm
     (vorher: 8-12 s 'weg', weil ein veraltetes Icon und der Lane-Anfang in der Basis zaehlten)."""
@@ -113,6 +121,6 @@ def zauber_im_briefing():
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
-                 zauber_im_briefing, recalls_im_verlauf):
+                 zauber_im_briefing, recalls_im_verlauf, sprechbar):
         test()
         print(f"{test.__name__} OK")

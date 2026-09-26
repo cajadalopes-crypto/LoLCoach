@@ -18,6 +18,7 @@ oberen Jungle" abgewuergt - der Spieler hat die Warnung nie gehoert.
 from __future__ import annotations
 
 import queue
+import re
 import threading
 import time
 
@@ -107,6 +108,22 @@ class _Neural:
         return True
 
 
+_SPRECHBAR = [
+    (re.compile(r"(\d+)\s?[-–]\s?(\d+)"), r"\1 bis \2"),        # "30-40" -> "30 bis 40"
+    (re.compile(r"(\d+)\s?s\b"), r"\1 Sekunden"),              # "30 s" -> "30 Sekunden"
+    (re.compile(r"(\d+)\+"), r"mehr als \1"),                  # "2500+" -> "mehr als 2500"
+    (re.compile(r"(?<=[^\W\d])\s?/\s?(?=[^\W\d])"), " oder "),  # "Recall/Kauf" -> "Recall oder Kauf" (KDA 27/6/4 bleibt)
+]
+
+
+def sprechbar(text: str) -> str:
+    """Was Claude schreibt, ist nicht immer, was man sagt: die Stimme las 'Jungler/Laner' mit
+    Schraegstrich und '30-40 s' als 'dreissig minus vierzig s' (Review-Ansage 26.09.)."""
+    for muster, ersatz in _SPRECHBAR:
+        text = muster.sub(ersatz, text)
+    return text
+
+
 class Stimme:
     def __init__(self, sprache: str = "German", warten: bool = False, lautstaerke: int = 100,
                  neural: str | None = None, tempo: str = "+8%"):
@@ -143,7 +160,7 @@ class Stimme:
                     continue
             self._stopp.clear()
             self.protokoll.append(text)
-            if not motor.spreche(text, self._stopp):
+            if not motor.spreche(sprechbar(text), self._stopp):
                 self._unterbrochen = (text, time.monotonic())
             if fertig is not None:
                 fertig.set()
