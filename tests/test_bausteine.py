@@ -97,6 +97,9 @@ def recalls_im_verlauf():
     r = [m for m in v.momente if m.art == "recall"]
     assert [verlauf.uhr(m.von) for m in r] == ["6:53", "10:01", "12:50"], [m.von for m in r]
     assert "Wieder in der Lane um 7:23 (30 s weg)" in r[0].fakten and "Gekauft: Caulfields Kriegshammer" in r[0].fakten
+    # Kaempfe nach Zeit UND Ort: der Kampf unten ohne dich ist einer, und er sagt, wie weit weg du warst
+    k = next(m for m in v.momente if m.art == "kampf" and verlauf.uhr(m.von) == "7:44")
+    assert k.titel == "Kampf 2:0 (ohne dich)" and any("0.99 Kartenbreiten entfernt" in f for f in k.fakten), k
 
 
 def zauber_im_briefing():

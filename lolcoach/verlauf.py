@@ -257,17 +257,49 @@ def _objective_name(e) -> str:
     return {"BaronKill": "Baron", "HeraldKill": "Herold", "HordeKill": "Larve"}.get(e.art, e.art)
 
 
+KAMPF_WEITE = 0.25       # Kartenanteil: weiter auseinander sind es zwei Kaempfe
+
+
+def _kill_ort(e, sekunden: list[Sekunde]) -> tuple[float, float] | None:
+    """Wo das Opfer zuletzt zu sehen war, kurz vor dem Kill (hoechstens 8 s alt)."""
+    sek = _sekunde(sekunden, e.zeit - 1)
+    pos = sek.positionen.get(e.opfer.name) if sek and e.opfer else None
+    return (pos[0], pos[1]) if pos and pos[2] < 8 else None
+
+
 def _kaempfe(partien: list[Partie], sekunden: list[Sekunde]) -> list[Moment]:
+    """Kills, die zeitlich UND oertlich zusammengehoeren. Nur nach der Zeit gruppiert, lagen
+    ein Solokill oben und ein Kampf im unteren Fluss in einem "Kampf" mit dem Ort
+    'Flussmitte' - dem Mittel zweier Orte, an dem nichts passiert war (Partie 3, 11:23)."""
     ende = partien[-1]
     kills = [e for e in ende.ereignisse if e.art == "ChampionKill"]
-    gruppen, aktuell = [], []
+    def beteiligte(e) -> set[str]:
+        return {n for n in (e.daten.get("KillerName"), e.daten.get("VictimName"), *e.daten.get("Assisters", [])) if n}
+
+    offen: list[tuple[list, list, set]] = []      # (Kills, bekannte Orte, Beteiligte)
+    gruppen = []
     for e in kills:
-        if aktuell and e.zeit - aktuell[-1].zeit > KAMPF_LUECKE:
-            gruppen.append(aktuell)
-            aktuell = []
-        aktuell.append(e)
-    if aktuell:
-        gruppen.append(aktuell)
+        ort = _kill_ort(e, sekunden)
+        for gr in [g for g in offen if e.zeit - g[0][-1].zeit > KAMPF_LUECKE]:
+            offen.remove(gr)
+            gruppen.append(gr[0])
+        passend = None
+        for gr in offen:
+            mitte = (sum(o[0] for o in gr[1]) / len(gr[1]), sum(o[1] for o in gr[1]) / len(gr[1])) if gr[1] else None
+            # ohne Ort: nur zusammen, wenn jemand an beiden Kills beteiligt war (Partie 3, 1:19 oben
+            # und 1:27 unten lagen sonst in einem Kampf)
+            if (_abstand(ort, mitte) <= KAMPF_WEITE) if ort and mitte else bool(beteiligte(e) & gr[2]):
+                passend = gr
+                break
+        if passend:
+            passend[0].append(e)
+            passend[2].update(beteiligte(e))
+            if ort:
+                passend[1].append(ort)
+        else:
+            offen.append(([e], [ort] if ort else [], beteiligte(e)))
+    gruppen += [g[0] for g in offen]
+    gruppen.sort(key=lambda g: g[0].zeit)
     aus = []
     for gr in gruppen:
         if len(gr) < 2:
@@ -289,13 +321,14 @@ def _kaempfe(partien: list[Partie], sekunden: list[Sekunde]) -> list[Moment]:
                   "Ablauf: " + "; ".join(f"{uhr(e.zeit)} {_wer(e)}"
                                           f" -> {(e.opfer.champion if e.opfer else e.daten.get('VictimName', '?'))}" for e in gr)]
         ort_opfer = None
-        opfer_pos = [sek.positionen.get(e.opfer.name) for e in gr if e.opfer and sek and sek.positionen.get(e.opfer.name)]
+        opfer_pos = [o for e in gr if (o := _kill_ort(e, sekunden))]
         if opfer_pos:
             ort_opfer = (sum(q[0] for q in opfer_pos) / len(opfer_pos), sum(q[1] for q in opfer_pos) / len(opfer_pos))
             fakten.append("Ort: " + minimap.ort(*ort_opfer, wir))
         ich_pos = _eigene_position(sek, p)
         if not beteiligt_ich:
-            fakten.append("Du warst nicht beteiligt" + (f" - du warst {minimap.ort(*ich_pos, wir)}" if ich_pos else ""))
+            weite = f", {_abstand(ich_pos, ort_opfer):.2f} Kartenbreiten entfernt" if ich_pos and ort_opfer else ""
+            fakten.append("Du warst nicht beteiligt" + (f" - du warst {minimap.ort(*ich_pos, wir)}{weite}" if ich_pos else ""))
         danach = [e for e in ende.ereignisse if bis < e.zeit <= bis + 60 and e.art in
                   ("TurretKilled", "DragonKill", "BaronKill", "HeraldKill", "HordeKill", "InhibKilled")]
         if danach:
