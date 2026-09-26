@@ -123,7 +123,9 @@ def markdown(a: Auswertung) -> str:
     g = e.gegenueber()
     dauer_min = e.zeit / 60
     team_kills = e.kills(e.mein_team) or 1
-    z = [f"# {ich.champion} gegen {g.champion if g else '?'} - {a.ergebnis}", ""]
+    bots = sum(1 for s in e.spieler if s.bot)
+    art = f" (Bot-Partie: {bots} Bots)" if bots else ""
+    z = [f"# {ich.champion} gegen {g.champion if g else '?'} - {a.ergebnis}{art}", ""]
     z.append(f"**{uhr(e.zeit)}** · {ich.kills}/{ich.tode}/{ich.assists} · "
              f"{ich.cs} CS ({ich.cs / dauer_min:.1f}/min) · "
              f"Killbeteiligung {(ich.kills + ich.assists) / team_kills:.0%} · Level {ich.level}")
@@ -187,7 +189,7 @@ SYSTEM = (
     "im Voice-Chat nach dem Spiel. Nenne die DREI wichtigsten Lektionen, jede mit: was passiert ist "
     "(mit Spielzeit), warum es ein Fehler oder eine gute Entscheidung war, und was er naechstes Mal "
     "konkret tut. Nur was die Daten stuetzen - keine erfundenen Details. Hoechstens 250 Woerter. "
-    "Wenn es eine Bot-Partie war (Gegner mit '-Bot'), sag kurz, was davon auf echte Gegner uebertragbar ist."
+    "Wenn die Ueberschrift 'Bot-Partie' sagt, sag kurz, was davon auf echte Gegner uebertragbar ist."
 )
 
 

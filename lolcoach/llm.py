@@ -12,6 +12,7 @@ import json
 import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 
@@ -34,14 +35,21 @@ def _programm() -> str:
     return str(kandidaten[-1])
 
 
-def frage(prompt: str, system: str | None = None, modell: str = "sonnet", timeout: float = 120) -> str:
-    befehl = [_programm(), "-p", prompt, "--model", modell, "--output-format", "json",
-              "--tools", ""]  # reiner Text, keine Werkzeuge
+def frage(prompt: str, system: str | None = None, modell: str = "sonnet", timeout: float = 120,
+          aufwand: str | None = None) -> str:
+    """Gemessen am 26.09.2026 ueber das Abo: sonnet 4-11 s je Frage, haiku 20-60 s (!).
+    Schlank: eigener Systemprompt statt des grossen Claude-Code-Prompts, keine
+    Werkzeuge, keine MCP-Server, keine Projektdateien (Arbeitsordner = Temp),
+    Frage ueber stdin (lange Lagen sprengen sonst die Kommandozeile)."""
+    befehl = [_programm(), "-p", "--model", modell, "--output-format", "json", "--tools", "",
+              "--no-session-persistence", "--strict-mcp-config", "--disable-slash-commands"]
     if system:
-        befehl += ["--append-system-prompt", system]
+        befehl += ["--system-prompt", system]
+    if aufwand:
+        befehl += ["--effort", aufwand]
     try:
-        lauf = subprocess.run(befehl, capture_output=True, text=True, encoding="utf-8",
-                              timeout=timeout, stdin=subprocess.DEVNULL)
+        lauf = subprocess.run(befehl, input=prompt, capture_output=True, text=True, encoding="utf-8",
+                              timeout=timeout, cwd=tempfile.gettempdir())
     except subprocess.TimeoutExpired as e:
         raise LLMFehler(f"keine Antwort nach {timeout:.0f} s") from e
     try:

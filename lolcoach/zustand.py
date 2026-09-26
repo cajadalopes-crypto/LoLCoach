@@ -47,6 +47,7 @@ class Spieler:
     item_gold: int         # Summe der Nicht-Verbrauchsgueter, Data-Dragon-Preise
     zauber: tuple[str, ...]  # stabile Schluessel, z. B. ("SummonerFlash", "SummonerTeleport")
     namen: frozenset[str] = field(repr=False)
+    bot: bool = False
 
     @property
     def hat_flash(self) -> bool:
@@ -218,6 +219,7 @@ def _spieler(roh: dict) -> Spieler:
                       for i in items if not i.get("consumable")),
         zauber=zauber,
         namen=namen,
+        bot=bool(roh.get("isBot", False)),
     )
 
 

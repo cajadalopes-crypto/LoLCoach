@@ -152,7 +152,8 @@ def lage_text(p: Partie, lagebild=None) -> str:
     """Kompakte Lage fuer Claude."""
     it = ddragon.items()
     zeilen = [f"Spielzeit {int(p.zeit // 60)}:{int(p.zeit % 60):02d}. Ich: {p.ich.champion} "
-              f"({ROLLE_DE.get(p.ich.rolle, '?')}), Gold {int(p.gold or 0)}."]
+              f"({ROLLE_DE.get(p.ich.rolle, '?')}), Gold {int(p.gold or 0)}."
+              + (" Bot-Partie (Gegner sind Bots)." if any(s.bot for s in p.gegner()) else "")]
     for team, wer in ((p.mein_team, "Mein Team"), (gegenteam(p.mein_team), "Gegner")):
         zeilen.append(f"{wer}:")
         for s in p.team(team):
@@ -173,13 +174,29 @@ def lage_text(p: Partie, lagebild=None) -> str:
 SYSTEM = ("Du bist ein Challenger-Coach fuer League of Legends und sitzt neben dem Spieler, der gerade "
           "eine Partie spielt. Er fragt dich per Sprache. Antworte auf Deutsch in hoechstens zwei kurzen "
           "Saetzen, gesprochen, ohne Aufzaehlungen oder Markdown: erst was er tun soll, dann kurz warum. "
-          "Nutze die Lage; erfinde nichts, was nicht darin steht.")
+          "Nutze die Lage; erfinde nichts, was nicht darin steht. Items nur mit Namen aus der mitgegebenen "
+          "Ladenliste nennen.")
 
 
-def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "haiku") -> str:
+KAUF_WORTE = {"kaufen", "kauf", "item", "items", "build", "bauen", "baue", "shop", "laden", "gold"}
+
+
+def laden_liste() -> str:
+    """Alle fertigen Items des Patches, deutsch - damit Claude keine Namen erfindet."""
+    it = ddragon.items()
+    namen = sorted({v["name"] for v in it.values()
+                    if v.get("gold", {}).get("purchasable") and v.get("maps", {}).get("11")
+                    and not v.get("into") and v["gold"]["total"] >= 2200 and not v.get("requiredChampion")})
+    return ", ".join(namen)
+
+
+def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet") -> str:
+    zusatz = ""
+    if set(_woerter(frage)) & KAUF_WORTE:
+        zusatz = f"\n\nItems im Laden (Patch {ddragon.version()}, nur diese Namen verwenden): {laden_liste()}"
     try:
-        return llm.frage(f"Lage:\n{lage_text(p, lagebild)}\n\nFrage des Spielers: {frage}",
-                         system=SYSTEM, modell=modell, timeout=30).strip()
+        return llm.frage(f"Lage:\n{lage_text(p, lagebild)}{zusatz}\n\nFrage des Spielers: {frage}",
+                         system=SYSTEM, modell=modell, timeout=40, aufwand="low").strip()
     except llm.LLMFehler as e:
         if "login" in str(e).lower():
             return "Für diese Frage brauche ich Claude, und die Anmeldung fehlt noch."
