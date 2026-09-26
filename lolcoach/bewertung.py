@@ -131,6 +131,7 @@ class Bewertung:
     platten_gegner: int | None = None   # Platten am vordersten stehenden Gegnerturm deiner Lane (Minimap)
     platten_eigen: int | None = None    # ... an deinem vordersten Turm
     prio: dict[str, str | None] = field(default_factory=dict)   # Lane -> "ihr" / "er" / None (Welle steht)
+    kampf: "Kampflage | None" = None    # Kampf um das naechste Objective (wenn es in <= 90 s kommt oder lebt)
 
     # --- Ableitungen -------------------------------------------------------------
 
@@ -281,6 +282,8 @@ class Bewertung:
                      + (f", du brauchst ~{int(self.zum_objective)} s dorthin" if self.zum_objective else ""))
         if self.mitspieler_nah:
             z.append("Mitspieler bei dir: " + ", ".join(s.champion for s in self.mitspieler_nah))
+        if self.kampf is not None:
+            z.append("Kampf um das Objective (Minimap-Positionen, HUD-Leben): " + self.kampf.urteil()[1])
         return "BEWERTUNG (berechnet, Worst Case fuer Laufzeiten):\n" + "\n".join(z)
 
 
@@ -360,6 +363,8 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
     if objective is None:
         objective = naechstes_objective(p)
     b.objective = objective
+    if objective and objective[1] <= 90 and lb is not None:
+        b.kampf = kampf_um(p, lb, objective[0])
     if objective and b.pos and objective[0] in GRUBEN:
         b.zum_objective = abstand(b.pos, einheiten(*GRUBEN[objective[0]])) * WEGFAKTOR / b.mein_tempo
     return b
@@ -430,3 +435,88 @@ def _gegner_lage(s: Spieler, p: Partie, lb, ich_pos) -> GegnerLage:
     return GegnerLage(s=s, sichtbar=sichtbar, seit=seit, ort=ort or "", abstand=ab, ankunft=ankunft, tempo=ms,
                       flash=flash, ult=ult, level_vorsprung=s.level - p.ich.level,
                       gold_vorsprung=s.item_gold - p.ich.item_gold, kommt_naeher=naeher)
+
+
+# --- Kampf um ein Objective --------------------------------------------------------
+
+KAMPF_FENSTER = 15.0     # wer in so vielen Sekunden an der Grube sein kann, kaempft mit
+
+
+@dataclass
+class Kampflage:
+    schl: str
+    wir: list[tuple[Spieler, float | None, float | None, bool | None]]   # (Spieler, Sekunden zur Grube, Leben, Ult bereit)
+    die: list[tuple[Spieler, float | None, float | None]]              # (Gegner, fruehestens an der Grube, seit wann nicht gesehen)
+    ohne_flash: list[str]
+    ohne_ult: list[str]
+    gold: int                  # Item-Gold ihr minus die (alle)
+
+    def zahlen(self) -> tuple[int, int, int]:
+        """(ihr in KAMPF_FENSTER, die sicher in KAMPF_FENSTER, die unbekannt)."""
+        wir = sum(1 for _, t, le, _ in self.wir if t is not None and t <= KAMPF_FENSTER and (le is None or le >= 0.35))
+        # Gegner: dort, wenn frisch gesehen (<= 10 s) und rechtzeitig; weg, wenn er es selbst im Worst Case nicht
+        # schafft; alles dazwischen ist unbekannt (Partie 7: "2 gegen 4" zaehlte jeden Worst Case als Gegner)
+        die = sum(1 for _, t, seit in self.die if t is not None and t <= KAMPF_FENSTER and seit is not None and seit <= 10)
+        offen = sum(1 for _, t, seit in self.die if t is None or (t <= KAMPF_FENSTER and (seit is None or seit > 10)))
+        return wir, die, offen
+
+    def urteil(self) -> tuple[str, str]:
+        """('nehmen' | 'abgeben' | 'offen', gesprochener Satz mit den Gruenden)."""
+        from .komponist import OBJ_NAME
+        wir, die, offen = self.zahlen()
+        ults = sum(1 for *_, u in self.wir if u)
+        schwach = [s.champion for s, t, le, _ in self.wir if t is not None and t <= KAMPF_FENSTER and le is not None and le < 0.35]
+        gruende = [f"ihr {wir} in 15 Sekunden dort" + (f" mit {ults} Ults" if ults else ""),
+                   f"sie {die}" + (f", {offen} unbekannt" if offen else "")]
+        if self.ohne_flash:
+            gruende.append(f"{', '.join(self.ohne_flash[:2])} ohne Flash")
+        if schwach:
+            gruende.append(f"{', '.join(schwach[:2])} fast tot")
+        if abs(self.gold) >= 1500:
+            gruende.append(f"{'ihr' if self.gold > 0 else 'sie'} {abs(self.gold) // 100 * 100} Gold vorn")
+        name = OBJ_NAME.get(self.schl, self.schl)
+        vorteil = wir - (die + offen * 0.5) + (0.5 if self.gold >= 1500 else -0.5 if self.gold <= -1500 else 0) \
+            + 0.3 * len(self.ohne_flash) + 0.4 * len(self.ohne_ult)
+        if vorteil >= 1:
+            return "nehmen", f"{name}: {', '.join(gruende)} - nehmen."
+        if vorteil <= -1:
+            return "abgeben", f"{name} nicht erzwingen: {', '.join(gruende)} - abgeben, auf der anderen Seite tauschen."
+        return "offen", f"{name} ist ein Münzwurf: {', '.join(gruende)} - nur mit Sicht und allen Ults."
+
+
+def kampf_um(p: Partie, lb, schl: str) -> Kampflage | None:
+    """Wer kann in wie vielen Sekunden an der Grube von `schl` sein - beide Seiten - und in welchem Zustand."""
+    if lb is None or not getattr(lb, "aktiv", False) or schl not in GRUBEN or not p.ich:
+        return None
+    grube = einheiten(*GRUBEN[schl])
+    wir = []
+    for s in p.team(p.mein_team):
+        if s.tot:
+            continue
+        g = lb.gesehen(s)
+        t = abstand(einheiten(g[1], g[2]), grube) * WEGFAKTOR / tempo(s) if g and p.zeit - g[0] < 5 else None
+        if s.name == p.ich.name:
+            m = p.werte.get("maxHealth")
+            leben = p.werte.get("currentHealth", 0) / m if m else None
+            ult = None
+        else:
+            leben, ult = lb.leben(s, p.zeit), lb.ult_bereit(s, p.zeit)
+        wir.append((s, t, leben, ult))
+    die, ohne_flash, ohne_ult = [], [], []
+    for s in p.gegner():
+        if s.tot:
+            continue
+        g = lb.gesehen(s)
+        if g and p.zeit - g[0] < UNBEKANNT_AB:
+            seit = 0.0 if lb.sichtbar(s) else p.zeit - g[0]
+            t = max(0.0, abstand(einheiten(g[1], g[2]), grube) * WEGFAKTOR / tempo(s) - seit)
+        else:
+            seit = t = None
+        die.append((s, t, seit))
+        if hasattr(lb, "zauber"):
+            if (r := lb.zauber.fehlt(s, "SummonerFlash", p.zeit)) and r > 20:
+                ohne_flash.append(s.champion)
+            if (r := lb.zauber.fehlt(s, "R", p.zeit)) and r > 20:
+                ohne_ult.append(s.champion)
+    gold = p.item_gold(p.mein_team) - p.item_gold(gegenteam(p.mein_team))
+    return Kampflage(schl, wir, die, ohne_flash, ohne_ult, gold)

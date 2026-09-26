@@ -437,3 +437,16 @@ def lane_recall(b: Bewertung, champion: str, platten: bool) -> str:
     if b.gold >= RECALL_GOLD:
         tun += f", danach selbst back mit {b.gold // 100 * 100} Gold"
     return f"{satz}: {tun}."
+
+
+def gegner_am_objective(namen: str, grube: str, name: str, kl) -> str:
+    """Die Gegner machen ein Objective: hin (contesten) oder tauschen - aus der Kampflage."""
+    wir, die, offen = kl.zahlen()
+    art, _ = kl.urteil()
+    satz = f"{namen} an der {grube}, sie machen {name}"
+    zahl = f"{wir} gegen {die}" + (f" und {offen} unbekannt" if offen else "")
+    if art == "nehmen":
+        return satz + f". Ihr seid in 15 Sekunden {zahl}: hin und streitig machen."
+    if art == "abgeben":
+        return satz + f". Nur {zahl}: nicht reinlaufen, auf der anderen Seite tauschen."
+    return satz + f". {zahl}: nur mit allen und Ults hin, sonst tauschen."

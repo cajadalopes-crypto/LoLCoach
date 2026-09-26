@@ -695,8 +695,10 @@ class Regelwerk:
             gegner = [s for s in p.gegner() if not s.tot and self.lage.sichtbar(s) and nah(s, gx, gy, cfg["radius"])]
             if len(gegner) >= 2 and ich_weit > cfg["eng"] and frei(schl, "gegner"):
                 self._obj_gesagt[(schl, "gegner")] = p.zeit
-                yield Ansage(cfg["gegner"].format(namen=_namen(gegner), grube=grube, objective=name), WICHTIG,
-                             f"objgegner:{schl}", gueltig=15, sperre=20)
+                text = cfg["gegner"].format(namen=_namen(gegner), grube=grube, objective=name)
+                if (kl := bewertung.kampf_um(p, self.lage, schl)) is not None:
+                    text = komponist.gegner_am_objective(_namen(gegner), grube, name, kl)
+                yield Ansage(text, WICHTIG, f"objgegner:{schl}", gueltig=15, sperre=20, thema="objective")
             if ich_weit <= cfg["ich_nah"]:
                 continue   # dein Team faengt an, und du stehst selbst dort - das siehst du
             freunde = [s for s in p.team(p.mein_team) if s is not p.ich and not s.tot]
