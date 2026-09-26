@@ -293,9 +293,12 @@ def denkkette():
     from lolcoach import rechnung
     assert rechnung.zuenden_schaden(6) == 175 and rechnung.zuenden_schaden(18) == 475
     b.lane = gl(g, flash=200.0, leben=0.1)
-    assert any(x.art == "zuenden_kill" for x in denker.urteil(b).faktoren), denker.urteil(b).faktoren
+    # Riven: der volle Combo (combo.py) samt Zuenden rechnet - bei anderen Champions Zuenden allein
+    faktoren = denker.urteil(b).faktoren
+    assert any(x.art in ("combo_kill", "zuenden_kill") for x in faktoren), faktoren
     satz = denker.fenster_satz(b, denker.urteil(b))
-    assert "dein Zünden tötet Shen allein, Shen hat nur noch etwa 100 Leben" in satz and "Prozent Leben" not in satz, satz
+    assert "Shen hat noch 100 Leben" in satz or "Shen hat nur noch etwa 100 Leben" in satz, satz
+    assert "Prozent Leben" not in satz, satz
     b.jungler = gl(j, sichtbar=False, seit=3.0, ort="im oberen Fluss", abstand=1500.0, ankunft=4.0)
     b.gegner = [b.lane, b.jungler]
     u = denker.urteil(b)
@@ -401,6 +404,25 @@ def live_partie_2121():
     assert "Full Clear ist etwa jetzt fertig" in satz and "Scuttle oder der erste Gank" in satz, satz
 
 
+def combo_rechnung():
+    """Reasoning #1 'Reicht mein Full-Combo-Schaden fuer den Kill?' - Riven (Wiki V26.15) aus der Live-Partie 21:21:
+    Level 7, AD 119, Q3/W1/E1/R1 gegen Gragas Level 5 (Ruestung 53, 1235 Leben): voll ~1100 (reicht nicht), auf
+    halbem Leben ~1220 gegen 618 (reicht). Windschnitt waechst mit seinem fehlenden Leben."""
+    from lolcoach import combo, rechnung
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER.parent / "aufnahmen" / "2026-09-26_212105.jsonl.gz"))
+             if q.zeit > 330 and q.ich and q.ich.level >= 6) \
+        if (HIER.parent / "aufnahmen" / "2026-09-26_212105.jsonl.gz").exists() else None
+    if p is None:
+        return      # Aufnahme nicht da (frischer Checkout): die Rechnung laeuft trotzdem im Kampf-Urteil
+    g = p.gegenueber()
+    voll = combo.schaden(p.ich, p.werte, p.raenge, None, g, 1.0)
+    halb = combo.schaden(p.ich, p.werte, p.raenge, None, g, 0.5)
+    assert 950 <= voll <= 1250 and halb > voll and halb > 0.5 * rechnung.max_leben(g), (voll, halb)
+    ohne_r = combo.schaden(p.ich, p.werte, p.raenge, {"Q": True, "W": True, "E": True, "R": False}, g, 0.5)
+    assert ohne_r < halb, "ohne bereite Ult keine Windschnitt-Rechnung"
+    assert not combo.kann("Heimerdinger")          # nur Carlos' Champions - sonst keine Zahl
+
+
 def platten_lesen():
     """Platten-Ziffern der Turm-Icons (Camille-Partie, ~10:40): oben 2, Mitte 4, unten 4 bei ihm, deine
     Mitte 4; Teemos Icon verdeckt deinen inneren Mid-Turm -> keine Zahl statt einer falschen."""
@@ -485,7 +507,7 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
-                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121,
+                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121, combo_rechnung,
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen):
         test()
         print(f"{test.__name__} OK")

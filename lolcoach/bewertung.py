@@ -214,6 +214,7 @@ class Bewertung:
     kampf: "Kampflage | None" = None    # Kampf um das naechste Objective (wenn es in <= 90 s kommt oder lebt)
     tod_kostet: float = 0.0     # so lange waerst du tot, wenn du jetzt stirbst
     kauf: "object | None" = None   # kaufplan.Kauf: was dein Gold jetzt kauft / was bis zum naechsten Bauteil fehlt
+    bereit: dict | None = None  # eigene Q/W/E/R bereit (HUD), None = unbekannt
 
     # --- Ableitungen -------------------------------------------------------------
 
@@ -459,7 +460,9 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
                     b.flash = rest
                 elif b.zweiter is None:
                     b.zweiter = (schl, rest)
-        if (ef := lb.eigene_faehigkeiten(p.zeit)) and p.ich.level >= 6:
+        if ef := lb.eigene_faehigkeiten(p.zeit):
+            b.bereit = ef
+        if ef and p.ich.level >= 6:
             b.ult = ef.get("R")     # vor Level 6 ist R nie "bereit" - das ist kein Cooldown
         if (g := lb.gesehen(p.ich)) and p.zeit - g[0] < 3 and not p.ich.tot:
             b.pos = einheiten(g[1], g[2])

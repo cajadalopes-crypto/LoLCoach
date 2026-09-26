@@ -38,7 +38,8 @@ WEG_UNTER = -2.5       # er ist klar staerker: nicht traden
 TRAENKE = (2003, 2031, 2033)   # Heiltrank, Nachfuellbarer, Verderbender - verkaufbar fuer den naechsten Kauf
 KAUF_LOHNT_AB = 850    # so viel muss ein Einkauf wert sein, damit sich ein Recall dafuer lohnt (Langschwert: nein)
 KRAFT = ("level", "ult", "items", "matchup")
-ZUSTAND = ("leben", "zuenden_kill", "flash", "flash_ich", "zuenden", "welle", "gold_offen", "mana", "mana_er")
+ZUSTAND = ("leben", "zuenden_kill", "combo_kill", "combo_knapp", "combo_zu_wenig", "flash", "flash_ich", "zuenden",
+           "welle", "gold_offen", "mana", "mana_er")
 UMFELD = ("jungler", "jungler_nah", "jungler_weg", "dritter", "hilfe", "zone")
 ZONE_NAME = {"Heimerdinger": "Geschütze", "Zyra": "Pflanzen", "Azir": "Soldaten", "Illaoi": "Tentakel",
              "Yorick": "Ghule", "Teemo": "Pilze", "Shaco": "Boxen"}
@@ -135,7 +136,13 @@ def kampf_faktoren(b: Bewertung) -> list[Faktor]:
         f.append(Faktor(1.0, "flash", n, "hat", "kein Flash"))
     if b.flash is not None and b.flash > 10:
         f.append(Faktor(-0.8, "flash_ich", "dein Flash", "ist", "weg"))
-    if b.zweiter and b.zweiter[0] == "SummonerDot" and b.zweiter[1] <= 0:
+    zuenden_bereit = bool(b.zweiter and b.zweiter[0] == "SummonerDot" and b.zweiter[1] <= 0)
+    combo_faktor = _combo(b, g, zuenden_bereit)
+    if combo_faktor is not None:
+        f.append(combo_faktor)
+    if zuenden_bereit and combo_faktor is not None and combo_faktor.art == "combo_kill":
+        pass                                  # Zuenden steckt in der Combo-Rechnung
+    elif zuenden_bereit:
         # Reasoning #1 ("reicht mein Schaden fuer den Kill?"): sein Leben aus dem Balken x sein Max-Leben (Data
         # Dragon) gegen den wahren Schaden von Zuenden - mit 10 % Abschlag (Heilung, Schilde)
         from . import rechnung
@@ -255,6 +262,28 @@ def _hat_mana(champion_id: str) -> bool:
     return (ddragon.champions().get(champion_id) or {}).get("partype") in ("Mana", "Mana ")
 
 
+def _combo(b: Bewertung, g: GegnerLage, zuenden: bool) -> Faktor | None:
+    """Reasoning #1: dein voller Combo (combo.py: Wiki-Werte, deine Raenge und dein AD aus der API, bereit laut
+    HUD, seine Ruestung) plus Zuenden gegen sein Leben (Balken x Max-Leben). Nur fuer Riven, Camille, Graves und
+    nur mit seinem Leben im Bild - sonst keine Zahl."""
+    from . import combo, rechnung
+    if g.leben is None or b.partie is None or not combo.kann(b.ich.champion_id):
+        return None
+    dmg = combo.schaden(b.ich, b.partie.werte, b.partie.raenge, b.bereit, g.s, g.leben)
+    if dmg is None or dmg <= 0:
+        return None
+    if zuenden:
+        dmg += rechnung.zuenden_schaden(b.ich.level)
+    rest = g.leben * rechnung.max_leben(g.s)
+    n = g.champion
+    zahl, leben = int(dmg) // 10 * 10, int(rest) // 10 * 10
+    if dmg >= 1.1 * rest:     # 10 % Reserve: Heilung, Schilde, ein verfehlter Treffer
+        return Faktor(2.2, "combo_kill", "dein voller Combo", "macht", f"etwa {zahl} Schaden, {n} hat noch {leben} Leben")
+    if dmg >= 0.8 * rest:
+        return Faktor(0.6, "combo_knapp", "dein Combo", "macht", f"etwa {zahl}, {n} hat noch {leben} - das ist knapp")
+    return Faktor(-1.0, "combo_zu_wenig", "dein Combo", "macht", f"nur etwa {zahl}, {n} hat noch {leben} Leben")
+
+
 def urteil(b: Bewertung) -> Urteil | None:
     """Summe der Faktoren -> was du gegen deinen Lane-Gegner jetzt tust."""
     f = kampf_faktoren(b)
@@ -284,6 +313,10 @@ def urteil(b: Bewertung) -> Urteil | None:
         art = "weg"
     else:
         art = "halten"
+    # Die Rechnung belegt den Kill mit Reserve (Combo + Zuenden >= 110 % seines Lebens): dann kein "trade hart, All-in
+    # erst unter der Haelfte" (Nachlauf 21:21, 2:44: "dein Combo macht 510, Gragas hat noch 450 - trade hart")
+    if "combo_kill" in arten and art in ("trade", "halten") and not bedroht:
+        art = "kill_schnell" if "jungler_weg" in arten else "kill"
     # Risiko gegen Ertrag (Reasoning #27/#28): ein Kill, der zu 80 % aufgeht, ist trotzdem falsch, wenn dein Tod
     # (Kopfgeld + Todeszeit) mehr kostet, als der Kill bringt - "play not to throw".
     if art in ("kill", "kill_schnell") and ev is not None and ev[0] < 0:
@@ -375,6 +408,8 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
     j = b.jungler.champion if b.jungler else "der Jungler"
     if "ult" in ohne:
         ohne = set(ohne) | {"level"}           # "Du bist jetzt Level 6, er erst 5" sagt beides
+    if {"combo_kill", "combo_knapp", "combo_zu_wenig", "zuenden_kill"} & set(ohne):
+        ohne = set(ohne) | {"leben"}           # "Gragas hat noch 350 Leben" sagt der Anlass schon
     # das Matchup (Siegquote) einmal je 5 Minuten - Live 21:21 hing "schweres Matchup, 45,9 Prozent" an jeder
     # Kampf-Ansage (60 Zeichen, fuenfmal)
     box = getattr(b, "matchup_box", None)
@@ -385,8 +420,8 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
     haupt = sorted((x for x in fs if (x.wert > 0) == fuer_dich and x.art not in ("turm", "kopfgeld")),
                    key=lambda x: -abs(x.wert))
     gegen = sorted((x for x in fs if (x.wert > 0) != fuer_dich), key=lambda x: -abs(x.wert))
-    if any(x.art == "zuenden_kill" for x in haupt):
-        haupt = [x for x in haupt if x.art != "leben"]      # "...hat nur noch etwa 100 Leben" sagt es schon
+    if any(x.art in ("zuenden_kill", "combo_kill", "combo_knapp") for x in haupt):
+        haupt = [x for x in haupt if x.art != "leben"]      # "...hat noch 540 Leben" sagt es schon
     gruende = haupt[:3]
     aber = []
     if fuer_dich and u.art != "kill_schnell":

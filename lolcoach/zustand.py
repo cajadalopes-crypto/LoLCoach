@@ -76,6 +76,7 @@ class Partie:
     zuschauer: bool
     namensbuch: dict[str, Spieler | None] = field(default_factory=dict, repr=False)
     werte: dict = field(default_factory=dict, repr=False)  # eigene championStats (Leben, Vamp, ...)
+    raenge: dict = field(default_factory=dict, repr=False)  # eigene Faehigkeitsraenge Q/W/E/R (Live-API)
 
     @property
     def heilung(self) -> float:
@@ -315,4 +316,6 @@ def partie(daten: dict, ich: str | None = None) -> Partie:
         zuschauer=zuschauer,
         namensbuch=nach_name,
         werte={} if zuschauer else aktiv.get("championStats", {}),
+        raenge={} if zuschauer else {t: int((aktiv.get("abilities") or {}).get(t, {}).get("abilityLevel") or 0)
+                                     for t in "QWER"},
     )
