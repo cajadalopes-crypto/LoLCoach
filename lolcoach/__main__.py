@@ -164,9 +164,13 @@ class _LiveSicht:
         return self.b.ereignisse()
 
 
+_ANSAGEN_VORHER: dict = {}   # fortgesetzte Aufnahme -> Ansagen vor dem Neustart
+
+
 def _ansagen_speichern(pfad, plan: sprechplan.Sprechplan) -> None:
     ziel = pfad.with_name(pfad.name.removesuffix(".jsonl.gz") + "_ansagen.json")
-    ziel.write_text(json.dumps([asdict(a) for a in plan.gesagt], ensure_ascii=False, indent=0), encoding="utf-8")
+    alle = _ANSAGEN_VORHER.get(pfad, []) + [asdict(a) for a in plan.gesagt]
+    ziel.write_text(json.dumps(alle, ensure_ascii=False, indent=0), encoding="utf-8")
 
 
 _SPERRE = None   # haelt den Sperr-Port, solange der Coach laeuft
@@ -218,8 +222,25 @@ def live(args) -> None:
             continue
         schreiber = beobachter = None
         if not args.ohne_aufnahme:
-            schreiber = aufzeichnung.Schreiber()
-            print(f"Partie erkannt - Aufnahme: {schreiber.pfad}")
+            try:
+                fort = aufzeichnung.fortsetzbar(liveapi.alles(args.basis))
+            except Exception:
+                fort = None
+            schreiber = aufzeichnung.Schreiber(fortsetzen=fort)
+            if fort:
+                # dieselbe Partie wie die juengste Aufnahme (Neustart, Reconnect): weiterschreiben; das
+                # Review des Bruchstuecks ist veraltet und entsteht nach dem Spiel neu
+                stamm = fort.name.removesuffix(".jsonl.gz")
+                for rest in ("_review.json", "_verlauf.json", "_bericht.md"):
+                    fort.with_name(stamm + rest).unlink(missing_ok=True)
+                datei = fort.with_name(stamm + "_ansagen.json")
+                try:
+                    _ANSAGEN_VORHER[fort] = json.loads(datei.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    _ANSAGEN_VORHER[fort] = []
+                print(f"Partie erkannt - dieselbe wie eben, Aufnahme wird fortgesetzt: {schreiber.pfad}")
+            else:
+                print(f"Partie erkannt - Aufnahme: {schreiber.pfad}")
             for a in anzeigen:
                 if hasattr(a, "notizen"):  # Sprachnotizen landen neben der Aufnahme
                     a.notizen = schreiber.pfad.with_name(schreiber.pfad.name.removesuffix(".jsonl.gz") + "_notizen.md")
@@ -264,8 +285,11 @@ def _reviews_nachholen(hoechstens: int = 3) -> None:
     nachholen: die juengsten `hoechstens`, nur echte Partien ab 5 Minuten, still im Hintergrund."""
     try:
         from . import profil, review
+        jetzt = time.time()
         offen = [k for k in profil.partien(aufzeichnung.ORDNER) if k.dauer >= profil.KURZ
-                 and not review.pfade(aufzeichnung.ORDNER / f"{k.stamm}.jsonl.gz")["review"].exists()][:hoechstens]
+                 and not review.pfade(aufzeichnung.ORDNER / f"{k.stamm}.jsonl.gz")["review"].exists()
+                 # nicht, was vor Kurzem noch lief: die Partie kann gleich fortgesetzt werden (Neustart)
+                 and jetzt - (aufzeichnung.ORDNER / f"{k.stamm}.jsonl.gz").stat().st_mtime > 900][:hoechstens]
         for k in reversed(offen):   # aelteste zuerst: jedes Review sieht die frueheren
             print(f"Review wird nachgeholt: {k.stamm} ({k.champion} gegen {k.gegner}) ...", flush=True)
             review.erstelle(aufzeichnung.ORDNER / f"{k.stamm}.jsonl.gz")

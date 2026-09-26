@@ -10,6 +10,7 @@ from __future__ import annotations
 import gzip
 import json
 import time
+import zlib
 from pathlib import Path
 from typing import Iterator
 
@@ -19,10 +20,72 @@ import os
 ORDNER = Path(os.environ.get("LOLCOACH_AUFNAHMEN") or Path(__file__).resolve().parent.parent / "aufnahmen")
 
 
+def gz_text(pfad: Path) -> str:
+    """Der lesbare Inhalt einer gzip-Datei, auch wenn sie abgebrochen ist (Coach-Fenster zu): alle
+    Mitglieder, bis es nicht weitergeht; eine halbe letzte Zeile faellt weg."""
+    roh, teile = Path(pfad).read_bytes(), []
+    while roh:
+        d = zlib.decompressobj(16 + zlib.MAX_WBITS)
+        try:
+            teile.append(d.decompress(roh))
+        except zlib.error:
+            break
+        if not d.eof:           # abgebrochenes Mitglied: danach kann nichts Lesbares mehr kommen
+            break
+        roh = d.unused_data
+    text = b"".join(teile).decode("utf-8", "replace")
+    return text[:text.rfind("\n") + 1] if "\n" in text else ""
+
+
+def gz_saeubern(pfad: Path) -> None:
+    """Eine abgebrochene gzip-Datei sauber neu schreiben - sonst ist alles, was danach angehaengt wird,
+    unlesbar (der Leser haengt am fehlenden Ende des alten Stroms fest)."""
+    pfad = Path(pfad)
+    if not pfad.exists():
+        return
+    text = gz_text(pfad)
+    neu = pfad.with_name(pfad.name + ".neu")
+    with gzip.open(neu, "wt", encoding="utf-8") as f:
+        f.write(text)
+    neu.replace(pfad)
+
+
+def _spieler(daten: dict) -> list:
+    return sorted((s.get("riotId") or s.get("summonerName") or "", s.get("championName") or "")
+                  for s in daten.get("allPlayers") or [])
+
+
+def fortsetzbar(daten: dict, ordner: Path = ORDNER, hoechstens: float = 900) -> Path | None:
+    """Die juengste Aufnahme, wenn `daten` (jetzt laufende Partie) DIESELBE Partie ist - Coach neu gestartet
+    oder Reconnect: dieselben Spieler und Champions, die Spielzeit laeuft weiter, kein Spielende, zuletzt
+    vor hoechstens `hoechstens` Sekunden geschrieben. Sonst None (neue Partie, neue Aufnahme).
+    (26.09.: ein Neustart teilte Partie 7 in zwei Aufnahmen - zwei Reviews, zwei "Partien" im Fortschritt.)"""
+    kandidaten = sorted(Path(ordner).glob("*.jsonl.gz"), reverse=True)
+    if not kandidaten or time.time() - kandidaten[0].stat().st_mtime > hoechstens:
+        return None
+    letzte = None
+    for zeile in reversed(gz_text(kandidaten[0]).splitlines()):
+        try:
+            letzte = json.loads(zeile)["d"]
+            break
+        except (ValueError, KeyError):
+            continue
+    if not letzte or not _spieler(daten) or _spieler(letzte) != _spieler(daten):
+        return None
+    if any(e.get("EventName") == "GameEnd" for e in (letzte.get("events") or {}).get("Events", [])):
+        return None
+    if (daten.get("gameData") or {}).get("gameTime", 0) < (letzte.get("gameData") or {}).get("gameTime", 0) - 5:
+        return None
+    return kandidaten[0]
+
+
 class Schreiber:
-    def __init__(self, ordner: Path = ORDNER):
+    def __init__(self, ordner: Path = ORDNER, fortsetzen: Path | None = None):
         ordner.mkdir(parents=True, exist_ok=True)
-        self.pfad = ordner / time.strftime("%Y-%m-%d_%H%M%S.jsonl.gz")
+        if fortsetzen is not None:
+            gz_saeubern(fortsetzen)
+        self.pfad = fortsetzen or ordner / time.strftime("%Y-%m-%d_%H%M%S.jsonl.gz")
+        self.fortgesetzt = fortsetzen is not None
         self._f = gzip.open(self.pfad, "at", encoding="utf-8")
         self._offen = 0
 
@@ -60,7 +123,7 @@ def lies_mit_zeit(pfad: str | Path) -> Iterator[tuple[float, dict]]:
                     yield z["w"], z["d"]
                 except (json.JSONDecodeError, KeyError):
                     continue
-        except EOFError:
+        except (EOFError, OSError, zlib.error):   # abgebrochen (Fenster zu): lesen, was da ist
             return
 
 

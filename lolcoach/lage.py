@@ -286,6 +286,10 @@ class Beobachter(threading.Thread):
             leser = Leser()
         except Exception as e:
             self.fehler = f"Chat: {e}"
+        if self.ordner:   # fortgesetzte Partie: abgebrochene Protokolle erst saeubern, sonst ist das Angehaengte unlesbar
+            from .aufzeichnung import gz_saeubern
+            gz_saeubern(self.ordner / "sichtungen.jsonl.gz")
+            gz_saeubern(self.ordner / "ereignisse.jsonl.gz")
         protokoll = gzip.open(self.ordner / "sichtungen.jsonl.gz", "at", encoding="utf-8") if self.ordner else None
         self._ereignis_datei = gzip.open(self.ordner / "ereignisse.jsonl.gz", "at", encoding="utf-8") if self.ordner else None
         gespeichert: list[Path] = []

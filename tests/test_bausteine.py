@@ -130,6 +130,32 @@ def chat_zeitstempel():
     assert zauber.chat_zeit("Ille): Rumble- Blitz", 339.0) is None                                 # ohne Stempel
 
 
+def aufnahme_fortsetzen():
+    """Coach-Fenster mitten in der Partie getoetet (Datei nicht geschlossen), Coach neu gestartet: dieselbe
+    Partie wird erkannt und weitergeschrieben - und hinterher ist ALLES lesbar."""
+    import shutil
+    import tempfile
+    schnappschuesse = [d for d in aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")][:60]
+    with tempfile.TemporaryDirectory() as tmp:
+        ordner = Path(tmp)
+        s = aufzeichnung.Schreiber(ordner)
+        for d in schnappschuesse[:30]:
+            s.schreibe(d)
+        s._f.flush()
+        abbruch = ordner / "abbruch.gz"               # Stand der Platte beim Toeten: ohne gzip-Ende
+        shutil.copy(s.pfad, abbruch)
+        s._f.close()
+        abbruch.replace(s.pfad)
+        assert aufzeichnung.fortsetzbar(schnappschuesse[30], ordner) == s.pfad
+        andere = dict(schnappschuesse[30], allPlayers=schnappschuesse[30]["allPlayers"][:-1])
+        assert aufzeichnung.fortsetzbar(andere, ordner) is None            # andere Spieler: neue Partie
+        weiter = aufzeichnung.Schreiber(ordner, fortsetzen=s.pfad)
+        for d in schnappschuesse[30:]:
+            weiter.schreibe(d)
+        weiter.schliesse()
+        assert weiter.pfad == s.pfad and len(list(aufzeichnung.lies(s.pfad))) == 60
+
+
 def eigene_tasten():
     """Q W E R D F bereit? Echter HUD-Streifen aus Partie 6 (4K, ab Fenster 1075/1944): Q, W, D (Zuenden)
     bereit - E, R und F (Flash, 1:30) nicht. Gelber Tasten-Buchstabe = bereit."""
@@ -170,6 +196,7 @@ def zauber_im_briefing():
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
-                 zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten):
+                 zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
+                 aufnahme_fortsetzen):
         test()
         print(f"{test.__name__} OK")
