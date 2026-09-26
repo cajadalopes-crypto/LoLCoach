@@ -5,9 +5,10 @@ Gegners - und das steht auf dem Bildschirm (erlaubt: nur was du selbst siehst).
 
 Aufbau eines Champion-Balkens (vermessen am eigenen Balken, Spielbild der Camille-Partie, auf 1600 px
 Breite verkleinert, 4K-Spiel): links ein dunkles Level-Kaestchen (~16 x 16), rechts daneben der Balken,
-80 px breit und 8 px hoch, mit Strichen je 100 Leben; darunter der Ressourcenbalken, darueber der Name.
-Fuellfarbe: gruen = du, blau = Mitspieler, rot = Gegner. Anteil = Breite der Fuellung / 80.
-Gegenprobe am Bild: gelesen 67 %, HUD 617/955 = 65 %.
+78 px breit (geeicht, s. BALKEN) und 8 px hoch, mit Strichen je 100 Leben; darunter der Ressourcenbalken, darueber der Name.
+Fuellfarbe: gruen = du, blau = Mitspieler, rot = Gegner. Anteil = Breite der Fuellung / 78.
+Gegenprobe: Camille-Bild gelesen 65 %, HUD 617/955 = 65 %; 297 eigene Balken zweier Partien gegen die API: 90 %
+innerhalb +-2 % (`werkzeuge/balken_eichen.py`).
 
 Was hier NICHT geht und deshalb verworfen wird: Vasallen-Balken (duenner, kein Level-Kaestchen),
 Turm-Balken (breiter als 85 px), rote Schadenszahlen (keine Balkenform). Welcher Gegner es ist, sagt der
@@ -21,7 +22,12 @@ import cv2
 import numpy as np
 
 BREITE_REF = 1600          # Bildbreite, an der vermessen wurde
-BALKEN = 80                # Breite des Lebensbalkens (volle 100 %)
+# Breite des Lebensbalkens (volle 100 %). Geeicht am eigenen Balken gegen die Live-API (currentHealth/maxHealth):
+# 245 Bilder aus zwei Partien (26.09. 19:45 und 21:21), Fuellung / API-Anteil = 78,1 und 78,2 px, Quartile
+# 77,8-79,0. Mit den geschaetzten 80 las der Coach jeden Balken ~3 % zu leer - beim Gegner die gefaehrliche Richtung.
+BALKEN = 78
+# Das letzte Stueck der Fuellung ist oft blass (Saettigung 55-95 statt >110): Live 21:21, 9:30 las 66 % statt 72 %
+BLASS = {"feind": ((0, 9), (171, 180)), "freund": ((96, 116),), "ich": ((45, 75),)}
 HOEHE = (5, 10)            # Hoehe der Fuellung
 KASTEN = (12, 22)          # Kantenlaenge des Level-Kaestchens
 
@@ -78,10 +84,32 @@ def _spielfeld(bild: np.ndarray, x: int, y: int) -> bool:
     return not (x > 0.82 * ww and y > 0.62 * hh)
 
 
+def _blasses_ende(hsv: np.ndarray, team: str, x: int, y: int, w: int, h: int, k: float) -> int:
+    """Die Fuellung nach rechts verlaengern, solange die Mittelzeile im Farbton des Teams bleibt, nur blasser."""
+    zeile, ende = y + h // 2, x + w
+    grenze = min(hsv.shape[1], int(x + (BALKEN + 2) * k))
+
+    def fuellung(i: int) -> bool:
+        f, s, v = (int(c) for c in hsv[zeile, i])
+        return s >= 40 and v >= 90 and any(lo <= f <= hi for lo, hi in BLASS[team])
+
+    while ende < grenze:
+        if fuellung(ende):
+            ende += 1
+            continue
+        # der dunkle Strich je 100 Leben (1-2 px) trennt oft das blasse Ende ab (Live 21:21, 9:30)
+        weiter = next((i for i in range(ende + 1, min(grenze, ende + 1 + max(2, int(3 * k)))) if fuellung(i)), None)
+        if weiter is None:
+            break
+        ende = weiter + 1
+    return ende - x
+
+
 def finde(bild: np.ndarray) -> list[Balken]:
     """Alle Champion-Lebensbalken im Bild (ohne Namen)."""
     k = bild.shape[1] / BREITE_REF
     aus = []
+    hsv = cv2.cvtColor(bild, cv2.COLOR_BGR2HSV)
     for team, m in _masken(bild).items():
         # Striche je 100 Leben trennen die Fuellung: waagrecht zusammenziehen
         m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((1, max(3, int(4 * k))), np.uint8))
@@ -91,6 +119,7 @@ def finde(bild: np.ndarray) -> list[Balken]:
                 continue
             if flaeche < 0.6 * w * h or not _spielfeld(bild, x, y):
                 continue
+            w = _blasses_ende(hsv, team, int(x), int(y), int(w), int(h), k)
             if not _kaestchen(bild, x, y, k) or not _balkenform(bild, x, y, w, h, k):
                 continue
             aus.append(Balken(int(x), int(y), round(min(1.0, float(w) / (BALKEN * k)), 2), team))
