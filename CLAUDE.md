@@ -2,55 +2,60 @@
 
 Ein Coach fuer League of Legends, der waehrend Ranked-Partien mitschaut und
 per Sprache sagt, was jetzt zu tun ist und WARUM - wie ein Challenger-Kollege,
-dem man per Discord den Bildschirm teilt. Dazu Post-Game-Analyse mit
-Replay-Szenen. Anforderungen: `ANFORDERUNGEN.md`.
+dem man per Discord den Bildschirm teilt. Dazu ein Review nach dem Spiel, in dem
+man mit ihm redet. Anforderungen: `ANFORDERUNGEN.md`. Bedienung fuer Carlos:
+`ANLEITUNG.md`. Offene Aufgaben: `OFFEN.md`.
 
 ## Harte Grenzen (nicht verhandelbar)
 
 - **Kein Speicherlesen, keine Injection, kein Eingriff in den Spielprozess.**
   Vanguard erkennt das; Strafen bis Hardware-Bann.
 - **Nur, was der Spieler selbst sehen koennte:** Bildschirm (Aufnahme von
-  aussen) plus die offizielle lokale Live Client Data API. Keine Infos
-  ausserhalb der eigenen Sicht.
+  aussen: Minimap, Mitspieler-Leiste, Chat) plus die offizielle lokale Live
+  Client Data API. Keine Infos ausserhalb der eigenen Sicht.
 - **Keine Eingaben, keine Automatisierung.** Der Coach beobachtet und redet.
   Er drueckt keine Taste und klickt nichts - auch nicht "nur zum Testen".
-  Ausnahme: die Replay-API steuert die Kamera eines REPLAYS (kein Live-Spiel).
+  Push-to-Talk liest nur den Tastenzustand (GetAsyncKeyState).
 
 ## Aufbau
 
 | Modul | Aufgabe |
 |---|---|
-| `lolcoach/liveapi.py` | Live Client Data API (127.0.0.1:2999) - holt Rohdaten |
-| `lolcoach/zustand.py` | Rohdaten -> Spielzustand (reine Funktion, kein Gedaechtnis) |
-| `lolcoach/wissen.py` + `wissen/*.toml` | gepflegte Wissensbasis (Timer, Makro, Matchups) |
-| `lolcoach/aufzeichnung.py` | schreibt jede Partie als `aufnahmen/*.jsonl.gz` mit (+ `_bilder/`, `_ansagen.json`) |
-| `lolcoach/minimap.py` | Champions auf der Minimap erkennen (Riot-Portraets, ~60 ms/Bild); Orte in Worten |
-| `lolcoach/lage.py` | Lagebild (wer zuletzt wo), Beobachter-Thread live, Sichtungen aus Bildern (Cache) |
-| `lolcoach/regeln.py` | Regelwerk: aus Zustand + Lagebild werden Ansagen (Saetze in `wissen/makro.toml`) |
-| `lolcoach/sprechplan.py` + `stimme.py` | wer redet wann; Windows-Stimme Hedda |
-| `lolcoach/bericht.py` | Post-Game-Bericht, optional mit Claudes Analyse |
-| `lolcoach/dashboard.py` + `web/` | Live-Dashboard fuer den zweiten Monitor, http://127.0.0.1:8790 |
-| `lolcoach/llm.py` | Claude ueber die Kommandozeile (Abo), spaeter API |
-| `python -m lolcoach` | live; `abspielen [--nur-coach --dashboard --takt 0.05 --laut]`, `bericht`, `status`, `llm` |
+| `liveapi.py` | Live Client Data API (127.0.0.1:2999) |
+| `zustand.py` | Rohdaten -> Spielzustand (reine Funktion eines Schnappschusses) |
+| `aufzeichnung.py` | jede Partie nach `aufnahmen/` (+ `_bilder/` mit Protokollen, `_ansagen.json`, `_notizen.md`, `_spielakte.md`) |
+| `bild.py`, `lage.py` | Spielfenster finden; Beobachter-Thread (dxcam, 15 Bilder/s): Minimap, Mitspieler-Leiste, Chat, Wellen; Lagebild (wer zuletzt wo, Timer, Leben, Wellen); Nachspielen aus Protokoll/Bildern |
+| `minimap.py` | Champions erkennen + Verfolger (Umkreis, 6 ms/Bild), Flash-Spruenge, Orte in Worten |
+| `hud.py` | Mitspieler-Leiste ueber der Minimap: Leben, Ult bereit |
+| `welle.py` | Vasallen-Punkte -> Wellenstand je Lane |
+| `texterkennung.py`, `zauber.py` | Windows-OCR fuer den Chat; Zauber-/Ult-Timer (Chat-Pings, Minimap-Spruenge) |
+| `regeln.py` + `wissen/makro.toml` | Regelwerk: WANN der Coach etwas sagt (Saetze und Schwellen in der toml) |
+| `sprechplan.py`, `stimme.py` | wer redet wann; Stimme Killian (neuronal, edge-tts), Pause/Wiederholen bei Fragen |
+| `gehirn.py`, `stratege.py` | Spielakte + Briefing, Midgame-Plan, situative Anweisungen (Claude formuliert WAS) |
+| `champions.py`, `wissen/lexikon/` | Wissensbasis: Steckbriefe aus Data Dragon; Lexikon (Grundlagen, Saison 2026, alle 173 Champions) |
+| `sprache.py`, `antworten.py` | Push-to-Talk, faster-whisper (RTX 4070), Sofort-Antworten oder Claude |
+| `itemnamen.py` | fast richtige Item-Namen in Claude-Saetzen korrigieren |
+| `dashboard.py` + `web/dashboard.html` | Live-Dashboard :8790 |
+| `verlauf.py`, `review.py`, `review_server.py` + `web/review.html` | Spielverstaendnis (Zeitleiste + Momente), Claude-Review mit Belegen, Review-Oberflaeche :8791 mit Gespraech (Text und Sprache) |
+| `bericht.py` | Text-Bericht (Markdown) |
+| `llm.py` | Claude ueber die Claude-Code-Kommandozeile (Abo), schlank (eigener Systemprompt, stdin) |
 
-Tests: `python tests/test_grundlage.py` und `python tests/test_regeln.py` (zwei
-echte Bot-Partien, die zweite mit Minimap-Sichtungen). Neue Partie als Testfall:
-`python werkzeuge/testfall_aus_aufnahme.py aufnahmen/<x>.jsonl.gz tests/<name>.jsonl.gz`.
-
-Oberflaeche pruefen ohne Browserfenster: Aufnahme mit `--dashboard --takt 0.05`
-abspielen, dann `Brainstone/werkzeuge/browserprobe.py http://127.0.0.1:8790/ name 3`.
+`python -m lolcoach` = live. Weitere Befehle: `abspielen`, `review`, `bericht`,
+`frage`, `mikrotest`, `status`, `llm` (siehe `--help`).
 
 Spielzustand ist eine REINE Funktion eines Schnappschusses: die API liefert
-die Ereignisliste jedes Mal ganz. Was "neu" ist, entscheidet der Aufrufer
-ueber die EventID. So laesst sich jede Aufnahme Sekunde fuer Sekunde
-nachspielen, und Live und Aufnahme laufen durch denselben Code.
+die Ereignisliste jedes Mal ganz. So laeuft jede Aufnahme Sekunde fuer Sekunde
+durch denselben Code wie das Live-Spiel.
 
-## Entwickeln ohne Ranked
+## Pruefen
 
-Replays (`Dokumente/League of Legends/Replays/*.rofl`, nur aktueller Patch)
-bedienen dieselbe Live-API. Fuer Kamera/Zeitsteuerung braucht es in
-`C:\Riot Games\League of Legends\Config\game.cfg` unter `[General]` die Zeile
-`EnableReplayApi=1`. Im Replay fehlt `activePlayer` (Zuschauermodus).
+- `python tests/alle.py` - alle Tests (echte Partien als Testfaelle, ~10 s).
+- `python werkzeuge/generalprobe.py --ab 13.9 --minuten 2.5` - der komplette
+  Live-Weg ohne Spiel: nachgebauter Spielclient + Fenster mit aufgezeichneten
+  Minimap-Bildern; der Coach laeuft als Prozess dagegen (`aufnahmen_probe/`).
+  Hat bisher jeden Verdrahtungsfehler vor Carlos gefunden.
+- Oberflaeche ohne Browserfenster: `Brainstone/werkzeuge/browserprobe.py <url> name 3`.
+- Neue Partie als Testfall: `python werkzeuge/testfall_aus_aufnahme.py aufnahmen/<x>.jsonl.gz tests/<name>.jsonl.gz`.
 
 ## Aufgaben: `OFFEN.md`
 
@@ -61,7 +66,9 @@ eintragen, Erledigtes mit Commit nach unten.
 
 ## Arbeitsweise
 
-Schnell, sparsam, Tests nur wo sie Zeit sparen. Wissen, das mit dem Patch
-veraltet (Timer, Builds, Matchups), gehoert in `wissen/`, nie in den Code -
-und jeder Wert dort traegt seinen Stand. Was die API wirklich liefert, wird
-an echten Aufnahmen geprueft, nicht aus dem Gedaechtnis angenommen.
+Gruendlich vor schnell (Carlos: "kein Zeitdruck - clean und funktionsfaehig").
+Wissen, das mit dem Patch veraltet (Timer, Builds, Matchups), gehoert in
+`wissen/`, nie in den Code - und jeder Wert dort traegt seinen Stand. Was die
+API oder das Bild wirklich liefern, wird an echten Aufnahmen geprueft, nicht aus
+dem Gedaechtnis angenommen. Claude-Ausgaben im Spiel: kurz (hart gekuerzt),
+nur aus der Lage, Item-Namen abgesichert; im Review nur mit Beleg.
