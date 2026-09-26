@@ -129,3 +129,21 @@ Mentales, Makro, Mechanik, Meta, Soft-Faktoren). Neu darin und nicht messbar: Ti
 Kommunikation, Ping/Latenz, Patch-Meta, Smurf-Wahrscheinlichkeit. Die sechs Fragen am Ende ("Wer ist staerker?
 Wer ist zuerst da? Was sehen wir nicht? Welche Welle verlieren wir? Was bekommt der Gegner? Was gewinnen wir
 nach dem Play?") beantwortet das Kampf-Urteil (`denker.urteil` + `fenster_satz`) je Ansage.
+
+## Nachgemessen (Nacht 26./27.09., an 5 aufgenommenen Partien, je mit Wahrheit aus der API oder dem Bild)
+
+| Groesse | Wahrheit | Ergebnis | Werkzeug |
+|---|---|---|---|
+| Lebensbalken im Bild | eigenes Leben (API) | 90 % innerhalb +-2 % (nach Eichung 78 px) | `balken_eichen.py` |
+| Minimap: wer ist wer | Sichtprobe von Hand | 30 Icons, 0 Verwechslungen | - |
+| Minimap: Ringfarbe | eigenes Team blau / Gegner rot | 0,17-0,43 % falsch (Einzel-Champions) | `minimap_ringprobe.py` |
+| Minimap: eigenes Icon | Kamerarahmen | 99,3-99,7 % im Rahmen | `kamera_rahmen.py` |
+| Flash (eigener) auf der Minimap | HUD | 2 von 7, 0 Fehlalarme (im Kampf liegt das Icon unter dem Gegner) | - |
+| Jungler-Prognose | naechste Sichtung | 44/60 richtig, Brier 0,183 (Raten 0,250) | `jungler_prognose.py` |
+| Gegner-Ankunft "fruehestens" | Strecken zwischen Sichtungen | vorher 19 % schneller als gerechnet -> jetzt 90 % gedeckt | `gegner_tempo.py` |
+| Kill-Gold | Goldsprung beim eigenen Kill | vorher Median -118 -> jetzt +2 (80 % in 65) | `kill_gold.py` |
+| Gegner-Gold (ungenutzt) | seine Einkaeufe | Jungler/Support vorher -475/-298 -> je Rolle -90..+47 | - |
+| Max-Leben (Gegner) | eigenes maxHealth | vorher -6 % -> jetzt Median 1,00 (Leben-Rune) | - |
+| Ruestung / Magieresistenz | eigene Werte | Median 1,00 | - |
+| Todeszeit | respawnTimer | Median -0,2 s | - |
+| Kampf-Urteil | Kill/Tod in 20 s | kill 22 -> 9 Kills, 0 Tode; kill_schnell 7 -> 5, 0 Tode | (scratchpad) |
