@@ -88,7 +88,7 @@ class Regelwerk:
         for regel in (self._vorwarnung, self._zahlen, self._jungler_tot, self._lane_tot,
                       self._level, self._items, self._gold, self._cs, self._tod,
                       self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf,
-                      self._ward, self._recall_fenster):
+                      self._ward, self._recall_fenster, self._tief_ohne_sicht):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 ansagen.append(a)
@@ -529,6 +529,66 @@ class Regelwerk:
             yield Ansage(cfg["satz"].format(ort=ort, grund=anlaesse[zweck]), HINWEIS,
                          f"ward:{st['name']}:{st['seite']}", gueltig=6, sperre=cfg["erneut_nach"])
             return
+
+    def _tief_ohne_sicht(self, p: Partie, v: Partie):
+        """Tief auf seiner Seite, waehrend Gegner (oder in der Lane-Phase der Jungler) lange
+        nicht zu sehen sind: zurueck, bis du sie siehst. Die Lektion, die das Review aus vier
+        Toden von Partie 3 zog - live gesagt, bevor der fuenfte passiert."""
+        if not self.lage or not self.lage.aktiv or self._ich_weg(p):
+            return
+        from . import minimap
+        cfg = self.m["tief"]
+        ich = self.lage.gesehen(p.ich)
+        if p.zeit < cfg["ab"] or not ich or p.zeit - ich[0] > 1.5:
+            return
+        x, y = ich[1], ich[2]
+        if "Basis" in minimap.ort(x, y):
+            return
+        # tief = auf der Lane an/hinter seinem Aussenturm, sonst weit in seinem Jungle.
+        # (Erster Versuch "0.15 hinter dem Fluss": 18 Warnungen in Partie 3 - eine gewonnene
+        # Top-Lane steht immer ein Stueck hinter der Ecke.)
+        from .welle import _projektion
+        blau = p.mein_team == "ORDER"
+        pr = _projektion(x, y)
+        tief = ((pr[1] if blau else 1 - pr[1]) >= cfg["lane_tief"] if pr
+                else ((x - y) if blau else (y - x)) >= cfg["jungle_tief"])   # Fluss: x = y; blau unten links
+        if not tief:
+            self._tief_gewarnt = None    # zurueck auf deiner Seite: der naechste Vorstoss darf wieder warnen
+            return
+        # einmal je Vorstoss (17 Warnungen in Partie 3 hoert keiner mehr), bei langem Splitpush
+        # alle `erneut_nach` Sekunden (sonst fehlte die Warnung vor dem Tod 21:18: seit 18:02 tief)
+        if (bei := getattr(self, "_tief_gewarnt", None)) is not None and p.zeit - bei < cfg["erneut_nach"]:
+            return
+        nah = sum(1 for s in p.team(p.mein_team) if s is not p.ich and not s.tot and self.lage.sichtbar(s)
+                  and (g := self.lage.gesehen(s)) and abs(g[1] - x) + abs(g[2] - y) < 0.18)
+        if nah >= cfg["gruppe_ab"]:
+            return
+        fehlend = []
+        for s in p.gegner():
+            if s.tot:
+                continue
+            g = self.lage.gesehen(s)
+            weg = p.zeit - g[0] if g else p.zeit
+            # nur wer es seit seiner letzten Sichtung bis zu dir geschafft haben KANN (Swain vor
+            # 25 s unten ist noch nicht oben) - so denkt ein Challenger, nicht nach der Stoppuhr
+            erreichbar = not g or abs(g[1] - x) + abs(g[2] - y) <= weg * cfg["tempo"]
+            if weg >= cfg["weg_ab"] and not self.lage.sichtbar(s) and erreichbar:
+                fehlend.append((s, weg))
+        j = p.jungler(gegenteam(p.mein_team))
+        jungler_fehlt = next((w for s, w in fehlend if s is j and w >= cfg["jungler_ab"]), None)
+        if len(fehlend) < cfg["mindestens"] and not (jungler_fehlt and p.zeit < self.m["sicht"]["lane_phase_bis"]):
+            return
+        if len(fehlend) < cfg["mindestens"]:
+            fehlend = [(j, jungler_fehlt)]
+        fehlend.sort(key=lambda sw: -sw[1])
+        namen = [s.champion for s, _ in fehlend[:3]]
+        text = cfg["satz"].format(namen=" und ".join([", ".join(namen[:-1]), namen[-1]] if len(namen) > 1 else namen),
+                                  sind="sind" if len(namen) > 1 else "ist", sie="sie" if len(namen) > 1 else "ihn",
+                                  sekunden=int(min(w for _, w in fehlend[:3])))
+        self._tief_gewarnt = p.zeit
+        # 10 s gueltig: solange er tief steht, stimmt der Satz (mit 4 s fiel er 20:53 hinter
+        # einer anderen Ansage weg - 25 s vor dem Tod)
+        yield Ansage(text, WICHTIG, "tief", gueltig=10, sperre=cfg["sperre"])
 
     def _recall_fenster(self, p: Partie, v: Partie):
         """Deine Welle laeuft in seinen Turm und du hast Gold oder wenig Leben: jetzt zurueck,

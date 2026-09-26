@@ -38,6 +38,9 @@ def mit_minimap():
     assert any(380 <= t <= 395 and "Vorsicht, Vi oben" in x for t, x in um)
     assert not any(t > 840 and "sicher pushen" in x for t, x in um)       # Lane-Sprache nur in der Lane-Phase
     assert not any("Kartenseite" in x and ("Mitte" in x or "Mid-Lane" in x) for _, x in um)
+    # tief ohne Sicht: vor dem Tod 19:55 gewarnt, aber nicht in einem fort (einmal je Vorstoss)
+    tief = [t for t, x in um if x.startswith("Du stehst tief")]
+    assert any(1170 <= t <= 1195 for t in tief) and len(tief) <= 10, tief
     print(f"Partie 2 mit Minimap: {len(gesagt)} Ansagen, OK")
 
 

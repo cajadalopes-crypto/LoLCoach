@@ -147,6 +147,21 @@ solo_nachteil = "Solo gegen {champion} verloren - er war {grund}. Erst nachziehe
 solo = "Solo gegen {champion} verloren. Denk an seine Cooldowns - trade, wenn seine wichtigste Fähigkeit weg ist."
 turm = "Vom Turm erwischt. Unter seinen Turm nur mit genug Leben - und wenn deine Vasallen die Schüsse nehmen."
 
+[tief]
+# Tief auf der gegnerischen Seite, waehrend Gegner lange nicht zu sehen sind - das Muster
+# hinter vier Toden in Partie 3 (Review 26.09.: 21:03, 23:16, 27:44, 32:26).
+ab = 180             # vorher sind alle "weg", das heisst nichts
+lane_tief = 0.6      # auf der Lane: ab hier (0 = deine Basis, 1 = seine) - sein Aussenturm steht bei ~0.65
+jungle_tief = 0.25   # abseits der Lanes: so weit hinter dem Fluss (Kartenanteil)
+weg_ab = 25          # Sekunden unsichtbar, ab denen ein Gegner als fehlend zaehlt
+tempo = 0.03         # Kartenanteil je Sekunde (Manhattan): ~370 Lauftempo auf 14820 Einheiten, Wege krumm
+mindestens = 2       # so viele fehlende Gegner
+jungler_ab = 40      # in der Lane-Phase reicht der Jungler allein, wenn er so lange fehlt
+gruppe_ab = 3        # so viele Mitspieler in deiner Naehe: ihr seid als Gruppe dort, keine Warnung
+sperre = 45
+erneut_nach = 90     # im selben Vorstoss erst nach so vielen Sekunden wieder
+satz = "Du stehst tief, und {namen} {sind} seit {sekunden} Sekunden weg. Zurück, bis du {sie} siehst."
+
 [todesanalyse]
 # Ab so viel Todeszeit sagt der Coach statt des Standardsatzes den Grund (Claude, ~10 s).
 ab_sekunden = 14

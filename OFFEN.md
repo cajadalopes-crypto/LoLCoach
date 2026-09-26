@@ -47,9 +47,17 @@ Notizen und Review durchsehen und nachschaerfen.
 - Todesanalyse live: kommt der Satz vor dem Wiedereinstieg, trifft er den Grund? An
   Partie 3 nachgespielt: 5 von 6 Toden mit konkretem Grund in ~6 s.
 - Fokus im Briefing: kommt der Satz an, passt er zur Partie?
+- "Du stehst tief": in Partie 3 nachgespielt 15 Warnungen in 35 min (vor 21:18 und 32:41
+  rechtzeitig) - im echten Spiel pruefen, ob die Haeufigkeit stoert.
 
 ## Erledigt
 
+- Live: "Du stehst tief, und Warwick und Swain sind seit 30 s weg" - die Hauptlektion aus
+  dem Review von Partie 3 als Regel (tief = an/hinter seinem Aussenturm oder weit in
+  seinem Jungle; nur Gegner, die dich seit der letzten Sichtung erreichen koennen; einmal
+  je Vorstoss, bei langem Splitpush alle 90 s)
+- Review: Recall-Analyse - ff615b9; Kaempfe nach Zeit UND Ort - d8d3afb; eigene
+  Powerspikes live - 7528c6a; Todes-Fakten fuer Fragen - f4848da
 - Todesanalyse live (`todesanalyse.py`): Rueckblick der letzten 45 s (Leben, Gold, Ort,
   Welle, wer zu sehen war); beim Tod mit >= 14 s Todeszeit sagt Claude statt des
   Standardsatzes den Grund und was naechstes Mal zu tun ist; ohne Minimap-Daten keine
