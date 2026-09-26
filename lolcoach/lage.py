@@ -202,7 +202,7 @@ BILDER_BEHALTEN = 20 * 60     # Sekunden: aeltere Minimap-Bilder der laufenden P
 
 
 class Beobachter(threading.Thread):
-    """Schaut `takt`-mal je Sekunde auf die Minimap (Verfolger, Flash-Spruenge)
+    """Schaut 1/`takt`-mal je Sekunde auf die Minimap (Verfolger, Flash-Spruenge)
     und einmal je Sekunde in den Chat (Windows-Texterkennung).
 
     Liefert ueber `abholen()` (Wanduhr, Sichtungen) und ueber `ereignisse()`
@@ -210,7 +210,9 @@ class Beobachter(threading.Thread):
     alle Sichtungen je Bild (`sichtungen.jsonl.gz`), ein Minimap-Bild je Sekunde
     (nur die letzten 20 Minuten), Chat-Bilder, wenn neuer Text dazukommt."""
 
-    def __init__(self, ordner: Path | None, takt: float = 1 / 15, bild_alle: float = 1.0):
+    def __init__(self, ordner: Path | None, takt: float = 1 / 60, bild_alle: float = 1.0):
+        # 60 Bilder/s (Carlos, 26.09.: "ich habe immer noch max FPS"): Dashes verteilen sich auf mehr
+        # Bilder, ein Flash bleibt ein Einzelbild-Sprung; bestaetigt wird nach Zeit (minimap.BESTAETIGT_NACH)
         super().__init__(daemon=True)
         self.ordner, self.takt, self.bild_alle = ordner, takt, bild_alle
         if ordner:

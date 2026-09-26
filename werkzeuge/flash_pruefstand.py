@@ -120,12 +120,18 @@ def szenen():
                                                ("lauf", 1.5, r)])],
         "Verdeckung": [Bahn((150, 300), [("lauf", 4, r)]), Bahn((330, 300), [("steh", 1), ("lauf", 3, l)])],
         "Fehlzuordnung zurueck": [Bahn((150, 300), [("lauf", 1.5, u), ("zuck", r), ("lauf", 1.5, u)])],
+        # Carlos, Partie 5: "wenn sich die Icons ueberdecken, erkennt das Tool nicht, wer alles da ist"
+        # - Urgot laeuft unter Vi (die spaeter gezeichnet wird, also oben liegt), bleibt 2 s, laeuft weiter
+        "Stapel": [Bahn((90, 300), [("lauf", 5, r), ("steh", 2), ("lauf", 5, r)]),
+                   Bahn((90 + 5 * 350 * E, 300), [("steh", 12)])],
+        "halb verdeckt": [Bahn((90, 300), [("lauf", 5, r), ("steh", 2), ("lauf", 5, r)]),
+                          Bahn((90 + 5 * 350 * E + 24, 300), [("steh", 12)])],
         "Gruppe mit Flash": [Bahn((200, 250), [("lauf", 1.5, u), ("flash", u), ("lauf", 1.5, u)]),
                              Bahn((230, 260), [("lauf", 3, u)]), Bahn((180, 280), [("lauf", 3, r)])],
     }
 
 
-def pruefe(ausfall: float = 0.0, rausch: float = 0.0, samen: int = 1) -> dict:
+def pruefe(ausfall: float = 0.0, rausch: float = 0.0, samen: int = 1, takt: float = TAKT) -> dict:
     random.seed(samen)
     ver = ddragon.version()
     grund = cv2.resize(cv2.imread(str(ddragon.ABLAGE / str(ver) / "map11.png")), (SEITE, SEITE))
@@ -137,8 +143,9 @@ def pruefe(ausfall: float = 0.0, rausch: float = 0.0, samen: int = 1) -> dict:
         verfolger = minimap.Verfolger(champions, hoehe=2160)
         ende = max(b.ende for b in bahnen)
         t, gefunden = 0.0, []
+        bilder = gesehen = 0          # Sichtbarkeit: Bilder, in denen JEDER Champion am richtigen Ort gemeldet ist
         while t <= ende + 0.5:
-            t += TAKT
+            t += takt
             if random.random() < ausfall:
                 continue  # Takt-Aussetzer: dieses Bild fehlt
             bild = zeichne(grund, icons, [b.bei(t) for b in bahnen])
@@ -151,23 +158,31 @@ def pruefe(ausfall: float = 0.0, rausch: float = 0.0, samen: int = 1) -> dict:
             aus = verfolger.bild(bild, t)
             if aus:
                 gefunden += aus[1]
+                bilder += len(bahnen)
+                for i, b in enumerate(bahnen):
+                    wx, wy = b.bei(t)
+                    gesehen += any(s.champion_id == namen[i] and abs(s.x * SEITE - wx) + abs(s.y * SEITE - wy) <= 14
+                                   for s in aus[0])
         wahr = sum(len(b.flashes) for b in bahnen)
         # ein gefundener Sprung zaehlt als Treffer, wenn er hoechstens 0,3 s nach einem echten Flash liegt
         echte = [f for b in bahnen for f in b.flashes]
         treffer = sum(1 for f in echte if any(0 <= s.zeit - f <= 0.3 for s in gefunden))
         fehl = sum(1 for s in gefunden if not any(0 <= s.zeit - f <= 0.3 for f in echte))
-        ergebnis[name] = (wahr, treffer, fehl)
+        ergebnis[name] = (wahr, treffer, fehl, gesehen / max(1, bilder))
     return ergebnis
 
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    for titel, kw in (("sauber", {}), ("10 % Bildaussetzer", {"ausfall": 0.1}), ("Rauschen", {"rausch": 6.0})):
+    for titel, kw in (("sauber", {}), ("10 % Bildaussetzer", {"ausfall": 0.1}), ("Rauschen", {"rausch": 6.0}),
+                      ("60 Bilder/s", {"takt": 1 / 60}), ("60 Bilder/s + Aussetzer", {"takt": 1 / 60, "ausfall": 0.1})):
         erg = pruefe(**kw)
         w = sum(e[0] for e in erg.values())
         tr = sum(e[1] for e in erg.values())
         fa = sum(e[2] for e in erg.values())
         print(f"== {titel}: {tr}/{w} Flashes gefunden, {fa} Fehlalarme")
-        for name, (wahr, treffer, fehl) in erg.items():
+        for name, (wahr, treffer, fehl, sicht) in erg.items():
             if treffer != wahr or fehl:
                 print(f"   {name}: {treffer}/{wahr} gefunden, {fehl} Fehlalarme")
+            if name in ("Stapel", "halb verdeckt", "Verdeckung"):
+                print(f"   {name}: alle am richtigen Ort in {sicht * 100:.0f} % der Bilder")

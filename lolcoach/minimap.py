@@ -1,4 +1,4 @@
-"""Minimap: wo steht wer - so, wie der Spieler es selbst auf der Minimap sieht.
+﻿"""Minimap: wo steht wer - so, wie der Spieler es selbst auf der Minimap sieht.
 
 Erkennung per Bildvergleich: fuer die zehn Champions der Partie (die API
 nennt sie) das Riot-Portraet aus Data Dragon, kreisfoermig maskiert, gegen
@@ -33,6 +33,9 @@ RAND_UNTEN = 29 / REFERENZ_HOEHE
 PORTRAET = 48 / REFERENZ_HOEHE     # ganzes Portraet auf der Minimap
 AUSSCHNITT = 40 / REFERENZ_HOEHE   # davon verglichen: die Mitte (Ring und Rand stoeren)
 SCHWELLE = 0.85
+SCHWELLE_TEIL = 0.88    # eine Haelfte allein muss besser passen als das ganze Portraet
+DECKUNG = 36 / REFERENZ_HOEHE     # so nah (Summe der Achsen) liegt ein anderes Icon darauf: verdeckt
+VERDECKT_MAX = 2.5      # Sekunden, die ein verdecktes Icon mit seiner Deckung mitlaeuft
 
 
 @dataclass(frozen=True)
@@ -90,6 +93,22 @@ def _ringfarbe(karte: np.ndarray, cx: int, cy: int, radius: int) -> str | None:
     if abs(r - b) < 25:
         return None
     return "ORDER" if b > r else "CHAOS"
+
+
+@lru_cache(maxsize=16)
+def _teilmasken(d: int) -> tuple[np.ndarray, ...]:
+    """Die Kreismaske in vier Haelften (links, rechts, oben, unten): ein halb verdecktes Icon
+    passt mit seiner sichtbaren Haelfte noch sauber (Carlos, Partie 5: 'wenn sich die Icons
+    ueberdecken, erkennt das Tool nicht, wer alles auf einem Fleck ist')."""
+    ganz = np.zeros((d, d), np.uint8)
+    cv2.circle(ganz, (d // 2, d // 2), d // 2 - 1, 255, -1)
+    teile = []
+    for sl in ((slice(None), slice(0, d // 2)), (slice(None), slice(d // 2, None)),
+               (slice(0, d // 2), slice(None)), (slice(d // 2, None), slice(None))):
+        m = ganz.copy()
+        m[sl] = 0
+        teile.append(m)
+    return tuple(teile)
 
 
 @lru_cache(maxsize=64)
@@ -161,6 +180,7 @@ def finde(karte: np.ndarray, champions: list[tuple[str, str]], hoehe: int = REFE
 
 FLASH_EINHEITEN = 400
 KARTE_EINHEITEN = 14820          # Kantenlaenge der Karte in Spiel-Einheiten (etwa)
+BESTAETIGT_NACH = 0.2            # Sekunden am Landepunkt, bis ein Sprung als Flash gilt
 
 
 @dataclass(frozen=True)
@@ -190,7 +210,8 @@ class Verfolger:
         self.flash_px = FLASH_EINHEITEN / KARTE_EINHEITEN * round(KARTE * hoehe)
         self.pos: dict[tuple[str, int], tuple[float, int, int, str | None]] = {}  # -> (zeit, cx, cy, team)
         self.verlauf: dict[tuple[str, int], list[tuple[float, int, int]]] = {}
-        self._kandidat: dict[tuple[str, int], tuple[float, int, int, int, int]] = {}
+        self._kandidat: dict[tuple[str, int], tuple] = {}
+        self._verdeckt: dict[tuple[str, int], tuple[float, tuple[str, int], int, int]] = {}  # -> (seit, Deckung, Versatz)
         self._letzte_vollsuche = -1e9
 
     def _lokal(self, karte: np.ndarray, cid: str, cx: int, cy: int) -> tuple[float, int, int] | None:
@@ -207,7 +228,18 @@ class Verfolger:
         erg = np.nan_to_num(cv2.matchTemplate(fenster, vorlage, cv2.TM_CCOEFF_NORMED, mask=maske),
                             nan=-1.0, posinf=-1.0, neginf=-1.0)
         _, guete, _, (fx, fy) = cv2.minMaxLoc(erg)
-        return (guete, x0 + fx + d // 2, y0 + fy + d // 2) if guete >= SCHWELLE else None
+        if guete >= SCHWELLE:
+            return guete, x0 + fx + d // 2, y0 + fy + d // 2
+        # teilweise verdeckt: die sichtbare Haelfte allein (nur hier, im engen Umkreis der letzten
+        # Position - ueber die ganze Karte waere eine halbe Vorlage zu beliebig)
+        bestes = None
+        for teil in _teilmasken(d):
+            erg = np.nan_to_num(cv2.matchTemplate(fenster, vorlage, cv2.TM_CCOEFF_NORMED, mask=teil),
+                                nan=-1.0, posinf=-1.0, neginf=-1.0)
+            _, g, _, (fx, fy) = cv2.minMaxLoc(erg)
+            if g >= SCHWELLE_TEIL and (bestes is None or g > bestes[0]):
+                bestes = (g, x0 + fx + d // 2, y0 + fy + d // 2)
+        return bestes
 
     def bild(self, karte: np.ndarray, zeit: float) -> tuple[list[Sichtung], list[Sprung]] | None:
         """Ein neues Minimap-Bild. Gibt None, wenn es dem vorigen gleicht: ein stehendes
@@ -253,18 +285,51 @@ class Verfolger:
                 while schl in gefunden:
                     schl = (schl[0], schl[1] + 1)
                 gefunden[schl] = (s.guete, cx, cy, s.team)
+        # 2b. Verdeckt: eben noch gesehen, jetzt nicht gefunden, aber ein gefundenes Icon liegt darauf
+        # -> er steht darunter. Er laeuft mit seiner Deckung mit (fester Versatz), bis er wieder
+        # auftaucht, die Deckung weiterzieht oder VERDECKT_MAX um ist (dann war es wohl Nebel).
+        deckung = DECKUNG * self.hoehe
+        for schl, (t, cx, cy, team) in list(self.pos.items()):
+            if schl in gefunden:
+                self._verdeckt.pop(schl, None)
+                continue
+            if zeit - t > self.verloren_nach:
+                continue
+            alt_deckung = self._verdeckt.get(schl)
+            if alt_deckung and alt_deckung[1] in gefunden:
+                k, (_, gx, gy, _) = alt_deckung[1], gefunden[alt_deckung[1]]
+            else:
+                naechst = min(((abs(g[1] - cx) + abs(g[2] - cy), k) for k, g in gefunden.items()
+                               if k != schl and g[0] > 0), default=None)
+                if naechst is None or naechst[0] > deckung:
+                    self._verdeckt.pop(schl, None)
+                    continue
+                k = naechst[1]
+                _, gx, gy, _ = gefunden[k]
+                alt_deckung = (zeit, k, cx - gx, cy - gy)
+            seit, _, ox, oy = alt_deckung
+            if zeit - seit > VERDECKT_MAX or abs(ox) + abs(oy) > deckung:
+                self._verdeckt.pop(schl, None)
+                continue
+            self._verdeckt[schl] = (seit, k, ox, oy)
+            gefunden[schl] = (0.0, gx + ox, gy + oy, team)   # Guete 0 = erschlossen, nicht gesehen
         # 3. Buch fuehren, Spruenge pruefen
         spruenge = []
         for schl, (guete, cx, cy, team) in gefunden.items():
             alt = self.pos.get(schl)
             v = self.verlauf.setdefault(schl, [])
-            if (k := self._kandidat.pop(schl, None)) and zeit - k[0] <= 0.5:
-                # Bestaetigt erst, wenn ZWEI Bilder danach am Landepunkt bleiben und keins zum
-                # Absprung zurueckrutscht (Partie 4, 4:16: Galio "sprang" im Getuemmel mid auf ein
-                # Nachbar-Icon, das erste Bild danach lag noch 5 px am Landepunkt, das zweite halb zurueck)
+            if guete <= 0:            # verdeckt: mitfuehren, aber nie als Sprung werten
+                self.pos[schl] = (zeit, cx, cy, team or (alt[3] if alt else None))
+                self._kandidat.pop(schl, None)
+                continue
+            if (k := self._kandidat.pop(schl, None)) and zeit - k[0] <= 0.6:
+                # Bestaetigt erst, wenn der Champion BESTAETIGT_NACH Sekunden am Landepunkt bleibt und nie
+                # zum Absprung zurueckrutscht (Partie 4, 4:16: Galio "sprang" im Getuemmel mid auf ein
+                # Nachbar-Icon, 0,07 s spaeter noch 5 px am Landepunkt, 0,14 s spaeter halb zurueck).
+                # Nach Zeit, nicht nach Bildern: bei 60 Bildern/s hielte eine Fehlzuordnung vier Bilder.
                 (t0, weite0, n, lx, ly, ax, ay) = k
                 bleibt = abs(cx - lx) + abs(cy - ly) <= 6 and ((cx - ax) ** 2 + (cy - ay) ** 2) ** 0.5 >= 0.8 * weite0
-                if bleibt and n + 1 >= 2:
+                if bleibt and zeit - t0 >= BESTAETIGT_NACH:
                     spruenge.append(Sprung(schl[0], team, t0, weite0 / seite, lx / seite, ly / seite))
                 elif bleibt:
                     self._kandidat[schl] = (t0, weite0, n + 1, lx, ly, ax, ay)

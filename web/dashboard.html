@@ -85,8 +85,24 @@ function zeichne(z) {
   g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(0, 0, N, N);
   const r = N * 0.034;
   const liste = z.spieler.filter(s => s.gesehen).sort((a, b) => b.gesehen.vor - a.gesehen.vor);
+  // Icons, die sich ueberdecken, faechern: wer auf einem Fleck steht, soll zu sehen sein
+  // (Carlos, Partie 5: "erkennt nicht, wer alles auf einem Fleck ist")
+  const ort = new Map(liste.map(s => [s, [s.gesehen.x * N, s.gesehen.y * N]]));
+  const frei = new Set(liste);
   for (const s of liste) {
-    const { x, y, vor, jetzt } = s.gesehen, px = x * N, py = y * N;
+    if (!frei.has(s)) continue;
+    const gruppe = liste.filter(t => frei.has(t) && Math.hypot(ort.get(t)[0] - ort.get(s)[0], ort.get(t)[1] - ort.get(s)[1]) < r * 1.2);
+    gruppe.forEach(t => frei.delete(t));
+    if (gruppe.length < 2) continue;
+    const mx = gruppe.reduce((a, t) => a + ort.get(t)[0], 0) / gruppe.length;
+    const my = gruppe.reduce((a, t) => a + ort.get(t)[1], 0) / gruppe.length;
+    gruppe.forEach((t, i) => {
+      const w = 2 * Math.PI * i / gruppe.length - Math.PI / 2;
+      ort.set(t, [mx + Math.cos(w) * r * 0.95, my + Math.sin(w) * r * 0.95]);
+    });
+  }
+  for (const s of liste) {
+    const { vor, jetzt } = s.gesehen, [px, py] = ort.get(s);
     g.globalAlpha = jetzt ? 1 : Math.max(0.3, 1 - vor / 45);
     g.save(); g.beginPath(); g.arc(px, py, r, 0, 7); g.clip();
     const i = bild(`/icon/${s.id}.png`);
@@ -151,7 +167,7 @@ function zeige(z) {
   zeichne(z);
 }
 
-// Minimap schnell: /positionen.json zehnmal je Sekunde (der Beobachter liest 15 Bilder/s);
+// Minimap schnell: /positionen.json 25-mal je Sekunde (der Beobachter liest 60 Bilder/s);
 // alles andere kommt weiter je Sekunde mit zustand.json. Ohne diesen Kanal (aeltere Coach-Version)
 // bleibt es beim Sekundentakt.
 let schnell = null;   // { t, s: [[id, team, x, y], ...] }
@@ -165,7 +181,7 @@ function aufsetzen(z) {
   }
 }
 async function schnellFrage() {
-  let warten = 100;
+  let warten = 40;   // 25/s - der Coach liest die Minimap mit 60/s
   try {
     const r = await fetch('/positionen.json', { cache: 'no-store' });
     if (r.status === 404) warten = 10000;
