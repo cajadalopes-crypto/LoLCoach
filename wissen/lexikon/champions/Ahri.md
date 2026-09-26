@@ -51,5 +51,5 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Kern (Richtung, ungeprüft): Ludens Echo oder Sturmblitz → Schattenflamme → Rabadons Todeshaube.
 - Situativ: Zhonyas Stundenglas (Assassinen), Leerenstab (MR), Schleier der Todesfee (Pick-Magier gegen sie), Kosmischer Antrieb (mehr Roams).
 - Stiefel: Zaubererschuhe; gegen AD-Assassinen Beschichtete Stahlkappen.
-- Runen: Herrschaft-Keystone (Burst) oder Inspiration (ungeprüft). Beschwörer: Blitz + Entzünden.
+- Runen: Dominanz-Keystone (Burst) oder Inspiration (ungeprüft). Beschwörer: Blitz + Entzünden.
 - Skill: Q > W > E, R auf 6/11/16.
