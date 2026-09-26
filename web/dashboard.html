@@ -26,7 +26,7 @@
   .zahl { font-variant-numeric: tabular-nums; }
   .plus { color: var(--gut); } .minus { color: var(--feind); }
   .obj { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; }
-  .obj div { background: #0e141b; border-radius: 6px; padding: 6px 8px; display: flex; justify-content: space-between; }
+  .obj div { background: #0e141b; border-radius: 6px; padding: 6px 8px; display: flex; justify-content: space-between; gap: 8px; }
   .lebt { color: var(--gut); font-weight: 700; }
   .bald { color: var(--warn); font-weight: 700; }
   .gegner { display: grid; gap: 4px; }
@@ -170,8 +170,12 @@ function zeige(z) {
   if (j) {
     $('jetztplan').textContent = j.plan || 'Kein besonderer Plan - farmen, Karte lesen.';
     const teile = [];
-    if (j.gefahr.length) teile.push('Kann bei dir sein: ' + j.gefahr.map(g =>
-      `<b style="color:${g.sek < 8 ? 'var(--feind)' : 'var(--text)'}">${g.champion} ${g.sek < 2 ? 'jetzt' : g.sek + ' s'}</b>`).join(', '));
+    // sichtbar: echte Laufzeit (rot unter 8 s); nicht sichtbar und 'sofort moeglich' nur, weil er lange weg ist:
+    // grau 'seit X s weg' - kein falsches 'jetzt' (Live-Partie 26.09.: 'Nautilus jetzt' war 40 s unsichtbar)
+    if (j.gefahr.length) teile.push('Kann bei dir sein: ' + j.gefahr.map(g => {
+      if (!g.sichtbar && g.sek < 2 && g.seit) return `<span class="klein">${g.champion} (seit ${g.seit} s weg)</span>`;
+      return `<b style="color:${g.sek < 8 ? 'var(--feind)' : 'var(--text)'}">${g.champion} ${g.sek < 2 ? 'jetzt' : g.sek + ' s'}</b>`;
+    }).join(', '));
     if (j.unbekannt.length) teile.push('Unbekannt: ' + j.unbekannt.join(', '));
     if (j.fenster.length) teile.push('Fenster: ' + j.fenster.join(', '));
     if (j.kraefte) teile.push('Lane: ' + j.kraefte);

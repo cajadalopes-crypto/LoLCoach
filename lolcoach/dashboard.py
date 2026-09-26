@@ -88,7 +88,8 @@ def _jetzt(p: Partie, lagebild) -> dict | None:
     if b is None:
         return None
     e = getattr(lagebild, "entscheider", None)
-    gefahr = [{"champion": g.champion, "id": g.s.champion_id, "sek": round(g.ankunft), "sichtbar": g.sichtbar}
+    gefahr = [{"champion": g.champion, "id": g.s.champion_id, "sek": round(g.ankunft), "sichtbar": g.sichtbar,
+               "seit": round(g.seit) if g.seit else None, "leben": g.leben}
               for g in sorted((g for g in b.gegner if not g.s.tot and g.ankunft is not None and not g.unbekannt
                                and b.plausibel(g)), key=lambda g: g.ankunft)[:4]]
     return {
