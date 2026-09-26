@@ -86,7 +86,8 @@ class Option:
     def thema(self) -> str:
         return {"zurueck": "gefahr", "druck": "druck", "freeze": "gefahr", "gruppe": "objective",
                 "obj_plan": "objective", "seite": "seite", "seite_nicht": "seite", "gank": "druck",
-                "invade": "druck", "hilfe": "hilfe", "hilfe_fern": "seite", "reset": "gefahr"}.get(
+                "invade": "druck", "hilfe": "hilfe", "hilfe_fern": "seite", "reset": "gefahr",
+                "muster": "gefahr"}.get(
             self.name, "back" if self.name.startswith("back") else "")
 
 
@@ -170,6 +171,15 @@ class Entscheider:
             # kurz halten: 9 s Reset-Satz liess "Shen hat Flash benutzt" verfallen (test_zauber, 26.09.)
             aus.append(Option("reset", f"Zweimal gestorben: sicher farmen {spike}, kein Trade ohne Sicht auf {wer}.",
                               170, 3))
+
+        # 2c) Muster: sein Jungler war schon zweimal an Toden auf deiner Lane beteiligt - er kommt wieder
+        mlane = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}.get(rolle)
+        n_ganks = self.jungle.ganks.get(mlane, 0) if mlane else 0
+        if lane_phase and j and not j.s.tot and n_ganks >= 2 and ("muster", n_ganks) not in self._einmal:
+            andere = {l: n for l, n in self.jungle.ganks.items() if l != mlane}
+            vergleich = f", woanders {sum(andere.values())}x" if andere else ", nirgends sonst"
+            aus.append(Option("muster", f"{j.champion} war schon an {n_ganks} Toden auf deiner Lane beteiligt{vergleich}: "
+                                        f"er spielt auf dich. Welle bei dir halten, tief nur mit Sicht.", 120, 3))
 
         # 3) Druck: Lane-Gegner sichtbar, du staerker, Jungler tot oder sicher weit weg, Leben gut.
         #    (Camille-Partie 26.09., 4:42/4:50: "Gragas 19 s zu dir, zurueck" und 8 s spaeter "Spiel auf Rumble")
@@ -386,6 +396,9 @@ class Entscheider:
         einmal = beste.name in ("gank_erwartet", "gank_weg")
         if beste.name == "reset":
             self._einmal.add(("reset", b.tode_kurz[-1]))   # je Todesserie einmal
+        if beste.name == "muster":
+            mlane = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}.get(b.ich.rolle)
+            self._einmal.add(("muster", self.jungle.ganks.get(mlane, 0)))   # je neuer Anzahl einmal
         if einmal and beste.name in self._einmal:
             return None
         if b.zeit - self._zuletzt < ABSTAND and not beste.dringend:

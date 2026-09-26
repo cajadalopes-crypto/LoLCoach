@@ -61,6 +61,7 @@ class Jungletracker:
     start: str | None = None          # "oben"/"unten"
     start_grund: str = ""
     zuerst_in_lane: dict[str, float] = field(default_factory=dict)   # Rolle -> Spielzeit der ersten Sichtung
+    ganks: dict[str, int] = field(default_factory=dict)   # Lane -> Kills an euch, an denen er beteiligt war (Muster)
     _name: str | None = None
 
     def neu(self, p: Partie, lagebild) -> None:
@@ -84,6 +85,7 @@ class Jungletracker:
                     and lagebild.sichtbar(s) and (g := lagebild.gesehen(s)) and p.zeit >= 40:
                 if _in_lane(g[1], g[2], s.rolle):
                     self.zuerst_in_lane[s.rolle] = g[0]
+        self.ganks = gank_muster(p, j)
         if self.start is None and p.zeit <= 150:
             top, bot = self.zuerst_in_lane.get("TOP"), self.zuerst_in_lane.get("BOTTOM")
             if top is not None and bot is not None:
@@ -126,6 +128,9 @@ class Jungletracker:
             teile.append(f"zuletzt gesehen vor {int(zeit - z[0])} s {seite(z[1], z[2])}")
         w = self.wahrscheinlich(zeit)
         teile.append("jetzt wahrscheinlich " + ", ".join(f"{s} {int(p * 100)} %" for s, p in sorted(w.items(), key=lambda x: -x[1])))
+        if self.ganks:
+            teile.append("an euren Toden beteiligt: " + ", ".join(f"{l} {n}x" for l, n in
+                                                                   sorted(self.ganks.items(), key=lambda x: -x[1])))
         return f"JUNGLER {self._name}: " + "; ".join(teile)
 
 
@@ -138,3 +143,21 @@ def _in_lane(x: float, y: float, rolle: str) -> bool:
     if rolle == "TOP":
         return x < 0.14 or y < 0.14
     return x > 0.86 or y > 0.86
+
+
+LANE_DER_ROLLE = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}
+
+
+def gank_muster(p: Partie, j: Spieler) -> dict[str, int]:
+    """Reasoning #48 (Mustererkennung): an welchen Kills gegen euch der gegnerische Jungler beteiligt war,
+    nach der Lane des Opfers - in der Lane-Phase (bis 14:00), da ist die Lane noch der Ort."""
+    aus: dict[str, int] = {}
+    for e in p.ereignisse:
+        if e.art != "ChampionKill" or e.opfer is None or e.opfer.team != p.mein_team or e.zeit > 840:
+            continue
+        dabei = e.taeter is not None and e.taeter.name == j.name
+        dabei = dabei or any((sp := p.spieler_namens(n)) is not None and sp.name == j.name
+                             for n in e.daten.get("Assisters", []))
+        if dabei and (lane := LANE_DER_ROLLE.get(e.opfer.rolle)):
+            aus[lane] = aus.get(lane, 0) + 1
+    return aus
