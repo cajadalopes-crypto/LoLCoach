@@ -82,6 +82,13 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
   (f2f8f10); Tuerme heissen "Top-Tier-1-Turm" (9331d68); Gegner am Drachen bei weitem Weg: "zu weit fuer dich"
   (8fa9652); Bruchstuecke ohne Frage bekommen keine Antwort (b5e7874). Live pruefen: kommt "Ach nee" an der
   richtigen Stelle, bricht nichts ab, was noch stimmt (Fehlabbrueche = Satz fehlt ganz)?
+  Nacht 27.09., ohne Partie gemessen: Minimap-Erkennung - Sichtprobe 30 Icons, 0 Verwechslungen; Ringfarbe aller
+  Sichtungen 0,17-0,43 % falsch (Einzel-Champions, neue Partien; `werkzeuge/minimap_ringprobe.py`); verloren unter
+  einem Icon nur 2-3x je Partie. Eigene Flashes (HUD als Wahrheit): Minimap 2 von 7, 0 Fehlalarme - die 5
+  verpassten lagen im Kampf komplett unter dem Gegner-Icon (Grenze der Minimap; der Bildschirm deckt den Kampf vor
+  dir ab). Bildschirm-Sprung jetzt mit Kamerarahmen: die Minimap nennt den Springer oder verwirft (fc9eaa7).
+  Sofort-Antworten "Soll ich backen?" / "Sollen wir Drache machen?" (bc78656); feste Rat-Anhaenge gerechnet
+  (6cec013); 'seit X nicht zu sehen' nach Neustart ab Zuschau-Beginn (d6fcf0e). Generalprobe (stumm, 2 min): laeuft.
 
 - NEU 26.09. nachts: (1) jede Ansage protokolliert live ihren ersten Ton und ob sie abgebrochen wurde - nach der
   Partie `python werkzeuge/verzoegerung_live.py` (Warten im Plan vs. Stimme, je Vorrang; das Mass fuer "geisteskrank
