@@ -30,6 +30,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - R-Timer (90–120 s) mitzählen.
 - Klon (W) greift nicht wirklich an – nicht darauf zielen.
 - Magieresistenz.
+- Ohne Blitz (300 s) muss sie mit R-Sprung allein anlaufen – dann ist die Aufladung leichter zu sehen.
 
 ## Makro/Teamfight
 - Flanke-Engage mit Tarnung + R. Picks mit E.

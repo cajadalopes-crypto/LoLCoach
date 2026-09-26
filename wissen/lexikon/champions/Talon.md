@@ -29,6 +29,9 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Seine Abwesenheit auf Mid sofort ansagen – er ist in ~15 s auf Top/Bot.
 - Q ist gezielt: Punkt-CC nach dem Sprung.
 - Warden an Wandsprung-Punkten neben Lanes.
+- Level 2–3-Roam ist sein Standard: nach Mid-Push fehlt er – Top/Bot sofort warnen.
+- R-Timer (60–100 s) mitzählen: ohne R fehlt ihm der Teamfight-Burst.
+- Energie gibt es nicht – er ist Mana-begrenzt: nach W-Spam früh schwächer.
 
 ## Makro/Teamfight
 - Roams, Picks, Seitendruck; Teamfight: R auf Backline.

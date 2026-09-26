@@ -30,6 +30,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Dive auf sie: kaum Flucht außer R.
 - Früh invaden (Dschungel) – sie verliert Duelle.
 - Magieresistenz.
+- Im Dschungel: ihre Camps sind früh schnell gecleart – Konter-Invade auf der Seite ihres ersten Ganks.
 
 ## Makro/Teamfight
 - Roams/Ganks mit R, Teamfight-Trennung durch Wand.

@@ -30,6 +30,8 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - R-Timer (110–170 s) mitzählen und Seitenlanes informieren.
 - All-in in der Lane (er ist früh schwach).
 - Magieresistenz.
+- Blaue Karte = Mana, rote = Flächen-Slow – nur Gold ist gefährlich; Kartenfarbe über dem Kopf lesen.
+- Bot-Lane-Ganks mit R + Gold-Karte ab Level 6 – Bot vor seiner R warnen.
 
 ## Makro/Teamfight
 - Globale Picks, Split-Druck; Teamfight: Gold-Karte auf Carry.

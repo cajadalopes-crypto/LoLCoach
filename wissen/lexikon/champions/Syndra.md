@@ -29,6 +29,9 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Kein Dash in ihrem Gesicht, solange E bereit ist.
 - Magieresistenz früh.
 - R-Timer mitzählen.
+- Blitz-Timer: Blitz-E (Stun aus Überraschungswinkel) ist ihr Standard-Pick.
+- Mana früh knapp: nach mehreren Q-W-Pokes ist sie leer.
+- Wellen, die sie schnell räumt, geben ihr Roam-Zeit – Seiten warnen, wenn sie fehlt.
 
 ## Makro/Teamfight
 - Picks aus Sicherheit, Burst auf Carry.

@@ -29,6 +29,8 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Leben hoch halten: R skaliert mit fehlendem Leben.
 - Magieresistenz + Zhonyas/Schutz spät.
 - R-Timer (60–120 s) mitzählen.
+- Blitz-E-Käfig ist sein Engage: Blitz-Timer ansagen.
+- Ab ~20 min und vielen Stapeln tötet R allein Squishies – Magieresistenz und Leben erhöhen.
 
 ## Makro/Teamfight
 - Käfig zur Zonenkontrolle, R auf Carry.

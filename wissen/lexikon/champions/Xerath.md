@@ -28,6 +28,9 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Dive: nach E-Fehlwurf (11–13 s) hat er keine Verteidigung.
 - Leben hoch halten (Poke), Heilung aus Items/Support.
 - R-Timer mitzählen.
+- Mana: nach mehreren Q/W ist er leer (Passiv hilft nur über AAs).
+- Im Teamfight von der Seite angehen: er steht weit hinten, oft ohne Peel.
+- Ohne Blitz ist er ein leichtes Dive-Ziel.
 
 ## Makro/Teamfight
 - Belagerung, Poke vor Objectives, R zum Aufräumen.

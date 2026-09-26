@@ -29,6 +29,9 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Früh bestrafen, bevor er Upgrades hat.
 - R: aus dem Sturm heraus, er kann ihn steuern.
 - Magieresistenz.
+- Blitz-Timer: ohne Blitz fehlt ihm jede Flucht (nur Q-Schild).
+- Welle nahe dem Turm halten: er muss für E-Poke nach vorn.
+- R-Timer (80–120 s) mitzählen.
 
 ## Makro/Teamfight
 - Zonenkontrolle, R in Gruppen, Belagerung.

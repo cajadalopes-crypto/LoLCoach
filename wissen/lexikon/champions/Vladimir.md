@@ -28,6 +28,9 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Heilungsreduktion Pflicht (Ruf des Henkers/Kugel des Untergangs/Dornenweste).
 - R getroffen: kurz auseinander, Schaden wird verstärkt.
 - Partie früh entscheiden: nach 16 sehr stark.
+- Ohne W ist er dem Burst ausgeliefert – dann All-in/Ganks.
+- Er muss Leben für E ausgeben: nach vollem E ist er niedriger, als er aussieht.
+- Mit Heilungsreduktion und frühem Druck gewinnt fast jeder Toplaner.
 
 ## Makro/Teamfight
 - Flanke, R auf Gruppen, Überleben mit W.

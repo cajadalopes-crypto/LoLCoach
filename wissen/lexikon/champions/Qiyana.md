@@ -29,6 +29,8 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Rüstung früh; Zhonyas/Schutz.
 - R-Timer (120 s) mitzählen.
 - Im offenen Gelände kämpfen (weniger Wände).
+- Blitz-R-Timer: ohne Blitz fehlt ihr der Winkel, um Gegner gegen die Wand zu stoßen.
+- Früh (Level 1–2) ist sie schwach: Lane-Druck, bevor sie W-Element-Trades nutzen kann.
 
 ## Makro/Teamfight
 - Teamfight-R an Flusswänden (Drachengrube); Picks.

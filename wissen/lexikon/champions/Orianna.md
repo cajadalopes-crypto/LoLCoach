@@ -29,6 +29,8 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Dive auf sie direkt: sie hat nur E-Schild auf sich selbst.
 - Früh Ganks, bevor sie Items hat.
 - Magieresistenz.
+- Blitz-Timer: Kugel auf sich + Blitz + R ist ihr Überraschungs-Engage – ohne Blitz braucht sie einen Diver.
+- Mana früh knapp: nach 4–5 Q/W-Pokes ist sie leer → Trade-Fenster.
 
 ## Makro/Teamfight
 - Kontrolle in der Mitte, Peel mit W/E, Teamfight-R.

@@ -28,6 +28,8 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - E verbraucht (14–18 s) → Dive.
 - Magieresistenz früh.
 - Nach R kehrt sie an den Startpunkt zurück – dort CC hinlegen.
+- Blitz-/W-Splitter: sie kann aufgesammelte Beschwörerzauber nutzen – ein zweiter Blitz ist möglich.
+- R-Timer ist kurz (5–11 s): nicht auf "R verbraucht" warten, sondern auf E.
 
 ## Makro/Teamfight
 - Picks mit E + Q, Poke vor Objectives.

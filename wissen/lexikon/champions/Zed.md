@@ -29,6 +29,8 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Rüstung früh (Beschichtete Stahlkappen, Dornenweste).
 - R-Timer (100–120 s) mitzählen.
 - Energie leer nach Combo → zurückschlagen.
+- Level 6: seine R-Kill-Drohung sofort ansagen, Zhonyas/Schutz-Bauteil kaufen.
+- Blitz-Timer: ohne Blitz hat er nach der Combo nur den Schatten als Flucht.
 
 ## Makro/Teamfight
 - Picks, Splitpush, Flanke auf Carry.

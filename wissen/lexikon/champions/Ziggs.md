@@ -28,6 +28,9 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Minenfeld meiden; nicht in Minen gestoßen werden (Abstand zu ihm).
 - R-Timer mitzählen; nach Kämpfen Leben hoch halten (globale R).
 - Magieresistenz.
+- Früh Dive: vor Level 6 hat er nur W als Flucht.
+- Blitz-Timer: ohne Blitz und W ist er ein leichtes Ziel.
+- Seine R nach Kämpfen: niedrige Verbündete sofort warnen.
 
 ## Makro/Teamfight
 - Belagerung, Turmdruck, Poke.

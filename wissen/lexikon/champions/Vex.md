@@ -28,6 +28,9 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - R-Geschoss seitlich ausweichen.
 - W-Schild: Burst erst danach.
 - R-Timer mitzählen; Kills auf niedrige Verbündete geben ihr Resets.
+- Blitz-Timer: Blitz-W mit geladenem Verhängnis = Flächen-Furcht.
+- Ohne Dash spielen gegen sie: Poke-Champions haben leichteres Spiel als Diver.
+- Mana: nach mehreren Q/E-Pokes leer.
 
 ## Makro/Teamfight
 - Anti-Dive, Aufräumen mit R-Resets.

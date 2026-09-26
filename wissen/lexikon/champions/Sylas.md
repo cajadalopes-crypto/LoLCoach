@@ -28,6 +28,9 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Eure Team-Ults kennen: welche er stehlen kann (Teamfight-Ults sind gefährlich in seiner Hand).
 - R-Timer (30–80 s) mitzählen.
 - Früh Druck vor Level 6.
+- Blitz- und W-Timer: ohne W fehlt ihm Heilung und zweiter Dash – dann All-in.
+- Welle nahe dem eigenen Turm halten: er braucht Nähe für seine Passiv-Trades.
+- In Teamfights nicht mit eigenen großen Ults vorpreschen, solange er seine R noch hat.
 
 ## Makro/Teamfight
 - Flanke, gestohlene Ult entscheidet; Dive auf Carry.

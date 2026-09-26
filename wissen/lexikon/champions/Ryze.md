@@ -29,6 +29,9 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. 26.19
 - Portal (R): 180–140 s CD; Portal-Ort beobachten und Team warnen.
 - Früh Druck, bevor sein Mana-Item fertig ist.
 - Magieresistenz.
+- Er ist Nahkampf-anfällig ohne Flucht außer Blitz/R: Blitz-Timer ansagen, dann Dive.
+- R-Portal-Rotationen: wenn er vor dem Drachen fehlt, kommt oft das ganze Team über R.
+- Spät (3 Items) gewinnt er lange Kämpfe – Kämpfe kurz halten, Burst statt Abtausch.
 
 ## Makro/Teamfight
 - Frontnaher Dauerschaden, R-Rotationen/Flanken.

@@ -29,6 +29,9 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. Data-
 - Dive: er hat keine Flucht.
 - Drei Treffer = absoluter Schaden: nicht mehrere Pokes nacheinander fressen.
 - R-Timer (80–100 s) mitzählen.
+- Mana früh knapp: nach mehreren W-Ladungen ist er leer.
+- Im Teamfight nicht in einer Linie stehen (R-Strahl, Q-Teilung).
+- Tanks leiden unter seinem absoluten Schaden – nicht nur auf Resistenzen verlassen.
 
 ## Makro/Teamfight
 - Poke vor Objectives; R in Engstellen.
