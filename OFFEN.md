@@ -21,7 +21,10 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## Als Naechstes
 
-- (leer - neue Wuensche von Carlos kommen hierher)
+- Bildschirm-Momente fuer das Review (Carlos' Ziel: "Momente notieren, die du durch Screenshot
+  siehst"): alle 5 s ein Spielbild auf die Platte, rund um jeden Tod die Bilder davor; das Review
+  bekommt die Bilder der wichtigsten Momente, das Gespraech das Bild zum gefragten Zeitpunkt, die
+  Review-Seite zeigt es neben der Minimap.
 
 ## Braucht eine Partie
 
@@ -53,11 +56,17 @@ Notizen und Review durchsehen und nachschaerfen.
 - Kamera-Schwenk (bf72298): "Schwenk kurz die Kamera: ..." und die Antwort mit dem neuen Bild.
 - Eigene Zauber/Faehigkeiten aus dem HUD (fbfa43b): stimmt "Flash weg, noch ~X s" im Spiel?
   Bildschirm-Aufnahme und HUD-Lesen liefen noch nie live (Beobachter meldet Fehler am Ende).
-- Pings von Carlos' Konto, die er nicht geschickt hat ("Rumble hat Blitz benutzt" 2:13, 7:17):
+- (geklaert, Partie 7: Pings sind Carlos' eigene, nicht Maus 5) Pings von Carlos' Konto ("Rumble hat Blitz benutzt" 2:13, 7:17):
   <Partie>_sprechtaste.log gegen die Chatzeilen legen - liegt Maus 5 im Spiel auf Pingen?
 - Verdeckte Icons (700b52c): Pruefstand 80-87 % statt 71-72 % - im Spiel mit Stapeln pruefen.
 
 ## Erledigt
+
+- Partie 7 ausgewertet: Strich-Pings zaehlen wieder (4916472); Objective-Warnungen kamen
+  nicht (einmal je Spawn, Naehe schaltete Gegner-Warnung ab, zu kurz gueltig) und HUD-Flackern
+  (5c7e9e8); Neustart setzt dieselbe Aufnahme fort (671d29e), Zusammenfuehr-Werkzeug (ce6f953);
+  nur ein Coach zur Zeit (203ea99); Laden mit Preisen (6cc8571); Sprechtaste nach der Partie
+  fragt das Review (c920f0a)
 
 - Partie 6 ausgewertet: falsche Rumble-Flash-Timer kamen aus dem Chat (alte Zeilen nach jedem
   Kill neu gelesen; "Rumble — Blitz" als Verbrauch gewertet) - a56c544; Objective-Start
