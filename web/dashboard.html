@@ -158,7 +158,9 @@ let schnell = null;   // { t, s: [[id, team, x, y], ...] }
 function aufsetzen(z) {
   if (!schnell || performance.now() - schnell.t > 600 || !z.spieler) return;
   for (const [id, team, x, y] of schnell.s) {
-    const sp = z.spieler.find(s => s.id === id && (!s.team || s.team === team));
+    // der Minimap-Leser kennt das Team oft nicht (null) - dann zaehlt nur der Champion
+    // (Partie 5: mit Team-Pflicht passte keine Position, die Karte blieb beim Sekundentakt)
+    const sp = z.spieler.find(s => s.id === id && (!team || !s.team || s.team === team));
     if (sp && !sp.tot) sp.gesehen = { ...(sp.gesehen || {}), x, y, vor: 0, jetzt: true, ort: sp.gesehen ? sp.gesehen.ort : '' };
   }
 }
