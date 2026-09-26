@@ -16,8 +16,6 @@ Commit nach unten. Was eine echte Partie braucht, steht unter "Braucht Partie".
 
 ## In Arbeit
 
-- **Grundlagen-Lexikon** (Agent): `wissen/lexikon/grundlagen.md`,
-  `saison2026.md` - Wellen, Recall, Trading, Rollen, Objectives, Sicht, Teamfight.
 - **Champion-Lexikon** (Agent): `wissen/lexikon/champions/*.md` - Riven, Camille,
   Graves ausfuehrlich mit Matchups, dann die haeufigsten Top-Gegner.
 
@@ -64,6 +62,12 @@ Commit nach unten. Was eine echte Partie braucht, steht unter "Braucht Partie".
   offline wiederholbar machen, sobald die erste Partie so ein Protokoll hat.
 
 ## Erledigt
+
+- Gehirn (`gehirn.py`) + Stratege (`stratege.py`): Spielakte zu Spielbeginn,
+  gesprochenes Briefing, Midgame-Plan nach der Lane-Phase, situative
+  Vorwarnungen (Claude formuliert aus der Lage, sonst Standardsatz nach 12 s),
+  Fragen mit Spielakte + Lexikon. Platten bis zum Turmfall (26.1). - siehe Commit "Gehirn"
+- Grundlagen-Lexikon `wissen/lexikon/grundlagen.md` + `saison2026.md` - 32934eb
 
 - Minimap 15 Bilder/s (dxcam, Verfolger im Umkreis 6 ms/Bild), Flash an
   Spruengen, Chat lesen (Windows-OCR), Zauber-Timer mit Ansagen/Antworten/

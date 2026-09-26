@@ -69,7 +69,8 @@ nicht_mehr_vor_weg = 30       # so knapp vor dem Verschwinden schickt der Coach 
 
 [lane_tot]
 min_sekunden = 10
-platten_bis = 840             # 14:00 - danach keine Turmplatten mehr
+# Seit 26.1 bleiben Platten bis zum Turmfall, auch an inneren/Inhib-Tuermen (Lexikon saison2026.md).
+# 'mit_platten' gilt also, solange in deiner Lane ein gegnerischer Turm steht.
 mit_platten = "{champion} ist tot, noch {sekunden} Sekunden. Welle in den Turm schieben und Platten holen."
 ohne_platten = "{champion} ist tot, noch {sekunden} Sekunden. Welle reinschieben, dann Turm, Recall oder zum Objective."
 

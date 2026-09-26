@@ -203,15 +203,18 @@ def laden_liste() -> str:
     return ", ".join(namen)
 
 
-def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", letzte=()) -> str:
+def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", letzte=(), gehirn=None) -> str:
+    """`gehirn`: wenn da, bekommt Claude Spielakte + passende Lexikon-Abschnitte dazu."""
     zusatz = ""
     if letzte:
         zusatz += "\n\nDeine letzten Ansagen: " + " | ".join(
             f"{int((a.gesprochen or a.zeit) // 60)}:{int((a.gesprochen or a.zeit) % 60):02d} {a.text}" for a in letzte)
     if set(_woerter(frage)) & KAUF_WORTE:
         zusatz += f"\n\nItems im Laden (Patch {ddragon.version()}, nur diese Namen verwenden): {laden_liste()}"
+    lage = lage_text(p, lagebild) + zusatz
+    inhalt = gehirn.kontext(frage, p, lage) if gehirn else f"Lage:\n{lage}"
     try:
-        return llm.frage(f"Lage:\n{lage_text(p, lagebild)}{zusatz}\n\nFrage des Spielers: {frage}",
+        return llm.frage(f"{inhalt}\n\nFrage des Spielers: {frage}",
                          system=SYSTEM, modell=modell, timeout=40, aufwand="low").strip()
     except llm.LLMFehler as e:
         print(f"  Claude-Fehler: {e}", flush=True)

@@ -9,6 +9,8 @@ Alles in Spielzeit - so laeuft eine Aufnahme exakt wie das Live-Spiel.
 """
 from __future__ import annotations
 
+import threading
+
 from .regeln import HINWEIS, SOFORT, Ansage
 
 ZEICHEN_PRO_SEKUNDE = 14.0   # Windows-Stimme bei Rate 1, grob gemessen
@@ -23,9 +25,18 @@ class Sprechplan:
         self.frei_ab = -1e9           # Spielzeit, ab der wieder gesprochen werden darf
         self.zuletzt: dict[str, float] = {}
         self.gesagt: list[Ansage] = []
+        self._einwurf: list[Ansage] = []
+        self._schloss = threading.Lock()
+
+    def einwerfen(self, a: Ansage) -> None:
+        """Aus einem anderen Thread (Stratege, Briefing): kommt beim naechsten Takt dran."""
+        with self._schloss:
+            self._einwurf.append(a)
 
     def neu(self, ansagen: list[Ansage]) -> None:
-        for a in ansagen:
+        with self._schloss:
+            eingeworfen, self._einwurf = self._einwurf, []
+        for a in [*eingeworfen, *ansagen]:
             if a.zeit - self.zuletzt.get(a.schluessel, -1e9) < a.sperre:
                 continue
             self.warte = [w for w in self.warte if w.schluessel != a.schluessel]  # die neuere gilt

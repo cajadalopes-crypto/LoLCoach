@@ -26,6 +26,7 @@ class Ansage:
     gueltig: float = 12.0  # so lange darf sie warten, danach ist sie ueberholt
     sperre: float = 60.0   # so lange kommt derselbe Schluessel nicht wieder
     gesprochen: float | None = None  # Spielzeit, zu der der Sprechplan sie sagte
+    situativ: bool = False  # hat Vorlauf: der Stratege darf sie aus der Lage neu formulieren
 
 
 def _objective_name(schl: str, p: Partie) -> str:
@@ -108,6 +109,19 @@ class Regelwerk:
     def _ich_weg(self, p: Partie) -> bool:
         return p.ich.tot or self._ich_in_basis(p)
 
+    def _platten_moeglich(self, p: Partie) -> bool:
+        """Steht in deiner Lane noch ein gegnerischer Turm (aussen, innen, Inhib)?
+        Seit 26.1 haben alle Platten bis zum Turmfall."""
+        lane = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}.get(p.ich.rolle)
+        if not lane:
+            return False
+        gefallen = 0
+        for e in p.kills_von("TurretKilled"):
+            st = struktur(e.daten.get("TurretKilled", ""))
+            if st and st.team != p.mein_team and st.lane == lane and st.stufe in ("aussen", "innen", "Inhib"):
+                gefallen += 1
+        return gefallen < 3
+
     def _lebend(self, p: Partie) -> tuple[int, int]:
         """(lebende eigene, lebende Gegner). Leben der Mitspieler kennt die API nicht."""
         return (sum(1 for s in p.team(p.mein_team) if not s.tot),
@@ -131,7 +145,7 @@ class Regelwerk:
             if schl == "drache" and any(len(p.drachen(t)) == 3 for t in ("ORDER", "CHAOS")) and not p.seele():
                 abschnitt = self.m["vorwarnung"]["drache_seele"]
             if text := self._satz(abschnitt, p):
-                yield Ansage(text, WICHTIG, f"vorwarnung:{schl}", gueltig=25)
+                yield Ansage(text, WICHTIG, f"vorwarnung:{schl}", gueltig=25, situativ=True)
 
     def _objectives(self, p: Partie, bis: float = 0.0) -> list[str]:
         return _lebende_objectives(p, bis, self.m["seiten"]["nicht_mehr_vor_weg"])
@@ -189,7 +203,7 @@ class Regelwerk:
             return
         if len(self._gegner_tot(p, self.m["zahlen"]["min_sekunden"])) >= 2:
             return
-        satz = cfg["mit_platten"] if p.zeit < cfg["platten_bis"] else cfg["ohne_platten"]
+        satz = cfg["mit_platten"] if self._platten_moeglich(p) else cfg["ohne_platten"]
         yield Ansage(satz.format(champion=g.champion, sekunden=int(g.respawn)), WICHTIG, "lane_tot", gueltig=6)
 
     def _level(self, p: Partie, v: Partie):
@@ -351,7 +365,7 @@ class Regelwerk:
         # Recall: stand vor dem Verschwinden still - sofort ansagen, das ist ein Fenster
         if p.zeit - seit < 3 and self.lage.stand_still(g):
             self._gemeldet.add(("gemeldet", g.name, seit))
-            satz = cfg["recall_mit_platten"] if p.zeit < self.m["lane_tot"]["platten_bis"] else cfg["recall_ohne_platten"]
+            satz = cfg["recall_mit_platten"] if self._platten_moeglich(p) else cfg["recall_ohne_platten"]
             yield Ansage(satz.format(champion=g.champion), WICHTIG, "lane_recall", gueltig=6, sperre=30)
             return
         if p.zeit - seit < cfg["fehlt_nach"]:

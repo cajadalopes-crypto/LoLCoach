@@ -153,6 +153,9 @@ class Gespraech:
     def aktualisiere(self, p, lagebild=None, ansagen=None) -> None:
         self.p, self.lagebild, self.gesagt = p, lagebild, ansagen
 
+    def gehirn_setzen(self, gehirn) -> None:
+        self.gehirn = gehirn
+
     def _frage(self, audio: np.ndarray) -> None:
         try:
             self._beantworte(audio)
@@ -181,7 +184,8 @@ class Gespraech:
             antwort = self.antworten.sofort(text, p, self.lagebild)
             if antwort is None:
                 letzte = [a for a in (self.gesagt or []) if a.schluessel != "antwort"][-3:]
-                antwort = self.antworten.mit_claude(text, self.p, self.lagebild, self.modell, letzte)
+                antwort = self.antworten.mit_claude(text, self.p, self.lagebild, self.modell, letzte,
+                                                    getattr(self, "gehirn", None))
                 if antwort.strip().rstrip(".").lower() == "notiert":
                     self._notiere(text, p)  # Claude hat es als Rueckmeldung erkannt
         print(f"  Coach: {antwort}", flush=True)

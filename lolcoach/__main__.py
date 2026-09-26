@@ -21,7 +21,8 @@ from . import ansicht, aufzeichnung, bericht, lage, liveapi, llm, regeln, sprech
 
 
 def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, sicht=None,
-              anzeigen=(), alle: int = 5, nur_coach: bool = False) -> sprechplan.Sprechplan:
+              anzeigen=(), alle: int = 5, nur_coach: bool = False, gehirn: bool = False,
+              gehirn_ablage=None) -> sprechplan.Sprechplan:
     """Gemeinsamer Kern fuer Live und Aufnahme.
 
     `quelle` liefert (Wanduhr, Rohdaten); `sicht` hat `zwischen(bis, champions)`
@@ -32,6 +33,15 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
     rollen_gezeigt = False
     werk, plan = regeln.Regelwerk(), sprechplan.Sprechplan(sprecher)
     lagebild = lage.Lagebild() if sicht else None
+    stratege_ = None
+    if gehirn:
+        from .stratege import Stratege
+        stratege_ = Stratege(plan)
+        stratege_.gehirn.ablage = gehirn_ablage
+        anzeigen = [*anzeigen, stratege_]
+        for a in anzeigen:
+            if hasattr(a, "gehirn_setzen"):
+                a.gehirn_setzen(stratege_.gehirn)
     for n, (w, daten) in enumerate(quelle):
         if schreiber:
             schreiber.schreibe(daten, w)
@@ -53,7 +63,12 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
                 gesehen.add(e.id)
                 if satz := ansicht.ereignis(p, e):
                     print(satz)
-        plan.neu(werk.pruefe(p, lagebild))
+        ansagen = werk.pruefe(p, lagebild)
+        if stratege_:
+            for a in [a for a in ansagen if a.situativ]:
+                stratege_.veredle(a)
+            ansagen = [a for a in ansagen if not a.situativ]
+        plan.neu(ansagen)
         if a := plan.takt(p.zeit):
             print(f"{ansicht.uhr(p.zeit)}  >> {a.text}", flush=True)
         for anzeige in anzeigen:
@@ -150,7 +165,9 @@ def live(args) -> None:
         try:
             plan = _verfolge(_live_quelle(args.basis), args.ich, takt=1.0, sprecher=sprecher,
                              schreiber=schreiber, sicht=_LiveSicht(beobachter) if beobachter else None,
-                             anzeigen=anzeigen)
+                             anzeigen=anzeigen, gehirn=not args.ohne_gehirn,
+                             gehirn_ablage=schreiber.pfad.with_name(
+                                 schreiber.pfad.name.removesuffix(".jsonl.gz") + "_spielakte.md") if schreiber else None)
         finally:
             if beobachter:
                 beobachter.halt()
@@ -274,6 +291,7 @@ def main() -> None:
     lv.add_argument("--stimme", default=STIMME, help="neuronale Stimme (de-DE-KatjaNeural, ...) oder windows")
     lv.add_argument("--ohne-dashboard", action="store_true")
     lv.add_argument("--ohne-sprache", action="store_true", help="keine Fragen per Mikrofon")
+    lv.add_argument("--ohne-gehirn", action="store_true", help="kein Briefing, keine situativen Saetze (spart Claude-Aufrufe)")
     lv.add_argument("--ptt", default="maus5", help="Push-to-Talk-Taste (maus4, maus5, f9, ...)")
     lv.add_argument("--modell-frage", default="sonnet", help="Claude-Modell fuer freie Fragen")
     ab = unter.add_parser("abspielen")
