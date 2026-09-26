@@ -548,8 +548,8 @@ class Regelwerk:
             gekauft, self._spikes = list(self._spikes), []
             if text := denker.aufbruch(self.b, self.entscheider.jungle, gekauft):
                 lane = self.b.lane
-                if lane is not None and (t := denker.tipp(lane.s.champion_id, "items", self._tipps_gesagt)):
-                    yield Ansage(f"Gegen {lane.champion}: {t}", HINWEIS, "tipp", gueltig=40, sperre=45)
+                if lane is not None and (t := denker.item_tipp(self.b, lane, self._tipps_gesagt)):
+                    yield Ansage(t, HINWEIS, "tipp", gueltig=40, sperre=45)
                 self._kauf_bei = None       # das Kontroll-Auge sagt der Aufbruch-Satz nicht extra
                 yield Ansage(text, WICHTIG, "aufbruch:" + ",".join(gekauft), gueltig=20, sperre=30, thema="plan")
         if self._spikes and p.zeit - self._spike_bei >= 3 and (self.b is None or not self._ich_in_basis(p)):

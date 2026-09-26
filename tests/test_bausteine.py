@@ -618,6 +618,19 @@ def stimme_spielt_ab_dem_ersten_stueck():
         edge_tts.Communicate = alt
 
 
+def konter_kauf_ohne_eigenes():
+    """'Gegen Heimerdinger: Items: Magieresistenz, Merkurs Schuhe.' war vorgelesen - jetzt ein Rat, und was du
+    schon hast (Merkurs Schuhe, genug Magieresistenz), faellt weg."""
+    from types import SimpleNamespace as N
+    from lolcoach import denker
+    heimer = N(s=N(champion_id="Heimerdinger"), champion="Heimerdinger")
+    assert denker.item_tipp(N(ich=N(items=[1055])), heimer, set()) == \
+        "Gegen Heimerdinger kaufst du am besten Magieresistenz und Merkurs Schuhe."
+    assert denker.item_tipp(N(ich=N(items=[3111])), heimer, set()) == \
+        "Gegen Heimerdinger kaufst du am besten Magieresistenz."          # 20 MR aus den Schuhen reichen nicht
+    assert denker.item_tipp(N(ich=N(items=[3111, 3155])), heimer, set()) == ""
+
+
 def kein_zweites_geh_zurueck():
     """Nachlauf 194524: viermal "geh zurueck zu deinem Mid-Tier-1-Turm" in 37 s, und eine Gefahr brach die andere nach
     einer Sekunde ab. Ein eben gehoertes "geh zurueck" wird nicht wiederholt (ausser als Gefahr); eine Gefahr wartet,
@@ -829,6 +842,7 @@ if __name__ == "__main__":
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr,
                  faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht,
                  satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
+                 konter_kauf_ohne_eigenes,
                  sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")

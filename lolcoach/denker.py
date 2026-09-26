@@ -765,6 +765,34 @@ def _tipps(champion_id: str) -> list[str]:
     return [z[2:].strip() for z in (m.group(1) if m else "").splitlines() if z.startswith("- ")]
 
 
+STAT_WORT = {"Magieresistenz": "FlatSpellBlockMod", "Rüstung": "FlatArmorMod"}
+
+
+def item_tipp(b: Bewertung, g: GegnerLage, gesagt: set) -> str:
+    """Konter-Kauf aus dem Lexikon ("Items: Magieresistenz, Merkurs Schuhe") nach dem Einkauf - ohne das, was du
+    schon hast (Nachlauf 194524, 7:11: "Gegen Heimerdinger: Items: Magieresistenz, Merkurs Schuhe." klang
+    vorgelesen). Beschreibt die Zeile seine Spikes statt eines Kaufs ("erstes Toedlichkeits-Item = ..."), schweigt er."""
+    from . import ddragon
+    t = tipp(g.s.champion_id, "items", gesagt)
+    if not t:
+        return ""
+    if not t.startswith("Items:"):
+        return f"Gegen {g.champion}: {t}"
+    rest = t[len("Items:"):].strip().rstrip(".")
+    if any(z in rest for z in ("=", "(", ";", "+")):
+        return ""
+    it = ddragon.items()
+    meine = [it.get(i, {}) for i in b.ich.items]
+    namen = {m.get("name") for m in meine}
+    offen = []
+    for teil in [x.strip() for x in rest.replace(" und ", ", ").split(",") if x.strip()]:
+        stat = STAT_WORT.get(teil)
+        if teil in namen or (stat and sum(float(m.get("stats", {}).get(stat, 0)) for m in meine) >= 40):
+            continue
+        offen.append(teil)
+    return f"Gegen {g.champion} kaufst du am besten {_liste(offen)}." if offen else ""
+
+
 def tipp(champion_id: str, art: str, gesagt: set) -> str:
     """Der erste noch nicht gesagte Konter-Tipp aus dem Lexikon ("Gegen diesen Champion"), der zur Lage passt
     (Turm, Trade, Jungler, Items) - je Partie jeder nur einmal, sonst wird er zur Standardphrase."""
