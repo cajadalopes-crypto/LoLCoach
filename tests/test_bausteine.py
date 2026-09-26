@@ -281,7 +281,8 @@ def denkkette():
     assert u.art == "kill", (u.art, u.wert, [(x.art, x.wert) for x in u.faktoren])
     satz = denker.fenster_satz(b, u, anlass=f"Du bist jetzt Level 6, {g.champion} erst 5", ohne={"ult"})
     # Handlung zuerst, Gruende in einem Satz (Live 21:21: ~300 Zeichen je Ansage, der Coach redete 74 % der Zeit)
-    assert satz.startswith(f"Du bist jetzt Level 6, {g.champion} erst 5 - geh rein, das ist ein Kill: "), satz
+    # ... und der Anlass ist der erste Grund, nicht der Satzanfang (Nachlauf 194524: 3,5 s bis zum "geh rein")
+    assert satz.startswith(f"Geh rein, das ist ein Kill: du bist jetzt Level 6, {g.champion} erst 5"), satz
     assert "kein Flash" in satz and len(satz) <= 190, (len(satz), satz)
     assert satz.count("Level 6") == 1, satz                      # der Anlass sagt das Level, nicht zweimal
     # dieselbe Lage als Frage per Sprechtaste: sofort aus dem Urteil, nicht ~3 s ueber Claude

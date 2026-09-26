@@ -470,31 +470,49 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
         from .komponist import _rueckzug
         handlung = _rueckzug(b)[:1].lower() + _rueckzug(b)[1:]
     bedroht_halten = u.art == "halten" and bool({"jungler_nah", "dritter"} & u.arten_alle) and u.wert >= TRADE_AB
+    # Die Handlung zuerst, der Anlass ist ihr erster Grund (Nachlauf 194524: "Dein Combo macht etwa 810, Heimerdinger
+    # hat nur 730 Leben - geh rein" - 3,5 s bis zum "geh rein", und das Fenster ist kurz). Spricht der Anlass gegen
+    # die Handlung, bleibt er vorn: "Du bist zuerst Level 2, Wukong noch 1 - aber nur kurze Trades: ..."
+    vorn = bool(anlass) and anlass_gut == fuer_dich
+    grund1 = _klein_vorn(anlass) if vorn else ""
     if u.art == "turm":
         # Die Gruende FUER den Kampf erklaeren das Warten nicht ("noch nicht rein: du hast 1700 Gold mehr ..." -
         # Nachlauf 21:21, 8:05). Gesagt wird, was gilt, sobald er den Turm verlaesst.
-        text = handlung + f" - kommt {n} raus, " + ("geh rein" if u.wert >= KILL_AB else "trade hart")
+        text = handlung + f" - kommt {n} raus, " + ("geh rein" if u.wert >= KILL_AB else "trade hart") \
+            + (f": {grund1}" if grund1 else "")
     elif bedroht_halten:
         # dasselbe beim Jungler in der Naehe (Camille-Partie 5:21: "kein All-in, solange Gragas in der Naehe ist:
         # deine Ult ist da, seine noch nicht"): was gilt, sobald er weg ist
         wer = j if "jungler_nah" in u.arten_alle else next(x.subj for x in u.faktoren if x.art == "dritter")
-        text = handlung + f" - ohne {wer} " + ("wäre es ein Kill" if u.wert >= KILL_AB else "tradest du hart")
+        text = handlung + f" - ohne {wer} " + ("wäre es ein Kill" if u.wert >= KILL_AB else "tradest du hart") \
+            + (f": {grund1}" if grund1 else "")
     else:
-        text = handlung + (": " + _liste([x.satz for x in gruende]) if gruende else "")
+        teile = ([grund1] if grund1 else []) + [x.satz for x in gruende]
+        # "Gragas ist zuerst Level 2 und Gragas ist ein schweres Matchup" -> "... und ein schweres Matchup"
+        for i in range(len(teile) - 1, 0, -1):
+            vor = f"{n} ist "
+            if teile[i].startswith(vor) and teile[i - 1].startswith(vor):
+                teile[i] = teile[i][len(vor):]
+        text = handlung + (": " + _liste(teile) if teile else "")
     if aber and u.art == "kill":
         # nicht "Vi ist tot - geh trotzdem rein" (Nachlauf 194524, 4:11): das Trotzdem galt dem Aber am Satzende
         text += f". Einziger Haken: {aber[0].satz}"
     elif aber and u.art != "turm" and not bedroht_halten:
         text += f" - aber {aber[0].satz}"
-    if anlass:
-        # "Du bist zuerst Level 2, Wukong noch 1 - aber nur kurze Trades: du hast nur 49 Prozent Leben."
-        text = f"{anlass} - {'aber ' if anlass_gut != fuer_dich else ''}{text}"
+    if anlass and not vorn:
+        text = f"{anlass} - aber {text}"
     satz = _gross(text) + "."
     if box is not None and "Matchup" in satz:
         box[0] = b.zeit
     if u.art == "turm" and (t := turm_satz(b)):
         satz += " " + t
     return satz
+
+
+def _klein_vorn(s: str) -> str:
+    """Ein Satzanfang mitten im Satz: "Dein Combo macht ..." -> "dein Combo macht ...", Namen bleiben gross."""
+    erstes = s.split(" ", 1)[0]
+    return s[:1].lower() + s[1:] if erstes in ("Du", "Dein", "Deine", "Dir", "Dich", "Jetzt", "Seine", "Sein") else s
 
 
 def turm_satz(b: Bewertung) -> str:
