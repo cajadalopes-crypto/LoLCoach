@@ -11,7 +11,10 @@ _ASYNC, _UNTERBRECHEN = 1, 2
 
 
 class Stimme:
-    def __init__(self, sprache: str = "German"):
+    def __init__(self, sprache: str = "German", warten: bool = False):
+        """`warten`: jeder Satz blockiert, bis er gesprochen ist - zum Anhoeren
+        einer Aufnahme im Zeitraffer."""
+        self.warten = warten
         self._v = win32com.client.Dispatch("SAPI.SpVoice")
         stimmen = self._v.GetVoices()
         for i in range(stimmen.Count):
@@ -22,6 +25,8 @@ class Stimme:
 
     def sage(self, text: str, dringend: bool = False) -> None:
         self._v.Speak(text, _ASYNC | (_UNTERBRECHEN if dringend else 0))
+        if self.warten:
+            self._v.WaitUntilDone(-1)
 
 
 class Stumm:

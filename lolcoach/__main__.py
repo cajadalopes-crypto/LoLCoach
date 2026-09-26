@@ -13,14 +13,16 @@ import argparse
 import sys
 import time
 
-from . import ansicht, aufzeichnung, liveapi, llm, zustand
+from . import ansicht, aufzeichnung, liveapi, llm, regeln, sprechplan, stimme, zustand
 
 
-def _verfolge(quelle, ich: str | None, takt: float, schreiber=None, alle: int = 5) -> None:
-    """Gemeinsamer Kern fuer Live und Aufnahme: neue Ereignisse als Satz,
-    alle `alle` Takte die Uebersicht."""
+def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, alle: int = 5,
+              nur_coach: bool = False) -> sprechplan.Sprechplan:
+    """Gemeinsamer Kern fuer Live und Aufnahme: Regeln pruefen, Sprechplan
+    takten, neue Ereignisse als Satz, alle `alle` Takte die Uebersicht."""
     gesehen: set[int] = set()
     rollen_gezeigt = False
+    werk, plan = regeln.Regelwerk(), sprechplan.Sprechplan(sprecher)
     for n, daten in enumerate(quelle):
         if schreiber:
             schreiber.schreibe(daten)
@@ -28,18 +30,23 @@ def _verfolge(quelle, ich: str | None, takt: float, schreiber=None, alle: int = 
         if not rollen_gezeigt and p.spieler:
             print(ansicht.rollen_tabelle(p))
             if p.zuschauer and not p.ich:
-                print("(Zuschauer ohne --ich: Sicht Blau/Rot)")
+                print("(Zuschauer ohne --ich: Sicht Blau/Rot, der Coach schweigt)")
             rollen_gezeigt = True
-        for e in p.ereignisse:
-            if e.id in gesehen:
-                continue
-            gesehen.add(e.id)
-            if satz := ansicht.ereignis(p, e):
-                print(satz)
-        if n % alle == 0:
+        if not nur_coach:
+            for e in p.ereignisse:
+                if e.id in gesehen:
+                    continue
+                gesehen.add(e.id)
+                if satz := ansicht.ereignis(p, e):
+                    print(satz)
+        plan.neu(werk.pruefe(p))
+        if a := plan.takt(p.zeit):
+            print(f"{ansicht.uhr(p.zeit)}  >> {a.text}", flush=True)
+        if n % alle == 0 and not nur_coach:
             print(ansicht.uebersicht(p))
         if takt:
             time.sleep(takt)
+    return plan
 
 
 def _live_quelle(basis: str, aus_nach: float = 10.0):
@@ -58,7 +65,6 @@ def _live_quelle(basis: str, aus_nach: float = 10.0):
 
 
 def live(args) -> None:
-    from . import stimme
     sprecher = stimme.Stumm() if args.stumm else stimme.Stimme()
     print("Warte auf eine Partie (Strg+C beendet) ...")
     while True:
@@ -74,7 +80,7 @@ def live(args) -> None:
                 bilder.start()
         sprecher.sage("Coach verbunden.")
         try:
-            _verfolge(_live_quelle(args.basis), args.ich, takt=1.0, schreiber=schreiber)
+            _verfolge(_live_quelle(args.basis), args.ich, takt=1.0, sprecher=sprecher, schreiber=schreiber)
         finally:
             if bilder:
                 bilder.halt()
@@ -90,7 +96,10 @@ def abspielen(args) -> None:
     if not pfad:
         sys.exit("Keine Aufnahme gefunden.")
     print(f"Aufnahme: {pfad}")
-    _verfolge(aufzeichnung.lies(pfad), args.ich, takt=args.takt, alle=args.alle)
+    sprecher = stimme.Stimme(warten=True) if args.laut else stimme.Stumm()
+    plan = _verfolge(aufzeichnung.lies(pfad), args.ich, takt=args.takt, sprecher=sprecher,
+                     alle=args.alle, nur_coach=args.nur_coach)
+    print(f"\n{len(plan.gesagt)} Ansagen.")
 
 
 def status(args) -> None:
@@ -125,6 +134,8 @@ def main() -> None:
     ab.add_argument("datei", nargs="?")
     ab.add_argument("--takt", type=float, default=0.0, help="Sekunden je Schnappschuss (0 = so schnell es geht)")
     ab.add_argument("--alle", type=int, default=60, help="Uebersicht alle N Schnappschuesse")
+    ab.add_argument("--nur-coach", action="store_true", help="nur die Ansagen des Coaches")
+    ab.add_argument("--laut", action="store_true", help="Ansagen vorlesen (wartet, bis jede gesprochen ist)")
     unter.add_parser("status")
     lm = unter.add_parser("llm")
     lm.add_argument("frage")

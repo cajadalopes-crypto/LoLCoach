@@ -73,6 +73,17 @@ class Partie:
     gold: float | None     # nur das eigene; fremdes Gold liefert die API nicht
     ereignisse: list[Ereignis]
     zuschauer: bool
+    namensbuch: dict[str, Spieler | None] = field(default_factory=dict, repr=False)
+    werte: dict = field(default_factory=dict, repr=False)  # eigene championStats (Leben, Vamp, ...)
+
+    @property
+    def heilung(self) -> float:
+        """Eigene Heilung aus Treffern: Lebensraub + Omnivamp + Vamp-Werte."""
+        return sum(float(self.werte.get(k, 0.0)) for k in ("lifeSteal", "omnivamp", "physicalVamp", "spellVamp"))
+
+    def spieler_namens(self, name: str) -> Spieler | None:
+        """Wie die Ereignisse Spieler nennen (KillerName, Assisters)."""
+        return self.namensbuch.get(name)
 
     @property
     def mein_team(self) -> str | None:
@@ -279,4 +290,6 @@ def partie(daten: dict, ich: str | None = None) -> Partie:
         gold=None if zuschauer else aktiv.get("currentGold"),
         ereignisse=ereignisse,
         zuschauer=zuschauer,
+        namensbuch=nach_name,
+        werte={} if zuschauer else aktiv.get("championStats", {}),
     )

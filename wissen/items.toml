@@ -1,0 +1,26 @@
+# Items, die das Spiel gegen den Traeger veraendern: was der Coach dazu sagt.
+# Schluessel = Item-ID (Data Dragon). IDs am 26.09.2026 gegen Patch 26.19 geprueft.
+# Ein Eintrag hier wird angesagt, auch wenn das Item kein legendaeres ist
+# (Heilungsreduktion kommt oft als Bauteil).
+stand = "Patch 26.19, IDs geprueft 26.09.2026"
+
+[heilungsreduktion]
+ids = [3075, 3076, 3123, 3916, 3033, 6609, 3165]
+nur_wenn_ich_heile = true
+satz = "{champion} hat Heilungsreduktion ({item}). Deine Heilung wirkt weniger - kürzere Trades."
+
+[stasis]
+ids = [3157]
+satz = "{champion} hat Zhonyas. Schadenscombo erst, wenn die Stasis verbraucht ist."
+
+[wiederbelebung]
+ids = [3026]
+satz = "{champion} hat Schutzengel. Nach dem Kill nicht wegdrehen - er steht wieder auf."
+
+[reinigung]
+ids = [3140, 3139]
+satz = "{champion} kann Kontrolleffekte reinigen. Deinen wichtigsten CC erst nach der Reinigung."
+
+[zauberschild]
+ids = [3102]
+satz = "{champion} hat einen Zauberschild. Erst mit einer schwachen Fähigkeit brechen, dann die starke."

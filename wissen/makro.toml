@@ -1,0 +1,114 @@
+# Makro-Regelwerk: WANN der Coach etwas sagt und WAS.
+#
+# Jede Regel in lolcoach/regeln.py liest hier ihre Schwellen und Saetze.
+# Saetze duerfen Platzhalter tragen: {champion}, {sekunden}, {objective},
+# {anzahl}, {item}, {gold}, {cs}, {cspm}, {gegner_cs}, {minute}, {level}.
+# Rollen: TOP, JUNGLE, MIDDLE, BOTTOM, UTILITY; "alle" gilt, wenn die Rolle fehlt.
+# Ein leerer Satz ("") heisst: fuer diese Rolle schweigen.
+#
+# Grundsatz: jede Ansage sagt, was zu tun ist UND warum - kurz genug, dass
+# sie waehrend des Spielens ankommt (Faustregel: unter 5 Sekunden Sprechzeit).
+stand = "Grundgeruest 26.09.2026 - allgemeines Makro, noch kein Matchup-Wissen"
+
+[vorwarnung]
+vorlauf = 60                  # Sekunden vor dem Spawn
+
+[vorwarnung.drache]
+alle = "Drache in einer Minute."
+TOP = "Drache in einer Minute. Schieb deine Welle rein, dann kannst du per Teleport mitkämpfen oder oben Druck machen."
+TOP_ohne_tp = "Drache in einer Minute. Ohne Teleport bist du zu weit weg - nutz die Zeit oben: Welle pushen, Platten, Turm."
+JUNGLE = "Drache in einer Minute. Prüf, ob Bot und Mid Prio haben, und setz vorher Sicht am Fluss."
+MIDDLE = "Drache in einer Minute. Schieb deine Welle rein, damit du vor dem Mid-Gegner am Fluss bist."
+BOTTOM = "Drache in einer Minute. Welle reinschieben - wer zuerst am Pit ist, bestimmt den Kampf."
+UTILITY = "Drache in einer Minute. Sicht vor dem Pit setzen, solange eure Welle Druck macht."
+
+[vorwarnung.drache_seele]
+alle = "Drache in einer Minute - und er entscheidet die Seele. Alle Wellen vorher rein, niemand stirbt davor."
+
+[vorwarnung.larven]
+TOP = "Larven in einer Minute. Welle reinschieben, damit du deinem Jungler oben helfen kannst."
+JUNGLE = "Larven in einer Minute. Plane deinen Clear so, dass du oben bist, wenn Top und Mid Prio haben."
+MIDDLE = "Larven in einer Minute. Mit Prio auf deiner Welle kannst du deinem Jungler oben helfen."
+BOTTOM = ""
+UTILITY = ""
+alle = "Larven in einer Minute."
+
+[vorwarnung.herold]
+TOP = "Herold in einer Minute. Welle vorbereiten - der Herold ist auf deiner Seite."
+JUNGLE = "Herold in einer Minute. Oben Prio prüfen und Sicht an der Grube setzen."
+MIDDLE = "Herold in einer Minute. Mit Prio kannst du beim Herold helfen."
+BOTTOM = ""
+UTILITY = ""
+alle = "Herold in einer Minute."
+
+[vorwarnung.baron]
+alle = "Baron in einer Minute. Seitenwellen jetzt rausschieben, dann gemeinsam Sicht um die Grube."
+
+[jungler_tot]
+min_sekunden = 15
+alle = "{champion} ist {sekunden} Sekunden tot."
+TOP = "{champion}, der Jungler, ist {sekunden} Sekunden tot. Du kannst ohne Gankgefahr pushen und traden."
+MIDDLE = "{champion}, der Jungler, ist {sekunden} Sekunden tot. Du kannst frei pushen oder zum Fluss gehen."
+BOTTOM = "{champion}, der Jungler, ist {sekunden} Sekunden tot. Ihr könnt ohne Gankgefahr hart spielen."
+UTILITY = "{champion}, der Jungler, ist {sekunden} Sekunden tot. Ihr könnt ohne Gankgefahr hart spielen und tief Sicht setzen."
+JUNGLE = "{champion} ist {sekunden} Sekunden tot. Sein Jungle ist offen - Camps klauen oder ein Objective nehmen."
+
+[jungler_tot_objective]
+# Jungler tot UND ein Objective lebt oder kommt, bevor er zurueck ist.
+# nah: das Objective liegt auf deiner Seite; fern: dein Team muss es machen.
+nah = "{champion} ist {sekunden} Sekunden tot. {objective} jetzt - er kann nicht kontern."
+fern = "{champion} ist {sekunden} Sekunden tot. Ping {objective} für dein Team und nutz die Zeit auf deiner Lane."
+
+[seiten]
+# Welche Rollen ein Objective in der Regel selbst erreichen (Rest: "fern").
+drache = ["JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"]
+larven = ["JUNGLE", "MIDDLE", "TOP"]
+herold = ["JUNGLE", "MIDDLE", "TOP"]
+baron = ["JUNGLE", "MIDDLE", "TOP", "BOTTOM", "UTILITY"]
+nicht_mehr_vor_weg = 30       # so knapp vor dem Verschwinden schickt der Coach niemanden mehr hin
+
+[lane_tot]
+min_sekunden = 10
+platten_bis = 840             # 14:00 - danach keine Turmplatten mehr
+mit_platten = "{champion} ist {sekunden} Sekunden tot. Welle in den Turm schieben und Platten holen."
+ohne_platten = "{champion} ist {sekunden} Sekunden tot. Welle reinschieben, dann Turm, Recall oder zum Objective."
+
+[zahlen]
+min_sekunden = 12             # nur Gegner zaehlen, die mindestens so lange tot bleiben
+vorteil_objective = "{anzahl} Gegner tot für {sekunden} Sekunden. {objective} jetzt - sie können nicht verteidigen."
+vorteil_turm = "{anzahl} Gegner tot für {sekunden} Sekunden. Jetzt Türme drücken, solange sie fehlen."
+nachteil = "Ihr seid {sekunden} Sekunden lang zu {anzahl}. Nicht kämpfen - Objective lieber abgeben als noch jemanden verlieren."
+
+[level]
+frueh_bis = 180               # Level-2-Rennen nur in den ersten 3 Minuten
+gegner_2 = "{champion} ist Level 2, du noch nicht. Zurück, bis du nachziehst."
+ich_2 = "Du bist zuerst Level 2. Jetzt ist dein Trade-Fenster."
+gegner_6 = "{champion} hat Level 6, du noch nicht. Keine langen Trades, bis du nachziehst."
+ich_6 = "Du hast Level 6 vor {champion}. Das ist dein Fenster für einen All-in."
+jungler_6 = "{champion} hat Ultimate. Ganks werden gefährlicher - pushen nur mit Sicht."
+
+[items]
+# Neues legendaeres Item beim Lane-Gegner oder Jungler (ab diesem Preis, ohne Stiefel)
+legendaer_ab = 2200
+# Heilungsreduktion nur ansagen, wenn du selbst so viel Heilung hast
+# (Lebensraub + Omnivamp + Zaubervamp, Werte der Live-API)
+heilung_ab = 0.05
+fertig = "{champion} hat {item} fertig."
+
+[gold]
+schwelle = 1300               # ab hier lohnt ein Recall fuer ein Kernteil
+erneut_nach = 150             # Sekunden, bis dieselbe Erinnerung wiederkommt
+satz = "Du hast {gold} Gold. Bei der nächsten ruhigen Welle zurück - ungenutztes Gold ist verschenkte Stärke."
+
+[cs]
+minuten = [5, 10, 15, 20]
+ziel_pro_minute = 8.0         # Diamond+
+satz = "Minute {minute}: {cs} CS, {cspm} pro Minute. {champion} hat {gegner_cs}."
+satz_ohne_gegner = "Minute {minute}: {cs} CS, {cspm} pro Minute."
+unter_ziel = " Ziel sind acht pro Minute."
+
+[tod]
+gank = "Gank von {champion}. Ohne Sicht auf den gegnerischen Jungler nicht so weit vorne stehen."
+ueberzahl = "Gestorben gegen {anzahl}. Wenn Gegner fehlen, rechne damit, dass sie zu dir kommen."
+solo_nachteil = "Solo gegen {champion} verloren - er war {grund}. Erst nachziehen, dann wieder traden."
+solo = "Solo gegen {champion} verloren. Denk an seine Cooldowns - trade, wenn seine wichtigste Fähigkeit weg ist."
