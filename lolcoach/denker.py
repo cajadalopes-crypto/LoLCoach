@@ -283,7 +283,7 @@ def _combo(b: Bewertung, g: GegnerLage, zuenden: bool) -> Faktor | None:
     if dmg >= 1.1 * rest:     # 10 % Reserve: Heilung, Schilde, ein verfehlter Treffer
         if not combo.genau(b.ich.champion_id):
             return Faktor(2.2, "combo_kill", "dein Combo", "macht", f"mindestens {zahl} Schaden, {n} hat noch {leben} Leben")
-        return Faktor(2.2, "combo_kill", "dein voller Combo", "macht", f"etwa {zahl} Schaden, {n} hat noch {leben} Leben")
+        return Faktor(2.2, "combo_kill", "dein Combo", "macht", f"etwa {zahl}, {n} hat nur {leben} Leben")
     if not combo.genau(b.ich.champion_id):
         return None
     if dmg >= 0.8 * rest:
@@ -447,7 +447,7 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
     gegen = sorted((x for x in fs if (x.wert > 0) != fuer_dich), key=lambda x: -abs(x.wert))
     if any(x.art in ("zuenden_kill", "combo_kill", "combo_knapp") for x in haupt):
         haupt = [x for x in haupt if x.art != "leben"]      # "...hat noch 540 Leben" sagt es schon
-    gruende = haupt[:3]
+    gruende = haupt[:2]      # zwei, nicht drei: Nachlauf 21:21 - Fenster-Saetze im Schnitt 190 Zeichen, 19 % der Sprechzeit
     aber = []
     if fuer_dich and u.art != "kill_schnell":
         # was dagegen spricht - der Turm steckt schon in der Handlung
@@ -465,8 +465,13 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
     if u.art == "weg" and ((b.leben is not None and b.leben < 0.35) or {"jungler_nah", "dritter"} & u.arten_alle):
         from .komponist import _rueckzug
         handlung = _rueckzug(b)[:1].lower() + _rueckzug(b)[1:]
-    text = handlung + (": " + _liste([x.satz for x in gruende]) if gruende else "")
-    if aber:
+    if u.art == "turm":
+        # Die Gruende FUER den Kampf erklaeren das Warten nicht ("noch nicht rein: du hast 1700 Gold mehr ..." -
+        # Nachlauf 21:21, 8:05). Gesagt wird, was gilt, sobald er den Turm verlaesst.
+        text = handlung + f" - kommt {n} raus, " + ("geh rein" if u.wert >= KILL_AB else "trade hart")
+    else:
+        text = handlung + (": " + _liste([x.satz for x in gruende]) if gruende else "")
+    if aber and u.art != "turm":
         text += f" - aber {aber[0].satz}"
     if anlass:
         # "Du bist zuerst Level 2, Wukong noch 1 - aber nur kurze Trades: du hast nur 49 Prozent Leben."

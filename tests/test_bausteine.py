@@ -311,7 +311,7 @@ def denkkette():
     faktoren = denker.urteil(b).faktoren
     assert any(x.art in ("combo_kill", "zuenden_kill") for x in faktoren), faktoren
     satz = denker.fenster_satz(b, denker.urteil(b))
-    assert "Shen hat noch 100 Leben" in satz or "Shen hat nur noch etwa 100 Leben" in satz, satz
+    assert "Shen hat nur 100 Leben" in satz or "Shen hat nur noch etwa 100 Leben" in satz, satz
     assert "Prozent Leben" not in satz, satz
     b.jungler = gl(j, sichtbar=False, seit=3.0, ort="im oberen Fluss", abstand=1500.0, ankunft=4.0)
     b.gegner = [b.lane, b.jungler]

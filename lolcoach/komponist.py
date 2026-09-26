@@ -83,7 +83,7 @@ def _gross(s: str) -> str:
     return s[:1].upper() + s[1:] if s else s
 
 
-def todespreis(b: Bewertung) -> str:
+def todespreis(b: Bewertung, mit_objective: bool = True) -> str:
     """Was ein Tod JETZT kostet (Reasoning #27 "Death Value"): Todeszeit ab 30 s, dein Kopfgeld, und das
     Objective, das in dieser Zeit kommt. '' wenn nichts davon zaehlt."""
     from .bewertung import kopfgeld
@@ -99,7 +99,7 @@ def todespreis(b: Bewertung) -> str:
         return ""
     satz = "ein Tod kostet dich " + " und ".join(teile)
     ob = b.objective
-    if b.tod_kostet >= 30 and ob and 0 < ob[1] <= b.tod_kostet + 10:
+    if mit_objective and b.tod_kostet >= 30 and ob and 0 < ob[1] <= b.tod_kostet + 10:
         satz += f", und {OBJ_NOM[ob[0]]} {kommt(ob[0])} in {sek(ob[1])}"
     return satz
 
@@ -261,20 +261,17 @@ def jungler_gesehen(b: Bewertung, j: GegnerLage, art: str, platten: bool) -> str
         r = b.kraft_gegen(gruppe)
         r_allein = b.kraft_gegen([j])
         vorn = _ankunft_satz(j)
+        # Kurz: Ort und Zeit, die Handlung, der EINE Grund (Nachlauf 21:21 nach allen Umbauten: der Coach sprach
+        # 88 % der Spielzeit, Jungler-Saetze im Schnitt 162 Zeichen - "Allein wuerdest du ... Aber ... zusammen ...
+        # Geh zurueck zu deinem Turm, das sind 22 Sekunden" waren 260)
+        grund = b.ueberlegen_satz(gruppe).split(", ")[0]
         if r >= KLAR_STAERKER and (b.leben is None or b.leben >= 0.4):
-            wer = j.champion if len(gruppe) == 1 else _namen([x.champion for x in gruppe])
-            kommt_rein = "sie reinkommen" if len(gruppe) > 1 else f"{j.champion} reinkommt"
-            return (f"{vorn}. Keine Sorge, {wer} {'kann' if len(gruppe) == 1 else 'können'} dich nicht töten: "
-                    f"{b.ueberlegen_satz(gruppe)}. Wenn {kommt_rein}, nimm den Kampf an.")
+            return f"{vorn} - nimm den Kampf an" + (f", {grund}." if grund else ".")
         if r >= STAERKER and (b.leben is None or b.leben >= 0.5):
-            return (f"{vorn}. Du bist stärker - {b.ueberlegen_satz(gruppe)}. Bleib an deiner Welle, "
-                    f"nur geh nicht zu tief.")
+            return f"{vorn}. Bleib an deiner Welle, du bist stärker - nur nicht zu tief."
         if len(gruppe) > 1 and r_allein >= STAERKER and (b.leben is None or b.leben >= 0.5):
-            from .denker import kampf_kurz
             andere = [x.champion for x in gruppe[1:]]
-            return (f"{vorn}. Allein würdest du {j.champion} schlagen, du bist {kampf_kurz(b, j)}. Aber "
-                    f"{_namen(andere)} {'kann' if len(andere) == 1 else 'können'} mitkommen, und zusammen sind "
-                    f"sie zu stark. {_rueckzug(b)}.")
+            return f"{vorn}. {_rueckzug(b)} - mit {_namen(andere)} zusammen ist {j.champion} zu stark."
         gruende = verwundbar(b)
         if an is not None and an < 2 and b.zum_turm is not None and b.zum_turm >= 12:
             # direkt bei dir, der Turm ist weit: der Weg dorthin rettet nicht - raus, mit dem, was du hast
@@ -303,8 +300,7 @@ def lane_fehlt(b: Bewertung, g: GegnerLage, sekunden: int, platten: bool, richtu
     """Der Lane-Gegner ist verschwunden: wohin er kann (Reasoning #12/#13: "Wo kann er sein, welche Wege,
     wie schnell?") - bis Mid, wenn er Richtung Fluss lief - und was du mit der Zeit machst."""
     n = g.champion
-    satz = f"{n} ist seit {sekunden} Sekunden aus deiner Lane verschwunden" + (
-        f", zuletzt {richtung}" if richtung else "")
+    satz = f"{n} fehlt seit {sekunden} Sekunden in deiner Lane" + (f", zuletzt {richtung}" if richtung else "")
     if g.pos is not None and b.ich.rolle in ("TOP", "BOTTOM", "UTILITY") and richtung and "Fluss" in richtung:
         from .bewertung import abstand, einheiten
         bis_mid = abstand(g.pos, einheiten(0.5, 0.5)) * 1.15 / g.tempo - sekunden
@@ -313,17 +309,16 @@ def lane_fehlt(b: Bewertung, g: GegnerLage, sekunden: int, platten: bool, richtu
         else:
             satz += f" - {n} kann schon Mid sein"
     if j := jungler_offen(b):
-        return (satz + f", und {j.champion} ist auch nicht zu sehen. Bleib hinter deiner Welle und ping deinem "
-                       f"Team, dass {n} fehlt.")
+        return satz + f", {j.champion} auch. Bleib hinter deiner Welle und ping es."
     j = b.jungler
     if j and (j.s.tot or (j.ankunft is not None and not j.unbekannt and j.ankunft >= RUHE_SEKUNDEN)):
         wo = "tot" if j.s.tot else j.ort
         tun = f"schieb die Welle in seinen Turm und hol dir {_platten(b)}" if platten else "schieb die Welle rein"
-        return satz + f". {j.champion} ist {wo}, also {tun} - und ping, dass {n} fehlt."
+        return satz + f". {j.champion} ist {wo}: {tun} und ping es."
     gruende = verwundbar(b)
     if gruende:
-        return satz + f". {_gross(gruende[0])}, also bleib hinten und ping, dass {n} fehlt."
-    return satz + f". Geh nicht vor deine Welle und ping, dass {n} fehlt."
+        return satz + f". {_gross(gruende[0])} - bleib hinten und ping es."
+    return satz + ". Bleib hinter deiner Welle und ping es."
 
 
 def anlauf(b: Bewertung, kommen: list[tuple[GegnerLage, str]]) -> str:
@@ -337,9 +332,9 @@ def anlauf(b: Bewertung, kommen: list[tuple[GegnerLage, str]]) -> str:
     wer = _namen([g.champion for g, _ in kommen])
     kommt_satz = f"{wer} {'kommen' if viele else 'kommt'}{'' if viele else ' ' + woher} auf dich zu{wann}"
     if r >= KLAR_STAERKER and (b.leben is None or b.leben >= 0.4):
-        return f"{kommt_satz}. Nimm den Kampf an: {b.ueberlegen_satz(gruppe)}."
+        return f"{kommt_satz}. Nimm den Kampf an: {b.ueberlegen_satz(gruppe).split(', ')[0]}."
     if r >= STAERKER and (b.leben is None or b.leben >= 0.5) and not viele:
-        return f"{kommt_satz}. Du bist stärker: {b.ueberlegen_satz(gruppe)}. Halte deine Stellung."
+        return f"{kommt_satz}. Halte deine Stellung: {b.ueberlegen_satz(gruppe).split(', ')[0]}."
     if viele:
         return f"{kommt_satz}. {_rueckzug(b)}."
     satz = kommt_satz + "."
@@ -490,12 +485,11 @@ def tief(b: Bewertung, namen: str, sind: str, sekunden: int, sie: str, fehlende:
         if gl and r >= STAERKER and (b.leben is None or b.leben >= 0.5):
             # Live 21:21, 14:30 - Carlos: "ich bin Level 12, Tryndamere 7, Sona 8 - ich nehme die beiden
             # auseinander". Stimmt: dann ist der Grund fuer Vorsicht das Kopfgeld, nicht der Kampf.
-            preis = todespreis(b)
-            wer = "schlägt dich" if len(gl) == 1 else "schlagen dich auch zusammen"
-            return (satz + f" {namen} {wer} nicht"
-                    + (f", aber {preis}" if preis else "") + " - geh nicht tiefer, bleib an deiner Welle.")
+            preis = todespreis(b, mit_objective=False)
+            wer = f"{namen} schlägt dich nicht" if len(gl) == 1 else "Auch zusammen schlagen sie dich nicht"
+            return satz + f" {wer} - geh nur nicht tiefer" + (f", {preis}." if preis else ".")
     gruende = [x for x in verwundbar(b) if "weit vorn" not in x and "Turm" not in x]
-    preis = todespreis(b)
+    preis = todespreis(b, mit_objective=False)
     if preis:
         return satz + f" Geh zurück - {preis}."
     if b.zum_turm and b.zum_turm >= 6:

@@ -33,7 +33,7 @@ def mit_minimap():
     """Zweite Partie (Riven gegen Shen, 25 min) mit den Sichtungen der Minimap."""
     gesagt = ansagen(PARTIE_2, lage.SichtAusBildern.aus_cache(PARTIE_2.with_name("botspiel_riven_2_bilder")))
     um = [(a.gesprochen, a.text) for a in gesagt]
-    weg = [t for t, x in um if re.match(r"Shen ist seit \d+ Sekunden", x)]
+    weg = [t for t, x in um if re.match(r"Shen fehlt seit \d+ Sekunden", x)]
     assert 1 <= len(weg) <= 4, weg                                        # vorher 10 Fehlalarme
     assert any(95 <= t <= 110 and "Vom Turm erwischt" in x for t, x in um)
     # Vi taucht oben auf, Riven hat 39 % Leben: gerechnet statt "Vorsicht, Vi oben" (Komponist 26.09.)

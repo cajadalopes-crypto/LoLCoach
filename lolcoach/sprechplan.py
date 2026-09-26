@@ -35,6 +35,15 @@ NUR_LEBEND = ("lane_tot", "fenster", "plan:", "gold", "recallfenster", "anlauf",
 
 GESAGT_NACH = 4.0      # Sekunden: so lange laeuft eine Ansage mindestens, bevor eine gleich wichtige sie abbricht
 
+# Sprechbudget: Nachlauf 21:21 nach allen Umbauten - der Coach sprach 88 % der Spielzeit, alles Neue musste warten
+# oder abbrechen ("geisteskrank zu spaet"). Hat er in der letzten Minute schon mehr als die Haelfte geredet, wartet
+# das Beiwerk (Kauf, Objective-Vorlauf, Wards, Spikes, Aufbruch ...) und verfaellt, wenn es zu alt wird. Gefahr,
+# Flash, Kampf-Fenster, Jungler kommen immer durch.
+BUDGET_FENSTER = 60.0
+BUDGET_ANTEIL = 0.5
+BEIWERK = ("gold", "plan:back", "objstart", "objgegner", "vorwarnung", "cs", "aufbruch", "spike", "kontrollauge",
+           "ward:", "wiedereinstieg", "recallfenster", "tipp", "wardplan", "item:", "jungler6", "lane_tot")
+
 
 def unterbrechbar(a: Ansage) -> bool:
     """Lange Saetze (ueber ~14 s) duerfen immer von etwas Wichtigem abgebrochen werden - sonst wartet alles."""
@@ -62,6 +71,13 @@ class Sprechplan:
         self.thema_zuletzt: dict[str, float] = {}
         self._schloss = threading.Lock()
         self._laeuft: Ansage | None = None      # was gerade gesprochen wird (bis frei_ab)
+        self._reden: list[tuple[float, float]] = []   # (Beginn, geschaetzte Dauer) - fuer das Sprechbudget
+
+    def geredet(self, zeit: float) -> float:
+        """Sekunden Sprechzeit in den letzten BUDGET_FENSTER Sekunden (abgebrochene zaehlen bis zum Abbruch)."""
+        ab = zeit - BUDGET_FENSTER
+        self._reden = [(t, d) for t, d in self._reden if t + d > ab]
+        return sum(min(t + d, zeit) - max(t, ab) for t, d in self._reden if t < zeit)
 
     def einwerfen(self, a: Ansage) -> None:
         """Aus einem anderen Thread (Stratege, Briefing): kommt beim naechsten Takt dran."""
@@ -89,9 +105,14 @@ class Sprechplan:
             self.warte = [a for a in self.warte if not a.schluessel.startswith(NUR_LEBEND)]
         if not self.warte:
             return None
+        kandidaten = self.warte
+        if self.geredet(zeit) > BUDGET_ANTEIL * BUDGET_FENSTER:
+            kandidaten = [a for a in self.warte if not (a.prio == HINWEIS or a.schluessel.startswith(BEIWERK))]
+            if not kandidaten:
+                return None
         # bei gleichem Vorrang geht eine Gefahr vor (Pruefpartie 2, 19:39: "Du hast 5900 Gold ... recall" verdraengte
         # "Du stehst tief, Varus und Rakan seit 32 s weg" - 16 s vor dem Tod)
-        a = max(self.warte, key=lambda a: (a.prio, a.thema == "gefahr", a.zeit))
+        a = max(kandidaten, key=lambda a: (a.prio, a.thema == "gefahr", a.zeit))
         frei = self.frei_ab + (RUHE_VOR_HINWEIS if a.prio == HINWEIS else 0.0)
         # Live 26.09. 21:21: das Briefing (~50 s) hielt "Gragas hat Flash benutzt" 9 s und Vaynes Flash 16 s auf.
         # Laeuft etwas Unterbrechbares, darf eine wichtige Ansage es abbrechen.
@@ -112,6 +133,10 @@ class Sprechplan:
         if a.thema:
             self.thema_zuletzt[a.thema] = zeit
         self.frei_ab = zeit + len(a.text) / ZEICHEN_PRO_SEKUNDE + PAUSE
+        if abbrechen and self._reden:          # der abgebrochene zaehlt nur bis jetzt
+            t0, _ = self._reden[-1]
+            self._reden[-1] = (t0, max(0.0, zeit - t0))
+        self._reden.append((zeit, len(a.text) / ZEICHEN_PRO_SEKUNDE))
         self.sprecher.sage(a.text, dringend=a.prio == SOFORT or abbrechen, melde=_melder(a, time.monotonic()))
         self._laeuft = a
         self.gesagt.append(a)

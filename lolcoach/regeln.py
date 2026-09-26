@@ -248,7 +248,8 @@ class Regelwerk:
                                             p.ich.rolle in self.m["seiten"][schl], tp)
             if text:
                 # gerechnet, nicht von Claude umformuliert: die Umformulierung kam live 5-21 s zu spaet (26.09.)
-                yield Ansage(text, WICHTIG, f"vorwarnung:{schl}", gueltig=25, thema="objective")
+                # "in einer Minute" stimmt nur kurz: 14 s spaeter war es falsch (Nachlauf 21:21, 7:14)
+                yield Ansage(text, WICHTIG, f"vorwarnung:{schl}", gueltig=10, thema="objective")
 
     def _objectives(self, p: Partie, bis: float = 0.0) -> list[str]:
         return _lebende_objectives(p, bis, self.m["seiten"]["nicht_mehr_vor_weg"])
@@ -608,8 +609,15 @@ class Regelwerk:
                 # Minimap-Flashes war gegen seinen Wunsch ("Flash-Timer sind Gold wert")
                 ist_lane = gl is not None and self.b is not None and self.b.lane is not None \
                     and gl.s.name == self.b.lane.s.name
-                if ist_lane and t.zauber in ("SummonerFlash", "R") and not gl.s.tot \
-                        and (u := denker.urteil(self.b)) is not None and u.art != "halten":
+                u = denker.urteil(self.b) if ist_lane and not gl.s.tot else None
+                # dasselbe Urteil eben erst gesagt: nur der Timer (Nachlauf 21:21, 7:06 "Trade hart ..." und 7:10
+                # "Gragas hat Flash benutzt - trade hart ..." mit denselben Gruenden)
+                eben = u is not None and u.art == self._fenster_art and p.zeit - self._fenster_gesagt < 30
+                if eben:
+                    was = "die Ult" if t.zauber == "R" else name
+                    text = f"{gl.champion} hat {was} benutzt, bis {komponist.uhr_gesprochen(t.zurueck)}."
+                elif ist_lane and t.zauber in ("SummonerFlash", "R") and not gl.s.tot \
+                        and u is not None and u.art != "halten":
                     was = "Ult" if t.zauber == "R" else name
                     text = denker.fenster_satz(self.b, u, anlass=f"{gl.champion} hat {was} benutzt, "
                                                                  f"bis {komponist.uhr_gesprochen(t.zurueck)}",
