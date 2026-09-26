@@ -199,7 +199,9 @@ def _spieler(roh: dict) -> Spieler:
     sc = roh.get("scores", {})
     zauber = tuple(_zauber_schluessel(z) for z in (roh.get("summonerSpells") or {}).values())
     items = roh.get("items", [])
-    rolle = roh.get("position", "") or ("JUNGLE" if "SummonerSmite" in zauber else "")
+    rolle = roh.get("position", "")
+    if rolle in ("", "NONE"):
+        rolle = "JUNGLE" if any("Smite" in z for z in zauber) else ""
     return Spieler(
         name=roh.get("riotIdGameName") or roh.get("summonerName") or roh.get("championName", "?"),
         champion=roh.get("championName", "?"),
@@ -221,6 +223,25 @@ def _spieler(roh: dict) -> Spieler:
         namen=namen,
         bot=bool(roh.get("isBot", False)),
     )
+
+
+ROLLEN = ("TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY")
+
+
+def _rollen_ergaenzen(spieler: list[Spieler]) -> list[Spieler]:
+    """Fehlt genau einem Spieler eines Teams die Rolle, bekommt er die freie. Uebungsmodus/Bot-Partie
+    26.09.: die API meldete fuer Carlos 'NONE', die Bots hatten Rollen - ohne Rolle gab es keinen Lane-
+    Gegner, Heimerdinger galt als fremder Ganker und der Larven-Plan fehlte."""
+    from dataclasses import replace
+    aus = list(spieler)
+    for team in {s.team for s in spieler}:
+        im_team = [i for i, s in enumerate(aus) if s.team == team]
+        ohne = [i for i in im_team if aus[i].rolle not in ROLLEN]
+        bekannt = {aus[i].rolle for i in im_team if aus[i].rolle in ROLLEN}
+        frei = [r for r in ROLLEN if r not in bekannt]
+        if len(ohne) == 1 and len(frei) == 1:
+            aus[ohne[0]] = replace(aus[ohne[0]], rolle=frei[0])
+    return aus
 
 
 def _team_des_namens(name: str, nach_name: dict[str, Spieler | None]) -> str | None:
@@ -269,7 +290,7 @@ def _ereignis(roh: dict, nach_name: dict[str, Spieler | None]) -> Ereignis:
 def partie(daten: dict, ich: str | None = None) -> Partie:
     """Baut den Zustand. `ich` (Champion oder Name) ersetzt den aktiven
     Spieler - noetig im Replay, wo die API keinen hat."""
-    spieler = [_spieler(r) for r in daten.get("allPlayers", [])]
+    spieler = _rollen_ergaenzen([_spieler(r) for r in daten.get("allPlayers", [])])
     nach_name = _namensbuch(spieler)
 
     aktiv = daten.get("activePlayer") or {}
