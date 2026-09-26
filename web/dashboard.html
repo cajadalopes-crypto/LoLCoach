@@ -33,6 +33,8 @@
   .zeile { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; align-items: center; }
   .zeile img { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--feind); }
   .zeile.tot img { filter: grayscale(1); opacity: .5; }
+  .timer { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 4px;
+    background: #3a2a10; color: var(--warn); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .klein { color: var(--leise); font-size: 13px; }
   .ansagen { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
   .ansagen li { padding: 6px 8px; border-left: 3px solid var(--linie); background: #0e141b; border-radius: 4px; }
@@ -120,8 +122,9 @@ function zeige(z) {
       : !z.bild ? '' : !s.gesehen ? '<span class="klein">nie gesehen</span>'
       : s.gesehen.jetzt ? `<span class="plus">${s.gesehen.ort}</span>`
       : `<span class="klein">vor ${Math.round(s.gesehen.vor)}s ${s.gesehen.ort}</span>`;
+    const weg = (s.zauber_weg || []).map(z => `<span class="timer">${z.name} ${uhr(z.rest)}</span>`).join(' ');
     return `<div class="zeile ${s.tot ? 'tot' : ''}"><img src="/icon/${s.id}.png" alt="">
-      <span>${s.champion} <span class="klein">${s.rolle} · L${s.level} · ${s.kda}</span></span>${wo}</div>`;
+      <span>${s.champion} <span class="klein">${s.rolle} · L${s.level} · ${s.kda}</span> ${weg}</span>${wo}</div>`;
   }).join('');
   $('ansagen').innerHTML = z.ansagen.map(a => `<li class="p${a.prio}"><span class="klein">${a.zeit}</span> ${a.text}</li>`).join('');
   zeichne(z);

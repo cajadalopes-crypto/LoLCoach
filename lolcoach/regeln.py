@@ -44,6 +44,14 @@ def _lebende_objectives(p: Partie, bis: float = 0.0, puffer: float = 30.0) -> li
             and not ("weg" in obj[s] and obj[s]["weg"] - p.zeit < puffer)]
 
 
+def _minuten(sek: float) -> str:
+    s = int(round(sek))
+    if s < 90:
+        return f"{s} Sekunden"
+    m, r = divmod(s, 60)
+    return f"{m} Minuten" if r < 15 else (f"{m} Minuten 30" if r < 45 else f"{m + 1} Minuten")
+
+
 def _legendaer(item_id: int, ab: int) -> bool:
     e = ddragon.items().get(item_id)
     return bool(e and not e.get("into") and e["gold"]["total"] >= ab and "Boots" not in e.get("tags", []))
@@ -69,7 +77,7 @@ class Regelwerk:
         ansagen: list[Ansage] = []
         for regel in (self._vorwarnung, self._zahlen, self._jungler_tot, self._lane_tot,
                       self._level, self._items, self._gold, self._cs, self._tod,
-                      self._jungler_gesehen, self._lane_fehlt, self._leben):
+                      self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 ansagen.append(a)
@@ -353,6 +361,38 @@ class Regelwerk:
         self._gemeldet.add(("gemeldet", g.name, seit))
         yield Ansage(cfg["fehlt"].format(champion=g.champion, sekunden=int(p.zeit - seit)), WICHTIG,
                      "lane_fehlt", gueltig=6, sperre=45)
+
+    def _zauber(self, p: Partie, v: Partie):
+        """Flash & Co.: Verbrauch melden, vor Kaempfen erinnern, Rueckkehr melden.
+        Quellen: Chat-Pings der Mitspieler, Flash-Spruenge auf der Minimap."""
+        if not self.lage or not hasattr(self.lage, "zauber"):
+            return
+        from .zauber import NAME_DE
+        cfg = self.m["zauber"]
+        wichtig = {s.name for s in (p.gegenueber(), p.jungler(gegenteam(p.mein_team))) if s}
+        for t in self.lage.zauber.aktiv(p.zeit):
+            name = NAME_DE.get(t.zauber, t.zauber)
+            if not t.gemeldet:
+                t.gemeldet = True
+                satz = cfg["neu_chat" if t.quelle == "Chat" else "neu_minimap"]
+                yield Ansage(satz.format(champion=t.champion, zauber=name,
+                                         dauer=_minuten(t.zurueck - p.zeit)), WICHTIG,
+                             f"zauber:{t.name}:{t.zauber}", gueltig=10, sperre=30)
+        # vor einem Kampf: Gegner ohne Flash nah bei dir
+        ich = self.lage.gesehen(p.ich) if self.lage.aktiv else None
+        if ich and not self._ich_weg(p) and p.zeit - ich[0] < 2:
+            for s in p.gegner():
+                rest = self.lage.zauber.fehlt(s, "SummonerFlash", p.zeit)
+                g = self.lage.gesehen(s)
+                if (rest and rest > 15 and g and self.lage.sichtbar(s)
+                        and abs(g[1] - ich[1]) + abs(g[2] - ich[2]) < cfg["nah"]):
+                    yield Ansage(cfg["kampf"].format(champion=s.champion, dauer=_minuten(rest)), WICHTIG,
+                                 f"ohneflash:{s.name}", gueltig=4, sperre=cfg["kampf_erneut"])
+        # Rueckkehr beim Lane-Gegner und Jungler
+        for t in list(self.lage.zauber.timer.values()):
+            if t.name in wichtig and t.zauber == "SummonerFlash" and v.zeit < t.zurueck <= p.zeit:
+                yield Ansage(cfg["zurueck"].format(champion=t.champion), HINWEIS, f"flashzurueck:{t.name}",
+                             gueltig=15, sperre=30)
 
     def _tod(self, p: Partie, v: Partie):
         if not (p.ich.tot and not v.ich.tot):

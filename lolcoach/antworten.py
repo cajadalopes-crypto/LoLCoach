@@ -115,8 +115,16 @@ def sofort(frage: str, p: Partie, lagebild=None) -> str | None:
     if menge & {"flash", "zauber", "summoner", "teleport", "tp", "zünden", "ignite", "heal", "cooldown", "cooldowns"}:
         s = ziel or p.gegenueber()
         if s:
-            zauber = " und ".join(ZAUBER_DE.get(z, z) for z in s.zauber)
-            return f"Cooldowns sehe ich nicht, das zeigt mir das Spiel nicht. {s.champion} hat {zauber}."
+            timer = getattr(lagebild, "zauber", None)
+            weg = [(z, timer.fehlt(s, z, p.zeit)) for z in s.zauber] if timer else []
+            weg = [(z, r) for z, r in weg if r]
+            da = [ZAUBER_DE.get(z, z) for z in s.zauber if z not in dict(weg)]
+            if weg:
+                teile = [f"{ZAUBER_DE.get(z, z)} ist noch {_dauer(r)} weg" for z, r in weg]
+                return f"{s.champion}: " + ", ".join(teile) + (f". {' und '.join(da)} vermutlich bereit." if da else ".")
+            zauber = " und ".join(da)
+            return (f"{s.champion} hat {zauber}. Einen Verbrauch habe ich nicht gesehen, weder im Chat "
+                    f"noch auf der Minimap - also vermutlich bereit.")
     if objs := [OBJEKTIVE[x] for x in w if x in OBJEKTIVE]:
         return _timer(objs[0], p)
     if menge & {"wo", "gesehen", "position", "steht"} and not menge & {"stehen", "steht's", "stehts"}:
@@ -168,6 +176,9 @@ def lage_text(p: Partie, lagebild=None) -> str:
     obj = [_timer(k, p) for k in ("drache", "larven", "herold", "baron")]
     zeilen.append("Objectives: " + " ".join(obj))
     zeilen.append(f"Drachen: wir {len(p.drachen(p.mein_team))}, Gegner {len(p.drachen(gegenteam(p.mein_team)))}.")
+    if lagebild is not None and hasattr(lagebild, "zauber") and (aktiv := lagebild.zauber.aktiv(p.zeit)):
+        zeilen.append("Beschwoererzauber weg (Gegner): " + ", ".join(
+            f"{t.champion} {ZAUBER_DE.get(t.zauber, t.zauber)} noch {int(t.zurueck - p.zeit)} s ({t.quelle})" for t in aktiv))
     return "\n".join(zeilen)
 
 

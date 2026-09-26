@@ -44,6 +44,8 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
         if sicht:
             for wb, sichtungen in sicht.zwischen(w, lage.champions(p)):
                 lagebild.neu(p.zeit - (w - wb), sichtungen, p)
+            for t in lagebild.ereignisse(lambda wb: p.zeit - (w - wb), sicht.ereignisse(), p):
+                print(f"{ansicht.uhr(t.seit)}  [{t.quelle}] {t.champion}: {t.zauber} weg bis {ansicht.uhr(t.zurueck)}")
         if not nur_coach:
             for e in p.ereignisse:
                 if e.id in gesehen:
@@ -107,6 +109,9 @@ class _LiveSicht:
     def zwischen(self, bis: float, champions):
         self.b.champions = champions
         return self.b.abholen()
+
+    def ereignisse(self):
+        return self.b.ereignisse()
 
 
 def _ansagen_speichern(pfad, plan: sprechplan.Sprechplan) -> None:

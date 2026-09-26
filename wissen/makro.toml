@@ -155,3 +155,13 @@ unter = 0.25                  # Anteil des Lebens
 dauer = 3                     # Sekunden am Stueck, damit ein kurzer Treffer im Kampf nicht zaehlt
 erneut_nach = 45
 satz = "Du hast nur noch {prozent} Prozent Leben. Zurück, bevor dich jemand erwischt."
+
+[zauber]
+# Beschwoererzauber der Gegner (Chat-Pings der Mitspieler, Flash-Spruenge auf der Minimap).
+# Carlos, Partie 3: "Flash-Timer sind fuer mich Gold wert und muss ein Coach natuerlich koennen."
+neu_chat = "{champion} hat {zauber} benutzt, für {dauer} weg."
+neu_minimap = "{champion} hat gerade Flash benutzt, das sehe ich auf der Minimap. Für {dauer} ohne."
+nah = 0.12                    # Kartenanteil: so nah bei dir ist ein Kampf moeglich
+kampf = "{champion} hat kein Flash, noch {dauer}. Nutz das Fenster."
+kampf_erneut = 120
+zurueck = "{champion} hat Flash wieder."

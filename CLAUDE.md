@@ -52,6 +52,13 @@ bedienen dieselbe Live-API. Fuer Kamera/Zeitsteuerung braucht es in
 `C:\Riot Games\League of Legends\Config\game.cfg` unter `[General]` die Zeile
 `EnableReplayApi=1`. Im Replay fehlt `activePlayer` (Zuschauermodus).
 
+## Aufgaben: `OFFEN.md`
+
+Alle offenen Wuensche stehen in `OFFEN.md` - nichts bleibt liegen. Oben steht
+der verbindliche Grundsatz fuer Agenten (nur wenn wirklich effizient, kein
+Kaltstart, keine vergeudeten Tokens). Neue Wuensche von Carlos sofort dort
+eintragen, Erledigtes mit Commit nach unten.
+
 ## Arbeitsweise
 
 Schnell, sparsam, Tests nur wo sie Zeit sparen. Wissen, das mit dem Patch

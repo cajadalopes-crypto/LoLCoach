@@ -157,6 +157,115 @@ def finde(karte: np.ndarray, champions: list[tuple[str, str]], hoehe: int = REFE
     return sichtungen
 
 
+# --- Verfolgen von Bild zu Bild (10-20 Bilder/s) ---------------------------------
+
+FLASH_EINHEITEN = 400
+KARTE_EINHEITEN = 14820          # Kantenlaenge der Karte in Spiel-Einheiten (etwa)
+
+
+@dataclass(frozen=True)
+class Sprung:
+    """Ein Champion ist zwischen zwei aufeinanderfolgenden Bildern um etwa
+    Flash-Weite versetzt - vorher und nachher ruhig. Dashes laufen ueber
+    mehrere Bilder, Flash ist sofort da."""
+    champion_id: str
+    team: str | None
+    zeit: float              # Wanduhr des Bildes nach dem Sprung
+    weite: float             # Kartenanteil
+    x: float
+    y: float
+
+
+class Verfolger:
+    """Sucht jeden bekannten Champion nur im Umkreis seiner letzten Position
+    (~1 ms), die ganze Karte nur fuer verlorene und nur alle `vollsuche_alle`
+    Sekunden. Damit reichen die Takte fuer 15 Bilder/s."""
+
+
+    def __init__(self, champions: list[tuple[str, str]], hoehe: int = REFERENZ_HOEHE, vollsuche_alle: float = 0.5,
+                 verloren_nach: float = 0.4):
+        self.champions, self.hoehe, self.vollsuche_alle = champions, hoehe, vollsuche_alle
+        self.verloren_nach = verloren_nach  # Aufnahmen mit 1 Bild/s brauchen mehr als live mit 15
+        self.umkreis = round(30 * hoehe / REFERENZ_HOEHE)
+        self.flash_px = FLASH_EINHEITEN / KARTE_EINHEITEN * round(KARTE * hoehe)
+        self.pos: dict[tuple[str, int], tuple[float, int, int, str | None]] = {}  # -> (zeit, cx, cy, team)
+        self.verlauf: dict[tuple[str, int], list[tuple[float, int, int]]] = {}
+        self._kandidat: dict[tuple[str, int], tuple[float, int, int, int, int]] = {}
+        self._letzte_vollsuche = -1e9
+
+    def _lokal(self, karte: np.ndarray, cid: str, cx: int, cy: int) -> tuple[float, int, int] | None:
+        v = _vorlage(cid, self.hoehe)
+        if v is None:
+            return None
+        vorlage, maske = v
+        d, r, seite = vorlage.shape[0], self.umkreis, karte.shape[0]
+        x0, y0 = max(0, cx - d // 2 - r), max(0, cy - d // 2 - r)
+        x1, y1 = min(seite, cx + d // 2 + r + 1), min(seite, cy + d // 2 + r + 1)
+        fenster = karte[y0:y1, x0:x1]
+        if fenster.shape[0] < d or fenster.shape[1] < d:
+            return None
+        erg = np.nan_to_num(cv2.matchTemplate(fenster, vorlage, cv2.TM_CCOEFF_NORMED, mask=maske),
+                            nan=-1.0, posinf=-1.0, neginf=-1.0)
+        _, guete, _, (fx, fy) = cv2.minMaxLoc(erg)
+        return (guete, x0 + fx + d // 2, y0 + fy + d // 2) if guete >= SCHWELLE else None
+
+    def bild(self, karte: np.ndarray, zeit: float) -> tuple[list[Sichtung], list[Sprung]]:
+        seite = karte.shape[0]
+        gefunden: dict[tuple[str, int], tuple[float, int, int, str | None]] = {}
+        # 1. Umkreissuche fuer alle frisch gesehenen
+        for schl, (t, cx, cy, team) in list(self.pos.items()):
+            if zeit - t > self.verloren_nach:
+                continue
+            if treffer := self._lokal(karte, schl[0], cx, cy):
+                gefunden[schl] = (treffer[0], treffer[1], treffer[2], team)
+        # 2. Vollsuche fuer die fehlenden, nicht jedes Bild
+        if zeit - self._letzte_vollsuche >= self.vollsuche_alle:
+            self._letzte_vollsuche = zeit
+            schon = {}
+            for k in gefunden:
+                schon[k[0]] = schon.get(k[0], 0) + 1
+            fehlend = []
+            for cid, team in self.champions:  # nur, wer nicht schon per Umkreis gefunden ist
+                if schon.get(cid, 0) > 0:
+                    schon[cid] -= 1
+                else:
+                    fehlend.append((cid, team))
+            zaehler: dict[str, int] = {}
+            for s in finde(karte, fehlend, self.hoehe):
+                n = zaehler.get(s.champion_id, 0)
+                zaehler[s.champion_id] = n + 1
+                cx, cy = round(s.x * seite), round(s.y * seite)
+                # schon per Umkreis gefunden? dann nicht doppelt
+                if any(k[0] == s.champion_id and abs(v[1] - cx) < 12 and abs(v[2] - cy) < 12
+                       for k, v in gefunden.items()):
+                    continue
+                schl = next((k for k in self.pos if k[0] == s.champion_id and k not in gefunden
+                             and (s.team is None or self.pos[k][3] in (None, s.team))), (s.champion_id, n))
+                while schl in gefunden:
+                    schl = (schl[0], schl[1] + 1)
+                gefunden[schl] = (s.guete, cx, cy, s.team)
+        # 3. Buch fuehren, Spruenge pruefen
+        spruenge = []
+        for schl, (guete, cx, cy, team) in gefunden.items():
+            alt = self.pos.get(schl)
+            v = self.verlauf.setdefault(schl, [])
+            if (k := self._kandidat.pop(schl, None)) and abs(cx - k[3]) + abs(cy - k[4]) <= 5:
+                # nach dem Sprung ruhig geblieben -> bestaetigt
+                spruenge.append(Sprung(schl[0], team, k[0], (k[1] / seite), k[3] / seite, k[4] / seite))
+            if alt and zeit - alt[0] <= 0.2:
+                weite = ((cx - alt[1]) ** 2 + (cy - alt[2]) ** 2) ** 0.5
+                vorher_ruhig = len(v) >= 2 and zeit - v[-2][0] <= 0.45 and \
+                    ((v[-1][1] - v[-2][1]) ** 2 + (v[-1][2] - v[-2][2]) ** 2) ** 0.5 <= 5
+                if 0.7 * self.flash_px <= weite <= 1.45 * self.flash_px and vorher_ruhig:
+                    self._kandidat[schl] = (zeit, int(weite), 0, cx, cy)
+            self.pos[schl] = (zeit, cx, cy, team or (alt[3] if alt else None))
+            v.append((zeit, cx, cy))
+            del v[:-6]
+        sichtungen = [Sichtung(schl[0], team, cx / seite, cy / seite, float(g))
+                      for schl, (g, cx, cy, team) in gefunden.items()]
+        return sichtungen, spruenge
+
+
 # --- Orte in Worten ------------------------------------------------------------
 
 def ort(x: float, y: float, aus_sicht: str | None = None) -> str:

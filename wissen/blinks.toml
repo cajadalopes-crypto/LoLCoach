@@ -1,0 +1,7 @@
+# Champions mit einem eigenen SOFORT-Versatz auf Flash-Weite (Blink): ein Sprung
+# dieser Groesse auf der Minimap ist bei ihnen kein sicheres Zeichen fuer Flash.
+# Dashes (Riven Q/E, Vi Q, Urgot E ...) laufen ueber mehrere Bilder und stoeren nicht.
+# Stand: aus dem Spielwissen, 26.09.2026 - bei neuen Champions ergaenzen.
+stand = "Modellwissen 26.09.2026, ungeprueft gegen 26.19"
+ids = ["Ezreal", "Kassadin", "Shaco", "Katarina", "Zed", "Fizz", "MasterYi", "Kindred",
+       "Leblanc", "Ekko", "Pyke", "Akali", "Kayn", "Elise", "Yuumi", "Vex", "Aurora", "Hwei"]

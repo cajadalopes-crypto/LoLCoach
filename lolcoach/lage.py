@@ -25,9 +25,33 @@ VERLAUF = 15.0            # Sekunden Positionsverlauf je Spieler
 
 class Lagebild:
     def __init__(self):
+        from .zauber import Zaubertimer
         self.zuletzt: dict[tuple[str, str], tuple[float, float, float]] = {}  # (name, team) -> (zeit, x, y)
         self.verlauf: dict[tuple[str, str], deque] = {}
         self.letztes_bild: float | None = None
+        self.zauber = Zaubertimer()
+        self.chat: list[tuple[float, str]] = []   # (Spielzeit, Zeile) - alles, was im Chat stand
+
+    def ereignisse(self, zeit_von_wand, liste, p: Partie) -> list:
+        """Spruenge und Chatzeilen des Beobachters -> Zauber-Timer. Gibt die neuen Timer zurueck."""
+        from . import zauber
+        neu = []
+        blinks = zauber.blink_champions()
+        for e in liste:
+            if e[0] == "sprung":
+                s = e[1]
+                sp = zuordnen(minimap.Sichtung(s.champion_id, s.team, s.x, s.y, 1.0), p)
+                if (sp and sp.team != p.mein_team and "SummonerFlash" in sp.zauber
+                        and sp.champion_id not in blinks and not sp.tot):
+                    if t := self.zauber.benutzt(sp, "SummonerFlash", zeit_von_wand(s.zeit), "Minimap"):
+                        neu.append(t)
+            elif e[0] == "chat":
+                zeit = zeit_von_wand(e[1])
+                self.chat.append((zeit, e[2]))
+                for sp, schl, zurueck in zauber.aus_chat(e[2], p):
+                    if t := self.zauber.benutzt(sp, schl, zeit, "Chat", zurueck):
+                        neu.append(t)
+        return neu
 
     def neu(self, zeit: float, sichtungen: list[minimap.Sichtung], p: Partie) -> None:
         self.letztes_bild = zeit if self.letztes_bild is None else max(self.letztes_bild, zeit)
@@ -77,49 +101,136 @@ def champions(p: Partie) -> list[tuple[str, str]]:
 
 # --- live: der Beobachter ---------------------------------------------------------
 
-class Beobachter(threading.Thread):
-    """Fotografiert `takt`-mal je Sekunde die Minimap, erkennt die Champions und
-    legt (Wanduhr, Sichtungen) bereit. Jedes `speichere_jedes`-te Bild landet
-    zusaetzlich im Bilderordner der Aufnahme (Material fuers Nachspielen)."""
+class _Kamera:
+    """Bildschirmausschnitte: Desktop-Duplizierung (dxcam, 2-5 ms), sonst GDI (~110 ms)."""
 
-    def __init__(self, ordner: Path | None, takt: float = 0.25, speichere_jedes: int = 4):
+    def __init__(self):
+        self._dx = None
+        try:
+            import dxcam
+            self._dx = dxcam.create(output_color="BGR")
+        except Exception:
+            self._dx = None
+        self._letzt: dict[tuple, np.ndarray] = {}
+
+    def hole(self, box: tuple[int, int, int, int]) -> np.ndarray | None:
+        if self._dx is not None:
+            try:
+                bild = self._dx.grab(region=box)
+                if bild is None:          # Bildschirm unveraendert seit dem letzten Mal
+                    return self._letzt.get(box)
+                self._letzt[box] = bild
+                return bild
+            except Exception:
+                self._dx = None           # z. B. anderer Monitor: auf GDI ausweichen
+        from PIL import ImageGrab
+        return cv2.cvtColor(np.asarray(ImageGrab.grab(bbox=box, all_screens=True)), cv2.COLOR_RGB2BGR)
+
+
+# Chat unten links, grosszuegig (Anteil des Spielfensters) - genau geeicht wird an einer Partie.
+CHAT = (0.0, 0.50, 0.32, 0.90)
+BILDER_BEHALTEN = 20 * 60     # Sekunden: aeltere Minimap-Bilder der laufenden Partie werden entfernt
+
+
+class Beobachter(threading.Thread):
+    """Schaut `takt`-mal je Sekunde auf die Minimap (Verfolger, Flash-Spruenge)
+    und einmal je Sekunde in den Chat (Windows-Texterkennung).
+
+    Liefert ueber `abholen()` (Wanduhr, Sichtungen) und ueber `ereignisse()`
+    Spruenge und neue Chatzeilen. Schreibt, wenn `ordner` gesetzt ist:
+    alle Sichtungen je Bild (`sichtungen.jsonl.gz`), ein Minimap-Bild je Sekunde
+    (nur die letzten 20 Minuten), Chat-Bilder, wenn neuer Text dazukommt."""
+
+    def __init__(self, ordner: Path | None, takt: float = 1 / 15, bild_alle: float = 1.0):
         super().__init__(daemon=True)
-        self.ordner, self.takt, self.speichere_jedes = ordner, takt, speichere_jedes
+        self.ordner, self.takt, self.bild_alle = ordner, takt, bild_alle
         if ordner:
             ordner.mkdir(parents=True, exist_ok=True)
         self.champions: list[tuple[str, str]] = []
         self.anzahl = 0
         self.fehler: str | None = None
+        self.messung: list[float] = []
         self._neu: list[tuple[float, list[minimap.Sichtung]]] = []
+        self._ereignisse: list[tuple] = []
         self._schloss = threading.Lock()
         self._halt = threading.Event()
 
     def run(self) -> None:
-        from PIL import ImageGrab
+        import gzip
+        import json
         from . import bild
-        while not self._halt.is_set():
-            start = time.time()
-            try:
-                f = bild.spielfenster()
-                if f and self.champions:
-                    l, o, r, u = f
-                    kl, ko, kr, ku = minimap.kartenrechteck(r - l, u - o)
-                    roh = ImageGrab.grab(bbox=(l + kl, o + ko, l + kr, o + ku), all_screens=True)
-                    karte = cv2.cvtColor(np.asarray(roh), cv2.COLOR_RGB2BGR)
-                    sichtungen = minimap.finde(karte, self.champions, hoehe=u - o)
-                    with self._schloss:
-                        self._neu.append((start, sichtungen))
-                    if self.ordner and self.anzahl % self.speichere_jedes == 0:
-                        cv2.imwrite(str(self.ordner / f"{int(start * 1000)}.jpg"), karte,
-                                    [cv2.IMWRITE_JPEG_QUALITY, 85])
-                    self.anzahl += 1
-            except Exception as e:  # ein Bild weniger, nie die Partie verlieren
-                self.fehler = f"{type(e).__name__}: {e}"
-            self._halt.wait(max(0.0, self.takt - (time.time() - start)))
+        kamera = _Kamera()
+        verfolger = None
+        leser = None
+        try:
+            from .texterkennung import Leser
+            leser = Leser()
+        except Exception as e:
+            self.fehler = f"Chat: {e}"
+        protokoll = gzip.open(self.ordner / "sichtungen.jsonl.gz", "at", encoding="utf-8") if self.ordner else None
+        gespeichert: list[Path] = []
+        letztes_bild = letzter_chat = 0.0
+        chat_zeilen: set[str] = set()
+        try:
+            while not self._halt.is_set():
+                start = time.time()
+                try:
+                    f = bild.spielfenster()
+                    if f and self.champions:
+                        l, o, r, u = f
+                        breite, hoehe = r - l, u - o
+                        if verfolger is None or verfolger.champions != self.champions:
+                            verfolger = minimap.Verfolger(list(self.champions), hoehe=hoehe)
+                        kl, ko, kr, ku = minimap.kartenrechteck(breite, hoehe)
+                        karte = kamera.hole((l + kl, o + ko, l + kr, o + ku))
+                        if karte is not None:
+                            sichtungen, spruenge = verfolger.bild(karte, start)
+                            with self._schloss:
+                                self._neu.append((start, sichtungen))
+                                self._ereignisse += [("sprung", s) for s in spruenge]
+                            if protokoll:
+                                protokoll.write(json.dumps({"w": round(start, 3), "s": [
+                                    [s.champion_id, s.team, round(s.x, 4), round(s.y, 4)] for s in sichtungen]}) + "\n")
+                            if self.ordner and start - letztes_bild >= self.bild_alle:
+                                letztes_bild = start
+                                ziel = self.ordner / f"{int(start * 1000)}.jpg"
+                                cv2.imwrite(str(ziel), karte, [cv2.IMWRITE_JPEG_QUALITY, 85])
+                                gespeichert.append(ziel)
+                                while gespeichert and int(gespeichert[0].stem) / 1000 < start - BILDER_BEHALTEN:
+                                    gespeichert.pop(0).unlink(missing_ok=True)
+                            self.anzahl += 1
+                        if leser and start - letzter_chat >= 1.0:  # Chat einmal je Sekunde
+                            letzter_chat = start
+                            a, b, c, d = CHAT
+                            box = (l + int(a * breite), o + int(b * hoehe), l + int(c * breite), o + int(d * hoehe))
+                            chatbild = kamera.hole(box)
+                            if chatbild is not None:
+                                neue = [z for z in leser.zeilen(chatbild) if z not in chat_zeilen and len(z) > 3]
+                                if neue:
+                                    chat_zeilen.update(neue)
+                                    with self._schloss:
+                                        self._ereignisse += [("chat", start, z) for z in neue]
+                                    if self.ordner:  # Material zum Eichen des Chat-Lesers
+                                        cv2.imwrite(str(self.ordner / f"chat_{int(start * 1000)}.jpg"), chatbild,
+                                                    [cv2.IMWRITE_JPEG_QUALITY, 80])
+                except Exception as e:  # ein Bild weniger, nie die Partie verlieren
+                    self.fehler = f"{type(e).__name__}: {e}"
+                dauer = time.time() - start
+                self.messung.append(dauer)
+                del self.messung[:-300]
+                self._halt.wait(max(0.0, self.takt - dauer))
+        finally:
+            if protokoll:
+                protokoll.close()
 
     def abholen(self) -> list[tuple[float, list[minimap.Sichtung]]]:
         with self._schloss:
             neu, self._neu = self._neu, []
+        return neu
+
+    def ereignisse(self) -> list[tuple]:
+        with self._schloss:
+            neu, self._ereignisse = self._ereignisse, []
         return neu
 
     def halt(self) -> None:
@@ -225,6 +336,9 @@ class SichtAusBildern:
         if cache:
             cache.write_text(json.dumps({"kennung": kennung, "bilder": {
                 k: [asdict(s) for s in v] for k, v in self._ergebnis.items()}}), encoding="utf-8")
+
+    def ereignisse(self) -> list:
+        return []
 
     def zwischen(self, bis: float, champions_: list[tuple[str, str]]) -> list[tuple[float, list[minimap.Sichtung]]]:
         if self._ergebnis is None and champions_:
