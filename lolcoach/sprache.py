@@ -156,6 +156,10 @@ class Gespraech:
     def gehirn_setzen(self, gehirn) -> None:
         self.gehirn = gehirn
 
+    def beobachter_setzen(self, beobachter) -> None:
+        """Der Minimap-Leser der Partie haelt auch den Spielbildschirm - fuer Fragen mit Bild."""
+        self.beobachter = beobachter
+
     def _frage(self, audio: np.ndarray) -> None:
         try:
             self._beantworte(audio)
@@ -184,8 +188,10 @@ class Gespraech:
             antwort = self.antworten.sofort(text, p, self.lagebild)
             if antwort is None:
                 letzte = [a for a in (self.gesagt or []) if a.schluessel != "antwort"][-3:]
+                b = getattr(self, "beobachter", None)
+                bild = b.bildschirm() if b is not None else None   # der Bildschirm, als er fragte
                 antwort = self.antworten.mit_claude(text, self.p, self.lagebild, self.modell, letzte,
-                                                    getattr(self, "gehirn", None))
+                                                    getattr(self, "gehirn", None), [bild] if bild else None)
                 if antwort.strip().rstrip(".").lower() == "notiert":
                     self._notiere(text, p)  # Claude hat es als Rueckmeldung erkannt
         print(f"  Coach: {antwort}", flush=True)

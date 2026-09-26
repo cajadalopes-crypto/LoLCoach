@@ -179,7 +179,9 @@ SITUATIV_SYSTEM = (
     "weg, tot, falsche Seite), sag das Passende statt des Anlasses. Der Standardsatz zeigt nur den Anlass; "
     "kommentiere nie die Daten oder was fehlt ('nicht erwaehnt', 'laut Lage'), sprich nur zum Spieler. "
     "Sauberes gesprochenes Deutsch: LoL-Begriffe (All-in, Trade, Welle, Gank) als Nomen, keine "
-    "eingedeutschten Verben wie 'all-inen'.")
+    "eingedeutschten Verben wie 'all-inen'. Liegt ein Bild bei, ist es sein Bildschirm jetzt: nutze, was "
+    "darauf zu sehen ist (Lebensbalken ueber den Koepfen, wer nah ist, Vasallen, sein Leben und Mana unten), "
+    "aber sag nur, was wirklich zu sehen ist.")
 
 
 BRIEFING_WOERTER = 75   # ~25 s Sprechzeit; der Fokus-Satz kommt dazu (Partie 4: 120 Woerter = 45 s)
@@ -192,7 +194,9 @@ TOD_SYSTEM = (
     "was er in genau so einer Lage naechstes Mal tut. Kein Trost, kein Vorwurf, keine Allgemeinplaetze. Zeigen "
     "die Fakten keinen Fehler (fairer Tausch, Objective dafuer bekommen), sag das in einem Satz. Hat der Tod mit "
     "seinem FOKUS HEUTE zu tun, sag es. Spawnt gleich ein Objective, das er verpasst, sag, was das Team jetzt "
-    "tun sollte. Kommentiere nie die Daten, sprich nur zum Spieler.")
+    "tun sollte. Kommentiere nie die Daten, sprich nur zum Spieler. Liegen Bilder bei, sind es seine "
+    "Bildschirme etwa 6 und 3 Sekunden vor dem Tod: lies daraus, was die Fakten nicht haben (Leben beider "
+    "Seiten, wer im Kampf war, Vasallen, Turm) - nur, was wirklich zu sehen ist.")
 
 
 _MARKER = re.compile(r"(?m)^[#*\s]*(AKTE|BRIEFING|LANEPLAN|ULTS|FOKUS)[*\s]*:[*]*")
@@ -315,6 +319,7 @@ class Gehirn:
         teile.append("LAGE JETZT:\n" + lage_text)
         return "\n\n".join(teile)
 
-    def frage(self, system: str, anlass: str, p: Partie, lage_text: str, timeout: float = 40) -> str:
-        return llm.frage(f"{self.kontext(anlass, p, lage_text)}\n\nANLASS: {anlass}", system=system,
+    def frage(self, system: str, anlass: str, p: Partie, lage_text: str, timeout: float = 40,
+              bilder: list[bytes] | None = None) -> str:
+        return llm.frage(f"{self.kontext(anlass, p, lage_text)}\n\nANLASS: {anlass}", system=system, bilder=bilder,
                          modell=self.modell, timeout=timeout, aufwand="low").strip()

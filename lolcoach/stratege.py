@@ -69,6 +69,15 @@ class Stratege:
         text = absichern(gehirn.kuerzen(text, 6 if schluessel == "briefing" else 3))[0]
         self.plan.einwerfen(Ansage(text, WICHTIG, schluessel, zeit=self.p.zeit, gueltig=90, sperre=600))
 
+    def _bilder(self, a: Ansage) -> list[bytes] | None:
+        """Der Spielbildschirm fuer Claude: beim Tod zwei Bilder davor (6 und 3 s - danach ist der
+        Bildschirm grau), sonst der jetzige. None ohne Beobachter (Aufnahme, Tests)."""
+        b = getattr(self, "beobachter", None)
+        if b is None:
+            return None
+        bilder = [b.bildschirm(6), b.bildschirm(3)] if a.schluessel == "tod" else [b.bildschirm(0)]
+        return [x for x in bilder if x] or None
+
     def veredle(self, a: Ansage) -> None:
         """Ersetzt den Standardsatz durch eine situative Anweisung. Gibt nach
         `a.frist` (sonst `VEREDELN_HOECHSTENS`) Sekunden auf und laesst den Standardsatz
@@ -81,11 +90,13 @@ class Stratege:
         erledigt = threading.Event()
         frist = a.frist or VEREDELN_HOECHSTENS
         system = SYSTEM_JE_SCHLUESSEL.get(a.schluessel, gehirn.SITUATIV_SYSTEM)
+        bilder = self._bilder(a)
 
         def lauf():
             try:
                 lage = ("FAKTEN:\n" + a.kontext) if a.kontext else antworten.lage_text(p, lb)
-                text = self.gehirn.frage(system, f"{a.text} (Standardsatz der Regel)", p, lage, timeout=frist + 5)
+                text = self.gehirn.frage(system, f"{a.text} (Standardsatz der Regel)", p, lage, timeout=frist + 5,
+                                         bilder=bilder)
             except Exception:
                 text = None
             if not erledigt.is_set():

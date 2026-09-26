@@ -15,7 +15,7 @@ class GehirnAttrappe:
     def __init__(self, dauer, text="Schieb jetzt die Welle rein und geh zum Drachen."):
         self.dauer, self.text, self.akte, self.anfragen = dauer, text, "Akte", []
 
-    def frage(self, system, anlass, p, lage_text, timeout=40):
+    def frage(self, system, anlass, p, lage_text, timeout=40, bilder=None):
         self.anfragen.append(anlass)
         self.systeme = getattr(self, "systeme", []) + [system]
         self.lagen = getattr(self, "lagen", []) + [lage_text]

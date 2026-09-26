@@ -39,6 +39,7 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
         from .stratege import Stratege
         stratege_ = Stratege(plan, werk=werk)
         stratege_.gehirn.ablage = gehirn_ablage
+        stratege_.beobachter = getattr(sicht, "b", None)   # live: der Spielbildschirm fuer Claude
         anzeigen = [*anzeigen, stratege_]
         for a in anzeigen:
             if hasattr(a, "gehirn_setzen"):

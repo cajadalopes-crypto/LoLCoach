@@ -211,7 +211,12 @@ SYSTEM = ("Du bist ein Challenger-Coach fuer League of Legends und sitzt neben d
           "Nutze die Lage; erfinde nichts, was nicht darin steht. Items nur mit Namen aus der mitgegebenen "
           "Ladenliste nennen. Fragt er nach einer deiner letzten Ansagen ('was meinst du damit'), erklaere "
           "sie. Gibt er keine Frage, sondern Rueckmeldung ueber dich oder das Programm (Lob, Kritik, "
-          "Wuensche), antworte nur mit dem einen Wort: Notiert.")
+          "Wuensche), antworte nur mit dem einen Wort: Notiert. " + "{BILD}")
+
+BILD_HINWEIS = ("Liegt ein Bild bei, ist es sein Bildschirm in diesem Moment: lies daraus, was die Lage nicht "
+                "hat - Lebensbalken ueber den Koepfen, wer in seiner Naehe ist, Vasallen und Welle vor ihm, Tuerme, "
+                "sein eigenes Leben und Mana unten. Sag nur, was wirklich zu sehen ist.")
+SYSTEM = SYSTEM.replace("{BILD}", BILD_HINWEIS)
 
 
 KAUF_WORTE = {"kaufen", "kauf", "item", "items", "build", "bauen", "baue", "shop", "laden", "gold"}
@@ -226,8 +231,10 @@ def laden_liste() -> str:
     return ", ".join(namen)
 
 
-def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", letzte=(), gehirn=None) -> str:
-    """`gehirn`: wenn da, bekommt Claude Spielakte + passende Lexikon-Abschnitte dazu."""
+def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", letzte=(), gehirn=None,
+               bilder: list[bytes] | None = None) -> str:
+    """`gehirn`: wenn da, bekommt Claude Spielakte + passende Lexikon-Abschnitte dazu.
+    `bilder`: der Spielbildschirm im Moment der Frage (JPEG)."""
     zusatz = ""
     if letzte:
         zusatz += "\n\nDeine letzten Ansagen: " + " | ".join(
@@ -239,7 +246,7 @@ def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", let
     try:
         from .itemnamen import absichern
         return absichern(llm.frage(f"{inhalt}\n\nFrage des Spielers: {frage}",
-                                   system=SYSTEM, modell=modell, timeout=40, aufwand="low").strip())[0]
+                                   system=SYSTEM, modell=modell, timeout=40, aufwand="low", bilder=bilder).strip())[0]
     except llm.LLMFehler as e:
         print(f"  Claude-Fehler: {e}", flush=True)
         if "login" in str(e).lower():

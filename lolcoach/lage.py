@@ -198,6 +198,7 @@ class _Kamera:
 # hochschob (Partie 5: 5:03 gepingt, 6:01 gelesen). Unten 0.95 (Eingabezeile), oben 0.70 (darueber nur
 # Spielwelt mit Namensschildern als Rauschen).
 CHAT = (0.0, 0.70, 0.32, 0.95)
+BILDSCHIRM_BREITE = 1600   # fuer Claude: Lebensbalken und Namen noch lesbar, ~150 KB je Bild
 BILDER_BEHALTEN = 20 * 60     # Sekunden: aeltere Minimap-Bilder der laufenden Partie werden entfernt
 
 
@@ -223,6 +224,9 @@ class Beobachter(threading.Thread):
         self.messung: list[float] = []
         self._neu: list[tuple[float, list[minimap.Sichtung]]] = []
         self.aktuell: tuple[float, list[minimap.Sichtung]] = (0.0, [])   # letztes Bild, nicht abholend
+        # Der Spielbildschirm, einmal je Sekunde, die letzten 12 s (JPEG, 1600 breit): damit Claude sieht,
+        # was Carlos sieht - Leben ueber den Koepfen, wer im Kampf ist, die Welle (Carlos, 26.09.)
+        self._bildschirme: deque[tuple[float, bytes]] = deque(maxlen=12)
         self._ereignisse: list[tuple] = []
         self._schloss = threading.Lock()
         self._halt = threading.Event()
@@ -282,8 +286,18 @@ class Beobachter(threading.Thread):
                                 while gespeichert and int(gespeichert[0].stem) / 1000 < start - BILDER_BEHALTEN:
                                     gespeichert.pop(0).unlink(missing_ok=True)
                             self.anzahl += 1
-                        if start - letzter_chat >= 1.0:  # Chat und Mitspieler-Leiste einmal je Sekunde
+                        if start - letzter_chat >= 1.0:  # Chat, Mitspieler-Leiste, Bildschirm einmal je Sekunde
                             letzter_chat = start
+                            try:   # eigener Schutz: ein Fehler hier darf Chat und Leiste nicht mitreissen
+                                ganz = kamera.hole((l, o, r, u))
+                                if ganz is not None:
+                                    klein = cv2.resize(ganz, (BILDSCHIRM_BREITE, round(BILDSCHIRM_BREITE * hoehe / breite)),
+                                                       interpolation=cv2.INTER_AREA)
+                                    ok, jpg = cv2.imencode(".jpg", klein, [cv2.IMWRITE_JPEG_QUALITY, 70])
+                                    if ok:
+                                        self._bildschirme.append((start, jpg.tobytes()))
+                            except Exception as e:
+                                self.fehler = f"Bildschirm: {type(e).__name__}: {e}"
                             from . import hud
                             hx0, hy0, hx1, hy1 = hud.bereich(breite, hoehe)
                             leiste = kamera.hole((l + hx0, o + hy0, l + hx1, o + hy1))
@@ -319,6 +333,16 @@ class Beobachter(threading.Thread):
                 protokoll.close()
             if self._ereignis_datei:
                 self._ereignis_datei.close()
+
+    def bildschirm(self, vor: float = 0.0) -> bytes | None:
+        """Der Spielbildschirm (JPEG) etwa `vor` Sekunden vor jetzt - None, wenn keiner da ist
+        oder der naechste mehr als 2 s daneben liegt (z. B. Spiel minimiert)."""
+        ziel = time.time() - vor
+        bilder = list(self._bildschirme)
+        if not bilder:
+            return None
+        w, jpg = min(bilder, key=lambda b: abs(b[0] - ziel))
+        return jpg if abs(w - ziel) <= 2.0 else None
 
     def abholen(self) -> list[tuple[float, list[minimap.Sichtung]]]:
         with self._schloss:

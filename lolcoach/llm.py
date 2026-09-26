@@ -35,26 +35,49 @@ def _programm() -> str:
     return str(kandidaten[-1])
 
 
+def _json_oder_nichts(zeile: str) -> dict | None:
+    try:
+        return json.loads(zeile)
+    except ValueError:
+        return None
+
+
 def frage(prompt: str, system: str | None = None, modell: str = "sonnet", timeout: float = 120,
-          aufwand: str | None = None) -> str:
+          aufwand: str | None = None, bilder: list[bytes] | None = None) -> str:
     """Gemessen am 26.09.2026 ueber das Abo: sonnet 4-11 s je Frage, haiku 20-60 s (!).
     Schlank: eigener Systemprompt statt des grossen Claude-Code-Prompts, keine
     Werkzeuge, keine MCP-Server, keine Projektdateien (Arbeitsordner = Temp),
-    Frage ueber stdin (lange Lagen sprengen sonst die Kommandozeile)."""
-    befehl = [_programm(), "-p", "--model", modell, "--output-format", "json", "--tools", "",
+    Frage ueber stdin (lange Lagen sprengen sonst die Kommandozeile).
+    `bilder`: JPEG-Bytes (Spielbildschirm), gehen als Bild-Bloecke mit - dann ueber
+    stream-json (gemessen: Bild + Frage in 4,5 s)."""
+    befehl = [_programm(), "-p", "--model", modell, "--tools", "",
               "--no-session-persistence", "--strict-mcp-config", "--disable-slash-commands"]
+    if bilder:
+        import base64
+        inhalt = [{"type": "image", "source": {"type": "base64", "media_type": "image/jpeg",
+                                                "data": base64.b64encode(b).decode()}} for b in bilder]
+        eingabe = json.dumps({"type": "user", "message": {"role": "user", "content": inhalt + [
+            {"type": "text", "text": prompt}]}}) + "\n"
+        befehl += ["--input-format", "stream-json", "--output-format", "stream-json", "--verbose"]
+    else:
+        eingabe = prompt
+        befehl += ["--output-format", "json"]
     if system:
         befehl += ["--system-prompt", system]
     if aufwand:
         befehl += ["--effort", aufwand]
     try:
-        lauf = subprocess.run(befehl, input=prompt, capture_output=True, text=True, encoding="utf-8",
+        lauf = subprocess.run(befehl, input=eingabe, capture_output=True, text=True, encoding="utf-8",
                               timeout=timeout, cwd=tempfile.gettempdir())
     except subprocess.TimeoutExpired as e:
         raise LLMFehler(f"keine Antwort nach {timeout:.0f} s") from e
     try:
-        antwort = json.loads(lauf.stdout)
-    except json.JSONDecodeError as e:
+        if bilder:   # stream-json: die letzte Zeile vom Typ "result" traegt die Antwort
+            antwort = next(e for e in map(_json_oder_nichts, reversed(lauf.stdout.splitlines()))
+                           if e and e.get("type") == "result")
+        else:
+            antwort = json.loads(lauf.stdout)
+    except (json.JSONDecodeError, StopIteration) as e:
         raise LLMFehler((lauf.stderr or lauf.stdout)[:300]) from e
     if antwort.get("is_error"):
         text = antwort.get("result", "")
