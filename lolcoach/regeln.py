@@ -121,6 +121,8 @@ class Regelwerk:
         """`lage`: Lagebild aus der Minimap (lage.Lagebild) oder None ohne Bild."""
         v, self.vorher = self.vorher, p
         self.lage = lage
+        if getattr(self, "_zuschauen_seit", None) is None and p.ich:
+            self._zuschauen_seit = p.zeit     # Spielzeit, ab der dieser Coach zuschaut (Neustart mitten in der Partie)
         if not p.ich or v is None or not v.ich or p.zeit < v.zeit:
             return []
         ansagen: list[Ansage] = []
@@ -846,7 +848,7 @@ class Regelwerk:
         j = p.jungler(gegenteam(p.mein_team))
         if j and not j.tot and p.zeit < self.m["sicht"]["lane_phase_bis"] and p.ich.rolle != "JUNGLE":
             g = self.lage.gesehen(j)
-            weg = p.zeit - g[0] if g else p.zeit
+            weg = p.zeit - g[0] if g else p.zeit - self._zuschauen_seit     # nie gesehen: seit der Coach zuschaut
             if weg >= cfg["jungler_weg_ab"]:
                 zweck = {"TOP": "lane_top", "MIDDLE": "lane_mid", "BOTTOM": "lane_bot", "UTILITY": "lane_bot"}.get(p.ich.rolle)
                 if zweck:
@@ -982,7 +984,9 @@ class Regelwerk:
             if s.tot:
                 continue
             g = self.lage.gesehen(s)
-            weg = p.zeit - g[0] if g else p.zeit
+            # nie gesehen: seit der Coach zuschaut - nach einem Neustart mitten in der Partie war es sonst "seit
+            # 8 Minuten 30" bzw. "noch nie zu sehen gewesen" (Live 26.09., 11:05, Neustart um 9:30)
+            weg = p.zeit - g[0] if g else p.zeit - self._zuschauen_seit
             # nur wer es seit seiner letzten Sichtung bis zu dir geschafft haben KANN (Swain vor
             # 25 s unten ist noch nicht oben) - so denkt ein Challenger, nicht nach der Stoppuhr
             erreichbar = not g or abs(g[1] - x) + abs(g[2] - y) <= weg * cfg["tempo"]
