@@ -25,7 +25,9 @@ Prio -> Tempo -> Information -> Gegner-Vorhersage -> Aktionen -> Gegenantwort ->
   Zahlen. Wartet auf Spielbilder MIT Gegnern: die naechste Partie legt alle 5 s `schirm_*.jpg`
   ab - damit eichen, erst dann in Ansagen (lieber stumm als falsch).
 - Eigene Wards auf der Minimap lesen (Sicht als Faktor: "Fluss gewardet - Gank kommt nur ueber ...").
-- Gegner-Ults ohne Ping: bisher nur ueber Chat-Pings bekannt.
+- Gegner-Ults ohne Ping: globale Ults (TF, Shen, Pantheon, Galio, Ryze, Taliyah, Nocturne, Sion) und Teleport
+  erkennt die Minimap jetzt als Fernsprung (197c7b1); alle anderen Ults nur ueber Chat-Pings.
+  Live pruefen: kommen TP-Meldungen, und keine falschen?
 - "Welle crasht in X s" (Reasoning #6 wave_crash_in): aus der Wellenfront nicht verlaesslich - die Front
   springt, wenn eine Welle stirbt (dann ist die naechste an der eigenen Basis die "Front"); Klumpen nach
   Flaeche zu zaehlen aenderte nichts (Camille-Partie: 62 -> 65 Spruenge > 0,15). Experiment mit der
@@ -39,7 +41,9 @@ Startseite, Kampf-Vorhersage am Objective, Platten von der Minimap, Lane-Prio, K
 Lexikon-Build, Todespreis, Trade-Hinweis aus der Akte, Sofort-Antworten (Plan, Jungler-Ort,
 Platten, Prio), Themen-Sperre + Widerspruchs-Waechter, Dashboard "Jetzt", 4 Takte/s live,
 verdeckte Icons unter bekannten Icons, doppelte Champions per Ringfarbe, 170 Champion-Eintraege,
-Mechanik-Lexikon, Pruefwerkzeug `werkzeuge/ansagen_pruefen.py` (0 Widersprueche in 4 Partien).
+Mechanik-Lexikon, Pruefwerkzeug `werkzeuge/ansagen_pruefen.py` (0 Widersprueche in 4 Partien),
+Wiedereinstieg (Kauf + Ziel kurz vor dem Respawn), Kontroll-Auge situativ, Review vergleicht Live-Ansagen
+mit dem Ausgang, Teleport/globale Ults von der Minimap.
 
 ## Als Naechstes
 
