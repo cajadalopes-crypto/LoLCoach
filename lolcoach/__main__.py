@@ -235,7 +235,7 @@ def live(args) -> None:
             except Exception:
                 fort = None
             schreiber = aufzeichnung.Schreiber(fortsetzen=fort)
-            if fort:
+            if schreiber.fortgesetzt:       # gesperrte Datei: der Schreiber hat neu angefangen
                 # dieselbe Partie wie die juengste Aufnahme (Neustart, Reconnect): weiterschreiben; das
                 # Review des Bruchstuecks ist veraltet und entsteht nach dem Spiel neu
                 stamm = fort.name.removesuffix(".jsonl.gz")

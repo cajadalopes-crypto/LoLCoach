@@ -37,17 +37,26 @@ def gz_text(pfad: Path) -> str:
     return text[:text.rfind("\n") + 1] if "\n" in text else ""
 
 
-def gz_saeubern(pfad: Path) -> None:
+def gz_saeubern(pfad: Path) -> bool:
     """Eine abgebrochene gzip-Datei sauber neu schreiben - sonst ist alles, was danach angehaengt wird,
-    unlesbar (der Leser haengt am fehlenden Ende des alten Stroms fest)."""
+    unlesbar (der Leser haengt am fehlenden Ende des alten Stroms fest). False, wenn die Datei gesperrt bleibt:
+    Live 26.09., 23:14 - beim Neustart hielt Windows sie fest (Virenscanner/OneDrive), der Coach brach mit
+    PermissionError ab. Dann laeuft eine neue Aufnahme statt gar keiner."""
     pfad = Path(pfad)
     if not pfad.exists():
-        return
+        return True
     text = gz_text(pfad)
     neu = pfad.with_name(pfad.name + ".neu")
     with gzip.open(neu, "wt", encoding="utf-8") as f:
         f.write(text)
-    neu.replace(pfad)
+    for _ in range(20):          # bis ~6 s: eine kurze Sperre (Scan, Sync) geht vorbei
+        try:
+            neu.replace(pfad)
+            return True
+        except PermissionError:
+            time.sleep(0.3)
+    neu.unlink(missing_ok=True)
+    return False
 
 
 def _spieler(daten: dict) -> list:
@@ -82,8 +91,9 @@ def fortsetzbar(daten: dict, ordner: Path = ORDNER, hoechstens: float = 900) -> 
 class Schreiber:
     def __init__(self, ordner: Path = ORDNER, fortsetzen: Path | None = None):
         ordner.mkdir(parents=True, exist_ok=True)
-        if fortsetzen is not None:
-            gz_saeubern(fortsetzen)
+        if fortsetzen is not None and not gz_saeubern(fortsetzen):
+            print(f"!! {fortsetzen.name} ist gesperrt - neue Aufnahme statt Fortsetzung", flush=True)
+            fortsetzen = None
         self.pfad = fortsetzen or ordner / time.strftime("%Y-%m-%d_%H%M%S.jsonl.gz")
         self.fortgesetzt = fortsetzen is not None
         self._f = gzip.open(self.pfad, "at", encoding="utf-8")
