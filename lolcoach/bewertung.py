@@ -128,6 +128,8 @@ class Bewertung:
     zum_objective: float | None = None          # deine Laufzeit zur Grube (Sekunden)
     mitspieler_nah: list[Spieler] = field(default_factory=list)   # innerhalb ~1500 Einheiten
     trade: str = ""             # aus der Spielakte: worauf beim All-in gegen den Lane-Gegner achten
+    platten_gegner: int | None = None   # Platten am vordersten stehenden Gegnerturm deiner Lane (Minimap)
+    platten_eigen: int | None = None    # ... an deinem vordersten Turm
 
     # --- Ableitungen -------------------------------------------------------------
 
@@ -260,6 +262,9 @@ class Bewertung:
             urteil = "du staerker" if wert >= 1 else "er staerker" if wert <= -1 else "ausgeglichen"
             z.append(f"Kraefte gegen {self.lane.champion}: {urteil}" + (f" ({'; '.join(gruende)})" if gruende else "")
                      + " - sein Leben siehst du nur im Bild.")
+        if self.platten_gegner is not None or self.platten_eigen is not None:
+            z.append(f"Platten (Minimap): sein vorderster Turm deiner Lane {self.platten_gegner if self.platten_gegner is not None else '?'}"
+                     f", deiner {self.platten_eigen if self.platten_eigen is not None else '?'}")
         if self.welle:
             wir, die, front, schiebt = self.welle
             z.append(f"Deine Welle: {wir} eigene gegen {die}, Front {front if front is None else round(front, 2)}"
@@ -336,6 +341,12 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
         front = w.front if blau or w.front is None else 1 - w.front
         schiebt = None if not w.schiebt else ("ihr" if (w.schiebt == "blau") == blau else "er")
         b.welle = (wir, die, front, schiebt)
+
+    if lb is not None and (lane := LANE_DER_ROLLE.get(p.ich.rolle)) and getattr(lb, "platten", None):
+        for team, feld in ((feind, "platten_gegner"), (mein, "platten_eigen")):
+            vorn = next(((team, lane, s) for s in ("aussen", "innen", "Inhib") if (team, lane, s) in tuerme), None)
+            if vorn is not None and vorn in lb.platten:
+                setattr(b, feld, lb.platten[vorn])
 
     if objective is None:
         objective = naechstes_objective(p)

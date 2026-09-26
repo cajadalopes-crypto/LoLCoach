@@ -515,8 +515,12 @@ class Regelwerk:
         # Recall: stand vor dem Verschwinden still - sofort ansagen, das ist ein Fenster
         if p.zeit - seit < 3 and self.lage.stand_still(g):
             self._gemeldet.add(("gemeldet", g.name, seit))
-            satz = cfg["recall_mit_platten"] if self._platten_moeglich(p) else cfg["recall_ohne_platten"]
-            yield Ansage(satz.format(champion=g.champion), WICHTIG, "lane_recall", gueltig=6, sperre=30)
+            if self.b is not None:
+                text = komponist.lane_recall(self.b, g.champion, self._platten_moeglich(p))
+            else:
+                satz = cfg["recall_mit_platten"] if self._platten_moeglich(p) else cfg["recall_ohne_platten"]
+                text = satz.format(champion=g.champion)
+            yield Ansage(text, WICHTIG, "lane_recall", gueltig=6, sperre=30)
             return
         if p.zeit - seit < cfg["fehlt_nach"]:
             return

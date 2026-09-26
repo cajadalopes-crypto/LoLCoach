@@ -39,6 +39,7 @@ class Lagebild:
         self.eigene: dict[str, tuple[bool, float]] = {}     # Taste -> (bereit, seit Spielzeit), aus dem HUD
         self._eigene_kandidat: dict[str, tuple[bool, float]] = {}   # Wechsel, einmal gelesen, noch unbestaetigt
         self.eigene_zeit: float | None = None
+        self.platten: dict[tuple[str, str, str], int] = {}   # (Team, Lane, Stufe) -> verbleibende Platten (Minimap)
 
     def eigene_zauber(self, p: Partie, jetzt: float) -> dict[str, float] | None:
         """Beschwoererzauber des Spielers -> Sekunden bis bereit (0 = bereit), aus dem HUD (frisch, < 3 s).
@@ -77,6 +78,8 @@ class Lagebild:
                 from . import welle
                 self.wellen = welle.zustaende(e[2])
                 self.wellen_zeit = zeit_von_wand(e[1])
+            elif e[0] == "platten":
+                self.platten.update(e[2])
             elif e[0] == "eigene":
                 # eigene Faehigkeiten/Zauber aus dem HUD: Wechsel bereit -> weg ist der Moment der Nutzung
                 # Ein Wechsel zaehlt erst, wenn ihn zwei Lesungen hintereinander zeigen (Partie 7, 13:10-13:12:
@@ -201,6 +204,8 @@ def ereignis_als_json(e: tuple) -> dict:
         return {"art": "wellen", "w": e[1], "p": [[t, round(x, 4), round(y, 4)] for t, x, y in e[2]]}
     if e[0] == "eigene":
         return {"art": "eigene", "w": e[1], "b": e[2]}
+    if e[0] == "platten":
+        return {"art": "platten", "w": e[1], "p": {"/".join(k): v for k, v in e[2].items()}}
     return {"art": e[0], "w": e[1], "text": e[2]}
 
 
@@ -215,6 +220,8 @@ def ereignis_aus_json(d: dict) -> tuple:
         return ("wellen", d["w"], [tuple(q) for q in d["p"]])
     if d["art"] == "eigene":
         return ("eigene", d["w"], d["b"])
+    if d["art"] == "platten":
+        return ("platten", d["w"], {tuple(k.split("/")): v for k, v in d["p"].items()})
     return (d["art"], d["w"], d["text"])
 
 
@@ -292,6 +299,8 @@ class Beobachter(threading.Thread):
         verfolger = None
         from .welle import Wellenleser
         wellenleser = Wellenleser()
+        from .platten import Plattenleser
+        plattenleser, platten_bei, platten_gemeldet = Plattenleser(), 0.0, {}
         letzte_sichtungen: list = []
         leser = None
         try:
@@ -367,6 +376,13 @@ class Beobachter(threading.Thread):
                             if leiste is not None:
                                 with self._schloss:
                                     self._ereignisse.append(("hud", start, hud.lies(leiste, hoehe)))
+                            if karte is not None and start - platten_bei >= 2.0:
+                                platten_bei = start
+                                stand = plattenleser.lies_karte(karte)
+                                if stand != platten_gemeldet:
+                                    platten_gemeldet = stand
+                                    with self._schloss:
+                                        self._ereignisse.append(("platten", start, stand))
                             if karte is not None:
                                 punkte = wellenleser.punkte(karte, [(s.x, s.y) for s in letzte_sichtungen])
                                 if wellenleser.bereit:
@@ -491,6 +507,8 @@ class SichtAusProtokoll:
                             continue
                 except EOFError:
                     pass
+        if not any(e[0] == "platten" for e in self._e):
+            self._e += _platten_aus_bildern(ordner)
         self._e.sort(key=lambda e: e[1].zeit if e[0] == "sprung" else e[1])
         self.bilder = self._s
         self.i = self.j = 0
@@ -514,6 +532,21 @@ class SichtAusProtokoll:
             aus.append(e)
             self.j += 1
         return aus
+
+
+def _platten_aus_bildern(ordner: Path, jedes: int = 3) -> list[tuple]:
+    """Platten-Ereignisse aus den gespeicherten Minimap-Bildern (Wanduhr = Dateiname in ms)."""
+    from .platten import Plattenleser
+    leser, gemeldet, aus = Plattenleser(), {}, []
+    for pfad in sorted(ordner.glob("[0-9]*.jpg"))[::jedes]:
+        karte = cv2.imread(str(pfad))
+        if karte is None or karte.shape[0] != karte.shape[1] or karte.shape[0] > 700:
+            continue   # alte Aufnahmen mit Rand um die Karte (Partie 1: 907 px) - dort stimmt die Lage nicht
+        stand = leser.lies_karte(karte)
+        if stand != gemeldet:
+            gemeldet = stand
+            aus.append(("platten", int(pfad.stem) / 1000, stand))
+    return aus
 
 
 def sicht_fuer(pfad):

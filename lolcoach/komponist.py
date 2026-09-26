@@ -100,6 +100,12 @@ def _wann(g: GegnerLage) -> str:
     return f"kann in {sek(g.ankunft or 0)} da sein"
 
 
+def _platten(b: Bewertung) -> str:
+    """'Platten' - mit Zahl, wenn die Minimap sie zeigt: 'noch 3 Platten'."""
+    n = b.platten_gegner
+    return "Platten" if n is None else ("letzte Platte" if n == 1 else f"Platten, noch {n}")
+
+
 def _rueckzug(b: Bewertung) -> str:
     if b.leben is not None and b.leben < 0.2:
         return "Hinter den Turm und back"      # mit 5 Prozent "bleib am Turm" hilft nichts (Camille-Partie 13:21)
@@ -142,7 +148,7 @@ def chance(b: Bewertung, platten: bool) -> str | None:
     if b.gold >= RECALL_GOLD and (schiebt_ihr or not lebt):
         return f"Welle in den Turm und back, {b.gold // 100 * 100} Gold"
     if platten and (schiebt_ihr or not lebt):
-        return "Welle in den Turm, Platten"
+        return f"Welle in den Turm, {_platten(b)}"
     if b.gold >= RECALL_GOLD + 300:
         return f"Welle crashen und back, {b.gold // 100 * 100} Gold"
     return None
@@ -179,7 +185,7 @@ def lane_fehlt(b: Bewertung, g: GegnerLage, sekunden: int, platten: bool, richtu
     j = b.jungler
     if j and (j.s.tot or (j.ankunft is not None and not j.unbekannt and j.ankunft >= RUHE_SEKUNDEN)):
         wo = "tot" if j.s.tot else j.ort
-        tun = "Welle in den Turm, Platten" if platten else "Welle rein"
+        tun = f"Welle in den Turm, {_platten(b)}" if platten else "Welle rein"
         return satz + f". {j.champion} {'ist ' if wo in ('tot', 'oben', 'unten') else ''}{wo}: {tun}, und ping."
     gruende = verwundbar(b)
     return satz + ". Ping" + (f" und bleib hinten, {gruende[0]}." if gruende else ", nicht vor die Welle.")
@@ -229,9 +235,9 @@ def lane_tot(b: Bewertung, champion: str, sekunden: int, platten: bool) -> str:
         return satz + f". {frisch[0].champion} {_wann(frisch[0])} - Welle nur bis zum Turm."
     if andere:   # nur Worst Case (lange nicht gesehen): Platten ja, aber mit Blick auf den Fluss
         x = andere[0]
-        return (satz + f": Welle rein" + (", Platten" if platten else "")
+        return (satz + f": Welle rein" + (f", {_platten(b)}" if platten else "")
                 + f" - aber {x.champion} seit {sek(x.seit or b.zeit)} nicht gesehen, raus, sobald {x.champion} auftaucht.")
-    tun = "Welle in den Turm" + (", Platten" if platten else "")
+    tun = "Welle in den Turm" + (f", {_platten(b)}" if platten else "")
     if ob := _objective_erreichbar(b):
         tun += f", dann {OBJ_NAME[ob[0]]}"
     elif b.gold >= RECALL_GOLD:
@@ -393,3 +399,17 @@ def obj_dazu(b: Bewertung, nah: bool, tp_moeglich: bool) -> str:
     if b.zum_objective is not None and b.zum_objective <= 25:
         return f"{sek(b.zum_objective)} Weg: hin."
     return "Zu weit für dich: Welle rein, Druck auf deiner Seite."
+
+
+def lane_recall(b: Bewertung, champion: str, platten: bool) -> str:
+    """Der Lane-Gegner recallt (stand still, dann weg): was du mit den ~15 s machst."""
+    satz = f"{champion} recallt"
+    if frisch := [x for x in gefahr(b) if x.seit is not None and x.seit <= 15]:
+        return satz + f", aber {frisch[0].champion} {_wann(frisch[0])} - Welle nur bis zum Turm."
+    if platten:
+        tun = f"Welle in seinen Turm, {_platten(b)}"
+    else:
+        tun = "Welle reinschieben, dann hast du Zeit für deinen Recall"
+    if b.gold >= RECALL_GOLD:
+        tun += f", danach selbst back mit {b.gold // 100 * 100} Gold"
+    return f"{satz}: {tun}."

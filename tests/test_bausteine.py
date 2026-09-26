@@ -246,10 +246,30 @@ def bewertung_und_plan():
     assert komponist.sek(105) == "1 Minute 45" and komponist.sek(1) == "1 Sekunde"
 
 
+def platten_lesen():
+    """Platten-Ziffern der Turm-Icons (Camille-Partie, ~10:40): oben 2, Mitte 4, unten 4 bei ihm, deine
+    Mitte 4; Teemos Icon verdeckt deinen inneren Mid-Turm -> keine Zahl statt einer falschen."""
+    from lolcoach import platten
+    from lolcoach.bewertung import TUERME
+    img = cv2.imread(str(HIER / "minimap_platten.jpg"))
+    gelesen = {k: platten.lies(img, k[0], *v)[0] for k, v in TUERME.items()}
+    erwartet = {("CHAOS", "Top", "aussen"): 2, ("CHAOS", "Mid", "aussen"): 4, ("CHAOS", "Bot", "aussen"): 4,
+                ("ORDER", "Mid", "aussen"): 4, ("ORDER", "Top", "aussen"): 5, ("ORDER", "Mid", "innen"): None}
+    for k, z in erwartet.items():
+        assert gelesen[k] == z, (k, gelesen[k], z)
+    # Platten wachsen nie nach; ein niedrigerer Wert gilt erst nach zwei Lesungen
+    leser = platten.Plattenleser()
+    leser.stand[("CHAOS", "Top", "aussen")] = 3
+    leser.lies_karte(img)
+    assert leser.stand[("CHAOS", "Top", "aussen")] == 3
+    leser.lies_karte(img)
+    assert leser.stand[("CHAOS", "Top", "aussen")] == 2
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
-                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan):
+                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, platten_lesen):
         test()
         print(f"{test.__name__} OK")
