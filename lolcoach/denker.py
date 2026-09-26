@@ -38,7 +38,7 @@ WEG_UNTER = -2.5       # er ist klar staerker: nicht traden
 TRAENKE = (2003, 2031, 2033)   # Heiltrank, Nachfuellbarer, Verderbender - verkaufbar fuer den naechsten Kauf
 KAUF_LOHNT_AB = 850    # so viel muss ein Einkauf wert sein, damit sich ein Recall dafuer lohnt (Langschwert: nein)
 KRAFT = ("level", "ult", "items", "matchup")
-ZUSTAND = ("leben", "flash", "flash_ich", "zuenden", "welle", "gold_offen")
+ZUSTAND = ("leben", "flash", "flash_ich", "zuenden", "welle", "gold_offen", "mana")
 UMFELD = ("jungler", "jungler_nah", "jungler_weg", "dritter", "hilfe", "zone")
 ZONE_NAME = {"Heimerdinger": "Geschütze", "Zyra": "Pflanzen", "Azir": "Soldaten", "Illaoi": "Tentakel",
              "Yorick": "Ghule", "Teemo": "Pilze", "Shaco": "Boxen"}
@@ -137,6 +137,14 @@ def kampf_faktoren(b: Bewertung) -> list[Faktor]:
         f.append(Faktor(-0.8, "flash_ich", "dein Flash", "ist", "weg"))
     if b.zweiter and b.zweiter[0] == "SummonerDot" and b.zweiter[1] <= 0:
         f.append(Faktor(0.8, "zuenden", "dein Zünden", "ist", "bereit"))
+    # deine Ressource (Reasoning #1/#2 "Mana Advantage", "Ressourcen fuer Combo"): Mana/Energie aus der API
+    w = b.partie.werte if b.partie is not None else {}
+    if w.get("resourceType") in ("MANA", "ENERGY") and (voll := float(w.get("resourceMax") or 0)) > 0:
+        anteil = float(w.get("resourceValue") or 0) / voll
+        was = "Mana" if w["resourceType"] == "MANA" else "Energie"
+        if anteil < 0.25:
+            f.append(Faktor(-1.0, "mana", f"dein {was}" if was == "Mana" else "deine Energie", "reicht",
+                            "kaum für eine Combo"))
     # sein Item-Timing: traegt er viel Gold, ist er nach dem naechsten Back staerker - jetzt ist besser als gleich
     from .bewertung import gold_offen
     offen = gold_offen(er, b.zeit)
