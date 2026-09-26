@@ -58,17 +58,28 @@ def _live_quelle(basis: str, aus_nach: float = 10.0):
 
 
 def live(args) -> None:
+    from . import stimme
+    sprecher = stimme.Stumm() if args.stumm else stimme.Stimme()
     print("Warte auf eine Partie (Strg+C beendet) ...")
     while True:
         if not liveapi.laeuft(args.basis):
             time.sleep(2)
             continue
-        schreiber = None if args.ohne_aufnahme else aufzeichnung.Schreiber()
-        if schreiber:
+        schreiber = bilder = None
+        if not args.ohne_aufnahme:
+            schreiber = aufzeichnung.Schreiber()
             print(f"Partie erkannt - Aufnahme: {schreiber.pfad}")
+            if not args.ohne_bilder:
+                bilder = aufzeichnung.Bildschreiber(schreiber)
+                bilder.start()
+        sprecher.sage("Coach verbunden.")
         try:
             _verfolge(_live_quelle(args.basis), args.ich, takt=1.0, schreiber=schreiber)
         finally:
+            if bilder:
+                bilder.halt()
+                print(f"{bilder.anzahl} Bilder in {bilder.ordner}"
+                      + (f" - letzter Fehler: {bilder.fehler}" if bilder.fehler else ""))
             if schreiber:
                 schreiber.schliesse()
         print("Partie vorbei. Warte auf die naechste ...")
@@ -108,6 +119,8 @@ def main() -> None:
     unter = ap.add_subparsers(dest="befehl")
     lv = unter.add_parser("live")
     lv.add_argument("--ohne-aufnahme", action="store_true")
+    lv.add_argument("--ohne-bilder", action="store_true")
+    lv.add_argument("--stumm", action="store_true")
     ab = unter.add_parser("abspielen")
     ab.add_argument("datei", nargs="?")
     ab.add_argument("--takt", type=float, default=0.0, help="Sekunden je Schnappschuss (0 = so schnell es geht)")
@@ -118,7 +131,7 @@ def main() -> None:
     lm.add_argument("--modell", default="haiku")
     args = ap.parse_args()
     if args.befehl is None:
-        args.befehl, args.ohne_aufnahme = "live", False
+        args.befehl, args.ohne_aufnahme, args.ohne_bilder, args.stumm = "live", False, False, False
     {"live": live, "abspielen": abspielen, "status": status, "llm": frage_llm}[args.befehl](args)
 
 
