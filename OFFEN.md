@@ -17,49 +17,43 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
-- **Champion-Lexikon fuer alle Champions** (Agent, fortgesetzt statt neu gestartet):
-  kompakte Eintraege fuer die restlichen ~144, blockweise Jungle/Mid/ADC/Support.
+- **Offene Fakten klaeren**: Inhibitor-Respawn (5:00 in objektive.toml, Wiki-Auszug
+  3:00), TP-Abklingzeit mit Quest (300/390/420 s).
 
 ## Als Naechstes
 
-- **Generalprobe ohne Spiel**: nachgebauter Spielclient (Live-API aus einer
-  Aufnahme) + nachgebautes Spielfenster (Minimap-/HUD-Bilder an der echten
-  Stelle) -> der komplette Live-Weg laeuft einmal durch: Beobachter mit dxcam,
-  Verfolger, Mitspieler-Leiste, Regeln, Stratege, Dashboard, Ansagen,
-  Aufnahme, Review danach. Findet Verdrahtungsfehler, bevor Carlos spielt.
-- **Spielakte schneller**: 35 s gemessen (Quelle 17 000 Zeichen). Kuerzere Quelle
-  und knappere Akte, damit das Briefing vor der ersten Welle (0:30) kommt.
-- **Gehirn in die Regeln**: Spikes/Ults aus der Wissensbasis ("Urgot hat Level 6 -
-  seine Ult richtet unter 25 % hin"), Ult-Timer aus Chat-Pings ("Urgot R")
-  mit Cooldowns aus Data Dragon; weitere Anlaesse situativ (Recall-Fenster,
-  Lane-Gegner tot, Jungler gesehen), sobald eine Partie zeigt, wie lange Claude
-  live braucht.
-- **Anlauf-Warnungen Mid-/Lategame**: "Vex kommt von unten auf dich zu" beim
-  Splitpushen (Richtung aus dem Verfolger).
-- **Ward-Vorschlaege**: "du laeufst gerade am Tri-Bush vorbei, setz ein Ward",
-  passend zu Position, Laufweg, Spielstand (bestaetigt 26.09.). Faelight-Punkte
-  (26.1) aus dem Lexikon beruecksichtigen.
-- **Wellen-Zustand** aus den Vasallen-Punkten der Minimap: wie genau die Welle
-  vorbereiten (freezen, slow push, crashen) - auch fuers Review.
-- **Item-Namen absichern**: Claude-Antworten gegen die Ladenliste pruefen
-  ("Schwarzer Fleischer" statt "Schwarzes Beil" kam trotz Liste vor).
 - **Review per Sprache**: im Review mit dem Headset fragen (Push-to-Talk wie im
   Spiel), Antwort auch gesprochen.
-- **Offene Fakten aus dem Lexikon klaeren**: Inhibitor-Respawn (5:00 in
-  objektive.toml, Wiki-Auszug 3:00), TP-Abklingzeit mit Quest (300/390/420 s).
 
 ## Braucht eine Partie
+
+Alles hier ist vorbereitet und mit Aufnahmen/Generalprobe getestet - die echte
+Partie ist der letzte Schritt. Nach Carlos' naechster Partie: Log, Aufnahme,
+Notizen und Review durchsehen und nachschaerfen.
 
 - Chat-Format der Pings ablesen (der Beobachter speichert `chat_*.jpg`, sobald
   neuer Text erscheint) und Chat-Bereich + Leser daran eichen (`lage.CHAT`).
 - Flash-Erkennung an echten 15-Bilder/s-Daten pruefen (`sichtungen.jsonl.gz`
   hat jede Position; Fehlalarme durch Dashes/Verdeckung zaehlen).
-- Briefing, Spielakte, situative Vorwarnungen live: rechtzeitig? passend?
-- Neue Stimme (Killian), Unterbrechen/Wiederholen, Notizen im Spiel pruefen.
-- Review der ersten Partie mit vollem Protokoll (15/s, Leiste, Chat) ansehen:
+- Wellen-Erkennung und Recall-Fenster live pruefen (in Partie 3 neunmal - passend?).
+- Briefing, Spielakte, situative Vorwarnungen live: rechtzeitig? passend? Dann
+  entscheiden, welche weiteren Anlaesse situativ werden (Recall-Fenster, Lane-Gegner
+  tot, Jungler gesehen) - je nachdem, wie lange Claude live braucht.
+- Stimme Killian, Unterbrechen/Wiederholen, Notizen, Fragen im Spiel pruefen.
+- Review der ersten Partie mit vollem Protokoll (15/s, Leiste, Chat, Wellen) ansehen:
   stimmen die Momente, sind die Lektionen belegt und hilfreich?
 
 ## Erledigt
+
+- Wellen-Zustand aus Vasallen-Punkten, Recall-Fenster, Wellen im Review - 87ccd7d
+- Ward-Vorschlaege (Stelle + Anlass) - bd96a61
+- Anlauf-Warnungen ("X kommt ... auf dich zu"), Port-Schutz der Server - 0341eb3
+- Ult-Timer aus Chat-Pings, Level-6-Warnung mit dem Inhalt der Ult - 278f2e0
+- Generalprobe ohne Spiel (`werkzeuge/generalprobe.py`) - fand Absturz, Flash-
+  Fehlalarme bei stehenden Bildern, zu lange Ansagen, Meta-Gerede; alles behoben;
+  Spielakte + Briefing in 22,7 s statt 46 s; Item-Namen abgesichert - cf618e1
+- Champion-Lexikon: alle 173 Champions (29 ausfuehrlich, 144 kompakt) -
+  34b8891 ... 5217081
 
 - Review nach dem Spiel: `verlauf.py` (Zeitleiste + Momente aus Daten),
   `review.py` (Claude-Lektionen mit Beleg, Gespraech), Oberflaeche
