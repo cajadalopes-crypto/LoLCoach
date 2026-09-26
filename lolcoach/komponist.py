@@ -338,7 +338,7 @@ def zauber_neu(b: Bewertung, g: GegnerLage, zauber: str, dauer: float, quelle: s
             else f"{g.champion} hat {zauber} benutzt, {sek(dauer)} weg" + (" - Minimap" if quelle == "Minimap" else ""))
     ist_lane = b.lane is not None and g.s.name == b.lane.s.name
     if zauber == "Teleport":
-        wo = f" - er ist jetzt {g.ort}" if g.ort else ""
+        wo = f" - jetzt {g.ort}" if g.ort else ""
         if ist_lane:
             return satz + f"{wo}. Er kann nicht per TP zurück: deine Lane gehört dir, Welle rein und Turm."
         return satz + f"{wo}. Dort ist jetzt einer mehr."
@@ -362,7 +362,8 @@ def kein_flash_nah(b: Bewertung, g: GegnerLage, rest: float) -> str:
         wert, _ = b.kraefte()
         v = b.vorsprung_satz()
         if wert >= 0.5:
-            return satz + (f", {v}: rein, wenn er in Reichweite kommt." if v else ": rein, wenn er in Reichweite kommt.")
+            return satz + (f", {v}: rein, sobald {g.champion} in Reichweite ist." if v
+                           else f": rein, sobald {g.champion} in Reichweite ist.")
         if wert <= -1:
             return satz + (f", aber {v}: nur traden." if v else ": nur traden.")
     return satz + ". Nutz das Fenster."
@@ -418,7 +419,7 @@ def jungler_tot(b: Bewertung, sekunden: int, objective: str | None, nah: bool, p
         name = OBJ_NAME[objective]
         if nah:
             weg = f", du bist {sek(b.zum_objective)} weg" if b.zum_objective and b.zum_objective >= 8 else ""
-            return f"{satz}: {name} jetzt, er kann nicht kontern{weg}."
+            return f"{satz}: {name} jetzt, kein Konter möglich{weg}."
         tun = chance(b, platten)
         return f"{satz}: ping {name}." + (f" Du: {tun}." if tun else "")
     tun = chance(b, platten)
@@ -497,7 +498,7 @@ def jungler_spaet(b: Bewertung, j: GegnerLage, seite: str) -> str:
         if b.kampf is not None:
             art, _ = b.kampf.urteil()
             if art == "nehmen":
-                return f"{satz}. {name} jetzt, er kann nicht rechtzeitig da sein."
+                return f"{satz}. {name} jetzt, {j.champion} ist nicht rechtzeitig da."
             if art == "abgeben":
                 return f"{satz}. {name} trotzdem nicht: zu wenige von euch in der Nähe."
         return f"{satz}. Chance auf {name} - nur, wenn dein Team in der Nähe ist."

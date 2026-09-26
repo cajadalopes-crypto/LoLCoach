@@ -152,7 +152,8 @@ class Entscheider:
             if gank == meine and (j.seit is None or j.seit >= 15):
                 aus.append(Option("gank_erwartet",
                                   f"{j.champion} hat {self.jungle.start} angefangen, {self.jungle.start_grund}: "
-                                  + ("ab Minute 2 kommt er zu dir" if b.zeit < 120 else "ab jetzt kann er kommen")
+                                  + (f"ab Minute 2 kommt {j.champion} zu dir" if b.zeit < 120
+                                     else f"ab jetzt kann {j.champion} kommen")
                                   + ". Welle nicht über die Mitte, Ward in den Fluss.",
                                   150, 3))
             elif gank != meine:
@@ -341,7 +342,7 @@ class Entscheider:
             prio = b.prio.get(lane)
             if prio == "er":
                 wert += 0.8
-                gruende.append("seine Welle drückt, er steht vorn")
+                gruende.append("die gegnerische Welle drückt, der Laner steht vorn")
             elif prio == "ihr":
                 wert -= 1.0
             lv = sum(s.level for s in freunde) - sum(g.s.level for g in gegner)
@@ -370,7 +371,7 @@ class Entscheider:
             lane = "Bot" if frei == "unten" else "Top"
             if b.prio.get(lane) != "er":        # ohne Prio dort laufen dir seine Laner in den Invade
                 aus.append(Option("invade", f"{feind_j.champion} ist {j_seite} gesehen: seine Camps {frei} sind frei "
-                                            f"- klauen, solange er drüben ist.", 55, 2))
+                                            f"- klauen, solange {feind_j.champion} drüben ist.", 55, 2))
         return aus
 
     # --- Sprechen ----------------------------------------------------------------------
