@@ -79,6 +79,14 @@ class Bahn:
                 y += dy * 400 * E
                 self.punkte.append((t, (x, y)))
                 self.flashes.append(t)
+            elif s[0] == "zuck":
+                # Fehlzuordnung wie Partie 4, 4:16 (Galio): sofort Flash-weit weg, in zwei Bildern zurueck
+                dx, dy = s[1]
+                for dt, anteil in ((0.001, 1.0), (0.07, -0.15), (0.07, -0.35)):   # gemessen: 5 px, dann halb zurueck
+                    t += dt
+                    x += dx * 380 * E * anteil
+                    y += dy * 380 * E * anteil
+                    self.punkte.append((t, (x, y)))
             elif s[0] == "dash":
                 _, einheiten, dauer, (dx, dy) = s
                 n = max(1, int(dauer / 0.01))
@@ -111,6 +119,7 @@ def szenen():
         "E + Flash (Riven)": [Bahn((150, 300), [("lauf", 1, r), ("dash", 250, 0.15, r), ("flash", ro),
                                                ("lauf", 1.5, r)])],
         "Verdeckung": [Bahn((150, 300), [("lauf", 4, r)]), Bahn((330, 300), [("steh", 1), ("lauf", 3, l)])],
+        "Fehlzuordnung zurueck": [Bahn((150, 300), [("lauf", 1.5, u), ("zuck", r), ("lauf", 1.5, u)])],
         "Gruppe mit Flash": [Bahn((200, 250), [("lauf", 1.5, u), ("flash", u), ("lauf", 1.5, u)]),
                              Bahn((230, 260), [("lauf", 3, u)]), Bahn((180, 280), [("lauf", 3, r)])],
     }

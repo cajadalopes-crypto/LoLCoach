@@ -258,15 +258,22 @@ class Verfolger:
         for schl, (guete, cx, cy, team) in gefunden.items():
             alt = self.pos.get(schl)
             v = self.verlauf.setdefault(schl, [])
-            if (k := self._kandidat.pop(schl, None)) and abs(cx - k[3]) + abs(cy - k[4]) <= 5:
-                # nach dem Sprung ruhig geblieben -> bestaetigt
-                spruenge.append(Sprung(schl[0], team, k[0], (k[1] / seite), k[3] / seite, k[4] / seite))
+            if (k := self._kandidat.pop(schl, None)) and zeit - k[0] <= 0.5:
+                # Bestaetigt erst, wenn ZWEI Bilder danach am Landepunkt bleiben und keins zum
+                # Absprung zurueckrutscht (Partie 4, 4:16: Galio "sprang" im Getuemmel mid auf ein
+                # Nachbar-Icon, das erste Bild danach lag noch 5 px am Landepunkt, das zweite halb zurueck)
+                (t0, weite0, n, lx, ly, ax, ay) = k
+                bleibt = abs(cx - lx) + abs(cy - ly) <= 6 and ((cx - ax) ** 2 + (cy - ay) ** 2) ** 0.5 >= 0.8 * weite0
+                if bleibt and n + 1 >= 2:
+                    spruenge.append(Sprung(schl[0], team, t0, weite0 / seite, lx / seite, ly / seite))
+                elif bleibt:
+                    self._kandidat[schl] = (t0, weite0, n + 1, lx, ly, ax, ay)
             if alt and zeit - alt[0] <= 0.2:
                 weite = ((cx - alt[1]) ** 2 + (cy - alt[2]) ** 2) ** 0.5
                 vorher_ruhig = len(v) >= 2 and zeit - v[-2][0] <= 0.45 and \
                     ((v[-1][1] - v[-2][1]) ** 2 + (v[-1][2] - v[-2][2]) ** 2) ** 0.5 <= 5
                 if 0.7 * self.flash_px <= weite <= 1.45 * self.flash_px and vorher_ruhig:
-                    self._kandidat[schl] = (zeit, int(weite), 0, cx, cy)
+                    self._kandidat[schl] = (zeit, weite, 0, cx, cy, alt[1], alt[2])
             self.pos[schl] = (zeit, cx, cy, team or (alt[3] if alt else None))
             v.append((zeit, cx, cy))
             del v[:-6]

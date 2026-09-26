@@ -193,7 +193,9 @@ class _Kamera:
 
 
 # Chat unten links, grosszuegig (Anteil des Spielfensters) - genau geeicht wird an einer Partie.
-CHAT = (0.0, 0.50, 0.32, 0.90)
+# Chat-Fenster (Anteile des Spielfensters), geeicht an Partie 4 (46 Chat-Bilder, 4K): die neueste Zeile
+# steht bei 0.89, vier Zeilen reichen bis 0.83; oberhalb von 0.70 nur Spielwelt (Namensschilder als Rauschen)
+CHAT = (0.0, 0.70, 0.32, 0.93)
 BILDER_BEHALTEN = 20 * 60     # Sekunden: aeltere Minimap-Bilder der laufenden Partie werden entfernt
 
 
