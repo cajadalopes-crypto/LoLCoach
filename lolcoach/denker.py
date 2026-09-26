@@ -103,7 +103,9 @@ def kampf_faktoren(b: Bewertung) -> list[Faktor]:
         if b.ult is not False:
             f.append(Faktor(1.8, "ult", "deine Ult", "ist", "da, seine noch nicht"))
         else:
-            f.append(Faktor(0.3, "ult", "deine Ult", "lädt", "noch"))
+            # zaehlt leicht, wird aber nicht gesagt (< 0.3): direkt nach dem Level-up ist R meist nur noch nicht
+            # geskillt - "trade hart: deine Ult laedt noch" (Nachlauf Wukong 5:05) war kein Grund
+            f.append(Faktor(0.25, "ult", "deine Ult", "lädt", "noch"))
     elif er.level >= 6 > ich.level:
         f.append(Faktor(-1.8, "ult", n, "hat", "schon die Ult, du noch nicht"))
     else:

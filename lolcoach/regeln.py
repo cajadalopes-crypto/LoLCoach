@@ -282,7 +282,7 @@ class Regelwerk:
                 text = (komponist.zahlen(self.b, namen, fenster, objs[0], wir, die) if self.b is not None
                         else z["vorteil_objective"].format(anzahl=len(tot), sekunden=fenster,
                                                            objective=_objective_name(objs[0], p)))
-                yield Ansage(text, SOFORT, f"jetzt:{objs[0]}", gueltig=6, sperre=20)
+                yield Ansage(text, SOFORT, f"jetzt:{objs[0]}", gueltig=6, sperre=45)   # 20 s: 14:58/15:19 zweimal
             elif wir > die:
                 text = (komponist.zahlen(self.b, namen, fenster, None, wir, die) if self.b is not None
                         else z["vorteil_turm"].format(anzahl=len(tot), sekunden=fenster))
@@ -309,7 +309,7 @@ class Regelwerk:
             text = (komponist.jungler_tot(self.b, int(j.respawn), objs[0], nah, self._platten_moeglich(p)) if mit_b
                     else self.m["jungler_tot_objective"]["nah" if nah else "fern"].format(
                         champion=j.champion, sekunden=int(j.respawn), objective=_objective_name(objs[0], p)))
-            yield Ansage(text, SOFORT if nah else WICHTIG, f"jetzt:{objs[0]}", gueltig=6, sperre=20)
+            yield Ansage(text, SOFORT if nah else WICHTIG, f"jetzt:{objs[0]}", gueltig=6, sperre=45)
         elif mit_b:
             yield Ansage(komponist.jungler_tot(self.b, int(j.respawn), None, False, self._platten_moeglich(p)),
                          WICHTIG, "jungler_tot", gueltig=8)
@@ -360,8 +360,10 @@ class Regelwerk:
                     yield Ansage(text, WICHTIG, f"level{stufe}", gueltig=8)
                 elif ich.level >= stufe > ich_alt.level and g.level < stufe:
                     if u is not None:
+                        # die Gruende des letzten Urteils nicht noch einmal (Nachlauf Wukong 4:48/5:05)
+                        eben = set(getattr(self, "_fenster_werte", {})) if p.zeit - self._fenster_gesagt < 30 else set()
                         text = denker.fenster_satz(self.b, u, anlass=f"Du bist zuerst Level {stufe}, {g.champion} "
-                                                                     f"noch {g.level}", ohne={"level"})
+                                                                     f"noch {g.level}", ohne={"level"} | eben)
                         self._fenster_gesagt, self._fenster_art = p.zeit, u.art
                     else:
                         text = (komponist.level(self.b, stufe, True, gl) if gl
