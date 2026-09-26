@@ -144,7 +144,10 @@ class Bewertung:
         war oder sichtbar auf dich zulaeuft. Danach (ab 14:00) kann jeder kommen."""
         if self.zeit >= 840 or g.sichtbar or g.kommt_naeher:
             return True
-        if g.s.rolle in ("JUNGLE", "MIDDLE", "UTILITY") or (self.lane and g.s.name == self.lane.s.name):
+        if g.s.rolle == "JUNGLE" or (self.lane and g.s.name == self.lane.s.name):
+            return True
+        # Mid und Support wandern - aber kaum vor Minute 4 (Camille-Partie 26.09., 2:29: "Anivia fehlt" oben)
+        if g.s.rolle in ("MIDDLE", "UTILITY") and self.zeit >= 240:
             return True
         return g.abstand is not None and g.abstand <= 4000
 
@@ -341,16 +344,32 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
     return b
 
 
+OBEN = ("larven", "herold", "baron")
+
+
 def naechstes_objective(p: Partie, bis: float = 150) -> tuple[str, float] | None:
+    """Das Objective, das fuer DICH zaehlt: in der Lane-Phase zuerst eines auf deiner Kartenseite
+    (Top: Larven/Herold/Baron, Bot: Drache), das bald kommt, dann eines dort, das lebt; sonst das
+    naechste ueberhaupt. Ein lebender Drache verdeckte sonst die Larven fuer den Toplaner."""
     from . import regeln
-    beste = None
+    kandidaten = []
     for schl in regeln._lebende_objectives(p, bis=bis):
         n = p.naechster_spawn(schl)
-        if n is None:
-            continue
-        if beste is None or n < beste[1] + p.zeit:
-            beste = (schl, n - p.zeit)
-    return beste
+        if n is not None:
+            kandidaten.append((schl, n - p.zeit))
+    if not kandidaten:
+        return None
+    rolle = p.ich.rolle if p.ich else ""
+    if p.zeit < 840 and rolle in ("TOP", "BOTTOM", "UTILITY"):
+        meine = [k for k in kandidaten if (k[0] in OBEN) == (rolle == "TOP")]
+        kommt = [k for k in meine if k[1] > 0]
+        if kommt:
+            return min(kommt, key=lambda k: k[1])
+        if meine:
+            return min(meine, key=lambda k: k[1])
+    kommt = [k for k in kandidaten if k[1] > 0]
+    lebt = [k for k in kandidaten if k[1] <= 0]
+    return min(kommt, key=lambda k: k[1]) if kommt and not lebt else min(kandidaten, key=lambda k: k[1])
 
 
 def _gegner_lage(s: Spieler, p: Partie, lb, ich_pos) -> GegnerLage:

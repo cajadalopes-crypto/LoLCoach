@@ -31,8 +31,11 @@ def sek(s: float) -> str:
     s = max(1, int(round(s)))
     if s < 90:
         return f"{s} Sekunde" + ("" if s == 1 else "n")
-    m, r = divmod(s, 60)
-    return f"{m} Minuten" if r < 15 else (f"{m} Minuten 30" if r < 45 else f"{m + 1} Minuten")
+    if s >= 240:     # lange Zeiten: halbe Minuten reichen
+        m, r = divmod(s, 60)
+        return f"{m} Minuten" if r < 15 else (f"{m} Minuten 30" if r < 45 else f"{m + 1} Minuten")
+    m, r = divmod(int(round(s / 5) * 5), 60)    # 1:45 -> "1 Minute 45" (auf 5 s)
+    return f"{m} Minute{'n' if m > 1 else ''}" + (f" {r}" if r else "")
 
 
 def wohin(ort: str) -> str:
@@ -98,6 +101,8 @@ def _wann(g: GegnerLage) -> str:
 
 
 def _rueckzug(b: Bewertung) -> str:
+    if b.leben is not None and b.leben < 0.2:
+        return "Hinter den Turm und back"      # mit 5 Prozent "bleib am Turm" hilft nichts (Camille-Partie 13:21)
     if b.unter_eigenem_turm:
         return "Bleib am Turm"
     if b.zum_turm is not None and b.zum_turm >= 6:
@@ -188,7 +193,8 @@ def anlauf(b: Bewertung, kommen: list[tuple[GegnerLage, str]]) -> str:
         return f"{_namen([g.champion for g, _ in kommen])} kommen auf dich zu{wann}. {_rueckzug(b)}."
     satz = f"{erster.champion} kommt {woher} auf dich zu{wann}."
     if b.mitspieler_nah:
-        return satz + f" {_namen([s.champion for s in b.mitspieler_nah])} ist bei dir - zusammen bleiben."
+        n = [s.champion for s in b.mitspieler_nah]
+        return satz + f" {_namen(n)} {'ist' if len(n) == 1 else 'sind'} bei dir - zusammen bleiben."
     ist_lane = b.lane is not None and erster.s.name == b.lane.s.name
     wert = b.kraefte()[0] if ist_lane else None
     if wert is not None and wert >= 1.5 and not gefahr(b, ausser=erster) and (b.leben or 1) >= 0.6:
@@ -199,10 +205,12 @@ def anlauf(b: Bewertung, kommen: list[tuple[GegnerLage, str]]) -> str:
 
 def leben(b: Bewertung, prozent: int) -> str:
     satz = f"{prozent} Prozent Leben"
-    nah = [g for g in b.bedrohung(12) if not g.s.tot]
+    nah = [g for g in b.bedrohung(12) if not g.s.tot and g.seit is not None and g.seit <= 15]
     if nah:
         g = nah[0]
         return satz + f", {g.champion} {_wann(g)}. Sofort zurück."
+    if prozent < 15:
+        return satz + ": sofort zurück, jeder Treffer tötet dich."
     j = b.jungler
     niemand = (j is None or j.s.tot or (j.ankunft is not None and not j.unbekannt and j.ankunft >= RUHE_SEKUNDEN))
     offen = [g for g in b.unbekannte() if not g.s.tot]
@@ -215,8 +223,14 @@ def leben(b: Bewertung, prozent: int) -> str:
 
 def lane_tot(b: Bewertung, champion: str, sekunden: int, platten: bool) -> str:
     satz = f"{champion} tot, {sekunden} Sekunden"
-    if andere := gefahr(b):
-        return satz + f". {andere[0].champion} {_wann(andere[0])} - Welle nur bis zum Turm."
+    andere = gefahr(b)
+    frisch = [x for x in andere if x.seit is not None and x.seit <= 15]
+    if frisch:   # eben erst nah gesehen: der kommt wirklich
+        return satz + f". {frisch[0].champion} {_wann(frisch[0])} - Welle nur bis zum Turm."
+    if andere:   # nur Worst Case (lange nicht gesehen): Platten ja, aber mit Blick auf den Fluss
+        x = andere[0]
+        return (satz + f": Welle rein" + (", Platten" if platten else "")
+                + f" - aber {x.champion} seit {sek(x.seit or b.zeit)} nicht gesehen, raus, sobald {x.champion} auftaucht.")
     tun = "Welle in den Turm" + (", Platten" if platten else "")
     if ob := _objective_erreichbar(b):
         tun += f", dann {OBJ_NAME[ob[0]]}"

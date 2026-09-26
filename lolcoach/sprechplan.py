@@ -16,6 +16,7 @@ from .regeln import HINWEIS, SOFORT, Ansage
 ZEICHEN_PRO_SEKUNDE = 14.0   # Windows-Stimme bei Rate 1, grob gemessen
 PAUSE = 2.0                  # zwischen zwei Saetzen
 RUHE_VOR_HINWEIS = 8.0       # Hinweise nur, wenn es so lange still war
+THEMA_SPERRE = 30.0          # zwei Ansagen zum selben Thema (back, druck, gefahr, objective) nicht so kurz hintereinander
 
 
 class Sprechplan:
@@ -26,6 +27,7 @@ class Sprechplan:
         self.zuletzt: dict[str, float] = {}
         self.gesagt: list[Ansage] = []
         self._einwurf: list[Ansage] = []
+        self.thema_zuletzt: dict[str, float] = {}
         self._schloss = threading.Lock()
 
     def einwerfen(self, a: Ansage) -> None:
@@ -43,7 +45,11 @@ class Sprechplan:
             self.warte.append(a)
 
     def takt(self, zeit: float) -> Ansage | None:
-        self.warte = [a for a in self.warte if zeit - a.zeit <= a.gueltig]
+        # Dasselbe Thema eben erst gesagt ("2000 Gold: ... back" 9:47 und 9:53, Camille-Partie 26.09.):
+        # die zweite faellt weg - ausser sie ist SOFORT (Gefahr darf immer)
+        self.warte = [a for a in self.warte if zeit - a.zeit <= a.gueltig
+                      and not (a.thema and a.prio < SOFORT
+                               and zeit - self.thema_zuletzt.get(a.thema, -1e9) < THEMA_SPERRE)]
         if not self.warte:
             return None
         a = max(self.warte, key=lambda a: (a.prio, a.zeit))
@@ -53,6 +59,8 @@ class Sprechplan:
         self.warte.remove(a)
         a.gesprochen = zeit
         self.zuletzt[a.schluessel] = zeit
+        if a.thema:
+            self.thema_zuletzt[a.thema] = zeit
         self.frei_ab = zeit + len(a.text) / ZEICHEN_PRO_SEKUNDE + PAUSE
         self.sprecher.sage(a.text, dringend=a.prio == SOFORT)
         self.gesagt.append(a)

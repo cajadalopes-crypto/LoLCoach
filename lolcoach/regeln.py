@@ -12,6 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from . import bewertung, ddragon, komponist, wissen
+from .entscheider import Entscheider
 from .zustand import Partie, Spieler, gegenteam, struktur
 
 SOFORT, WICHTIG, HINWEIS = 3, 2, 1
@@ -29,6 +30,7 @@ class Ansage:
     situativ: bool = False  # hat Vorlauf: der Stratege darf sie aus der Lage neu formulieren
     kontext: str = ""       # Fakten fuer den Strategen statt der Lage (z. B. Todesanalyse)
     frist: float | None = None  # so lange darf der Stratege formulieren (sonst VEREDELN_HOECHSTENS)
+    thema: str = ""         # gleiche Themen sperren sich im Sprechplan (sprechplan.THEMA_SPERRE): back, druck, ...
 
 
 def _objective_name(schl: str, p: Partie) -> str:
@@ -86,6 +88,7 @@ class Regelwerk:
         self._spike_bei = 0.0
         self.b: bewertung.Bewertung | None = None      # die Lagebewertung dieses Takts (bewertung.py)
         self._zauber_gesagt: dict[str, float] = {}      # Spielername -> zuletzt ein Verbrauch gemeldet
+        self.entscheider = Entscheider()               # der Plan zwischen den Ereignissen (entscheider.py)
 
     def pruefe(self, p: Partie, lage=None) -> list[Ansage]:
         """`lage`: Lagebild aus der Minimap (lage.Lagebild) oder None ohne Bild."""
@@ -99,6 +102,8 @@ class Regelwerk:
         self.b = None
         if lage is not None and getattr(lage, "aktiv", False):
             try:
+                self.entscheider.jungle.neu(p, lage)
+                lage.jungle = self.entscheider.jungle      # fuer Claude (antworten.lage_text)
                 self.b = bewertung.bewerte(p, lage)
             except Exception as e:   # die Bewertung darf keine Regel mitreissen - dann gelten die alten Saetze
                 if not getattr(self, "_bewertung_fehler", False):
@@ -108,7 +113,7 @@ class Regelwerk:
                       self._level, self._items, self._gold, self._cs, self._tod,
                       self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf,
                       self._ward, self._recall_fenster, self._tief_ohne_sicht, self._kontrollauge,
-                      self._objective_start):
+                      self._objective_start, self._plan):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 ansagen.append(a)
@@ -221,7 +226,7 @@ class Regelwerk:
                 text = komponist.vorwarnung(self.b, schl, p.ich.rolle, abschnitt is self.m["vorwarnung"].get("drache_seele"),
                                             p.ich.rolle in self.m["seiten"][schl], tp)
             if text:
-                yield Ansage(text, WICHTIG, f"vorwarnung:{schl}", gueltig=25, situativ=True)
+                yield Ansage(text, WICHTIG, f"vorwarnung:{schl}", gueltig=25, situativ=True, thema="objective")
 
     def _objectives(self, p: Partie, bis: float = 0.0) -> list[str]:
         return _lebende_objectives(p, bis, self.m["seiten"]["nicht_mehr_vor_weg"])
@@ -313,7 +318,7 @@ class Regelwerk:
                 elif ich.level >= stufe > ich_alt.level and g.level < stufe:
                     text = (komponist.level(self.b, stufe, True, gl) if gl
                             else cfg[f"ich_{stufe}"].format(champion=g.champion))
-                    yield Ansage(text, WICHTIG, f"level{stufe}", gueltig=8)
+                    yield Ansage(text, WICHTIG, f"level{stufe}", gueltig=8, thema="druck")
         j, j_alt = p.jungler(gegenteam(p.mein_team)), v.jungler(gegenteam(v.mein_team))
         if j and j_alt and j.level >= 6 > j_alt.level and p.ich.rolle != "JUNGLE":
             text = cfg["jungler_6"].format(champion=j.champion)
@@ -360,11 +365,11 @@ class Regelwerk:
         if p.gold >= cfg["viel"]:
             text = (komponist.recall(self.b, "viel") if self.b is not None
                     else cfg["satz_viel"].format(gold=int(p.gold // 100 * 100)))
-            yield Ansage(text, WICHTIG, "gold_viel", gueltig=5, sperre=cfg["erneut_nach_viel"])
+            yield Ansage(text, WICHTIG, "gold_viel", gueltig=5, sperre=cfg["erneut_nach_viel"], thema="back")
         elif p.gold >= cfg["schwelle"]:
             text = (komponist.recall(self.b, "gold") if self.b is not None
                     else cfg["satz"].format(gold=int(p.gold // 100 * 100)))
-            yield Ansage(text, HINWEIS, "gold", gueltig=5, sperre=cfg["erneut_nach"])
+            yield Ansage(text, HINWEIS, "gold", gueltig=5, sperre=cfg["erneut_nach"], thema="back")
 
     def _kontrollauge(self, p: Partie, v: Partie):
         """Nach dem Einkauf ohne Kontroll-Auge im Inventar: eins mitnehmen (75 Gold). Wardscore
@@ -470,7 +475,7 @@ class Regelwerk:
         elif meine_seite and rolle != "JUNGLE":
             text = (komponist.jungler_gesehen(self.b, jl, "seite", platten) if jl
                     else cfg["seine_seite"].format(champion=j.champion, ort=ort))
-            yield Ansage(text, WICHTIG, "jungler_sicht", gueltig=4, sperre=30)
+            yield Ansage(text, WICHTIG, "jungler_sicht", gueltig=4, sperre=30, thema="gefahr")
         elif p.zeit > cfg["lane_phase_bis"] and ("Mitte" in ort or "Mid-Lane" in ort):
             return  # spaet und mittig: keine Kartenseite, die frei waere
         elif jl and p.zeit <= cfg["lane_phase_bis"]:
@@ -517,7 +522,7 @@ class Regelwerk:
         gl = self._gl(g)
         text = (komponist.lane_fehlt(self.b, gl, int(p.zeit - seit), self._platten_moeglich(p), self._richtung(g, p))
                 if gl else cfg["fehlt"].format(champion=g.champion, sekunden=int(p.zeit - seit)))
-        yield Ansage(text, WICHTIG, "lane_fehlt", gueltig=6, sperre=45)
+        yield Ansage(text, WICHTIG, "lane_fehlt", gueltig=6, sperre=45, thema="gefahr")
 
     def _zauber(self, p: Partie, v: Partie):
         """Flash & Co.: Verbrauch melden, vor Kaempfen erinnern, Rueckkehr melden.
@@ -533,6 +538,12 @@ class Regelwerk:
                 t.gemeldet = True
                 self._zauber_gesagt[t.name] = p.zeit
                 gl = self._gl(next((s for s in p.gegner() if s.name == t.name), None))
+                # Minimap-Spruenge sind weniger sicher als Carlos' Pings: laut nur fuer Lane-Gegner, Jungler und
+                # wer nah bei dir ist - die anderen laufen still mit (Dashboard, Fragen). Camille-Partie 26.09.:
+                # Anivia/Rakan-"Flashes" in Minute 2 fuellten die Sprechzeit.
+                if (t.quelle == "Minimap" and t.name not in wichtig and gl is not None
+                        and (gl.abstand is None or gl.abstand > 5000)):
+                    continue
                 if gl:
                     text = komponist.zauber_neu(self.b, gl, "Ult" if t.zauber == "R" else name,
                                                 t.zurueck - p.zeit, t.quelle)
@@ -553,7 +564,8 @@ class Regelwerk:
                     gl = self._gl(s)
                     text = (komponist.kein_flash_nah(self.b, gl, rest) if gl
                             else cfg["kampf"].format(champion=s.champion, dauer=_minuten(rest)))
-                    yield Ansage(text, WICHTIG, f"ohneflash:{s.name}", gueltig=4, sperre=cfg["kampf_erneut"])
+                    yield Ansage(text, WICHTIG, f"ohneflash:{s.name}", gueltig=4, sperre=cfg["kampf_erneut"],
+                                 thema="druck")
                 ult = self.lage.zauber.fehlt(s, "R", p.zeit)
                 if ult and ult > 10 and nah:
                     yield Ansage(cfg["kampf_ult"].format(champion=s.champion, dauer=_minuten(ult)), WICHTIG,
@@ -710,7 +722,8 @@ class Regelwerk:
                     tp = "SummonerTeleport" in p.ich.zauber or (
                         p.ich.rolle == "TOP" and p.zeit >= self.m["rollenquest"]["top_teleport_spaetestens"])
                     dazu = komponist.obj_dazu(self.b, ich_weit <= cfg["hin_bis"], tp)
-                yield Ansage(f"{text} {dazu}".strip(), WICHTIG, f"objstart:{schl}", gueltig=15, sperre=20)
+                yield Ansage(f"{text} {dazu}".strip(), WICHTIG, f"objstart:{schl}", gueltig=15, sperre=20,
+                             thema="objective")
 
     def _tief_ohne_sicht(self, p: Partie, v: Partie):
         """Tief auf seiner Seite, waehrend Gegner (oder in der Lane-Phase der Jungler) lange
@@ -777,7 +790,7 @@ class Regelwerk:
         self._tief_gewarnt = p.zeit
         # 10 s gueltig: solange er tief steht, stimmt der Satz (mit 4 s fiel er 20:53 hinter
         # einer anderen Ansage weg - 25 s vor dem Tod)
-        yield Ansage(text, WICHTIG, "tief", gueltig=10, sperre=cfg["sperre"])
+        yield Ansage(text, WICHTIG, "tief", gueltig=10, sperre=cfg["sperre"], thema="gefahr")
 
     def _recall_fenster(self, p: Partie, v: Partie):
         """Deine Welle laeuft in seinen Turm und du hast Gold oder wenig Leben: jetzt zurueck,
@@ -802,7 +815,13 @@ class Regelwerk:
             self._recallfenster_bei = p.zeit  # die allgemeine Gold-Erinnerung schweigt dann
             text = (komponist.recall(self.b, "welle") if self.b is not None
                     else cfg["satz"].format(gold=int((p.gold or 0) // 100 * 100)))
-            yield Ansage(text, WICHTIG, "recallfenster", gueltig=6, sperre=cfg["erneut_nach"])
+            yield Ansage(text, WICHTIG, "recallfenster", gueltig=6, sperre=cfg["erneut_nach"], thema="back")
+
+    def _plan(self, p: Partie, v: Partie):
+        """Der Plan zwischen den Ereignissen - siehe entscheider.py."""
+        if self.b is not None and not self._ich_weg(p):
+            if a := self.entscheider.pruefe(self.b, self._platten_moeglich(p)):
+                yield a
 
     def _tod(self, p: Partie, v: Partie):
         if not (p.ich.tot and not v.ich.tot):

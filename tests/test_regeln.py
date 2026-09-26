@@ -46,7 +46,10 @@ def mit_minimap():
     assert not any("Kartenseite" in x and ("Mitte" in x or "Mid-Lane" in x) for _, x in um)
     # tief ohne Sicht: vor dem Tod 19:55 gewarnt, aber nicht in einem fort (einmal je Vorstoss)
     tief = [t for t, x in um if x.startswith("Du stehst tief")]
-    assert any(1170 <= t <= 1195 for t in tief) and len(tief) <= 10, tief
+    # vor dem Tod gewarnt - von der Tief-Regel oder vom Entscheider ("Vi seit 6 Sekunden weg ... Jetzt zurueck",
+    # 19:36, genauer als "tief"; die Themen-Sperre laesst dann nur einen der beiden sprechen)
+    zurueck = [t for t, x in um if "Jetzt zurück" in x]
+    assert any(1170 <= t <= 1195 for t in tief + zurueck) and len(tief) <= 10, (tief, zurueck)
     print(f"Partie 2 mit Minimap: {len(gesagt)} Ansagen, OK")
 
 

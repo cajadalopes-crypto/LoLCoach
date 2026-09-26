@@ -115,6 +115,10 @@ class Zaubertimer:
             if quelle == "Chat" and alt.quelle == "Minimap":
                 alt.quelle = "Chat"  # Chat bestaetigt die Minimap
             return None
+        if alt and alt.zurueck > zeit and quelle == "Minimap":
+            # Flash ist laut Timer noch weg - ein neuer Sprung kann kein Flash sein (Camille-Partie 26.09.:
+            # Rumble "flasht" 11:36, sein Flash war seit 7:16 weg). Lieber stumm als falsch.
+            return None
         t = Timer(spieler.name, spieler.champion, zauber, zurueck or zeit + cooldown(zauber, spieler, zeit), quelle, zeit)
         self.timer[schl] = t
         return t

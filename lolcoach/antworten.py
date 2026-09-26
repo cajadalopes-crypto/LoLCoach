@@ -216,6 +216,8 @@ def lage_text(p: Partie, lagebild=None) -> str:
             from . import bewertung
             if b := bewertung.bewerte(p, lagebild):
                 zeilen.append(b.text())
+            if (jt := getattr(lagebild, "jungle", None)) and (jtext := jt.text(p.zeit, p.ich.rolle)):
+                zeilen.append(jtext)
         except Exception as e:
             print(f"  Bewertung fuer Claude fehlgeschlagen: {e}", flush=True)
     # "Warum bin ich gestorben?" - die Fakten der Todesanalyse, drei Minuten lang
