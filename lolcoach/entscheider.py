@@ -136,8 +136,9 @@ class Entscheider:
                 wann = komponist._wann(x)
                 if len(knapp) >= 2:
                     wann = wann.replace("kann", "können", 1)
+                grund = verwundbar[0] if verwundbar else komponist.todespreis(b)
                 aus.append(Option("zurueck", f"{wer} {wann}, du brauchst {sek(b.zum_turm)} zum Turm. "
-                                             f"Jetzt zurück" + (f", {verwundbar[0]}." if verwundbar else "."),
+                                             f"Jetzt zurück" + (f", {grund}." if grund else "."),
                                   200, 2 + bool(verwundbar), dringend=True))
 
         # 2) Frueher Jungler-Plan: Startseite bekannt -> wo kommt der erste Gank?

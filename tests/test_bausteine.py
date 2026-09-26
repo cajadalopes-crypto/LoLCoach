@@ -244,6 +244,10 @@ def bewertung_und_plan():
     assert antworten.sofort("Was soll ich jetzt machen?", p, lb) == plan.satz
     assert antworten.sofort("Was soll ich kaufen?", p, lb) is None
     assert komponist.sek(105) == "1 Minute 45" and komponist.sek(1) == "1 Sekunde"
+    # Todeszeit (Wiki Death): L9 @20:00 = 29,2 s, L18 @55:00 = 78,75 s
+    assert round(bewertung.todeszeit(9, 1200), 1) == 29.2 and round(bewertung.todeszeit(18, 3300), 2) == 78.75
+    b.tod_kostet, b.objective = 45.0, ("baron", 30.0)
+    assert komponist.todespreis(b) == "ein Tod kostet jetzt 45 Sekunden, Baron in 30 Sekunden"
 
 
 def platten_lesen():

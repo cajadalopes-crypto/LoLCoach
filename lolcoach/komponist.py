@@ -62,6 +62,18 @@ def _ist(g: GegnerLage) -> str:
     return f"{g.champion} ist {g.ort}" if g.ort in ("oben", "unten") else f"{g.champion} {g.ort}"
 
 
+def todespreis(b: Bewertung) -> str:
+    """Ab ~30 s Todeszeit (Reasoning #27 "Death Value"): was ein Tod JETZT kostet - mit dem
+    Objective, das in dieser Zeit kommt. '' wenn es nicht zaehlt."""
+    if b.tod_kostet < 30:
+        return ""
+    satz = f"ein Tod kostet jetzt {sek(b.tod_kostet)}"
+    ob = b.objective
+    if ob and ob[1] <= b.tod_kostet + 10:
+        satz += f", {OBJ_NAME[ob[0]]} " + ("lebt" if ob[1] <= 0 else f"in {sek(ob[1])}")
+    return satz
+
+
 def verwundbar(b: Bewertung) -> list[str]:
     """Warum du gerade nicht nach vorn gehoerst - das Wichtigste zuerst, kurz."""
     aus = []
@@ -345,6 +357,8 @@ def kein_flash_nah(b: Bewertung, g: GegnerLage, rest: float) -> str:
 def tief(b: Bewertung, namen: str, sind: str, sekunden: int, sie: str) -> str:
     satz = f"Du stehst tief, {namen} seit {sekunden} Sekunden weg."
     gruende = [x for x in verwundbar(b) if "weit vorn" not in x and "Turm" not in x]
+    if preis := todespreis(b):
+        gruende.append(preis)
     ziel = (f" Zurück, {sek(b.zum_turm)} bis zum Turm" if b.zum_turm and b.zum_turm >= 6
             else f" Zurück, bis du {sie} siehst")
     return satz + ziel + (f", {gruende[0]}." if gruende else ".")

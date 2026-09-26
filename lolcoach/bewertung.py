@@ -69,6 +69,20 @@ def tempo(s: Spieler) -> float:
     return (basis + flach) * (1 + prozent)
 
 
+def todeszeit(level: int, zeit: float) -> float:
+    """Sekunden tot, wenn man jetzt stirbt (Wiki Death, wissen/mechanik.toml [tod])."""
+    import math
+    from . import wissen
+    cfg = wissen.lade("mechanik")["tod"]
+    brw = cfg["brw"][max(1, min(18, level)) - 1]
+    minute = zeit / 60
+    tif = 0.0
+    for stufe in cfg["tif"]:
+        if minute >= stufe["ab"]:
+            tif = stufe["basis"] + math.ceil(2 * (minute - stufe["ab"])) * stufe["je_halbe_minute"]
+    return brw * (1 + min(tif, cfg["tif_max"]) / 100)
+
+
 def stehende_tuerme(p: Partie) -> dict[tuple[str, str, str], tuple[float, float]]:
     weg = set()
     for e in p.kills_von("TurretKilled"):
@@ -132,6 +146,7 @@ class Bewertung:
     platten_eigen: int | None = None    # ... an deinem vordersten Turm
     prio: dict[str, str | None] = field(default_factory=dict)   # Lane -> "ihr" / "er" / None (Welle steht)
     kampf: "Kampflage | None" = None    # Kampf um das naechste Objective (wenn es in <= 90 s kommt oder lebt)
+    tod_kostet: float = 0.0     # so lange waerst du tot, wenn du jetzt stirbst
 
     # --- Ableitungen -------------------------------------------------------------
 
@@ -237,6 +252,8 @@ class Bewertung:
             ich.append("STEHT UNTER GEGNERISCHEM TURM")
         if self.tiefe is not None:
             ich.append(f"Lane-Position {self.tiefe:.2f} (0 eigene Basis, 1 gegnerische)")
+        if self.tod_kostet:
+            ich.append(f"ein Tod jetzt = {int(self.tod_kostet)} s grau")
         if ich:
             z.append("Du: " + ", ".join(ich) + (f", {self.ort}" if self.ort else "") + ".")
         for g in sorted(self.gegner, key=lambda g: (g.ankunft is None, g.ankunft or 0)):
@@ -297,6 +314,10 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
         b.leben_abs = int(p.werte.get("currentHealth", 0))
         b.leben = b.leben_abs / m
     b.mein_tempo = float(p.werte.get("moveSpeed") or tempo(p.ich))
+    try:
+        b.tod_kostet = todeszeit(p.ich.level, p.zeit)
+    except (KeyError, IndexError, TypeError):
+        pass
     feind, mein = gegenteam(p.mein_team), p.mein_team
     tuerme = stehende_tuerme(p)
     lb = lagebild if lagebild is not None and getattr(lagebild, "aktiv", False) else None
