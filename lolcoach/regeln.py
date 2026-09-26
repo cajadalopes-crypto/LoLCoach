@@ -616,7 +616,19 @@ class Regelwerk:
         if cfg["item"] in p.ich.items or p.gold < 75 or len(plaetze) >= 6:
             return
         text = komponist.kontrollauge(self.b, p.ich.rolle) if self.b is not None else ""
-        yield Ansage(text or cfg["satz"], HINWEIS, "kontrollauge", gueltig=10, sperre=cfg["sperre"])
+        # kaufen kann er es nur im Brunnen - hat er ihn sichtbar verlassen oder es schon gekauft, faellt der Satz
+        # (unbekannte Position: gilt weiter)
+        def noch_im_laden() -> bool:
+            q = self.vorher
+            if q is None or not q.ich:
+                return True
+            if cfg["item"] in q.ich.items:
+                return False
+            from . import minimap
+            g = self.lage.gesehen(q.ich) if self.lage is not None else None
+            return not (g and q.zeit - g[0] < 3 and "Basis" not in minimap.ort(g[1], g[2], q.mein_team))
+        yield Ansage(text or cfg["satz"], HINWEIS, "kontrollauge", gueltig=10, sperre=cfg["sperre"],
+                     pruefe=noch_im_laden)
 
     def _inventar_voll(self, p: Partie) -> bool:
         """Sechs Plaetze belegt, ohne Trinket und Verbrauchsgueter (Partie 3, 30:25)."""
@@ -921,8 +933,12 @@ class Regelwerk:
             else:
                 eigen = (st["seite"] == "blau") == blau
                 ort = f"an {'deinem' if eigen else 'seinem'} {st['name']}"
+            # "du bist gerade dort" stimmt nur, solange du dort bist
+            def noch_dort(st=st, r=1.5 * w["radius"]) -> bool:
+                g = self.lage.gesehen(self.vorher.ich) if self.vorher is not None and self.vorher.ich else None
+                return g is None or abs(st["x"] - g[1]) + abs(st["y"] - g[2]) <= r
             yield Ansage(cfg["satz"].format(ort=ort, grund=anlaesse[zweck]), HINWEIS,
-                         f"ward:{st['name']}:{st['seite']}", gueltig=6, sperre=cfg["erneut_nach"])
+                         f"ward:{st['name']}:{st['seite']}", gueltig=6, sperre=cfg["erneut_nach"], pruefe=noch_dort)
             return
 
     GRUBEN = {"drache": (0.675, 0.71, "Drachengrube"), "baron": (0.325, 0.29, "Baron-Grube"),
