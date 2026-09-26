@@ -76,6 +76,12 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
   ("Voll-Clear", Smite) aus der ersten Partie blieben (3da384b). Aufnahme 2026-09-26_230520 enthaelt deshalb zwei
   Partien (74 Schnappschuesse Nasus/Rumble-Partie, dann Sion/Ekko) - fuer Auswertungen die ersten 74 abschneiden.
   Nach der naechsten Partie: `python werkzeuge/verzoegerung_live.py` - kommt die Stimme jetzt unter 0,5 s?
+  Danach, gleiche Partie (Carlos: "du bist sowas von in der Vergangenheit", "die Top-Aktualitaet ist das
+  Wichtigste ueberhaupt", "was ist denn mein Tower?"): Antippen der Sprechtaste hielt die Stimme minutenlang an
+  (9e6b0b8); jeder Satz prueft sich vor und waehrend des Sprechens, bricht ab und das Neue beginnt mit "Ach nee"
+  (f2f8f10); Tuerme heissen "Top-Tier-1-Turm" (9331d68); Gegner am Drachen bei weitem Weg: "zu weit fuer dich"
+  (8fa9652); Bruchstuecke ohne Frage bekommen keine Antwort (b5e7874). Live pruefen: kommt "Ach nee" an der
+  richtigen Stelle, bricht nichts ab, was noch stimmt (Fehlabbrueche = Satz fehlt ganz)?
 
 - NEU 26.09. nachts: (1) jede Ansage protokolliert live ihren ersten Ton und ob sie abgebrochen wurde - nach der
   Partie `python werkzeuge/verzoegerung_live.py` (Warten im Plan vs. Stimme, je Vorrang; das Mass fuer "geisteskrank
