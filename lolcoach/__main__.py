@@ -21,7 +21,7 @@ from . import ansicht, aufzeichnung, bericht, lage, liveapi, llm, regeln, sprech
 
 
 def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, sicht=None,
-              alle: int = 5, nur_coach: bool = False) -> sprechplan.Sprechplan:
+              anzeige=None, alle: int = 5, nur_coach: bool = False) -> sprechplan.Sprechplan:
     """Gemeinsamer Kern fuer Live und Aufnahme.
 
     `quelle` liefert (Wanduhr, Rohdaten); `sicht` hat `zwischen(bis, champions)`
@@ -54,11 +54,24 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
         plan.neu(werk.pruefe(p, lagebild))
         if a := plan.takt(p.zeit):
             print(f"{ansicht.uhr(p.zeit)}  >> {a.text}", flush=True)
+        if anzeige:
+            anzeige.aktualisiere(p, lagebild, plan.gesagt)
         if n % alle == 0 and not nur_coach:
             print(ansicht.uebersicht(p))
         if takt:
             time.sleep(takt)
     return plan
+
+
+def _dashboard():
+    from . import dashboard
+    try:
+        d = dashboard.Dashboard()
+    except OSError as e:
+        print(f"Dashboard nicht gestartet ({e})")
+        return None
+    print(f"Dashboard: {d.url}")
+    return d
 
 
 def _live_quelle(basis: str, aus_nach: float = 10.0):
@@ -96,6 +109,7 @@ def _ansagen_speichern(pfad, plan: sprechplan.Sprechplan) -> None:
 
 def live(args) -> None:
     sprecher = stimme.Stumm() if args.stumm else stimme.Stimme()
+    anzeige = None if args.ohne_dashboard else _dashboard()
     print("Warte auf eine Partie (Strg+C beendet) ...")
     while True:
         if not liveapi.laeuft(args.basis):
@@ -113,7 +127,8 @@ def live(args) -> None:
         plan = None
         try:
             plan = _verfolge(_live_quelle(args.basis), args.ich, takt=1.0, sprecher=sprecher,
-                             schreiber=schreiber, sicht=_LiveSicht(beobachter) if beobachter else None)
+                             schreiber=schreiber, sicht=_LiveSicht(beobachter) if beobachter else None,
+                             anzeige=anzeige)
         finally:
             if beobachter:
                 beobachter.halt()
@@ -157,6 +172,7 @@ def abspielen(args) -> None:
         print(f"Minimap: {len(bilder)} Bilder")
     plan = _verfolge(aufzeichnung.lies_mit_zeit(pfad), args.ich, takt=args.takt, sprecher=sprecher,
                      sicht=lage.SichtAusBildern(bilder) if bilder else None,
+                     anzeige=_dashboard() if args.dashboard else None,
                      alle=args.alle, nur_coach=args.nur_coach)
     print(f"\n{len(plan.gesagt)} Ansagen.")
 
@@ -189,6 +205,7 @@ def main() -> None:
     lv.add_argument("--ohne-aufnahme", action="store_true")
     lv.add_argument("--ohne-bilder", action="store_true", help="keine Minimap (weder Erkennung noch Bilder)")
     lv.add_argument("--stumm", action="store_true")
+    lv.add_argument("--ohne-dashboard", action="store_true")
     ab = unter.add_parser("abspielen")
     ab.add_argument("datei", nargs="?")
     ab.add_argument("--takt", type=float, default=0.0, help="Sekunden je Schnappschuss (0 = so schnell es geht)")
@@ -196,6 +213,7 @@ def main() -> None:
     ab.add_argument("--nur-coach", action="store_true", help="nur die Ansagen des Coaches")
     ab.add_argument("--laut", action="store_true", help="Ansagen vorlesen (wartet, bis jede gesprochen ist)")
     ab.add_argument("--ohne-bilder", action="store_true", help="Minimap-Bilder nicht auswerten")
+    ab.add_argument("--dashboard", action="store_true", help="Dashboard mitlaufen lassen (sinnvoll mit --takt)")
     be = unter.add_parser("bericht")
     be.add_argument("datei", nargs="?")
     be.add_argument("--ohne-llm", action="store_true")
@@ -205,7 +223,7 @@ def main() -> None:
     lm.add_argument("--modell", default="haiku")
     args = ap.parse_args()
     if args.befehl is None:
-        args.befehl, args.ohne_aufnahme, args.ohne_bilder, args.stumm = "live", False, False, False
+        args.befehl, args.ohne_aufnahme, args.ohne_bilder, args.stumm, args.ohne_dashboard = "live", False, False, False, False
     {"live": live, "abspielen": abspielen, "bericht": bericht_befehl, "status": status,
      "llm": frage_llm}[args.befehl](args)
 

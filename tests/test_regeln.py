@@ -7,18 +7,38 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from lolcoach import aufzeichnung, regeln, sprechplan, stimme, zustand  # noqa: E402
+from lolcoach import aufzeichnung, lage, regeln, sprechplan, stimme, zustand  # noqa: E402
 
 PARTIE = Path(__file__).parent / "botspiel_riven_1.jsonl.gz"
 
 
-def ansagen(pfad=PARTIE):
+PARTIE_2 = Path(__file__).parent / "botspiel_riven_2.jsonl.gz"   # mit Minimap-Sichtungen
+
+
+def ansagen(pfad=PARTIE, sicht=None):
     werk, plan = regeln.Regelwerk(), sprechplan.Sprechplan(stimme.Stumm())
-    for d in aufzeichnung.lies(pfad):
+    lagebild = lage.Lagebild() if sicht else None
+    for w, d in aufzeichnung.lies_mit_zeit(pfad):
         p = zustand.partie(d)
-        plan.neu(werk.pruefe(p))
+        if sicht:
+            for wb, s in sicht.zwischen(w, lage.champions(p)):
+                lagebild.neu(p.zeit - (w - wb), s, p)
+        plan.neu(werk.pruefe(p, lagebild))
         plan.takt(p.zeit)
     return plan.gesagt
+
+
+def mit_minimap():
+    """Zweite Partie (Riven gegen Shen, 25 min) mit den Sichtungen der Minimap."""
+    gesagt = ansagen(PARTIE_2, lage.SichtAusBildern.aus_cache(PARTIE_2.with_name("botspiel_riven_2_bilder")))
+    um = [(a.gesprochen, a.text) for a in gesagt]
+    weg = [t for t, x in um if "weg aus deiner Lane" in x]
+    assert 1 <= len(weg) <= 4, weg                                        # vorher 10 Fehlalarme
+    assert any(95 <= t <= 110 and "Vom Turm erwischt" in x for t, x in um)
+    assert any(380 <= t <= 395 and "Vorsicht, Vi oben" in x for t, x in um)
+    assert not any(t > 840 and "sicher pushen" in x for t, x in um)       # Lane-Sprache nur in der Lane-Phase
+    assert not any("Kartenseite" in x and "Mitte" in x for _, x in um)
+    print(f"Partie 2 mit Minimap: {len(gesagt)} Ansagen, OK")
 
 
 def main():
@@ -43,6 +63,7 @@ def main():
         dauer = len(a.text) / sprechplan.ZEICHEN_PRO_SEKUNDE
         assert b.gesprochen >= a.gesprochen + dauer or b.prio == regeln.SOFORT, (a.text, b.text)
     print(f"{len(gesagt)} Ansagen, OK")
+    mit_minimap()
 
 
 if __name__ == "__main__":

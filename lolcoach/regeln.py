@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from . import ddragon, wissen
-from .zustand import Partie, Spieler, gegenteam
+from .zustand import Partie, Spieler, gegenteam, struktur
 
 SOFORT, WICHTIG, HINWEIS = 3, 2, 1
 
@@ -263,7 +263,9 @@ class Regelwerk:
         elif meine_seite and rolle != "JUNGLE":
             yield Ansage(cfg["seine_seite"].format(champion=j.champion, ort=ort), WICHTIG, "jungler_sicht",
                          gueltig=4, sperre=30)
-        elif text := cfg.get(f"sicher_{rolle}"):
+        elif p.zeit > cfg["lane_phase_bis"] and "Mitte" in ort:
+            return  # spaet und mittig: keine Kartenseite, die frei waere
+        elif text := cfg.get("sicher_spaet" if p.zeit > cfg["lane_phase_bis"] else f"sicher_{rolle}"):
             yield Ansage(text.format(champion=j.champion, ort=ort), WICHTIG, "jungler_sicht", gueltig=5, sperre=40)
 
     def _lane_fehlt(self, p: Partie, v: Partie):
@@ -314,7 +316,9 @@ class Regelwerk:
             return
         beteiligt = [s for s in [kill.taeter, *(p.spieler_namens(n) for n in kill.daten.get("Assisters", []))] if s]
         j = p.jungler(gegenteam(p.mein_team))
-        if j and p.ich.rolle != "JUNGLE" and any(s is j for s in beteiligt):
+        if kill.taeter is None and struktur(kill.daten.get("KillerName", "")):
+            text = cfg["turm"]
+        elif j and p.ich.rolle != "JUNGLE" and any(s is j for s in beteiligt):
             text = cfg["gank"].format(champion=j.champion)
         elif len(beteiligt) >= 2:
             text = cfg["ueberzahl"].format(anzahl=len(beteiligt))

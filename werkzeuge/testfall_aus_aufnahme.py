@@ -34,9 +34,16 @@ def schlank(d: dict) -> dict:
 
 def main(quelle: str, ziel: str) -> None:
     with gzip.open(ziel, "wt", encoding="utf-8") as f:
-        for d in aufzeichnung.lies(quelle):
-            f.write(json.dumps({"w": 0, "d": schlank(d)}, ensure_ascii=False, separators=(",", ":")) + "\n")
+        for w, d in aufzeichnung.lies_mit_zeit(quelle):
+            f.write(json.dumps({"w": w, "d": schlank(d)}, ensure_ascii=False, separators=(",", ":")) + "\n")
     print(ziel, Path(ziel).stat().st_size // 1024, "KB")
+    # Minimap: nur die Sichtungen (sichtungen.json), nicht die Bilder
+    cache = aufzeichnung.bilder(quelle)[0][1].parent / "sichtungen.json" if aufzeichnung.bilder(quelle) else None
+    if cache and cache.exists():
+        ordner = Path(ziel).with_name(Path(ziel).name.removesuffix(".jsonl.gz") + "_bilder")
+        ordner.mkdir(exist_ok=True)
+        (ordner / "sichtungen.json").write_bytes(cache.read_bytes())
+        print(ordner / "sichtungen.json", cache.stat().st_size // 1024, "KB")
 
 
 if __name__ == "__main__":

@@ -157,24 +157,34 @@ class SichtAusBildern:
         self.i = 0
         self._ergebnis: dict[str, list[minimap.Sichtung]] | None = None
 
+    @classmethod
+    def aus_cache(cls, ordner: Path) -> "SichtAusBildern":
+        """Nur aus `sichtungen.json`, ohne Bilder (Testfaelle)."""
+        import json
+        namen = json.loads((ordner / "sichtungen.json").read_text(encoding="utf-8"))["bilder"]
+        return cls(sorted((int(n.removesuffix(".jpg")) / 1000, ordner / n) for n in namen))
+
     def _berechne(self, champions_: list[tuple[str, str]]) -> None:
         import json
         from concurrent.futures import ThreadPoolExecutor
         from dataclasses import asdict
         cache = self.bilder[0][1].parent / "sichtungen.json" if self.bilder else None
         kennung = {"stand": minimap.STAND, "champions": sorted(map(list, champions_))}
+        self._ergebnis = {}
         if cache and cache.exists():
             gespeichert = json.loads(cache.read_text(encoding="utf-8"))
             if gespeichert.get("kennung") == kennung:
                 self._ergebnis = {k: [minimap.Sichtung(**s) for s in v] for k, v in gespeichert["bilder"].items()}
-                return
+        fehlend = [p for _, p in self.bilder if p.name not in self._ergebnis]
+        if not fehlend:
+            return
 
         def eins(pfad: Path):
             karte = karte_aus_bild(pfad)
             return pfad.name, ([] if karte is None else minimap.finde(karte, champions_))
 
         with ThreadPoolExecutor() as pool:
-            self._ergebnis = dict(pool.map(eins, (p for _, p in self.bilder)))
+            self._ergebnis.update(pool.map(eins, fehlend))
         if cache:
             cache.write_text(json.dumps({"kennung": kennung, "bilder": {
                 k: [asdict(s) for s in v] for k, v in self._ergebnis.items()}}), encoding="utf-8")

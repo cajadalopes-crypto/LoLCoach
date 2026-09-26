@@ -16,7 +16,7 @@ from pathlib import Path
 
 from . import aufzeichnung, llm, regeln, sprechplan, stimme
 from .ansicht import uhr
-from .zustand import DRACHE_DE, Partie, gegenteam, partie as baue_partie
+from .zustand import DRACHE_DE, Partie, gegenteam, partie as baue_partie, struktur
 
 MINUTEN = (5, 10, 15, 20, 25, 30)
 GOLD_GEHORTET = 1500      # so viel ungenutztes Gold ...
@@ -85,9 +85,11 @@ def werte_aus(pfad: str | Path, ich: str | None = None) -> Auswertung:
             g = vor.gegenueber()
             helfer = [h for h in (p.spieler_namens(n) for n in (kill.daten.get("Assisters", []) if kill else [])) if h]
             taeter = kill.taeter if kill else None
+            roh_name = kill.daten.get("KillerName", "?") if kill else "?"
+            turm = struktur(roh_name)
             a.tode.append(Tod(
                 zeit=p.zeit,
-                taeter=taeter.champion if taeter else (kill.daten.get("KillerName", "?") if kill else "?"),
+                taeter=taeter.champion if taeter else (f"den Turm ({turm.lane} {turm.stufe})" if turm else roh_name),
                 helfer=[h.champion for h in helfer],
                 gank=bool(j_gegner and vor.ich.rolle != "JUNGLE"
                           and any(s is not None and s.name == j_gegner.name for s in [taeter, *helfer])),

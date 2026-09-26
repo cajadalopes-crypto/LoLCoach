@@ -23,9 +23,22 @@ Replay-Szenen. Anforderungen: `ANFORDERUNGEN.md`.
 | `lolcoach/liveapi.py` | Live Client Data API (127.0.0.1:2999) - holt Rohdaten |
 | `lolcoach/zustand.py` | Rohdaten -> Spielzustand (reine Funktion, kein Gedaechtnis) |
 | `lolcoach/wissen.py` + `wissen/*.toml` | gepflegte Wissensbasis (Timer, Makro, Matchups) |
-| `lolcoach/aufzeichnung.py` | schreibt jede Partie als `aufnahmen/*.jsonl.gz` mit |
+| `lolcoach/aufzeichnung.py` | schreibt jede Partie als `aufnahmen/*.jsonl.gz` mit (+ `_bilder/`, `_ansagen.json`) |
+| `lolcoach/minimap.py` | Champions auf der Minimap erkennen (Riot-Portraets, ~60 ms/Bild); Orte in Worten |
+| `lolcoach/lage.py` | Lagebild (wer zuletzt wo), Beobachter-Thread live, Sichtungen aus Bildern (Cache) |
+| `lolcoach/regeln.py` | Regelwerk: aus Zustand + Lagebild werden Ansagen (Saetze in `wissen/makro.toml`) |
+| `lolcoach/sprechplan.py` + `stimme.py` | wer redet wann; Windows-Stimme Hedda |
+| `lolcoach/bericht.py` | Post-Game-Bericht, optional mit Claudes Analyse |
+| `lolcoach/dashboard.py` + `web/` | Live-Dashboard fuer den zweiten Monitor, http://127.0.0.1:8790 |
 | `lolcoach/llm.py` | Claude ueber die Kommandozeile (Abo), spaeter API |
-| `python -m lolcoach` | Live-Ansicht + Aufzeichnung; `abspielen`, `status`, `llm` |
+| `python -m lolcoach` | live; `abspielen [--nur-coach --dashboard --takt 0.05 --laut]`, `bericht`, `status`, `llm` |
+
+Tests: `python tests/test_grundlage.py` und `python tests/test_regeln.py` (zwei
+echte Bot-Partien, die zweite mit Minimap-Sichtungen). Neue Partie als Testfall:
+`python werkzeuge/testfall_aus_aufnahme.py aufnahmen/<x>.jsonl.gz tests/<name>.jsonl.gz`.
+
+Oberflaeche pruefen ohne Browserfenster: Aufnahme mit `--dashboard --takt 0.05`
+abspielen, dann `Brainstone/werkzeuge/browserprobe.py http://127.0.0.1:8790/ name 3`.
 
 Spielzustand ist eine REINE Funktion eines Schnappschusses: die API liefert
 die Ereignisliste jedes Mal ganz. Was "neu" ist, entscheidet der Aufrufer

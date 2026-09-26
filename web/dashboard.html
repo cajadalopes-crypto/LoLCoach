@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LoL Coach</title>
+<style>
+  :root {
+    --grund: #0b0f14; --flaeche: #131a22; --linie: #223040; --text: #e6edf3; --leise: #8b9bb0;
+    --freund: #4aa3ff; --feind: #ff5a5a; --ich: #ffd24a; --gut: #3fd08a; --warn: #ffb020;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; background: var(--grund); color: var(--text);
+    font: 15px/1.35 "Segoe UI", system-ui, sans-serif; }
+  main { display: grid; grid-template-columns: minmax(280px, 62vh) minmax(300px, 1fr); gap: 14px;
+    padding: 14px; height: 100vh; }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; height: auto; } }
+  .karte { position: relative; aspect-ratio: 1; background: #000; border: 1px solid var(--linie); border-radius: 8px; overflow: hidden; }
+  canvas { width: 100%; height: 100%; display: block; }
+  .spalte { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow: auto; }
+  .kasten { background: var(--flaeche); border: 1px solid var(--linie); border-radius: 8px; padding: 10px 12px; }
+  h2 { margin: 0 0 6px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--leise); font-weight: 600; }
+  .kopf { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+  .uhr { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .zahl { font-variant-numeric: tabular-nums; }
+  .plus { color: var(--gut); } .minus { color: var(--feind); }
+  .obj { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; }
+  .obj div { background: #0e141b; border-radius: 6px; padding: 6px 8px; display: flex; justify-content: space-between; }
+  .lebt { color: var(--gut); font-weight: 700; }
+  .bald { color: var(--warn); font-weight: 700; }
+  .gegner { display: grid; gap: 4px; }
+  .zeile { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; align-items: center; }
+  .zeile img { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--feind); }
+  .zeile.tot img { filter: grayscale(1); opacity: .5; }
+  .klein { color: var(--leise); font-size: 13px; }
+  .ansagen { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .ansagen li { padding: 6px 8px; border-left: 3px solid var(--linie); background: #0e141b; border-radius: 4px; }
+  .ansagen li.p3 { border-left-color: var(--feind); }
+  .ansagen li.p2 { border-left-color: var(--warn); }
+  .ansagen li:first-child { font-size: 17px; }
+  .warte { display: grid; place-items: center; height: 100vh; color: var(--leise); font-size: 18px; }
+</style>
+</head>
+<body>
+<div id="warte" class="warte">Warte auf eine Partie …</div>
+<main id="haupt" hidden>
+  <div class="karte"><canvas id="karte" width="1024" height="1024"></canvas></div>
+  <div class="spalte">
+    <div class="kasten kopf">
+      <span class="uhr" id="uhr">0:00</span>
+      <span>Kills <b class="zahl" id="kills">0 : 0</b></span>
+      <span>Items <b class="zahl" id="itemgold">±0</b></span>
+      <span>Gold <b class="zahl" id="gold">–</b></span>
+    </div>
+    <div class="kasten"><h2>Objectives</h2><div class="obj" id="obj"></div><div class="klein" id="drachen"></div></div>
+    <div class="kasten"><h2 id="lanekopf">Lane</h2><div id="lane" class="zahl"></div></div>
+    <div class="kasten"><h2>Gegner</h2><div class="gegner" id="gegner"></div></div>
+    <div class="kasten"><h2>Coach</h2><ul class="ansagen" id="ansagen"></ul></div>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const bilder = {};
+function bild(src) {
+  if (!bilder[src]) { const i = new Image(); i.src = src; bilder[src] = i; }
+  return bilder[src];
+}
+const karte = bild('/karte.png');
+const uhr = s => s <= 0 ? 'lebt' : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+const vz = n => (n > 0 ? '+' : '') + n;
+
+function zeichne(z) {
+  const c = $('karte'), g = c.getContext('2d'), N = c.width;
+  g.clearRect(0, 0, N, N);
+  if (karte.complete && karte.naturalWidth) g.drawImage(karte, 0, 0, N, N);
+  g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(0, 0, N, N);
+  const r = N * 0.034;
+  const liste = z.spieler.filter(s => s.gesehen).sort((a, b) => b.gesehen.vor - a.gesehen.vor);
+  for (const s of liste) {
+    const { x, y, vor, jetzt } = s.gesehen, px = x * N, py = y * N;
+    g.globalAlpha = jetzt ? 1 : Math.max(0.3, 1 - vor / 45);
+    g.save(); g.beginPath(); g.arc(px, py, r, 0, 7); g.clip();
+    const i = bild(`/icon/${s.id}.png`);
+    if (i.complete && i.naturalWidth) g.drawImage(i, px - r * 1.15, py - r * 1.15, r * 2.3, r * 2.3);
+    g.restore();
+    g.lineWidth = jetzt ? 5 : 3;
+    g.strokeStyle = s.ich ? getComputedStyle(document.body).getPropertyValue('--ich')
+      : s.freund ? '#4aa3ff' : '#ff5a5a';
+    if (!jetzt) g.setLineDash([8, 6]);
+    g.beginPath(); g.arc(px, py, r, 0, 7); g.stroke(); g.setLineDash([]);
+    if (!jetzt && !s.freund) {
+      g.font = `bold ${Math.round(N * 0.022)}px Segoe UI`; g.textAlign = 'center';
+      g.lineWidth = 4; g.strokeStyle = '#000'; g.fillStyle = '#fff';
+      const t = `${Math.round(vor)}s`;
+      g.strokeText(t, px, py + r + N * 0.025); g.fillText(t, px, py + r + N * 0.025);
+    }
+    g.globalAlpha = 1;
+  }
+}
+
+function zeige(z) {
+  if (z.warte) { $('warte').hidden = false; $('haupt').hidden = true; return; }
+  $('warte').hidden = true; $('haupt').hidden = false;
+  $('uhr').textContent = z.zeit;
+  $('kills').textContent = z.kills ? `${z.kills[0]} : ${z.kills[1]}` : '–';
+  $('itemgold').textContent = vz(z.itemgold);
+  $('itemgold').className = 'zahl ' + (z.itemgold >= 0 ? 'plus' : 'minus');
+  $('gold').textContent = z.gold ?? '–';
+  $('obj').innerHTML = z.objectives.map(o =>
+    `<div><span>${o.name}</span><span class="${o.rest <= 0 ? 'lebt' : o.rest <= 60 ? 'bald' : ''}">${uhr(o.rest)}</span></div>`).join('');
+  $('drachen').textContent = z.drachen ? `Drachen: ${z.drachen[0].join(', ') || '–'}  ·  Gegner: ${z.drachen[1].join(', ') || '–'}` : '';
+  if (z.lane) {
+    $('lanekopf').textContent = `Lane gegen ${z.lane.gegner}`;
+    $('lane').innerHTML = `CS ${z.lane.cs[0]} : ${z.lane.cs[1]} &nbsp;·&nbsp; Level ${z.lane.level[0]} : ${z.lane.level[1]}
+      &nbsp;·&nbsp; Items <span class="${z.lane.itemgold >= 0 ? 'plus' : 'minus'}">${vz(z.lane.itemgold)}</span>`;
+  }
+  $('gegner').innerHTML = z.spieler.filter(s => !s.freund).map(s => {
+    let wo = s.tot ? `<span class="minus">tot ${s.respawn}s</span>`
+      : !z.bild ? '' : !s.gesehen ? '<span class="klein">nie gesehen</span>'
+      : s.gesehen.jetzt ? `<span class="plus">${s.gesehen.ort}</span>`
+      : `<span class="klein">vor ${Math.round(s.gesehen.vor)}s ${s.gesehen.ort}</span>`;
+    return `<div class="zeile ${s.tot ? 'tot' : ''}"><img src="/icon/${s.id}.png" alt="">
+      <span>${s.champion} <span class="klein">${s.rolle} · L${s.level} · ${s.kda}</span></span>${wo}</div>`;
+  }).join('');
+  $('ansagen').innerHTML = z.ansagen.map(a => `<li class="p${a.prio}"><span class="klein">${a.zeit}</span> ${a.text}</li>`).join('');
+  zeichne(z);
+}
+
+async function frage() {
+  try { zeige(await (await fetch('/zustand.json', { cache: 'no-store' })).json()); }
+  catch (e) { $('warte').textContent = 'Coach nicht erreichbar – läuft python -m lolcoach?'; $('warte').hidden = false; $('haupt').hidden = true; }
+  setTimeout(frage, 500);
+}
+frage();
+</script>
+</body>
+</html>
