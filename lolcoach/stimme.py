@@ -436,6 +436,11 @@ class Stimme:
                 ganz = motor.spreche(sprechbar(text), self._stopp, ton, gilt if noch_wahr is not None else None)
                 if not ganz and not widerrufen[0]:
                     self._unterbrochen = (text, time.monotonic())
+            except Exception as e:
+                # Ein Audiofehler (Headset kurz weg, WASAPI verweigert) darf den Sprech-Thread nie beenden - sonst
+                # ist der Coach fuer den Rest der Partie stumm. Beim naechsten Satz ueber MME.
+                print(f"  (Stimme: {type(e).__name__}: {e} - weiter ueber MME)", flush=True)
+                _Neural._wasapi = False
             finally:
                 self._spricht = False
                 if melde:

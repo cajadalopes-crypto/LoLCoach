@@ -618,6 +618,39 @@ def stimme_spielt_ab_dem_ersten_stueck():
         edge_tts.Communicate = alt
 
 
+def stimme_ueberlebt_audiofehler():
+    """Wirft die Ausgabe (Headset kurz weg), darf der Sprech-Thread nicht sterben - sonst ist der Coach fuer den
+    Rest der Partie stumm. Der naechste Satz kommt."""
+    import time
+    from lolcoach import stimme
+
+    class Wirft:
+        n = 0
+
+        def __init__(self, *a):
+            pass
+
+        def spreche(self, text, stopp, beim_ton=None, gilt=None):
+            Wirft.n += 1
+            if Wirft.n == 1:
+                raise OSError("Geraet weg")
+            return True
+
+    alt, alt_w = stimme._Sapi, stimme._Neural._wasapi
+    stimme._Sapi = Wirft
+    try:
+        st = stimme.Stimme(lautstaerke=0)
+        ende = []
+        for t in ("eins", "zwei"):
+            st.sage(t, melde=lambda a, _t: ende.append(a) if a != "ton" else None)
+        bis = time.monotonic() + 3
+        while len(ende) < 2 and time.monotonic() < bis:
+            time.sleep(0.02)
+        assert ende == ["abgebrochen", "ende"], ende
+    finally:
+        stimme._Sapi, stimme._Neural._wasapi = alt, alt_w
+
+
 def konter_kauf_ohne_eigenes():
     """'Gegen Heimerdinger: Items: Magieresistenz, Merkurs Schuhe.' war vorgelesen - jetzt ein Rat, und was du
     schon hast (Merkurs Schuhe, genug Magieresistenz), faellt weg."""
@@ -842,7 +875,7 @@ if __name__ == "__main__":
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr,
                  faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht,
                  satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
-                 konter_kauf_ohne_eigenes,
+                 konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler,
                  sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")
