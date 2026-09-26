@@ -11,7 +11,7 @@ sein kann, wer tot ist, Level und Items gegen deinen Lane-Gegner, dein Gold, dei
 naechste Objective. Das Kampf-Urteil gegen den Lane-Gegner rechnet denker.py.
 
 Stil: ganze Saetze, wie ein Coach sie spricht - erst was ist, dann was du tust und warum
-("Vi ist im oberen Fluss und kann in 12 Sekunden bei dir sein. Du stehst unter seinem Turm - geh
+("Vi ist im oberen Fluss, in 12 Sekunden bei dir. Du stehst unter seinem Turm - geh
 zurueck zu deinem, das sind 14 Sekunden."). Keine Telegramm-Fetzen ("Zurueck zum Turm, 14 s Weg").
 
 Grundsatz Gefahr vor Chance: kann dich jemand in wenigen Sekunden erreichen, den du nicht siehst,
@@ -328,12 +328,12 @@ STAERKER = 1.3
 
 
 def _ankunft_satz(g: GegnerLage) -> str:
-    """'Vi ist im oberen Fluss und kann in 12 Sekunden bei dir sein' / '..., direkt bei dir'."""
+    """'Vi ist im oberen Fluss, in 12 Sekunden bei dir' / '..., direkt bei dir'."""
     an = g.ankunft
     if an is not None and an < 2:
         return f"{_ist(g)}, direkt bei dir"
     if an is not None:
-        return f"{_ist(g)} und kann in {sek(an)} bei dir sein"
+        return f"{_ist(g)}, in {sek(an)} bei dir"      # kurz: "Vi ist im oberen Fluss, in 12 Sekunden bei dir"
     return _ist(g)
 
 
@@ -375,7 +375,7 @@ def jungler_gesehen(b: Bewertung, j: GegnerLage, art: str, platten: bool) -> str
         return f"{vorn}. {tun}"
     # sicher: er ist weit weg - wie lange hast du, und was machst du damit?
     ruhe = j.ankunft
-    satz = _ist(j) + (f" und frühestens in {sek(ruhe)} bei dir" if ruhe and ruhe >= 10 else "")
+    satz = _ist(j) + (f", frühestens in {sek(ruhe)} bei dir" if ruhe and ruhe >= 10 else "")
     andere = gefahr(b, ausser=j)
     if andere:
         n = [g.champion for g in andere]
@@ -501,11 +501,9 @@ def recall(b: Bewertung, grund: str) -> str:
     gold = b.gold // 100 * 100
     kauf = b.kauf.satz() if b.kauf is not None and b.kauf.kaufen else ""
     if grund == "welle":
-        satz = "Deine Welle läuft gerade in seinen Turm - das ist dein Recall-Fenster, du verlierst keine Vasallen" + (
-            f", und {gold} Gold {kauf}" if kauf else "")
+        satz = "Recall-Fenster: deine Welle läuft in seinen Turm" + (f", und {gold} Gold {kauf}" if kauf else "")
     elif grund == "viel":
-        satz = (f"Du trägst {gold} Gold mit dir herum, das ist mehr als ein ganzes Item. Schieb die Welle rein und "
-                f"geh sofort back")
+        satz = f"{gold} Gold in der Tasche, mehr als ein ganzes Item - schieb die Welle rein und geh sofort back"
     else:
         satz = f"Du hast {gold} Gold" + (f", das {kauf}" if kauf else "") + \
                ". Schieb die nächste Welle in den Turm und geh dann back"
@@ -705,7 +703,7 @@ def jungler_spaet(b: Bewertung, j: GegnerLage, seite: str) -> str:
     """Nach der Lane-Phase: der gegnerische Jungler zeigt sich auf `seite` ("oben"/"unten") - was die
     andere Seite jetzt hergibt: das Objective dort (mit Kampflage), sonst die Seitenwelle."""
     ruhe = j.ankunft
-    satz = _ist(j) + (f" und frühestens in {sek(ruhe)} bei dir" if ruhe and ruhe >= 10 else "")
+    satz = _ist(j) + (f", frühestens in {sek(ruhe)} bei dir" if ruhe and ruhe >= 10 else "")
     andere = "unten" if seite == "oben" else "oben"
     ob = b.objective
     ob_seite = None if not ob else ("unten" if ob[0] == "drache" else "oben")

@@ -115,8 +115,8 @@ satz_viel = "Du trägst {gold} Gold mit dir herum - das ist mehr als ein ganzes 
 [cs]
 minuten = [5, 10, 15, 20]
 ziel_pro_minute = 8.0         # Diamond+
-satz = "Minute {minute}: du hast {cs} Vasallen, das sind {cspm} pro Minute, und {champion} hat {gegner_cs}."
-satz_ohne_gegner = "Minute {minute}: du hast {cs} Vasallen, das sind {cspm} pro Minute."
+satz = "Minute {minute}: {cs} Vasallen, {cspm} pro Minute - {champion} hat {gegner_cs}."
+satz_ohne_gegner = "Minute {minute}: {cs} Vasallen, {cspm} pro Minute."
 unter_ziel = " Ziel sind acht pro Minute - nimm jeden mit, auch die unter deinem Turm."
 
 [sicht]
@@ -241,9 +241,9 @@ ab = 150                      # vorher hat noch niemand ein Ward-Trinket geladen
 objective_vorlauf = 90        # Sekunden vor dem Spawn zaehlt die Grube
 jungler_weg_ab = 25           # so lange nicht gesehen, dann zaehlt der Gank-Weg
 erneut_nach = 120             # dieselbe Stelle frueheste wieder
-satz = "Du läufst gerade {ort} vorbei - setz dort ein Ward: {grund}"
-satz_objective = "{objective} kommt in {sekunden} Sekunden, und so siehst du, wer sich dort sammelt."
-satz_gank = "{champion} ist seit {sekunden} Sekunden weg, und so siehst du den Gank kommen."
+satz = "Setz ein Ward {ort}, du bist gerade dort: {grund}"
+satz_objective = "{objective} kommt in {dauer}."
+satz_gank = "{champion} ist seit {dauer} weg."
 
 [recall]
 # Recall-Fenster aus dem Wellenstand (Minimap): deine Welle crasht gerade in seinen Turm.

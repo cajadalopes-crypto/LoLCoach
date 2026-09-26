@@ -639,7 +639,7 @@ class Regelwerk:
                 # "fehlen dir 0 Vasallen, etwa 0 Gold" (Nachlauf 230520, 15:00 - 120 nach 15:00,5 sind 7,97 pro Minute)
                 fehlen = int(cfg["ziel_pro_minute"] * minute - p.ich.cs)
                 if cspm < cfg["ziel_pro_minute"] and fehlen >= 3:
-                    text += (f" Bis acht pro Minute fehlen dir {fehlen} Vasallen, etwa {fehlen * 21 // 50 * 50} Gold"
+                    text += (f" Bis acht pro Minute fehlen {fehlen}, etwa {fehlen * 21 // 50 * 50} Gold"
                              + (" - fast ein ganzes Item." if fehlen * 21 >= 1000 else "."))
                 yield Ansage(text, HINWEIS, f"cs{minute}", gueltig=40, unterbrechbar=True)
 
@@ -883,7 +883,7 @@ class Regelwerk:
             n = p.naechster_spawn(schl)
             if n is not None and 0 <= n - p.zeit <= cfg["objective_vorlauf"]:
                 name = {"drache": "Drache", "baron": "Baron", "herold": "Herold"}[schl]
-                anlaesse[zweck] = cfg["satz_objective"].format(objective=name, sekunden=int(n - p.zeit))
+                anlaesse[zweck] = cfg["satz_objective"].format(objective=name, dauer=komponist.sek(n - p.zeit))
         j = p.jungler(gegenteam(p.mein_team))
         if j and not j.tot and p.zeit < self.m["sicht"]["lane_phase_bis"] and p.ich.rolle != "JUNGLE":
             g = self.lage.gesehen(j)
@@ -891,7 +891,7 @@ class Regelwerk:
             if weg >= cfg["jungler_weg_ab"]:
                 zweck = {"TOP": "lane_top", "MIDDLE": "lane_mid", "BOTTOM": "lane_bot", "UTILITY": "lane_bot"}.get(p.ich.rolle)
                 if zweck:
-                    anlaesse[zweck] = cfg["satz_gank"].format(champion=j.champion, sekunden=int(weg))
+                    anlaesse[zweck] = cfg["satz_gank"].format(champion=j.champion, dauer=komponist.sek(weg))
         if not anlaesse:
             return
         blau = p.mein_team == "ORDER"
