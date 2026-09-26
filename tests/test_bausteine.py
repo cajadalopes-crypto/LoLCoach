@@ -618,6 +618,27 @@ def stimme_spielt_ab_dem_ersten_stueck():
         edge_tts.Communicate = alt
 
 
+def eigene_position_aus_dem_kamerarahmen():
+    """235433, 6:33: Riven liegt unter Poppy (davor unter Twisted Fate), 6,8 s ohne erkanntes Icon. Der
+    Kamerarahmen sagt, wo sie ist: 3,6 s spaeter taucht sie bei (0,100, 0,168) wieder auf. Ein frei geschwenkter
+    Rahmen (passt nicht zur letzten Sichtung) gibt nichts."""
+    from types import SimpleNamespace
+    from lolcoach import lage, minimap
+    karte = cv2.imread(str(HIER / "minimap_riven_verdeckt.jpg"))
+    rahmen = minimap.kamerarahmen(karte)
+    pos = minimap.ich_aus_rahmen(rahmen, (97.0, 0.0772, 0.2228), 100.0)
+    assert pos is not None and abs(pos[0] - 0.100) + abs(pos[1] - 0.168) < 0.03, pos
+    assert minimap.ich_aus_rahmen(rahmen, (99.0, 0.60, 0.60), 100.0) is None          # Kamera woanders
+    assert minimap.ich_aus_rahmen(rahmen, (90.0, 0.0772, 0.2228), 100.0) is None      # letzte Sichtung zu alt
+    # der Beobachter ergaenzt nur das fehlende eigene Icon
+    b = SimpleNamespace(ich=("Riven", "ORDER"), _ich_zuletzt=(97.0, 0.0772, 0.2228))
+    ergaenzen = lage.Beobachter._ich_ergaenzen
+    neu = ergaenzen(b, karte, 100.0, [minimap.Sichtung("Poppy", None, 0.142, 0.151, 0.95)])
+    assert [s.champion_id for s in neu] == ["Poppy", "Riven"] and neu[1].guete == 0.0
+    gesehen = [minimap.Sichtung("Riven", None, 0.2, 0.2, 0.97)]
+    assert ergaenzen(b, karte, 101.0, gesehen) == gesehen and b._ich_zuletzt == (101.0, 0.2, 0.2)
+
+
 def stimme_ueberlebt_audiofehler():
     """Wirft die Ausgabe (Headset kurz weg), darf der Sprech-Thread nicht sterben - sonst ist der Coach fuer den
     Rest der Partie stumm. Der naechste Satz kommt."""
@@ -875,7 +896,7 @@ if __name__ == "__main__":
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr,
                  faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht,
                  satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
-                 konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler,
+                 konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler, eigene_position_aus_dem_kamerarahmen,
                  sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")

@@ -533,6 +533,7 @@ class Beobachter(threading.Thread):
                         ergebnis = verfolger.bild(karte, start) if karte is not None else None
                         if ergebnis is not None:
                             sichtungen, spruenge = ergebnis
+                            sichtungen = self._ich_ergaenzen(karte, start, sichtungen)
                             letzte_sichtungen = sichtungen
                             self.aktuell = (start, sichtungen)   # fuer das Dashboard (15/s statt 1/s)
                             with self._schloss:
@@ -628,6 +629,26 @@ class Beobachter(threading.Thread):
                 protokoll.close()
             if self._ereignis_datei:
                 self._ereignis_datei.close()
+
+    def _ich_ergaenzen(self, karte, zeit: float, sichtungen: list) -> list:
+        """Das eigene Icon fehlt (im Kampf unter Gegner-Icons): die Position aus dem Kamerarahmen, wenn er zur
+        letzten echten Sichtung passt (minimap.ich_aus_rahmen; an 172 Lueckenbildern: 87 % mit Position, Median
+        211 Einheiten daneben - `werkzeuge/rahmen_luecken.py`). Guete 0 = erschlossen, nie ein Flash-Sprung."""
+        ich = getattr(self, "ich", None)
+        if not ich:
+            return sichtungen
+        eigen = next((s for s in sichtungen if s.champion_id == ich[0] and s.team in (None, ich[1])), None)
+        if eigen is not None:
+            if eigen.guete > 0:
+                self._ich_zuletzt = (zeit, eigen.x, eigen.y)
+            return sichtungen     # gesehen oder unter seiner Deckung mitgefuehrt
+        try:
+            pos = minimap.ich_aus_rahmen(minimap.kamerarahmen(karte), getattr(self, "_ich_zuletzt", None), zeit)
+        except Exception:
+            return sichtungen
+        if pos is None:
+            return sichtungen
+        return sichtungen + [minimap.Sichtung(ich[0], None, pos[0], pos[1], 0.0)]
 
     def _spur_lauf(self, leser) -> None:
         """Arbeits-Thread der Balkenspur (lebensbalken.Balkenspur): ~12 Spielbilder/s, Balken finden (~13 ms),

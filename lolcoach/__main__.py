@@ -60,6 +60,8 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
             return None
 
     def schritt_sicht(p, w):
+        if (bb := getattr(sicht, "b", None)) is not None and p.ich:
+            bb.ich = (p.ich.champion_id, p.ich.team)      # live: der Beobachter ergaenzt das eigene Icon
         for wb, sichtungen in sicht.zwischen(w, lage.champions(p)):
             lagebild.neu(p.zeit - (w - wb), sichtungen, p)
         for t in lagebild.ereignisse(lambda wb: p.zeit - (w - wb), sicht.ereignisse(), p):

@@ -227,6 +227,45 @@ def kamerarahmen(karte: np.ndarray) -> tuple[float, float, float, float] | None:
     return float(x0 / w), float(y0 / h), float(x1 / w), float(y1 / h)
 
 
+# Kamerarahmen -> eigene Position (gesperrte Kamera): gemessen 27.09. an 3 Partien (1871 Bilder mit Rahmen und
+# eigenem Icon): Rahmen 0,274 x 0,153 der Karte, das Icon steht fest versetzt zur Mitte (dx -0,0070, dy +0,0184) -
+# danach Median 25 Einheiten daneben, 90 % unter 60-390 (die Ausreisser: Kamera frei geschwenkt).
+RAHMEN_GROESSE = (0.274, 0.153)
+RAHMEN_VERSATZ = (-0.0070, 0.0184)
+RAHMEN_TEMPO = 0.04     # Kartenanteil je Sekunde, den die eigene Position seit der letzten Sichtung wandern darf
+
+
+def ich_aus_rahmen(rahmen: tuple[float, float, float, float] | None, letzte: tuple[float, float, float] | None,
+                   zeit: float, hoechstens_alt: float = 6.0) -> tuple[float, float] | None:
+    """Die eigene Position aus dem Kamerarahmen, wenn das eigene Icon verdeckt ist (im Kampf liegt es unter
+    Gegner-Icons - 235433, 6:31-6:33: Riven unter Twisted Fate, dann Poppy, 3 s ohne Position). Nur, wenn die
+    Kamera zu der letzten echten Sichtung (`letzte` = (zeit, x, y), hoechstens `hoechstens_alt` s alt) passt -
+    ein frei geschwenkter Rahmen liegt woanders."""
+    if rahmen is None or letzte is None or zeit - letzte[0] > hoechstens_alt:
+        return None
+    x0, y0, x1, y1 = rahmen
+    bw, bh = RAHMEN_GROESSE
+    rand = 0.02
+    if x0 <= rand and x1 >= 1 - rand:
+        cx = (x0 + x1) / 2
+    elif x0 <= rand:
+        cx = x1 - bw / 2          # am Kartenrand abgeschnitten: vom freien Rand aus die uebliche Groesse
+    elif x1 >= 1 - rand:
+        cx = x0 + bw / 2
+    else:
+        cx = (x0 + x1) / 2
+    if y0 <= rand:
+        cy = y1 - bh / 2
+    elif y1 >= 1 - rand:
+        cy = y0 + bh / 2
+    else:
+        cy = (y0 + y1) / 2
+    x, y = cx + RAHMEN_VERSATZ[0], cy + RAHMEN_VERSATZ[1]
+    if ((x - letzte[1]) ** 2 + (y - letzte[2]) ** 2) ** 0.5 > 0.03 + RAHMEN_TEMPO * (zeit - letzte[0]):
+        return None
+    return min(max(x, 0.0), 1.0), min(max(y, 0.0), 1.0)
+
+
 GROB_SCHWELLE = 0.45
 KANDIDATEN = 3
 
