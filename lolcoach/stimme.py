@@ -25,11 +25,95 @@ _ASYNC, _UNTERBRECHEN = 1, 2
 NOCH_AKTUELL = 25.0   # so alt darf ein unterbrochener Satz sein, um wiederholt zu werden
 
 
+class _Sapi:
+    """Windows-Stimme: offline, sofort, klingt aber nach Roboter (Partie 3: 'viel zu roboterhaft')."""
+
+    def __init__(self, sprache: str, lautstaerke: int):
+        import pythoncom
+        import win32com.client
+        pythoncom.CoInitialize()
+        self.v = win32com.client.Dispatch("SAPI.SpVoice")
+        stimmen = self.v.GetVoices()
+        for i in range(stimmen.Count):
+            if sprache in stimmen.Item(i).GetDescription():
+                self.v.Voice = stimmen.Item(i)
+                break
+        self.v.Rate = 1
+        self.v.Volume = lautstaerke
+
+    def spreche(self, text: str, stopp: threading.Event) -> bool:
+        self.v.Speak(text, _ASYNC)
+        while not self.v.WaitUntilDone(40):
+            if stopp.is_set():
+                self.v.Speak("", _ASYNC | _UNTERBRECHEN)
+                return False
+        return True
+
+
+class _Neural:
+    """Microsofts neuronale Stimmen (wie "Vorlesen" in Edge), ueber edge-tts.
+    Gemessen 26.09.2026: Conrad/Katja 0,35-0,45 s bis zum ersten Ton. Braucht
+    Internet; faellt ein Satz aus, spricht ihn die Windows-Stimme."""
+
+    def __init__(self, stimme: str, tempo: str, lautstaerke: int, ersatz: "_Sapi"):
+        self.stimme, self.tempo, self.lautstaerke, self.ersatz = stimme, tempo, lautstaerke, ersatz
+        self._cache: dict[str, tuple] = {}
+
+    def _synthese(self, text: str):
+        if text in self._cache:
+            return self._cache[text]
+        import asyncio
+        import io
+        import av
+        import edge_tts
+        import numpy as np
+
+        async def hole() -> bytes:
+            daten = bytearray()
+            async for teil in edge_tts.Communicate(text, self.stimme, rate=self.tempo).stream():
+                if teil["type"] == "audio":
+                    daten += teil["data"]
+            return bytes(daten)
+
+        mp3 = asyncio.run(asyncio.wait_for(hole(), timeout=6))
+        with av.open(io.BytesIO(mp3)) as c:
+            strom = c.streams.audio[0]
+            rate = strom.rate
+            teile = [f.to_ndarray() for f in c.decode(strom)]
+        audio = np.concatenate(teile, axis=1)[0]
+        if audio.dtype.kind == "i":
+            audio = audio.astype(np.float32) / 32768.0
+        audio = (audio.astype(np.float32) * (self.lautstaerke / 100.0))
+        if len(self._cache) > 200:
+            self._cache.clear()
+        self._cache[text] = (audio, rate)
+        return audio, rate
+
+    def spreche(self, text: str, stopp: threading.Event) -> bool:
+        import sounddevice as sd
+        try:
+            audio, rate = self._synthese(text)
+        except Exception:
+            return self.ersatz.spreche(text, stopp)
+        if stopp.is_set():
+            return False
+        sd.play(audio, rate)
+        ende = time.monotonic() + len(audio) / rate + 0.3
+        while time.monotonic() < ende:
+            if stopp.is_set():
+                sd.stop()
+                return False
+            time.sleep(0.02)
+        return True
+
+
 class Stimme:
-    def __init__(self, sprache: str = "German", warten: bool = False, lautstaerke: int = 100):
+    def __init__(self, sprache: str = "German", warten: bool = False, lautstaerke: int = 100,
+                 neural: str | None = None, tempo: str = "+8%"):
         """`warten`: jeder Satz blockiert, bis er gesprochen ist - zum Anhoeren
-        einer Aufnahme im Zeitraffer. `lautstaerke` 0 fuer Tests."""
-        self.warten, self.lautstaerke = warten, lautstaerke
+        einer Aufnahme im Zeitraffer. `lautstaerke` 0 fuer Tests. `neural`: Name
+        einer neuronalen Stimme (z. B. "de-DE-ConradNeural"), sonst die Windows-Stimme."""
+        self.warten, self.lautstaerke, self.neural, self.tempo = warten, lautstaerke, neural, tempo
         self.protokoll: list[str] = []   # was angefangen wurde, in Reihenfolge
         self._schlange: queue.Queue = queue.Queue()   # (text, fertig)
         self._vorrang: queue.Queue = queue.Queue()     # Antworten
@@ -42,17 +126,9 @@ class Stimme:
         self._bereit.wait(timeout=5)
 
     def _lauf(self, sprache: str) -> None:
-        import pythoncom
-        import win32com.client
-        pythoncom.CoInitialize()
-        v = win32com.client.Dispatch("SAPI.SpVoice")
-        stimmen = v.GetVoices()
-        for i in range(stimmen.Count):
-            if sprache in stimmen.Item(i).GetDescription():
-                v.Voice = stimmen.Item(i)
-                break
-        v.Rate = 1
-        v.Volume = self.lautstaerke
+        motor = _Sapi(sprache, self.lautstaerke)
+        if self.neural:
+            motor = _Neural(self.neural, self.tempo, self.lautstaerke, ersatz=motor)
         self._bereit.set()
         while True:
             try:
@@ -67,12 +143,8 @@ class Stimme:
                     continue
             self._stopp.clear()
             self.protokoll.append(text)
-            v.Speak(text, _ASYNC)
-            while not v.WaitUntilDone(40):
-                if self._stopp.is_set():
-                    v.Speak("", _ASYNC | _UNTERBRECHEN)
-                    self._unterbrochen = (text, time.monotonic())
-                    break
+            if not motor.spreche(text, self._stopp):
+                self._unterbrochen = (text, time.monotonic())
             if fertig is not None:
                 fertig.set()
 

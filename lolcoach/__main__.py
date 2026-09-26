@@ -63,6 +63,13 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
     return plan
 
 
+STIMME = "de-DE-ConradNeural"   # Partie 3: "viel zu roboterhaft" - neuronale Stimme statt Windows-Hedda
+
+
+def _stimme(name: str, warten: bool = False):
+    return stimme.Stimme(warten=warten, neural=None if name == "windows" else name)
+
+
 def _dashboard():
     from . import dashboard
     try:
@@ -108,7 +115,7 @@ def _ansagen_speichern(pfad, plan: sprechplan.Sprechplan) -> None:
 
 
 def live(args) -> None:
-    sprecher = stimme.Stumm() if args.stumm else stimme.Stimme()
+    sprecher = stimme.Stumm() if args.stumm else _stimme(args.stimme)
     anzeigen = [] if args.ohne_dashboard else [d for d in [_dashboard()] if d]
     if not args.ohne_sprache:
         from . import sprache
@@ -181,7 +188,7 @@ def abspielen(args) -> None:
     if not pfad:
         sys.exit("Keine Aufnahme gefunden.")
     print(f"Aufnahme: {pfad}")
-    sprecher = stimme.Stimme(warten=True) if args.laut else stimme.Stumm()
+    sprecher = _stimme(args.stimme, warten=True) if args.laut else stimme.Stumm()
     sicht = None if args.ohne_bilder else lage.sicht_fuer(pfad)
     if sicht:
         print(f"Minimap: {len(sicht.bilder)} Bilder")
@@ -215,7 +222,7 @@ def frage_an_aufnahme(args) -> None:
 
 def mikrotest(args) -> None:
     from . import sprache
-    sprecher = stimme.Stimme()
+    sprecher = _stimme(args.stimme)
     erkenner = sprache.Erkenner()
 
     def gehoert(audio):
@@ -259,6 +266,7 @@ def main() -> None:
     lv.add_argument("--ohne-aufnahme", action="store_true")
     lv.add_argument("--ohne-bilder", action="store_true", help="keine Minimap (weder Erkennung noch Bilder)")
     lv.add_argument("--stumm", action="store_true")
+    lv.add_argument("--stimme", default=STIMME, help="neuronale Stimme (de-DE-KatjaNeural, ...) oder windows")
     lv.add_argument("--ohne-dashboard", action="store_true")
     lv.add_argument("--ohne-sprache", action="store_true", help="keine Fragen per Mikrofon")
     lv.add_argument("--ptt", default="maus5", help="Push-to-Talk-Taste (maus4, maus5, f9, ...)")
@@ -269,6 +277,7 @@ def main() -> None:
     ab.add_argument("--alle", type=int, default=60, help="Uebersicht alle N Schnappschuesse")
     ab.add_argument("--nur-coach", action="store_true", help="nur die Ansagen des Coaches")
     ab.add_argument("--laut", action="store_true", help="Ansagen vorlesen (wartet, bis jede gesprochen ist)")
+    ab.add_argument("--stimme", default=STIMME, help="neuronale Stimme (de-DE-KatjaNeural, ...) oder windows")
     ab.add_argument("--ohne-bilder", action="store_true", help="Minimap-Bilder nicht auswerten")
     ab.add_argument("--dashboard", action="store_true", help="Dashboard mitlaufen lassen (sinnvoll mit --takt)")
     be = unter.add_parser("bericht")
@@ -280,6 +289,7 @@ def main() -> None:
     fr.add_argument("--minute", type=float, default=10.0)
     mt = unter.add_parser("mikrotest", help="Push-to-Talk und Spracherkennung ohne Partie pruefen")
     mt.add_argument("--ptt", default="maus5")
+    mt.add_argument("--stimme", default=STIMME, help="neuronale Stimme (de-DE-KatjaNeural, ...) oder windows")
     unter.add_parser("status")
     lm = unter.add_parser("llm")
     lm.add_argument("frage")
