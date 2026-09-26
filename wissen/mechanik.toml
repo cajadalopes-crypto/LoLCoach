@@ -1,0 +1,218 @@
+# Spielmechanik-Kernzahlen fuer die Coach-Engine. Zeiten in Sekunden Spielzeit, Tempo in Einheiten/s.
+# Stand: Patch 26.19 (Data Dragon 16.19.1), nachgeschlagen 26.09.2026.
+# Quellen: wiki.leagueoflegends.com (Experience_(champion), Death, Gold, Champion_gold_bounties,
+#   Minion-Seiten, Turret, Camp-Seiten, Smite, Ignite, Flash, Dragon_pit, Baron_Nashor, Voidgrub,
+#   Stealth_Ward, Control_Ward, Oracle_Lens, Movement_speed, Boots) und Patchnotes 26.1.
+# Jede Zahl: "# Q: ..." = nachgeschlagen, "# ungeprueft" = nicht bestaetigt.
+# Text dazu: wissen/lexikon/mechaniken.md
+stand = "Patch 26.19, nachgeschlagen 26.09.2026"
+
+[xp]
+# Gesamt-XP, um Level 1..18 zu erreichen (Index 0 = Level 1)
+tabelle = [0, 280, 660, 1140, 1720, 2400, 3180, 4060, 5040, 6120, 7300, 8580, 9960, 11440, 13020, 14700, 16480, 18360]  # Q: Wiki Experience_(champion)
+vasall_nah = 62            # Q: Patch 26.1 (vorher 65), Wiki Melee_minion
+vasall_fern = 31           # Q: Patch 26.1 (vorher 32), Wiki Caster_minion
+vasall_kanone = 75         # Q: Patch 26.1 (vorher 100), Wiki Siege_minion
+vasall_super = 75          # Q: Patch 26.1 ("Cannon/Super minion XP ... 75")
+# Anteil je Kopf bei 1..6 teilenden Champions (Gesamtpool 130 % ab 2)
+geteilt = [1.0, 0.65, 0.433, 0.325, 0.26, 0.217]  # Q: Wiki V26.01
+reichweite_vasall = 1500   # Q: Wiki Experience_(champion)
+# Kill-XP nach Level des Opfers 1..18 (solo)
+kill = [42, 114, 144, 174, 204, 234, 308, 392, 486, 590, 640, 690, 740, 790, 840, 890, 940, 990]  # Q: Wiki ("then +50")
+# geteilter Kill: Pool = kill x Faktor, gleich verteilt; Faktor nach Opferlevel
+kill_geteilt_bis6 = 0.666  # Q: Wiki
+kill_geteilt_7_8 = 0.82    # Q: Wiki
+kill_geteilt_ab9 = 0.90    # Q: Wiki
+kill_level_diff = 0.20     # +-20 % je volles Level Unterschied ueber dem ersten; Q: Wiki
+kill_level_diff_min = 0.40 # Abzug hoechstens auf 40 %; Q: Wiki
+reichweite_kill = 1600     # Q: Wiki
+
+[gold]
+start = 500                # Q: Wiki Gold
+passiv_pro_10s = 20.4      # Q: Wiki Gold
+passiv_start = 65          # Q: Patch 26.1 "Ambient Gold Start Time: 65 seconds" (saison2026.md sagt 30 - Widerspruch)
+vasall_nah = 20            # Q: Patch 26.1 (vorher 21)
+vasall_fern = 14           # Q: Wiki Caster_minion
+vasall_kanone = 50         # + kanone_pro_stufe je 90-s-Aufwertung; Q: Patch 26.1
+vasall_kanone_pro_stufe = 1  # Q: Patch 26.1
+vasall_kanone_max = 69     # Q: Wiki Minion
+# vasall_super: ungeprueft (Wert nicht gefunden) - bewusst kein Schluessel
+# Kill-Gold nach Opferlevel 1..18
+kill_basis = [300, 300, 300, 300, 300, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420]  # Q: Wiki Champion_gold_bounties
+kill_minimum = 50          # Q: Wiki
+first_blood_bonus = 100    # Q: Wiki, Patch 26.1
+assist_anteil = 0.5        # Haelfte des ausgezahlten Kopfgelds, max 50 % Basis; frueh 50-100 % nach Zeit; Q: Wiki
+shutdown_ab = 100          # Kopfgeld ueber Basis, ab dem Shutdown gilt; Q: Wiki
+shutdown_max = 700         # hoechstens Basis + 700; Q: Wiki
+kopfgeld_je_kill_gold = 3  # 1 Kopfgeld je 3 g aus Kills/Assists; Q: Wiki
+kopfgeld_je_farm_gold = 20 # im Plus; im Minus 7 (26.3); Q: Wiki
+platte = 120               # Q: Wiki Turret, Patch 26.1
+platte_abzug_ab = 660      # ab 11:00 -10 g/min; ungeprueft hier (Q: saison2026.md, Patch 26.1)
+platte_abzug_pro_min = 10  # ungeprueft hier (Q: saison2026.md)
+platte_min = 80            # ab 15:00; ungeprueft hier (Q: saison2026.md)
+platten_je_turm = 5        # Q: Wiki Turret
+turm_aussen = 50           # global je Spieler; lokales Gold = Platten; Q: Wiki Turret
+turm_innen = 25            # global; Q: Wiki Turret
+turm_inhib = 25            # global; Q: Wiki Turret
+turm_nexus = 50            # global; Q: Wiki Turret
+erster_turm_bonus = 300    # geteilt unter den Beteiligten; Q: Patch 26.1
+drache = 75                # Q: Patch 26.1
+larve = 30                 # lokal, je Larve; Q: Wiki Voidgrub, Patch 26.1
+herold = 100               # an den Killer; Q: Patch 26.1, Wiki
+baron_je_spieler = 150     # + 100 an den Killer = 850 gesamt; Q: Wiki Baron_Nashor, Patch 26.1
+baron_killer = 100         # Q: Wiki
+aeltester_je_spieler = 150 # + 100 Killer = 850; Q: Wiki Elder_Dragon, Patch 26.1
+aeltester_killer = 100     # Q: Wiki
+
+[tod]
+# respawn(level, minute) = brw[level-1] * (1 + min(tif, tif_max) / 100)
+# tif = 0 vor 15:00; sonst Stufe s mit groesstem s.ab <= minute:
+#   tif = s.basis + ceil(2 * (minute - s.ab)) * s.je_halbe_minute
+brw = [10, 10, 12, 12, 14, 16, 20, 25, 28, 32.5, 35, 37.5, 40, 42.5, 45, 47.5, 50, 52.5]  # Q: Wiki Death
+tif = [
+  { ab = 15, basis = 0.0, je_halbe_minute = 0.425 },   # Q: Wiki Death
+  { ab = 30, basis = 12.75, je_halbe_minute = 0.30 },  # Q: Wiki Death
+  { ab = 45, basis = 21.75, je_halbe_minute = 1.45 },  # Q: Wiki Death
+]
+tif_max = 50.0             # Q: Wiki Death (L18 max 78,75 s)
+
+[wellen]
+erste = 30                 # Q: Patch 26.1, Wiki Minion
+takt = [{ ab = 0, s = 30 }, { ab = 840, s = 25 }, { ab = 1800, s = 20 }]  # Q: Wiki Minion, Patch 26.1
+erste_kanone_welle = 3     # Q: Patch 26.1
+kanone_jede = [{ ab = 0, n = 3 }, { ab = 840, n = 2 }, { ab = 1500, n = 1 }]  # Q: Wiki Minion
+tempo = 350                # Start; steigt auf 375/400/425/450 (Schwellen ungeprueft); Q: Patch 26.1
+aufwertung_takt = 90       # Q: Wiki Minion
+schaden_an_champ_turm = 0.60  # Q: Wiki Minion (26.1)
+# Turmschaden je Schuss in Anteil Max-HP
+turm_an_nah = 0.45         # Q: Wiki Turret/Melee_minion
+turm_an_fern = 0.70        # Q: Wiki Caster_minion
+turm_an_kanone = [0.14, 0.11, 0.08]  # Aussen/Innen/Inhib+; Q: Wiki Siege_minion
+turm_an_super = 0.05       # Q: Wiki Turret
+
+[tuerme]
+reichweite = 750           # Q: Wiki Turret
+leben_aussen = 9000        # Q: Patch 26.1
+leben_innen = 5000         # Q: Patch 26.1
+leben_inhib = 4750         # Q: Patch 26.1
+leben_nexus = 3500         # Q: Patch 26.1
+resistenz = 60             # Q: Wiki Turret, Patch 26.1
+# Schaden an Champions: start + pro_min je Minute ab ab_min, bis max
+schaden_aussen = { start = 182, pro_min = 12, ab_min = 0, max = 350 }   # Q: Wiki Turret
+schaden_innen = { start = 187, pro_min = 16, ab_min = 3, max = 427 }    # Q: Wiki Turret
+schaden_inhib = { start = 187, pro_min = 16, ab_min = 3, max = 427 }    # Q: Wiki Turret
+schaden_nexus = { start = 165, pro_min = 16, ab_min = 3, max = 405 }    # Q: Wiki Turret
+aufwaermen_je_schuss = 0.50  # Q: Wiki Turret
+aufwaermen_max = 1.50        # Q: Wiki Turret
+aufwaermen_reset = 5         # Q: Wiki Turret
+befestigung_bis = 300        # 50 % Schadensreduktion; Q: Wiki Turret
+nahkampf_bonus = 0.20        # Nahkampf-Champions +20 % an Tuermen; Q: Wiki Turret (26.1)
+platten_schwellen = [0.10, 0.25, 0.45, 0.70, 1.00]  # fehlendes Leben; Q: Patch 26.1
+inhib_respawn = 300          # Q: Wiki Inhibitor (objektive.toml)
+nexusturm_respawn = 180      # mit 40 % Leben; Q: Wiki Turret, Patch 26.1
+
+[zuenden]
+# schaden(L) = basis + pro_level_frueh * (min(L,5) - 1) + pro_level_spaet * max(0, L - 5); ueber dauer
+schaden_basis = 70         # Q: Wiki Ignite (25.9)
+pro_level_frueh = 20       # Level 2-5; Q: Wiki Ignite
+pro_level_spaet = 25       # ab Level 6; Q: Wiki Ignite -> L18 = 475
+dauer = 5                  # Q: Wiki Ignite
+reichweite = 600           # Q: Wiki Ignite
+abklingzeit = 180          # Q: Wiki Ignite
+heilungsreduktion = 0.40   # Q: Wiki Grievous_Wounds
+
+[schaden]
+kritisch = 2.0             # ungeprueft hier (Q: saison2026.md, Patch 26.1)
+aeltester_hinrichtung = 0.20  # Max-HP; Q: Wiki Aspect_of_the_Dragon
+
+[bewegung]
+flash = 400                # Q: Wiki Flash
+flash_cd = 300             # Q: Wiki Flash
+grund_min = 325            # Q: Wiki Movement_speed
+grund_max = 355            # Q: Wiki Movement_speed
+stiefel1 = 25              # Q: Wiki Boots
+stiefel2 = 45              # Q: Wiki Movement_speed/Mercury's_Treads
+stiefel_swiftness = 55     # Q: Wiki Movement_speed
+stiefel3 = 45              # nur Mid-Quest; Q: Patch 26.1
+stiefel3_swiftmarch = 65   # Q: Patch 26.1
+homeguard_frueh = [0.80, 0.40]  # vor 14:00, faellt ab; Q: Patch 26.1
+homeguard_spaet = [1.50, 0.65]  # ab 14:00; Q: Patch 26.1
+homeguard_wechsel = 840         # Q: Patch 26.1
+softcap = [{ ab = 415, faktor = 0.8, plus = 83 }, { ab = 490, faktor = 0.5, plus = 230 }]  # Q: Wiki Movement_speed
+ghost = [0.24, 0.508]      # Level 1..18, 10 s; Q: Wiki Ghost
+
+[beschwoerer]
+flash = 300                # Q: Wiki Flash
+zuenden = 180              # Q: Wiki Ignite
+heilen = 240               # Q: Wiki Heal
+barriere = 180             # Q: Wiki Barrier
+erschoepfung = 240         # Q: Wiki Exhaust
+reinigen = 240             # Q: Wiki Cleanse
+geist = 240                # Q: Wiki Ghost
+teleport = 300             # Q: Wiki Teleport (25.S1.1)
+teleport_unleashed_ab = 600  # Q: Wiki Teleport
+smite_ladung = 90          # Q: Wiki Smite
+tempo_ionian = 10          # CD x 100/(100+Tempo); Q: Wiki Summoner_spell_haste
+tempo_cosmic_insight = 18  # Q: Wiki Summoner_spell_haste
+tempo_crimson_lucidity = 20  # Q: Wiki Summoner_spell_haste
+
+[smite]
+monster = [600, 1000, 1400]  # Basis/Unleashed(15 Treats)/Primal(35); Q: Wiki Smite, Patch 26.1
+champion = [80, 160]         # Unleashed/Primal, nach Level; Q: Wiki Smite
+ladungen = 2                 # Q: Wiki Smite
+erste_aufladung = 48         # Q: Wiki Smite
+
+[camps.blau]
+erster = 55                # Q: Wiki Blue_Sentinel (26.1)
+respawn = 300              # Q: Wiki
+gold = 90                  # Q: Wiki
+xp = 95                    # bis 142.5 nach Monsterlevel; Q: Wiki
+buff_dauer = 120           # Q: Wiki Crest_of_Insight
+
+[camps.rot]
+erster = 55                # Q: Wiki Red_Brambleback (26.1)
+respawn = 300              # Q: Wiki
+gold = 90                  # Q: Wiki
+xp = 95                    # bis 142.5; Q: Wiki
+buff_dauer = 120           # Q: Wiki Crest_of_Cinders
+
+[camps.gromp]
+erster = 67                # Q: Wiki Gromp (26.1)
+respawn = 135              # Q: Wiki
+gold = 80                  # Q: Wiki
+xp = 120                   # bis 180; Q: Wiki
+
+[camps.woelfe]
+erster = 55                # Q: Wiki Murk_Wolf (26.1)
+respawn = 135              # Q: Wiki
+gold = 85                  # Q: Wiki
+xp = 80                    # bis 120; Q: Wiki
+
+[camps.raptoren]
+erster = 55                # Q: Wiki Crimson_Raptor (26.1)
+respawn = 135              # Q: Wiki
+gold = 75                  # Q: Wiki
+xp = 70                    # bis 105; Q: Wiki
+
+[camps.krugs]
+erster = 67                # Q: Wiki Krug_camp (26.1)
+respawn = 135              # Q: Wiki
+gold = 109                 # Summe 15 + 10 + 6x14 aus Wiki-Einzelwerten gerechnet
+xp = 121                   # bis 181.5; Summe gerechnet aus Wiki-Einzelwerten
+
+[camps.scuttle]
+erster = 175               # Q: Wiki Rift_Scuttler (26.1)
+respawn = 150              # Q: Wiki
+gold = 55                  # bis 121 nach Level; Q: Wiki
+xp = 100                   # bis 150; Q: Wiki
+
+[sicht]
+stealth_ward_dauer = [90, 120]      # nach Durchschnittslevel; Q: Wiki Stealth_Ward
+stealth_ward_aufladung = [210, 90]  # 26.3; Q: Wiki Stealth_Ward
+stealth_ward_max = 3                # Q: Wiki
+ward_sicht = 900                    # Q: Wiki Ward
+kontrollward_preis = 75             # Q: Wiki Control_Ward
+kontrollward_max = 1                # gelegt; Q: Wiki
+oracle_dauer = 8                    # Q: Wiki Oracle_Lens (26.1)
+oracle_aufladung = [160, 100]       # Q: Wiki Oracle_Lens
+farsight_sicht = 500                # Q: Wiki Ward

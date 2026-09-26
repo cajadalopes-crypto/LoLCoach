@@ -36,7 +36,19 @@ STICHWORTE = {
     "teamfight": "Teamfight", "fight": "Teamfight", "split": "Teamfight", "splitpush": "Teamfight",
     "teleport": "Rollen", "tp": "Rollen", "job": "Rollen", "aufgabe": "Rollen", "rolle": "Rollen",
     "flash": "Beschw", "zünden": "Beschw", "cooldown": "Beschw",
+    # mechaniken.md (26.09.): Zahlen zu Schaden, XP, Gold, Tod, Vasallen, Tuermen, Camps, Monstern, CC
+    "schaden": "Schaden", "kill": "Schaden", "killen": "Schaden", "töten": "Schaden", "rüstung": "Schaden",
+    "magieresistenz": "Schaden", "durchdringung": "Schaden", "letalität": "Schaden", "heilung": "Schaden",
+    "xp": "Erfahrung", "erfahrung": "Erfahrung", "respawn": "Tod", "respawnt": "Tod", "todeszeit": "Tod", "tot": "Tod",
+    "kopfgeld": "Gold", "shutdown": "Gold", "bounty": "Gold", "platten": "Tuerme", "turm": "Tuerme",
+    "türme": "Tuerme", "vasallen": "Vasallen", "kanone": "Vasallen", "minions": "Vasallen",
+    "camp": "Dschungel", "camps": "Dschungel", "buff": "Dschungel", "scuttle": "Dschungel", "smite": "Dschungel",
+    "jungle": "Dschungel", "tempo": "Bewegung", "laufen": "Bewegung", "stiefel": "Bewegung",
+    "betäubung": "Kontrolle", "cc": "Kontrolle", "reinigen": "Kontrolle", "qss": "Kontrolle",
+    "zähigkeit": "Kontrolle",
 }
+# Stichworte, die auch die Epischen Monster (mechaniken.md) brauchen
+AUCH = {"Objective": "Epische", "Sicht": "Sicht", "Beschw": "Beschwoerer"}
 
 
 @lru_cache(maxsize=None)
@@ -55,12 +67,13 @@ def champion_eintrag(champion_id: str) -> str | None:
 
 
 def grundlagen(anlass: str, hoechstens: int = 5000) -> str:
-    """Die Grundlagen-Abschnitte, die zu den Stichworten in `anlass` passen."""
-    abschnitte = _abschnitte("grundlagen.md")
+    """Die Abschnitte aus grundlagen.md und mechaniken.md, die zu den Stichworten in `anlass` passen."""
+    abschnitte = {**_abschnitte("grundlagen.md"), **_abschnitte("mechaniken.md")}
     if not abschnitte:
         return ""
     woerter = set(re.findall(r"[a-zäöüß]+", anlass.lower()))
     gesucht = {STICHWORTE[w] for w in woerter if w in STICHWORTE}
+    gesucht |= {AUCH[g] for g in gesucht if g in AUCH}
     gewaehlt, laenge = [], 0
     for titel, text in abschnitte.items():
         if any(g.lower() in titel.lower() for g in gesucht) and laenge + len(text) <= hoechstens:

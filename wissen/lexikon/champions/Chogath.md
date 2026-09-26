@@ -4,36 +4,51 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Kopf
 - Name: Cho'Gath, der Schrecken der Leere. Rollen: Top, Dschungel (26.19 häufig), Mid. Klasse: Tank/Magier (Data Dragon: Tank, Mage). Ressource: Mana.
-- Spielidee: Wachsender Tank. Riss (Q) wirft hoch, Schrei (W) verstummt, Fraß (R) richtet mit absolutem Schaden hin und macht ihn größer. R + Zerschmettern stiehlt Objectives.
+- Spielidee: Wachsender Tank. Q wirft hoch, W verstummt, R richtet mit absolutem Schaden hin und macht ihn größer. R + Zerschmettern gewinnt fast jeden Objective-Klau.
 
 ## Faehigkeiten-Kniffe
-- Passiv Fleischfresser: Kills heilen und geben Mana.
-- Q Riss: Kreis nach ~0,6 s Verzögerung, Reichweite 950, Knockup ~1 s + Slow. CD 6.
-- W Wilder Schrei: Kegel, Verstummen ~1,5 s. CD 11/10,5/10/9,5/9.
-- E Dornentod: nächste 3 AAs mit Stachel-Linie. CD 8/7/6/5/4.
-- R Fraß: 175 Reichweite, absoluter Schaden (hohe Summe auf Monstern), Kill = Stapel (Leben, Größe). CD 80/70/60.
-- Combo: Q (Knockup) → W → E-AAs → R wenn Ziel in Reichweite.
-- Smite-Kampf: R + Zerschmettern gegen Drache/Baron/Herold – er gewinnt fast jeden Klau.
+- Passiv Fleischfresser: Kills auf Einheiten geben Leben und Mana zurück.
+- Q Riss: Kreis auf Zielort (950) nach Verzögerung; Knockup + Slow + Schaden. CD 6, Kosten 50. Trick: Q auf den Laufweg, nicht auf den Standpunkt.
+- W Wilder Schrei: Kegel (300), Schaden + Verstummen einige Sekunden. CD 11/10,5/10/9,5/9, Kosten 70–90. Trick: W gegen Engager mit Fähigkeits-Combo (Riven, Akali) vor deren Einstieg.
+- E Dornentod: nächste AAs setzen Stachel in einer Linie frei (Schaden + Slow). CD 8/7/6/5/4, Kosten 30.
+- R Fraß: Reichweite 175, hoher absoluter Schaden auf eine Einheit (mehr auf Monster/Vasallen); Kill = Stapel (Leben, Größe). CD 80/70/60, Kosten 100.
+- Combos (Tastenfolgen):
+  - Lane: Q auf Laufweg → E-AAs → W, wenn Gegner zurückschlägt.
+  - Kill: Q (Knockup) → W (Verstummen) → E-AAs → R bei Kill-Schwelle.
+  - Objective: Drache/Baron-Leben beobachten → R + Zerschmettern gleichzeitig.
+- Zeichen im Spiel: Größe = seine Stapel. Riss-Kreis am Boden = Knockup kommt. Er steht neben dem Monster mit Zerschmettern und R bereit = Klau-Gefahr.
 
 ## Powerspikes
-- Level 6 R; Stapel + Herzstahl/Jak'Sho = Teamfight-Monster.
-- Schwächen: früh im Duell; langsamer Clear/Ganks ohne Dash; Kiter mit Reichweite.
+- Level 6 R; danach Stapel + Tank-Items. Mit Herzstahl/Jak'Sho ein Teamfight-Monster.
+- Schwächephasen: früh im Duell gegen Kämpfer; langsamer Clear/Ganks ohne Dash; Kiter mit Reichweite.
 
 ## Lane-Plan
-- Dschungel: Farm-Clear, Ganks mit Q aus dem Gras (Lane mit Slow/CC bevorzugt).
-- Objectives: steht immer beim Epic-Monster für R-Smite.
-- Top: Farm, Q-Poke, W gegen Engage.
+- Top: Skill Q > E > W (ungeprüft), Level 1 Q. Farm, Q-Poke, W gegen Engage; R auf Kanonen-Vasallen für Stapel.
+- Dschungel: Farm-Clear, Ganks mit Q aus dem Gras auf Lanes mit eigenem CC; immer beim Epic-Monster für R-Smite.
+- Gank-Anfälligkeit: mittel – kein Dash, aber Q + W wehren Nahkämpfer ab.
+- Top gegen Ranged: Q aus dem Gras auf die Lasthit-Position, sonst Welle am eigenen Turm halten.
 
 ## Gegen diesen Champion
-- Q-Kreis sieht man vor dem Knockup: seitlich raus. Q verfehlt = 6 s Fenster (kurz, aber er hat sonst nur W als CC).
-- Nicht mit wenig Leben in 175 Reichweite stehen (R = absolut, keine Schild-Umgehung nötig).
-- Beim Objective: Zerschmettern + seine R zusammen im Blick; nicht warten, bis er beides hat – Pit vorher verlassen oder ihn wegdrängen.
-- %-Schaden gegen seine Leben-Stapel (Klinge des gestürzten Königs, Liandrys Qual, Lord Dominiks Grüße).
+- Q-Kreis sieht man vor dem Knockup: seitlich raus. Q verfehlt = 6 s ohne Knockup (sonst nur W als CC).
+- W verbraucht (11–9 s) → Fähigkeits-Champions können ihre Combo spielen.
+- Nicht mit wenig Leben in 175 Reichweite stehen – R ist absoluter Schaden.
+- Objectives: Zerschmettern + R zusammen im Blick. Nicht bis zum Schluss warten; ihn vorher aus der Grube drängen oder Objective schneller schlagen.
+- %-Schaden gegen seine Leben-Stapel: Klinge des gestürzten Königs, Liandrys Qual, Lord Dominiks Grüße, Schwarzes Beil.
 - Er hat keinen Dash: kiten, Flucht mit Blitz nach dem Q.
+- Früh Druck: seine Stapel sind vor 6 null.
+- Kein Dash, Q ist sein einziger Engage: Q-Kreis ausweichen = er kommt nicht ran.
+- Sein Leben wächst mit jedem R-Kill: frühe Kills auf ihn verhindern Stapel, später hilft nur %-Schaden.
 
 ## Makro/Teamfight
-- Frontlinie, W-Verstummen auf Engage-Carrys, R auf Tiefstes.
-- Objectives: extrem stark im Smite-Kampf.
+- Job: Frontlinie, W-Verstummen auf Engage-Carrys, R auf das tiefste Ziel oder den Carry.
+- Objectives: extrem stark im Smite-Kampf (Dschungel); als Top Grubs/Herold mit R-Hilfe.
+- Teamfight: vorne, Q in Choke, W auf Assassinen, die springen.
+- Dschungel-Cho: kein schneller Ganker – Warden an den Pits sind wichtiger als an Lanes.
 
 ## Build 26.19
-- typische Kern-Items (ungeprüft): Herzstahl, Jak'Sho, der Proteaner, Dornenpanzer bzw. Kaenischer Rookern.
+- Kern (Richtung, ungeprüft): Herzstahl → Jak'Sho, der Proteaner → Dornenpanzer oder Kaenischer Rookern.
+- Situativ: Sonnenfeuer-Ägide/Hohler Glanz (Clear), Randuins Omen (Krit), Naturgewalt (AP), Warmogs Rüstung.
+- AP-Variante (ungeprüft): Rabadons Todeshaube, Zhonyas Stundenglas.
+- Stiefel: Beschichtete Stahlkappen oder Merkurs Schuhe.
+- Beschwörer: Blitz + Teleportation (Top), Blitz + Zerschmettern (Dschungel).
+- Skill: Q > E > W, R auf 6/11/16.

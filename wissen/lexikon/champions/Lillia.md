@@ -1,39 +1,53 @@
 # Lillia
 
-Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. 26.19: gebufft (Rüstung 24, R-Schlaf 2,5 s).
+Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. 26.19 laut vorigem Eintrag gebufft (Rüstung 24, R-Schlaf 2,5 s).
 
 ## Kopf
-- Name: Lillia, die scheue Blüte. Rollen: Dschungel, Top. Klasse: Kämpferin/Magierin (Data Dragon: Fighter, Mage). Ressource: Mana.
-- Spielidee: AP-Kiterin mit wachsendem Lauftempo (Q-Stapel), %-Leben-Brand (Passiv) und Massenschlaf (R) auf alle, die ihren Brand tragen.
+- Name: Lillia, die scheue Blüte. Rollen: Dschungel, Top. Klasse: Kämpferin/Magierin (Data Dragon: Fighter, Mage). Ressource: Mana. AA-Reichweite 325.
+- Spielidee: AP-Kiterin mit wachsendem Lauftempo (Q-Stapel), %-Leben-Brand (Passiv) und Massenschlaf (R) auf alle, die ihren Brand tragen. Gewinnt lange Kämpfe durch Laufen, verliert gegen harte Punkt-CC.
 
 ## Faehigkeiten-Kniffe
-- Passiv Traumstab: Fähigkeiten brennen % max. Leben (magisch) über Zeit; heilt sie an Monstern/Champions.
-- Q Blütenschwung: Kreis 450, äußerer Ring = absoluter Zusatzschaden; Treffer stapeln Lauftempo. CD 6/5,5/5/4,5/4.
-- W Vorsicht! Iiep!: Sprung-Schlag 500, Zentrum = dreifacher Schaden. CD 14/13/12/11/10.
-- E Wirbelsaat: Samen rollt 700 weiter, Slow + Sicht. CD 12.
-- R Sanftes Schlaflied: alle Gegner mit Passiv-Brand (Reichweite 1600) werden schläfrig (Slow ~1,5 s), dann Schlaf 2,5 s; Schaden weckt sie. CD 150/130/110.
-- Combo: E → Q-Ring (Tempo) → W-Zentrum → R auf alle Gebrandmarkten → W/Q auf Schlafende.
-- Zeichen: Brand-Effekt auf dir = R-Ziel. Viele Q-Stapel = sie ist schneller als du.
+- Passiv Traumstab: Jeder Fähigkeitstreffer brennt % max. Leben (magisch) über einige Sekunden; an großen Monstern/Champions heilt sie sich (ungeprüft). Der Brand ist die Voraussetzung für R.
+- Q Blütenschwung: Kreis 450, CD 6/5,5/5/4,5/4, 65 Mana. Äußerer Ring = absoluter Zusatzschaden. Passiv: Treffer stapeln Lauftempo (Stapel ungeprüft, ~5). Hauptwerkzeug – Q max.
+- W Vorsicht! Iiep!: Fläche 500, CD 14/13/12/11/10, 50 Mana. Verzögerter Schlag; Zentrum = mehrfacher Schaden (ungeprüft ~3x). Auf Schlafende = größter Einzeltreffer.
+- E Wirbelsaat: Wurf 700, CD 12, 70 Mana. Schaden + Slow + Sicht; trifft er nichts, rollt der Samen weiter, bis er gegen eine Mauer oder ein Ziel stößt. Rollt über Wände hinweg in den Nebel.
+- R Sanftes Schlaflied: Reichweite 1600 (alle Gegner mit Brand), CD 150/130/110, 50 Mana. Erst schläfrig (Slow), dann Schlaf (2,5 s laut 26.19-Notiz); Schaden weckt mit Zusatzschaden.
+- Combos:
+  - Gank: E (rollend über die Wand) → Q-Ring → W → Q → R, wenn der Brand sitzt.
+  - Teamfight: Q in der Gruppe (Brand verteilen) → R → W ins Zentrum auf den Schlafenden Carry.
+  - Kiten: Q auf Gegner am Ring-Rand (Tempo) → weglaufen → Q erneut, sobald bereit.
+- Zeichen im Spiel: Blütenbrand auf dir = du bist R-Ziel (1600!). Viele Q-Stapel (Blütenspur) = sie ist schneller als du. R verbraucht = 110–150 s kein Massen-CC.
 
 ## Powerspikes
-- Level 3; Level 6 R. Liandrys Qual = Clear und Kiten.
-- Schwächen: früh gegen Invader (niedrige Rüstung), harter CC.
+- Level 3: schneller Clear und Gank-Tempo.
+- Level 6: R = Massen-Schlaf in jedem Kampf.
+- Items: Liandrys Qual (Brand + Clear) = Kern-Spike; zweites Item (Rylais Kristallzepter) = Dauer-Slow.
+- Schwächephasen: früh gegen Invader (geringe Rüstung, 24); gegen harten Punkt-CC und Dive; ohne R.
 
-## Lane-Plan
-- Dschungel: schneller Clear, Ganks mit E + Q-Tempo; Top: Q-Poke, Kiten.
-- Gank-Muster: E vom Gras, R nach mehreren Treffern.
+## Dschungel-Plan
+- Erste Route: Voll-Clear (ungeprüft: einer der schnellsten), dann Scuttle oder Gank auf Lane mit Slow/CC-Laner.
+- Ganks: E aus Distanz über die Wand, Q-Tempo für den Nachlauf; R erst, wenn 2+ Gegner gebrandmarkt sind oder der Kill sicher ist.
+- Objectives: stark – Brand frisst Monster-Leben; Grubs und Drachen früh möglich.
+- Top-Variante: Q-Poke am Ring-Rand, Welle schnell, Teleport für R-Flanken.
 
 ## Gegen diesen Champion
-- Früh invaden (Level 1–3): sie verliert Nahkampf-Duelle.
-- Brand auf dir + R bereit: nicht in ihrer Nähe bleiben; bei Schläfrigkeit sofort Blitz/Dash raus.
-- W-Zentrum ausweichen (Vorwarnkreis).
-- Harter CC (Stun) beendet ihr Kiten – Gap-Closer aufheben, bis ihr Tempo abklingt.
-- Magieresistenz (Merkurs Schuhe).
-- R-Timer (110–150 s) mitzählen: ohne R ist sie kein Teamfight-Sieg.
+- Früh invaden (Level 1–3): Sie verliert Nahkampf-Duelle, geringe Rüstung.
+- Brand auf dir + R bereit: Abstand zu ihr halten, bei Schläfrigkeit sofort Blitz/Dash weg (Schlaf kommt erst nach der Schläfrigkeit).
+- Schlafende Verbündete nicht mit kleinen Treffern wecken, wenn sie ohnehin fliehen müssen – aufwecken = Zusatzschaden; aber Schlaf auf dem eigenen Carry mit Reinigen/Quecksilber beenden.
+- W-Zentrum ausweichen (Vorwarnkreis): nur der Rand ist harmlos.
+- Harter Punkt-CC (Stun, Unterdrückung) beendet ihr Kiten. Gap-Closer aufheben, bis ihre Q-Stapel abklingen.
+- Magieresistenz (Merkurs Schuhe, Naturgewalt) und Heilungsreduktion gegen ihre Passiv-Heilung.
+- R-Timer (150/130/110 s) mitzählen: ohne R ist sie kein Teamfight-Sieger – dann Kampf erzwingen.
+- Nicht verfolgen in den Nebel: Ihr Tempo ist höher, E-Samen rollen dir hinterher.
 
 ## Makro/Teamfight
-- Flächen-Brand, R-Engage für ganze Teams.
-- Objectives: stark (Brand + Tempo).
+- Job: Flächen-Brand, R für das ganze Team, Kiten an der Kampfkante.
+- Teamfight: Außen herum laufen und Q-Ring auf viele Ziele; R nach dem Brand, dann W auf den wichtigsten Schlafenden.
+- Objectives: stark (Brand + Tempo), Drache/Baron schnell.
+- Splitpush: gut dank Tempo und Welle-Räumung.
 
 ## Build 26.19
-- typische Kern-Items (ungeprüft): Liandrys Qual, Rylais Kristallzepter, Zhonyas Stundenglas.
+- Richtung (ungeprüft): Liandrys Qual → Rylais Kristallzepter → Zhonyas Stundenglas/Leerenstab.
+- Situativ: Dämonische Umarmung gegen Tanks; Kosmischer Antrieb für Tempo; Morellonomikon gegen Heilung.
+- Stiefel: Zaubererschuhe oder Merkurs Schuhe (ungeprüft).
+- Runen-Richtung (ungeprüft): Eroberer oder Phasenrausch; Beschwörer Zerschmettern + Blitz (Top: Teleportation).

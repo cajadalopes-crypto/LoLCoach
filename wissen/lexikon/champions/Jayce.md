@@ -1,6 +1,6 @@
 # Jayce
 
-Stand: Patch 26.19 (Data Dragon 16.19.1), geschrieben 26.09.2026.
+Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon. Grundfähigkeiten mit 6 Rängen.
 
 ## Kopf
 - Name: Jayce, der Verteidiger von Morgen. Rollen: Top, Mid. Klasse: Kämpfer/Schütze (Data Dragon: Fighter, Marksman). Ressource: Mana.
@@ -8,39 +8,50 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), geschrieben 26.09.2026.
 
 ## Faehigkeiten-Kniffe
 - Passiv Hextech-Kondensator: Formwechsel gibt kurz Lauftempo.
-- Hammer: Q Bis zum Himmel! = Sprung auf Ziel + Slow (Reichweite 600). W Blitzfeld = passiv Mana pro Treffer, aktiv Flächenschaden um ihn. E Donnernder Schlag = Rückstoß + % max. Leben Schaden (bester Peel). E-CD 20–10 s.
-- Kanone: Q Schockstoß = Skillshot, stoppt am ersten Ziel; durch das Tor (E) schneller, weiter, mehr Schaden. W Hyperladung = 3 schnelle AAs. E Beschleunigungstor = Tempo für Verbündete, verstärkt Q.
-- R Merkurkanone / Merkurhammer: Formwechsel, CD 6; erster AA nach Wechsel mit Zusatzeffekt.
-- Combos: Kanone E+Q (Poke); All-in: Kanone E+Q → R → Hammer Q (Sprung) → W → E (Rückstoß weg oder zurück zum Team). "Hammer-E, dann Kanone-Q" für Abstand + Poke.
-- Zeichen: Hammer-Form = er will nahkämpfen/wegstoßen. Hammer-E verbraucht = 10–20 s kein Peel.
+- Q Bis zum Himmel! / Schockstoß: Hammer = Sprung auf Ziel (600) + Slow. Kanone = Kugel, stoppt am ersten Ziel; durch das Tor schneller, weiter, mehr Schaden. CD 16/14/12/10/8/6, Kosten 40.
+- W Blitzfeld / Hyperladung: Hammer = passiv Mana pro Treffer, aktiv Flächenschaden um ihn (285). Kanone = einige AAs mit maximalem Angriffstempo. CD 10, Kosten 40.
+- E Donnernder Schlag / Beschleunigungstor: Hammer = magischer Schaden (% max. Leben) + Rückstoß (240) – bester Peel. Kanone = Tor: Tempo für Verbündete, verstärkt Q. CD 20/18/16/14/12/10, Kosten 55.
+- R Merkurkanone / Merkurhammer: Formwechsel, CD 6. Erster AA in Kanonenform verringert Rüstung und MR.
+- Combos (Tastenfolgen):
+  - Poke: Kanone E → Q (durch das Tor).
+  - All-in: Kanone E + Q → R → Hammer Q (Sprung) → W → AA → E (Rückstoß weg oder zum eigenen Team).
+  - Abstand + Poke: Hammer E (weg) → R → Kanone E + Q.
+  - Wellenräumung: Hammer W + AAs, dann R → Kanone W.
+- Zeichen im Spiel: Hammer-Form = er will nahkämpfen/wegstoßen. Leuchtendes Tor = E+Q kommt. Hammer-E verbraucht = 20–10 s kein Peel.
 
 ## Powerspikes
-- Level 1–3 Poke; Level 6 (mehr Rang-Punkte, R ab Start vorhanden). Items: Youmus Geistklinge → Muramana (aus Träne der Göttin) → Voltaisches Zykloschwert (Alternative Seryldas Bitterkeit).
-- Schwächen: spät gegen Tanks/Duellanten; Mana-hungrig; schwach, wenn Hammer-E weg und Gegner auf ihm.
+- Level 1–3 Poke; R ist ab Level 1 verfügbar, mehr Rangpunkte ab 6 (6 Ränge je Grundfähigkeit).
+- Items: Youmus Geistklinge → Muramana (aus Träne der Göttin) → Voltaisches Zykloschwert (Alternative Seryldas Bitterkeit).
+- Schwächephasen: spät gegen Tanks/Duellanten; Mana-hungrig; schwach, wenn Hammer-E weg und Gegner auf ihm.
 
 ## Lane-Plan
 - Level 1: Q (Q > W > E). Kanonen-Poke, Hammer-Q nur auf Kill.
 - Bis 6: Leben des Gegners mit E+Q runterpoken, dann Hammer-All-in.
 - Nach 6: Poke vor Objectives, Roams.
 - Gank-Anfälligkeit: mittel (Hammer-E als Peel, Tor-Tempo).
-- Recall: Träne früh, Youmu-Bauteile.
+- Recall: Träne der Göttin früh, Youmu-Bauteile.
 
 ## Gegen diesen Champion
-- Hinter Vasallen stehen: Kanonen-Q wird geblockt. E+Q seitlich ausweichen (Tor ist ein Vorwarnzeichen).
-- Hammer-E verbraucht (10–20 s) → All-in; vorher stößt er dich weg.
-- Leben hoch halten; mit Dorans Schild/Aufschwung starten; Teleportation für Lanes, die er zerpokt.
-- Früh überleben, später skalieren: nach ~2 Items verliert er die Seiten-Duelle.
+- Hinter Vasallen stehen: Kanonen-Q wird geblockt. E+Q seitlich ausweichen (das Tor ist die Vorwarnung).
+- Hammer-E verbraucht (20–10 s) → All-in; vorher stößt er dich weg.
+- Hammer-Q-Sprung (600) verbraucht → er hat keinen Gapclose; Kanonen-Form ist dann seine Flucht-Distanz.
+- Leben hoch halten; mit Dorans Schild starten; Teleportation für Lanes, die er zerpokt.
+- Früh überleben, später skalieren: nach ~2 Items verliert er Seiten-Duelle.
 - Mana: nach mehreren E+Q ist er leer.
+- Nahkämpfer: nicht in Wand-Nähe fangen lassen – Hammer-E stößt dich aus dem Kampf.
+- Kanonen-W (Hyperladung) trifft Türme hart: Turm früh verteidigen.
 
 ## Makro/Teamfight
-- Poke vor Teamfights (Belagerung), Pick mit Hammer-E. Splitpush mittel früh.
+- Job: Poke vor Teamfights (Belagerung), Pick mit Hammer-E. Splitpush mittel früh.
+- Teamfight: Kanonen-Poke vor dem Kampf, Hammer-E gegen Diver; nicht zuerst in der Hammerform rein.
 - Objectives: Belagerung/Turm-Poke stark.
 
 ## Build 26.19
-Quelle: op.gg Jayce Top Patch 16.19, abgerufen 26.09.2026.
+Quelle: op.gg Jayce Top Patch 16.19, abgerufen 26.09.2026 (aus Vorversion).
 - Start: Dorans Klinge + Heiltrank (92 %).
 - Kern: Träne der Göttin → Youmus Geistklinge → Muramana → Voltaisches Zykloschwert (16 %, 54 % Sieg); Alternative Muramana → Voltaisches Zykloschwert → Seryldas Bitterkeit.
 - Stiefel: Ionische Stiefel der Deutlichkeit (36 %) oder Beschichtete Stahlkappen (32 %).
+- Situativ: Schwarzes Beil, Schutzengel, Schlund von Malmortius (AP), Lord Dominiks Grüße (Tanks).
 - Runen: Zauberei – Woge des Sturmräubers (40 %), Manafluss, Absoluter Fokus, Aufziehender Sturm; sekundär Inspiration – Magisches Schuhwerk, Kekslieferung.
 - Beschwörer: Blitz + Teleportation (51 %) oder Blitz + Entzünden (45 %).
 - Skill: Q > W > E.

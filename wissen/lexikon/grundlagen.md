@@ -12,7 +12,7 @@ Champion_gold_bounties, Dragon (wiki.leagueoflegends.com), Data Dragon 16.19.1 (
 
 Spielzeit -> Ereignis (Quelle: Patch 26.1, Wiki Minion, objektive.toml):
 - 0:30 erste Welle (frueher 1:05). Treffen in der Lane: Mid ~0:50, Top/Bot ~0:55-1:00 [Schaetzung].
-- 0:30 passives Gold beginnt.
+- 1:05 passives Gold beginnt (Patch 26.1: "Ambient Gold Start Time: 65 seconds"; mechaniken.md).
 - 0:55 Buffs, Woelfe, Raptoren; 1:07 Krugs, Gromp. Wiederkehr: Camps 2:15, Buffs 5:00 [ungeprueft].
 - 1:30 erste Kanonenwelle (Welle 3). Bis 14:00 jede 3. Welle = alle 1:30 (1:30, 3:00, 4:30, 6:00,
   7:30, 9:00, 10:30, 12:00, 13:30).
@@ -289,8 +289,8 @@ wichtigste Objective der Karte.
 
 ## Sicht
 
-**Werkzeuge (Patch 26.1).** Stealth Ward (Trinket) Cooldown 170-90 s je Level, 2 Ladungen
-[Ladungen ungeprueft]. Oracle Lens (Sweeper) 8 s Wirkung. Kontrollward 75 g (Support nach Quest 40 g),
+**Werkzeuge (Patch 26.1).** Stealth Ward (Trinket) Cooldown 210-90 s je Level (seit 26.3; 26.1 hatte
+170-90), 2 Ladungen [Ladungen ungeprueft]. Oracle Lens (Sweeper) 8 s Wirkung. Kontrollward 75 g (Support nach Quest 40 g),
 eine pro Spieler auf der Karte [ungeprueft]. Farsight ab Level 9 [ungeprueft]. Faelights: ein Ward
 auf einem Faelight-Punkt bekommt +25 % Sichtradius und deckt 45 s eine Bonus-Region auf.
 Scryer's Bloom Respawn 200-260 s (90-120 s nach Elemental Rift).

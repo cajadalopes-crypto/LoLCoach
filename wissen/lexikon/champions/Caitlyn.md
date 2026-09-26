@@ -3,40 +3,56 @@
 Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 
 ## Kopf
-- Name: Caitlyn, der Sheriff von Piltover. Rollen: Bot. Klasse: Schütze (Data Dragon: Marksman). Ressource: Mana.
-- Spielidee: Reichweiten-Bully (AA 650). Fallen (W) + Netz (E) = verstärkte Kopfschüsse. Dominiert die Lane und Belagerungen.
+- Name: Caitlyn, der Sheriff von Piltover. Rollen: Bot. Klasse: Schützin (Data Dragon: Marksman). Ressource: Mana.
+- Spielidee: Reichweiten-Bully mit AA-Reichweite 650. Falle (W) + Netz (E) = verstärkte Kopfschüsse; dominiert Lane und Belagerung, braucht Vorsprung vor dem Mid-Game.
 
 ## Faehigkeiten-Kniffe
-- Passiv Kopfschuss: jeder 6. AA (im Gras schneller) verstärkt; auf gefangene/vernetzte Ziele Kopfschuss mit doppelter Reichweite.
-- Q Piltover-Friedensstifter: Linie 1250, durchdringt. CD 10/9/8/7/6.
-- W Yordle-Schlagfalle: Falle (800), Wurzel + Kopfschuss-Freigabe. Ladungen. CD 0,5 (Ladungs-Aufladung länger).
-- E Kaliber 90-Netz: Rückstoß für sie, Netz vorn = Slow + Kopfschuss. CD 16/14/12/10/8.
-- R Ass im Ärmel: Kanalisierung ~1 s, Schuss auf Ziel (3500); Verbündete des Ziels können ihn abfangen. CD 90.
-- Combo: E (Netz) → AA (Kopfschuss) → Q; W unter das gewurzelte/verlangsamte Ziel.
-- Zeichen: Fallen am Boden (sichtbar für dich, wenn gesehen) meiden. E verbraucht = 8–16 s keine Flucht.
+- Passiv Kopfschuss: alle paar AAs (im Gras schneller aufgeladen) ein Kopfschuss; gegen Ziele in Falle oder Netz immer Kopfschuss, bei Fallen mit doppelter Reichweite (ungeprüft Reichweite).
+- Q Piltover-Friedensstifter: 1 s Anlegen, durchdringender Schuss 1250 (weitere Ziele weniger Schaden). CD 10/9/8/7/6, Kosten 55–75.
+- W Yordle-Schlagfalle: Falle (800); Champion wird 1,5 s aufgedeckt und festgehalten + Kopfschuss-Freigabe. Ladungen, CD 0,5 zwischen Fallen, Kosten 20.
+  - Trick: Falle unter ein gewurzeltes/betäubtes Ziel (Support-CC) = garantiert.
+  - Trick: Fallen in Grasausgänge und vor den Turm beim Belagern.
+- E Kaliber 90-Netz: Netz (750) verlangsamt + Rückstoß für sie. CD 16/14/12/10/8, Kosten 75. Trick: E → Q (Netz-Treffer = Kopfschuss + Q trifft das langsamere Ziel).
+- R Ass im Ärmel: Anlegen, dann Schuss auf ein Ziel (3500); gegnerische Champions können ihn abfangen. CD 90, Kosten 100.
+- Combos (Tastenfolgen):
+  - Trade: E → AA (Kopfschuss) → Q.
+  - Falle-Combo: W unter gewurzeltes Ziel → AA (Kopfschuss) → E → AA → Q.
+  - Flucht: E weg vom Gegner → W auf den Verfolger-Weg.
+- Zeichen im Spiel: Fallen am Boden (nach Aufdecken sichtbar). Laser-Linie auf dir = R lädt. E verbraucht = 16–8 s ohne Flucht.
 
 ## Powerspikes
-- Level 1–6 Lane-Dominanz; Level 6 R; zwei Items (Krit) = Belagerung.
-- Schwächen: Mitte des Spiels gegen Dive; Burst-Schaden geringer als andere.
+- Level 1–6 Lane-Dominanz über Reichweite. Level 6 R für Kills auf Fliehende.
+- Items: Klinge der Unendlichkeit → Flimmerklinge der Navori (Richtung) → Lord Dominiks Grüße; ab 2 Items starke Belagerung.
+- Schwächephasen: Mid-Game (~15–25 min) gegen Dive; weniger Burst als andere Schützen; gegen Engage-Supports ohne Blitz.
+- Level 9: Q maximal (CD 6 s) – Welle und Poke ohne Nachladen.
 
 ## Lane-Plan
-- Bot: AA-Poke aus 650, Fallen in Gras und am Turm; Plates früh.
-- Gankbar nur ohne E.
-- Belagert Türme mit Fallen vor dem Turm.
+- Skill: Q > W > E (ungeprüft), Level 1 Q oder W.
+- Bot: AA-Poke aus 650 bei jedem Lasthit des Gegners; Fallen ins Gras; Plates früh.
+- Gankbar nur ohne E: vor 3:00 Fallen an Fluss-Eingänge.
+- Belagerung: Fallen vor den Turm, dann Welle schieben.
 
 ## Gegen diesen Champion
-- Nicht in ihre Fallen laufen – Wege um sie herum, Fallen mit AAs räumen.
-- E verbraucht → All-in.
-- R: jemand anders kann den Schuss abfangen (Tank davor).
-- Lane: auf Level 2–3 All-in mit Engage-Support, bevor sie zu weit pokt.
-- Kopfschuss-Zähler (6 AAs) im Blick: nach dem Kopfschuss kurz traden.
-- Rüstung, Randuins Omen.
-- Blitz-Timer: ohne Blitz stirbt sie beim Dive.
+- Fallen meiden: Wege um sie herum, bekannte Fallen mit AAs räumen oder bewusst Vasallen durchlaufen lassen (nur Champions lösen aus).
+- E verbraucht (16–8 s) → All-in, sie hat nur Blitz.
+- R: Tank/Verbündeten in die Schusslinie stellen; R-CD 90 s mitzählen.
+- Lane: Level 2–3 All-in mit Engage-Support, bevor ihr Poke dich zermürbt.
+- Kopfschuss-Zähler im Blick: direkt nach einem Kopfschuss kurz traden.
+- Blitz-Timer ansagen: ohne Blitz stirbt sie beim Dive.
+- Nie unter ihrem Turm in eine Falle rennen – Dive nur mit Tank vorne.
+- Items: Rüstung, Randuins Omen.
+- Q hat 1 s Anlegen (Laser sichtbar): seitlich ausweichen, besonders direkt nach einem Netz-Treffer (E → Q).
+- Im Gras lädt ihr Kopfschuss schneller: nicht im Gras vor ihr stehen bleiben.
 
 ## Makro/Teamfight
-- Belagerung, Turm-Plates, Fallen um Objectives.
-- Teamfight: Dauer-Schaden aus Reichweite, Fallen gegen Dive.
-- Objectives: stark bei Belagerung.
+- Job: Belagerung, Turm-Plates, Fallen um Objectives.
+- Teamfight: Dauer-Schaden aus Reichweite; Fallen in den Weg des Dives, E weg vom Engager.
+- Objectives: Fallen in die Grube vor dem Start; stark beim Belagern von Türmen.
+- Seitenwelle: mit Fallen im Rücken sicher; Dive-Champions nur mit Sicht und Engage-Kontrolle.
 
 ## Build 26.19
-- typische Kern-Items (ungeprüft): Klinge der Unendlichkeit, Flimmerklinge der Navori, Lord Dominiks Grüße.
+- Kern (Richtung, ungeprüft): Klinge der Unendlichkeit → Flimmerklinge der Navori → Lord Dominiks Grüße.
+- Situativ: Schnellfeuer-Geschütz (Reichweite), Blutdürster, Schutzengel, Sterbliche Mahnung.
+- Stiefel: Beinschienen des Berserkers.
+- Beschwörer: Blitz + Heilen (oder Barriere).
+- Skill: Q > W > E, R auf 6/11/16.

@@ -6,7 +6,7 @@ fuer sich. Q = Quelle.
 
 ## Zeitplan und Tempo
 
-- Erste Welle 0:30 (frueher 1:05); passives Gold ab 0:30; Buff-Camps/Woelfe/Raptoren 0:55,
+- Erste Welle 0:30 (frueher 1:05); passives Gold ab 1:05 (Patch 26.1, 65 s); Buff-Camps/Woelfe/Raptoren 0:55,
   Krugs/Gromp 1:07, Scuttle 2:55 (ohne Level-Abzug). Remake-Fenster 0:55-2:25. Q: Patch 26.1.
 - Wellen: bis 14:00 alle 30 s, 14:00-30:00 alle 25 s (Kanonenwellen mit 1 Nahkaempfer weniger),
   ab 30:00 alle 20 s (1 Fernkaempfer weniger). Erste Kanone Welle 3 (frueher 4) = 1:30; bis 14:00
@@ -87,7 +87,7 @@ Q: Patch 26.1.
 - Faelights: 8 feste Punkte (4 Jungle-Zugaenge an den Basen, 2 Insel-Bueschel top/bot, 2 Flusswaende
   Mitte), nach Elemental Rift 4 weitere an den Seitenlanes. Ward auf Faelight: +25 % Sichtradius und
   45 s Bonus-Sichtregion.
-- Stealth Ward Cooldown 170-90 s (vorher 210-120). Oracle Lens 8 s (vorher 6). Scryer's Bloom Respawn
+- Stealth Ward Cooldown 26.1: 170-90 s, seit 26.3 wieder 210-90 s (Wiki, mechaniken.md). Oracle Lens 8 s (vorher 6). Scryer's Bloom Respawn
   200-260 s (90-120 s nach Elemental Rift).
 
 ## Items, Runen, Jungle
