@@ -29,6 +29,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - R-Schutz: Fernkampf-Schaden von außen wird geblockt – nah an ihn heran oder warten, bis es endet.
 - Den 3. Q-Schlag (Knockup) mit Dash/CC verhindern.
 - Er fällt spät ab: Partie ruhig strecken.
+- R-Timer (100–120 s): ohne R fehlt ihm das Isolieren des Carrys.
 
 ## Makro/Teamfight
 - Frühes Tempo, Dive auf Carry, R trennt Peel.

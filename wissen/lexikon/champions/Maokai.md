@@ -29,6 +29,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - R-Welle: seitlich ausweichen oder überspringen; frühe Treffer = kurze Wurzel, späte = lange.
 - %-Schaden gegen Tank-Werte; Magieresistenz egal (wenig Schaden).
 - R-Timer mitzählen.
+- Als Support: Level-2-Engage mit W + Q aus dem Gras – Lane-Gras früh prüfen.
 
 ## Makro/Teamfight
 - Engage/Peel, R vor Objectives.

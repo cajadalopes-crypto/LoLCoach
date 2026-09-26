@@ -29,6 +29,8 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Q verbraucht → kein Engage außer R.
 - R-Timer mitzählen; ohne R fehlt der Fernkampf-Engage.
 - %-Schaden gegen Tank-Werte; sie ist langsam im Clear → invaden.
+- R-Timer (90–120 s) und Blitz mitzählen: ohne R fehlt ihr der Fern-Engage.
+- Ihr Clear ist langsam: Level-3-Invade mit Lane-Prio lohnt.
 
 ## Makro/Teamfight
 - Frontlinie, R-Engage auf Carry; Peel.
