@@ -27,6 +27,11 @@ RECALL_GOLD = 1100
 OBJ_NAME = {"drache": "Drache", "baron": "Baron", "herold": "Herold", "larven": "Larven"}
 
 
+def lebt(schl: str) -> str:
+    """'lebt' / 'leben' (die Larven sind drei)."""
+    return "leben" if schl == "larven" else "lebt"
+
+
 def sek(s: float) -> str:
     s = max(1, int(round(s)))
     if s < 90:
@@ -70,7 +75,7 @@ def todespreis(b: Bewertung) -> str:
     satz = f"ein Tod kostet jetzt {sek(b.tod_kostet)}"
     ob = b.objective
     if ob and ob[1] <= b.tod_kostet + 10:
-        satz += f", {OBJ_NAME[ob[0]]} " + ("lebt" if ob[1] <= 0 else f"in {sek(ob[1])}")
+        satz += f", {OBJ_NAME[ob[0]]} " + (lebt(ob[0]) if ob[1] <= 0 else f"in {sek(ob[1])}")
     return satz
 
 
@@ -170,7 +175,8 @@ def chance(b: Bewertung, platten: bool) -> str | None:
     if lebt and leben_ok and g.flash and g.flash > 30 and wert > -1:
         return f"Spiel aggressiv, {g.champion} ohne Flash"
     if ob := _objective_erreichbar(b):
-        return f"Welle rein, dann {OBJ_NAME[ob[0]]}" + (f" in {sek(ob[1])}" if ob[1] > 0 else ", er lebt")
+        return f"Welle rein, dann {OBJ_NAME[ob[0]]}" + (f" in {sek(ob[1])}" if ob[1] > 0
+                                                         else f", {'sie leben' if ob[0] == 'larven' else 'er lebt'}")
     welle = b.welle
     schiebt_ihr = welle is not None and welle[0] >= welle[1] + 2
     if b.gold >= RECALL_GOLD and (schiebt_ihr or not lebt):
@@ -356,7 +362,8 @@ def kein_flash_nah(b: Bewertung, g: GegnerLage, rest: float) -> str:
 
 
 def tief(b: Bewertung, namen: str, sind: str, sekunden: int, sie: str) -> str:
-    satz = f"Du stehst tief, {namen} seit {sekunden} Sekunden weg."
+    weg = "noch nie gesehen" if sekunden >= b.zeit - 5 else f"seit {sek(sekunden)} weg"
+    satz = f"Du stehst tief, {namen} {weg}."
     gruende = [x for x in verwundbar(b) if "weit vorn" not in x and "Turm" not in x]
     if preis := todespreis(b):
         gruende.append(preis)
@@ -443,7 +450,7 @@ def obj_dazu(b: Bewertung, nah: bool, tp_moeglich: bool) -> str:
 def lane_recall(b: Bewertung, champion: str, platten: bool) -> str:
     """Der Lane-Gegner recallt (stand still, dann weg): was du mit den ~15 s machst."""
     satz = f"{champion} recallt"
-    if frisch := [x for x in gefahr(b) if x.seit is not None and x.seit <= 15]:
+    if frisch := [x for x in gefahr(b, ausser=b.lane) if x.seit is not None and x.seit <= 15]:
         return satz + f", aber {frisch[0].champion} {_wann(frisch[0])} - Welle nur bis zum Turm."
     if platten:
         tun = f"Welle in seinen Turm, {_platten(b)}"
