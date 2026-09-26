@@ -92,7 +92,9 @@ def abschnitt(champion_id: str, titel: str, hoechstens: int = 2500) -> str:
 def matchup(champion_id: str, gegner) -> str:
     """Die Matchup-Zeile gegen genau diesen Gegner (Lexikon, Abschnitt Matchups)."""
     for zeile in abschnitt(champion_id, "Matchups", 20000).splitlines():
-        if zeile.startswith("- ") and any(n.lower() in zeile.lower()[:40] for n in {gegner.champion, gegner.champion_id}):
+        # ganze Woerter: "Vi" steckt sonst in "Viego" und bekam dessen Zeile
+        if zeile.startswith("- ") and any(re.search(rf"(?<![\w']){re.escape(n.lower())}(?![\w'])", zeile.lower()[:40])
+                                          for n in {gegner.champion, gegner.champion_id}):
             return zeile[2:]
     return ""
 

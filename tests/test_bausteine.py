@@ -110,6 +110,14 @@ def recalls_im_verlauf():
     assert k.titel == "Kampf 2:0 (ohne dich)" and any("0.99 Kartenbreiten entfernt" in f for f in k.fakten), k
 
 
+def matchup_zeilen():
+    from types import SimpleNamespace as S
+    vi = gehirn.matchup("Graves", S(champion="Vi", champion_id="Vi"))
+    assert vi.startswith("Vi ("), vi[:40]                      # nicht die Viego-Zeile
+    assert gehirn.matchup("Riven", S(champion="Urgot", champion_id="Urgot")).startswith("Urgot (")
+    assert gehirn.matchup("Riven", S(champion="K'Sante", champion_id="KSante")).startswith("K'Sante (")
+
+
 def zauber_im_briefing():
     p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.spieler)
     quelle = gehirn.akte_quelle(p, fokus="Frueher kaufen.")
@@ -121,6 +129,6 @@ def zauber_im_briefing():
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
-                 zauber_im_briefing, recalls_im_verlauf, sprechbar):
+                 zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen):
         test()
         print(f"{test.__name__} OK")

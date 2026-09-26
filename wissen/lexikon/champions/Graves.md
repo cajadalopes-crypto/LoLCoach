@@ -77,3 +77,23 @@ Gegner-Dschungler. Quelle Siegquoten: lolalytics Emerald+ Patch 16.19 (abgerufen
 - Hecarim (50,9 %): schnelle Ganks und Anlauf-Knockback. Früh gewinnt Graves das Duell mit Kiten; sein R (Furcht) + E-Anlauf respektieren – Abstand und Q+R auf Anlauflinie.
 - Shyvana (49,8 %): farmt und skaliert. Früh invaden, Camps stehlen; ihr W (Brennen) im Nahkampf, also kiten.
 - Lillia (47,9 %): schwer – schnell, Magieschaden, Kiten. Früh (Level 1–3) invaden, bevor sie Tempo hat; W-Nebel auf sie. Merkurs Schuhe; ihr R (Schlaf 2,5 s seit 26.19) nicht mit ihren Passiv-Markierungen auf dir stehen.
+- Sylas (52,4 %): Seine E2-Kette (Entführen, CD 13–9 s) trifft das erste Ziel – hinter Monster/Vasallen stehen, danach traden. Sein W (Königsmörder) heilt mehr bei wenig Leben: Burst statt Pokes, Sterbliche Mahnung bei Vorsprung.
+- Master Yi (50,3 %): Früh (Level 1–4) gewinnt Graves – invaden, Camps nehmen. Sein Q (Eröffnungsschlag, unanvisierbar, CD 20–18 s) abwarten, dann Q (Endstation) auf den Landepunkt. In seinem R (Highlander) wirkt dein W-Slow nicht: E-Stapel halten und kiten.
+- Qiyana (50,8 %): Ihr R (Elementares Supertalent) stößt und betäubt an Wänden – nicht mit dem Rücken zur Wand kämpfen, auch wenn dein Q dort gut detoniert. Nach ihrem E (Unbescheidenheit, Dash, CD 11–7 s) mit E-Stapeln traden.
+- Wukong (48,0 %): Sein W (Trickreicher Krieger, CD 22–18 s) lässt einen Klon stehen und macht ihn unsichtbar – nicht den Klon beschießen. Ab 6 wirft sein R (Zyklon) zweimal hoch: Abstand halten und deinen R-Rückstoß als Flucht bereithalten.
+- Nocturne (54,7 %): Sein W (Tuch der Dunkelheit, CD 20–12 s) blockt EINE Fähigkeit – erst AA, dann Q/R. Aus seiner E-Leine (Unsagbarer Schrecken) mit E herausdashen, bevor die Furcht greift. Ab 6 (R Paranoia) nicht allein im Dschungel stehen.
+- Vi (55,3 %): Früh gewinnt Graves das Duell. Ihr aufladendes Q (Mauerbrecher, CD 12–6 s) seitlich mit E ausweichen. Ihr R (Anzeige ist raus) ist unaufhaltbar – R-Rückstoß und E erst nach ihrem R.
+- Nidalee (47,7 %): Ihr Speer (Q Wurfspeer) trifft auf Distanz härter – nah ran, Monster zwischen euch. Im Nahduell gewinnt Graves: E rein und AA, bevor sie über W (Sprung) flieht.
+- Rengar (52,7 %): Er springt nur aus Gebüsch oder Unsichtbarkeit (Passiv Verborgener Jäger) – Kontroll-Auge in Gebüsche neben deinen Camps, im Kampf weg vom Gebüsch. Nach seinem Sprung E zurück und W-Nebel auf ihn.
+- Briar (52,1 %): In ihrem W (Blutrausch, CD 14–10 s) läuft sie stur dem nächsten Ziel nach – mit E weg und kiten, sie kann nicht umkehren. Duelle nur mit 2 Patronen und E bereit.
+- Shaco (53,1 %): Seine Kisten (W Springteufel) fürchten – vor dem Camp mit AA/Q wegschießen. Nach seinem Q (Täuschen, CD 13–11 s) hat er keine Flucht: E rein.
+- Ekko (51,5 %): Aus seinem W-Kreis (Parallelkonvergenz, verzögerter Stun) raus, bevor er zündet. Sein R (Zeitsprung) setzt ihn 4 s zurück – Q+R-Burst erst, nachdem er R genutzt hat.
+- Naafiri (51,3 %): Ihre Hunde (Passiv Wir sind mehr) schlucken deine Kugeln – seitlich stellen oder die Hunde zuerst schießen. Nach ihrem E (Ausweiden, Dash, CD 11–7 s) ist sie ohne Flucht: dann Q+R.
+- Zed (55,6 %): Nach seinem W (Lebender Schatten, CD 20–16 s) hat er keine Flucht – dann Q+R. E-Stapel (Rüstung) vor seinem R (Zeichen des Todes) aufbauen.
+- Diana (55,2 %): Ihr E (Mondhast) setzt nur nach Q-Treffer (Mondsichel-Schwung) zurück – dem Q-Bogen ausweichen, dann ist E 22–14 s weg. Ihr R (Mondsucht) zieht Nahe heran: bei Nähe E weg.
+- Warwick (51,1 %): Unter 50 % Leben bekommt er Tempo auf dich (W Blutjagd) – mit halbem Leben nicht durch den Dschungel. Sein E (Urschrei) fürchtet danach Nahe: Abstand halten und kiten. Sterbliche Mahnung gegen seine Heilung.
+- Kindred (51,0 %): In ihrem R (Gnadenfrist des Lamms) fällt niemand unter 10 % Leben – Q+R nicht hineinverschwenden, aus dem Kreis und danach nachsetzen. Früh invaden und ihre markierten Camps nehmen – ohne Mal-Stapel skaliert sie nicht.
+- Elise (48,5 %): Ihr Kokon (E, Betäubung, CD 12–10 s) bleibt an Vasallen/Monstern hängen – dahinter stehen, danach ist sie ohne Kontrolle. Nach ihrem Abseilen (Spinnen-E) ist sie kurz unanvisierbar: Q erst bei der Landung.
+- Zac (54,5 %): Sein E (Elastische Schleuder, CD 21–9 s) lädt sichtbar auf – seitlich E-Dash, wenn er fliegt. Nach seinem Tod die Klumpen (Passiv Zellteilung) sofort zerschießen, sonst steht er wieder auf.
+- Jayce (53,3 %): Sein Kanonen-Q (Schockstoß) explodiert an der ersten Einheit – Monster zwischen euch. Nach seinem Hammer-E (Donnernder Schlag, Knockback, CD 20–10 s) E rein und Q+R.
+- Bel'Veth (49,6 %): In ihrem E (Kaiserlicher Mahlstrom, CD 24–12 s) steht sie still mit Schadensreduktion – rausgehen und nach dem E Q+R. Früh Camps stehlen, sie skaliert mit Angriffstempo-Stapeln.
