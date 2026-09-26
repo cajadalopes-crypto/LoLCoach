@@ -29,11 +29,15 @@ Alles hier ist vorbereitet und mit Aufnahmen/Generalprobe getestet - die echte
 Partie ist der letzte Schritt. Nach Carlos' naechster Partie: Log, Aufnahme,
 Notizen und Review durchsehen und nachschaerfen.
 
-- Chat-Format der Pings ablesen (der Beobachter speichert `chat_*.jpg`, sobald
-  neuer Text erscheint) und Chat-Bereich + Leser daran eichen (`lage.CHAT`).
-- Flash-Erkennung an echten 15-Bilder/s-Daten pruefen (`sichtungen.jsonl.gz`
-  hat jede Position; Fehlalarme durch Dashes/Verdeckung zaehlen).
-- Wellen-Erkennung und Recall-Fenster live pruefen (in Partie 3 neunmal - passend?).
+- Chat: Format der eingebauten Ping-Nachricht recherchiert ("Spieler (Champion): Ziel
+  Zaubername") und die deutschen Client-Namen aus Data Dragon eingebaut (Entzuenden,
+  Laeuterung, Teleportation) - 5897650. Offen nur: Lage/Groesse des Chat-Fensters auf
+  Carlos' Bildschirm (`lage.CHAT`) an den gespeicherten `chat_*.jpg` eichen.
+- Flash-Erkennung: am synthetischen 15-Bilder/s-Pruefstand 3/4 Flashes, 0 Fehlalarme
+  (Dashes, Aussetzer, Rauschen); dabei einen echten Fehler im Stillstands-Schutz behoben -
+  c0fe21d. Offen nur: Gegenprobe an echten Daten (`sichtungen.jsonl.gz`).
+- Wellen-Erkennung: an drei echten Bildern gegen Augenzaehlung geprueft, Basis-Icons
+  ausgeschlossen - 0351296. Offen nur: Recall-Fenster live (in Partie 3 neunmal - passend?).
 - Briefing, Spielakte, situative Vorwarnungen live: rechtzeitig? passend? Dann
   entscheiden, welche weiteren Anlaesse situativ werden (Recall-Fenster, Lane-Gegner
   tot, Jungler gesehen) - je nachdem, wie lange Claude live braucht.
