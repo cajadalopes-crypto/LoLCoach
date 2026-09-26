@@ -197,7 +197,14 @@ SITUATIV_SYSTEM = (
     "Sauberes gesprochenes Deutsch: LoL-Begriffe (All-in, Trade, Welle, Gank) als Nomen, keine "
     "eingedeutschten Verben wie 'all-inen'. Liegt ein Bild bei, ist es sein Bildschirm jetzt: nutze, was "
     "darauf zu sehen ist (Lebensbalken ueber den Koepfen, wer nah ist, Vasallen, sein Leben und Mana unten), "
-    "aber sag nur, was wirklich zu sehen ist.")
+    "aber sag nur, was wirklich zu sehen ist. " + "{BEWERTUNG}")
+
+BEWERTUNG_HINWEIS = (
+    "Die BEWERTUNG in der Lage ist gerechnet, nicht geschaetzt: Ankunftszeiten (fruehestens, aus letzter "
+    "Sichtung und Lauftempo), Fenster, Kraefte, Prio, Platten, Kauf, Todeszeit, Kampf um das Objective. Stuetz "
+    "deine Anweisung darauf und nenne die ein, zwei Zahlen, die sie entscheiden (z. B. 'Gragas kann in 6 "
+    "Sekunden da sein'); rechne sie nicht neu und widersprich ihnen nicht.")
+SITUATIV_SYSTEM = SITUATIV_SYSTEM.replace("{BEWERTUNG}", BEWERTUNG_HINWEIS)
 
 
 BRIEFING_WOERTER = 75   # ~25 s Sprechzeit; der Fokus-Satz kommt dazu (Partie 4: 120 Woerter = 45 s)
@@ -212,7 +219,9 @@ TOD_SYSTEM = (
     "seinem FOKUS HEUTE zu tun, sag es. Spawnt gleich ein Objective, das er verpasst, sag, was das Team jetzt "
     "tun sollte. Kommentiere nie die Daten, sprich nur zum Spieler. Liegen Bilder bei, sind es seine "
     "Bildschirme etwa 6 und 3 Sekunden vor dem Tod: lies daraus, was die Fakten nicht haben (Leben beider "
-    "Seiten, wer im Kampf war, Vasallen, Turm) - nur, was wirklich zu sehen ist.")
+    "Seiten, wer im Kampf war, Vasallen, Turm) - nur, was wirklich zu sehen ist. Die BEWERTUNG IN DER LETZTEN "
+    "SEKUNDE ist gerechnet (wer wie schnell da sein konnte, wie tief er stand, sein Flash): nimm die Zahl, die "
+    "den Tod erklaert, statt zu raten.")
 
 
 _MARKER = re.compile(r"(?m)^[#*\s]*(AKTE|BRIEFING|LANEPLAN|ULTS|TRADE|FOKUS)[*\s]*:[*]*")

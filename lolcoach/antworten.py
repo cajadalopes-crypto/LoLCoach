@@ -285,7 +285,9 @@ BILD_HINWEIS = (
 KAMERA_NACHFRAGE = ("Er hat die Kamera wie gebeten geschwenkt - das Bild zeigt es jetzt. Beantworte seine Frage "
                     "damit; frag nicht noch einmal nach der Kamera.")
 KAMERA_WARTEN = 4.0     # Sekunden zwischen "schwenk mal" und dem neuen Bild
-SYSTEM = SYSTEM.replace("{BILD}", BILD_HINWEIS)
+SYSTEM = SYSTEM.replace("{BILD}", BILD_HINWEIS) + (
+    " Die BEWERTUNG in der Lage ist gerechnet (Ankunftszeiten, Fenster, Kraefte, Prio, Platten, Kauf, "
+    "Todeszeit): stuetz die Antwort darauf und nenne die entscheidende Zahl, statt zu schaetzen.")
 
 
 KAUF_WORTE = {"kaufen", "kauf", "item", "items", "build", "bauen", "baue", "shop", "laden", "gold"}
