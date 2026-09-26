@@ -22,13 +22,18 @@ Standardsaetze; Grundlage `Reasoning/LoL Reasoning.txt` (Entscheidungskette Zust
 Prio -> Tempo -> Information -> Gegner-Vorhersage -> Aktionen -> Gegenantwort -> Wert).
 
 - Gegner-Leben vom Bildschirm (Lebensbalken ueber den Koepfen) -> Kill-Rechnung mit echten
-  Zahlen (Ruestung/MR aus Items+Level, Zuenden, eigener Combo-Schaden; mechaniken.md).
-- Platten-Ziffer der Turm-Icons auf der Minimap lesen ("noch 2 Platten") - die Icons zeigen sie.
-- Prio aller Lanes (Wellen Mid/Bot/Top aus der Minimap) als Faktor fuer Objectives:
-  "Mid hat Prio, Bot nicht - Drache nur, wenn ...".
-- Nach der Lane-Phase: Seitenwelle vs. Gruppe genauer (welche Seite, wer kann zuerst da sein,
-  Baron/Drache-Tausch), Kampf-Vorhersage (Zahlen, Ults, Leben der Mitspieler aus der HUD-Leiste).
-- Minimap: gleiche Champions in beiden Teams (Ringfarbe in der lokalen Suche).
+  Zahlen. Wartet auf Spielbilder MIT Gegnern: die naechste Partie legt alle 5 s `schirm_*.jpg`
+  ab - damit eichen, erst dann in Ansagen (lieber stumm als falsch).
+- Eigene Wards auf der Minimap lesen (Sicht als Faktor: "Fluss gewardet - Gank kommt nur ueber ...").
+- Gegner-Ults ohne Ping: bisher nur ueber Chat-Pings bekannt.
+
+Erledigt fuer dieses Ziel (26.09., je mit Commit): Lagebewertung + Komponist (jede Ansage gerechnet),
+Entscheider (Plaene inkl. Jungle, spaete Phase, Mitspieler-Hilfe, Todesserie-Reset), Jungler-
+Startseite, Kampf-Vorhersage am Objective, Platten von der Minimap, Lane-Prio, Kaufplan aus dem
+Lexikon-Build, Todespreis, Trade-Hinweis aus der Akte, Sofort-Antworten (Plan, Jungler-Ort,
+Platten, Prio), Themen-Sperre + Widerspruchs-Waechter, Dashboard "Jetzt", 4 Takte/s live,
+verdeckte Icons unter bekannten Icons, doppelte Champions per Ringfarbe, 170 Champion-Eintraege,
+Mechanik-Lexikon, Pruefwerkzeug `werkzeuge/ansagen_pruefen.py` (0 Widersprueche in 4 Partien).
 
 ## Als Naechstes
 
