@@ -1,0 +1,47 @@
+# Objective-Timer, Sekunden Spielzeit.
+#
+# STAND: aus dem Modellwissen (Saison 2025), NICHT gegen den laufenden Patch
+# geprueft. Riot aendert diese Werte fast jede Saison. Vor Verlass pruefen
+# (Patchnotes oder eine eigene Partie) und `stand` dann auf den Patch setzen.
+stand = "ungeprueft"
+
+# event   = EventName der Live-API, der den Kill meldet
+# erster  = erster Spawn
+# respawn = Zeit bis zum naechsten Spawn nach dem Kill; fehlt = kommt nicht wieder
+
+[drache]
+name = "Drache"
+event = "DragonKill"
+erster = 300
+respawn = 300
+
+[aeltester]
+# erscheint statt des Drachen, sobald ein Team die Seele hat (4 Drachen)
+name = "Aeltester Drache"
+respawn = 360
+
+[larven]
+name = "Leerenlarven"
+event = "HordeKill"          # EventName ungeprueft
+erster = 480
+
+[herold]
+name = "Herold"
+event = "HeraldKill"
+erster = 900                 # ungeprueft
+
+[atakhan]
+name = "Atakhan"
+event = "AtakhanKill"        # EventName ungeprueft
+erster = 1200
+
+[baron]
+name = "Baron"
+event = "BaronKill"
+erster = 1500
+respawn = 360
+
+[inhibitor]
+name = "Inhibitor"
+event = "InhibKilled"
+respawn = 300
