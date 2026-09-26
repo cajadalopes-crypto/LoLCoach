@@ -362,8 +362,8 @@ def erwartung(b: Bewertung, wert: float) -> tuple[float, int, int] | None:
     if g is None:
         return None
     p = 1 / (1 + math.exp(-1.1 * (wert - 2.0)))
-    ertrag = kill_gold(g.s, erstes_blut=_erstes_blut_offen(b))
-    mein = kopfgeld(b.ich)
+    ertrag = kill_gold(g.s, erstes_blut=_erstes_blut_offen(b), p=b.partie)
+    mein = kopfgeld(b.ich, b.partie)
     verlust = mein + (b.tod_kostet or 15) * 10 + 300
     return p * ertrag - (1 - p) * verlust, ertrag, mein
 
@@ -519,7 +519,7 @@ def turm_satz(b: Bewertung) -> str:
 def kill_gold(b: Bewertung) -> int:
     """Gold fuer den Kill an deinem Lane-Gegner: nach seinem Level, erstes Blut, sein Kopfgeld (bewertung)."""
     from .bewertung import kill_gold as kg
-    return kg(b.lane.s, erstes_blut=_erstes_blut_offen(b)) if b.lane is not None else 300
+    return kg(b.lane.s, erstes_blut=_erstes_blut_offen(b), p=b.partie) if b.lane is not None else 300
 
 
 def trank_wert(b: Bewertung) -> int:

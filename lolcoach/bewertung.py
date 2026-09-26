@@ -85,17 +85,46 @@ def kraft(s: Spieler, leben: float | None) -> float:
     return lv * it * hp
 
 
-def shutdown(s: Spieler) -> bool:
-    """Liegt (sicher) ein Shutdown auf ihm? Das Kopfgeld 2026 waechst mit Gold aus Kills/Farm (Wiki Champion_
-    gold_bounties), die API liefert das Gold der Gegner nicht - belastbar ist: ab 3 Kills und 3 mehr als Tode
-    ist es ueber der Shutdown-Schwelle (Basis + 100)."""
+# Gold fuer einen Kill, gemessen am echten Goldsprung des Killers (72 Kills in 5 Partien, 27.09.,
+# werkzeuge/kill_gold.py): nach der Todesserie des Opfers (Tode seit seinem letzten Kill oder Assist) ...
+TODESSERIE_GOLD = (300, 255, 185, 155, 130)
+# ... oder, hat er seit seinem letzten Tod getoetet, nach seiner Killserie (ab 4 geschaetzt, hoechstens +700)
+KILLSERIE_GOLD = (300, 310, 350, 500, 600, 700, 800, 900, 1000)
+
+
+def serien(p: Partie | None, s: Spieler) -> tuple[int, int] | None:
+    """(Kills seit seinem letzten Tod, Tode seit seinem letzten Kill oder Assist) aus den Ereignissen der Partie."""
+    if p is None:
+        return None
+    k_seit_tod = tode_serie = 0
+    for e in p.ereignisse:
+        if e.art != "ChampionKill":
+            continue
+        if e.opfer is not None and e.opfer.name == s.name:
+            k_seit_tod = 0
+            tode_serie += 1
+        if e.taeter is not None and e.taeter.name == s.name:
+            k_seit_tod += 1
+            tode_serie = 0
+        elif s.name in (e.daten.get("Assisters") or []):
+            tode_serie = 0
+    return k_seit_tod, tode_serie
+
+
+def shutdown(s: Spieler, p: Partie | None = None) -> bool:
+    """Liegt (sicher) ein Shutdown auf ihm? Mit den Ereignissen: 3 Kills seit seinem letzten Tod (dann ~500 statt
+    300). Ohne: ab 3 Kills und 3 mehr als Tode."""
+    if (sr := serien(p, s)) is not None:
+        return sr[0] >= 3
     return s.kills >= 3 and s.kills - s.tode >= 3
 
 
-def kopfgeld(s: Spieler) -> int:
-    """Shutdown-Gold auf `s`, geschaetzt: 1 Kopfgeld-Punkt je 3 g aus Kills/Assists (wissen/mechanik.toml [gold]),
-    Tode bauen es ab; gezahlt wird ab 100 ueber der Basis, hoechstens 700. Die API liefert das Kopfgeld nicht -
-    Kills zu je ~300 g, Assists zu ~150 g, je Tod -150."""
+def kopfgeld(s: Spieler, p: Partie | None = None) -> int:
+    """Gold ueber die 300 hinaus, das ein Kill an `s` bringt. Mit den Ereignissen aus seiner Killserie seit dem letzten
+    Tod (Kopfgeld setzt beim Tod zurueck - Live: Ekko 4/1 brachte 338, die alte Schaetzung aus allen Kills 580).
+    Ohne Ereignisse die alte Schaetzung aus allen Kills/Assists/Toden."""
+    if (sr := serien(p, s)) is not None:
+        return KILLSERIE_GOLD[min(sr[0], len(KILLSERIE_GOLD) - 1)] - 300
     roh = (s.kills * 300 + s.assists * 150) / 3 - s.tode * 150
     return int(max(0, min(700, roh - 100)))
 
@@ -120,12 +149,18 @@ def carry(p: Partie, team: str) -> Spieler | None:
     return s if s.kills >= 4 or s.item_gold >= 1.3 * schnitt + 500 else None
 
 
-def kill_gold(opfer: Spieler, erstes_blut: bool = False) -> int:
-    """Gold fuer einen Kill an `opfer` nach seinem Level (Wiki Champion_gold_bounties) + erstes Blut + Kopfgeld."""
+def kill_gold(opfer: Spieler, erstes_blut: bool = False, p: Partie | None = None) -> int:
+    """Gold fuer einen Kill an `opfer` + erstes Blut. Mit den Ereignissen (`p`) gemessen: Todesserie macht ihn billig
+    (Heimerdinger 0/5 brachte ~130, nicht 300), Killserie teuer. Ohne: nach Level (Wiki) + Kopfgeld-Schaetzung."""
     from . import wissen
     g = wissen.lade("mechanik")["gold"]
+    fb = g["first_blood_bonus"] if erstes_blut else 0
+    if (sr := serien(p, opfer)) is not None:
+        k, tode = sr
+        gold = KILLSERIE_GOLD[min(k, len(KILLSERIE_GOLD) - 1)] if k else TODESSERIE_GOLD[min(tode, len(TODESSERIE_GOLD) - 1)]
+        return gold + fb
     basis = g["kill_basis"][max(1, min(18, opfer.level)) - 1]
-    return basis + (g["first_blood_bonus"] if erstes_blut else 0) + kopfgeld(opfer)
+    return basis + fb + kopfgeld(opfer)
 
 
 def _namen_liste(n: list[str]) -> str:
@@ -438,7 +473,7 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
     if not p.ich:
         return None
     b = Bewertung(zeit=p.zeit, ich=p.ich, gold=int(p.gold or 0), partie=p)
-    b.shutdown_ich = shutdown(p.ich)
+    b.shutdown_ich = shutdown(p.ich, p)
     b.tode_kurz = [e.zeit for e in p.ereignisse
                    if e.art == "ChampionKill" and e.opfer is p.ich and p.zeit - e.zeit <= 240]
     m = p.werte.get("maxHealth")
@@ -616,7 +651,7 @@ def _gegner_lage(s: Spieler, p: Partie, lb, ich_pos) -> GegnerLage:
     return GegnerLage(s=s, sichtbar=sichtbar, seit=seit, ort=ort or "", abstand=ab, ankunft=ankunft, tempo=ms,
                       flash=flash, ult=ult, level_vorsprung=s.level - p.ich.level,
                       gold_vorsprung=s.item_gold - p.ich.item_gold, kommt_naeher=naeher, pos=pos,
-                      shutdown=shutdown(s),
+                      shutdown=shutdown(s, p),
                       leben=lb.gegner_leben_jetzt(s, p.zeit) if lb is not None and hasattr(lb, "gegner_leben_jetzt")
                       else None,
                       mana=lb.gegner_mana_jetzt(s, p.zeit) if lb is not None and hasattr(lb, "gegner_mana_jetzt")

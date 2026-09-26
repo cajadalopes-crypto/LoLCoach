@@ -90,7 +90,7 @@ def todespreis(b: Bewertung, mit_objective: bool = True) -> str:
     teile = []
     if b.tod_kostet >= 30:
         teile.append(sek(b.tod_kostet))
-    k = kopfgeld(b.ich) if b.shutdown_ich else 0
+    k = kopfgeld(b.ich, b.partie) if b.shutdown_ich else 0
     if k >= 100:
         teile.append(f"{k} Gold Kopfgeld")
     elif b.shutdown_ich:
