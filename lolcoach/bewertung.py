@@ -134,7 +134,14 @@ def gold_offen(s: Spieler, zeit: float) -> int:
     500 Start + 20,4 je 10 s ab 1:05 + ~19,5 je Vasall + 300 je Kill + 150 je Assist - Items - ~150 Verbrauch.
     Die API liefert fremdes Gold nicht, den CS nur in Zehnerschritten: +-300 Gold."""
     verdient = 500 + max(0.0, zeit - 65) / 10 * 20.4 + s.cs * 19.5 + s.kills * 300 + s.assists * 150
+    # je Rolle, gemessen an 158 Einkaeufen in 5 Partien (Schaetzung davor gegen den Kaufpreis, 27.09.): Jungler
+    # verdienen je Monster mehr als 19,5 (-44 g/min), Supports ueber ihr Support-Item (-28 g/min), Laner lagen leicht
+    # darueber (+5..10 g/min)
+    verdient += GOLD_JE_ROLLE.get(s.rolle, -7.0) * max(0.0, zeit - 90) / 60
     return int(max(0, verdient - s.item_gold - 150))
+
+
+GOLD_JE_ROLLE = {"JUNGLE": 45.0, "UTILITY": 28.0}
 
 
 def carry(p: Partie, team: str) -> Spieler | None:
