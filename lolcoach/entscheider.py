@@ -140,10 +140,11 @@ class Entscheider:
                 wer = _namen_kurz(knapp) if len(knapp) >= 2 else x.champion
                 wann = komponist._wann(x)
                 if len(knapp) >= 2:
-                    wann = wann.replace("kann", "können", 1)
+                    # mehrere: ohne "seit X weg" - zwei Namen und ihre Zeiten waeren zu lang
+                    wann = "können schon da sein" if (x.ankunft or 0) < 2 else f"können in {sek(x.ankunft)} da sein"
                 grund = verwundbar[0] if verwundbar else komponist.todespreis(b)
-                aus.append(Option("zurueck", f"{wer} {wann}, du brauchst {sek(b.zum_turm)} zum Turm. "
-                                             f"Jetzt zurück" + (f", {grund}." if grund else "."),
+                aus.append(Option("zurueck", f"{wer} {wann}, {sek(b.zum_turm)} bis zum Turm: jetzt zurück"
+                                             + (f" - {grund}." if grund else "."),
                                   200, 2 + bool(verwundbar), dringend=True))
 
         # 2) Frueher Jungler-Plan: Startseite bekannt -> wo kommt der erste Gank?

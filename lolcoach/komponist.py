@@ -79,8 +79,8 @@ def todespreis(b: Bewertung) -> str:
         return ""
     satz = " und ".join(teile)
     ob = b.objective
-    if b.tod_kostet >= 30 and ob and ob[1] <= b.tod_kostet + 10:
-        satz += f", {OBJ_NAME[ob[0]]} " + (lebt(ob[0]) if ob[1] <= 0 else f"in {sek(ob[1])}")
+    if b.tod_kostet >= 30 and ob and 0 < ob[1] <= b.tod_kostet + 10:
+        satz += f", {OBJ_NAME[ob[0]]} in {sek(ob[1])}"
     return satz
 
 
@@ -382,10 +382,12 @@ def tief(b: Bewertung, namen: str, sind: str, sekunden: int, sie: str) -> str:
     preis = todespreis(b)
     if preis:
         gruende.append(preis)
-    if b.zum_turm and (b.zum_turm >= 15 or (b.zum_turm >= 6 and not preis)):
+    if preis:
+        return satz + f" Zurück - {preis}."
+    if b.zum_turm and b.zum_turm >= 6:
         ziel = f" Zurück, {sek(b.zum_turm)} zum Turm"
     else:
-        ziel = f" Zurück, bis du {sie} siehst" if not preis else " Zurück"
+        ziel = f" Zurück, bis du {sie} siehst"
     return satz + ziel + (f", {gruende[0]}." if gruende else ".")
 
 

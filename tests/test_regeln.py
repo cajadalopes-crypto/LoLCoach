@@ -48,7 +48,7 @@ def mit_minimap():
     tief = [t for t, x in um if x.startswith("Du stehst tief")]
     # vor dem Tod gewarnt - von der Tief-Regel oder vom Entscheider ("Vi seit 6 Sekunden weg ... Jetzt zurueck",
     # 19:36, genauer als "tief"; die Themen-Sperre laesst dann nur einen der beiden sprechen)
-    zurueck = [t for t, x in um if "Jetzt zurück" in x]
+    zurueck = [t for t, x in um if "jetzt zurück" in x.lower()]
     assert any(1170 <= t <= 1195 for t in tief + zurueck) and len(tief) <= 10, (tief, zurueck)
     print(f"Partie 2 mit Minimap: {len(gesagt)} Ansagen, OK")
 
