@@ -139,8 +139,12 @@ def szenen():
         # (der im Nebel verschwindet, liegt oben - gezeichnet wird in dieser Reihenfolge)
         "Nebel neben Icon": [Bahn((150 + 19, 300), [("lauf", 8, r)]),
                              Bahn((150, 300), [("lauf", 2, r), ("weg", 6)])],
+        # Brand landet genau auf Urgots Landepunkt und liegt oben: ganz verdeckt - unsichtbar fuer jeden
+        "Gruppe mit Flash (verdeckt)": [Bahn((200, 250), [("lauf", 1.5, u), ("flash", u), ("lauf", 1.5, u)]),
+                                        Bahn((230, 260), [("lauf", 3, u)]), Bahn((180, 280), [("lauf", 3, r)])],
+        # realistischer Klumpen: die Icons ueberdecken sich um ~20 px, Urgot bleibt halb zu sehen
         "Gruppe mit Flash": [Bahn((200, 250), [("lauf", 1.5, u), ("flash", u), ("lauf", 1.5, u)]),
-                             Bahn((230, 260), [("lauf", 3, u)]), Bahn((180, 280), [("lauf", 3, r)])],
+                             Bahn((226, 262), [("lauf", 3, u)]), Bahn((158, 285), [("lauf", 3, r)])],
     }
 
 

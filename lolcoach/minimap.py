@@ -249,6 +249,7 @@ class Verfolger:
         self._kandidat: dict[tuple[str, int], tuple] = {}
         self._verdeckt: dict[tuple[str, int], tuple[float, tuple[str, int], int, int]] = {}  # -> (seit, Deckung, Versatz)
         self._letzte_vollsuche = -1e9
+        self._verdeckt_alle_bei = -1e9
 
     def _lokal(self, karte: np.ndarray, cid: str, cx: int, cy: int) -> tuple[float, int, int] | None:
         v = _vorlage(cid, self.hoehe)
@@ -277,6 +278,45 @@ class Verfolger:
                 bestes = (g, x0 + fx + d // 2, y0 + fy + d // 2)
         return bestes
 
+    def _lokal_verdeckt(self, karte: np.ndarray, cid: str, cx: int, cy: int, deckungen: list[tuple[int, int]],
+                        umkreis: int | None = None, min_anteil: float = 0.35) -> tuple[float, int, int] | None:
+        """Umkreissuche, wenn andere Icons darueber liegen: deren Flaeche (bekannt, sie wurden in diesem Bild
+        gefunden) wird im Bild auf den Mittelwert gesetzt und zaehlt so nicht - verglichen wird nur, was von
+        diesem Icon zu sehen ist. Ein perfekter Treffer erreicht dann sqrt(sichtbarer Anteil); die Schwelle
+        wird entsprechend gesenkt. Pruefstand 26.09.: im Klumpen aus drei Icons war Urgot nie zu finden,
+        weil keine ganze Haelfte frei lag."""
+        v = _vorlage(cid, self.hoehe)
+        if v is None:
+            return None
+        vorlage, maske = v
+        d, r, seite = vorlage.shape[0], umkreis or self.umkreis, karte.shape[0]
+        x0, y0 = max(0, cx - d // 2 - r), max(0, cy - d // 2 - r)
+        x1, y1 = min(seite, cx + d // 2 + r + 1), min(seite, cy + d // 2 + r + 1)
+        fenster = karte[y0:y1, x0:x1].astype(np.float32)
+        if fenster.shape[0] < d or fenster.shape[1] < d:
+            return None
+        radius = round(PORTRAET * self.hoehe / 2)
+        zu = np.zeros(fenster.shape[:2], np.uint8)
+        for ox, oy in deckungen:
+            cv2.circle(zu, (ox - x0, oy - y0), radius, 255, -1)
+        if not zu.any():
+            return None
+        frei = zu == 0
+        mittel = fenster[frei].mean(axis=0) if frei.any() else fenster.reshape(-1, 3).mean(axis=0)
+        fenster[~frei] = mittel
+        erg = np.nan_to_num(cv2.matchTemplate(fenster, vorlage.astype(np.float32), cv2.TM_CCOEFF_NORMED, mask=maske),
+                            nan=-1.0, posinf=-1.0, neginf=-1.0)
+        _, guete, _, (fx, fy) = cv2.minMaxLoc(erg)
+        # sichtbarer Anteil an der gefundenen Stelle
+        hier = np.zeros_like(zu)
+        cv2.circle(hier, (fx + d // 2, fy + d // 2), d // 2, 255, -1)
+        anteil = float(((hier > 0) & frei).sum()) / max(1, int((hier > 0).sum()))
+        if anteil < min_anteil:
+            return None
+        if guete >= SCHWELLE_TEIL * anteil ** 0.5:
+            return guete, x0 + fx + d // 2, y0 + fy + d // 2
+        return None
+
     def bild(self, karte: np.ndarray, zeit: float) -> tuple[list[Sichtung], list[Sprung]] | None:
         """Ein neues Minimap-Bild. Gibt None, wenn es dem vorigen gleicht: ein stehendes
         Bild (Ruckler, Aufnahme mit 1 Bild/s in der Generalprobe) darf keine Zeit verstreichen
@@ -290,10 +330,31 @@ class Verfolger:
         seite = karte.shape[0]
         gefunden: dict[tuple[str, int], tuple[float, int, int, str | None]] = {}
         # 1. Umkreissuche fuer alle frisch gesehenen
+        doppelt = {c for c, _ in self.champions if sum(1 for d, _ in self.champions if d == c) > 1}
         for schl, (t, cx, cy, team) in list(self.pos.items()):
             if zeit - t > self.verloren_nach:
                 continue
             if treffer := self._lokal(karte, schl[0], cx, cy):
+                # Derselbe Champion in beiden Teams (Bot-/Normal-Partie): die Umkreissuche darf nicht auf das
+                # andere Icon springen - die Ringfarbe muss zum Team passen (Partie 7: zwei Ashes tauschten
+                # die Identitaet, ein 418-px-"Flash" war die Folge)
+                if schl[0] in doppelt and team is not None:
+                    farbe = _ringfarbe(karte, treffer[1], treffer[2], round(PORTRAET * self.hoehe / 2) + 2)
+                    if farbe is not None and farbe != team:
+                        continue
+                gefunden[schl] = (treffer[0], treffer[1], treffer[2], team)
+        # 1b. Nicht gefunden, aber ganz sichtbare Icons liegen auf der letzten Position: nur den freien Rest vergleichen
+        d_px = round(PORTRAET * self.hoehe)
+        for schl, (t, cx, cy, team) in list(self.pos.items()):
+            if schl in gefunden or zeit - t > self.verloren_nach:
+                continue
+            oben = [(g[1], g[2]) for k, g in gefunden.items() if k != schl and g[0] >= SCHWELLE
+                    and abs(g[1] - cx) < d_px and abs(g[2] - cy) < d_px]
+            if oben and (treffer := self._lokal_verdeckt(karte, schl[0], cx, cy, oben)):
+                if schl[0] in doppelt and team is not None:
+                    farbe = _ringfarbe(karte, treffer[1], treffer[2], round(PORTRAET * self.hoehe / 2) + 2)
+                    if farbe is not None and farbe != team:
+                        continue
                 gefunden[schl] = (treffer[0], treffer[1], treffer[2], team)
         # 2. Vollsuche fuer die fehlenden, nicht jedes Bild
         if zeit - self._letzte_vollsuche >= self.vollsuche_alle:
@@ -321,6 +382,38 @@ class Verfolger:
                 while schl in gefunden:
                     schl = (schl[0], schl[1] + 1)
                 gefunden[schl] = (s.guete, cx, cy, s.team)
+            # 2a. Wer auch so fehlt, kann unter einem Icon liegen (Klumpen): dort mit ausgeblendeter Deckung
+            #     suchen - strenger als die Umkreissuche (mindestens halb sichtbar), sonst entstehen Geister
+            # Kosten: ~5 ms je Champion und Icon. Eben verlorene (<= 5 s) bei jeder Vollsuche, lange nicht
+            # gesehene nur alle 2 s (Camille-Partie: Vollsuche 50 ms, mit allen Verdeckt-Suchen 100 ms)
+            oben = [(g[1], g[2]) for g in gefunden.values() if g[0] >= SCHWELLE]
+            alle = zeit - self._verdeckt_alle_bei >= 2.0
+            if alle:
+                self._verdeckt_alle_bei = zeit
+            eben = {k[0]: (v[1], v[2]) for k, v in self.pos.items() if zeit - v[0] <= 5.0}
+            schon = {}
+            for k in gefunden:
+                schon[k[0]] = schon.get(k[0], 0) + 1
+            for cid, team in self.champions:
+                if schon.get(cid, 0) > 0:
+                    schon[cid] -= 1
+                    continue
+                if cid in doppelt or not (alle or cid in eben):
+                    continue   # zwei gleiche: ohne sicheren Ring keine Zuordnung
+                beste = None
+                # eben verloren: nur die Icons nahe seiner letzten Stelle; sonst alle
+                kandidaten = oben if cid not in eben else [
+                    (x, y) for x, y in oben if abs(x - eben[cid][0]) < 2 * d_px and abs(y - eben[cid][1]) < 2 * d_px]
+                for ox, oy in kandidaten:
+                    nahe = [(x, y) for x, y in oben if abs(x - ox) < d_px and abs(y - oy) < d_px]
+                    if tr := self._lokal_verdeckt(karte, cid, ox, oy, nahe, umkreis=d_px, min_anteil=0.5):
+                        if beste is None or tr[0] > beste[0]:
+                            beste = tr
+                if beste is not None:
+                    schl = next((k for k in self.pos if k[0] == cid and k not in gefunden), (cid, 0))
+                    while schl in gefunden:
+                        schl = (schl[0], schl[1] + 1)
+                    gefunden[schl] = (beste[0], beste[1], beste[2], None)
         # 2b. Verdeckt: eben noch gesehen, jetzt nicht gefunden, aber ein gefundenes Icon liegt darauf
         # -> er steht darunter. Er laeuft mit seiner Deckung mit (fester Versatz), bis er wieder
         # auftaucht, die Deckung weiterzieht oder VERDECKT_MAX um ist (dann war es wohl Nebel).
