@@ -601,7 +601,10 @@ class Regelwerk:
                 text = (cfg["satz"].format(champion=g.champion, gegner_cs=g.cs, **kw) if g
                         else cfg["satz_ohne_gegner"].format(**kw))
                 if cspm < cfg["ziel_pro_minute"]:
-                    text += cfg["unter_ziel"]
+                    # gerechnet statt "Ziel sind acht pro Minute - nimm jeden mit" (7x wortgleich in 5 Partien)
+                    fehlen = int(cfg["ziel_pro_minute"] * minute - p.ich.cs)
+                    text += (f" Bis acht pro Minute fehlen dir {fehlen} Vasallen, etwa {fehlen * 21 // 50 * 50} Gold"
+                             + (" - fast ein ganzes Item." if fehlen * 21 >= 1000 else "."))
                 yield Ansage(text, HINWEIS, f"cs{minute}", gueltig=40, unterbrechbar=True)
 
     # --- Regeln aus der Minimap ------------------------------------------------

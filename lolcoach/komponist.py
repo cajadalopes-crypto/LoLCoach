@@ -357,7 +357,7 @@ def jungler_gesehen(b: Bewertung, j: GegnerLage, art: str, platten: bool) -> str
                 return f"{vorn}. Kommt {j.champion}, nimm den Kampf an" + (f": {grund}." if grund else ".")
             return f"{vorn} - nimm den Kampf an" + (f", {grund}." if grund else ".")
         if r >= STAERKER and (b.leben is None or b.leben >= 0.5):
-            return f"{vorn}. Bleib an deiner Welle, du bist stärker - nur nicht zu tief."
+            return f"{vorn}. Bleib an deiner Welle" + (f", {grund}" if grund else ", du bist stärker") + " - nur nicht zu tief."
         if len(gruppe) > 1 and r_allein >= STAERKER and (b.leben is None or b.leben >= 0.5):
             andere = [x.champion for x in gruppe[1:]]
             return f"{vorn}. {_rueckzug(b)} - mit {_namen(andere)} zusammen ist {j.champion} zu stark."
@@ -445,7 +445,7 @@ def leben(b: Bewertung, prozent: int) -> str:
     nah = [g for g in b.bedrohung(12) if not g.s.tot and g.seit is not None and g.seit <= 15]
     if nah:
         g = nah[0]
-        return satz + f", und {g.champion} {_wann(g)}. Geh sofort zurück."
+        return satz + f", und {g.champion} {_wann(g)}. {_rueckzug(b)}."
     if prozent < 15:
         return satz + " - geh sofort zurück, jeder Treffer kann dich töten."
     j = b.jungler
@@ -455,7 +455,7 @@ def leben(b: Bewertung, prozent: int) -> str:
         return satz + ", aber niemand ist in Reichweite: schieb die Welle noch rein und geh dann back."
     if jo := jungler_offen(b):
         return satz + f", und {jo.champion} ist nicht zu sehen. Geh zurück."
-    return satz + ". Geh zurück, bevor dich jemand erwischt."
+    return satz + f". {_rueckzug(b)}, bevor dich jemand erwischt."
 
 
 def lane_tot(b: Bewertung, champion: str, sekunden: int, platten: bool) -> str:
@@ -501,7 +501,8 @@ def recall(b: Bewertung, grund: str) -> str:
     gold = b.gold // 100 * 100
     kauf = b.kauf.satz() if b.kauf is not None and b.kauf.kaufen else ""
     if grund == "welle":
-        satz = "Deine Welle läuft gerade in seinen Turm - das ist dein Recall-Fenster, du verlierst keine Vasallen"
+        satz = "Deine Welle läuft gerade in seinen Turm - das ist dein Recall-Fenster, du verlierst keine Vasallen" + (
+            f", und {gold} Gold {kauf}" if kauf else "")
     elif grund == "viel":
         satz = (f"Du trägst {gold} Gold mit dir herum, das ist mehr als ein ganzes Item. Schieb die Welle rein und "
                 f"geh sofort back")
@@ -648,7 +649,10 @@ def zahlen_nachteil(b: Bewertung, tote: list[str], sekunden: int) -> str:
     satz = f"{_namen(tote)} {'ist' if len(tote) == 1 else 'sind'} für {sekunden} Sekunden tot, ihr seid {zu}"
     if b.unter_eigenem_turm:
         return satz + f". Bleib an {b.turm_name} und nimm keinen Kampf an."
-    return satz + f". Nimm keinen Kampf an und gib das Objective lieber ab. {_rueckzug(b)}."
+    ob = b.objective
+    if ob and ob[1] <= sekunden:      # es lebt oder kommt, bevor sie wieder da sind: welches, konkret
+        return satz + f". Nimm keinen Kampf an und gib {OBJ_AKK[ob[0]]} lieber ab. {_rueckzug(b)}."
+    return satz + f". Nimm keinen Kampf an, bis sie wieder da sind - {_rueckzug(b)[:1].lower() + _rueckzug(b)[1:]}."
 
 
 def obj_dazu(b: Bewertung, nah: bool, tp_moeglich: bool) -> str:
