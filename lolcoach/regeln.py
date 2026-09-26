@@ -1031,7 +1031,8 @@ class Regelwerk:
         elif j and p.ich.rolle != "JUNGLE" and any(s is j for s in beteiligt):
             text = komponist.tod_gank(davor, j.champion) if davor is not None else cfg["gank"].format(champion=j.champion)
         elif len(beteiligt) >= 2:
-            text = cfg["ueberzahl"].format(anzahl=len(beteiligt))
+            text = (komponist.tod_ueberzahl(davor, [s.champion for s in beteiligt])
+                    or cfg["ueberzahl"].format(anzahl=len(beteiligt)))
         elif kill.taeter:
             t = kill.taeter
             gruende = []

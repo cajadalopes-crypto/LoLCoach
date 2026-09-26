@@ -148,6 +148,21 @@ def tod_gank(b: Bewertung | None, champion: str) -> str:
     return satz + ". Fehlt der Jungler länger als 20 Sekunden, bleib hinter deiner Welle."
 
 
+def tod_ueberzahl(b: Bewertung | None, namen: list[str]) -> str:
+    """Gegen mehrere gestorben: wer, und wer davon vorher nicht zu sehen war ("Gestorben gegen 2" war der alte Satz)."""
+    if len(namen) < 2:
+        return ""
+    ungesehen = []
+    if b is not None:
+        for g in b.gegner:
+            if g.champion in namen and not g.sichtbar and g.seit and g.seit >= 8:
+                ungesehen.append(f"{g.champion} war {sek(g.seit)} nicht zu sehen")
+    satz = f"Gestorben gegen {_namen(namen)}"
+    if ungesehen:
+        return satz + ": " + _namen(ungesehen[:2]) + ". Fehlen Gegner so lange, rechne damit, dass sie zu dir kommen."
+    return satz + f", {'beide' if len(namen) == 2 else 'alle'} waren zu sehen - gegen mehrere nur mit Hilfe kämpfen."
+
+
 def tod_solo(b: Bewertung | None, champion: str) -> str:
     """Solo verloren: was die Denkkette in der Sekunde davor gegen dich zaehlte (die zwei staerksten Faktoren).
     '' ohne Urteil oder ohne Gegen-Faktor - dann bleibt der Standardsatz."""
