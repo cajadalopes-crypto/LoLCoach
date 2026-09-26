@@ -37,6 +37,7 @@ class Lagebild:
         self.wellen_zeit: float | None = None
         self.letzter_tod: tuple[float, str] | None = None   # (Spielzeit, Fakten der Todesanalyse)
         self.eigene: dict[str, tuple[bool, float]] = {}     # Taste -> (bereit, seit Spielzeit), aus dem HUD
+        self._eigene_kandidat: dict[str, tuple[bool, float]] = {}   # Wechsel, einmal gelesen, noch unbestaetigt
         self.eigene_zeit: float | None = None
 
     def eigene_zauber(self, p: Partie, jetzt: float) -> dict[str, float] | None:
@@ -78,11 +79,22 @@ class Lagebild:
                 self.wellen_zeit = zeit_von_wand(e[1])
             elif e[0] == "eigene":
                 # eigene Faehigkeiten/Zauber aus dem HUD: Wechsel bereit -> weg ist der Moment der Nutzung
+                # Ein Wechsel zaehlt erst, wenn ihn zwei Lesungen hintereinander zeigen (Partie 7, 13:10-13:12:
+                # F weg / bereit / weg im Sekundentakt - ein Fehllesen haette die Restzeit neu gestartet)
                 zeit = zeit_von_wand(e[1])
                 for taste, bereit in e[2].items():
                     alt = self.eigene.get(taste)
-                    if alt is None or alt[0] != bereit:
+                    if alt is None:
                         self.eigene[taste] = (bereit, zeit)
+                    elif alt[0] != bereit:
+                        kandidat = self._eigene_kandidat.get(taste)
+                        if kandidat and kandidat[0] == bereit:
+                            self.eigene[taste] = (bereit, kandidat[1])   # ab der ersten Lesung
+                            self._eigene_kandidat.pop(taste, None)
+                        else:
+                            self._eigene_kandidat[taste] = (bereit, zeit)
+                    else:
+                        self._eigene_kandidat.pop(taste, None)
                 self.eigene_zeit = zeit
             elif e[0] == "hud":
                 # Reihenfolge der Leiste = Reihenfolge des Teams ohne dich (geprueft an Partie 2)

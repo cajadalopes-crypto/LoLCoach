@@ -81,6 +81,7 @@ class Regelwerk:
         self.rueckblick = Rueckblick()                 # die letzten 45 s - fuer die Todesanalyse
         self._in_grube: dict[tuple[str, str], float] = {}   # (Jungler, Objective) -> seit wann in der Grube
         self._am_pit: dict[str, float] = {}                 # Objective -> seit wann zwei Mitspieler dort stehen
+        self._obj_gesagt: dict[tuple[str, str], float] = {}  # (Objective, team/anlauf/gegner) -> zuletzt gesagt
         self._spikes: list[str] = []                   # eben fertig gewordene eigene Items (noch nicht gesagt)
         self._spike_bei = 0.0
 
@@ -576,12 +577,24 @@ class Regelwerk:
             g = self.lage.gesehen(s)
             return bool(g and p.zeit - g[0] < 2 and abs(g[1] - gx) + abs(g[2] - gy) <= r)
 
+        def frei(schl: str, art: str) -> bool:
+            """Wieder sagen erst nach `erneut_nach` s - einmal je Spawn reichte nicht: Partie 7, Ashe und
+            Xerath 10:57 am Drachen, wieder weg; als Vi und Ashe 16:15 zurueckkamen, schwieg der Coach."""
+            return p.zeit - self._obj_gesagt.get((schl, art), -1e9) >= cfg["erneut_nach"]
+
         for schl in _lebende_objectives(p):
             gx, gy, grube = self.GRUBEN[schl]
-            if ich_pos and abs(ich_pos[0] - gx) + abs(ich_pos[1] - gy) <= cfg["ich_nah"]:
-                continue   # du stehst selbst dort
-            spawn = int(p.naechster_spawn(schl) or 0)
+            ich_weit = abs(ich_pos[0] - gx) + abs(ich_pos[1] - gy) if ich_pos else 1.0
             name = _objective_name(schl, p)
+            # die Gegner, wenn sie dort zu sehen sind - auch wenn du in der Naehe bist (Partie 7, 17:20: 0,14
+            # von der Herold-Grube, Wukong und Ashe darin - und Stille); nur nicht, wenn du selbst drin stehst
+            gegner = [s for s in p.gegner() if not s.tot and self.lage.sichtbar(s) and nah(s, gx, gy, cfg["radius"])]
+            if len(gegner) >= 2 and ich_weit > cfg["eng"] and frei(schl, "gegner"):
+                self._obj_gesagt[(schl, "gegner")] = p.zeit
+                yield Ansage(cfg["gegner"].format(namen=_namen(gegner), grube=grube, objective=name), WICHTIG,
+                             f"objgegner:{schl}", gueltig=15, sperre=20)
+            if ich_weit <= cfg["ich_nah"]:
+                continue   # dein Team faengt an, und du stehst selbst dort - das siehst du
             freunde = [s for s in p.team(p.mein_team) if s is not p.ich and not s.tot]
             dort = [s for s in freunde if nah(s, gx, gy, cfg["radius"])]
             j = p.jungler(p.mein_team)
@@ -595,30 +608,22 @@ class Regelwerk:
                 self._am_pit.pop(schl, None)
             text = None
             if (len(dort) >= 2 and p.zeit - self._am_pit.get(schl, p.zeit) >= cfg["bleiben"]
-                    and ("objstart", schl, spawn, "team") not in self._gemeldet):
-                self._gemeldet.add(("objstart", schl, spawn, "team"))
+                    and frei(schl, "team")):
+                self._obj_gesagt[(schl, "team")] = p.zeit
                 text = cfg["team"].format(objective=name, grube=grube, namen=_namen(dort))
             elif (j is not None and p.zeit - self._in_grube.get((j.name, schl), p.zeit) >= cfg["jungler_ab"]
-                  and ("objstart", schl, spawn, "team") not in self._gemeldet):
-                self._gemeldet.add(("objstart", schl, spawn, "team"))
+                  and frei(schl, "team")):
+                self._obj_gesagt[(schl, "team")] = p.zeit
                 text = cfg["jungler"].format(jungler=j.champion, objective=name)
-            elif ("objstart", schl, spawn, "anlauf") not in self._gemeldet and ("objstart", schl, spawn, "team") \
-                    not in self._gemeldet:
+            elif frei(schl, "anlauf") and frei(schl, "team"):
                 laufen = [s for s in freunde if nah(s, gx, gy, cfg["anlauf_nah"])
                           and (self.lage.naehert_sich(s, (gx, gy), p.zeit) or 0) >= 0.03]
                 if len(laufen) >= cfg["anlauf_ab"]:
-                    self._gemeldet.add(("objstart", schl, spawn, "anlauf"))
+                    self._obj_gesagt[(schl, "anlauf")] = p.zeit
                     text = cfg["anlauf"].format(grube=grube, objective=name)
             if text:
-                weit = abs(ich_pos[0] - gx) + abs(ich_pos[1] - gy) if ich_pos else 1.0
-                dazu = cfg["dazu"]["nah"] if weit <= cfg["hin_bis"] else self._satz(cfg["dazu"], p)
-                yield Ansage(f"{text} {dazu}".strip(), WICHTIG, f"objstart:{schl}", gueltig=8, sperre=20)
-            # die Gegner, wenn sie dort zu sehen sind
-            gegner = [s for s in p.gegner() if not s.tot and self.lage.sichtbar(s) and nah(s, gx, gy, cfg["radius"])]
-            if len(gegner) >= 2 and ("objstart", schl, spawn, "gegner") not in self._gemeldet:
-                self._gemeldet.add(("objstart", schl, spawn, "gegner"))
-                yield Ansage(cfg["gegner"].format(namen=_namen(gegner), grube=grube, objective=name), WICHTIG,
-                             f"objgegner:{schl}", gueltig=6, sperre=20)
+                dazu = cfg["dazu"]["nah"] if ich_weit <= cfg["hin_bis"] else self._satz(cfg["dazu"], p)
+                yield Ansage(f"{text} {dazu}".strip(), WICHTIG, f"objstart:{schl}", gueltig=15, sperre=20)
 
     def _tief_ohne_sicht(self, p: Partie, v: Partie):
         """Tief auf seiner Seite, waehrend Gegner (oder in der Lane-Phase der Jungler) lange

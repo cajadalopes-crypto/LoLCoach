@@ -152,6 +152,7 @@ turm = "Vom Turm erwischt. Unter seinen Turm nur mit genug Leben - und wenn dein
 # bewegen, oder ein Jungler allein". Aus den Minimap-Positionen (Mitspieler sind immer zu sehen).
 radius = 0.09        # Kartenanteil um die Grube: "an der Grube"
 bleiben = 2          # Sekunden, die zwei Mitspieler dort stehen muessen (nicht nur durch den Fluss laufen)
+erneut_nach = 90     # Sekunden, bis dieselbe Ansage fuer dasselbe Objective wieder kommen darf
 eng = 0.055          # "in der Grube" (Jungler allein)
 jungler_ab = 3       # Sekunden, die der Jungler allein in der Grube steht
 ich_nah = 0.15       # bist du selbst so nah, siehst du es - der Coach schweigt
