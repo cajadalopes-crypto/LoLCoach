@@ -215,12 +215,16 @@ def live(args) -> None:
         except Exception as e:
             print(f"Sprachsteuerung aus ({type(e).__name__}: {e})")
     threading.Thread(target=_reviews_nachholen, daemon=True).start()
+    for a in anzeigen:
+        a.partie_vorbei = True   # noch keine Partie: die Sprechtaste redet uebers Review
     print("Warte auf eine Partie (Strg+C beendet) ...")
     while True:
         if not liveapi.laeuft(args.basis):
             time.sleep(2)
             continue
         schreiber = beobachter = None
+        for a in anzeigen:
+            a.partie_vorbei = False   # Sprechtaste wieder fuer die Partie
         if not args.ohne_aufnahme:
             try:
                 fort = aufzeichnung.fortsetzbar(liveapi.alles(args.basis))
@@ -277,6 +281,8 @@ def live(args) -> None:
                 sprecher.sage("Partie vorbei. Ich schreibe jetzt das Review, das dauert ein, zwei Minuten.")
             threading.Thread(target=_bericht_im_hintergrund, args=(schreiber.pfad, args.ich, sprecher, args.basis),
                              daemon=False).start()
+        for a in anzeigen:
+            a.partie_vorbei = True    # Sprechtaste geht jetzt ans Review (Review-Seite, gewaehlte Partie)
         print("Partie vorbei. Bericht wird geschrieben. Warte auf die naechste ...")
 
 

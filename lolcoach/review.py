@@ -146,8 +146,10 @@ def _detail(v: verlauf.Verlauf, zeit: float, spanne: float = 45) -> str:
 _verlaeufe: dict[str, verlauf.Verlauf] = {}
 
 
-def frage(aufnahme: str | Path, text: str, zeit: float | None = None, modell: str = "sonnet") -> str:
-    """Eine Frage im Gespraech nach der Partie. `zeit`: Moment, den der Spieler gerade ansieht."""
+def frage(aufnahme: str | Path, text: str, zeit: float | None = None, modell: str = "sonnet",
+          gesprochen: bool = False) -> str:
+    """Eine Frage im Gespraech nach der Partie. `zeit`: Moment, den der Spieler gerade ansieht.
+    `gesprochen`: die Antwort wird vorgelesen - kurz halten (eine Antwort las sich in 40 s vor)."""
     aufnahme = Path(aufnahme)
     p = pfade(aufnahme)
     if aufnahme.name not in _verlaeufe:
@@ -165,7 +167,9 @@ def frage(aufnahme: str | Path, text: str, zeit: float | None = None, modell: st
         teile.append(_detail(v, z))
     if verlauf_gespraech:
         teile.append("BISHERIGES GESPRAECH:\n" + "\n".join(f"{e['wer']}: {e['text']}" for e in verlauf_gespraech[-8:]))
-    antwort = llm.frage("\n\n".join(teile) + f"\n\nFRAGE DES SPIELERS: {text}", system=GESPRAECH_SYSTEM,
+    hinweis = ("\n(Die Antwort wird vorgelesen: hoechstens 4 kurze Saetze, keine Aufzaehlungen - das "
+               "Wichtigste zuerst; Details kann er nachfragen.)") if gesprochen else ""
+    antwort = llm.frage("\n\n".join(teile) + f"\n\nFRAGE DES SPIELERS: {text}{hinweis}", system=GESPRAECH_SYSTEM,
                         modell=modell, timeout=120, aufwand="medium").strip()
     from .itemnamen import absichern
     antwort = absichern(antwort)[0]
