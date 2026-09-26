@@ -19,7 +19,7 @@ wird keine Chance angesagt, die dich nach vorn schickt.
 """
 from __future__ import annotations
 
-from .bewertung import Bewertung, GegnerLage
+from .bewertung import GEGNER_TEMPO_RESERVE, Bewertung, GegnerLage
 
 GEFAHR_SEKUNDEN = 8.0        # so schnell bei dir = akute Gefahr
 RUHE_SEKUNDEN = 20.0         # so lange mindestens weg = ein Fenster, das sich lohnt
@@ -209,7 +209,7 @@ def jungler_offen(b: Bewertung) -> GegnerLage | None:
 def _wann(g: GegnerLage) -> str:
     """Nach dem Namen: 'kann in 6 Sekunden da sein' - oder, wenn er nur deshalb 'sofort' da sein kann, weil er
     lange nicht zu sehen war: 'ist seit 40 Sekunden weg und kann schon da sein'."""
-    weg_zeit = g.abstand * 1.15 / g.tempo if g.abstand is not None else 0.0
+    weg_zeit = g.abstand / (g.tempo * GEGNER_TEMPO_RESERVE) if g.abstand is not None else 0.0
     if g.ankunft is not None and g.ankunft < 2:
         return (f"ist seit {sek(g.seit)} weg und kann schon da sein" if weg_zeit > 4 and g.seit
                 else "kann schon da sein")
@@ -392,7 +392,7 @@ def lane_fehlt(b: Bewertung, g: GegnerLage, sekunden: int, platten: bool, richtu
     satz = f"{n} fehlt seit {sekunden} Sekunden in deiner Lane" + (f", zuletzt {richtung}" if richtung else "")
     if g.pos is not None and b.ich.rolle in ("TOP", "BOTTOM", "UTILITY") and richtung and "Fluss" in richtung:
         from .bewertung import abstand, einheiten
-        bis_mid = abstand(g.pos, einheiten(0.5, 0.5)) * 1.15 / g.tempo - sekunden
+        bis_mid = abstand(g.pos, einheiten(0.5, 0.5)) / (g.tempo * GEGNER_TEMPO_RESERVE) - sekunden
         if bis_mid >= 3:
             satz += f" - bis Mid braucht {n} von dort noch etwa {sek(bis_mid)}"
         else:

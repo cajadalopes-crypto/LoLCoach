@@ -27,7 +27,11 @@ from . import ddragon, minimap
 from .zustand import BLAU, ROT, Partie, Spieler, gegenteam, struktur
 
 BREITE, HOEHE = 14820.0, 14881.0      # Spiel-Einheiten der Karte (x, y)
-WEGFAKTOR = 1.15                      # Wege sind krumm (Waende): Luftlinie x 1,15
+WEGFAKTOR = 1.15                      # Wege sind krumm (Waende): Luftlinie x 1,15 - fuer DEINE Wege (realistisch)
+# Fuer die Ankunft eines GEGNERS gilt die Untergrenze ("fruehestens"): gemessen 27.09. an 1647 Strecken aus 5
+# Partien (werkzeuge/gegner_tempo.py) liefen Gegner in 52 % der Faelle schneller als Luftlinie x 1,15 / Tempo,
+# in 19 % um mehr als 15 % (gerade Lanes, Tempo-Buffs, Dashes). Luftlinie / (Tempo x 1,1) deckt 90 % ab.
+GEGNER_TEMPO_RESERVE = 1.1
 TURM_REICHWEITE = 775                 # Turmreichweite 750 + halbe Champion-Breite
 FLASH_WEITE = 400
 UNBEKANNT_AB = 45.0                   # so lange nicht gesehen: Ort unbekannt, rechne mit allem
@@ -594,13 +598,13 @@ def _gegner_lage(s: Spieler, p: Partie, lb, ich_pos) -> GegnerLage:
         ort = minimap.ort(g[1], g[2], p.mein_team)
         if ich_pos:
             ab = abstand(ich_pos, einheiten(g[1], g[2]))
-            ankunft = max(0.0, ab * WEGFAKTOR / ms - seit)
+            ankunft = max(0.0, ab / (ms * GEGNER_TEMPO_RESERVE) - seit)     # fruehestens: die Untergrenze
             # nach Tod oder Recall steht er im Brunnen: ab dort rechnen, nicht ab der letzten Sichtung (die Ankunft
             # ab dem Sterbeort liess ihn "schon da sein", waehrend er noch einkaufte)
             if not sichtbar and hasattr(lb, "brunnen_seit") and (br := lb.brunnen_seit(s, p.zeit)):
                 bx, by, t0, _ = br
                 ab_brunnen = abstand(ich_pos, einheiten(bx, by))
-                ankunft = max(ankunft, max(0.0, ab_brunnen * WEGFAKTOR / ms - (p.zeit - t0)))
+                ankunft = max(ankunft, max(0.0, ab_brunnen / (ms * GEGNER_TEMPO_RESERVE) - (p.zeit - t0)))
                 ort = minimap.ort(bx, by, p.mein_team)
             if sichtbar and (n := lb.naehert_sich(s, (ich_pos[0] / BREITE, 1 - ich_pos[1] / HOEHE), p.zeit)):
                 naeher = n >= 0.03
@@ -694,7 +698,7 @@ def kampf_um(p: Partie, lb, schl: str) -> Kampflage | None:
         g = lb.gesehen(s)
         if g and p.zeit - g[0] < UNBEKANNT_AB:
             seit = 0.0 if lb.sichtbar(s) else p.zeit - g[0]
-            t = max(0.0, abstand(einheiten(g[1], g[2]), grube) * WEGFAKTOR / tempo(s) - seit)
+            t = max(0.0, abstand(einheiten(g[1], g[2]), grube) / (tempo(s) * GEGNER_TEMPO_RESERVE) - seit)
         else:
             seit = t = None
         die.append((s, t, seit))
