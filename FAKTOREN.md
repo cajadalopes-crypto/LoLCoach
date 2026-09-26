@@ -83,6 +83,7 @@ Sicherheit), `komponist.py` (Saetze je Anlass), `regeln.py` (wann).
 | Cross-Map ("zu weit fuer dich: Druck auf deiner Seite") | rechnet | `komponist.vorwarnung/obj_dazu/jungler_spaet` |
 | Kill-Gold nach Level, erstes Blut, Kopfgeld, Platten 120 | rechnet | `wissen/mechanik.toml`, `bewertung.kill_gold` |
 | Kill-Wahrscheinlichkeit, Bedingungen | rechnet | `denker.urteil` (Summe, logistisch), Faktoren im Satz |
+| Schaden in Zahlen: Zuenden allein toetet? Turmschuesse, die du aushaeltst | rechnet | `rechnung.py` (Max-Leben aus Data Dragon mit Riots Wachstumsformel, Zuenden/Turm aus `mechanik.toml`); Faehigkeitsschaden der Champions nicht - dafuer fehlen verlaessliche Rohdaten |
 | Kampf 1v1 bis 5v5 | rechnet | `kraft_gegen` (Level, Items, Leben, Mitspieler in 1500) |
 
 ## 20-26 Faehigkeiten, Summoner, Ults, Matchup, Comp, Win Condition, Seite

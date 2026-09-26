@@ -285,6 +285,16 @@ def denkkette():
     # am Turm: warten (kein Dive - Live 11:00/11:08), mit dem Jungler nah: kein All-in
     b.lane = gl(g, flash=200.0, pos=bewertung.TUERME[(zustand.gegenteam(p.mein_team), "Top", "aussen")])
     assert denker.urteil(b).art == "turm", denker.urteil(b).art
+    b.leben_abs = 1200      # Turm in Zahlen (Wiki Turret): 5:30 aussen 248 pro Schuss, aufwaermend -> 3 Schuesse
+    satz = denker.fenster_satz(b, denker.urteil(b))
+    assert "Sein Turm trifft dich mit etwa 240 pro Schuss - mit deinen 1200 Leben hältst du 3 Schüsse aus." in satz, satz
+    # Zuenden allein toetet: sein Leben (Balken x Max-Leben) unter 90 % des Zuendschadens (Level 6: 175)
+    from lolcoach import rechnung
+    assert rechnung.zuenden_schaden(6) == 175 and rechnung.zuenden_schaden(18) == 475
+    b.lane = gl(g, flash=200.0, leben=0.1)
+    assert any(x.art == "zuenden_kill" for x in denker.urteil(b).faktoren), denker.urteil(b).faktoren
+    satz = denker.fenster_satz(b, denker.urteil(b))
+    assert "tötet dein Zünden Shen allein, Shen hat nur noch etwa 100 Leben" in satz and "Prozent Leben" not in satz, satz
     b.jungler = gl(j, sichtbar=False, seit=3.0, ort="im oberen Fluss", abstand=1500.0, ankunft=4.0)
     b.gegner = [b.lane, b.jungler]
     u = denker.urteil(b)

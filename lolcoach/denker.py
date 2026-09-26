@@ -38,7 +38,7 @@ WEG_UNTER = -2.5       # er ist klar staerker: nicht traden
 TRAENKE = (2003, 2031, 2033)   # Heiltrank, Nachfuellbarer, Verderbender - verkaufbar fuer den naechsten Kauf
 KAUF_LOHNT_AB = 850    # so viel muss ein Einkauf wert sein, damit sich ein Recall dafuer lohnt (Langschwert: nein)
 KRAFT = ("level", "ult", "items", "matchup")
-ZUSTAND = ("leben", "flash", "flash_ich", "zuenden", "welle", "gold_offen", "mana", "mana_er")
+ZUSTAND = ("leben", "zuenden_kill", "flash", "flash_ich", "zuenden", "welle", "gold_offen", "mana", "mana_er")
 UMFELD = ("jungler", "jungler_nah", "jungler_weg", "dritter", "hilfe", "zone")
 ZONE_NAME = {"Heimerdinger": "Geschütze", "Zyra": "Pflanzen", "Azir": "Soldaten", "Illaoi": "Tentakel",
              "Yorick": "Ghule", "Teemo": "Pilze", "Shaco": "Boxen"}
@@ -136,7 +136,15 @@ def kampf_faktoren(b: Bewertung) -> list[Faktor]:
     if b.flash is not None and b.flash > 10:
         f.append(Faktor(-0.8, "flash_ich", "dein Flash", "ist", "weg"))
     if b.zweiter and b.zweiter[0] == "SummonerDot" and b.zweiter[1] <= 0:
-        f.append(Faktor(0.8, "zuenden", "dein Zünden", "ist", "bereit"))
+        # Reasoning #1 ("reicht mein Schaden fuer den Kill?"): sein Leben aus dem Balken x sein Max-Leben (Data
+        # Dragon) gegen den wahren Schaden von Zuenden - mit 10 % Abschlag (Heilung, Schilde)
+        from . import rechnung
+        rest = g.leben * rechnung.max_leben(er) if g.leben is not None else None
+        if rest is not None and rest <= 0.9 * rechnung.zuenden_schaden(ich.level):
+            f.append(Faktor(1.8, "zuenden_kill", "dein Zünden", "tötet", f"{n} allein, {n} hat nur noch etwa "
+                                                                        f"{int(rest) // 10 * 10} Leben"))
+        else:
+            f.append(Faktor(0.8, "zuenden", "dein Zünden", "ist", "bereit"))
     # deine Ressource (Reasoning #1/#2 "Mana Advantage", "Ressourcen fuer Combo"): Mana/Energie aus der API
     w = b.partie.werte if b.partie is not None else {}
     if w.get("resourceType") in ("MANA", "ENERGY") and (voll := float(w.get("resourceMax") or 0)) > 0:
@@ -350,6 +358,8 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
     haupt = sorted((x for x in fs if (x.wert > 0) == fuer_dich and x.art != "turm"), key=lambda x: -abs(x.wert))
     gegen = sorted((x for x in fs if (x.wert > 0) != fuer_dich), key=lambda x: -abs(x.wert))
     saetze = [anlass + "."] if anlass else []
+    if any(x.art == "zuenden_kill" for x in haupt):
+        haupt = [x for x in haupt if x.art != "leben"]      # "...hat nur noch etwa 100 Leben" sagt es schon
     kraft = [x for x in haupt if x.art in KRAFT][:2]
     zustand = [x for x in haupt if x.art in ZUSTAND][:2]
     umfeld = [x for x in haupt if x.art in UMFELD][:1]
@@ -380,9 +390,30 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
         from .komponist import _rueckzug
         handlung = f"Also {_rueckzug(b)[:1].lower() + _rueckzug(b)[1:]}."
     saetze.append(handlung)
+    if u.art == "turm" and (t := turm_satz(b)):
+        saetze.append(t)
     if danach and u.art in ("kill", "kill_schnell") and (d := nach_dem_kill(b)):
         saetze.append(d)
     return " ".join(saetze)
+
+
+def turm_satz(b: Bewertung) -> str:
+    """Reasoning #37 (Turm, Dive-Potenzial) in Zahlen: 'Sein Turm trifft dich mit etwa 270 pro Schuss - mit deinen
+    900 Leben haeltst du 2 Schuesse aus.'"""
+    from . import rechnung
+    g = b.lane
+    if g is None or g.pos is None or b.partie is None or b.leben_abs is None:
+        return ""
+    feind = gegenteam(b.partie.mein_team)
+    naechst = min(((abstand(g.pos, v), k) for k, v in stehende_tuerme(b.partie).items() if k[0] == feind), default=None)
+    if naechst is None or naechst[0] > TURM_REICHWEITE + 400:
+        return ""
+    stufe = naechst[1][2]
+    schuss = rechnung.turm_schaden(stufe, b.zeit)
+    n = rechnung.turm_schuesse(b.leben_abs, stufe, b.zeit)
+    schuesse = "keinen Schuss" if n == 0 else ("einen Schuss" if n == 1 else f"{n} Schüsse")
+    return (f"Sein Turm trifft dich mit etwa {int(schuss) // 10 * 10} pro Schuss - mit deinen "
+            f"{b.leben_abs // 10 * 10} Leben hältst du {schuesse} aus.")
 
 
 # --- danach: Gold, Kauf, Weg -------------------------------------------------------------------------
