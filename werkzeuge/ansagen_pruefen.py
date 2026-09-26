@@ -24,7 +24,7 @@ SPRACHE = [(r"\bin 1 Sekunden\b", "in 1 Sekunden"), (r"Larven lebt\b", "Larven l
            (r"\bfür Der\b", "für Der"), (r"  ", "doppeltes Leerzeichen"), (r"\bNone\b", "None"),
            (r"\.\.", "zwei Punkte"), (r" ,", "Leerzeichen vor Komma")]
 # eigenes Muster, nicht regeln.RUECKZUG: die Pruefung muss auch gegen einen alten Stand laufen (Gegenprobe)
-RUECKZUG = re.compile(r"geh (sofort |jetzt |lieber )?zurück|raus da", re.I)
+RUECKZUG = re.compile(r"geh (sofort |jetzt |lieber |erst )?zurück|raus da", re.I)
 
 
 def vorlagen() -> set[str]:

@@ -12,7 +12,7 @@ from __future__ import annotations
 import threading
 import time
 
-from .regeln import HINWEIS, SOFORT, WICHTIG, Ansage
+from .regeln import HINWEIS, RUECKZUG, SOFORT, WICHTIG, Ansage
 
 ZEICHEN_PRO_SEKUNDE = 14.0   # Killian +25 % gemessen 26.09. nachts: 14,3 Zeichen/s; live fragt der Plan die Stimme
 PAUSE = 1.5                  # zwischen zwei Saetzen (2,0 bis 26.09.; die Schaetzung ist jetzt ehrlicher)
@@ -64,6 +64,11 @@ def _stimmt(a: Ansage) -> bool:
 # lange darf eine Ansage hoechstens warten, egal was die Regel wollte - das Briefing ausgenommen.
 WARTEN_HOECHSTENS = {SOFORT: 6.0, WICHTIG: 10.0, HINWEIS: 20.0}
 ACH_NEE = 8.0     # Sekunden: so lange nach einem widerrufenen Satz beginnt der neue zum selben Thema mit "Ach nee"
+# "Geh zurueck" eben gehoert - ein zweites aus anderem Grund sagt nichts Neues (Nachlauf 194524, 16:46-17:23: viermal
+# "geh zurueck zu deinem Mid-Tier-1-Turm" in 37 s, aus Gold, Jungler und Unterzahl). Gezaehlt ab dem Moment, in dem
+# die Worte "geh zurueck" im Satz fallen - kommt ein neues vorher, ist es das direktere und darf abbrechen.
+# Eine Gefahr (SOFORT: "Vi ist direkt bei dir") kommt immer.
+RUECKZUG_SPERRE = 12.0
 
 
 class Sprechplan:
@@ -80,6 +85,7 @@ class Sprechplan:
         self._reden: list[tuple[float, float]] = []   # (Beginn, geschaetzte Dauer) - fuer das Sprechbudget
         self._ich_tot = False
         self._widerruf: tuple[float, str, str] | None = None   # (Wanduhr, Thema, Schluessel-Art) des abgebrochenen
+        self._rueckzug_gehoert = -1e9    # Spielzeit, zu der das letzte "geh zurueck" beim Spieler ankommt
 
     def _melder(self, a: Ansage, ab: float):
         """Die Stimme meldet ersten Ton und Ende in Wanduhr; umgerechnet auf Spielzeit ab dem Moment der Abgabe.
@@ -90,6 +96,8 @@ class Sprechplan:
                 return
             a.ganz = art == "ende"
             if art == "widerrufen":
+                if RUECKZUG.search(a.text):
+                    self._rueckzug_gehoert = -1e9
                 self.zuletzt.pop(a.schluessel, None)
                 if a.thema:
                     self.thema_zuletzt.pop(a.thema, None)
@@ -128,7 +136,9 @@ class Sprechplan:
                       and not (a.thema and a.prio < SOFORT
                                and zeit - self.thema_zuletzt.get(a.thema, -1e9) < THEMA_SPERRE_JE.get(a.thema, THEMA_SPERRE))
                       and not (a.thema in WIDERSPRUCH
-                               and zeit - self.thema_zuletzt.get(WIDERSPRUCH[a.thema][0], -1e9) < WIDERSPRUCH[a.thema][1])]
+                               and zeit - self.thema_zuletzt.get(WIDERSPRUCH[a.thema][0], -1e9) < WIDERSPRUCH[a.thema][1])
+                      and not (a.prio < SOFORT and 0 <= zeit - self._rueckzug_gehoert < RUECKZUG_SPERRE
+                               and RUECKZUG.search(a.text))]
         self._ich_tot = ich_tot
         if ich_tot:
             self.warte = [a for a in self.warte if not a.schluessel.startswith(NUR_LEBEND)]
@@ -155,6 +165,12 @@ class Sprechplan:
                               and a.prio >= laeuft.prio)))
         if zeit < frei and a.prio < SOFORT and not abbrechen:
             return None
+        # Eine Gefahr bricht die andere nicht nach einer Sekunde ab (Nachlauf 194524, 17:22/17:23: "Vi ist oben und kann
+        # in 7 Sekunden ..." - weg, bevor ihr "geh zurueck" kam, fuer "Braum und Warwick sind tot"): erst ihre Handlung
+        if (a.prio == SOFORT and laeuft is not None and laeuft.prio == SOFORT and not unterbrechbar(laeuft)
+                and zeit < self.frei_ab and getattr(self.sprecher, "beschaeftigt", True)
+                and laeuft.gesprochen is not None and zeit - laeuft.gesprochen < GESAGT_NACH):
+            return None
         if a.prio < SOFORT and getattr(self.sprecher, "beschaeftigt", False) and not abbrechen:
             return None     # die Stimme spricht noch (live exakt statt geschaetzt)
         self.warte.remove(a)
@@ -172,6 +188,10 @@ class Sprechplan:
         if abbrechen and self._reden:          # der abgebrochene zaehlt nur bis jetzt
             t0, _ = self._reden[-1]
             self._reden[-1] = (t0, max(0.0, zeit - t0))
+        if abbrechen and self._rueckzug_gehoert > zeit:     # sein "geh zurueck" kam nicht mehr an
+            self._rueckzug_gehoert = -1e9
+        if m := RUECKZUG.search(a.text):
+            self._rueckzug_gehoert = zeit + m.start() / ZEICHEN_PRO_SEKUNDE
         self._reden.append((zeit, len(a.text) / ZEICHEN_PRO_SEKUNDE))
         self.sprecher.sage(a.text, dringend=a.prio == SOFORT or abbrechen, melde=self._melder(a, time.monotonic()),
                            noch_wahr=self._noch_wahr(a))

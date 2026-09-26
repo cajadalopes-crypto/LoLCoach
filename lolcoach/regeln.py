@@ -17,12 +17,25 @@ from .entscheider import Entscheider
 from .zustand import Partie, Spieler, gegenteam, struktur
 
 BACK = re.compile(r"\bback\b|\brecall\b", re.I)   # eine Ansage rät zum Recall (komponist.back_eben)
-RUECKZUG = re.compile(r"geh (sofort |jetzt |lieber )?zurück|raus da", re.I)   # eine Ansage rät zum Rueckzug
+RUECKZUG = re.compile(r"geh (sofort |jetzt |lieber |erst )?zurück|raus da", re.I)   # eine Ansage rät zum Rueckzug
 
 SOFORT, WICHTIG, HINWEIS = 3, 2, 1
+
+
+def _und(*pruefungen):
+    """Beide Pruefungen muessen gelten; None-Pruefungen fallen weg."""
+    da = [f for f in pruefungen if f is not None]
+    if not da:
+        return None
+    return da[0] if len(da) == 1 else (lambda: all(f() for f in da))
 # Richtung eines Kampf-Urteils: ein Satz bricht nur ab, wenn sie kippt (Regelwerk._noch_wahr)
 RICHTUNG = {"kill": "rein", "kill_schnell": "rein", "trade": "rein", "turm": "turm", "halten": "zurueck",
             "weg": "zurueck", "dive": "rein"}
+# Ansagen, die ein genannter Gegner nur lebend wahr macht: stirbt er waehrend des Wartens oder Sprechens, ist der Satz
+# ueberholt ("Heimerdinger hat kein Flash - spiel aggressiv", und Heimerdinger ist eben gestorben - Nachlauf 194524,
+# 10:12). Nicht: Flash- und Item-Meldungen, Todesanalyse, Gold (der Kauf gilt weiter).
+STIRBT_UEBERHOLT = ("fenster", "level", "jungler_tot", "lane_fehlt", "tief", "plan:", "anlauf", "ohneflash",
+                    "objgegner", "jungler_sicht", "leben")
 TIPP_BIS = 280      # Zeichen: nur so kurze Ansagen bekommen einen Konter-Tipp dazu (sonst > 25 s Sprechzeit)
 
 
@@ -157,6 +170,8 @@ class Regelwerk:
                 if a.pruefe is None:
                     try:
                         a.pruefe = self._noch_wahr(a, p)
+                        if a.schluessel.startswith(STIRBT_UEBERHOLT):
+                            a.pruefe = _und(a.pruefe, self._alle_leben(a, p))
                     except Exception:   # die Pruefung darf keine Ansage verhindern
                         a.pruefe = None
                 ansagen.append(a)
@@ -167,6 +182,15 @@ class Regelwerk:
         return ansagen
 
     # --- Hilfen ---------------------------------------------------------------
+
+    def _alle_leben(self, a: Ansage, p: Partie):
+        """Die im Satz genannten Gegner, die bei seiner Entstehung lebten, leben noch (ganzes Wort: "Vi", nicht
+        "Viel"). None, wenn keiner genannt ist."""
+        namen = {x.name for x in p.gegner()
+                 if not x.tot and x.champion and re.search(rf"\b{re.escape(x.champion)}\b", a.text)}
+        if not namen:
+            return None
+        return lambda: not any(x.tot for x in (self.vorher or p).gegner() if x.name in namen)
 
     def _noch_wahr(self, a: Ansage, p: Partie):
         """'Stimmt das noch?' je Art der Ansage, gegen den Zustand bei ihrer Entstehung - gerufen vor der Abgabe und
@@ -245,7 +269,18 @@ class Regelwerk:
         if s.startswith("leben"):
             return lambda: not ich_weg(jetzt()) and (self.b is None or self.b.leben is None or self.b.leben < 0.45)
         if s.startswith("plan:zurueck"):
-            return lambda: not ich_weg(jetzt()) and not (self.b is not None and self.b.unter_eigenem_turm)
+            def rueckzug_gilt() -> bool:
+                if ich_weg(jetzt()) or (self.b is not None and self.b.unter_eigenem_turm):
+                    return False
+                # "Ekko und Vex koennen schon da sein - geh jetzt zurueck", und 2 s spaeter ist Vex weit weg zu sehen
+                # und Ekko allein schwaecher (Nachlauf 230520, 18:06/18:08): ueberholt, wenn keiner der Genannten
+                # mehr vor dir am Turm sein kann
+                b = self.b
+                if b is None or not genannt or b.zum_turm is None:
+                    return True
+                return any(g.s.name in genannt and not g.s.tot and g.ankunft is not None
+                           and g.ankunft < b.zum_turm + 3 for g in b.gegner)
+            return rueckzug_gilt
         if s.startswith(("fenster", "level")) and u0 is not None and lane is not None:
             def urteil_gilt() -> bool:
                 q = jetzt()
@@ -600,9 +635,10 @@ class Regelwerk:
                 kw = dict(minute=minute, cs=p.ich.cs, cspm=f"{cspm:.1f}".replace(".0", "").replace(".", ","))
                 text = (cfg["satz"].format(champion=g.champion, gegner_cs=g.cs, **kw) if g
                         else cfg["satz_ohne_gegner"].format(**kw))
-                if cspm < cfg["ziel_pro_minute"]:
-                    # gerechnet statt "Ziel sind acht pro Minute - nimm jeden mit" (7x wortgleich in 5 Partien)
-                    fehlen = int(cfg["ziel_pro_minute"] * minute - p.ich.cs)
+                # gerechnet statt "Ziel sind acht pro Minute - nimm jeden mit" (7x wortgleich in 5 Partien); nicht
+                # "fehlen dir 0 Vasallen, etwa 0 Gold" (Nachlauf 230520, 15:00 - 120 nach 15:00,5 sind 7,97 pro Minute)
+                fehlen = int(cfg["ziel_pro_minute"] * minute - p.ich.cs)
+                if cspm < cfg["ziel_pro_minute"] and fehlen >= 3:
                     text += (f" Bis acht pro Minute fehlen dir {fehlen} Vasallen, etwa {fehlen * 21 // 50 * 50} Gold"
                              + (" - fast ein ganzes Item." if fehlen * 21 >= 1000 else "."))
                 yield Ansage(text, HINWEIS, f"cs{minute}", gueltig=40, unterbrechbar=True)

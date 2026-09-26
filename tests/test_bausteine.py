@@ -238,7 +238,7 @@ def bewertung_und_plan():
     b.gegner = [b.jungler, b.lane, fern]
     assert [x.s.name for x in b.bedrohung(8)] == [b.lane.s.name, j.name], "ADC in Minute 12 bot ist keine Gefahr"
     satz = komponist.jungler_gesehen(b, b.jungler, "gefahr", platten=True)
-    assert "zurück zu deinem Turm" in satz and "35 Prozent Leben" in satz and "3 Sekunden" in satz, satz
+    assert "zurück zu deinem nächsten Turm" in satz and "35 Prozent Leben" in satz and "3 Sekunden" in satz, satz
     # Sofort-Antwort aus dem Entscheider, Kauf-Frage bleibt bei Claude
     plan = entscheider.Option("druck", "Spiel auf Shen: du bist 2 Level vorn.", 100, 2)
     lb = S(entscheider=S(aktuell=plan))
@@ -580,6 +580,44 @@ def satz_bricht_ab_wenn_er_nicht_mehr_stimmt():
         stimme._Sapi = alt
 
 
+def kein_zweites_geh_zurueck():
+    """Nachlauf 194524: viermal "geh zurueck zu deinem Mid-Tier-1-Turm" in 37 s, und eine Gefahr brach die andere nach
+    einer Sekunde ab. Ein eben gehoertes "geh zurueck" wird nicht wiederholt (ausser als Gefahr); eine Gefahr wartet,
+    bis die laufende ihre Handlung gesagt hat; stirbt ein genannter Gegner, ist der Satz ueberholt."""
+    from lolcoach import regeln, sprechplan, stimme
+    A, W, S = regeln.Ansage, regeln.WICHTIG, regeln.SOFORT
+    plan = sprechplan.Sprechplan(stimme.Stumm())
+    assert plan.takt(100.0) is None
+    plan.neu([A("Geh zurück zu deinem Top-Tier-1-Turm, Vi ist oben.", W, "jungler_sicht", zeit=100.0, thema="gefahr")])
+    assert plan.takt(100.0) is not None
+    plan.neu([A("Kassadin kann schon da sein. Geh jetzt zurück.", W, "plan:zurueck", zeit=106.0)])
+    assert plan.takt(106.0) is None and not plan.warte            # eben gehoert: faellt weg
+    plan.neu([A("Vi ist direkt bei dir. Geh zurück.", S, "jungler_sicht", zeit=107.0, sperre=0)])
+    assert plan.takt(107.0) is not None                           # eine Gefahr kommt immer
+    lang = A("Vi ist oben und kann in 7 Sekunden bei dir sein. Geh zurück zu deinem Mid-Tier-1-Turm, das sind 22 "
+             "Sekunden.", S, "gefahr1", zeit=200.0)
+    plan.neu([lang])
+    assert plan.takt(200.0) is lang
+    zweite = A("Braum und Warwick sind tot, ihr seid nur zu dritt.", S, "zahlen_nachteil", zeit=201.0)
+    plan.neu([zweite])
+    assert plan.takt(201.0) is None and zweite in plan.warte      # erst die Handlung der laufenden
+    assert plan.takt(204.5) is zweite
+    # stirbt der genannte Gegner, stimmt "Heimerdinger hat kein Flash - spiel aggressiv" nicht mehr
+    from types import SimpleNamespace
+    heimer = SimpleNamespace(name="h", champion="Heimerdinger", tot=False)
+    vi_tot = SimpleNamespace(name="v", champion="Vi", tot=True)
+    p = SimpleNamespace(gegner=lambda: [heimer, vi_tot])
+    werk = regeln.Regelwerk()
+    werk.vorher = p
+    lebt = werk._alle_leben(A("Vi ist tot. Heimerdinger hat kein Flash - spiel aggressiv.", W, "jungler_tot"), p)
+    assert lebt is not None and lebt()
+    heimer.tot = True
+    assert not lebt()
+    vi = SimpleNamespace(gegner=lambda: [SimpleNamespace(name="v", champion="Vi", tot=False)])
+    assert werk._alle_leben(A("Viel Gold, geh back.", W, "gold"), vi) is None           # ganzes Wort
+    assert werk._alle_leben(A("Vi ist oben.", W, "jungler_sicht"), vi) is not None
+
+
 def sofort_back_und_objective():
     """'Soll ich backen?' und 'Sollen wir Drache machen?' kommen sofort aus dem Zustand (vorher ~3 s ueber Claude):
     wenig Leben -> ja; Gold fuer ein Bauteil und Gefahr -> erst zum Turm; zu wenig Gold -> noch nicht; der Drache
@@ -752,6 +790,6 @@ if __name__ == "__main__":
                  aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121, combo_rechnung,
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr,
                  faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht,
-                 satz_bricht_ab_wenn_er_nicht_mehr_stimmt, sofort_back_und_objective):
+                 satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")

@@ -238,7 +238,7 @@ class Bewertung:
     zweiter: tuple[str, float] | None = None    # (Zauber, Sekunden bis bereit)
     ult: bool | None = None
     zum_turm: float | None = None               # Sekunden bis zum naechsten eigenen Turm
-    turm_name: str = "deinem Turm"              # welcher: "deinem Top-Tier-1-Turm" (Dativ, fuer "zu ...", "an ...")
+    turm_name: str = "deinem nächsten Turm"     # welcher: "deinem Top-Tier-1-Turm" (Dativ, fuer "zu ...", "an ...")
     unter_gegnerturm: bool = False
     unter_eigenem_turm: bool = False
     tiefe: float | None = None                  # auf der eigenen Lane: 0 deine Basis .. 1 seine
@@ -516,6 +516,18 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
             b.pos = einheiten(g[1], g[2])
             b.ort = minimap.ort(g[1], g[2], mein)
 
+    if not b.pos and not p.ich.tot:
+        # Ohne frische Position nie "geh zurueck zu deinem Turm" (Nachlauf 212105, 10:50 - Carlos: "Was ist denn mein
+        # Tower?"): der Turm zur letzten Sichtung (bis 20 s alt), sonst der aeusserste stehende deiner Lane
+        g = lb.gesehen(p.ich) if lb is not None else None
+        if g is not None and p.zeit - g[0] < 20:
+            wo = einheiten(g[1], g[2])
+            k = min((k for k in tuerme if k[0] == mein), key=lambda k: abstand(wo, tuerme[k]), default=None)
+        else:
+            lane = LANE_DER_ROLLE.get(p.ich.rolle)
+            k = next((k for st in TIER for k in tuerme if k[0] == mein and k[1] == lane and k[2] == st), None)
+        if k is not None:
+            b.turm_name = f"deinem {k[1]}-Tier-{TIER[k[2]]}-Turm"
     if b.pos:
         eigene = [(k, v) for k, v in tuerme.items() if k[0] == mein] + [(None, BRUNNEN[mein])]
         naechster, wo = min(eigene, key=lambda kv: abstand(b.pos, kv[1]))

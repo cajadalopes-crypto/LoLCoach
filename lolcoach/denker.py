@@ -462,8 +462,6 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
     if u.art == "halten":
         aber = [x for x in aber if x.art not in ("jungler_nah", "dritter")]    # die Handlung nennt sie schon
     handlung = HANDLUNG[u.art].format(n=n, j=j)
-    if u.art == "kill" and aber:
-        handlung = "geh trotzdem rein, das ist ein Kill"
     if u.art == "halten" and "jungler_nah" in u.arten_alle:
         handlung = f"kein All-in, solange {j} in der Nähe ist"
     elif u.art == "halten" and (dritte := [x for x in u.faktoren if x.art == "dritter"]):
@@ -483,7 +481,10 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
         text = handlung + f" - ohne {wer} " + ("wäre es ein Kill" if u.wert >= KILL_AB else "tradest du hart")
     else:
         text = handlung + (": " + _liste([x.satz for x in gruende]) if gruende else "")
-    if aber and u.art != "turm" and not bedroht_halten:
+    if aber and u.art == "kill":
+        # nicht "Vi ist tot - geh trotzdem rein" (Nachlauf 194524, 4:11): das Trotzdem galt dem Aber am Satzende
+        text += f". Einziger Haken: {aber[0].satz}"
+    elif aber and u.art != "turm" and not bedroht_halten:
         text += f" - aber {aber[0].satz}"
     if anlass:
         # "Du bist zuerst Level 2, Wukong noch 1 - aber nur kurze Trades: du hast nur 49 Prozent Leben."
