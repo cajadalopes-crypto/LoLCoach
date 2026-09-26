@@ -36,7 +36,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), geschrieben 26.09.2026. Werte aus Data
 - Nach 6: R1 VOR dem Engage drücken (15 s Fenster), Windschnitt zum Schluss. Mit Axiombogen: Kill = R schneller zurück → nächsten Kampf suchen.
 - Wellen: Riven will Priorität. Slow-Push auf 3 → Crash → Plating (bis 14:00). Vorne: Freeze vor eigenem Turm, wenn Gegner Ranged/Poke ist. Vor dem Recall immer die Welle crashen.
 - Gank-Anfälligkeit: mittel. Mit Q3+E entkommt sie fast jedem Gank; ohne Q/E ist sie leichte Beute. Erster Gegner-Gank oft 2:45–3:30 → vorher Flusswarde oder Tribush beobachten.
-- Recall-Schwellen: 1337 g (Der Brutalisierer) oder 1050 g (Caulfields Kriegshammer) + Kontrollwarde. Nicht mit <800 g zurück, außer Leben <30 %.
+- Recall-Schwellen: 1337 g (Der Brutalisierer) oder 1050 g (Caulfields Kriegshammer) + Kontroll-Auge. Nicht mit <800 g zurück, außer Leben <30 %.
 
 ## Gegen diesen Champion
 - Fenster: Q (alle 3) + E verbraucht → 6–13 s ohne Mobilität und Schild. Dann All-in.
