@@ -223,7 +223,8 @@ def kamerarahmen(karte: np.ndarray) -> tuple[float, float, float, float] | None:
     y0, y1 = min(ys.min(), ys2.min()), max(ys.max(), ys2.max())
     if (x1 - x0) < w * 0.1 or (y1 - y0) < h * 0.05 or (x1 - x0) > w * 0.5:
         return None
-    return x0 / w, y0 / h, x1 / w, y1 / h
+    # float() statt numpy: das Ereignis geht als JSON ins Protokoll (np.float64 laesst sich nicht schreiben)
+    return float(x0 / w), float(y0 / h), float(x1 / w), float(y1 / h)
 
 
 GROB_SCHWELLE = 0.45
