@@ -126,6 +126,10 @@ class Wellenleser:
 def zustaende(punkte: list[tuple[str, float, float]]) -> dict[str, LaneZustand]:
     je_lane: dict[str, dict[str, list[float]]] = {l: {"blau": [], "rot": []} for l in LANES}
     for team, x, y in punkte:
+        # Basen (unten links / oben rechts) zaehlen nicht: dort liegen Nexus-/Inhibitor-Icons
+        # (gemessen an Partie 3, Bild 900: "Bot: eure 1 ... tief bei deinem Turm" aus der Basis)
+        if (x < 0.24 and y > 0.76) or (x > 0.76 and y < 0.24):
+            continue
         if pr := _projektion(x, y):
             je_lane[pr[0]][team].append(pr[1])
     aus = {}
