@@ -20,6 +20,9 @@ BACK = re.compile(r"\bback\b|\brecall\b", re.I)   # eine Ansage rät zum Recall 
 RUECKZUG = re.compile(r"geh (sofort |jetzt |lieber )?zurück|raus da", re.I)   # eine Ansage rät zum Rueckzug
 
 SOFORT, WICHTIG, HINWEIS = 3, 2, 1
+# Richtung eines Kampf-Urteils: ein Satz bricht nur ab, wenn sie kippt (Regelwerk._noch_wahr)
+RICHTUNG = {"kill": "rein", "kill_schnell": "rein", "trade": "rein", "turm": "turm", "halten": "zurueck",
+            "weg": "zurueck", "dive": "rein"}
 TIPP_BIS = 280      # Zeichen: nur so kurze Ansagen bekommen einen Konter-Tipp dazu (sonst > 25 s Sprechzeit)
 
 
@@ -168,6 +171,7 @@ class Regelwerk:
         waehrend des Sprechens (sprechplan/stimme). Carlos, Live 26.09. 23:20: "Ich bin in der Base, bin schon lange
         draussen, habe mein Item geholt - und nach einer Minute sagt er: hol dir Caulfields Hammer. Wenn er mitten im
         Satz sieht, dass Ekko beim Drachen ist, muss er abbrechen." None = gilt, solange sie gueltig ist."""
+        from . import minimap
         s = a.schluessel
         lage = self.lage if self.lage is not None and getattr(self.lage, "aktiv", False) else None
         gold0 = int(p.gold or 0)
@@ -191,6 +195,18 @@ class Regelwerk:
         def ich_weg(q: Partie) -> bool:
             return q.ich is None or q.ich.tot or self._ich_in_basis(q)
 
+        def sicher_gesehen(x) -> bool:
+            """Wirklich aufgetaucht, nicht ein einzelnes Fehlbild: zwei Sichtungen in den letzten 1,5 s."""
+            v = lage.verlauf.get((x.name, x.team)) if lage is not None else None
+            if not v:
+                return False
+            ende = v[-1][0]
+            return lage.sichtbar(x) and sum(1 for e in v if e[0] >= ende - 1.5) >= 2
+
+        def seit_ungesehen(x) -> float:
+            g = lage.gesehen(x) if lage is not None else None
+            return 1e9 if g is None or lage.letztes_bild is None else lage.letztes_bild - g[0]
+
         if s.startswith(("gold", "plan:back", "recallfenster")):
             # Rat zum Recall: vorbei, sobald du in der Basis bist, tot bist oder gekauft hast
             return lambda: not ich_weg(jetzt()) and int(jetzt().gold or 0) >= gold0 - 250
@@ -205,7 +221,7 @@ class Regelwerk:
         if s.startswith(("lane_fehlt", "tief")) and lage is not None:
             # "X fehlt / ist seit 30 s nicht zu sehen": ueberholt, sobald einer der Genannten auftaucht
             fehlend = (genannt & unsichtbar0) or ({lane.name} if s.startswith("lane_fehlt") and lane else set())
-            return lambda: not ich_weg(jetzt()) and not any(lage.sichtbar(x) for x in gegner(jetzt(), fehlend))
+            return lambda: not ich_weg(jetzt()) and not any(sicher_gesehen(x) for x in gegner(jetzt(), fehlend))
         if s.startswith("jungler_sicht") and j is not None and lage is not None:
             def jungler_noch_dort() -> bool:
                 q = jetzt()
@@ -215,10 +231,15 @@ class Regelwerk:
                 g = lage.gesehen(jj[0])
                 if g is None or j_pos0 is None:
                     return True
-                return abs(g[1] - j_pos0[1]) + abs(g[2] - j_pos0[2]) <= 0.15   # "Ekko ist oben" - er ist jetzt Drache
+                # "Ekko ist oben" - er ist jetzt am Drachen: ein anderer Ort und weit weg. Laeuft er nur auf dich zu,
+                # bleibt der Satz wahr (er aendert sich in 4-5 s um 0,15 - das darf nicht abbrechen)
+                weit = abs(g[1] - j_pos0[1]) + abs(g[2] - j_pos0[2]) > 0.25
+                return not (weit and minimap.ort(g[1], g[2], q.mein_team) != minimap.ort(j_pos0[1], j_pos0[2], q.mein_team))
             return jungler_noch_dort
         if s.startswith("anlauf") and lage is not None and genannt:
-            return lambda: not ich_weg(jetzt()) and all(not x.tot and lage.sichtbar(x) for x in gegner(jetzt(), genannt))
+            # ein Busch, ein Bild ohne ihn: kein Abbruch - erst nach 3 s ohne Sichtung ist "X kommt" ueberholt
+            return lambda: not ich_weg(jetzt()) and all(not x.tot and seit_ungesehen(x) <= 3.0
+                                                        for x in gegner(jetzt(), genannt))
         if s.startswith("leben"):
             return lambda: not ich_weg(jetzt()) and (self.b is None or self.b.leben is None or self.b.leben < 0.45)
         if s.startswith("plan:zurueck"):
@@ -229,7 +250,13 @@ class Regelwerk:
                 if all(x.tot for x in gegner(q, {lane.name})) or ich_weg(q):
                     return False
                 u = denker.urteil(self.b) if self.b is not None and self.b.lane is not None else None
-                return u is None or u.art == u0          # das Urteil ist gekippt: der alte Satz ist falsch
+                # gekippt, und zwar stabil (auch im letzten Takt der Regel) - ein einzelner Takt flackert - und in die
+                # andere Richtung: Kill -> Trade ist dieselbe Richtung (Nachlauf 21:21, 1:54: "geh rein, das ist ein
+                # Kill" waere nach 0,3 s abgebrochen - und fuehrte zum Kill); Angriff -> halten/weg/Turm nicht
+                vorher = getattr(self, "_fenster_vorher", None)
+                if u is None or vorher is None or vorher[0] != u.art:
+                    return True
+                return RICHTUNG.get(u.art) == RICHTUNG.get(u0)
             return urteil_gilt
         return None
 
