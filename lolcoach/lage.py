@@ -63,7 +63,7 @@ class Lagebild:
                 zeit = zeit_von_wand(e[1])
                 self.chat.append((zeit, e[2]))
                 for sp, schl, zurueck in zauber.aus_chat(e[2], p):
-                    if t := self.zauber.benutzt(sp, schl, zeit, "Chat", zurueck):
+                    if t := self.zauber.benutzt(sp, schl, zauber.chat_zeit(e[2], zeit), "Chat", zurueck):
                         neu.append(t)
         return neu
 

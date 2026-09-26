@@ -110,6 +110,13 @@ def recalls_im_verlauf():
     assert k.titel == "Kampf 2:0 (ohne dich)" and any("0.99 Kartenbreiten entfernt" in f for f in k.fakten), k
 
 
+def chat_zeitstempel():
+    # Partie 4: "04:48 Riven (Riven): Tryndamere hat Blitz benutzt", gelesen um 4:51
+    assert zauber.chat_zeit("04:48 Riven (Riven): Tryndamere hat Blitz benutzt", 291.0) == 288.0
+    assert zauber.chat_zeit("04:48 Riven (Riven): Tryndamere hat Blitz benutzt", 400.0) == 400.0   # zu alt
+    assert zauber.chat_zeit("Riven (Riven): Urgot Blitz", 291.0) == 291.0                          # ohne Stempel
+
+
 def matchup_zeilen():
     from types import SimpleNamespace as S
     vi = gehirn.matchup("Graves", S(champion="Vi", champion_id="Vi"))
@@ -129,6 +136,6 @@ def zauber_im_briefing():
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
-                 zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen):
+                 zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel):
         test()
         print(f"{test.__name__} OK")
