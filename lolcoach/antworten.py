@@ -79,9 +79,26 @@ def _wo(s: Spieler, p: Partie, lagebild) -> str:
     if not g:
         return f"{s.champion} habe ich noch nicht gesehen."
     ort = minimap.ort(g[1], g[2], p.mein_team)
+    zusatz = ""
+    try:   # dazu gerechnet: wie schnell er bei dir sein kann, und beim Jungler die wahrscheinliche Seite
+        from . import bewertung
+        b = bewertung.bewerte(p, lagebild)
+        gl = next((x for x in b.gegner if x.s.name == s.name), None) if b else None
+        if gl and gl.ankunft is not None and gl.ankunft >= 2 and not gl.unbekannt:
+            zusatz = f" Frühestens in {_dauer(gl.ankunft)} bei dir."
+        elif gl and gl.ankunft is not None and gl.ankunft < 2 and not lagebild.sichtbar(s):
+            zusatz = f" {s.champion} könnte schon bei dir sein."
+        jt = getattr(lagebild, "jungle", None)
+        if s.rolle == "JUNGLE" and jt is not None and not lagebild.sichtbar(s):
+            w = jt.wahrscheinlich(p.zeit)
+            seite, anteil = max(w.items(), key=lambda x: x[1])
+            if anteil >= 0.6:
+                zusatz += f" Wahrscheinlich {seite}, {int(anteil * 100)} Prozent."
+    except Exception:
+        pass
     if lagebild.sichtbar(s):
-        return f"{s.champion} ist {ort}, gerade zu sehen."
-    return f"{s.champion} war vor {_dauer(p.zeit - g[0])} {ort}."
+        return f"{s.champion} ist {ort}, gerade zu sehen.{zusatz}"
+    return f"{s.champion} war vor {_dauer(p.zeit - g[0])} {ort}.{zusatz}"
 
 
 def _timer(schl: str, p: Partie) -> str:
@@ -141,6 +158,22 @@ def sofort(frage: str, p: Partie, lagebild=None) -> str | None:
             zauber = " und ".join(da)
             return (f"{s.champion} hat {zauber}. Einen Verbrauch habe ich nicht gesehen, weder im Chat "
                     f"noch auf der Minimap - also vermutlich bereit.")
+    if menge & {"platten", "platte"}:
+        from . import bewertung
+        b = bewertung.bewerte(p, lagebild) if lagebild is not None and getattr(lagebild, "aktiv", False) else None
+        if b is None or (b.platten_gegner is None and b.platten_eigen is None):
+            return "Die Platten kann ich gerade nicht lesen."
+        teile = []
+        if b.platten_gegner is not None:
+            teile.append(f"Sein vorderster Turm hat noch {b.platten_gegner} Platte{'n' if b.platten_gegner != 1 else ''}")
+        if b.platten_eigen is not None:
+            teile.append(f"deiner {b.platten_eigen}")
+        return ", ".join(teile) + "."
+    if "prio" in menge:
+        from . import bewertung, komponist
+        b = bewertung.bewerte(p, lagebild) if lagebild is not None and getattr(lagebild, "aktiv", False) else None
+        satz = komponist._prio_satz(b, ("Top", "Mid", "Bot")) if b else ""
+        return (satz[0].upper() + satz[1:] + ".") if satz else "Die Wellen stehen gerade offen, keiner hat klar Prio."
     if objs := [OBJEKTIVE[x] for x in w if x in OBJEKTIVE]:
         return _timer(objs[0], p)
     if menge & {"wo", "gesehen", "position", "steht"} and not menge & {"stehen", "steht's", "stehts"}:
