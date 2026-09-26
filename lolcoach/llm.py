@@ -78,7 +78,9 @@ def frage(prompt: str, system: str | None = None, modell: str = "sonnet", timeou
         else:
             antwort = json.loads(lauf.stdout)
     except (json.JSONDecodeError, StopIteration) as e:
-        raise LLMFehler((lauf.stderr or lauf.stdout)[:300]) from e
+        # das Ende zeigen, nicht den Anfang: vorn steht bei stream-json nur die Init-Zeile (Generalprobe 26.09.)
+        ende = (lauf.stderr or "").strip()[-300:] or " | ".join(lauf.stdout.strip().splitlines()[-2:])[-400:]
+        raise LLMFehler(f"Rueckgabe {lauf.returncode}: {ende or 'leer'}") from e
     if antwort.get("is_error"):
         text = antwort.get("result", "")
         if "login" in text.lower():

@@ -127,8 +127,13 @@ def erstelle(aufnahme: str | Path, neu: bool = False, modell: str = "sonnet") ->
     if bilder:
         inhalt += "\n\nBILDER (sein Spielbildschirm, in dieser Reihenfolge):\n" + "\n".join(
             f"{i}. {text}" for i, (text, _) in enumerate(bilder, 1))
-    antwort = llm.frage(inhalt, system=REVIEW_SYSTEM, modell=modell, timeout=300,
-                        bilder=[b for _, b in bilder] or None)
+    try:
+        antwort = llm.frage(inhalt, system=REVIEW_SYSTEM, modell=modell, timeout=300,
+                            bilder=[b for _, b in bilder] or None)
+    except llm.LLMFehler as e:   # ein zweiter Versuch - das Review ist das Wichtigste nach der Partie
+        print(f"  Review, erster Versuch: {e} - noch einmal", flush=True)
+        antwort = llm.frage(inhalt, system=REVIEW_SYSTEM, modell=modell, timeout=300,
+                            bilder=[b for _, b in bilder] or None)
     try:
         review = _json_aus(antwort)
     except (ValueError, json.JSONDecodeError):
