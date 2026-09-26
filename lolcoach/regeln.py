@@ -869,10 +869,7 @@ class Regelwerk:
         from .todesanalyse import fakten
         kontext = fakten(p, kill, self.rueckblick, self.lage)
         if (vorher := getattr(self, "_b_lebend", None)) is not None and p.zeit - vorher.zeit <= 5:
-            kontext += "
-
-BEWERTUNG IN DER LETZTEN SEKUNDE VOR DEM TOD:
-" + vorher.text()
+            kontext += "\n\nBEWERTUNG IN DER LETZTEN SEKUNDE VOR DEM TOD:\n" + vorher.text()
         if self.lage is not None:
             self.lage.letzter_tod = (p.zeit, kontext)   # fuer Fragen danach ("warum bin ich gestorben?")
         if p.ich.respawn >= cfg_a["ab_sekunden"]:
