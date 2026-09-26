@@ -88,7 +88,7 @@ class Regelwerk:
         for regel in (self._vorwarnung, self._zahlen, self._jungler_tot, self._lane_tot,
                       self._level, self._items, self._gold, self._cs, self._tod,
                       self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf,
-                      self._ward, self._recall_fenster, self._tief_ohne_sicht):
+                      self._ward, self._recall_fenster, self._tief_ohne_sicht, self._kontrollauge):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 ansagen.append(a)
@@ -296,6 +296,26 @@ class Regelwerk:
         elif p.gold >= cfg["schwelle"]:
             yield Ansage(cfg["satz"].format(gold=int(p.gold // 100 * 100)), HINWEIS, "gold",
                          gueltig=5, sperre=cfg["erneut_nach"])
+
+    def _kontrollauge(self, p: Partie, v: Partie):
+        """Nach dem Einkauf ohne Kontroll-Auge im Inventar: eins mitnehmen (75 Gold). Wardscore
+        in den ersten drei Partien 0,08-0,89 je Minute - Sicht ist die billigste Versicherung
+        gegen genau die Ganks, an denen Partie 3 hing."""
+        cfg = self.m["kontrollauge"]
+        if p.ich.tot or p.gold is None or v.gold is None:
+            return
+        if v.gold - p.gold >= 250:
+            self._kauf_bei = p.zeit
+            return
+        bei = getattr(self, "_kauf_bei", None)
+        if bei is None or not (cfg["nach"] <= p.zeit - bei <= cfg["nach"] + 8) or p.zeit < cfg["ab"]:
+            return
+        self._kauf_bei = None
+        it = ddragon.items()
+        plaetze = [i for i in p.ich.items if i in it and "Trinket" not in it[i].get("tags", [])]
+        if cfg["item"] in p.ich.items or p.gold < 75 or len(plaetze) >= 6:
+            return
+        yield Ansage(cfg["satz"], HINWEIS, "kontrollauge", gueltig=10, sperre=cfg["sperre"])
 
     def _inventar_voll(self, p: Partie) -> bool:
         """Sechs Plaetze belegt, ohne Trinket und Verbrauchsgueter (Partie 3, 30:25)."""

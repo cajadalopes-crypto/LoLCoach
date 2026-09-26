@@ -162,6 +162,14 @@ sperre = 45
 erneut_nach = 90     # im selben Vorstoss erst nach so vielen Sekunden wieder
 satz = "Du stehst tief, und {namen} {sind} seit {sekunden} Sekunden weg. Zurück, bis du {sie} siehst."
 
+[kontrollauge]
+# Nach dem Einkauf ohne Kontroll-Auge (Item 2055, 75 Gold) im Inventar
+item = 2055
+ab = 240             # der erste Einkauf zu Spielbeginn zaehlt nicht
+nach = 3             # Sekunden nach dem letzten Kauf (dann ist er fertig, steht aber noch im Laden)
+sperre = 100
+satz = "Nimm noch ein Kontroll-Auge mit - 75 Gold, und du siehst den nächsten Gank kommen."
+
 [todesanalyse]
 # Ab so viel Todeszeit sagt der Coach statt des Standardsatzes den Grund (Claude, ~10 s).
 ab_sekunden = 14
