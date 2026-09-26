@@ -29,6 +29,7 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Axt aufheben verhindern: auf der Axt stehen/weglaufen zwingt ihn zu Umwegen.
 - Rüstung + Angriffstempo-Senkung; Heilungsreduktion gegen W.
 - Er fällt spät ab – Partie strecken.
+- Ohne Blitz und ohne R ist er leicht zu kiten: diese Fenster für Kämpfe nutzen.
 
 ## Makro/Teamfight
 - Frontlinie, läuft auf Carry; frühes Objective-Tempo.

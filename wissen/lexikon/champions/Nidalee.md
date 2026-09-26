@@ -29,6 +29,8 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Ihre Heilung (Mensch-E) ist stark früh → Heilungsreduktion bei Duellen.
 - Früh ihre Invades mit Lane-Hilfe kontern; sie fällt spät ab.
 - Katzen-W verbraucht = sie ist nah und ohne Flucht → CC + Burst.
+- Frühe Invades: sie kommt oft Level 2–3 in deinen Dschungel (Katzen-Tempo). Mit Lane-Prio zurückkämpfen, ohne Prio Camp aufgeben.
+- Ihre Speer-Pokes vor Objectives: Leben voll halten, nicht einzeln in die Grube laufen.
 
 ## Makro/Teamfight
 - Poke vor Objectives, Katzen-Aufräumen.

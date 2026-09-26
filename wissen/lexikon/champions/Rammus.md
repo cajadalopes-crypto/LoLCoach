@@ -29,6 +29,9 @@ Stand: Patch 26.19 (Data Dragon 16.19.1), 26.09.2026. CDs aus Data Dragon.
 - Q-Anlauf mit Slows/CC stoppen, bevor er Tempo hat.
 - Magieschaden/absoluter Schaden (Camille Q2) gegen ihn; Rüstungsdurchdringung.
 - R-Timer mitzählen; Warden an Fluss (lange Anläufe).
+- Gegen AD-lastige Teams baut er schnell viel Rüstung: dann Kämpfe um seine R-Abklingzeit herum wählen, nicht in seine Spott-Kette laufen.
+- Q-Anlauf ist laut sichtbar (rollende Kugel): Lane früh warnen, Gankwege über den Fluss warden.
+- Ohne Blitz fehlt ihm der Blitz-E-Spott auf Backliner – Blitz-Timer ansagen.
 
 ## Makro/Teamfight
 - Engage auf Carry, Spott-Kette mit Team-Schaden.
