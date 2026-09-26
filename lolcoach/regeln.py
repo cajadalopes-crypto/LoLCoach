@@ -79,7 +79,7 @@ class Regelwerk:
         ansagen: list[Ansage] = []
         for regel in (self._vorwarnung, self._zahlen, self._jungler_tot, self._lane_tot,
                       self._level, self._items, self._gold, self._cs, self._tod,
-                      self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber):
+                      self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 ansagen.append(a)
@@ -434,6 +434,38 @@ class Regelwerk:
             if t.name in wichtig and t.zauber == "SummonerFlash" and v.zeit < t.zurueck <= p.zeit:
                 yield Ansage(cfg["zurueck"].format(champion=t.champion), HINWEIS, f"flashzurueck:{t.name}",
                              gueltig=15, sperre=30)
+
+    def _anlauf(self, p: Partie, v: Partie):
+        """Gegner laufen sichtbar auf dich zu (Positionsverlauf der Minimap).
+        Carlos: "Wenn ich im Late Game die Welle pushe, musst du mir sagen, dass der und der
+        auf dem Weg ist." In der Lane-Phase zaehlt der Lane-Gegner nicht (der steht immer da)."""
+        if not self.lage or not self.lage.aktiv or self._ich_weg(p):
+            return
+        from . import minimap
+        cfg = self.m["anlauf"]
+        ich = self.lage.gesehen(p.ich)
+        if not ich or p.zeit - ich[0] > 1.5:
+            return
+        pos = (ich[1], ich[2])
+        g = p.gegenueber()
+        kommen = []
+        for s in p.gegner():
+            if s.tot or not self.lage.sichtbar(s):
+                continue
+            if g and s is g and p.zeit < cfg["ab"]:
+                continue
+            sg = self.lage.gesehen(s)
+            abstand = abs(sg[1] - pos[0]) + abs(sg[2] - pos[1])
+            naeher = self.lage.naehert_sich(s, pos, p.zeit)
+            if naeher is not None and naeher >= cfg["naeher_um"] and cfg["nah_min"] <= abstand <= cfg["weit"]:
+                kommen.append((s, minimap.woher(minimap.ort(sg[1], sg[2], p.mein_team))))
+        if len(kommen) >= 2:
+            yield Ansage(cfg["mehrere"].format(anzahl=len(kommen), namen=", ".join(s.champion for s, _ in kommen)),
+                         SOFORT, "anlauf", gueltig=3, sperre=cfg["sperre"])
+        elif kommen:
+            s, ort = kommen[0]
+            yield Ansage(cfg["einer"].format(champion=s.champion, ort=ort), SOFORT, f"anlauf:{s.name}",
+                         gueltig=3, sperre=cfg["sperre"])
 
     def _tod(self, p: Partie, v: Partie):
         if not (p.ich.tot and not v.ich.tot):

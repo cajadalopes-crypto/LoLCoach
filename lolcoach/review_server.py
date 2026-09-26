@@ -11,6 +11,10 @@ import json
 import threading
 from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+
+class _EinServer(ThreadingHTTPServer):
+    allow_reuse_address = False  # Windows liesse sonst zwei Server auf denselben Port
 from pathlib import Path
 from urllib.parse import unquote
 
@@ -149,6 +153,6 @@ class _Anfrage(BaseHTTPRequestHandler):
 
 
 def starte(port: int = PORT) -> ThreadingHTTPServer:
-    server = ThreadingHTTPServer(("127.0.0.1", port), _Anfrage)
+    server = _EinServer(("127.0.0.1", port), _Anfrage)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     return server

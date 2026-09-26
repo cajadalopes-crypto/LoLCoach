@@ -169,3 +169,13 @@ kampf_erneut = 120
 zurueck = "{champion} hat Flash wieder."
 neu_ult = "{champion} hat seine Ult benutzt, für {dauer} weg."
 kampf_ult = "{champion} hat keine Ult, noch {dauer}. Das ist dein Fenster."
+
+[anlauf]
+# Gegner, die sichtbar auf dich zulaufen (Kartenanteile, Manhattan-Abstand).
+ab = 840                      # Lane-Gegner zaehlt erst nach der Lane-Phase
+weit = 0.30                   # nur wer schon in diesem Umkreis ist
+nah_min = 0.03                # direkt neben dir: dann laeuft der Kampf schon, keine Warnung mehr
+naeher_um = 0.05              # so viel naeher in 2,5 s (ca. 700 Einheiten - laufen, nicht zufaellig)
+sperre = 25
+einer = "Vorsicht, {champion} kommt {ort} auf dich zu!"
+mehrere = "{anzahl} Gegner kommen auf dich zu: {namen}. Zieh dich zurück!"

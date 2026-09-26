@@ -12,6 +12,10 @@ from __future__ import annotations
 import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+
+class _EinServer(ThreadingHTTPServer):
+    allow_reuse_address = False  # Windows liesse sonst zwei Server auf denselben Port
 from pathlib import Path
 
 from . import ddragon, minimap, wissen
@@ -105,7 +109,7 @@ class Dashboard:
             def log_message(self, *a):
                 pass
 
-        self.server = ThreadingHTTPServer(("127.0.0.1", port), Anfrage)
+        self.server = _EinServer(("127.0.0.1", port), Anfrage)
         self.url = f"http://127.0.0.1:{port}/"
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
 

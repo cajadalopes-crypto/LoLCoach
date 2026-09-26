@@ -72,6 +72,19 @@ class Lagebild:
                 while v and v[0][0] < zeit - VERLAUF:
                     v.popleft()
 
+    def naehert_sich(self, sp: Spieler, ziel: tuple[float, float], jetzt: float, fenster: float = 2.5) -> float | None:
+        """Um wie viel (Kartenanteil) ist `sp` in den letzten `fenster` Sekunden naeher an `ziel`
+        gekommen? None, wenn er nicht durchgehend gesehen wurde."""
+        v = self.verlauf.get((sp.name, sp.team))
+        if not v or jetzt - v[-1][0] > 1.0:
+            return None
+        frueher = [(t, x, y) for t, x, y in v if t <= v[-1][0] - fenster + 0.5]
+        if not frueher or v[-1][0] - frueher[-1][0] > fenster + 1.5:
+            return None
+        _, x0, y0 = frueher[-1]
+        _, x1, y1 = v[-1]
+        return (abs(x0 - ziel[0]) + abs(y0 - ziel[1])) - (abs(x1 - ziel[0]) + abs(y1 - ziel[1]))
+
     def stand_still(self, sp: Spieler, dauer: float = 5.5, toleranz: float = 0.015) -> bool:
         """Stand `sp` vor seiner letzten Sichtung mindestens `dauer` Sekunden auf
         der Stelle? So sieht ein Recall aus (8 s kanalisieren, dann weg)."""

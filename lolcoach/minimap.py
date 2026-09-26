@@ -302,6 +302,16 @@ def ort(x: float, y: float, aus_sicht: str | None = None) -> str:
     return f"in {'eurem' if eigen else 'seinem'} {haelfte} Jungle"
 
 
+def woher(ort_text: str) -> str:
+    """'im oberen Fluss' -> 'aus dem oberen Fluss', 'oben' -> 'von oben' - fuer 'kommt ... auf dich zu'."""
+    for alt, neu in (("im ", "aus dem "), ("in der ", "aus der "), ("in seinem ", "aus seinem "),
+                     ("in eurem ", "aus eurem "), ("in seiner ", "aus seiner "), ("in eurer ", "aus eurer "),
+                     ("auf der ", "über die ")):
+        if ort_text.startswith(alt):
+            return neu + ort_text[len(alt):]
+    return f"von {ort_text}" if ort_text in ("oben", "unten") else ort_text
+
+
 def seite_der_karte(x: float, y: float) -> str:
     """'oben' (Top-Seite: Larven, Herold, Baron) oder 'unten' (Drache, Bot)."""
     return "oben" if x + y < 1.0 else "unten"
