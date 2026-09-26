@@ -101,6 +101,8 @@ legendaer_ab = 2200
 # (Lebensraub + Omnivamp + Zaubervamp, Werte der Live-API)
 heilung_ab = 0.05
 fertig = "{champion} hat {item} fertig."
+# Eigenes legendaeres Item: situativ - der Stratege sagt, was es gegen DIESEN Gegner aendert
+ich_fertig = "{item} fertig - das ist ein Powerspike, nutz ihn."
 
 [gold]
 schwelle = 1300               # ab hier lohnt ein Recall fuer ein Kernteil

@@ -167,7 +167,9 @@ SITUATIV_SYSTEM = (
     "GENAU JETZT tun soll und kurz warum - konkret fuer seine Position, sein Leben, sein Gold, die "
     "Welle und den Jungler. Keine Allgemeinplaetze. Stimmt der Anlass fuer ihn gerade nicht (zu weit "
     "weg, tot, falsche Seite), sag das Passende statt des Anlasses. Der Standardsatz zeigt nur den Anlass; "
-    "kommentiere nie die Daten oder was fehlt ('nicht erwaehnt', 'laut Lage'), sprich nur zum Spieler.")
+    "kommentiere nie die Daten oder was fehlt ('nicht erwaehnt', 'laut Lage'), sprich nur zum Spieler. "
+    "Sauberes gesprochenes Deutsch: LoL-Begriffe (All-in, Trade, Welle, Gank) als Nomen, keine "
+    "eingedeutschten Verben wie 'all-inen'.")
 
 
 TOD_SYSTEM = (

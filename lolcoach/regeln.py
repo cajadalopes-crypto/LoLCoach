@@ -73,6 +73,8 @@ class Regelwerk:
         self.ult_warnungen: dict[str, str] = {}        # Champion -> ein Satz, was seine Ult bedeutet (Spielakte)
         from .todesanalyse import Rueckblick
         self.rueckblick = Rueckblick()                 # die letzten 45 s - fuer die Todesanalyse
+        self._spikes: list[str] = []                   # eben fertig gewordene eigene Items (noch nicht gesagt)
+        self._spike_bei = 0.0
 
     def pruefe(self, p: Partie, lage=None) -> list[Ansage]:
         """`lage`: Lagebild aus der Minimap (lage.Lagebild) oder None ohne Bild."""
@@ -254,6 +256,17 @@ class Regelwerk:
 
     def _items(self, p: Partie, v: Partie):
         ab = self.m["items"]["legendaer_ab"]
+        # eigener Powerspike: im Brunnen gekauft, gesagt wird es, bevor er wieder in der Lane ist.
+        # Mehrere Kaeufe eines Besuchs (kommen in aufeinanderfolgenden Takten) werden ein Satz.
+        for item in set(p.ich.items) - set(v.ich.items):
+            if _legendaer(item, ab) and ("spike", item) not in self._gemeldet:
+                self._gemeldet.add(("spike", item))
+                self._spikes.append(ddragon.items().get(item, {}).get("name", str(item)))
+                self._spike_bei = p.zeit
+        if self._spikes and p.zeit - self._spike_bei >= 3:
+            namen, self._spikes = " und ".join(self._spikes), []
+            yield Ansage(self.m["items"]["ich_fertig"].format(item=namen), WICHTIG, f"spike:{namen}",
+                         gueltig=40, sperre=10_000, situativ=True)
         beobachtet = {s.name for s in (p.gegenueber(), p.jungler(gegenteam(p.mein_team))) if s}
         for s in p.gegner():
             alt = next((x for x in v.spieler if x.name == s.name and x.team == s.team), None)

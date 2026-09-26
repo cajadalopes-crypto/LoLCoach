@@ -49,7 +49,10 @@ def main():
     def gesagt_bei(von, bis, teil):
         return any(von <= t <= bis and teil in x for t, x in um.items())
 
-    assert 20 <= len(gesagt) <= 50, f"{len(gesagt)} Ansagen - zu still oder zu geschwaetzig"
+    # 48 bis zu den eigenen Powerspikes (26.09.), die drei weitere bringen
+    assert 20 <= len(gesagt) <= 55, f"{len(gesagt)} Ansagen - zu still oder zu geschwaetzig"
+    assert gesagt_bei(480, 500, "Eklipse fertig")                         # eigener Powerspike, 8:02 gekauft
+    assert sum("Tanz des Todes und Endloser Hunger" in t for t in texte) == 1   # zwei Kaeufe, ein Satz
     # Riven hatte Zuenden statt Teleport - bis die Top-Quest (spaetestens 13:35) Teleport gibt
     assert not any(a.gesprochen < 815 and "Teleport mitkämpfen" in a.text for a in gesagt), "vor der Quest kein TP"
     assert any(a.gesprochen > 815 and "Teleport mitkämpfen" in a.text for a in gesagt), "nach der Quest mit TP"
