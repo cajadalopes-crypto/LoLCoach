@@ -165,6 +165,9 @@ AKTE_SYSTEM = (
     "Danach: ... (Plan nach der Lane-Phase))\n"
     "ULTS:\n(je gegnerischer Champion eine Zeile 'Name: Satz', hoechstens 15 Woerter, gesprochen: was seine Ult "
     "fuer den Spieler bedeutet und worauf er achten muss)\n"
+    "TRADE:\n(EIN gesprochener Halbsatz, hoechstens 14 Woerter, klein anfangend: worauf der Spieler bei Trade und "
+    "All-in gegen seinen Lane-Gegner achten muss - welche Faehigkeit des Gegners er abwarten oder koedern muss und wie "
+    "lange sie dann weg ist, z. B. 'erst nach seinem E, das blockt 2 Sekunden deine Autos, 16 Sekunden Abklingzeit')\n"
     "FOKUS:\n(nur wenn das Material einen FOKUS DES SPIELERS nennt: EIN kurzer gesprochener Satz, hoechstens 20 "
     "Woerter, der diesen Fokus auf genau diese Partie anwendet - wann und wogegen er heute darauf achten muss; "
     "ohne Zeichen wie / oder +. Das BRIEFING selbst erwaehnt den Fokus nicht, dieser Satz wird danach gesprochen)\n"
@@ -212,7 +215,7 @@ TOD_SYSTEM = (
     "Seiten, wer im Kampf war, Vasallen, Turm) - nur, was wirklich zu sehen ist.")
 
 
-_MARKER = re.compile(r"(?m)^[#*\s]*(AKTE|BRIEFING|LANEPLAN|ULTS|FOKUS)[*\s]*:[*]*")
+_MARKER = re.compile(r"(?m)^[#*\s]*(AKTE|BRIEFING|LANEPLAN|ULTS|TRADE|FOKUS)[*\s]*:[*]*")
 LANEPLAN_FELDER = ("Spielweise", "Level 1-3", "Wellen", "Erster Back", "Gefahr", "Danach")
 
 
@@ -264,6 +267,7 @@ class Gehirn:
         self.fokus_satz: str | None = None       # der Fokus aus dem letzten Review, auf diese Partie bezogen
         self.fokus: str | None = None            # derselbe Fokus im Wortlaut des Reviews (Dashboard)
         self.laneplan: list[str] = []            # "Spielweise: ...", "Level 1-3: ..." (Dashboard-Zettel)
+        self.trade_hinweis: str = ""             # "erst nach seinem E ..." - haengt der Komponist an Druck-Ansagen
         self._akte_laeuft = False
         self.ablage: Path | None = None    # je Partie: hier wird die Akte gespeichert
 
@@ -297,6 +301,8 @@ class Gehirn:
                 if fokus:
                     self.akte += f"\nFOKUS HEUTE (aus dem Review der letzten Partie): {fokus}"
                 self.ult_warnungen = {}
+                trade = kuerzen(teile.get("TRADE", "").strip().strip("'\""), 1, woerter=16).rstrip(".")
+                self.trade_hinweis = trade[:1].lower() + trade[1:] if trade else ""
                 for zeile in ults.splitlines():
                     name, _, satz = zeile.strip().lstrip("-* ").partition(":")
                     if name and satz.strip():

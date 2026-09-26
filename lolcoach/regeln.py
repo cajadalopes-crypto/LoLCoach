@@ -79,6 +79,7 @@ class Regelwerk:
         self._weg_seit: dict[str, float | None] = {}  # Spielername -> seit wann unsichtbar (lebendig)
         self._tot_bei: dict[str, float] = {}           # Spielername -> zuletzt tot gesehen (Spielzeit)
         self.ult_warnungen: dict[str, str] = {}        # Champion -> ein Satz, was seine Ult bedeutet (Spielakte)
+        self.trade_hinweis: str = ""                   # worauf beim All-in gegen den Lane-Gegner achten (Spielakte)
         from .todesanalyse import Rueckblick
         self.rueckblick = Rueckblick()                 # die letzten 45 s - fuer die Todesanalyse
         self._in_grube: dict[tuple[str, str], float] = {}   # (Jungler, Objective) -> seit wann in der Grube
@@ -104,7 +105,10 @@ class Regelwerk:
             try:
                 self.entscheider.jungle.neu(p, lage)
                 lage.jungle = self.entscheider.jungle      # fuer Claude (antworten.lage_text)
+                lage.entscheider = self.entscheider        # "was soll ich jetzt machen?" (antworten.sofort)
                 self.b = bewertung.bewerte(p, lage)
+                if self.b is not None:
+                    self.b.trade = self.trade_hinweis
             except Exception as e:   # die Bewertung darf keine Regel mitreissen - dann gelten die alten Saetze
                 if not getattr(self, "_bewertung_fehler", False):
                     self._bewertung_fehler = True

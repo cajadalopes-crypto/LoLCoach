@@ -127,6 +127,7 @@ class Bewertung:
     objective: tuple[str, float] | None = None  # (Schluessel, Sekunden bis Spawn; <= 0 lebt)
     zum_objective: float | None = None          # deine Laufzeit zur Grube (Sekunden)
     mitspieler_nah: list[Spieler] = field(default_factory=list)   # innerhalb ~1500 Einheiten
+    trade: str = ""             # aus der Spielakte: worauf beim All-in gegen den Lane-Gegner achten
 
     # --- Ableitungen -------------------------------------------------------------
 

@@ -108,6 +108,12 @@ def sofort(frage: str, p: Partie, lagebild=None) -> str | None:
     if not w or not p.ich:
         return None
     menge = set(w)
+    # "Was soll ich jetzt machen?" - der Entscheider hat die Antwort schon gerechnet: sofort sagen statt 5 s
+    # auf Claude zu warten (Carlos: "moeglichst Richtung Echtzeit, damit es wie ein Gespraech ist")
+    if ("was" in menge and menge & {"mache", "machen", "tun", "jetzt", "soll", "plan"} and len(w) <= 7
+            and not menge & (KAUF_WORTE | {"warum", "wieso"}) and _champion_im_text(w, p) is None
+            and (e := getattr(lagebild, "entscheider", None)) is not None and e.aktuell is not None):
+        return e.aktuell.satz
     if menge & ENTSCHEIDUNG:
         return None  # "soll ich ...", "lieber ...", "warum ...": das ist eine Abwaegung, keine Nachschau
     ziel = _ziel(w, p)

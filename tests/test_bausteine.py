@@ -213,10 +213,43 @@ def zauber_im_briefing():
     assert "FOKUS DES SPIELERS" in quelle and "Frueher kaufen." in quelle
 
 
+def bewertung_und_plan():
+    """Lagebewertung, Komponist, Entscheider: die Rechnungen, auf die sich die Ansagen stuetzen."""
+    from types import SimpleNamespace as S
+    from lolcoach import antworten, bewertung, entscheider, komponist
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.zeit > 400)
+    g, j = p.gegenueber(), p.jungler(zustand.gegenteam(p.mein_team))
+    adc = next(s for s in p.gegner() if s.rolle == "BOTTOM")
+    # Kanonenwellen 2026: 1:30, 3:00, 4:30, 6:00 ... + ~27 s Laufweg nach oben
+    assert entscheider.naechste_kanone(300, "TOP") == 387, entscheider.naechste_kanone(300, "TOP")
+    # Lauftempo aus Data Dragon + Stiefel
+    assert 300 < bewertung.tempo(g) < 500
+    b = bewertung.Bewertung(zeit=720, ich=p.ich, leben=0.35, pos=(1500, 11000), zum_turm=9, mein_tempo=345)
+
+    def gl(s, **kw):
+        a = dict(s=s, sichtbar=False, seit=5.0, ort="im oberen Fluss", abstand=2000.0, ankunft=3.0, tempo=350.0,
+                 flash=None, ult=None, level_vorsprung=0, gold_vorsprung=0)
+        a.update(kw)
+        return bewertung.GegnerLage(**a)
+    b.jungler = gl(j)
+    b.lane = gl(g, sichtbar=True, seit=0.0, ort="oben", abstand=800.0, ankunft=2.0)
+    fern = gl(adc, seit=40.0, ort="unten", abstand=11000.0, ankunft=0.0)     # Worst Case, aber unplausibel
+    b.gegner = [b.jungler, b.lane, fern]
+    assert [x.s.name for x in b.bedrohung(8)] == [b.lane.s.name, j.name], "ADC in Minute 12 bot ist keine Gefahr"
+    satz = komponist.jungler_gesehen(b, b.jungler, "gefahr", platten=True)
+    assert "Zurück zum Turm" in satz and "35 Prozent Leben" in satz and "3 Sekunden" in satz, satz
+    # Sofort-Antwort aus dem Entscheider, Kauf-Frage bleibt bei Claude
+    plan = entscheider.Option("druck", "Spiel auf Shen: du bist 2 Level vorn.", 100, 2)
+    lb = S(entscheider=S(aktuell=plan))
+    assert antworten.sofort("Was soll ich jetzt machen?", p, lb) == plan.satz
+    assert antworten.sofort("Was soll ich kaufen?", p, lb) is None
+    assert komponist.sek(105) == "1 Minute 45" and komponist.sek(1) == "1 Sekunde"
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
-                 aufnahme_fortsetzen, bildschirm_momente):
+                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan):
         test()
         print(f"{test.__name__} OK")

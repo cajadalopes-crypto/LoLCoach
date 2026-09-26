@@ -132,7 +132,7 @@ def chance(b: Bewertung, platten: bool) -> str | None:
     leben_ok = b.leben is None or b.leben >= 0.5
     lebt = g is not None and not g.s.tot
     if lebt and leben_ok and wert >= 1 and g.seit is not None and g.seit < 3:
-        return f"Geh auf {g.champion}, {b.vorsprung_satz()}"
+        return f"Geh auf {g.champion}, {b.vorsprung_satz()}" + (f" - {b.trade}" if b.trade else "")
     if lebt and leben_ok and g.flash and g.flash > 30 and wert > -1:
         return f"Spiel aggressiv, {g.champion} ohne Flash"
     if ob := _objective_erreichbar(b):
@@ -260,7 +260,7 @@ def level(b: Bewertung, stufe: int, ich_zuerst: bool, g: GegnerLage) -> str:
     if j and b.zeit >= JUNGLER_ZAEHLT_AB and (j.s.tot or (j.ankunft or 0) >= RUHE_SEKUNDEN):
         gruende.append(f"{j.champion} {'tot' if j.s.tot else j.ort}")
     tun = "All-in jetzt" if stufe == 6 else "Trade jetzt"
-    return satz + f". {tun}" + (f", {_namen(gruende)}." if gruende else ".")
+    return satz + f". {tun}" + (f", {_namen(gruende)}" if gruende else "") + (f" - {b.trade}." if b.trade else ".")
 
 
 def recall(b: Bewertung, grund: str) -> str:
@@ -293,7 +293,7 @@ def zauber_neu(b: Bewertung, g: GegnerLage, zauber: str, dauer: float, quelle: s
         if jo := jungler_offen(b):
             return satz + f". Fenster, aber {jo.champion} fehlt."
         if wert >= 0 and (b.leben is None or b.leben >= 0.5):
-            return satz + ". Dein Fenster" + (f", {v}." if v else ".")
+            return satz + ". Dein Fenster" + (f", {v}" if v else "") + (f" - {b.trade}." if b.trade else ".")
         if wert <= -1:
             return satz + (f", aber {v}: nur traden." if v else ": nur traden.")
     return satz + "."

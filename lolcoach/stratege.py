@@ -52,6 +52,7 @@ class Stratege:
         `sprechen=False`: spaet eingestiegen - nur die Ult-Warnungen uebernehmen."""
         if self.werk is not None:
             self.werk.ult_warnungen = dict(self.gehirn.ult_warnungen)
+            self.werk.trade_hinweis = self.gehirn.trade_hinweis
         if not sprechen:
             return
         if self.gehirn.briefing and self.p is not None:
