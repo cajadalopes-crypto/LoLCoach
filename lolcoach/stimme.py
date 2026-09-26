@@ -199,10 +199,30 @@ class _Neural:
     def _synthese(self, text: str):
         return self.strom(text).ganz()
 
+    _wasapi: bool | None = None     # None: noch nicht versucht
+
+    def _ausgabe(self, rate: int):
+        """Ausgabestrom ueber WASAPI (geteilt, Windows wandelt 24 auf 48 kHz): 60 ms Puffer statt der 182 ms von
+        MME, das sounddevice sonst nimmt (gemessen 27.09., Carlos' Headset). Scheitert WASAPI einmal, dann MME."""
+        import sounddevice as sd
+        if self._wasapi is not False:
+            try:
+                apis = sd.query_hostapis()
+                w = next(i for i, a in enumerate(apis) if "WASAPI" in a["name"])
+                aus = sd.OutputStream(device=apis[w]["default_output_device"], samplerate=rate, channels=2,
+                                      dtype="float32", latency=0.05,
+                                      extra_settings=sd.WasapiSettings(auto_convert=True))
+                _Neural._wasapi = True
+                return aus
+            except Exception as e:
+                _Neural._wasapi = False
+                print(f"  (Stimme: WASAPI geht nicht - {type(e).__name__}: {e}; nehme MME)", flush=True)
+        return sd.OutputStream(samplerate=rate, channels=1, dtype="float32")
+
     def spreche(self, text: str, stopp: threading.Event, beim_ton=None, gilt=None) -> bool:
         """`gilt()`: stimmt der Satz noch? Alle PRUEFEN_ALLE Sekunden gefragt - wenn nicht, bricht er ab.
         `beim_ton`: wird beim ersten Ton gerufen (Messung)."""
-        import sounddevice as sd
+        import numpy as np
         teile = teilsaetze(text)
         stroeme: list[_Strom | None] = [None] * len(teile)
 
@@ -243,11 +263,11 @@ class _Neural:
                     if st is None or st is ENDE:
                         break
                     if aus is None:
-                        aus = sd.OutputStream(samplerate=s.rate, channels=1, dtype="float32")
+                        aus = self._ausgabe(s.rate)
                         aus.start()
                         if beim_ton:
                             beim_ton()
-                    aus.write(st.reshape(-1, 1))
+                    aus.write(np.repeat(st.reshape(-1, 1), aus.channels, axis=1))   # WASAPI stereo: beide Ohren
                     n += 1
                 if n == 0:
                     # kein Ton fuer diesen Teil: der Rest mit der Windows-Stimme
@@ -257,7 +277,9 @@ class _Neural:
                         aus = None
                     return self.ersatz.spreche(" ".join(teile[i:]), stopp, beim_ton if i == 0 else None, gilt)
             if aus is not None:
-                aus.stop()          # wartet, bis der Puffer ausgespielt ist
+                # WASAPI wartet beim Stoppen nicht auf den Puffer: 0,1 s Stille hinterher, dann ist der Satz ganz raus
+                aus.write(np.zeros((int(aus.samplerate * 0.1), aus.channels), dtype=np.float32))
+                aus.stop()
             ende = time.monotonic() + 0.3
             while time.monotonic() < ende:
                 if stopp.is_set():

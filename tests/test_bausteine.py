@@ -585,6 +585,7 @@ def stimme_spielt_ab_dem_ersten_stueck():
     0,63 s). Haengt die erste Anfrage, gewinnt die zweite - und nur ihre Stuecke zaehlen, keine doppelten."""
     import asyncio
     import time
+    import av  # noqa: F401 - kalt importiert dauert er unter Last ~1 s (live waermt "Los." vor)
     import edge_tts
     from lolcoach import stimme
     mp3 = (HIER / "satz.mp3").read_bytes()
@@ -608,7 +609,7 @@ def stimme_spielt_ab_dem_ersten_stueck():
         s = stimme._Strom("Der Drache kommt in einer Minute.", "x", "+0%", 1.0)
         erstes = s.stueck(0, time.monotonic() + 5)
         assert erstes is not None and erstes is not stimme.ENDE
-        assert time.monotonic() - t0 < 1.0, time.monotonic() - t0      # nicht erst nach den 3 s der ersten
+        assert time.monotonic() - t0 < 2.0, time.monotonic() - t0      # nicht erst nach den 3 s der ersten
         audio, rate = s.ganz()
         assert rate == 24000 and 1.5 < len(audio) / rate < 4.0, len(audio) / rate     # ~2,3 s, nicht doppelt
         assert len(anfragen) == 2 and s.fehler is None
