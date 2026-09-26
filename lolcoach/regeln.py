@@ -487,6 +487,8 @@ class Regelwerk:
         elif jl and p.zeit <= cfg["lane_phase_bis"]:
             yield Ansage(komponist.jungler_gesehen(self.b, jl, "sicher", platten), WICHTIG, "jungler_sicht",
                          gueltig=5, sperre=40)
+        elif jl and p.zeit > cfg["lane_phase_bis"]:
+            yield Ansage(komponist.jungler_spaet(self.b, jl, seite), WICHTIG, "jungler_sicht", gueltig=5, sperre=40)
         elif text := cfg.get("sicher_spaet" if p.zeit > cfg["lane_phase_bis"] else f"sicher_{rolle}"):
             yield Ansage(text.format(champion=j.champion, ort=ort), WICHTIG, "jungler_sicht", gueltig=5, sperre=40)
 

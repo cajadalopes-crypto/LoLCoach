@@ -472,3 +472,28 @@ def gegner_am_objective(namen: str, grube: str, name: str, kl) -> str:
     if art == "abgeben":
         return satz + f". Nur {zahl}: nicht reinlaufen, auf der anderen Seite tauschen."
     return satz + f". {zahl}: nur mit allen und Ults hin, sonst tauschen."
+
+
+def jungler_spaet(b: Bewertung, j: GegnerLage, seite: str) -> str:
+    """Nach der Lane-Phase: der gegnerische Jungler zeigt sich auf `seite` ("oben"/"unten") - was die
+    andere Seite jetzt hergibt: das Objective dort (mit Kampflage), sonst die Seitenwelle."""
+    ruhe = j.ankunft
+    satz = _ist(j) + (f", frühestens in {sek(ruhe)} bei dir" if ruhe and ruhe >= 10 else "")
+    andere = "unten" if seite == "oben" else "oben"
+    ob = b.objective
+    ob_seite = None if not ob else ("unten" if ob[0] == "drache" else "oben")
+    if ob and ob_seite == andere and ob[1] <= 30:
+        name = OBJ_NAME[ob[0]]
+        if b.kampf is not None:
+            art, _ = b.kampf.urteil()
+            if art == "nehmen":
+                return f"{satz}. {name} jetzt, er kann nicht rechtzeitig da sein."
+            if art == "abgeben":
+                return f"{satz}. {name} trotzdem nicht: zu wenige von euch in der Nähe."
+        return f"{satz}. Chance auf {name} - nur, wenn dein Team in der Nähe ist."
+    if andere := gefahr(b, ausser=j):
+        x = andere[0]
+        return f"{satz}. Aber {x.champion} {_wann(x)} - nicht vorlaufen."
+    if ruhe and ruhe >= 20:
+        return f"{satz}. Seitenwelle drücken, Turm - du hast mindestens {sek(ruhe)}."
+    return satz + "."
