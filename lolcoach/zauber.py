@@ -28,6 +28,32 @@ WOERTER = {"blitz": "SummonerFlash", "flash": "SummonerFlash", "flashlos": "Summ
            "cleanse": "SummonerBoost", "ult": "R", "ulti": "R", "ultimate": "R", "r": "R"}
 
 
+def _woerter() -> dict[str, str]:
+    """Umgangssprache (oben) plus die Namen, die der Client selbst in den Chat schreibt.
+    Die eingebaute Nachricht beim Anklicken eines gegnerischen Zaubers lautet
+    'Spieler (Champion): Zielchampion Zaubername' (z. B. "hotcode (Corki): Kog'Maw Heal",
+    fuer die Ult "... Corki R") - im deutschen Client mit den deutschen Namen aus Data
+    Dragon: Blitz, Entzuenden, Laeuterung, Teleportation, ... (geprueft 26.09.2026)."""
+    global _WOERTER_CACHE
+    if _WOERTER_CACHE is None:
+        aus = dict(WOERTER)
+        try:
+            from . import ddragon
+            daten = ddragon.roh("summoner.json") or {}
+            for schl, v in (daten.get("data") or {}).items():
+                if schl in GRUND:
+                    for wort in re.findall(r"[a-zäöüß]+", v.get("name", "").lower()):
+                        if len(wort) >= 4:
+                            aus.setdefault(wort, schl)
+        except Exception:
+            pass
+        _WOERTER_CACHE = aus
+    return _WOERTER_CACHE
+
+
+_WOERTER_CACHE: dict[str, str] | None = None
+
+
 def cooldown(schluessel: str, spieler=None, zeit: float | None = None) -> float:
     """Aus Data Dragon (champions.zauber_cooldown), sonst die Grundwerte oben.
     Zauber-Tempo aus Stiefeln/Runen ist nicht eingerechnet: eher zu lang als zu kurz.
@@ -118,7 +144,8 @@ def aus_chat(zeile: str, p) -> list[tuple[object, str, float | None]]:
     rest = re.sub(r"^\s*\[?\d{1,2}:\d{2}\]?\s*", "", zeile)   # Zeitstempel vorn (Chat-Einstellung)
     nachricht = rest.split(":", 1)[1] if ":" in rest else rest
     woerter = re.findall(r"[a-zäöüß']+", nachricht.lower())
-    zauber = [WOERTER[w] for w in woerter if w in WOERTER and (w != "r" or len(woerter) <= 3)]
+    woerterbuch = _woerter()
+    zauber = [woerterbuch[w] for w in woerter if w in woerterbuch and (w != "r" or len(woerter) <= 3)]
     if not zauber:
         return []
     namen = {}

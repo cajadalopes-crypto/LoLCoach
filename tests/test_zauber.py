@@ -32,6 +32,14 @@ def chat_formate():
         else:
             assert treffer and (treffer[0][0].champion, treffer[0][1]) == erwartet, (zeile, treffer)
     assert zauber.aus_chat("[Team] Diana (Diana): Rakan Blitz 16:40", p)[0][2] == 1000.0
+    # Eingebaute Client-Nachricht (Klick auf den gegnerischen Zauber): "Spieler (Champion): Ziel Zaubername",
+    # im deutschen Client mit den Namen aus Data Dragon
+    for zeile, erwartet in {"Schizoid Nevir (Riven): Shen Entzünden": ("Shen", "SummonerDot"),
+                            "Schizoid Nevir (Riven): Vi Teleportation": ("Vi", "SummonerTeleport"),
+                            "Diana (Diana): Brand Läuterung": ("Brand", "SummonerBoost"),
+                            "Diana (Diana): Varus R": ("Varus", "R")}.items():
+        treffer = zauber.aus_chat(zeile, p)
+        assert treffer and (treffer[0][0].champion, treffer[0][1]) == erwartet, (zeile, treffer)
     # Ult-Pings: "Shen Ult" / "shen r"; ein einzelnes r in einem langen Satz ist keine Ult
     assert [(s.champion, z) for s, z, _ in zauber.aus_chat("[Team] Riven: Shen Ult", p)] == [("Shen", "R")]
     assert [(s.champion, z) for s, z, _ in zauber.aus_chat("[Team] Riven: shen r", p)] == [("Shen", "R")]
