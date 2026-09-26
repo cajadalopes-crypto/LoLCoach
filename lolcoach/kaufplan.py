@@ -49,7 +49,41 @@ def kern(champion_id: str) -> tuple[int, ...]:
         treffer = n if n in namen else next(iter(difflib.get_close_matches(n, list(namen), n=1, cutoff=0.85)), None)
         if treffer and namen[treffer] not in aus:
             aus.append(namen[treffer])
+    if len(aus) < 2:
+        # andere Schreibweisen (12 von 173 Champions, Pruefung 26.09.): "Richtung: ... (A oder B), dann C" oder
+        # die Wege erst in den Zeilen darunter ("- Support: A -> B"): Item-Namen in Reihenfolge suchen
+        roh = next((z for z in zeilen if z.startswith("Richtung")), "")
+        kandidaten = [roh.split(":", 1)[-1]] + [z.split(":", 1)[-1] for z in zeilen
+                                                if not z.startswith(("Richtung", "Situativ", "Stiefel", "Runen",
+                                                                     "Beschwörer", "Skill"))]
+        for zeile in kandidaten:
+            gefunden = _items_in(zeile)
+            if len(gefunden) >= 2:
+                return tuple(gefunden[:3])      # der erste Weg - eine Zeile nennt manchmal zwei (Katarina)
     return tuple(aus)
+
+
+def _items_in(zeile: str) -> list[int]:
+    """Item-Namen in der Reihenfolge ihres Auftretens; bei "A oder B" / "A/B" nur A; ohne Stiefel."""
+    it = ddragon.items()
+    namen = _nach_name()
+    treffer = []
+    for n in sorted(namen, key=len, reverse=True):
+        for m in re.finditer(r"(?<![\w])" + re.escape(n) + r"(?![\w])", zeile):
+            if not any(a <= m.start() < e for a, e, _ in treffer):
+                treffer.append((m.start(), m.end(), namen[n]))
+    treffer.sort()
+    aus, ende = [], -1
+    for a, e, i in treffer:
+        zwischen = zeile[ende:a] if ende >= 0 else ""
+        if ende >= 0 and zwischen.strip() in ("oder", "/", ""):
+            ende = e
+            continue       # Alternative zum vorigen
+        ende = e
+        if "Boots" in it.get(i, {}).get("tags", []) or i in aus:
+            continue
+        aus.append(i)
+    return aus
 
 
 @dataclass
