@@ -78,6 +78,10 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
   Gefahr), eine Gefahr bricht die andere erst nach 4 s ab, stirbt ein genannter Gegner, faellt der Satz ("Ach nee"),
   "Geh jetzt zurueck, Ekko und Vex koennen da sein" bricht ab, wenn keiner mehr vor dir am Turm sein kann; ohne
   frische eigene Position trotzdem ein benannter Turm (letzte Sichtung / aeusserster der Lane).
+  Danach (bis ~02:00): Handlung zuerst - "Geh rein, das ist ein Kill: dein Combo macht ..." (6f193bd), "Geh jetzt
+  zurueck zu deinem Top-Tier-1-Turm, das sind 16 Sekunden: Vi ..." (ae13a7f); Beiwerk kuerzer (b18e9b5); Konter-Kauf
+  ohne eigene Items (1151bf2); "kein Flash" beim Jungler gerechnet statt "nutz das Fenster" (ad20ab4); kein
+  Plan-Hin-und-Her (5e2930f). LIVE PRUEFEN: klingen die Saetze jetzt knapper und kommt das Entscheidende zuerst?
 
 - LIVE 26.09. 23:05 (Practice Tool, Graves top gegen Sion): erste Live-Verzoegerung gemessen - 'Stimme' (Abgabe
   bis erster Ton) Median 1,5 s, bis 2,5 s; Ursache: jede zehnte edge-tts-Anfrage haengt 1,4-1,8 s -> zweite Anfrage
