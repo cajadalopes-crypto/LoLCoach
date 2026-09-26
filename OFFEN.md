@@ -29,28 +29,29 @@ Alles hier ist vorbereitet und mit Aufnahmen/Generalprobe getestet - die echte
 Partie ist der letzte Schritt. Nach Carlos' naechster Partie: Log, Aufnahme,
 Notizen und Review durchsehen und nachschaerfen.
 
-- Chat: Format der eingebauten Ping-Nachricht recherchiert ("Spieler (Champion): Ziel
-  Zaubername") und die deutschen Client-Namen aus Data Dragon eingebaut (Entzuenden,
-  Laeuterung, Teleportation) - 5897650. Offen nur: Lage/Groesse des Chat-Fensters auf
-  Carlos' Bildschirm (`lage.CHAT`) an den gespeicherten `chat_*.jpg` eichen.
-- Flash-Erkennung: am synthetischen 15-Bilder/s-Pruefstand 3/4 Flashes, 0 Fehlalarme
-  (Dashes, Aussetzer, Rauschen); dabei einen echten Fehler im Stillstands-Schutz behoben -
-  c0fe21d. Offen nur: Gegenprobe an echten Daten (`sichtungen.jsonl.gz`).
-- Wellen-Erkennung: an drei echten Bildern gegen Augenzaehlung geprueft, Basis-Icons
-  ausgeschlossen - 0351296. Offen nur: Recall-Fenster live (in Partie 3 neunmal - passend?).
-- Briefing, Spielakte, situative Vorwarnungen live: rechtzeitig? passend? Dann
-  entscheiden, welche weiteren Anlaesse situativ werden (Recall-Fenster, Lane-Gegner
-  tot, Jungler gesehen) - je nachdem, wie lange Claude live braucht.
-- Stimme Killian, Unterbrechen/Wiederholen, Notizen, Fragen im Spiel pruefen.
-- Review der ersten Partie mit vollem Protokoll (15/s, Leiste, Chat, Wellen) ansehen:
-  stimmen die Momente, sind die Lektionen belegt und hilfreich?
+- Recall-Fenster und Wellen: in Partie 4 einmal (2:49, Welle lief in seinen Turm) - passend.
+  Offen: Haeufigkeit ueber eine ganze Partie.
+- Briefing, situative Vorwarnungen live: Briefing kam 22 s nach Spielstart (0:36), war aber
+  45 s lang -> auf 75 Woerter begrenzt (f18828d). Offen: kommt es jetzt kuerzer an; welche
+  weiteren Anlaesse situativ werden.
+- Stimme, Unterbrechen, Notizen: Frage per Sprache in Partie 4 beantwortet (1:52). Offen:
+  Unterbrechen/Wiederholen, Notizen.
+- Review einer Partie mit vollem Protokoll (Partie 4 endete nach 6 min ohne Review - der Coach
+  wurde geschlossen): stimmen die Momente, sind die Lektionen belegt und hilfreich?
 - Todesanalyse live: kommt der Satz vor dem Wiedereinstieg, trifft er den Grund? An
   Partie 3 nachgespielt: 5 von 6 Toden mit konkretem Grund in ~6 s.
-- Fokus im Briefing: kommt der Satz an, passt er zur Partie?
-- "Du stehst tief": in Partie 3 nachgespielt 15 Warnungen in 35 min (vor 21:18 und 32:41
-  rechtzeitig) - im echten Spiel pruefen, ob die Haeufigkeit stoert.
+- Fokus im Briefing: kam in Partie 4 als letzter Satz an. Offen: passt er, wirkt er?
+- "Du stehst tief": Partie 4 einmal in 6 min (4:32 - Amumu flashte 5:16 oben auf ihn),
+  Partie 3 nachgespielt 15 in 35 min. Offen: stoert die Haeufigkeit in einer ganzen Partie?
+- Dashboard-Minimap mit 10/s (94ef3f5): im Spiel ansehen, ob sie fluessig laeuft.
 
 ## Erledigt
+
+- Echte Partie 4 ausgewertet: Chat-Fenster an 46 Bildern geeicht (0.70-0.93), Chat-Ping
+  "Tryndamere hat Blitz benutzt" kam trotz OCR-Rauschen an, Timer jetzt ab dem Zeitstempel
+  der Zeile (23a94be); Flash an echten Bahnen: Rakan und Amumu echt, Galio war eine
+  Fehlzuordnung -> Bestaetigung erst nach zwei ruhigen Bildern (50b37d2)
+- 87 neue Matchups (Riven 42, Camille 45, Graves 30), Suche auf ganze Woerter - 5843df4
 
 - Dashboard-Kasten "Dein Fokus heute" - e10873b; Kontroll-Auge nach dem Einkauf - e38bb00;
   nach der Partie gesprochen: "Review fertig, wichtigster Punkt, Fokus" + alles Gesprochene
