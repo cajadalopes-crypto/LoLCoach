@@ -18,12 +18,18 @@ def wachstum(basis: float, je_level: float, level: int) -> float:
 
 
 def max_leben(s: Spieler) -> float:
-    """Maximales Leben: Grundwert nach Level (Data Dragon) + Leben aus Items. Ohne Runen/Stapel (Herzstahl,
-    Seelen) - eher zu niedrig, also eher zu optimistisch fuer einen Kill; deshalb nur mit Abschlag benutzen."""
+    """Maximales Leben: Grundwert nach Level (Data Dragon) + Leben aus Items + die Leben-Rune (10 je Level).
+    Gemessen 27.09. am eigenen Champion (API maxHealth, 5 Partien): ohne Rune fehlten genau 10 x Level in 3 von 5
+    Partien (die skalierende Leben-Scherbe, 10-180), 65 flach in einer, 0 in einer. Ohne Stapel (Herzstahl, Seelen)
+    - eher zu niedrig, also eher zu optimistisch fuer einen Kill; deshalb nur mit Abschlag benutzen."""
     st = (ddragon.champions().get(s.champion_id) or {}).get("stats", {})
     leben = wachstum(float(st.get("hp", 600)), float(st.get("hpperlevel", 100)), s.level)
     it = ddragon.items()
-    return leben + sum(float(it.get(i, {}).get("stats", {}).get("FlatHPPoolMod", 0.0)) for i in s.items)
+    return leben + sum(float(it.get(i, {}).get("stats", {}).get("FlatHPPoolMod", 0.0)) for i in s.items) \
+        + LEBEN_RUNE_JE_LEVEL * max(1, min(18, s.level))
+
+
+LEBEN_RUNE_JE_LEVEL = 10.0   # skalierende Leben-Scherbe (10 auf Level 1 .. 180 auf 18)
 
 
 def zuenden_schaden(level: int) -> float:
