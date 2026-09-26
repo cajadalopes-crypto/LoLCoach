@@ -582,6 +582,13 @@ def _gegner_lage(s: Spieler, p: Partie, lb, ich_pos) -> GegnerLage:
         if ich_pos:
             ab = abstand(ich_pos, einheiten(g[1], g[2]))
             ankunft = max(0.0, ab * WEGFAKTOR / ms - seit)
+            # nach Tod oder Recall steht er im Brunnen: ab dort rechnen, nicht ab der letzten Sichtung (die Ankunft
+            # ab dem Sterbeort liess ihn "schon da sein", waehrend er noch einkaufte)
+            if not sichtbar and hasattr(lb, "brunnen_seit") and (br := lb.brunnen_seit(s, p.zeit)):
+                bx, by, t0, _ = br
+                ab_brunnen = abstand(ich_pos, einheiten(bx, by))
+                ankunft = max(ankunft, max(0.0, ab_brunnen * WEGFAKTOR / ms - (p.zeit - t0)))
+                ort = minimap.ort(bx, by, p.mein_team)
             if sichtbar and (n := lb.naehert_sich(s, (ich_pos[0] / BREITE, 1 - ich_pos[1] / HOEHE), p.zeit)):
                 naeher = n >= 0.03
     flash = ult = None

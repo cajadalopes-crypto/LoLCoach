@@ -49,6 +49,7 @@ class Lagebild:
         self.gegner_mana: dict[str, tuple[float, float]] = {}    # ... (Zeit, Mana 0..1) aus dem Balken darunter
         self._tp_kandidat: dict[str, tuple] = {}     # Spielername -> (Zeit, x, y, zuletzt gesehen) eines Fernsprungs
         self._tode: dict[str, float] = {}            # Spielername -> zuletzt tot (Spielzeit)
+        self._recall: dict[str, float] = {}          # Gegner -> Spielzeit, zu der er nach 7 s Stillstand verschwand
         self.fernspruenge: list = []                 # gemeldete TP/globale Ults (zauber.Timer)
 
     def eigene_zauber(self, p: Partie, jetzt: float) -> dict[str, float] | None:
@@ -164,6 +165,36 @@ class Lagebild:
                 while v and v[0][0] < zeit - VERLAUF:
                     v.popleft()
         self._verbuendete_halten(zeit, sichtungen, p)
+        self._recalls_merken(zeit, sichtungen, p)
+
+    def _recalls_merken(self, zeit: float, sichtungen: list[minimap.Sichtung], p: Partie) -> None:
+        """Ein Gegner stand 7 s still und ist jetzt weg: Recall (8 s kanalisieren), er steht im Brunnen. Streng
+        (nicht 5,5 s wie beim Lane-Gegner): wer faelschlich im Brunnen vermutet wird, gilt als weiter weg, als
+        er ist - die gefaehrliche Richtung."""
+        gefunden = {sp.name for s in sichtungen if (sp := zuordnen(s, p)) is not None}
+        for sp in p.gegner():
+            g = self.zuletzt.get((sp.name, sp.team))
+            if g is None or sp.tot:
+                continue
+            if sp.name in gefunden:
+                self._recall.pop(sp.name, None)
+            elif sp.name not in self._recall and 0.5 <= zeit - g[0] <= 3 and self.stand_still(sp, dauer=7.0):
+                self._recall[sp.name] = g[0]
+
+    def brunnen_seit(self, sp: Spieler, jetzt: float) -> tuple[float, float, float, str] | None:
+        """Wo ein nicht sichtbarer Gegner sicher ist, obwohl die letzte Sichtung woanders war: nach einem Tod
+        (Wiedereinstieg) oder einem Recall steht er in seinem Brunnen. (x, y, seit wann, 'Tod'/'Recall')."""
+        g = self.zuletzt.get((sp.name, sp.team))
+        if g is None or sp.tot:
+            return None
+        bx, by = BRUNNEN.get(sp.team, (0.5, 0.5))
+        tod = self._tode.get(sp.name)
+        if tod is not None and tod > g[0]:
+            return bx, by, tod, "Tod"
+        r = self._recall.get(sp.name)
+        if r is not None and r >= g[0] - 0.01:
+            return bx, by, r, "Recall"
+        return None
 
     def _verbuendete_halten(self, zeit: float, sichtungen: list[minimap.Sichtung], p: Partie) -> None:
         """Verbuendete (und du) sind auf der Minimap IMMER zu sehen - fuer das eigene Team gibt es keinen Nebel.

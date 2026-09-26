@@ -42,7 +42,7 @@ Sicherheit), `komponist.py` (Saetze je Anlass), `regeln.py` (wann).
 | andere Beschwoererzauber, Ult | teilweise | nur, wenn gepingt; Ult erst ab Level 6 |
 | Mana | rechnet | Manabalken unter seinem Lebensbalken (`lebensbalken.mana`), Faktor "mana_er" bei Mana-Champions |
 | Q/W/E-Abklingzeiten | nicht messbar | das Spiel zeigt fremde Abklingzeiten nicht |
-| Recall-Zustand Lane-Gegner | rechnet | stand still, dann weg = Recall (`regeln._lane_fehlt`) |
+| Recall-Zustand aller Gegner, Wiedereinstieg nach Tod | rechnet | 7 s still, dann weg = Brunnen; nach dem Tod Brunnen - Ankunft ab dort (`lage.brunnen_seit`, `bewertung._gegner_lage`) |
 | Roam-Potenzial, Position in 5/10/20 s | teilweise | Ankunft je Gegner; Verschwundener: "bis Mid noch X Sekunden" |
 
 ## 5 Jungler-Tracking

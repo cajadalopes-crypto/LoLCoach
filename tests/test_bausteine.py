@@ -332,6 +332,31 @@ def flash_auf_dem_bildschirm():
                                                                        g.champion, adc.champion])], p)   # zwei Namen
 
 
+def brunnen_nach_recall_und_tod():
+    """Gegner nach Recall (7 s still, dann weg) oder Tod steht im Brunnen - die Ankunft rechnet ab dort. Nur kurz
+    gesehen und weg ist kein Recall (er kann im Busch stehen: lieber zu nah als zu weit)."""
+    from lolcoach import lage
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.zeit > 400)
+    j = p.jungler(zustand.gegenteam(p.mein_team))
+    def sicht(x, y):
+        return minimap.Sichtung(j.champion_id, None, x, y, 1.0)
+    lb = lage.Lagebild()
+    for i in range(90):
+        lb.neu(400 + i * 0.1, [sicht(0.3, 0.3)], p)
+    for i in range(10):
+        lb.neu(409 + i * 0.1, [], p)
+    br = lb.brunnen_seit(j, 410)
+    assert br is not None and br[3] == "Recall" and br[:2] == lage.BRUNNEN[j.team], br
+    lb = lage.Lagebild()
+    for i in range(20):
+        lb.neu(400 + i * 0.1, [sicht(0.3, 0.3)], p)
+    for i in range(10):
+        lb.neu(402 + i * 0.1, [], p)
+    assert lb.brunnen_seit(j, 403) is None
+    lb._tode[j.name] = 405.0                    # gestorben nach der letzten Sichtung, wieder am Leben
+    assert lb.brunnen_seit(j, 406)[3] == "Tod"
+
+
 def platten_lesen():
     """Platten-Ziffern der Turm-Icons (Camille-Partie, ~10:40): oben 2, Mitte 4, unten 4 bei ihm, deine
     Mitte 4; Teemos Icon verdeckt deinen inneren Mid-Turm -> keine Zahl statt einer falschen."""
@@ -416,6 +441,7 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
-                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, platten_lesen, teleport_von_der_minimap, lebensbalken_lesen):
+                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod,
+                 platten_lesen, teleport_von_der_minimap, lebensbalken_lesen):
         test()
         print(f"{test.__name__} OK")
