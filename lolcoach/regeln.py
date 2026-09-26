@@ -9,11 +9,14 @@ sondern der Sprechplan (Vorrang, Pausen, keine Wiederholung).
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from . import bewertung, ddragon, denker, komponist, wissen
 from .entscheider import Entscheider
 from .zustand import Partie, Spieler, gegenteam, struktur
+
+BACK = re.compile(r"\bback\b|\brecall\b", re.I)   # eine Ansage rät zum Recall (komponist.back_eben)
 
 SOFORT, WICHTIG, HINWEIS = 3, 2, 1
 TIPP_BIS = 280      # Zeichen: nur so kurze Ansagen bekommen einen Konter-Tipp dazu (sonst > 25 s Sprechzeit)
@@ -96,6 +99,7 @@ class Regelwerk:
         self.entscheider = Entscheider()               # der Plan zwischen den Ereignissen (entscheider.py)
         self._gewarnt_vor: dict[str, float] = {}       # Spielername -> zuletzt eine Gefahr-Warnung zu ihm
         self._matchup_box = [-1e9]                     # zuletzt die Matchup-Siegquote gesagt (denker.fenster_satz)
+        self._back_box = [-1e9]                        # zuletzt "geh back" gesagt (komponist.back_eben)
         self._fenster_box = [-1e9]                     # zuletzt ein Kampf-Urteil gegen den Lane-Gegner (denker.py) -
                                                        # geteilt mit komponist.chance ueber die Bewertung
         self._fenster_art: str | None = None           # ... welches
@@ -124,6 +128,7 @@ class Regelwerk:
                     self.b.trade = self.trade_hinweis
                     self.b.fenster_box = self._fenster_box
                     self.b.matchup_box = self._matchup_box
+                    self.b.back_box = self._back_box
                     if not p.ich.tot:
                         self._b_lebend = self.b      # die letzte Lage vor einem Tod - fuer die Todesanalyse
             except Exception as e:   # die Bewertung darf keine Regel mitreissen - dann gelten die alten Saetze
@@ -138,6 +143,8 @@ class Regelwerk:
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 ansagen.append(a)
+                if BACK.search(a.text):
+                    self._back_box[0] = p.zeit
         return ansagen
 
     # --- Hilfen ---------------------------------------------------------------

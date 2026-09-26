@@ -271,6 +271,13 @@ def _objective_erreichbar(b: Bewertung) -> tuple[str, float] | None:
     return None
 
 
+def back_eben(b: Bewertung) -> bool:
+    """'Geh back' ist in der letzten Minute schon gesagt worden (Nachlauf 19:45, 12:52-14:12: fuenfmal "geh back, du
+    hast 4400 Gold", angehaengt an Jungler-, Drachen- und Objective-Saetze - Carlos blieb trotzdem)."""
+    box = getattr(b, "back_box", None)
+    return box is not None and b.zeit - box[0] < 60
+
+
 def chance(b: Bewertung, platten: bool) -> str | None:
     """Was du mit einem ruhigen Moment machst - aus Kampf-Urteil (denker.py), Flash des Gegners, Welle,
     Gold und Objective, als ganzer Satz (ohne Schlusspunkt). None, wenn nichts davon traegt."""
@@ -298,11 +305,11 @@ def chance(b: Bewertung, platten: bool) -> str | None:
                    else f", {'sie leben' if ob[0] == 'larven' else 'er lebt'}"))
     welle = b.welle
     schiebt_ihr = welle is not None and welle[0] >= welle[1] + 2
-    if b.gold >= RECALL_GOLD and (schiebt_ihr or not lebt):
+    if b.gold >= RECALL_GOLD and (schiebt_ihr or not lebt) and not back_eben(b):
         return f"Schieb die Welle in den Turm und geh back, du hast {b.gold // 100 * 100} Gold"
     if platten and (schiebt_ihr or not lebt):
         return f"Schieb die Welle in den Turm und hol dir {_platten(b)}"
-    if b.gold >= RECALL_GOLD + 300:
+    if b.gold >= RECALL_GOLD + 300 and not back_eben(b):
         return f"Lass die Welle crashen und geh back, du hast {b.gold // 100 * 100} Gold"
     return None
 
@@ -456,7 +463,7 @@ def lane_tot(b: Bewertung, champion: str, sekunden: int, platten: bool) -> str:
     tun = "Schieb die Welle in seinen Turm" + (f" und hol dir {_platten(b)}" if platten else "")
     if ob := _objective_erreichbar(b):
         tun += f", dann geh {ZUM[ob[0]]}"
-    elif b.gold >= RECALL_GOLD:
+    elif b.gold >= RECALL_GOLD and not back_eben(b):
         tun += f", dann geh back, du hast {b.gold // 100 * 100} Gold"
     return f"{satz}. {tun}."
 
@@ -587,7 +594,7 @@ def vorwarnung(b: Bewertung, schl: str, rolle: str, seele: bool, meine_seite: bo
         tp = ("SummonerTeleport", 0.0)     # Abklingzeit unbekannt (kein HUD): als bereit rechnen
     zu_fuss = b.zum_objective
     hin = meine_seite or (zu_fuss is not None and zu_fuss <= 25) or (tp is not None and tp[1] <= 50)
-    if b.leben is not None and b.leben < 0.5 or b.gold >= 1300:
+    if b.leben is not None and b.leben < 0.5 or (b.gold >= 1300 and not back_eben(b)):
         grund = f"du hast {b.gold // 100 * 100} Gold" if b.gold >= 1300 else f"du hast nur {int(b.leben * 100)} Prozent Leben"
         tun = f"Geh jetzt back, {grund}" + (", und dann hin." if hin else ", und mach danach Druck auf deiner Seite.")
     elif meine_seite or (zu_fuss is not None and zu_fuss <= 25):
