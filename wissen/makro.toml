@@ -161,7 +161,7 @@ anlauf_ab = 3        # ... so viele: "dein Team laeuft hin"
 hin_bis = 0.40       # so nah an der Grube: "geh hin"
 team = "Dein Team fängt {objective_akk} an, {namen} stehen an der {grube}."
 jungler = "{jungler} fängt {objective_akk} an."
-anlauf = "Dein Team läuft Richtung {grube}, sie wollen {objective_akk}."
+anlauf = "{namen} laufen Richtung {grube} - sie wollen {objective_akk}."
 gegner = "Achtung, {namen} stehen an der {grube} - die Gegner machen {objective_akk}."
 
 [objective_start.dazu]

@@ -985,7 +985,8 @@ class Regelwerk:
                           and (self.lage.naehert_sich(s, (gx, gy), p.zeit) or 0) >= 0.03]
                 if len(laufen) >= cfg["anlauf_ab"]:
                     self._obj_gesagt[(schl, "anlauf")] = p.zeit
-                    text = cfg["anlauf"].format(grube=grube, objective=name, objective_akk=komponist.OBJ_AKK[schl])
+                    text = cfg["anlauf"].format(namen=_namen(laufen), grube=grube, objective=name,
+                                                objective_akk=komponist.OBJ_AKK[schl])
             if text:
                 dazu = cfg["dazu"]["nah"] if ich_weit <= cfg["hin_bis"] else self._satz(cfg["dazu"], p)
                 if self.b is not None:
