@@ -305,10 +305,32 @@ def teleport_von_der_minimap():
     assert not lb3.zauber.fehlt(teleporter, art, 708)
 
 
+def lebensbalken_lesen():
+    """Lebensbalken im Spielbild (Camille-Partie): der eigene gruene Balken 64 % (HUD 617/955 = 65 %), sonst
+    nichts; gruen -> Gegner-Rot umgefaerbt wird er 'feind'; ein gelesener Name wird dem Gegner zugeordnet."""
+    import numpy as np
+    from lolcoach import lage, lebensbalken
+    img = cv2.imread(str(HIER / "schirm_balken.jpg"))
+    b = lebensbalken.finde(img)
+    assert len(b) == 1 and b[0].team == "ich" and abs(b[0].anteil - 0.65) <= 0.03, b
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    m = cv2.inRange(hsv, (45, 110, 110), (75, 255, 255))
+    rot = img.copy()
+    hell = hsv[..., 2][m > 0].astype(float) / 255
+    rot[m > 0] = (np.array((45, 55, 205))[None, :] * hell[:, None] * 1.2).clip(0, 255).astype(np.uint8)
+    b = lebensbalken.finde(rot)
+    assert len(b) == 1 and b[0].team == "feind" and abs(b[0].anteil - 0.63) <= 0.04, b
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.zeit > 400)
+    g = p.gegenueber()
+    lb = lage.Lagebild()
+    lb.ereignisse(lambda w: 400.0, [("balken", 0.0, [(g.champion, 0.3, "feind")])], p)
+    assert lb.gegner_leben_jetzt(g, 401.0) == 0.3 and lb.gegner_leben_jetzt(g, 404.0) is None
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
-                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, platten_lesen, teleport_von_der_minimap):
+                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, platten_lesen, teleport_von_der_minimap, lebensbalken_lesen):
         test()
         print(f"{test.__name__} OK")

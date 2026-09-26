@@ -114,6 +114,7 @@ class GegnerLage:
     kommt_naeher: bool = False   # sichtbar und laeuft auf dich zu
     pos: tuple[float, float] | None = None   # zuletzt gesehen (Spiel-Einheiten)
     shutdown: bool = False       # auf ihm liegt ein Shutdown (K/D)
+    leben: float | None = None   # 0..1 aus seinem Lebensbalken im Spielbild (frisch), sonst unbekannt
 
     @property
     def champion(self) -> str:
@@ -211,6 +212,10 @@ class Bewertung:
         if self.leben is not None and self.leben < 0.6:
             wert -= (0.6 - self.leben) * 5
             gruende.append(f"du hast nur {int(self.leben * 100)} Prozent Leben")
+        if g.leben is not None:        # sein Balken im Bild: das entscheidet einen Kampf mehr als ein Level
+            wert += ((self.leben if self.leben is not None else 1.0) - g.leben) * 4
+            if g.leben <= 0.5:
+                gruende.append(f"{g.champion} hat nur {int(g.leben * 100)} Prozent Leben")
         if self.ult is False and self.ich.level >= 6:
             wert -= 1
             gruende.append("deine Ult ist nicht bereit")
@@ -297,6 +302,8 @@ class Bewertung:
                 extra.append(f"{abs(g.level_vorsprung)} Level {'ueber' if g.level_vorsprung > 0 else 'unter'} dir")
             if g.shutdown:
                 extra.append(f"Shutdown auf ihm ({g.s.kills}/{g.s.tode})")
+            if g.leben is not None:
+                extra.append(f"Leben laut Bild {int(g.leben * 100)} %")
             z.append(f"- {g.champion} ({g.s.rolle or '?'}): {wo}{an}" + (f"; {', '.join(extra)}" if extra else ""))
         wert, gruende = self.kraefte()
         if self.lane and not self.lane.s.tot:
@@ -497,7 +504,9 @@ def _gegner_lage(s: Spieler, p: Partie, lb, ich_pos) -> GegnerLage:
     return GegnerLage(s=s, sichtbar=sichtbar, seit=seit, ort=ort or "", abstand=ab, ankunft=ankunft, tempo=ms,
                       flash=flash, ult=ult, level_vorsprung=s.level - p.ich.level,
                       gold_vorsprung=s.item_gold - p.ich.item_gold, kommt_naeher=naeher, pos=pos,
-                      shutdown=shutdown(s))
+                      shutdown=shutdown(s),
+                      leben=lb.gegner_leben_jetzt(s, p.zeit) if lb is not None and hasattr(lb, "gegner_leben_jetzt")
+                      else None)
 
 
 # --- Kampf um ein Objective --------------------------------------------------------

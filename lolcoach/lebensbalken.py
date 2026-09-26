@@ -1,0 +1,153 @@
+"""Lebensbalken ueber den Koepfen: wie viel Leben hat der Gegner, den du gerade siehst?
+
+Die Live-API kennt nur dein eigenes Leben. Fuer "reicht das fuer den Kill?" braucht der Coach das des
+Gegners - und das steht auf dem Bildschirm (erlaubt: nur was du selbst siehst).
+
+Aufbau eines Champion-Balkens (vermessen am eigenen Balken, Spielbild der Camille-Partie, auf 1600 px
+Breite verkleinert, 4K-Spiel): links ein dunkles Level-Kaestchen (~16 x 16), rechts daneben der Balken,
+80 px breit und 8 px hoch, mit Strichen je 100 Leben; darunter der Ressourcenbalken, darueber der Name.
+Fuellfarbe: gruen = du, blau = Mitspieler, rot = Gegner. Anteil = Breite der Fuellung / 80.
+Gegenprobe am Bild: gelesen 67 %, HUD 617/955 = 65 %.
+
+Was hier NICHT geht und deshalb verworfen wird: Vasallen-Balken (duenner, kein Level-Kaestchen),
+Turm-Balken (breiter als 85 px), rote Schadenszahlen (keine Balkenform). Welcher Gegner es ist, sagt der
+Name ueber dem Balken (Windows-Texterkennung); ohne lesbaren Namen bleibt der Balken namenlos.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+import cv2
+import numpy as np
+
+BREITE_REF = 1600          # Bildbreite, an der vermessen wurde
+BALKEN = 80                # Breite des Lebensbalkens (volle 100 %)
+HOEHE = (5, 10)            # Hoehe der Fuellung
+KASTEN = (12, 22)          # Kantenlaenge des Level-Kaestchens
+
+
+@dataclass(frozen=True)
+class Balken:
+    x: int                  # linke Kante der Fuellung (Bildpixel)
+    y: int                  # obere Kante
+    anteil: float           # 0..1
+    team: str               # "feind", "freund", "ich"
+    name: str | None = None
+
+
+def _masken(bild: np.ndarray) -> dict[str, np.ndarray]:
+    hsv = cv2.cvtColor(bild, cv2.COLOR_BGR2HSV)
+    rot = cv2.inRange(hsv, (0, 120, 110), (9, 255, 255)) | cv2.inRange(hsv, (171, 120, 110), (180, 255, 255))
+    blau = cv2.inRange(hsv, (96, 110, 110), (116, 255, 255))
+    gruen = cv2.inRange(hsv, (45, 110, 110), (75, 255, 255))
+    return {"feind": rot, "freund": blau, "ich": gruen}
+
+
+def _kaestchen(bild: np.ndarray, x: int, y: int, k: float) -> bool:
+    """Links vor der Fuellung ein dunkles Level-Kaestchen mit heller Ziffer (Vasallen- und Turmbalken
+    haben keines)."""
+    x0, x1 = int(x - 17 * k), int(x - 3 * k)
+    y0, y1 = int(y - 2 * k), int(y + 12 * k)
+    if x0 < 0 or y0 < 0 or y1 > bild.shape[0]:
+        return False
+    teil = bild[y0:y1, x0:x1]
+    if teil.size == 0:
+        return False
+    hell = teil.max(axis=2)
+    return float((hell < 90).mean()) >= 0.6 and int((hell > 150).sum()) >= 3
+
+
+def _balkenform(bild: np.ndarray, x: int, y: int, w: int, h: int, k: float) -> bool:
+    """Der ganze Balken (80 px) besteht aus der Fuellung und einem dunklen, leeren Rest - und direkt darueber
+    und darunter liegt der dunkle Rahmen. Gras, Effekte und Icons haben diese Form nicht."""
+    x1 = int(x + BALKEN * k)
+    if x1 > bild.shape[1] or y < 2 or y + h + 2 > bild.shape[0]:
+        return False
+    rest = bild[y:y + h, x + w:x1]
+    if rest.size and float((rest.max(axis=2) < 80).mean()) < 0.7:
+        return False
+    rahmen = np.concatenate([bild[y - 2:y - 1, x:x1], bild[y + h + 1:y + h + 2, x:x1]], axis=0)
+    return float((rahmen.max(axis=2) < 110).mean()) >= 0.5
+
+
+def _spielfeld(bild: np.ndarray, x: int, y: int) -> bool:
+    """Nicht im HUD unten, nicht in der Minimap, nicht in der Leiste oben."""
+    hh, ww = bild.shape[:2]
+    if y > 0.8 * hh or y < 0.04 * hh:
+        return False
+    return not (x > 0.82 * ww and y > 0.62 * hh)
+
+
+def finde(bild: np.ndarray) -> list[Balken]:
+    """Alle Champion-Lebensbalken im Bild (ohne Namen)."""
+    k = bild.shape[1] / BREITE_REF
+    aus = []
+    for team, m in _masken(bild).items():
+        # Striche je 100 Leben trennen die Fuellung: waagrecht zusammenziehen
+        m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((1, max(3, int(4 * k))), np.uint8))
+        n, _, st, _ = cv2.connectedComponentsWithStats(m)
+        for x, y, w, h, flaeche in st[1:]:
+            if not (HOEHE[0] * k <= h <= HOEHE[1] * k) or w < 2 or w > (BALKEN + 5) * k:
+                continue
+            if flaeche < 0.6 * w * h or not _spielfeld(bild, x, y):
+                continue
+            if not _kaestchen(bild, x, y, k) or not _balkenform(bild, x, y, w, h, k):
+                continue
+            aus.append(Balken(int(x), int(y), round(min(1.0, float(w) / (BALKEN * k)), 2), team))
+    return aus
+
+
+def mit_namen(bild: np.ndarray, balken: list[Balken], namen: list[str], leser) -> list[Balken]:
+    """Den Namen ueber jedem Balken lesen (Windows-Texterkennung) und einem der `namen` zuordnen."""
+    import difflib
+    k = bild.shape[1] / BREITE_REF
+    aus = []
+    klein = {n.lower().replace(" ", "").replace("'", ""): n for n in namen}
+    for b in balken:
+        x0, x1 = max(0, int(b.x - 20 * k)), min(bild.shape[1], int(b.x + (BALKEN + 10) * k))
+        y0, y1 = max(0, int(b.y - 16 * k)), max(0, int(b.y - 2 * k))
+        name = None
+        if y1 > y0 and x1 > x0 and leser is not None:
+            try:
+                zeilen = leser.zeilen(bild[y0:y1, x0:x1], vergroessern=3.0)
+            except Exception:
+                zeilen = []
+            for z in zeilen:
+                wort = z.lower().replace(" ", "").replace("'", "")
+                treffer = difflib.get_close_matches(wort, list(klein), n=1, cutoff=0.7)
+                if treffer:
+                    name = klein[treffer[0]]
+                    break
+        aus.append(Balken(b.x, b.y, b.anteil, b.team, name))
+    return aus
+
+
+def namen_lesen(bild: np.ndarray, balken: list[Balken], leser) -> list[tuple[Balken, str]]:
+    """(Balken, gelesener Text ueber ihm) - roh, fuer die Zuordnung im Lagebild."""
+    k = bild.shape[1] / BREITE_REF
+    aus = []
+    for b in balken:
+        x0, x1 = max(0, int(b.x - 20 * k)), min(bild.shape[1], int(b.x + (BALKEN + 10) * k))
+        y0, y1 = max(0, int(b.y - 16 * k)), max(0, int(b.y - 2 * k))
+        text = ""
+        if y1 > y0 and x1 > x0 and leser is not None:
+            try:
+                text = " ".join(leser.zeilen(bild[y0:y1, x0:x1], vergroessern=3.0))
+            except Exception:
+                text = ""
+        aus.append((b, text))
+    return aus
+
+
+def zuordnen(text: str, spieler) -> object | None:
+    """Gelesenen Namen einem Spieler zuordnen (Champion- oder Spielername)."""
+    import difflib
+    wort = text.lower().replace(" ", "").replace("'", "")
+    if len(wort) < 3:
+        return None
+    namen = {}
+    for s in spieler:
+        for n in {s.champion, s.champion_id, s.name.split("#")[0]}:
+            namen[n.lower().replace(" ", "").replace("'", "")] = s
+    treffer = difflib.get_close_matches(wort, list(namen), n=1, cutoff=0.7)
+    return namen[treffer[0]] if treffer else None

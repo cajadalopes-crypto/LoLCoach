@@ -43,6 +43,7 @@ class Lagebild:
         self._eigene_kandidat: dict[str, tuple[bool, float]] = {}   # Wechsel, einmal gelesen, noch unbestaetigt
         self.eigene_zeit: float | None = None
         self.platten: dict[tuple[str, str, str], int] = {}   # (Team, Lane, Stufe) -> verbleibende Platten (Minimap)
+        self.gegner_leben: dict[str, tuple[float, float]] = {}   # Spielername -> (Zeit, Leben 0..1) aus dem Spielbild
         self._tp_kandidat: dict[str, tuple] = {}     # Spielername -> (Zeit, x, y, zuletzt gesehen) eines Fernsprungs
         self._tode: dict[str, float] = {}            # Spielername -> zuletzt tot (Spielzeit)
         self.fernspruenge: list = []                 # gemeldete TP/globale Ults (zauber.Timer)
@@ -86,6 +87,13 @@ class Lagebild:
                 self.wellen_zeit = zeit_von_wand(e[1])
             elif e[0] == "platten":
                 self.platten.update(e[2])
+            elif e[0] == "balken":
+                # Lebensbalken ueber den Koepfen (Spielbild): nur mit gelesenem Namen zugeordnet
+                from .lebensbalken import zuordnen as balken_zuordnen
+                zeit = zeit_von_wand(e[1])
+                for text, anteil, team in e[2]:
+                    if team == "feind" and (sp := balken_zuordnen(text, p.gegner())):
+                        self.gegner_leben[sp.name] = (zeit, float(anteil))
             elif e[0] == "eigene":
                 # eigene Faehigkeiten/Zauber aus dem HUD: Wechsel bereit -> weg ist der Moment der Nutzung
                 # Ein Wechsel zaehlt erst, wenn ihn zwei Lesungen hintereinander zeigen (Partie 7, 13:10-13:12:
@@ -211,6 +219,11 @@ class Lagebild:
         return (ende - punkte[0][0] >= dauer
                 and all(abs(x - ex) + abs(y - ey) <= toleranz for _, x, y in punkte))
 
+    def gegner_leben_jetzt(self, sp: Spieler, jetzt: float) -> float | None:
+        """Leben eines Gegners (0..1) aus seinem Lebensbalken im Spielbild, wenn frisch (<= 2,5 s)."""
+        g = self.gegner_leben.get(sp.name)
+        return g[1] if g and jetzt - g[0] <= 2.5 else None
+
     def leben(self, sp: Spieler, jetzt: float) -> float | None:
         """Leben eines Mitspielers (0..1) aus der HUD-Leiste, wenn frisch (< 3 s)."""
         m = self.mitspieler.get(sp.name)
@@ -263,6 +276,8 @@ def ereignis_als_json(e: tuple) -> dict:
         return {"art": "eigene", "w": e[1], "b": e[2]}
     if e[0] == "platten":
         return {"art": "platten", "w": e[1], "p": {"/".join(k): v for k, v in e[2].items()}}
+    if e[0] == "balken":
+        return {"art": "balken", "w": e[1], "b": [[t, a, team] for t, a, team in e[2]]}
     return {"art": e[0], "w": e[1], "text": e[2]}
 
 
@@ -279,6 +294,8 @@ def ereignis_aus_json(d: dict) -> tuple:
         return ("eigene", d["w"], d["b"])
     if d["art"] == "platten":
         return ("platten", d["w"], {tuple(k.split("/")): v for k, v in d["p"].items()})
+    if d["art"] == "balken":
+        return ("balken", d["w"], [tuple(x) for x in d["b"]])
     return (d["art"], d["w"], d["text"])
 
 
@@ -419,6 +436,7 @@ class Beobachter(threading.Thread):
                                             self._ereignisse.append(("eigene", start, eig))
                                     klein = cv2.resize(ganz, (BILDSCHIRM_BREITE, round(BILDSCHIRM_BREITE * hoehe / breite)),
                                                        interpolation=cv2.INTER_AREA)
+                                    self._balken_pruefen(start, klein, leser)
                                     ok, jpg = cv2.imencode(".jpg", klein, [cv2.IMWRITE_JPEG_QUALITY, 70])
                                     if ok:
                                         self._bildschirme.append((start, jpg.tobytes()))
@@ -469,6 +487,30 @@ class Beobachter(threading.Thread):
                 protokoll.close()
             if self._ereignis_datei:
                 self._ereignis_datei.close()
+
+    def _balken_pruefen(self, start: float, klein, leser) -> None:
+        """Gegnerische Lebensbalken im Spielbild finden (schnell, hier) und ihre Namen lesen (Texterkennung,
+        ~50 ms je Balken - im eigenen Faden, damit die Minimap mit 60 Bildern/s nicht stockt)."""
+        from . import lebensbalken
+        try:
+            feind = [b for b in lebensbalken.finde(klein) if b.team == "feind"][:3]
+        except Exception as e:
+            self.fehler = f"Balken: {e}"
+            return
+        if not feind or leser is None or getattr(self, "_balken_laeuft", False):
+            return
+        self._balken_laeuft = True
+
+        def lauf():
+            try:
+                gelesen = lebensbalken.namen_lesen(klein, feind, leser)
+                with self._schloss:
+                    self._ereignisse.append(("balken", start, [(t, b.anteil, b.team) for b, t in gelesen]))
+            except Exception as e:
+                self.fehler = f"Balken-Namen: {e}"
+            finally:
+                self._balken_laeuft = False
+        threading.Thread(target=lauf, daemon=True).start()
 
     def _schirm_schreiben(self, wand: float, jpg: bytes) -> None:
         ziel = self.ordner / f"schirm_{int(wand * 1000)}.jpg"

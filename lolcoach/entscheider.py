@@ -190,7 +190,9 @@ class Entscheider:
         if g and not g.s.tot and g.seit is not None and g.seit < 2 and not gefahr and not serie \
                 and (b.leben or 1) >= 0.6 and wert_kraefte >= 1 and j_weit:
             grund = f"{j.champion} ist {'tot' if j.s.tot else j.ort}" if j and (j.s.tot or not j.unbekannt) else ""
-            aus.append(Option("druck", f"Spiel auf {g.champion}: {vorsprung}" + (f", {grund}" if grund else "")
+            hp = f", {g.champion} hat {int(g.leben * 100)} Prozent Leben" if g.leben is not None and g.leben <= 0.6 else ""
+            aus.append(Option("druck", f"Spiel auf {g.champion}: {vorsprung or 'du bist stärker'}{hp}"
+                              + (f", {grund}" if grund else "")
                               + (f" - {b.trade}." if b.trade else "."),
                               60 + 20 * wert_kraefte, 2 + bool(grund)))
 

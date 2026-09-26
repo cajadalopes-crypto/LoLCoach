@@ -176,7 +176,9 @@ def chance(b: Bewertung, platten: bool) -> str | None:
     leben_ok = b.leben is None or b.leben >= 0.5
     lebt = g is not None and not g.s.tot
     if lebt and leben_ok and wert >= 1 and g.seit is not None and g.seit < 3:
-        return (f"Geh auf {g.champion}, {b.vorsprung_satz()}" + (", Shutdown auf ihm" if g.shutdown else "")
+        hp = f", {g.champion} hat {int(g.leben * 100)} Prozent Leben" if g.leben is not None and g.leben <= 0.6 else ""
+        v = b.vorsprung_satz()
+        return (f"Geh auf {g.champion}" + (f", {v}" if v else "") + hp + (", Shutdown auf ihm" if g.shutdown else "")
                 + (f" - {b.trade}" if b.trade else ""))
     if lebt and leben_ok and g.flash and g.flash > 30 and wert > -1:
         return f"Spiel aggressiv, {g.champion} ohne Flash"
