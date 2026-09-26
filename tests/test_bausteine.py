@@ -1,0 +1,73 @@
+"""Kleine Bausteine: Item-Namen, Wellen, Mitspieler-Leiste, Teleport-Timer, Kuerzen, Orte.
+
+    python tests/test_bausteine.py
+"""
+import sys
+from pathlib import Path
+
+import cv2
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lolcoach import aufzeichnung, gehirn, hud, itemnamen, minimap, welle, zauber, zustand  # noqa: E402
+
+HIER = Path(__file__).parent
+
+
+def item_namen():
+    text, k = itemnamen.absichern("Kauf dir jetzt Stereks Pegel und danach Tanz der Todes.")
+    assert text == "Kauf dir jetzt Steraks Pegel und danach Tanz des Todes.", text
+    text, k = itemnamen.absichern("Bau Schwarzes Beil, dann Gefraessige Hydra.")
+    assert text == "Bau Schwarzes Beil, dann Gefräßige Hydra.", text      # "Bau" bleibt stehen
+    for unberuehrt in ("Geh zum Drachen mit Lee Sin, Riven ist stark.", "Warwick ist in seinem oberen Jungle!"):
+        assert itemnamen.absichern(unberuehrt) == (unberuehrt, []), unberuehrt
+
+
+def wellen():
+    # Lane-Geometrie: Ecke oben ist die Mitte der Top-Lane, Basen an den Enden
+    assert welle._projektion(0.14, 0.16)[0] == "Top" and abs(welle._projektion(0.14, 0.16)[1] - 0.5) < 0.05
+    assert welle._projektion(0.5, 0.5)[0] == "Mid"
+    assert welle._projektion(0.93, 0.6)[0] == "Bot" and welle._projektion(0.93, 0.6)[1] > 0.7
+    assert welle._projektion(0.35, 0.55) is None                     # Jungle
+    # blaue Welle tief bei Rot, keine rote: "tief bei seinem Turm" fuer Blau, "tief bei deinem" fuer Rot
+    punkte = [("blau", 0.93, y) for y in (0.30, 0.32, 0.34, 0.36)]
+    z = welle.zustaende(punkte)["Bot"]
+    assert z.blau == 4 and z.rot == 0 and z.schiebt == "blau"
+    assert "tief bei seinem Turm" in z.worte("ORDER") and "tief bei deinem Turm" in z.worte("CHAOS"), z.worte("ORDER")
+    assert welle.zustaende([])["Mid"].worte("ORDER") == "keine Welle zu sehen"
+
+
+def mitspieler_leiste():
+    """Echtes Bild (Partie 2, 26.09.2026): Lee Sin 93 %, Diana 95 % mit Ult bereit, Varus 32 %, Alistar 75 %."""
+    bild = cv2.imread(str(HIER / "hud_ecke.jpg"))
+    x0, y0, x1, y1 = hud.bereich(3840, 2160)
+    ox, oy = 3840 - 907, 2160 - 907
+    m = hud.lies(bild[y0 - oy:y1 - oy, x0 - ox:x1 - ox])
+    leben = [x.leben for x in m]
+    assert all(abs(a - b) <= 0.04 for a, b in zip(leben, [0.93, 0.95, 0.32, 0.75])), leben
+    assert [x.ult_bereit for x in m] == [False, True, False, False], m
+    assert all(type(x.ult_bereit) is bool for x in m)      # numpy-bool hat den Coach einmal abstuerzen lassen
+
+
+def teleport_timer():
+    p = zustand.partie(list(aufzeichnung.lies(HIER / "botspiel_riven_2.jsonl.gz"))[900])
+    shen = p.gegenueber()                                   # Top, Level 8
+    assert zauber.cooldown("SummonerTeleport", shen, 300) == 300
+    assert 280 < zauber.cooldown("SummonerTeleport", shen, 700) < 300
+    assert zauber.cooldown("SummonerTeleport", shen, 900) == zauber.cooldown("SummonerTeleport", shen, 700) - 30
+    assert zauber.cooldown("SummonerFlash") == 300
+
+
+def kuerzen_und_orte():
+    assert gehirn.kuerzen("Eins. Zwei! Drei? Vier.", 2) == "Eins. Zwei!"
+    assert minimap.woher("im oberen Fluss") == "aus dem oberen Fluss"
+    assert minimap.woher("oben") == "von oben"
+    assert minimap.woher("auf der Mid-Lane") == "über die Mid-Lane"
+    assert minimap.ort(0.5, 0.5, "ORDER") == "in der Flussmitte"
+    assert minimap.ort(0.33, 0.30, "ORDER") == "im oberen Fluss"
+
+
+if __name__ == "__main__":
+    sys.stdout.reconfigure(encoding="utf-8")
+    for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte):
+        test()
+        print(f"{test.__name__} OK")
