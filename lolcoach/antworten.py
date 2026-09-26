@@ -221,7 +221,13 @@ BILD_HINWEIS = (
     "Sekunden alt sein); widersprechen sie sich, gilt das Bild. Schau zuerst darauf und nutze es fuer die Antwort: "
     "unten Mitte sein Leben und Mana (Zahlen), seine Faehigkeiten und rechts daneben die zwei Beschwoererzauber "
     "(eine Zahl darauf = Abklingzeit, also weg), sein Gold unten rechts; ueber den Koepfen die Lebensbalken; ob "
-    "er unter einem gegnerischen Turm steht; Vasallen beider Seiten. Sag nur, was wirklich zu sehen ist.")
+    "er unter einem gegnerischen Turm steht; Vasallen beider Seiten. Sag nur, was wirklich zu sehen ist. "
+    "Fehlt dir fuer eine gute Antwort etwas, das er mit der Kamera zeigen kann (z. B. den Kampf am Drachen, "
+    "die Welle in seiner Lane), dann antworte NUR mit 'KAMERA: <wohin, hoechstens 8 Woerter>' - er schwenkt "
+    "kurz dorthin, und du bekommst das neue Bild.")
+KAMERA_NACHFRAGE = ("Er hat die Kamera wie gebeten geschwenkt - das Bild zeigt es jetzt. Beantworte seine Frage "
+                    "damit; frag nicht noch einmal nach der Kamera.")
+KAMERA_WARTEN = 4.0     # Sekunden zwischen "schwenk mal" und dem neuen Bild
 SYSTEM = SYSTEM.replace("{BILD}", BILD_HINWEIS)
 
 

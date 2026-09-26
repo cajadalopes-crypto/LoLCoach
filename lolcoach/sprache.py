@@ -206,6 +206,19 @@ class Gespraech:
                 bild = b.bildschirm() if b is not None else None   # der Bildschirm, als er fragte
                 antwort = self.antworten.mit_claude(text, self.p, self.lagebild, self.modell, letzte,
                                                     getattr(self, "gehirn", None), [bild] if bild else None)
+                if antwort.upper().startswith("KAMERA:") and b is not None:
+                    # Der Coach braucht einen Blick: "Schwenk kurz zum Drachen" - dann mit dem neuen Bild
+                    # (Carlos: "er kann mir sagen, dass ich die Kamera verschieben soll - er ist ja mein Coach")
+                    wohin = antwort.split(":", 1)[1].strip().rstrip(".")
+                    print(f"  Coach: Schwenk kurz {wohin}", flush=True)
+                    self.sprecher.antworte(f"Schwenk kurz die Kamera: {wohin}.")
+                    time.sleep(self.antworten.KAMERA_WARTEN)
+                    neu = b.bildschirm()
+                    antwort = self.antworten.mit_claude(f"{text}\n({self.antworten.KAMERA_NACHFRAGE})", self.p,
+                                                        self.lagebild, self.modell, letzte, getattr(self, "gehirn", None),
+                                                        [neu] if neu else None)
+                    if antwort.upper().startswith("KAMERA:"):
+                        antwort = "Ich sehe es leider noch nicht - frag mich gleich noch mal."
                 if antwort.strip().rstrip(".").lower() == "notiert":
                     self._notiere(text, p)  # Claude hat es als Rueckmeldung erkannt
         print(f"  Coach: {antwort}", flush=True)
