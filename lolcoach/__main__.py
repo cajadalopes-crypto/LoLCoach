@@ -1,7 +1,8 @@
-"""python -m lolcoach [live|abspielen|status|llm] ...
+"""python -m lolcoach [live|abspielen|bericht|status|llm] ...
 
-  live (Standard)       wartet auf eine Partie, zeigt sie an, schreibt sie mit
+  live (Standard)       wartet auf eine Partie, coacht sie, schreibt sie mit (Daten + Minimap)
   abspielen [DATEI]     spielt eine Aufnahme durch denselben Code (Standard: die neueste)
+  bericht [DATEI]       Post-Game-Bericht einer Aufnahme
   status                ein Schnappschuss, sofort
   llm "Frage"           prueft die Claude-Anbindung
 
@@ -10,29 +11,39 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import threading
 import time
+from dataclasses import asdict
 
-from . import ansicht, aufzeichnung, bericht, liveapi, llm, regeln, sprechplan, stimme, zustand
+from . import ansicht, aufzeichnung, bericht, lage, liveapi, llm, regeln, sprechplan, stimme, zustand
 
 
-def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, alle: int = 5,
-              nur_coach: bool = False) -> sprechplan.Sprechplan:
-    """Gemeinsamer Kern fuer Live und Aufnahme: Regeln pruefen, Sprechplan
-    takten, neue Ereignisse als Satz, alle `alle` Takte die Uebersicht."""
+def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, sicht=None,
+              alle: int = 5, nur_coach: bool = False) -> sprechplan.Sprechplan:
+    """Gemeinsamer Kern fuer Live und Aufnahme.
+
+    `quelle` liefert (Wanduhr, Rohdaten); `sicht` hat `zwischen(bis, champions)`
+    und liefert die Minimap-Sichtungen bis zu dieser Wanduhrzeit. Je Takt:
+    Lagebild fortschreiben, Regeln pruefen, Sprechplan takten, Ereignisse und
+    alle `alle` Takte die Uebersicht zeigen."""
     gesehen: set[int] = set()
     rollen_gezeigt = False
     werk, plan = regeln.Regelwerk(), sprechplan.Sprechplan(sprecher)
-    for n, daten in enumerate(quelle):
+    lagebild = lage.Lagebild() if sicht else None
+    for n, (w, daten) in enumerate(quelle):
         if schreiber:
-            schreiber.schreibe(daten)
+            schreiber.schreibe(daten, w)
         p = zustand.partie(daten, ich)
         if not rollen_gezeigt and p.spieler:
             print(ansicht.rollen_tabelle(p))
             if p.zuschauer and not p.ich:
                 print("(Zuschauer ohne --ich: Sicht Blau/Rot, der Coach schweigt)")
             rollen_gezeigt = True
+        if sicht:
+            for wb, sichtungen in sicht.zwischen(w, lage.champions(p)):
+                lagebild.neu(p.zeit - (w - wb), sichtungen, p)
         if not nur_coach:
             for e in p.ereignisse:
                 if e.id in gesehen:
@@ -40,7 +51,7 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, al
                 gesehen.add(e.id)
                 if satz := ansicht.ereignis(p, e):
                     print(satz)
-        plan.neu(werk.pruefe(p))
+        plan.neu(werk.pruefe(p, lagebild))
         if a := plan.takt(p.zeit):
             print(f"{ansicht.uhr(p.zeit)}  >> {a.text}", flush=True)
         if n % alle == 0 and not nur_coach:
@@ -51,18 +62,36 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, al
 
 
 def _live_quelle(basis: str, aus_nach: float = 10.0):
-    """Liefert Schnappschuesse, solange die Partie laeuft; endet, wenn die API
-    `aus_nach` Sekunden lang nicht antwortet."""
+    """Liefert (Wanduhr, Schnappschuss), solange die Partie laeuft; endet, wenn
+    die API `aus_nach` Sekunden lang nicht antwortet."""
     stumm_seit = None
     while True:
         try:
-            yield liveapi.alles(basis)
+            daten = liveapi.alles(basis)
+            yield time.time(), daten
             stumm_seit = None
         except liveapi.KeinSpiel:
             stumm_seit = stumm_seit or time.monotonic()
             if time.monotonic() - stumm_seit > aus_nach:
                 return
             time.sleep(1)
+
+
+class _LiveSicht:
+    """Verbindet den Beobachter-Thread mit dem Kern: gibt ihm die Champions
+    der Partie und holt ab, was er inzwischen gesehen hat."""
+
+    def __init__(self, beobachter: lage.Beobachter):
+        self.b = beobachter
+
+    def zwischen(self, bis: float, champions):
+        self.b.champions = champions
+        return self.b.abholen()
+
+
+def _ansagen_speichern(pfad, plan: sprechplan.Sprechplan) -> None:
+    ziel = pfad.with_name(pfad.name.removesuffix(".jsonl.gz") + "_ansagen.json")
+    ziel.write_text(json.dumps([asdict(a) for a in plan.gesagt], ensure_ascii=False, indent=0), encoding="utf-8")
 
 
 def live(args) -> None:
@@ -72,23 +101,28 @@ def live(args) -> None:
         if not liveapi.laeuft(args.basis):
             time.sleep(2)
             continue
-        schreiber = bilder = None
+        schreiber = beobachter = None
         if not args.ohne_aufnahme:
             schreiber = aufzeichnung.Schreiber()
             print(f"Partie erkannt - Aufnahme: {schreiber.pfad}")
-            if not args.ohne_bilder:
-                bilder = aufzeichnung.Bildschreiber(schreiber)
-                bilder.start()
+        if not args.ohne_bilder:
+            ordner = schreiber.bilderordner if schreiber else None
+            beobachter = lage.Beobachter(ordner)
+            beobachter.start()
         sprecher.sage("Coach verbunden.")
+        plan = None
         try:
-            _verfolge(_live_quelle(args.basis), args.ich, takt=1.0, sprecher=sprecher, schreiber=schreiber)
+            plan = _verfolge(_live_quelle(args.basis), args.ich, takt=1.0, sprecher=sprecher,
+                             schreiber=schreiber, sicht=_LiveSicht(beobachter) if beobachter else None)
         finally:
-            if bilder:
-                bilder.halt()
-                print(f"{bilder.anzahl} Bilder in {bilder.ordner}"
-                      + (f" - letzter Fehler: {bilder.fehler}" if bilder.fehler else ""))
+            if beobachter:
+                beobachter.halt()
+                print(f"Minimap: {beobachter.anzahl} Bilder ausgewertet"
+                      + (f" - letzter Fehler: {beobachter.fehler}" if beobachter.fehler else ""))
             if schreiber:
                 schreiber.schliesse()
+                if plan:
+                    _ansagen_speichern(schreiber.pfad, plan)
         if schreiber:
             # im Hintergrund: Claude braucht bis zu zwei Minuten, die naechste Partie nicht
             threading.Thread(target=_bericht_im_hintergrund, args=(schreiber.pfad, args.ich), daemon=False).start()
@@ -118,7 +152,11 @@ def abspielen(args) -> None:
         sys.exit("Keine Aufnahme gefunden.")
     print(f"Aufnahme: {pfad}")
     sprecher = stimme.Stimme(warten=True) if args.laut else stimme.Stumm()
-    plan = _verfolge(aufzeichnung.lies(pfad), args.ich, takt=args.takt, sprecher=sprecher,
+    bilder = [] if args.ohne_bilder else aufzeichnung.bilder(pfad)
+    if bilder:
+        print(f"Minimap: {len(bilder)} Bilder")
+    plan = _verfolge(aufzeichnung.lies_mit_zeit(pfad), args.ich, takt=args.takt, sprecher=sprecher,
+                     sicht=lage.SichtAusBildern(bilder) if bilder else None,
                      alle=args.alle, nur_coach=args.nur_coach)
     print(f"\n{len(plan.gesagt)} Ansagen.")
 
@@ -149,7 +187,7 @@ def main() -> None:
     unter = ap.add_subparsers(dest="befehl")
     lv = unter.add_parser("live")
     lv.add_argument("--ohne-aufnahme", action="store_true")
-    lv.add_argument("--ohne-bilder", action="store_true")
+    lv.add_argument("--ohne-bilder", action="store_true", help="keine Minimap (weder Erkennung noch Bilder)")
     lv.add_argument("--stumm", action="store_true")
     ab = unter.add_parser("abspielen")
     ab.add_argument("datei", nargs="?")
@@ -157,6 +195,7 @@ def main() -> None:
     ab.add_argument("--alle", type=int, default=60, help="Uebersicht alle N Schnappschuesse")
     ab.add_argument("--nur-coach", action="store_true", help="nur die Ansagen des Coaches")
     ab.add_argument("--laut", action="store_true", help="Ansagen vorlesen (wartet, bis jede gesprochen ist)")
+    ab.add_argument("--ohne-bilder", action="store_true", help="Minimap-Bilder nicht auswerten")
     be = unter.add_parser("bericht")
     be.add_argument("datei", nargs="?")
     be.add_argument("--ohne-llm", action="store_true")

@@ -97,7 +97,8 @@ fertig = "{champion} hat {item} fertig."
 
 [gold]
 schwelle = 1300               # ab hier lohnt ein Recall fuer ein Kernteil
-erneut_nach = 90              # Sekunden, bis die Erinnerung wiederkommt, solange das Gold liegen bleibt
+erneut_nach = 150             # Sekunden, bis die Erinnerung wiederkommt, solange das Gold liegen bleibt
+erneut_nach_viel = 90
 satz = "Du hast {gold} Gold. Bei der nächsten ruhigen Welle zurück - ungenutztes Gold ist verschenkte Stärke."
 viel = 3000                   # ab hier deutlicher
 satz_viel = "Du trägst {gold} Gold mit dir herum - das ist mehr als ein ganzes Item. Welle reinschieben und sofort zurück."
@@ -108,6 +109,25 @@ ziel_pro_minute = 8.0         # Diamond+
 satz = "Minute {minute}: {cs} CS, {cspm} pro Minute. {champion} hat {gegner_cs}."
 satz_ohne_gegner = "Minute {minute}: {cs} CS, {cspm} pro Minute."
 unter_ziel = " Ziel sind acht pro Minute."
+
+[sicht]
+# Regeln aus der Minimap (nur, was der Spieler selbst sehen koennte).
+neu_nach = 4                  # so lange weg, dann gilt ein Auftauchen als neue Sichtung
+gefahr = "Vorsicht, {champion} {ort}!"
+nah_ab = 0.25                 # so nah bei dir (Kartenanteil) ist es immer Gefahr
+seine_seite = "{champion} ist {ort} gesehen - er kann zu dir kommen. Nicht zu weit vorne stehen."
+sicher_TOP = "{champion} ist {ort} gesehen. Oben kannst du jetzt sicher pushen."
+sicher_MIDDLE = "{champion} ist {ort} gesehen. Die Mitte ist gerade sicher."
+sicher_BOTTOM = "{champion} ist {ort} gesehen. Unten könnt ihr jetzt hart spielen."
+sicher_UTILITY = "{champion} ist {ort} gesehen. Unten könnt ihr jetzt hart spielen und tief Sicht setzen."
+sicher_JUNGLE = "{champion} ist {ort} gesehen. Auf der anderen Seite hast du jetzt Platz."
+fehlt_nach = 8                # Sekunden, bis der Lane-Gegner als fehlend gilt
+fehlt_ab = 90                 # vorher ist niemand in der Lane
+fehlt_bis = 840               # nur in der Lane-Phase
+fehlt_naehe = 0.3             # nur wenn er aus deiner Naehe verschwunden ist
+fehlt = "{champion} ist seit {sekunden} Sekunden weg aus deiner Lane. Nicht zu weit vorne stehen - und ping ihn für dein Team."
+recall_mit_platten = "{champion} recallt. Schieb die Welle in seinen Turm und hol Platten."
+recall_ohne_platten = "{champion} recallt. Schieb die Welle rein, dann hast du Zeit für einen eigenen Recall."
 
 [tod]
 gank = "Gank von {champion}. Ohne Sicht auf den gegnerischen Jungler nicht so weit vorne stehen."

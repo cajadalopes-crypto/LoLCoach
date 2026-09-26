@@ -10,6 +10,7 @@ Ausgabe: Markdown neben der Aufnahme (`<aufnahme>_bericht.md`).
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -60,11 +61,16 @@ def werte_aus(pfad: str | Path, ich: str | None = None) -> Auswertung:
     spielende = next((e for e in ende.ereignisse if e.art == "GameEnd"), None)
     a = Auswertung(partien, ende, spielende.daten.get("Result", "?") if spielende else "abgebrochen")
 
-    werk, plan = regeln.Regelwerk(), sprechplan.Sprechplan(stimme.Stumm())
-    for p in partien:
-        plan.neu(werk.pruefe(p))
-        plan.takt(p.zeit)
-    a.ansagen = plan.gesagt
+    # Was live gesagt wurde, steht neben der Aufnahme; sonst nachspielen (ohne Minimap)
+    gespeichert = Path(pfad).with_name(Path(pfad).name.removesuffix(".jsonl.gz") + "_ansagen.json")
+    if gespeichert.exists():
+        a.ansagen = [regeln.Ansage(**x) for x in json.loads(gespeichert.read_text(encoding="utf-8"))]
+    else:
+        werk, plan = regeln.Regelwerk(), sprechplan.Sprechplan(stimme.Stumm())
+        for p in partien:
+            plan.neu(werk.pruefe(p))
+            plan.takt(p.zeit)
+        a.ansagen = plan.gesagt
 
     j_gegner = ende.jungler(gegenteam(ende.mein_team))
     horten_seit = cs_seit = None

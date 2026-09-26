@@ -64,15 +64,21 @@ class Regelwerk:
         self.item_tipps = {i: v for v in wissen.lade("items").values()
                            if isinstance(v, dict) for i in v["ids"]}
         self.vorher: Partie | None = None
+        self.lage = None
         self._gemeldet: set = set()  # einmalige Dinge (Vorwarnung je Spawn, CS je Minute)
+        self._weg_seit: dict[str, float | None] = {}  # Spielername -> seit wann unsichtbar (lebendig)
+        self._tot_bei: dict[str, float] = {}           # Spielername -> zuletzt tot gesehen (Spielzeit)
 
-    def pruefe(self, p: Partie) -> list[Ansage]:
+    def pruefe(self, p: Partie, lage=None) -> list[Ansage]:
+        """`lage`: Lagebild aus der Minimap (lage.Lagebild) oder None ohne Bild."""
         v, self.vorher = self.vorher, p
+        self.lage = lage
         if not p.ich or v is None or not v.ich or p.zeit < v.zeit:
             return []
         ansagen: list[Ansage] = []
         for regel in (self._vorwarnung, self._zahlen, self._jungler_tot, self._lane_tot,
-                      self._level, self._items, self._gold, self._cs, self._tod):
+                      self._level, self._items, self._gold, self._cs, self._tod,
+                      self._jungler_gesehen, self._lane_fehlt):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 ansagen.append(a)
@@ -191,10 +197,12 @@ class Regelwerk:
             return
         # Solange das Gold liegen bleibt, jede Sekunde anbieten - der Sprechplan
         # laesst es nur alle `erneut_nach` Sekunden durch.
-        if p.gold >= cfg["schwelle"]:
-            viel = p.gold >= cfg["viel"]
-            yield Ansage(cfg["satz_viel" if viel else "satz"].format(gold=int(p.gold // 100 * 100)),
-                         WICHTIG if viel else HINWEIS, "gold", gueltig=5, sperre=cfg["erneut_nach"])
+        if p.gold >= cfg["viel"]:
+            yield Ansage(cfg["satz_viel"].format(gold=int(p.gold // 100 * 100)), WICHTIG, "gold_viel",
+                         gueltig=5, sperre=cfg["erneut_nach_viel"])
+        elif p.gold >= cfg["schwelle"]:
+            yield Ansage(cfg["satz"].format(gold=int(p.gold // 100 * 100)), HINWEIS, "gold",
+                         gueltig=5, sperre=cfg["erneut_nach"])
 
     def _cs(self, p: Partie, v: Partie):
         cfg = self.m["cs"]
@@ -211,6 +219,90 @@ class Regelwerk:
                 if cspm < cfg["ziel_pro_minute"]:
                     text += cfg["unter_ziel"]
                 yield Ansage(text, HINWEIS, f"cs{minute}", gueltig=40)
+
+    # --- Regeln aus der Minimap ------------------------------------------------
+
+    def _unsichtbar_seit(self, p: Partie, s: Spieler) -> float | None:
+        """Fuehrt Buch, seit wann `s` lebendig und unsichtbar ist. Tote zaehlen
+        nicht (ihr Icon verschwindet, das ist kein Fehlen)."""
+        if s.tot:
+            self._tot_bei[s.name] = p.zeit
+        if s.tot or self.lage.sichtbar(s):
+            self._weg_seit[s.name] = None
+        elif self._weg_seit.get(s.name) is None:
+            self._weg_seit[s.name] = p.zeit
+        return self._weg_seit[s.name]
+
+    def _jungler_gesehen(self, p: Partie, v: Partie):
+        if not self.lage or not self.lage.aktiv or p.ich.tot:
+            return
+        from . import minimap
+        cfg = self.m["sicht"]
+        j = p.jungler(gegenteam(p.mein_team))
+        if not j:
+            return
+        weg_vorher = self._weg_seit.get(j.name)
+        self._unsichtbar_seit(p, j)
+        # neu aufgetaucht: jetzt sichtbar, vorher lange genug weg
+        if not (self.lage.sichtbar(j) and weg_vorher is not None and p.zeit - weg_vorher >= cfg["neu_nach"]):
+            return
+        _, x, y = self.lage.gesehen(j)
+        ort = minimap.ort(x, y, p.mein_team)
+        if "Basis" in ort:
+            return
+        seite = minimap.seite_der_karte(x, y)
+        rolle = p.ich.rolle
+        meine_seite = ((rolle == "TOP" and seite == "oben") or (rolle in ("BOTTOM", "UTILITY") and seite == "unten")
+                       or (rolle == "MIDDLE" and abs(x - 0.5) + abs(y - 0.5) < 0.35))
+        ich = self.lage.gesehen(p.ich)
+        nah = bool(ich and self.lage.sichtbar(p.ich) and abs(ich[1] - x) + abs(ich[2] - y) < cfg["nah_ab"])
+        in_seinem_jungle = "seinem" in ort
+        if nah or (meine_seite and not in_seinem_jungle and rolle != "JUNGLE"):
+            yield Ansage(cfg["gefahr"].format(champion=j.champion, ort=ort), SOFORT, "jungler_sicht",
+                         gueltig=3, sperre=15)
+        elif meine_seite and rolle != "JUNGLE":
+            yield Ansage(cfg["seine_seite"].format(champion=j.champion, ort=ort), WICHTIG, "jungler_sicht",
+                         gueltig=4, sperre=30)
+        elif text := cfg.get(f"sicher_{rolle}"):
+            yield Ansage(text.format(champion=j.champion, ort=ort), WICHTIG, "jungler_sicht", gueltig=5, sperre=40)
+
+    def _lane_fehlt(self, p: Partie, v: Partie):
+        if not self.lage or not self.lage.aktiv:
+            return
+        from . import minimap
+        cfg = self.m["sicht"]
+        g = p.gegenueber()
+        if not g or p.ich.rolle == "JUNGLE":
+            return
+        seit = self._unsichtbar_seit(p, g)
+        if (seit is None or p.ich.tot or not (cfg["fehlt_ab"] <= p.zeit <= cfg["fehlt_bis"])
+                or ("gemeldet", g.name, seit) in self._gemeldet):
+            return
+        zuletzt = self.lage.gesehen(g)
+        ich = self.lage.gesehen(p.ich)
+        if not zuletzt or not ich or p.zeit - ich[0] > 2:
+            return  # er war nie zu sehen, oder du selbst bist nicht auf der Karte zu finden
+        if zuletzt[0] < self._tot_bei.get(g.name, -1):
+            return  # seit dem Respawn noch nicht gesehen: er laeuft aus seiner Basis zurueck
+        if "Basis" in minimap.ort(zuletzt[1], zuletzt[2], p.mein_team) \
+                or "Basis" in minimap.ort(ich[1], ich[2], p.mein_team):
+            return  # er kauft gerade, oder du bist selbst nicht in der Lane
+        abstand = abs(ich[1] - zuletzt[1]) + abs(ich[2] - zuletzt[2])
+        if abstand > cfg["fehlt_naehe"]:
+            return  # nicht aus deiner Naehe verschwunden - betrifft dich nicht
+        # Recall: stand vor dem Verschwinden still - sofort ansagen, das ist ein Fenster
+        if p.zeit - seit < 3 and self.lage.stand_still(g):
+            self._gemeldet.add(("gemeldet", g.name, seit))
+            satz = cfg["recall_mit_platten"] if p.zeit < self.m["lane_tot"]["platten_bis"] else cfg["recall_ohne_platten"]
+            yield Ansage(satz.format(champion=g.champion), WICHTIG, "lane_recall", gueltig=6, sperre=30)
+            return
+        if p.zeit - seit < cfg["fehlt_nach"]:
+            return
+        if abstand < 0.06 and p.zeit - ich[0] < 2:
+            return  # stand direkt bei dir - vermutlich nur verdeckt
+        self._gemeldet.add(("gemeldet", g.name, seit))
+        yield Ansage(cfg["fehlt"].format(champion=g.champion, sekunden=int(p.zeit - seit)), WICHTIG,
+                     "lane_fehlt", gueltig=6, sperre=45)
 
     def _tod(self, p: Partie, v: Partie):
         if not (p.ich.tot and not v.ich.tot):
