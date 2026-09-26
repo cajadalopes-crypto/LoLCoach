@@ -134,15 +134,26 @@ _ZEIT = re.compile(r"\b(\d{1,2})[:.](\d{2})\b")
 _STEMPEL = re.compile(r"^\s*\[?(\d{1,2})\s?[:.]\s?(\d{2})\b")
 
 
-def chat_zeit(zeile: str, gelesen: float) -> float:
-    """Spielzeit, zu der die Zeile geschrieben wurde: der Zeitstempel vorn ("04:48 Riven (Riven): ..."),
-    wenn er zu `gelesen` passt (hoechstens 60 s frueher) - sonst `gelesen`. Partie 4: der Leser sah
-    den Ping erst 3 s spaeter; Partie 5 (altes Chat-Fenster) bis zu 58 s - der Timer lief so viel zu lang."""
+CHAT_FRISCH = 20.0   # Sekunden: so alt darf eine Chatzeile beim Lesen hoechstens sein
+
+
+def chat_stempel(zeile: str) -> float | None:
+    """Der Zeitstempel vorn in Sekunden, oder None (keiner oder unlesbar)."""
+    m = _STEMPEL.match(zeile)
+    return int(m.group(1)) * 60 + int(m.group(2)) if m else None
+
+
+def chat_zeit(zeile: str, gelesen: float) -> float | None:
+    """Spielzeit, zu der die Zeile geschrieben wurde (Zeitstempel vorn, "04:48 Riven (Riven): ..."), wenn
+    sie FRISCH ist (hoechstens CHAT_FRISCH vor dem Lesen) - sonst None, und die Zeile zaehlt nicht.
+    Partie 6: der Chat blendet nach jedem Kill alte Zeilen wieder ein; der Leser las "02:13 ... Rumble hat
+    Blitz benutzt" um 4:08 und 5:39 mit neuem Rauschen erneut - jedes Mal ein neuer Flash-Timer. Eine
+    Zeile ohne lesbaren Stempel ist nicht zu datieren; der echte Ping wird ohnehin mehrmals gelesen."""
     if m := _STEMPEL.match(zeile):
         t = int(m.group(1)) * 60 + int(m.group(2))
-        if 0 <= gelesen - t <= 60:
+        if 0 <= gelesen - t <= CHAT_FRISCH:
             return float(t)
-    return gelesen
+    return None
 
 
 def aus_chat(zeile: str, p) -> list[tuple[object, str, float | None]]:
@@ -153,8 +164,14 @@ def aus_chat(zeile: str, p) -> list[tuple[object, str, float | None]]:
     Eine Uhrzeit in der Nachricht wird als Rueckkehrzeit gelesen, wenn sie in
     der Zukunft liegt (manche Pings nennen sie)."""
     import difflib
-    rest = re.sub(r"^\s*\[?\d{1,2}:\d{2}\]?\s*", "", zeile)   # Zeitstempel vorn (Chat-Einstellung)
+    rest = re.sub(r"^\s*\[?\d{1,2}\s?[:.]\s?\d{2}\]?\s*", "", zeile)   # Zeitstempel vorn (Chat-Einstellung)
     nachricht = rest.split(":", 1)[1] if ":" in rest else rest
+    # Der Spiel-Ping "Rumble — Blitz" (Strich, kein "benutzt", keine Uhrzeit) sagt nicht, dass der Zauber
+    # verbraucht ist - nur "hat Blitz benutzt" (binnen 15 s gesehen) oder eine Rueckkehrzeit sagen das
+    # (Partie 6, 1:31: Flash-Timer fuer Rumble, der nie geflasht hatte).
+    if (re.search(r"[—–]|\w\s*-\s+\w", nachricht) and not re.search(r"benutz|used", nachricht.lower())
+            and not _ZEIT.search(nachricht)):
+        return []
     woerter = re.findall(r"[a-zäöüß']+", nachricht.lower())
     woerterbuch = _woerter()
     zauber = [woerterbuch[w] for w in woerter if w in woerterbuch and (w != "r" or len(woerter) <= 3)]

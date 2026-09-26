@@ -64,10 +64,12 @@ def kette():
             antwort_vorher = antworten.sofort("Hat Shen Flash?", p, lb)
             # Chat-Ping und ein Flash-Sprung von Vi (die Rakan-Zeile ohne Zauber zaehlt nicht)
             vi = p.jungler("CHAOS")
+            stempel = f"{int(p.zeit // 60):02d}:{int(p.zeit % 60):02d}"
             neu = lb.ereignisse(lambda wb: p.zeit - (w - wb), [
-                ("chat", w, "[Team] Schizoid Nevir (Riven): Shen Blitz"),
-                ("chat", w, "[Team] Schizoid Nevir (Riven): Shen Blitz"),     # doppelt: nur ein Timer
-                ("chat", w, "[Team] Diana (Diana): Rakan komm"),
+                ("chat", w, f"{stempel} Schizoid Nevir (Riven): Shen Blitz"),
+                ("chat", w, f"{stempel} Schizoid Nevir (Riven): Shen Blitz"),     # doppelt: nur ein Timer
+                ("chat", w, f"{stempel} Diana (Diana): Rakan komm"),
+                ("chat", w, "01:10 Schizoid Nevir (Riven): Rakan hat Blitz benutzt"),   # alt, neu eingeblendet
                 ("sprung", minimap.Sprung(vi.champion_id, None, w, 0.027, 0.6, 0.4)),
             ], p)
             assert len(neu) == 2, neu

@@ -167,8 +167,22 @@ class Gespraech:
             print(f"  Sprachfrage fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
             self.sprecher.freigeben()
 
+    def _tastenlog(self, p, audio: np.ndarray, text: str = "") -> None:
+        """Jeder Druck auf die Sprechtaste mit Spielzeit - Partie 6: 'hat Blitz benutzt'-Pings von Carlos'
+        Konto, die er nicht geschickt hat; liegt die Taste (Maus 5) im Spiel auf Pingen?"""
+        if self.notizen is None or p is None:
+            return
+        try:
+            with open(self.notizen.with_name(self.notizen.name.replace("_notizen.md", "_sprechtaste.log")), "a",
+                      encoding="utf-8") as f:
+                f.write(f"{int(p.zeit // 60)}:{int(p.zeit % 60):02d} gedrueckt {len(audio) / RATE:.1f} s"
+                        f"{' - ' + text if text else ''}\n")
+        except OSError:
+            pass
+
     def _beantworte(self, audio: np.ndarray) -> None:
         p = self.p
+        self._tastenlog(p, audio)
         if p is None or not p.ich:
             self.sprecher.antworte("Ich sehe noch keine Partie.")
             return

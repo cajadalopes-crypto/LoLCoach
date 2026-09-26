@@ -172,8 +172,11 @@ def lage_text(p: Partie, lagebild=None) -> str:
     zauber = [ZAUBER_DE.get(z, z) for z in p.ich.zauber]
     if p.ich.rolle == "TOP" and "SummonerTeleport" not in p.ich.zauber and p.zeit >= 815:
         zauber.append("Teleport (aus der Top-Quest)")
+    m = p.werte.get("maxHealth")
+    leben = (f"Leben {int(p.werte.get('currentHealth', 0))}/{int(m)} ({int(100 * p.werte.get('currentHealth', 0) / m)} %), "
+             if m else "")
     zeilen = [f"Spielzeit {int(p.zeit // 60)}:{int(p.zeit % 60):02d}. Ich: {p.ich.champion} "
-              f"({ROLLE_DE.get(p.ich.rolle, '?')}), Gold {int(p.gold or 0)}, Beschwoererzauber: {', '.join(zauber)}."
+              f"({ROLLE_DE.get(p.ich.rolle, '?')}), {leben}Gold {int(p.gold or 0)}, Beschwoererzauber: {', '.join(zauber)}."
               + (" Bot-Partie (Gegner sind Bots)." if any(s.bot for s in p.gegner()) else "")]
     for team, wer in ((p.mein_team, "Mein Team"), (gegenteam(p.mein_team), "Gegner")):
         zeilen.append(f"{wer}:")
@@ -213,9 +216,12 @@ SYSTEM = ("Du bist ein Challenger-Coach fuer League of Legends und sitzt neben d
           "sie. Gibt er keine Frage, sondern Rueckmeldung ueber dich oder das Programm (Lob, Kritik, "
           "Wuensche), antworte nur mit dem einen Wort: Notiert. " + "{BILD}")
 
-BILD_HINWEIS = ("Liegt ein Bild bei, ist es sein Bildschirm in diesem Moment: lies daraus, was die Lage nicht "
-                "hat - Lebensbalken ueber den Koepfen, wer in seiner Naehe ist, Vasallen und Welle vor ihm, Tuerme, "
-                "sein eigenes Leben und Mana unten. Sag nur, was wirklich zu sehen ist.")
+BILD_HINWEIS = (
+    "Liegt ein Bild bei, ist es sein Bildschirm in diesem Moment - AKTUELLER als die Lage (die kann ein paar "
+    "Sekunden alt sein); widersprechen sie sich, gilt das Bild. Schau zuerst darauf und nutze es fuer die Antwort: "
+    "unten Mitte sein Leben und Mana (Zahlen), seine Faehigkeiten und rechts daneben die zwei Beschwoererzauber "
+    "(eine Zahl darauf = Abklingzeit, also weg), sein Gold unten rechts; ueber den Koepfen die Lebensbalken; ob "
+    "er unter einem gegnerischen Turm steht; Vasallen beider Seiten. Sag nur, was wirklich zu sehen ist.")
 SYSTEM = SYSTEM.replace("{BILD}", BILD_HINWEIS)
 
 

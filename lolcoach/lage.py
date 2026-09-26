@@ -62,8 +62,14 @@ class Lagebild:
             elif e[0] == "chat":
                 zeit = zeit_von_wand(e[1])
                 self.chat.append((zeit, e[2]))
+                if zauber.chat_stempel(e[2]) is not None:
+                    self._chat_mit_stempel = True
+                geschrieben = zauber.chat_zeit(e[2], zeit)
+                if geschrieben is None and getattr(self, "_chat_mit_stempel", False):
+                    continue   # alte Zeile, wieder eingeblendet und neu gelesen - zaehlt nicht noch einmal
+                geschrieben = zeit if geschrieben is None else geschrieben   # Chat ohne Zeitstempel (Einstellung)
                 for sp, schl, zurueck in zauber.aus_chat(e[2], p):
-                    if t := self.zauber.benutzt(sp, schl, zauber.chat_zeit(e[2], zeit), "Chat", zurueck):
+                    if t := self.zauber.benutzt(sp, schl, geschrieben, "Chat", zurueck):
                         neu.append(t)
         return neu
 

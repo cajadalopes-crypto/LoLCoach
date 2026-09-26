@@ -126,9 +126,18 @@ def akte_teile():
 def chat_zeitstempel():
     # Partie 4: "04:48 Riven (Riven): Tryndamere hat Blitz benutzt", gelesen um 4:51
     assert zauber.chat_zeit("04:48 Riven (Riven): Tryndamere hat Blitz benutzt", 291.0) == 288.0
-    assert zauber.chat_zeit("05:03 Riven (Riven): Tryndamere hat Entzünden benutzt", 361.0) == 303.0  # Partie 5
-    assert zauber.chat_zeit("04:48 Riven (Riven): Tryndamere hat Blitz benutzt", 400.0) == 400.0   # zu alt
-    assert zauber.chat_zeit("Riven (Riven): Urgot Blitz", 291.0) == 291.0                          # ohne Stempel
+    assert zauber.chat_zeit("02: 13 Camille (Camille): Rumble hat Blitz benutzt", 248.0) is None   # Partie 6: alt
+    assert zauber.chat_zeit("Ille): Rumble- Blitz", 339.0) is None                                 # ohne Stempel
+
+
+def chat_pings():
+    """Partie 6: nur eindeutige Pings setzen Timer - der Strich-Ping "Rumble — Blitz" nicht."""
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.spieler)
+    g = p.gegenueber().champion                    # Shen
+    assert zauber.aus_chat(f"01:31 Camille (Camille): {g} — Blitz", p) == []
+    assert zauber.aus_chat(f"01:31 Camille (Camille): {g}- Blitz", p) == []
+    assert [z for _, z, _ in zauber.aus_chat(f"02:13 Camille (Camille): {g} hat Blitz benutzt", p)] == ["SummonerFlash"]
+    assert [z for _, z, _ in zauber.aus_chat(f"02:13 Lee Sin (Lee Sin): {g.lower()} flash", p)] == ["SummonerFlash"]
 
 
 def matchup_zeilen():
@@ -150,6 +159,6 @@ def zauber_im_briefing():
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
-                 zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile):
+                 zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings):
         test()
         print(f"{test.__name__} OK")
