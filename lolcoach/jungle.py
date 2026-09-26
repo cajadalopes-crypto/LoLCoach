@@ -88,9 +88,9 @@ class Jungletracker:
             top, bot = self.zuerst_in_lane.get("TOP"), self.zuerst_in_lane.get("BOTTOM")
             if top is not None and bot is not None:
                 if top >= LEASH_SPAET and bot < LEASH_SPAET - 10:
-                    self.start, self.start_grund = "oben", "sein Toplaner kam spät in die Lane"
+                    self.start, self.start_grund = "oben", "sein Toplaner kam spät"
                 elif bot >= LEASH_SPAET and top < LEASH_SPAET - 10:
-                    self.start, self.start_grund = "unten", "seine Botlane kam spät in die Lane"
+                    self.start, self.start_grund = "unten", "seine Botlane kam spät"
 
     def zuletzt(self) -> tuple[float, float, float] | None:
         return self.sichtungen[-1] if self.sichtungen else None

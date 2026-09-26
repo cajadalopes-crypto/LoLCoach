@@ -247,7 +247,7 @@ def bewertung_und_plan():
     # Todeszeit (Wiki Death): L9 @20:00 = 29,2 s, L18 @55:00 = 78,75 s
     assert round(bewertung.todeszeit(9, 1200), 1) == 29.2 and round(bewertung.todeszeit(18, 3300), 2) == 78.75
     b.tod_kostet, b.objective = 45.0, ("baron", 30.0)
-    assert komponist.todespreis(b) == "ein Tod kostet jetzt 45 Sekunden, Baron in 30 Sekunden"
+    assert komponist.todespreis(b) == "ein Tod kostet 45 Sekunden, Baron in 30 Sekunden"
     # Kaufplan aus dem Lexikon-Build: Riven Kern Stiefel -> Axiombogen -> Endloser Hunger -> Tanz des Todes
     from lolcoach import kaufplan
     assert kaufplan.plan("Riven", (1055,), 1400).satz() == "reicht für den Brutalisierer"

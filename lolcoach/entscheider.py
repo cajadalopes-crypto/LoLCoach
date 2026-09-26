@@ -150,8 +150,8 @@ class Entscheider:
             gank = anders(self.jungle.start)
             if gank == meine and (j.seit is None or j.seit >= 15):
                 aus.append(Option("gank_erwartet",
-                                  f"{j.champion} hat {self.jungle.start} angefangen ({self.jungle.start_grund}): "
-                                  + ("ab Minute 2 kommt er zu dir" if b.zeit < 120 else "er kann jetzt jederzeit kommen")
+                                  f"{j.champion} hat {self.jungle.start} angefangen, {self.jungle.start_grund}: "
+                                  + ("ab Minute 2 kommt er zu dir" if b.zeit < 120 else "ab jetzt kann er kommen")
                                   + ". Welle nicht über die Mitte, Ward in den Fluss.",
                                   150, 3))
             elif gank != meine:

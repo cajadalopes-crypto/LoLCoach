@@ -72,7 +72,7 @@ def todespreis(b: Bewertung) -> str:
     Objective, das in dieser Zeit kommt. '' wenn es nicht zaehlt."""
     if b.tod_kostet < 30:
         return ""
-    satz = f"ein Tod kostet jetzt {sek(b.tod_kostet)}"
+    satz = f"ein Tod kostet {sek(b.tod_kostet)}"
     ob = b.objective
     if ob and ob[1] <= b.tod_kostet + 10:
         satz += f", {OBJ_NAME[ob[0]]} " + (lebt(ob[0]) if ob[1] <= 0 else f"in {sek(ob[1])}")
@@ -245,7 +245,7 @@ def anlauf(b: Bewertung, kommen: list[tuple[GegnerLage, str]]) -> str:
     if wert is not None and wert >= 1.5 and not andere and (b.leben or 1) >= 0.6:
         return satz + f" Nimm den Kampf, {b.vorsprung_satz()}."
     if wert is not None and wert >= 1.5 and andere:
-        return satz + f" Du bist stärker, aber {andere[0].champion} {_wann(andere[0])}: {_rueckzug(b)}."
+        return f"{erster.champion} kommt{wann}. Du bist stärker, aber {andere[0].champion} {_wann(andere[0])}: zurück."
     gruende = verwundbar(b)
     return satz + f" {_rueckzug(b)}" + (f", {gruende[0]}." if gruende else ".")
 
@@ -320,7 +320,9 @@ def recall(b: Bewertung, grund: str) -> str:
         kauf = b.kauf.satz() if b.kauf is not None and b.kauf.kaufen else ""
         satz = f"{b.gold // 100 * 100} Gold" + (f" {kauf}" if kauf else "") + ": nächste Welle in den Turm, dann back"
     if (andere := gefahr(b)) and grund != "welle":
-        return satz + f", aber {andere[0].champion} {_wann(andere[0])}."
+        kauf = b.kauf.satz() if b.kauf is not None and b.kauf.kaufen else ""
+        return (f"{b.gold // 100 * 100} Gold" + (f" {kauf}" if kauf else "")
+                + f", aber {andere[0].champion} {_wann(andere[0])}: zurück zum Turm und dort back.")
     ob = b.objective
     if ob and 45 <= ob[1] <= 150:
         return satz + f", {OBJ_NAME[ob[0]]} in {sek(ob[1])}."
@@ -365,10 +367,13 @@ def tief(b: Bewertung, namen: str, sind: str, sekunden: int, sie: str) -> str:
     weg = "noch nie gesehen" if sekunden >= b.zeit - 5 else f"seit {sek(sekunden)} weg"
     satz = f"Du stehst tief, {namen} {weg}."
     gruende = [x for x in verwundbar(b) if "weit vorn" not in x and "Turm" not in x]
-    if preis := todespreis(b):
+    preis = todespreis(b)
+    if preis:
         gruende.append(preis)
-    ziel = (f" Zurück, {sek(b.zum_turm)} bis zum Turm" if b.zum_turm and b.zum_turm >= 6
-            else f" Zurück, bis du {sie} siehst")
+    if b.zum_turm and (b.zum_turm >= 15 or (b.zum_turm >= 6 and not preis)):
+        ziel = f" Zurück, {sek(b.zum_turm)} zum Turm"
+    else:
+        ziel = f" Zurück, bis du {sie} siehst" if not preis else " Zurück"
     return satz + ziel + (f", {gruende[0]}." if gruende else ".")
 
 
@@ -465,12 +470,12 @@ def gegner_am_objective(namen: str, grube: str, name: str, kl) -> str:
     """Die Gegner machen ein Objective: hin (contesten) oder tauschen - aus der Kampflage."""
     wir, die, offen = kl.zahlen()
     art, _ = kl.urteil()
-    satz = f"{namen} an der {grube}, sie machen {name}"
-    zahl = f"{wir} gegen {die}" + (f" und {offen} unbekannt" if offen else "")
+    satz = f"{namen} machen {name}"
+    zahl = f"{wir} gegen {die}" + (f", {offen} unbekannt" if offen else "")
     if art == "nehmen":
-        return satz + f". Ihr seid in 15 Sekunden {zahl}: hin und streitig machen."
+        return satz + f". Ihr seid {zahl}: hin und streitig machen."
     if art == "abgeben":
-        return satz + f". Nur {zahl}: nicht reinlaufen, auf der anderen Seite tauschen."
+        return satz + f". Nur {zahl}: nicht reinlaufen, anderswo tauschen."
     return satz + f". {zahl}: nur mit allen und Ults hin, sonst tauschen."
 
 
