@@ -33,6 +33,7 @@ FLASH_WEITE = 400
 UNBEKANNT_AB = 45.0                   # so lange nicht gesehen: Ort unbekannt, rechne mit allem
 
 # (Team, Lane, Stufe) -> Spiel-Einheiten
+TIER = {"aussen": 1, "innen": 2, "Inhib": 3}   # Stufe eines Turms, wie Spieler sie nennen
 TUERME = {
     (BLAU, "Top", "aussen"): (981, 10441), (BLAU, "Top", "innen"): (1512, 6699), (BLAU, "Top", "Inhib"): (1169, 4287),
     (BLAU, "Mid", "aussen"): (5846, 6396), (BLAU, "Mid", "innen"): (5048, 4812), (BLAU, "Mid", "Inhib"): (3651, 3696),
@@ -191,6 +192,7 @@ class Bewertung:
     zweiter: tuple[str, float] | None = None    # (Zauber, Sekunden bis bereit)
     ult: bool | None = None
     zum_turm: float | None = None               # Sekunden bis zum naechsten eigenen Turm
+    turm_name: str = "deinem Turm"              # welcher: "deinem Top-Tier-1-Turm" (Dativ, fuer "zu ...", "an ...")
     unter_gegnerturm: bool = False
     unter_eigenem_turm: bool = False
     tiefe: float | None = None                  # auf der eigenen Lane: 0 deine Basis .. 1 seine
@@ -469,8 +471,11 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
             b.ort = minimap.ort(g[1], g[2], mein)
 
     if b.pos:
-        eigene = [v for (t, _, _), v in tuerme.items() if t == mein] + [BRUNNEN[mein]]
-        b.zum_turm = min(abstand(b.pos, v) for v in eigene) * WEGFAKTOR / b.mein_tempo
+        eigene = [(k, v) for k, v in tuerme.items() if k[0] == mein] + [(None, BRUNNEN[mein])]
+        naechster, wo = min(eigene, key=lambda kv: abstand(b.pos, kv[1]))
+        b.zum_turm = abstand(b.pos, wo) * WEGFAKTOR / b.mein_tempo
+        # Carlos, live 26.09.: "Was ist denn mein Tower? Er soll sagen Top, Mid, Bot - Tier 1, 2, 3."
+        b.turm_name = ("deinem " + f"{naechster[1]}-Tier-{TIER[naechster[2]]}-Turm") if naechster else "deiner Basis"
         b.unter_gegnerturm = any(abstand(b.pos, v) <= TURM_REICHWEITE for (t, _, _), v in tuerme.items() if t == feind)
         b.unter_eigenem_turm = any(abstand(b.pos, v) <= TURM_REICHWEITE for (t, _, _), v in tuerme.items() if t == mein)
         if (lane := LANE_DER_ROLLE.get(p.ich.rolle)) and lb is not None:

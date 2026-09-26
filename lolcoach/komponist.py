@@ -240,13 +240,14 @@ def _prio_satz(b: Bewertung, lanes: tuple[str, ...]) -> str:
 
 def _rueckzug(b: Bewertung) -> str:
     """Die Handlung als Satz: 'Geh zurück zu deinem Turm, das sind 14 Sekunden'."""
+    turm = b.turm_name      # "deinem Top-Tier-1-Turm" (Carlos: "Was ist denn mein Tower?")
     if b.leben is not None and b.leben < 0.2:
-        return "Geh hinter deinen Turm und dann back"   # mit 5 Prozent "bleib am Turm" hilft nichts (13:21)
+        return f"Geh hinter {turm} und dann back"   # mit 5 Prozent "bleib am Turm" hilft nichts (13:21)
     if b.unter_eigenem_turm:
-        return "Bleib an deinem Turm"
+        return f"Bleib an {turm}"
     if b.zum_turm is not None and b.zum_turm >= 6:
-        return f"Geh zurück zu deinem Turm, das sind {sek(b.zum_turm)}"
-    return "Geh zurück zu deinem Turm"
+        return f"Geh zurück zu {turm}, das sind {sek(b.zum_turm)}"
+    return f"Geh zurück zu {turm}"
 
 
 def _grund_und_rueckzug(b: Bewertung, gruende: list[str]) -> str:
@@ -509,7 +510,7 @@ def recall(b: Bewertung, grund: str) -> str:
                ". Schieb die nächste Welle in den Turm und geh dann back"
     if (andere := gefahr(b)) and grund != "welle":
         return (f"Du hast {gold} Gold" + (f", das {kauf}" if kauf else "") + f". Aber {andere[0].champion} "
-                f"{_wann(andere[0])}, also geh erst zurück zu deinem Turm und recall dort.")
+                f"{_wann(andere[0])}, also geh erst zurück zu {b.turm_name} und recall dort.")
     ob = b.objective
     if ob and 45 <= ob[1] <= 150:
         return satz + f". {_gross(OBJ_NOM[ob[0]])} {kommt(ob[0])} in {sek(ob[1])}, bis dahin bist du zurück."
@@ -581,7 +582,7 @@ def tief(b: Bewertung, namen: str, sind: str, sekunden: int, sie: str, fehlende:
     if preis:
         return satz + f" Geh zurück - {preis}."
     if b.zum_turm and b.zum_turm >= 6:
-        ziel = f" Geh zurück, bis zu deinem Turm sind es {sek(b.zum_turm)}"
+        ziel = f" Geh zurück, bis zu {b.turm_name} sind es {sek(b.zum_turm)}"
     else:
         ziel = f" Geh zurück, bis du {sie} siehst"
     return satz + ziel + (f" - {gruende[0]}." if gruende else ".")
@@ -646,7 +647,7 @@ def zahlen_nachteil(b: Bewertung, tote: list[str], sekunden: int) -> str:
     zu = {1: "allein", 2: "nur zu zweit", 3: "nur zu dritt", 4: "zu viert"}.get(n, f"zu {n}")
     satz = f"{_namen(tote)} {'ist' if len(tote) == 1 else 'sind'} für {sekunden} Sekunden tot, ihr seid {zu}"
     if b.unter_eigenem_turm:
-        return satz + ". Bleib an deinem Turm und nimm keinen Kampf an."
+        return satz + f". Bleib an {b.turm_name} und nimm keinen Kampf an."
     return satz + f". Nimm keinen Kampf an und gib das Objective lieber ab. {_rueckzug(b)}."
 
 
