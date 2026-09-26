@@ -91,7 +91,9 @@ def anfaenge(p) -> list[str]:
     if not p.ich:
         return []
     feind = gegenteam(p.mein_team)
-    aus = ["Geh rein,", "das ist ein Kill:", "Noch nicht rein,", "Trade hart,", "Du stehst tief,", "Recall-Fenster:"]
+    aus = ["Geh rein,", "das ist ein Kill:", "Noch nicht rein,", "Trade hart,", "Du stehst tief,", "Recall-Fenster:",
+           "Nimm keinen Kampf an,", "Drückt jetzt die Türme,", "Kein Gank möglich,"]
+    aus += [f"Nehmt jetzt {a}," for a in OBJ_AKK.values()] + [f"Ping {a} für dein Team," for a in OBJ_AKK.values()]
     if (j := p.jungler(feind)) is not None:
         aus += [f"{j.champion} ist {o}," for o in ORTE]
     lane = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}.get(p.ich.rolle)
@@ -659,38 +661,41 @@ def vorwarnung(b: Bewertung, schl: str, rolle: str, seele: bool, meine_seite: bo
 def jungler_tot(b: Bewertung, sekunden: int, objective: str | None, nah: bool, platten: bool) -> str:
     """Der gegnerische Jungler ist tot. `objective`: Schluessel eines machbaren Objectives (oder None),
     `nah`: es liegt auf deiner Seite."""
+    # die Handlung zuerst - und ein Anfang, der sich wiederholt ("Nehmt jetzt den Drachen,"): er liegt vorgewaermt
+    # bereit und klingt sofort (stimme.teilsaetze, anfaenge)
     j = b.jungler.champion if b.jungler else "Der Jungler"
     satz = f"{j} ist für {sekunden} Sekunden tot"
     if objective:
         if nah:
             weg = f" - du bist {sek(b.zum_objective)} entfernt" if b.zum_objective and b.zum_objective >= 8 else ""
-            return f"{satz}: nehmt jetzt {OBJ_AKK[objective]}, niemand kann kontern{weg}."
+            return f"Nehmt jetzt {OBJ_AKK[objective]}, niemand kann kontern: {satz}{weg}."
         tun = chance(b, platten)
-        return f"{satz}: ping {OBJ_AKK[objective]} für dein Team." + (f" {tun}." if tun else "")
+        return f"Ping {OBJ_AKK[objective]} für dein Team, {satz}." + (f" {tun}." if tun else "")
     tun = chance(b, platten)
-    return f"{satz}, es kann also kein Gank kommen." + (f" {tun}." if tun else " Spiel nach vorn.")
+    return f"Kein Gank möglich, {satz}." + (f" {tun}." if tun else " Spiel nach vorn.")
 
 
 def zahlen(b: Bewertung, tote: list[str], sekunden: int, objective: str | None, wir: int, die: int) -> str:
     """Zwei oder mehr Gegner tot: was jetzt - mit Namen, Zahl und ob DU es rechtzeitig schaffst."""
-    satz = f"{_namen(tote)} {'ist' if len(tote) == 1 else 'sind'} für {sekunden} Sekunden tot, ihr seid {wir} gegen {die}"
+    tot = f"{_namen(tote)} {'ist' if len(tote) == 1 else 'sind'} für {sekunden} Sekunden tot"
     if objective:
         if b.zum_objective is not None and b.zum_objective > sekunden:
-            return f"{satz}. Dein Team nimmt {OBJ_AKK[objective]} - du schaffst es nicht rechtzeitig hin, also drück deine Lane."
-        return f"{satz}: nehmt jetzt {OBJ_AKK[objective]}."
-    return f"{satz}: drückt jetzt die Türme, solange sie fehlen."
+            return (f"Drück deine Lane, dein Team nimmt {OBJ_AKK[objective]}: {tot}, ihr seid {wir} gegen {die}, "
+                    f"und du schaffst es nicht rechtzeitig hin.")
+        return f"Nehmt jetzt {OBJ_AKK[objective]}, ihr seid {wir} gegen {die}: {tot}."
+    return f"Drückt jetzt die Türme, ihr seid {wir} gegen {die}: {tot}."
 
 
 def zahlen_nachteil(b: Bewertung, tote: list[str], sekunden: int) -> str:
     n = 5 - len(tote)
     zu = {1: "allein", 2: "nur zu zweit", 3: "nur zu dritt", 4: "zu viert"}.get(n, f"zu {n}")
-    satz = f"{_namen(tote)} {'ist' if len(tote) == 1 else 'sind'} für {sekunden} Sekunden tot, ihr seid {zu}"
+    tot = f"{_namen(tote)} {'ist' if len(tote) == 1 else 'sind'} für {sekunden} Sekunden tot"
     if b.unter_eigenem_turm:
-        return satz + f". Bleib an {b.turm_name} und nimm keinen Kampf an."
+        return f"Bleib an {b.turm_name}, ihr seid {zu}: {tot} - nimm keinen Kampf an."
     ob = b.objective
     if ob and ob[1] <= sekunden:      # es lebt oder kommt, bevor sie wieder da sind: welches, konkret
-        return satz + f". Nimm keinen Kampf an und gib {OBJ_AKK[ob[0]]} lieber ab. {_rueckzug(b)}."
-    return satz + f". Nimm keinen Kampf an, bis sie wieder da sind - {_rueckzug(b)[:1].lower() + _rueckzug(b)[1:]}."
+        return f"Nimm keinen Kampf an, ihr seid {zu}: {tot}. Gib {OBJ_AKK[ob[0]]} lieber ab. {_rueckzug(b)}."
+    return f"Nimm keinen Kampf an, ihr seid {zu}: {tot}. {_rueckzug(b)}."
 
 
 def obj_dazu(b: Bewertung, nah: bool, tp_moeglich: bool, kl=None) -> str:
