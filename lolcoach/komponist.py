@@ -297,9 +297,18 @@ def jungler_gesehen(b: Bewertung, j: GegnerLage, art: str, platten: bool) -> str
 
 
 def lane_fehlt(b: Bewertung, g: GegnerLage, sekunden: int, platten: bool, richtung: str | None) -> str:
+    """Der Lane-Gegner ist verschwunden: wohin er kann (Reasoning #12/#13: "Wo kann er sein, welche Wege,
+    wie schnell?") - bis Mid, wenn er Richtung Fluss lief - und was du mit der Zeit machst."""
     n = g.champion
     satz = f"{n} ist seit {sekunden} Sekunden aus deiner Lane verschwunden" + (
         f", zuletzt {richtung}" if richtung else "")
+    if g.pos is not None and b.ich.rolle in ("TOP", "BOTTOM", "UTILITY") and richtung and "Fluss" in richtung:
+        from .bewertung import abstand, einheiten
+        bis_mid = abstand(g.pos, einheiten(0.5, 0.5)) * 1.15 / g.tempo - sekunden
+        if bis_mid >= 3:
+            satz += f" - bis Mid braucht {n} von dort noch etwa {sek(bis_mid)}"
+        else:
+            satz += f" - {n} kann schon Mid sein"
     if j := jungler_offen(b):
         return (satz + f", und {j.champion} ist auch nicht zu sehen. Bleib hinter deiner Welle und ping deinem "
                        f"Team, dass {n} fehlt.")

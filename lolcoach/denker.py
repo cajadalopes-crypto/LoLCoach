@@ -37,9 +37,11 @@ TRADE_AB = 2.0         # harte Trades, All-in erst bei weniger Leben
 WEG_UNTER = -2.5       # er ist klar staerker: nicht traden
 TRAENKE = (2003, 2031, 2033)   # Heiltrank, Nachfuellbarer, Verderbender - verkaufbar fuer den naechsten Kauf
 KAUF_LOHNT_AB = 850    # so viel muss ein Einkauf wert sein, damit sich ein Recall dafuer lohnt (Langschwert: nein)
-KRAFT = ("level", "ult", "items")
-ZUSTAND = ("leben", "flash", "flash_ich", "zuenden", "welle")
-UMFELD = ("jungler", "jungler_nah", "jungler_weg", "dritter", "hilfe")
+KRAFT = ("level", "ult", "items", "matchup")
+ZUSTAND = ("leben", "flash", "flash_ich", "zuenden", "welle", "gold_offen")
+UMFELD = ("jungler", "jungler_nah", "jungler_weg", "dritter", "hilfe", "zone")
+ZONE_NAME = {"Heimerdinger": "Geschütze", "Zyra": "Pflanzen", "Azir": "Soldaten", "Illaoi": "Tentakel",
+             "Yorick": "Ghule", "Teemo": "Pilze", "Shaco": "Boxen"}
 
 
 @dataclass
@@ -135,6 +137,12 @@ def kampf_faktoren(b: Bewertung) -> list[Faktor]:
         f.append(Faktor(-0.8, "flash_ich", "dein Flash", "ist", "weg"))
     if b.zweiter and b.zweiter[0] == "SummonerDot" and b.zweiter[1] <= 0:
         f.append(Faktor(0.8, "zuenden", "dein Zünden", "ist", "bereit"))
+    # sein Item-Timing: traegt er viel Gold, ist er nach dem naechsten Back staerker - jetzt ist besser als gleich
+    from .bewertung import gold_offen
+    offen = gold_offen(er, b.zeit)
+    if offen >= 900 and b.zeit >= 240:
+        f.append(Faktor(0.3, "gold_offen", n, "trägt", f"geschätzt {offen // 100 * 100} Gold mit sich, nach seinem "
+                                                        f"Back ist {n} stärker"))
     if b.welle:
         wir, die = b.welle[0], b.welle[1]
         if wir - die >= 3:
@@ -165,7 +173,41 @@ def kampf_faktoren(b: Bewertung) -> list[Faktor]:
                         if " " in wann else ""))
     for s in b.mitspieler_nah:
         f.append(Faktor(1.0, "hilfe", s.champion, "ist", "bei dir"))
+    f += _matchup(b, g)
     return f
+
+
+def _matchup(b: Bewertung, g: GegnerLage) -> list[Faktor]:
+    """Reasoning #1/#23 (Matchup-Dynamik): wer ist in DIESER Phase der staerkere Champion - aus der Lane-Kurve
+    (wissen/lane_kurve.toml: Level 1-5, beide mit Ult, spaet). Dazu die Zone: gegen Heimerdinger, Zyra, Azir ...
+    ist ein Kampf auf ihrer Haelfte schlechter, als Level und Items sagen (Live 26.09.: 1:45 "Kill" an Riven L2
+    gegen Heimerdinger L1 - Heimerdinger ist Level 1-3 mit Geschuetzen der Lane-Bully)."""
+    from . import wissen
+    try:
+        daten = wissen.lade("lane_kurve")
+    except Exception:
+        return []
+    kurve = daten.get("kurve", {})
+    ich, er = kurve.get(b.ich.champion_id), kurve.get(g.s.champion_id)
+    aus: list[Faktor] = []
+    if ich and er:
+        hoch, tief = max(b.ich.level, g.s.level), min(b.ich.level, g.s.level)
+        if hoch <= 5:
+            d, w_je, wann = ich[0] - er[0], 0.5, "bis Level 5"
+        elif tief >= 6 and hoch <= 10:
+            d, w_je, wann = ich[1] - er[1], 0.4, "mit beiden Ults"
+        elif hoch >= 11:
+            d, w_je, wann = ich[2] - er[2], 0.3, "ab jetzt"
+        else:
+            d, w_je, wann = 0, 0.0, ""          # einer hat die Ult, der andere nicht - das sagt der Ult-Faktor
+        if d > 0:
+            aus.append(Faktor(w_je * d, "matchup", "dein Champion", "ist", f"{wann} der stärkere gegen {g.champion}"))
+        elif d < 0:
+            aus.append(Faktor(w_je * d, "matchup", g.champion, "ist", f"{wann} der stärkere Champion"))
+    if g.s.champion_id in daten.get("zone", []) and b.zeit < 840 and (b.tiefe or 0) >= 0.5:
+        aus.append(Faktor(-1.2, "zone", "du", "kämpfst", f"in seiner Zone, dort stehen seine "
+                                                        f"{ZONE_NAME.get(g.s.champion_id, 'Fallen')}"))
+    return aus
 
 
 def urteil(b: Bewertung) -> Urteil | None:
@@ -303,12 +345,17 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
         saetze.append(_gross(umfeld[0].satz) + ".")
     if fuer_dich:
         # was dagegen spricht, gehoert dazu - der Turm immer, sonst nur, was wirklich zaehlt
-        aber = [x for x in gegen if x.art in ("turm", "kopfgeld")] or [x for x in gegen if abs(x.wert) >= 1.5]
+        aber = ([x for x in gegen if x.art in ("turm", "kopfgeld", "zone")]
+                or [x for x in gegen if abs(x.wert) >= 1.5 or x.art == "matchup"])
         if u.art == "kill_schnell":
             aber = [x for x in gegen if x.art == "jungler_weg"]
         if aber:
             saetze.append(f"Aber {aber[0].satz}.")
+            if u.art == "kill":
+                handlung_trotzdem = True
     handlung = HANDLUNG[u.art].format(n=n, j=j)
+    if locals().get("handlung_trotzdem"):
+        handlung = "Geh trotzdem rein - das ist ein Kill."
     if u.art == "halten" and "jungler_nah" in u.arten_alle:
         handlung = f"Deshalb kein All-in, solange {j} da ist - nur kurze Trades."
     elif u.art == "halten" and (dritte := [x for x in u.faktoren if x.art == "dritter"]):

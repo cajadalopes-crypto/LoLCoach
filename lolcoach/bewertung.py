@@ -95,6 +95,26 @@ def kopfgeld(s: Spieler) -> int:
     return int(max(0, min(700, roh - 100)))
 
 
+def gold_offen(s: Spieler, zeit: float) -> int:
+    """Ungenutztes Gold eines Gegners, geschaetzt (Reasoning #4/#8: "Goldschaetzung", "gegnerisches Item-Timing"):
+    500 Start + 20,4 je 10 s ab 1:05 + ~19,5 je Vasall + 300 je Kill + 150 je Assist - Items - ~150 Verbrauch.
+    Die API liefert fremdes Gold nicht, den CS nur in Zehnerschritten: +-300 Gold."""
+    verdient = 500 + max(0.0, zeit - 65) / 10 * 20.4 + s.cs * 19.5 + s.kills * 300 + s.assists * 150
+    return int(max(0, verdient - s.item_gold - 150))
+
+
+def carry(p: Partie, team: str) -> Spieler | None:
+    """Der Carry eines Teams (Reasoning #25 "Wer ist Carry?"): wer am meisten Kills und Items hat - nur, wenn er
+    deutlich vorn ist (mindestens 4 Kills oder 30 % ueber dem Item-Schnitt seines Teams)."""
+    lebend = [s for s in p.team(team)]
+    if not lebend:
+        return None
+    wert = {s.name: s.kills * 300 + s.assists * 100 + s.item_gold for s in lebend}
+    s = max(lebend, key=lambda x: wert[x.name])
+    schnitt = sum(x.item_gold for x in lebend) / len(lebend)
+    return s if s.kills >= 4 or s.item_gold >= 1.3 * schnitt + 500 else None
+
+
 def kill_gold(opfer: Spieler, erstes_blut: bool = False) -> int:
     """Gold fuer einen Kill an `opfer` nach seinem Level (Wiki Champion_gold_bounties) + erstes Blut + Kopfgeld."""
     from . import wissen
@@ -589,6 +609,7 @@ class Kampflage:
     ohne_flash: list[str]
     ohne_ult: list[str]
     gold: int                  # Item-Gold ihr minus die (alle)
+    carry: str = ""            # ihr Carry (Reasoning #25): den zuerst
 
     def zahlen(self) -> tuple[int, int, int]:
         """(ihr in KAMPF_FENSTER, die sicher in KAMPF_FENSTER, die unbekannt)."""
@@ -614,6 +635,8 @@ class Kampflage:
         if abs(self.gold) >= 1500:
             gruende.append(f"{'ihr' if self.gold > 0 else 'sie'} {abs(self.gold) // 100 * 100} Gold vorn")
         name = OBJ_NAME.get(self.schl, self.schl)
+        if self.carry:
+            gruende.append(f"ihr Carry ist {self.carry}")
         vorteil = wir - (die + offen * 0.5) + (0.5 if self.gold >= 1500 else -0.5 if self.gold <= -1500 else 0) \
             + 0.3 * len(self.ohne_flash) + 0.4 * len(self.ohne_ult)
         if vorteil >= 1:
@@ -658,4 +681,6 @@ def kampf_um(p: Partie, lb, schl: str) -> Kampflage | None:
             if (r := lb.zauber.fehlt(s, "R", p.zeit)) and r > 20:
                 ohne_ult.append(s.champion)
     gold = p.item_gold(p.mein_team) - p.item_gold(gegenteam(p.mein_team))
-    return Kampflage(schl, wir, die, ohne_flash, ohne_ult, gold)
+    c = carry(p, gegenteam(p.mein_team))
+    return Kampflage(schl, wir, die, ohne_flash, ohne_ult, gold,
+                     carry=f"{c.champion} mit {c.kills} Kills" if c is not None and not c.tot else "")
