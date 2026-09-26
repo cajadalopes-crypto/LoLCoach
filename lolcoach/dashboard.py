@@ -56,6 +56,7 @@ def zustand_json(p: Partie, lagebild=None, ansagen=()) -> dict:
         objectives.append({"name": name, "rest": round(n - p.zeit)})
     g = p.gegenueber()
     return {
+        "jetzt": _jetzt(p, lagebild),
         "zeit": uhr(p.zeit), "sekunden": round(p.zeit),
         "ich": p.ich.champion if p.ich else None,
         "bild": bool(lagebild is not None and lagebild.aktiv),
@@ -71,6 +72,34 @@ def zustand_json(p: Partie, lagebild=None, ansagen=()) -> dict:
         "wellen": {l: z.worte(wir) for l in ("Top", "Mid", "Bot")
                    if lagebild is not None and hasattr(lagebild, "welle") and (z := lagebild.welle(l, p.zeit))} if wir else {},
         "ansagen": [{"zeit": uhr(a.gesprochen or a.zeit), "text": a.text, "prio": a.prio} for a in list(ansagen)[-7:]][::-1],
+    }
+
+
+def _jetzt(p: Partie, lagebild) -> dict | None:
+    """Der Kasten "Jetzt": Plan des Entscheiders, wer wie schnell bei dir sein kann, Fenster, Platten,
+    Kauf, Todespreis - dieselben Zahlen, aus denen die Ansagen gebaut werden."""
+    if lagebild is None or not getattr(lagebild, "aktiv", False) or not p.ich or p.ich.tot:
+        return None
+    try:
+        from . import bewertung
+        b = bewertung.bewerte(p, lagebild)
+    except Exception:
+        return None
+    if b is None:
+        return None
+    e = getattr(lagebild, "entscheider", None)
+    gefahr = [{"champion": g.champion, "id": g.s.champion_id, "sek": round(g.ankunft), "sichtbar": g.sichtbar}
+              for g in sorted((g for g in b.gegner if not g.s.tot and g.ankunft is not None and not g.unbekannt
+                               and b.plausibel(g)), key=lambda g: g.ankunft)[:4]]
+    return {
+        "plan": e.aktuell.satz if e is not None and e.aktuell is not None else None,
+        "gefahr": gefahr,
+        "unbekannt": [g.champion for g in b.unbekannte() if not g.s.tot],
+        "fenster": [f"{t} ({int(s)} s)" for s, t in b.fenster()],
+        "platten": b.platten_gegner,
+        "kauf": b.kauf.satz() if b.kauf is not None else "",
+        "tod": round(b.tod_kostet) if b.tod_kostet else None,
+        "kraefte": b.vorsprung_satz(),
     }
 
 

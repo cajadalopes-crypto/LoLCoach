@@ -57,6 +57,8 @@
       <span>Items <b class="zahl" id="itemgold">±0</b></span>
       <span>Gold <b class="zahl" id="gold">–</b></span>
     </div>
+    <div class="kasten" id="jetztkasten" hidden style="border-color: var(--gut)"><h2>Jetzt</h2>
+      <div id="jetztplan" style="font-size:1.15em;margin-bottom:6px"></div><div id="jetztzahlen" class="klein"></div></div>
     <div class="kasten" id="plankasten" hidden><h2>Dein Lane-Plan</h2><div id="laneplan" class="plan"></div></div>
     <div class="kasten" id="fokuskasten" hidden style="border-color: var(--warn)"><h2>Dein Fokus heute</h2><div id="fokus"></div></div>
     <div class="kasten"><h2>Objectives</h2><div class="obj" id="obj"></div><div class="klein" id="drachen"></div></div>
@@ -163,6 +165,21 @@ function zeige(z) {
   const w = Object.entries(z.wellen || {});
   $('wellenkasten').hidden = !w.length;
   $('wellen').innerHTML = w.map(([l, t]) => `<div><b style="color:var(--text)">${l}:</b> ${t}</div>`).join('');
+  const j = z.jetzt;                                 // gerechnet: Plan, Gefahr mit Ankunftszeit, Fenster, Kauf
+  $('jetztkasten').hidden = !j;
+  if (j) {
+    $('jetztplan').textContent = j.plan || 'Kein besonderer Plan - farmen, Karte lesen.';
+    const teile = [];
+    if (j.gefahr.length) teile.push('Kann bei dir sein: ' + j.gefahr.map(g =>
+      `<b style="color:${g.sek < 8 ? 'var(--feind)' : 'var(--text)'}">${g.champion} ${g.sek < 2 ? 'jetzt' : g.sek + ' s'}</b>`).join(', '));
+    if (j.unbekannt.length) teile.push('Unbekannt: ' + j.unbekannt.join(', '));
+    if (j.fenster.length) teile.push('Fenster: ' + j.fenster.join(', '));
+    if (j.kraefte) teile.push('Lane: ' + j.kraefte);
+    if (j.platten != null) teile.push('Platten: ' + j.platten);
+    if (j.kauf) teile.push('Gold: ' + j.kauf);
+    if (j.tod) teile.push('Tod jetzt: ' + j.tod + ' s');
+    $('jetztzahlen').innerHTML = teile.map(x => `<div>${x}</div>`).join('');
+  }
   const plan = z.laneplan || [];                     // aus der Spielakte: so spielst du die Lane
   $('plankasten').hidden = !plan.length;
   $('laneplan').innerHTML = plan.map(l => { const [k, ...r] = l.split(':');

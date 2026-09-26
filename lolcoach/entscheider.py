@@ -229,8 +229,11 @@ class Entscheider:
         if not lane_phase and rolle in ("TOP", "MIDDLE", "BOTTOM"):
             if ob and 5 <= ob[1] <= 60:
                 weg = f", {sek(b.zum_objective)} Weg" if b.zum_objective else ""
-                aus.append(Option("gruppe", f"{OBJ_NAME[ob[0]]} in {sek(ob[1])}: Welle crashen und zum Team{weg}.",
-                                  100, 2))
+                # wer beim Spawn noch tot ist, kann nicht streiten
+                fehlen = [s.champion for s in b.tote_gegner if s.respawn > ob[1] + 5]
+                dazu = f", {', '.join(fehlen[:3])} beim Spawn noch tot" if fehlen else ""
+                aus.append(Option("gruppe", f"{OBJ_NAME[ob[0]]} in {sek(ob[1])}{dazu}: Welle crashen und zum Team{weg}.",
+                                  100 + 20 * len(fehlen), 2 + bool(fehlen)))
             elif not gefahr and not (ob and ob[1] <= 75):
                 tp = b.zweiter is not None and b.zweiter[0] == "SummonerTeleport" and b.zweiter[1] <= 0
                 tp_satz = ", Teleport bereit für den Kampf" if tp else ""

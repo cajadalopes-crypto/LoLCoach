@@ -437,9 +437,15 @@ def naechstes_objective(p: Partie, bis: float = 150) -> tuple[str, float] | None
             return min(kommt, key=lambda k: k[1])
         if meine:
             return min(meine, key=lambda k: k[1])
-    kommt = [k for k in kandidaten if k[1] > 0]
+    # zuerst, was in den naechsten 90 s kommt (Camille-Partie 14:21: ein seit 9 Minuten lebender Drache
+    # verdeckte den Herold in 39 s), dann was lebt, dann das Naechste ueberhaupt
+    bald = [k for k in kandidaten if 0 < k[1] <= 90]
+    if bald:
+        return min(bald, key=lambda k: k[1])
     lebt = [k for k in kandidaten if k[1] <= 0]
-    return min(kommt, key=lambda k: k[1]) if kommt and not lebt else min(kandidaten, key=lambda k: k[1])
+    if lebt:
+        return max(lebt, key=lambda k: k[1])      # das zuletzt gespawnte
+    return min(kandidaten, key=lambda k: k[1])
 
 
 def _gegner_lage(s: Spieler, p: Partie, lb, ich_pos) -> GegnerLage:
