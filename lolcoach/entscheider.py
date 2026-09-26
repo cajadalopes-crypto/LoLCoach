@@ -179,7 +179,7 @@ class Entscheider:
             andere = {l: n for l, n in self.jungle.ganks.items() if l != mlane}
             vergleich = f", woanders {sum(andere.values())}x" if andere else ", nirgends sonst"
             aus.append(Option("muster", f"{j.champion} war schon an {n_ganks} Toden auf deiner Lane beteiligt{vergleich}: "
-                                        f"er spielt auf dich. Welle bei dir halten, tief nur mit Sicht.", 120, 3))
+                                        f"{j.champion} spielt auf dich. Welle bei dir halten, tief nur mit Sicht.", 120, 3))
 
         # 3) Druck: Lane-Gegner sichtbar, du staerker, Jungler tot oder sicher weit weg, Leben gut.
         #    (Camille-Partie 26.09., 4:42/4:50: "Gragas 19 s zu dir, zurueck" und 8 s spaeter "Spiel auf Rumble")
