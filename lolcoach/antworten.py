@@ -37,7 +37,8 @@ def _dauer(sek: float) -> str:
     if s < 90:
         return f"{s} Sekunden"
     m, r = divmod(s, 60)
-    return f"{m} Minuten" if r < 10 else f"{m} Minuten {r}"
+    minuten = "1 Minute" if m == 1 else f"{m} Minuten"      # "vor 1 Minuten 30" (Probe 26.09. nachts)
+    return minuten if r < 10 else f"{minuten} {r}"
 
 
 def _woerter(text: str) -> list[str]:
@@ -175,6 +176,70 @@ def _kampf(w: list[str], roh: str, p: Partie, lagebild) -> str | None:
     return denker.fenster_satz(b, u) if u is not None else None
 
 
+BACK_WORTE = {"back", "backen", "backe", "recall", "recallen", "recalle", "basis", "base", "heim"}
+FRAGE_ENTSCHEIDUNG = {"soll", "sollte", "kann", "können", "koennen", "lohnt", "machen", "nehmen", "gehen", "sollen"}
+
+
+def _back(w: list[str], roh: str, p: Partie, lagebild) -> str | None:
+    """'Soll ich backen?' aus Leben, Gold (Kaufplan), Welle, Gefahr und Objective - sofort statt ~3 s Claude."""
+    menge = set(w)
+    if not menge & BACK_WORTE or not (menge & FRAGE_ENTSCHEIDUNG or "?" in roh) or menge & {"warum", "wieso"}:
+        return None
+    if lagebild is None or not getattr(lagebild, "aktiv", False):
+        return None
+    from . import bewertung, komponist
+    b = bewertung.bewerte(p, lagebild)
+    if b is None or p.ich.tot:
+        return None
+    kauf = b.kauf.satz() if b.kauf is not None else ""
+    if kauf.startswith("noch "):          # "noch 700 bis ..." -> "dir fehlen 700 bis ..."
+        gold = f"{b.gold // 100 * 100} Gold - dir fehlen {kauf.removeprefix('noch ')}"
+    else:
+        gold = f"{b.gold // 100 * 100} Gold" + (f", das {kauf}" if kauf else "")
+    gefahr = komponist.gefahr(b)
+    welle = b.welle
+    schiebt = welle is not None and welle[0] >= welle[1] + 2
+    ob = b.objective
+    ob_satz = ""
+    if ob and 0 < ob[1] <= 90:
+        ob_satz = f" {komponist._gross(komponist.OBJ_NOM[ob[0]])} {komponist.kommt(ob[0])} in {komponist.sek(ob[1])}" \
+                  + (" - bis dahin bist du zurück." if ob[1] >= 45 else " - bleib lieber dafür da.")
+    if b.leben is not None and b.leben < 0.35:
+        return f"Ja, geh jetzt back: du hast nur {int(b.leben * 100)} Prozent Leben und {gold}." + ob_satz
+    if b.kauf is not None and b.kauf.kaufen and b.gold >= komponist.RECALL_GOLD:
+        if gefahr:
+            return (f"Ja, aber erst zu {b.turm_name}: {gefahr[0].champion} {komponist._wann(gefahr[0])}. "
+                    f"Dort recall - du hast {gold}.")
+        if schiebt:
+            return f"Ja, jetzt: deine Welle läuft in seinen Turm, du verlierst nichts. Du hast {gold}." + ob_satz
+        return f"Ja, aber schieb erst die Welle rein - du hast {gold}." + ob_satz
+    leben = f", und du hast {int(b.leben * 100)} Prozent Leben" if b.leben is not None else ""
+    return f"Noch nicht: du hast {gold}{leben}. Bleib und farm." + ob_satz
+
+
+def _objective(w: list[str], roh: str, p: Partie, lagebild) -> str | None:
+    """'Sollen wir Drache machen?' - die Kampflage an der Grube (wer ist in 15 s dort, beide Seiten, Flash, Ults,
+    Gold) und dein Weg dorthin, sofort."""
+    menge = set(w)
+    objs = [OBJEKTIVE[x] for x in w if x in OBJEKTIVE]
+    if not objs or not (menge & FRAGE_ENTSCHEIDUNG) or menge & {"warum", "wieso", "wann"}:
+        return None
+    if lagebild is None or not getattr(lagebild, "aktiv", False):
+        return None
+    from . import bewertung, komponist
+    schl = objs[0]
+    n = p.naechster_spawn(schl)
+    if n is not None and n - p.zeit > 60:
+        return f"{komponist._gross(komponist.OBJ_NOM[schl])} {komponist.kommt(schl)} erst in {komponist.sek(n - p.zeit)}."
+    kl = bewertung.kampf_um(p, lagebild, schl)
+    if kl is None:
+        return None
+    _, satz = kl.urteil()
+    mein = next((t for s, t, *_ in kl.wir if s is p.ich), None)
+    weg = f" Du brauchst {komponist.sek(mein)} dorthin." if mein is not None and mein >= 5 else ""
+    return satz + weg
+
+
 def sofort(frage: str, p: Partie, lagebild=None) -> str | None:
     """Antwort aus dem Zustand, oder None, wenn das Claude beantworten soll."""
     w = _woerter(frage)
@@ -193,8 +258,10 @@ def sofort(frage: str, p: Partie, lagebild=None) -> str | None:
     roh = frage.strip().lower()
     aussage = roh.startswith(("ich bin", "ich habe", "ich hab ", "ich war", "nein", "doch", "du weißt", "du weisst",
                               "ja,", "ja ", "ich bringe", "ich hatte")) or len(w) > 12
-    if not aussage and (antwort := _kampf(w, roh, p, lagebild)):
-        return antwort
+    if not aussage:
+        for weg in (_kampf, _back, _objective):
+            if antwort := weg(w, roh, p, lagebild):
+                return antwort
     if menge & ENTSCHEIDUNG:
         return None  # "soll ich ...", "lieber ...", "warum ...": das ist eine Abwaegung, keine Nachschau
     if aussage:

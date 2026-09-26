@@ -449,6 +449,10 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
     gegen = sorted((x for x in fs if (x.wert > 0) != fuer_dich), key=lambda x: -abs(x.wert))
     if any(x.art in ("zuenden_kill", "combo_kill", "combo_knapp") for x in haupt):
         haupt = [x for x in haupt if x.art != "leben"]      # "...hat noch 540 Leben" sagt es schon
+    if u.art == "halten" and {"jungler_nah", "dritter"} & u.arten_alle:
+        # die Handlung nennt ihn schon: "kein All-in, solange Tryndamere in der Naehe ist: Tryndamere ist ganz in der
+        # Naehe" (Probe 26.09. nachts)
+        haupt = [x for x in haupt if x.art not in ("jungler_nah", "dritter")]
     gruende = haupt[:2]      # zwei, nicht drei: Nachlauf 21:21 - Fenster-Saetze im Schnitt 190 Zeichen, 19 % der Sprechzeit
     aber = []
     if fuer_dich and u.art != "kill_schnell":

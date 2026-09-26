@@ -559,6 +559,37 @@ def satz_bricht_ab_wenn_er_nicht_mehr_stimmt():
         stimme._Sapi = alt
 
 
+def sofort_back_und_objective():
+    """'Soll ich backen?' und 'Sollen wir Drache machen?' kommen sofort aus dem Zustand (vorher ~3 s ueber Claude):
+    wenig Leben -> ja; Gold fuer ein Bauteil und Gefahr -> erst zum Turm; zu wenig Gold -> noch nicht; der Drache
+    aus der Kampflage an der Grube; erst in 2 Minuten -> das sagt die Antwort."""
+    from types import SimpleNamespace
+    from lolcoach import antworten, bewertung, kaufplan
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.zeit > 400)
+    lb = SimpleNamespace(aktiv=True)
+    b = bewertung.Bewertung(zeit=p.zeit, ich=p.ich, leben=0.2, gold=1500, partie=p)
+    b.kauf = kaufplan.Kauf("Schwarzes Beil", ["Caulfields Kriegshammer"], 1100, None)
+    alt, bewertung.bewerte = bewertung.bewerte, lambda *a, **k: b
+    alt_k = bewertung.kampf_um
+    try:
+        assert antworten.sofort("Soll ich backen?", p, lb).startswith("Ja, geh jetzt back: du hast nur 20 Prozent Leben")
+        b.leben = 0.9
+        b.welle = (5, 1, 0.7, "ihr")
+        assert antworten.sofort("Soll ich recallen?", p, lb).startswith("Ja, jetzt: deine Welle läuft in seinen Turm")
+        b.gold, b.kauf = 400, kaufplan.Kauf("Schwarzes Beil", [], 1100, ("Caulfields Kriegshammer", 700))
+        assert antworten.sofort("Kann ich back?", p, lb).startswith("Noch nicht: du hast 400 Gold - dir fehlen 700")
+        assert antworten.sofort("Warum soll ich backen?", p, lb) is None               # Begruendung: Claude
+        bewertung.kampf_um = lambda *a: SimpleNamespace(urteil=lambda: ("nehmen", "Drache: ihr 4, sie 1 - nehmen."),
+                                                        wir=[(p.ich, 12.0, 0.9, True)])
+        p.naechster_spawn = lambda schl: p.zeit + 10
+        assert antworten.sofort("Sollen wir Drache machen?", p, lb) == \
+            "Drache: ihr 4, sie 1 - nehmen. Du brauchst 12 Sekunden dorthin."
+        p.naechster_spawn = lambda schl: p.zeit + 130
+        assert "erst in 2 Minuten" in antworten.sofort("Sollen wir Drache machen?", p, lb)
+    finally:
+        bewertung.bewerte, bewertung.kampf_um = alt, alt_k
+
+
 def icon_in_der_brunnen_ecke():
     """Partie 19:45, 12:50: Riven steht im Brunnen, ihr Icon ist vom Kartenrand zu einem Drittel abgeschnitten - die
     ganze Vorlage fand sie 2,5 min lang nicht. Die Eckensuche vergleicht nur den sichtbaren Teil, nur im Brunnen
@@ -700,6 +731,6 @@ if __name__ == "__main__":
                  aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121, combo_rechnung,
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr,
                  faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht,
-                 satz_bricht_ab_wenn_er_nicht_mehr_stimmt):
+                 satz_bricht_ab_wenn_er_nicht_mehr_stimmt, sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")
