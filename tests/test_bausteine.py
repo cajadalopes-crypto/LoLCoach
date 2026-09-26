@@ -467,6 +467,46 @@ def faehigkeiten_aus_spieldaten():
     assert 350 <= ohne < mit <= 1600, (ohne, mit)
 
 
+def stimme_haengt_nicht():
+    """Live 26.09. 23:06: nach einem Antippen der Sprechtaste blieb die Stimme angehalten, 'Milio hat Flash benutzt'
+    kam 154 s spaet. Jetzt: angehalten ohne Antwort geht sie nach PAUSE_HOECHSTENS weiter, und was zu lange in
+    ihrer Schlange lag, wird verworfen statt veraltet gesprochen."""
+    import time
+    from lolcoach import stimme
+    gesprochen = []
+
+    class Sofort:
+        def __init__(self, *a):
+            pass
+
+        def spreche(self, text, stopp, beim_ton=None):
+            if beim_ton:
+                beim_ton()
+            gesprochen.append(text)
+            return True
+
+    alt = stimme._Sapi, stimme.PAUSE_HOECHSTENS, stimme.VERALTET
+    stimme._Sapi, stimme.PAUSE_HOECHSTENS, stimme.VERALTET = Sofort, 0.4, 5.0
+    try:
+        st = stimme.Stimme(lautstaerke=0)
+        st.pausiere()                          # Sprechtaste gedrueckt - und nur angetippt, keine Antwort
+        st.sage("Milio hat Flash benutzt")
+        time.sleep(0.2)
+        assert not gesprochen, "waehrend der Frage still"
+        time.sleep(0.6)
+        assert gesprochen == ["Milio hat Flash benutzt"], gesprochen   # von selbst weiter
+        stimme.PAUSE_HOECHSTENS, stimme.VERALTET = 5.0, 0.2
+        meldungen = []
+        st.pausiere()
+        st.sage("alt", melde=lambda art, t: meldungen.append(art))
+        time.sleep(0.4)
+        st.freigeben()
+        time.sleep(0.3)
+        assert "alt" not in gesprochen and meldungen == ["verworfen"], (gesprochen, meldungen)
+    finally:
+        stimme._Sapi, stimme.PAUSE_HOECHSTENS, stimme.VERALTET = alt
+
+
 def icon_in_der_brunnen_ecke():
     """Partie 19:45, 12:50: Riven steht im Brunnen, ihr Icon ist vom Kartenrand zu einem Drittel abgeschnitten - die
     ganze Vorlage fand sie 2,5 min lang nicht. Die Eckensuche vergleicht nur den sichtbaren Teil, nur im Brunnen
@@ -607,6 +647,6 @@ if __name__ == "__main__":
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
                  aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121, combo_rechnung,
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr,
-                 faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke):
+                 faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht):
         test()
         print(f"{test.__name__} OK")

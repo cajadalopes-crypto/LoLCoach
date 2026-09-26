@@ -24,6 +24,10 @@ import time
 
 _ASYNC, _UNTERBRECHEN = 1, 2
 ZWEITE_ANFRAGE_NACH = 0.35   # Sekunden ohne Audio, bis eine zweite Synthese-Anfrage mitlaeuft
+# Live 26.09., 23:06-23:16 (Practice Tool): die Stimme blieb nach einem Antippen der Sprechtaste minutenlang
+# angehalten; danach kam "Milio hat Flash benutzt" 154 s spaet - Carlos: "sowas von in der Vergangenheit".
+PAUSE_HOECHSTENS = 15.0      # so lange darf die Stimme fuer eine Frage angehalten sein, dann geht sie von selbst weiter
+VERALTET = 10.0              # so lange darf eine Ansage in der Schlange der Stimme warten - danach ist sie ueberholt
 NOCH_AKTUELL = 25.0   # so alt darf ein unterbrochener Satz sein, um wiederholt zu werden
 
 
@@ -211,13 +215,15 @@ class Stimme:
         einer neuronalen Stimme (z. B. "de-DE-ConradNeural"), sonst die Windows-Stimme."""
         self.warten, self.lautstaerke, self.neural, self.tempo = warten, lautstaerke, neural, tempo
         self.protokoll: list[str] = []   # was angefangen wurde, in Reihenfolge
-        self._schlange: queue.Queue = queue.Queue()   # (text, fertig)
+        self._schlange: queue.Queue = queue.Queue()   # (text, fertig, melde, eingereiht)
         self._vorrang: queue.Queue = queue.Queue()     # Antworten
         self._frei = threading.Event()
         self._frei.set()
         self._stopp = threading.Event()
         self._unterbrochen: tuple[str, float] | None = None
         self._spricht = False
+        self._pausiert_seit = 0.0
+        self._gehalten = None      # aus der Schlange geholt, als die Stimme gerade angehalten wurde
         self._bereit = threading.Event()
         threading.Thread(target=self._lauf, args=(sprache,), daemon=True).start()
         self._bereit.wait(timeout=5)
@@ -234,11 +240,27 @@ class Stimme:
                 text, fertig, melde = self._vorrang.get_nowait()
             except queue.Empty:
                 if not self._frei.is_set():
+                    if time.monotonic() - self._pausiert_seit > PAUSE_HOECHSTENS:
+                        print("  (Stimme war zu lange angehalten - geht weiter)", flush=True)
+                        self._wieder_und_frei()
                     time.sleep(0.03)
                     continue
-                try:
-                    text, fertig, melde = self._schlange.get(timeout=0.05)
-                except queue.Empty:
+                if self._gehalten is not None:
+                    eintrag, self._gehalten = self._gehalten, None
+                else:
+                    try:
+                        eintrag = self._schlange.get(timeout=0.05)
+                    except queue.Empty:
+                        continue
+                if not self._frei.is_set():
+                    # waehrend des Wartens angehalten (Sprechtaste): der Leerlauf sitzt fast immer in get() -
+                    # ohne diese Pruefung sprach der naechste Satz in Carlos' Frage hinein
+                    self._gehalten = eintrag
+                    continue
+                text, fertig, melde, rein = eintrag
+                if fertig is None and time.monotonic() - rein > VERALTET:
+                    if melde:
+                        _still(melde, "verworfen", time.monotonic())
                     continue
             self._stopp.clear()
             self.protokoll.append(text)
@@ -261,7 +283,8 @@ class Stimme:
         """Spricht gerade oder hat noch etwas in der Schlange - der Sprechplan gibt dann nichts Neues ab
         (gemessen 26.09.: Killian spricht 11-12 Zeichen/s, der Plan schaetzte 14 - Saetze stauten sich
         in der Schlange und kamen veraltet an)."""
-        return self._spricht or not self._schlange.empty() or not self._vorrang.empty()
+        return (self._spricht or self._gehalten is not None or not self._schlange.empty()
+                or not self._vorrang.empty())
 
     def sage(self, text: str, dringend: bool = False, melde=None) -> None:
         """`dringend`: vor alle wartenden Saetze, der laufende wird abgebrochen (nicht wiederholt).
@@ -272,11 +295,12 @@ class Stimme:
             if self._frei.is_set():
                 self._stopp.set()
         else:
-            self._schlange.put((text, fertig, melde))
+            self._schlange.put((text, fertig, melde, time.monotonic()))
         if fertig:
             fertig.wait(timeout=60)
 
     def pausiere(self) -> None:
+        self._pausiert_seit = time.monotonic()
         self._frei.clear()
         self._unterbrochen = None
         self._stopp.set()

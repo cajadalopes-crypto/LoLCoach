@@ -429,7 +429,7 @@ def mikrotest(args) -> None:
         print(f"  erkannt ({time.monotonic() - t:.2f} s, {erkenner.beschreibung}): {text}", flush=True)
         sprecher.antworte(f"Verstanden: {text}" if text else "Nichts verstanden.")
 
-    ptt = sprache.PushToTalk(args.ptt, gehoert, beim_druecken=sprecher.pausiere)
+    ptt = sprache.PushToTalk(args.ptt, gehoert, beim_druecken=sprecher.pausiere, bei_abbruch=sprecher.freigeben)
     print(f"Mikrofon: {ptt.geraet} bei {ptt.geraet_rate} Hz. Taste '{args.ptt}' halten, sprechen, loslassen. Strg+C beendet.")
     ptt.start()
     while True:
