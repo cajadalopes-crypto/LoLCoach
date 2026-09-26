@@ -604,3 +604,39 @@ def kampf_kurz(b: Bewertung, g: GegnerLage) -> str:
     if vorn and hinten:
         return f"{' und '.join(vorn)} vorn, {' und '.join(hinten)} hinten"
     return "gleichauf"
+
+
+# --- Champion-Wissen: der passende Konter-Tipp ----------------------------------------------------------------
+
+TIPP_WOERTER = {
+    "turm": ("Turm", "Dive", "Geschütz", "Zone"),
+    "trade": ("kurz", "Trade", "ausweich", "köder", "Fenster", "CD", "Stapel", "verfehlt", "nach "),
+    "jungler": ("Gank", "Kontroll", "Sicht", "R-Timer", "Tribush", "Fluss"),
+    "items": ("Items:", "Heilungsreduktion", "Magieresistenz", "Rüstung"),
+}
+
+
+def _tipps(champion_id: str) -> list[str]:
+    import re
+    from pathlib import Path
+    pfad = Path(__file__).resolve().parent.parent / "wissen" / "lexikon" / "champions" / f"{champion_id}.md"
+    try:
+        text = pfad.read_text(encoding="utf-8")
+    except OSError:
+        return []
+    m = re.search(r"## Gegen diesen Champion\n(.*?)(\n## |\Z)", text, re.S)
+    return [z[2:].strip() for z in (m.group(1) if m else "").splitlines() if z.startswith("- ")]
+
+
+def tipp(champion_id: str, art: str, gesagt: set) -> str:
+    """Der erste noch nicht gesagte Konter-Tipp aus dem Lexikon ("Gegen diesen Champion"), der zur Lage passt
+    (Turm, Trade, Jungler, Items) - je Partie jeder nur einmal, sonst wird er zur Standardphrase."""
+    woerter = TIPP_WOERTER.get(art, ())
+    for t in _tipps(champion_id):
+        if t in gesagt or len(t) > 170 or not any(w in t for w in woerter):
+            continue
+        if art != "items" and t.startswith("Items"):
+            continue
+        gesagt.add(t)
+        return t
+    return ""

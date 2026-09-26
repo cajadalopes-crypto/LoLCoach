@@ -93,7 +93,7 @@ Sicherheit), `komponist.py` (Saetze je Anlass), `regeln.py` (wann).
 | Flash-/TP-Tracking mit Rueckkehrzeit | rechnet | `zauber.py`, gesprochen "bis 12 39" |
 | Ult-Tracking (eigene, Mitspieler, gegnerische) | teilweise | eigene/Mitspieler per HUD; Gegner nur per Ping/Minimap |
 | Matchup (kurz/mittel/lang), Zone | rechnet | `lane_kurve.toml`, Faktoren "matchup", "zone" |
-| Faehigkeiten-Interaktionen | teilweise | Lexikon fuer Claude (Fragen, Briefing), nicht im Kampf-Urteil |
+| Faehigkeiten-Interaktionen, Konter-Wissen je Champion | teilweise | Lexikon fuer Claude (Fragen, Briefing); live der passende Tipp aus "Gegen diesen Champion" (1459 Tipps, 173 Champions) je Lage einmal (`denker.tipp`) - Faehigkeitsschaden nicht gerechnet |
 | Team-Comp, Win Conditions | teilweise | Briefing (Claude); Carry je Team (`bewertung.carry`) |
 | Seiten-Lane / Split | rechnet | Entscheider "seite", "seite_nicht" |
 

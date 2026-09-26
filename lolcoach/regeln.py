@@ -16,6 +16,7 @@ from .entscheider import Entscheider
 from .zustand import Partie, Spieler, gegenteam, struktur
 
 SOFORT, WICHTIG, HINWEIS = 3, 2, 1
+TIPP_BIS = 280      # Zeichen: nur so kurze Ansagen bekommen einen Konter-Tipp dazu (sonst > 25 s Sprechzeit)
 
 
 @dataclass
@@ -96,6 +97,7 @@ class Regelwerk:
         self._fenster_art: str | None = None           # ... welches
         self._fenster_vorher: tuple[str, set] | None = None   # Urteil und Faktoren des letzten Takts
         self._brunnen_kauf: float | None = None        # Spielzeit des letzten Einkaufs im Brunnen
+        self._tipps_gesagt: set[str] = set()           # Konter-Tipps aus dem Lexikon, je Partie jeder einmal
 
     def pruefe(self, p: Partie, lage=None) -> list[Ansage]:
         """`lage`: Lagebild aus der Minimap (lage.Lagebild) oder None ohne Bild."""
@@ -369,6 +371,10 @@ class Regelwerk:
             self._brunnen_kauf = None
             gekauft, self._spikes = list(self._spikes), []
             if text := denker.aufbruch(self.b, self.entscheider.jungle, gekauft):
+                lane = self.b.lane
+                if lane is not None and len(text) < TIPP_BIS \
+                        and (t := denker.tipp(lane.s.champion_id, "items", self._tipps_gesagt)):
+                    text += f" Gegen {self.b.lane.champion}: {t}"
                 self._kauf_bei = None       # das Kontroll-Auge sagt der Aufbruch-Satz nicht extra
                 yield Ansage(text, WICHTIG, "aufbruch:" + ",".join(gekauft), gueltig=20, sperre=30, thema="plan")
         if self._spikes and p.zeit - self._spike_bei >= 3 and (self.b is None or not self._ich_in_basis(p)):
@@ -518,8 +524,10 @@ class Regelwerk:
         elif p.zeit > cfg["lane_phase_bis"] and ("Mitte" in ort or "Mid-Lane" in ort):
             return  # spaet und mittig: keine Kartenseite, die frei waere
         elif jl and p.zeit <= cfg["lane_phase_bis"]:
-            yield Ansage(komponist.jungler_gesehen(self.b, jl, "sicher", platten), WICHTIG, "jungler_sicht",
-                         gueltig=5, sperre=40)
+            text = komponist.jungler_gesehen(self.b, jl, "sicher", platten)
+            if len(text) < TIPP_BIS and (t := denker.tipp(j.champion_id, "jungler", self._tipps_gesagt)):
+                text += f" Gegen {j.champion}: {t}"      # ruhiger Moment - Zeit fuer Champion-Wissen
+            yield Ansage(text, WICHTIG, "jungler_sicht", gueltig=5, sperre=40)
         elif jl and p.zeit > cfg["lane_phase_bis"]:
             yield Ansage(komponist.jungler_spaet(self.b, jl, seite), WICHTIG, "jungler_sicht", gueltig=5, sperre=40)
         elif text := cfg.get("sicher_spaet" if p.zeit > cfg["lane_phase_bis"] else f"sicher_{rolle}"):
@@ -943,6 +951,10 @@ class Regelwerk:
             return
         anlass = denker.anlass_satz(b, anlass_f) if anlass_f is not None else ""
         text = denker.fenster_satz(b, u, anlass=anlass, ohne={anlass_f.art} if anlass_f is not None else set())
+        if u.art in ("turm", "halten", "weg", "trade") and len(text) < TIPP_BIS:
+            # das Champion-Wissen dazu: wie man gegen GENAU diesen Gegner in dieser Lage spielt
+            if t := denker.tipp(g.s.champion_id, "turm" if u.art == "turm" else "trade", self._tipps_gesagt):
+                text += f" Gegen {g.champion}: {t}"
         self._fenster_gesagt, self._fenster_art = p.zeit, u.art
         prio = SOFORT if u.art == "kill" and u.wert >= 5 else WICHTIG
         yield Ansage(text, prio, "fenster", gueltig=3 if rang >= 2 else 5, sperre=8,
