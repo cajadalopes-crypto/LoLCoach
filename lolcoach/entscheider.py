@@ -86,7 +86,7 @@ class Option:
     def thema(self) -> str:
         return {"zurueck": "gefahr", "druck": "druck", "freeze": "gefahr", "gruppe": "objective",
                 "obj_plan": "objective", "seite": "seite", "seite_nicht": "seite", "gank": "druck",
-                "invade": "druck", "hilfe": "hilfe", "hilfe_fern": "seite"}.get(
+                "invade": "druck", "hilfe": "hilfe", "hilfe_fern": "seite", "reset": "gefahr"}.get(
             self.name, "back" if self.name.startswith("back") else "")
 
 
@@ -159,11 +159,22 @@ class Entscheider:
                                   f"{j.champion} hat {self.jungle.start} auf deiner Seite angefangen: sein erster Gank "
                                   f"kommt {gank}. Bis etwa Minute 3 kannst du hart spielen.", 90, 2))
 
+        # 2b) Zwei Tode kurz hintereinander (Reasoning #46, Spieler-Faktor): nach dem Wiedereinstieg einmal der
+        #     Reset - sicher farmen bis zum naechsten Spike, kein Trade ohne Sicht. Und solange: kein Druck-Plan.
+        serie = len(b.tode_kurz) >= 2
+        if serie and b.zeit - b.tode_kurz[-1] <= 120 and ("reset", b.tode_kurz[-1]) not in self._einmal:
+            k = b.kauf
+            name = ("der " + k.item[4:]) if k is not None and k.item.startswith("Der ") else (k.item if k else "")
+            spike = f"bis {name} fertig ist" if name else "bis zum nächsten Level-Spike"
+            wer = f", {j.champion}" if j and not j.s.tot else ""
+            aus.append(Option("reset", f"Zweimal gestorben in {sek(b.zeit - b.tode_kurz[0])}: jetzt sicher farmen, "
+                                       f"{spike} - kein Trade ohne Sicht auf den Jungler{wer}.", 170, 3))
+
         # 3) Druck: Lane-Gegner sichtbar, du staerker, Jungler tot oder sicher weit weg, Leben gut.
         #    (Camille-Partie 26.09., 4:42/4:50: "Gragas 19 s zu dir, zurueck" und 8 s spaeter "Spiel auf Rumble")
         j_weit = j is None or j.s.tot or (not j.unbekannt and j.ankunft is not None and j.ankunft >= 25
                                           and j_bei_mir < 0.5)
-        if g and not g.s.tot and g.seit is not None and g.seit < 2 and not gefahr \
+        if g and not g.s.tot and g.seit is not None and g.seit < 2 and not gefahr and not serie \
                 and (b.leben or 1) >= 0.6 and wert_kraefte >= 1 and j_weit:
             grund = f"{j.champion} ist {'tot' if j.s.tot else j.ort}" if j and (j.s.tot or not j.unbekannt) else ""
             aus.append(Option("druck", f"Spiel auf {g.champion}: {vorsprung}" + (f", {grund}" if grund else "")
@@ -372,6 +383,8 @@ class Entscheider:
         if not beste.dringend and b.zeit - self._kandidat[1] < HALTEN:
             return None
         einmal = beste.name in ("gank_erwartet", "gank_weg")
+        if beste.name == "reset":
+            self._einmal.add(("reset", b.tode_kurz[-1]))   # je Todesserie einmal
         if einmal and beste.name in self._einmal:
             return None
         if b.zeit - self._zuletzt < ABSTAND and not beste.dringend:

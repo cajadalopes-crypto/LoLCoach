@@ -144,6 +144,7 @@ class Bewertung:
     mitspieler_nah: list[Spieler] = field(default_factory=list)   # innerhalb ~1500 Einheiten
     mitspieler: list[tuple] = field(default_factory=list)   # (Spieler, Spiel-Einheiten, Leben 0..1|None, Ort) - frisch gesehen
     partie: "Partie | None" = None   # der Zustand dieses Takts (fuer Plaene, die alle Lanes brauchen)
+    tode_kurz: list[float] = field(default_factory=list)   # Spielzeiten deiner Tode der letzten 4 Minuten
     trade: str = ""             # aus der Spielakte: worauf beim All-in gegen den Lane-Gegner achten
     platten_gegner: int | None = None   # Platten am vordersten stehenden Gegnerturm deiner Lane (Minimap)
     platten_eigen: int | None = None    # ... an deinem vordersten Turm
@@ -258,6 +259,8 @@ class Bewertung:
             ich.append(f"Lane-Position {self.tiefe:.2f} (0 eigene Basis, 1 gegnerische)")
         if self.tod_kostet:
             ich.append(f"ein Tod jetzt = {int(self.tod_kostet)} s grau")
+        if len(self.tode_kurz) >= 2:
+            ich.append(f"{len(self.tode_kurz)} Tode in den letzten 4 Minuten - jetzt sicher spielen")
         if self.kauf is not None and self.kauf.satz():
             ich.append(f"Gold {self.gold}: {self.kauf.satz()} (Weg zu {self.kauf.item})")
         if ich:
@@ -315,6 +318,8 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
     if not p.ich:
         return None
     b = Bewertung(zeit=p.zeit, ich=p.ich, gold=int(p.gold or 0), partie=p)
+    b.tode_kurz = [e.zeit for e in p.ereignisse
+                   if e.art == "ChampionKill" and e.opfer is p.ich and p.zeit - e.zeit <= 240]
     m = p.werte.get("maxHealth")
     if m:
         b.leben_abs = int(p.werte.get("currentHealth", 0))
