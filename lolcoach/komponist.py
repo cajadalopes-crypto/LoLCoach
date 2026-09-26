@@ -508,8 +508,9 @@ def recall(b: Bewertung, grund: str) -> str:
         satz = f"Du hast {gold} Gold" + (f", das {kauf}" if kauf else "") + \
                ". Schieb die nächste Welle in den Turm und geh dann back"
     if (andere := gefahr(b)) and grund != "welle":
-        return (f"Du hast {gold} Gold" + (f", das {kauf}" if kauf else "") + f". Aber {andere[0].champion} "
-                f"{_wann(andere[0])}, also geh erst zurück zu {b.turm_name} und recall dort.")
+        # die Handlung zuerst: "geh erst zurueck" stand nach 130 Zeichen (Nachlauf 194524, 8:52)
+        return (f"Geh erst zurück zu {b.turm_name} und recall dort: {andere[0].champion} {_wann(andere[0])}. "
+                f"Du hast {gold} Gold" + (f", das {kauf}." if kauf else "."))
     ob = b.objective
     if ob and 45 <= ob[1] <= 150:
         return satz + f". {_gross(OBJ_NOM[ob[0]])} {kommt(ob[0])} in {sek(ob[1])}, bis dahin bist du zurück."

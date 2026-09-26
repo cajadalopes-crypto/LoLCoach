@@ -22,6 +22,13 @@ RUECKZUG = re.compile(r"geh (sofort |jetzt |lieber |erst )?zurück|raus da", re.
 SOFORT, WICHTIG, HINWEIS = 3, 2, 1
 
 
+def _kampf_thema(text: str) -> str:
+    """Ein Jungler-Satz, der zum Kampf raet, ist Druck, nicht Gefahr - dann gilt der Widerspruchs-Waechter
+    (Nachlauf 125902, 23:20: "ihr seid nur zu dritt, geh zurueck" und gleich darauf "Warwick ist oben - nimm den
+    Kampf an")."""
+    return "druck" if re.search(r"nimm den Kampf an|Bleib an deiner Welle", text, re.I) else "gefahr"
+
+
 def _und(*pruefungen):
     """Beide Pruefungen muessen gelten; None-Pruefungen fallen weg."""
     da = [f for f in pruefungen if f is not None]
@@ -439,7 +446,7 @@ class Regelwerk:
             fenster = int(min(s.respawn for s in eigene))
             text = (komponist.zahlen_nachteil(self.b, [s.champion for s in eigene], fenster) if self.b is not None
                     else self.m["zahlen"]["nachteil"].format(anzahl=5 - len(eigene), sekunden=fenster))
-            yield Ansage(text, SOFORT, "zahlen_nachteil", gueltig=6, sperre=30)
+            yield Ansage(text, SOFORT, "zahlen_nachteil", gueltig=6, sperre=30, thema="gefahr")
 
     def _jungler_tot(self, p: Partie, v: Partie):
         j = p.jungler(gegenteam(p.mein_team))
@@ -505,6 +512,8 @@ class Regelwerk:
                         text += " " + warnung
                     yield Ansage(text, WICHTIG, f"level{stufe}", gueltig=8)
                 elif ich.level >= stufe > ich_alt.level and g.level < stufe:
+                    if g.tot:
+                        continue     # "Du bist zuerst Level 6." - nach dem Kill, der das Level brachte (235433, 5:12)
                     if u is not None:
                         # die Gruende des letzten Urteils nicht noch einmal (Nachlauf Wukong 4:48/5:05)
                         eben = set(getattr(self, "_fenster_werte", {})) if p.zeit - self._fenster_gesagt < 30 else set()
@@ -687,12 +696,12 @@ class Regelwerk:
                     else cfg["gefahr"].format(champion=j.champion, ort=ort))
             self._gewarnt_vor[j.name] = p.zeit
             if self._beruhigung_frei(j.name, text, p.zeit):
-                yield Ansage(text, SOFORT, "jungler_sicht", gueltig=3, sperre=15, thema="gefahr")
+                yield Ansage(text, SOFORT, "jungler_sicht", gueltig=3, sperre=15, thema=_kampf_thema(text))
         elif meine_seite and rolle != "JUNGLE":
             text = (komponist.jungler_gesehen(self.b, jl, "seite", platten) if jl
                     else cfg["seine_seite"].format(champion=j.champion, ort=ort))
             if self._beruhigung_frei(j.name, text, p.zeit):
-                yield Ansage(text, WICHTIG, "jungler_sicht", gueltig=4, sperre=30, thema="gefahr")
+                yield Ansage(text, WICHTIG, "jungler_sicht", gueltig=4, sperre=30, thema=_kampf_thema(text))
         elif p.zeit > cfg["lane_phase_bis"] and ("Mitte" in ort or "Mid-Lane" in ort):
             return  # spaet und mittig: keine Kartenseite, die frei waere
         elif jl and p.zeit <= cfg["lane_phase_bis"]:

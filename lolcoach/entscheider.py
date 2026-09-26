@@ -152,8 +152,9 @@ class Entscheider:
                     # mehrere: ohne "seit X weg" - zwei Namen und ihre Zeiten waeren zu lang
                     wann = "können schon da sein" if (x.ankunft or 0) < 2 else f"können in {sek(x.ankunft)} da sein"
                 grund = verwundbar[0] if verwundbar else komponist.todespreis(b)
-                aus.append(Option("zurueck", f"{wer} {wann}, und bis zu {b.turm_name} sind es {sek(b.zum_turm)}. "
-                                             f"Geh jetzt zurück" + (f" - {grund}." if grund else "."),
+                # die Handlung zuerst (Nachlauf 194524, 6:23: "Geh jetzt zurueck" kam erst nach 5 s)
+                aus.append(Option("zurueck", f"Geh jetzt zurück zu {b.turm_name}, das sind {sek(b.zum_turm)}: "
+                                             f"{wer} {wann}" + (f" - {grund}." if grund else "."),
                                   200, 2 + bool(verwundbar), dringend=True))
 
         # 2) Frueher Jungler-Plan: Startseite bekannt -> wo kommt der erste Gank?
