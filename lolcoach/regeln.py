@@ -981,9 +981,23 @@ class Regelwerk:
             sagen = False
         if not sagen:
             return
+        # Kurz nach dem letzten Urteil: was hat sich geaendert? Der Faktor, der am meisten zugelegt hat, ist der
+        # Anlass - und die Gruende von eben werden nicht wiederholt (Nachlauf Wukong-Partie 12:12: "Vi ist tot -
+        # trade hart ..." und Sekunden spaeter "Geh rein, das ist ein Kill" mit denselben zwei Gruenden)
+        eben = getattr(self, "_fenster_werte", {}) if seit < 30 else {}
+        ohne = set()
+        if eben:
+            ohne = set(eben)
+            if anlass_f is None:
+                zuwachs = max(u.faktoren, key=lambda x: x.wert - eben.get(x.art, 0.0), default=None)
+                if zuwachs is not None and zuwachs.wert - eben.get(zuwachs.art, 0.0) >= 0.5 and zuwachs.wert > 0:
+                    anlass_f = zuwachs
         anlass = denker.anlass_satz(b, anlass_f) if anlass_f is not None else ""
-        text = denker.fenster_satz(b, u, anlass=anlass, ohne={anlass_f.art} if anlass_f is not None else set(),
+        text = denker.fenster_satz(b, u, anlass=anlass, ohne=ohne | ({anlass_f.art} if anlass_f is not None else set()),
                                    anlass_gut=anlass_f is None or anlass_f.wert > 0)
+        if eben and not anlass and rang > rang_alt:
+            text = "Jetzt " + text[:1].lower() + text[1:]      # "Jetzt geh rein, das ist ein Kill."
+        self._fenster_werte = {x.art: x.wert for x in u.faktoren}
         self._fenster_gesagt, self._fenster_art = p.zeit, u.art
         prio = SOFORT if u.art == "kill" and u.wert >= 5 else WICHTIG
         yield Ansage(text, prio, "fenster", gueltig=3 if rang >= 2 else 5, sperre=8,
