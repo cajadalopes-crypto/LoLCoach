@@ -90,6 +90,7 @@ class Regelwerk:
         self.b: bewertung.Bewertung | None = None      # die Lagebewertung dieses Takts (bewertung.py)
         self._zauber_gesagt: dict[str, float] = {}      # Spielername -> zuletzt ein Verbrauch gemeldet
         self.entscheider = Entscheider()               # der Plan zwischen den Ereignissen (entscheider.py)
+        self._gewarnt_vor: dict[str, float] = {}       # Spielername -> zuletzt eine Gefahr-Warnung zu ihm
 
     def pruefe(self, p: Partie, lage=None) -> list[Ansage]:
         """`lage`: Lagebild aus der Minimap (lage.Lagebild) oder None ohne Bild."""
@@ -478,6 +479,7 @@ class Regelwerk:
         if nah or (meine_seite and not in_seinem_jungle and rolle != "JUNGLE"):
             text = (komponist.jungler_gesehen(self.b, jl, "gefahr", platten) if jl
                     else cfg["gefahr"].format(champion=j.champion, ort=ort))
+            self._gewarnt_vor[j.name] = p.zeit
             yield Ansage(text, SOFORT, "jungler_sicht", gueltig=3, sperre=15, thema="gefahr")
         elif meine_seite and rolle != "JUNGLE":
             text = (komponist.jungler_gesehen(self.b, jl, "seite", platten) if jl
@@ -563,7 +565,7 @@ class Regelwerk:
                 else:
                     satz = cfg["neu_ult" if t.zauber == "R" else "neu_chat" if t.quelle == "Chat" else "neu_minimap"]
                     text = satz.format(champion=t.champion, zauber=name, dauer=_minuten(t.zurueck - p.zeit))
-                yield Ansage(text, WICHTIG, f"zauber:{t.name}:{t.zauber}", gueltig=10, sperre=30)
+                yield Ansage(text, WICHTIG, f"zauber:{t.name}:{t.zauber}", gueltig=20, sperre=30)   # bleibt minutenlang wahr
         # vor einem Kampf: Gegner ohne Flash nah bei dir
         ich = self.lage.gesehen(p.ich) if self.lage.aktiv else None
         if ich and not self._ich_weg(p) and p.zeit - ich[0] < 2:
@@ -608,6 +610,8 @@ class Regelwerk:
                 continue
             if g and s is g and p.zeit < cfg["ab"]:
                 continue
+            if p.zeit - self._gewarnt_vor.get(s.name, -1e9) < 6:
+                continue   # eben erst vor ihm gewarnt (Generalprobe 13:49/13:51: zweimal Vi in 2 s)
             sg = self.lage.gesehen(s)
             abstand = abs(sg[1] - pos[0]) + abs(sg[2] - pos[1])
             naeher = self.lage.naehert_sich(s, pos, p.zeit)

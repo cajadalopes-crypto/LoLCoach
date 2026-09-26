@@ -165,10 +165,11 @@ class Entscheider:
         if serie and b.zeit - b.tode_kurz[-1] <= 120 and ("reset", b.tode_kurz[-1]) not in self._einmal:
             k = b.kauf
             name = ("der " + k.item[4:]) if k is not None and k.item.startswith("Der ") else (k.item if k else "")
-            spike = f"bis {name} fertig ist" if name else "bis zum nächsten Level-Spike"
-            wer = f", {j.champion}" if j and not j.s.tot else ""
-            aus.append(Option("reset", f"Zweimal gestorben in {sek(b.zeit - b.tode_kurz[0])}: jetzt sicher farmen, "
-                                       f"{spike} - kein Trade ohne Sicht auf den Jungler{wer}.", 170, 3))
+            spike = f"bis {name}" if name else "bis zum nächsten Level"
+            wer = j.champion if j and not j.s.tot else "den Jungler"
+            # kurz halten: 9 s Reset-Satz liess "Shen hat Flash benutzt" verfallen (test_zauber, 26.09.)
+            aus.append(Option("reset", f"Zweimal gestorben: sicher farmen {spike}, kein Trade ohne Sicht auf {wer}.",
+                              170, 3))
 
         # 3) Druck: Lane-Gegner sichtbar, du staerker, Jungler tot oder sicher weit weg, Leben gut.
         #    (Camille-Partie 26.09., 4:42/4:50: "Gragas 19 s zu dir, zurueck" und 8 s spaeter "Spiel auf Rumble")
