@@ -33,6 +33,8 @@ class Ansage:
     frist: float | None = None  # so lange darf der Stratege formulieren (sonst VEREDELN_HOECHSTENS)
     thema: str = ""         # gleiche Themen sperren sich im Sprechplan (sprechplan.THEMA_SPERRE): back, druck, ...
     unterbrechbar: bool = False   # lang und nicht eilig (Briefing, CS): eine wichtige Ansage darf sie abbrechen
+    ton: float | None = None      # live: Spielzeit des ersten Tons (Entstehung -> Ohr, die echte Verzoegerung)
+    ganz: bool | None = None      # live: zu Ende gesprochen (False = abgebrochen)
 
 
 def _objective_name(schl: str, p: Partie) -> str:

@@ -10,6 +10,7 @@ Alles in Spielzeit - so laeuft eine Aufnahme exakt wie das Live-Spiel.
 from __future__ import annotations
 
 import threading
+import time
 
 from .regeln import HINWEIS, SOFORT, WICHTIG, Ansage
 
@@ -38,6 +39,16 @@ GESAGT_NACH = 4.0      # Sekunden: so lange laeuft eine Ansage mindestens, bevor
 def unterbrechbar(a: Ansage) -> bool:
     """Lange Saetze (ueber ~14 s) duerfen immer von etwas Wichtigem abgebrochen werden - sonst wartet alles."""
     return a.unterbrechbar or a.schluessel.startswith(UNTERBRECHBAR) or len(a.text) > 180 or a.prio == HINWEIS
+
+
+def _melder(a: Ansage, ab: float):
+    """Die Stimme meldet ersten Ton und Ende in Wanduhr; umgerechnet auf Spielzeit ab dem Moment der Abgabe."""
+    def melde(art: str, jetzt: float) -> None:
+        if art == "ton":
+            a.ton = round(a.gesprochen + (jetzt - ab), 2)
+        else:
+            a.ganz = art == "ende"
+    return melde
 
 
 class Sprechplan:
@@ -101,7 +112,7 @@ class Sprechplan:
         if a.thema:
             self.thema_zuletzt[a.thema] = zeit
         self.frei_ab = zeit + len(a.text) / ZEICHEN_PRO_SEKUNDE + PAUSE
-        self.sprecher.sage(a.text, dringend=a.prio == SOFORT or abbrechen)
+        self.sprecher.sage(a.text, dringend=a.prio == SOFORT or abbrechen, melde=_melder(a, time.monotonic()))
         self._laeuft = a
         self.gesagt.append(a)
         return a

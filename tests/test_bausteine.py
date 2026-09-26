@@ -503,11 +503,48 @@ def lebensbalken_lesen():
         == [("Shen", 0.5, "feind", 0.2)]
 
 
+def verzoegerung_bis_zum_ohr():
+    """Live misst der Plan, wann eine Ansage wirklich klingt (Carlos: 'geisteskrank zu spaet') und ob sie
+    abgebrochen wurde - mit einer Ersatzstimme, die 0,1 s bis zum ersten Ton braucht."""
+    import time
+    from lolcoach import regeln, sprechplan, stimme
+
+    class Langsam:
+        def __init__(self, *a):
+            pass
+
+        def spreche(self, text, stopp, beim_ton=None):
+            time.sleep(0.1)
+            if beim_ton:
+                beim_ton()
+            return not stopp.wait(0.3 if "kurz" in text else 5)
+
+    alt, stimme._Sapi = stimme._Sapi, Langsam
+    try:
+        st = stimme.Stimme(lautstaerke=0)
+        plan = sprechplan.Sprechplan(st)
+        lang = regeln.Ansage("lang " * 30, regeln.WICHTIG, "cs10", zeit=100.0, unterbrechbar=True)
+        plan.neu([lang])
+        plan.takt(100.0)
+        time.sleep(0.3)
+        eilig = regeln.Ansage("kurz: Vi kommt", regeln.SOFORT, "anlauf", zeit=101.0)
+        plan.neu([eilig])
+        plan.takt(101.0)
+        ende = time.monotonic() + 3
+        while eilig.ganz is None and time.monotonic() < ende:
+            time.sleep(0.02)
+    finally:
+        stimme._Sapi = alt
+    assert lang.ton is not None and 0.05 <= lang.ton - 100.0 <= 0.3, lang.ton
+    assert lang.ganz is False, "abgebrochen"
+    assert eilig.ton is not None and 0.05 <= eilig.ton - 101.0 <= 0.5 and eilig.ganz is True, (eilig.ton, eilig.ganz)
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
                  aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121, combo_rechnung,
-                 platten_lesen, teleport_von_der_minimap, lebensbalken_lesen):
+                 platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr):
         test()
         print(f"{test.__name__} OK")
