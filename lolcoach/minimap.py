@@ -209,7 +209,14 @@ class Verfolger:
         _, guete, _, (fx, fy) = cv2.minMaxLoc(erg)
         return (guete, x0 + fx + d // 2, y0 + fy + d // 2) if guete >= SCHWELLE else None
 
-    def bild(self, karte: np.ndarray, zeit: float) -> tuple[list[Sichtung], list[Sprung]]:
+    def bild(self, karte: np.ndarray, zeit: float) -> tuple[list[Sichtung], list[Sprung]] | None:
+        """Ein neues Minimap-Bild. Gibt None, wenn es dem vorigen gleicht: ein stehendes
+        Bild (Ruckler, Aufnahme mit 1 Bild/s in der Generalprobe) darf keine Zeit verstreichen
+        lassen - sonst sieht jede Bewegung danach wie ein Flash-Sprung aus."""
+        stempel = cv2.resize(karte, (48, 48), interpolation=cv2.INTER_AREA)
+        if getattr(self, "_stempel", None) is not None and np.abs(stempel.astype(np.int16) - self._stempel).mean() < 0.5:
+            return None
+        self._stempel = stempel.astype(np.int16)
         seite = karte.shape[0]
         gefunden: dict[tuple[str, int], tuple[float, int, int, str | None]] = {}
         # 1. Umkreissuche fuer alle frisch gesehenen

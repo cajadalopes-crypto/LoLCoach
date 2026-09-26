@@ -43,27 +43,36 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
         for a in anzeigen:
             if hasattr(a, "gehirn_setzen"):
                 a.gehirn_setzen(stratege_.gehirn)
-    for n, (w, daten) in enumerate(quelle):
-        if schreiber:
-            schreiber.schreibe(daten, w)
-        p = zustand.partie(daten, ich)
-        if not rollen_gezeigt and p.spieler:
-            print(ansicht.rollen_tabelle(p))
-            if p.zuschauer and not p.ich:
-                print("(Zuschauer ohne --ich: Sicht Blau/Rot, der Coach schweigt)")
-            rollen_gezeigt = True
-        if sicht:
-            for wb, sichtungen in sicht.zwischen(w, lage.champions(p)):
-                lagebild.neu(p.zeit - (w - wb), sichtungen, p)
-            for t in lagebild.ereignisse(lambda wb: p.zeit - (w - wb), sicht.ereignisse(), p):
-                print(f"{ansicht.uhr(t.seit)}  [{t.quelle}] {t.champion}: {t.zauber} weg bis {ansicht.uhr(t.zurueck)}")
-        if not nur_coach:
-            for e in p.ereignisse:
-                if e.id in gesehen:
-                    continue
-                gesehen.add(e.id)
-                if satz := ansicht.ereignis(p, e):
-                    print(satz)
+    gemeldet: set = set()
+
+    def sicher(name: str, f, *a):
+        """Ein Fehler in einem Baustein darf die Partie nie beenden (Generalprobe 26.09.:
+        ein numpy-bool im Ereignisprotokoll hat den ganzen Coach abgeschossen)."""
+        try:
+            return f(*a)
+        except Exception as e:
+            schl = (name, type(e).__name__)
+            if schl not in gemeldet:
+                gemeldet.add(schl)
+                import traceback
+                print(f"!! {name}: {type(e).__name__}: {e}\n{traceback.format_exc(limit=3)}", flush=True)
+            return None
+
+    def schritt_sicht(p, w):
+        for wb, sichtungen in sicht.zwischen(w, lage.champions(p)):
+            lagebild.neu(p.zeit - (w - wb), sichtungen, p)
+        for t in lagebild.ereignisse(lambda wb: p.zeit - (w - wb), sicht.ereignisse(), p):
+            print(f"{ansicht.uhr(t.seit)}  [{t.quelle}] {t.champion}: {t.zauber} weg bis {ansicht.uhr(t.zurueck)}")
+
+    def schritt_ereignisse(p):
+        for e in p.ereignisse:
+            if e.id in gesehen:
+                continue
+            gesehen.add(e.id)
+            if satz := ansicht.ereignis(p, e):
+                print(satz)
+
+    def schritt_coach(p):
         ansagen = werk.pruefe(p, lagebild)
         if stratege_:
             for a in [a for a in ansagen if a.situativ]:
@@ -72,10 +81,27 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
         plan.neu(ansagen)
         if a := plan.takt(p.zeit):
             print(f"{ansicht.uhr(p.zeit)}  >> {a.text}", flush=True)
+
+    for n, (w, daten) in enumerate(quelle):
+        if schreiber:
+            sicher("Aufnahme", schreiber.schreibe, daten, w)
+        p = sicher("Zustand", zustand.partie, daten, ich)
+        if p is None:
+            continue
+        if not rollen_gezeigt and p.spieler:
+            print(ansicht.rollen_tabelle(p))
+            if p.zuschauer and not p.ich:
+                print("(Zuschauer ohne --ich: Sicht Blau/Rot, der Coach schweigt)")
+            rollen_gezeigt = True
+        if sicht:
+            sicher("Minimap", schritt_sicht, p, w)
+        if not nur_coach:
+            sicher("Ereignisse", schritt_ereignisse, p)
+        sicher("Regeln", schritt_coach, p)
         for anzeige in anzeigen:
-            anzeige.aktualisiere(p, lagebild, plan.gesagt)
+            sicher(type(anzeige).__name__, anzeige.aktualisiere, p, lagebild, plan.gesagt)
         if n % alle == 0 and not nur_coach:
-            print(ansicht.uebersicht(p))
+            sicher("Uebersicht", lambda: print(ansicht.uebersicht(p)))
         if takt:
             time.sleep(takt)
     return plan

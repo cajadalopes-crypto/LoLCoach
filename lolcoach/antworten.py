@@ -217,8 +217,9 @@ def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", let
     lage = lage_text(p, lagebild) + zusatz
     inhalt = gehirn.kontext(frage, p, lage) if gehirn else f"Lage:\n{lage}"
     try:
-        return llm.frage(f"{inhalt}\n\nFrage des Spielers: {frage}",
-                         system=SYSTEM, modell=modell, timeout=40, aufwand="low").strip()
+        from .itemnamen import absichern
+        return absichern(llm.frage(f"{inhalt}\n\nFrage des Spielers: {frage}",
+                                   system=SYSTEM, modell=modell, timeout=40, aufwand="low").strip())[0]
     except llm.LLMFehler as e:
         print(f"  Claude-Fehler: {e}", flush=True)
         if "login" in str(e).lower():

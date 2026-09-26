@@ -13,7 +13,10 @@ import time
 from pathlib import Path
 from typing import Iterator
 
-ORDNER = Path(__file__).resolve().parent.parent / "aufnahmen"
+import os
+
+# LOLCOACH_AUFNAHMEN: anderer Ordner, z. B. fuer die Generalprobe (werkzeuge/generalprobe.py)
+ORDNER = Path(os.environ.get("LOLCOACH_AUFNAHMEN") or Path(__file__).resolve().parent.parent / "aufnahmen")
 
 
 class Schreiber:

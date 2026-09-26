@@ -94,6 +94,11 @@ def erstelle(aufnahme: str | Path, neu: bool = False, modell: str = "sonnet") ->
         review = _json_aus(antwort)
     except (ValueError, json.JSONDecodeError):
         review = {"zusammenfassung": antwort, "lektionen": [], "staerken": [], "naechste_partie": ""}
+    from .itemnamen import absichern
+    for teil in (review.get("lektionen") or []) + (review.get("staerken") or []):
+        for k in ("was", "warum", "besser", "titel"):
+            if isinstance(teil.get(k), str):
+                teil[k] = absichern(teil[k])[0]
     review["_modell"] = modell
     p["review"].write_text(json.dumps(review, ensure_ascii=False, indent=1), encoding="utf-8")
     return review
@@ -149,6 +154,8 @@ def frage(aufnahme: str | Path, text: str, zeit: float | None = None, modell: st
         teile.append("BISHERIGES GESPRAECH:\n" + "\n".join(f"{e['wer']}: {e['text']}" for e in verlauf_gespraech[-8:]))
     antwort = llm.frage("\n\n".join(teile) + f"\n\nFRAGE DES SPIELERS: {text}", system=GESPRAECH_SYSTEM,
                         modell=modell, timeout=120, aufwand="medium").strip()
+    from .itemnamen import absichern
+    antwort = absichern(antwort)[0]
     verlauf_gespraech += [{"wer": "Spieler", "text": text, "zeit": zeit}, {"wer": "Coach", "text": antwort}]
     p["gespraech"].write_text(json.dumps(verlauf_gespraech, ensure_ascii=False, indent=1), encoding="utf-8")
     return antwort

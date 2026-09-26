@@ -36,12 +36,19 @@ class Stratege:
             return
         if not self._briefing and p.spieler:
             self._briefing = True
-            self.gehirn.akte_anlegen(p, fertig=lambda akte: self._sprich(
-                gehirn.BRIEFING_SYSTEM, "Spielbeginn: Briefing fuer den Spieler", "briefing"))
+            self.gehirn.akte_anlegen(p, fertig=lambda akte: self._briefing_sprechen())
         if not self._midgame and p.zeit >= self.lane_phase_bis and self.gehirn.akte:
             self._midgame = True
             self._im_hintergrund(lambda: self._sprich(gehirn.MIDGAME_SYSTEM, "Ende der Lane-Phase: sein Job ab jetzt",
                                                       "midgame"))
+
+    def _briefing_sprechen(self) -> None:
+        """Das Briefing kommt mit der Spielakte; nur wenn es fehlt, eigener Aufruf."""
+        if self.gehirn.briefing and self.p is not None:
+            self.plan.einwerfen(Ansage(self.gehirn.briefing, WICHTIG, "briefing", zeit=self.p.zeit,
+                                       gueltig=90, sperre=600))
+        else:
+            self._sprich(gehirn.BRIEFING_SYSTEM, "Spielbeginn: Briefing fuer den Spieler", "briefing")
 
     def _im_hintergrund(self, f) -> None:
         threading.Thread(target=f, daemon=True).start()
@@ -55,6 +62,8 @@ class Stratege:
         except Exception as e:
             print(f"  {schluessel} fehlgeschlagen: {e}", flush=True)
             return
+        from .itemnamen import absichern
+        text = absichern(gehirn.kuerzen(text, 6 if schluessel == "briefing" else 3))[0]
         self.plan.einwerfen(Ansage(text, WICHTIG, schluessel, zeit=self.p.zeit, gueltig=90, sperre=600))
 
     def veredle(self, a: Ansage) -> None:
@@ -75,7 +84,8 @@ class Stratege:
             if not erledigt.is_set():
                 erledigt.set()
                 if text:
-                    a.text = text
+                    from .itemnamen import absichern
+                    a.text = absichern(gehirn.kuerzen(text, 2))[0]
                 self.plan.einwerfen(a)
 
         def notbremse():

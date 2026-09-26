@@ -60,6 +60,6 @@ def lies(leiste: np.ndarray, hoehe: int = REF) -> list[Mitspieler]:
         ult = None
         if kreis.size:
             anteil_gruen = (cv2.inRange(kreis, (40, 90, 90), (90, 255, 255)) > 0).mean()
-            ult = anteil_gruen > 0.25
+            ult = bool(anteil_gruen > 0.25)   # echtes bool: numpy-Werte lassen sich nicht als JSON speichern
         ergebnis.append(Mitspieler(round(float(leben), 2), ult))
     return ergebnis

@@ -73,37 +73,66 @@ def _champion_zeile(s) -> str:
     return f"{s.champion} ({ROLLE_DE.get(s.rolle, '?')})"
 
 
+def abschnitt(champion_id: str, titel: str, hoechstens: int = 2500) -> str:
+    """Ein ##-Abschnitt aus dem Champion-Eintrag des Lexikons ('' wenn keiner)."""
+    eintrag = champion_eintrag(champion_id)
+    if not eintrag:
+        return ""
+    for teil in re.split(r"^## ", eintrag, flags=re.M)[1:]:
+        kopf, _, rumpf = teil.partition("\n")
+        if kopf.strip().lower().startswith(titel.lower()):
+            return rumpf.strip()[:hoechstens]
+    return ""
+
+
+def matchup(champion_id: str, gegner) -> str:
+    """Die Matchup-Zeile gegen genau diesen Gegner (Lexikon, Abschnitt Matchups)."""
+    for zeile in abschnitt(champion_id, "Matchups", 20000).splitlines():
+        if zeile.startswith("- ") and any(n.lower() in zeile.lower()[:40] for n in {gegner.champion, gegner.champion_id}):
+            return zeile[2:]
+    return ""
+
+
 def akte_quelle(p: Partie) -> str:
-    """Rohstoff fuer die Spielakte: Steckbriefe aller zehn, Lexikon fuer die wichtigsten."""
+    """Rohstoff fuer Spielakte + Briefing - schlank (gemessen 26.09.: 17 000 Zeichen, 35 s):
+    fuer dich Kniffe/Spikes/Lane-Plan/Build und die EINE Matchup-Zeile gegen deinen Gegner,
+    fuer Lane-Gegner und Jungler das Noetigste, fuer den Rest Kurzsteckbriefe."""
     wir, die = p.mein_team, gegenteam(p.mein_team)
+    g, j = p.gegenueber(), p.jungler(die)
     teile = [f"Ich: {_champion_zeile(p.ich)}. Mein Team: {', '.join(_champion_zeile(s) for s in p.team(wir))}. "
              f"Gegner: {', '.join(_champion_zeile(s) for s in p.team(die))}."]
-    wichtig = [s for s in (p.ich, p.gegenueber(), p.jungler(die)) if s]
-    for s in p.spieler:
-        voll = s in wichtig
-        teile.append(champions.steckbrief(s.champion_id, kurz=not voll))
-    for s in wichtig:
-        if eintrag := champion_eintrag(s.champion_id):
-            teile.append(f"LEXIKON {s.champion}:\n{eintrag}")
-    saison = LEXIKON / "saison2026.md"
-    if saison.exists():
-        teile.append("SAISON 2026:\n" + saison.read_text(encoding="utf-8")[:4000])
+    ich = p.ich.champion_id
+    if champion_eintrag(ich):
+        teile.append(f"ICH ({p.ich.champion}) - Kniffe:\n{abschnitt(ich, 'Faehigkeiten', 1800)}\n"
+                     f"Spikes:\n{abschnitt(ich, 'Powerspikes', 800)}\nLane-Plan:\n{abschnitt(ich, 'Lane-Plan', 1200)}\n"
+                     f"Build:\n{abschnitt(ich, 'Build', 900)}")
+        if g and (zeile := matchup(ich, g)):
+            teile.append(f"MATCHUP gegen {g.champion}: {zeile}")
+    else:
+        teile.append(champions.steckbrief(ich))
+    for s, was in ((g, ("Faehigkeiten", "Powerspikes", "Gegen diesen")), (j, ("Powerspikes", "Gegen diesen"))):
+        if not s:
+            continue
+        if champion_eintrag(s.champion_id):
+            teile.append(f"{s.champion.upper()}:\n" + "\n".join(abschnitt(s.champion_id, w, 900) for w in was))
+        else:
+            teile.append(champions.steckbrief(s.champion_id))
+    rest = [s for s in p.spieler if s not in (p.ich, g, j)]
+    teile.append("UEBRIGE:\n" + "\n".join(champions.steckbrief(s.champion_id, kurz=True) for s in rest))
     return "\n\n".join(teile)
 
 
 AKTE_SYSTEM = (
     "Du bist ein Challenger-Coach fuer League of Legends und bereitest dich auf die Partie deines "
-    "Schuelers vor (Ziel Diamond+). Verdichte aus dem Material eine SPIELAKTE fuer dich selbst - "
-    "kein Text fuer den Spieler. Deutsch, stichpunktartig, hoechstens 350 Woerter:\n"
-    "1. Lane-Matchup: wer gewinnt welche Phase, Trade-Fenster (welche Faehigkeit des Gegners abwarten, "
-    "Cooldowns), Level- und Item-Spikes beider Seiten, Gank-Gefahr.\n"
-    "2. Gegnerischer Jungler: Staerken, typische Gank-Zeitpunkte, wann er schwach ist.\n"
-    "3. Beide Teams: Win-Conditions, gefaehrlichste Gegner-Faehigkeiten (Ults mit Cooldown), "
-    "wer Teamfights anfaengt.\n"
-    "4. Build-Richtung fuer den Spieler gegen DIESES Team (nur Items, die im Material stehen oder die du "
-    "sicher kennst; im Zweifel die Art nennen: 'Anti-Heilung', 'Ruestung').\n"
-    "5. Plan: Lane-Phase, nach der Lane-Phase (Splitpush oder Gruppe, welche Seite), Objectives.\n"
-    "Nur was das Material stuetzt; Unsicheres als unsicher markieren.")
+    "Schuelers vor (Ziel Diamond+). Schreib zwei Teile, genau mit diesen Markern:\n"
+    "AKTE:\n(fuer dich selbst, stichpunktartig, hoechstens 220 Woerter) Lane-Matchup (Trade-Fenster, welche "
+    "gegnerische Faehigkeit abwarten, Spikes beider Seiten), gegnerischer Jungler (Gefahr, Gank-Zeiten), "
+    "Win-Conditions beider Teams, gefaehrlichste Ults, Build-Richtung gegen dieses Team, Plan fuer "
+    "Lane-Phase und danach.\n"
+    "BRIEFING:\n(fuer den Spieler, ueber Headset gesprochen, 4-6 kurze Saetze, kein Markdown) das Matchup und "
+    "wann er traden kann, die groesste Gefahr, die Win-Condition, die Build-Richtung.\n"
+    "Nur was das Material stuetzt; Item-Namen nur aus dem Material; Unsicheres als unsicher.")
+
 
 BRIEFING_SYSTEM = (
     "Du bist ein Challenger-Coach und sprichst deinen Schueler vor der Partie ueber Headset an. "
@@ -113,16 +142,23 @@ BRIEFING_SYSTEM = (
 
 MIDGAME_SYSTEM = (
     "Du bist ein Challenger-Coach. Die Lane-Phase ist vorbei. Sag deinem Schueler ueber Headset in "
-    "3 bis 4 kurzen gesprochenen Saetzen (Deutsch, kein Markdown), was ab jetzt sein Job ist: "
+    "hoechstens 3 kurzen gesprochenen Saetzen (zusammen unter 45 Woertern; Deutsch, kein Markdown), was ab jetzt sein Job ist: "
     "Splitpush oder Gruppe, welche Seite, welche Objectives als naechstes, worauf er achten muss - "
     "abgeleitet aus Spielakte und aktueller Lage.")
 
 SITUATIV_SYSTEM = (
     "Du bist ein Challenger-Coach und sprichst live ueber Headset. Aus dem Anlass und der Lage: sag "
-    "dem Spieler in hoechstens zwei kurzen gesprochenen Saetzen (Deutsch, kein Markdown), was er "
+    "dem Spieler in hoechstens zwei kurzen gesprochenen Saetzen (zusammen unter 30 Woertern; Deutsch, kein Markdown), was er "
     "GENAU JETZT tun soll und kurz warum - konkret fuer seine Position, sein Leben, sein Gold, die "
     "Welle und den Jungler. Keine Allgemeinplaetze. Stimmt der Anlass fuer ihn gerade nicht (zu weit "
     "weg, tot, falsche Seite), sag das Passende statt des Anlasses.")
+
+
+def kuerzen(text: str, saetze: int) -> str:
+    """Hoechstens `saetze` Saetze - im Spiel zaehlt jede Sekunde Sprechzeit
+    (Generalprobe 26.09.: ein "3-4 Saetze"-Plan kam mit acht Saetzen)."""
+    teile = re.split(r"(?<=[.!?])\s+", text.strip())
+    return " ".join(teile[:saetze]).strip()
 
 
 class Gehirn:
@@ -131,6 +167,7 @@ class Gehirn:
     def __init__(self, modell: str = "sonnet"):
         self.modell = modell
         self.akte: str | None = None
+        self.briefing: str | None = None   # kommt mit der Akte (ein Aufruf statt zwei)
         self._akte_laeuft = False
         self.ablage: Path | None = None    # je Partie: hier wird die Akte gespeichert
 
@@ -144,8 +181,12 @@ class Gehirn:
 
         def lauf():
             try:
-                self.akte = llm.frage(akte_quelle(p), system=AKTE_SYSTEM, modell=self.modell,
-                                      timeout=90, aufwand="low").strip()
+                roh = llm.frage(akte_quelle(p), system=AKTE_SYSTEM, modell=self.modell,
+                                timeout=90, aufwand="low").strip()
+                akte, _, briefing = roh.partition("BRIEFING:")
+                self.akte = akte.replace("AKTE:", "", 1).strip()
+                from .itemnamen import absichern
+                self.briefing = absichern(kuerzen(briefing, 6))[0] or None
             except llm.LLMFehler as e:
                 print(f"  Spielakte fehlgeschlagen: {e}", flush=True)
                 self.akte = None

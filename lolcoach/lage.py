@@ -219,8 +219,9 @@ class Beobachter(threading.Thread):
                             verfolger = minimap.Verfolger(list(self.champions), hoehe=hoehe)
                         kl, ko, kr, ku = minimap.kartenrechteck(breite, hoehe)
                         karte = kamera.hole((l + kl, o + ko, l + kr, o + ku))
-                        if karte is not None:
-                            sichtungen, spruenge = verfolger.bild(karte, start)
+                        ergebnis = verfolger.bild(karte, start) if karte is not None else None
+                        if ergebnis is not None:
+                            sichtungen, spruenge = ergebnis
                             with self._schloss:
                                 self._neu.append((start, sichtungen))
                                 self._ereignisse += [("sprung", s) for s in spruenge]
@@ -278,8 +279,14 @@ class Beobachter(threading.Thread):
             neu, self._ereignisse = self._ereignisse, []
         if getattr(self, "_ereignis_datei", None) and not self._ereignis_datei.closed:
             for e in neu:
-                self._ereignis_datei.write(json.dumps(ereignis_als_json(e), ensure_ascii=False) + "\n")
-            self._ereignis_datei.flush()
+                try:
+                    self._ereignis_datei.write(json.dumps(ereignis_als_json(e), ensure_ascii=False, default=str) + "\n")
+                except (TypeError, ValueError, OSError) as f:
+                    self.fehler = f"Protokoll: {f}"
+            try:
+                self._ereignis_datei.flush()
+            except OSError:
+                pass
         return neu
 
     def halt(self) -> None:
