@@ -117,6 +117,13 @@ class _Neural:
         return True
 
 
+def _still(f, *a) -> None:
+    try:
+        f(*a)
+    except Exception:
+        pass
+
+
 def teilsaetze(text: str, erster_hoechstens: int = 90) -> list[str]:
     """In Saetze teilen (nach . ! ? und nach dem Doppelpunkt, an dem die Stimme ohnehin absetzt); ist der erste
     laenger als `erster_hoechstens`, auch am ersten Komma dahinter - damit der erste Ton frueh kommt."""
@@ -184,6 +191,8 @@ class Stimme:
         motor = _Sapi(sprache, self.lautstaerke)
         if self.neural:
             motor = _Neural(self.neural, self.tempo, self.lautstaerke, ersatz=motor)
+            # einmal stumm vorwaermen (Module, Verbindung): kalt kam der erste Ton nach 1,9 s, warm nach 0,6-0,75 s
+            threading.Thread(target=lambda: _still(motor._synthese, "Los."), daemon=True).start()
         self._bereit.set()
         while True:
             try:
