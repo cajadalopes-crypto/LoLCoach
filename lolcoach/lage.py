@@ -18,6 +18,9 @@ import numpy as np
 from . import hud, minimap
 from .zustand import Partie, Spieler
 
+# Ults, die quer ueber die Karte versetzen (Minimap-Fernsprung ohne Teleport = Ult)
+GLOBALE_ULTS = {"TwistedFate", "Shen", "Pantheon", "Galio", "Ryze", "Taliyah", "Nocturne", "Sion"}
+
 SICHTBAR_TOLERANZ = 1.6   # Sekunden: so alt darf eine Sichtung sein und gilt noch als "jetzt sichtbar"
 
 
@@ -40,6 +43,9 @@ class Lagebild:
         self._eigene_kandidat: dict[str, tuple[bool, float]] = {}   # Wechsel, einmal gelesen, noch unbestaetigt
         self.eigene_zeit: float | None = None
         self.platten: dict[tuple[str, str, str], int] = {}   # (Team, Lane, Stufe) -> verbleibende Platten (Minimap)
+        self._tp_kandidat: dict[str, tuple] = {}     # Spielername -> (Zeit, x, y, zuletzt gesehen) eines Fernsprungs
+        self._tode: dict[str, float] = {}            # Spielername -> zuletzt tot (Spielzeit)
+        self.fernspruenge: list = []                 # gemeldete TP/globale Ults (zauber.Timer)
 
     def eigene_zauber(self, p: Partie, jetzt: float) -> dict[str, float] | None:
         """Beschwoererzauber des Spielers -> Sekunden bis bereit (0 = bereit), aus dem HUD (frisch, < 3 s).
@@ -120,15 +126,66 @@ class Lagebild:
 
     def neu(self, zeit: float, sichtungen: list[minimap.Sichtung], p: Partie) -> None:
         self.letztes_bild = zeit if self.letztes_bild is None else max(self.letztes_bild, zeit)
+        self.tod_merken(p)
         for s in sichtungen:
             sp = zuordnen(s, p)
             if sp:
                 schl = (sp.name, sp.team)
+                if sp.team != p.mein_team and schl in self.zuletzt:
+                    self._fernsprung(sp, self.zuletzt[schl], zeit, s.x, s.y, p)
                 self.zuletzt[schl] = (zeit, s.x, s.y)
                 v = self.verlauf.setdefault(schl, deque())
                 v.append((zeit, s.x, s.y))
                 while v and v[0][0] < zeit - VERLAUF:
                     v.popleft()
+
+    def _fernsprung(self, sp: Spieler, alt: tuple[float, float, float], zeit: float, x: float, y: float,
+                    p: Partie) -> None:
+        """Teleport oder globale Ult von der Minimap: verschwunden und 3,5-15 s spaeter weit weg wieder da -
+        schneller, als man laufen kann (> 1100 Einheiten/s, mindestens 3500 Einheiten). Nicht in der Basis
+        (Recall), nicht nach einem Tod. Bestaetigt, wenn er am neuen Ort auch im naechsten Bild steht
+        (ein falsch zugeordnetes Einzelbild ergaebe sonst einen TP-Timer)."""
+        kand = self._tp_kandidat.get(sp.name)
+        if kand is not None:
+            t_neu, kx, ky, t0 = kand
+            if zeit - t_neu <= 2.5 and abs(x - kx) + abs(y - ky) <= 0.05 and zeit > t_neu:
+                del self._tp_kandidat[sp.name]
+                self._fernsprung_melden(sp, t0, p)
+                return
+            if zeit - t_neu > 2.5:
+                del self._tp_kandidat[sp.name]
+        t0, x0, y0 = alt
+        dt = zeit - t0
+        if not (3.5 <= dt <= 15) or sp.tot or self._tot_zwischen(sp, t0, zeit):
+            return
+        d = ((x - x0) * 14820) ** 2 + ((y - y0) * 14881) ** 2
+        d = d ** 0.5
+        if d < 3500 or d / dt < 1100 or "Basis" in minimap.ort(x, y) or "Basis" in minimap.ort(x0, y0):
+            return
+        self._tp_kandidat[sp.name] = (zeit, x, y, t0)
+
+    def _tot_zwischen(self, sp: Spieler, von: float, bis: float) -> bool:
+        tod = self._tode.get(sp.name)
+        return tod is not None and von - 1 <= tod <= bis
+
+    def _fernsprung_melden(self, sp: Spieler, t0: float, p: Partie) -> None:
+        from . import zauber
+        if "SummonerTeleport" in sp.zauber and not self.zauber.fehlt(sp, "SummonerTeleport", t0 + 1):
+            art = "SummonerTeleport"
+        elif sp.champion_id in GLOBALE_ULTS and sp.level >= 6 and not self.zauber.fehlt(sp, "R", t0 + 1):
+            art = "R"
+        elif sp.rolle == "TOP" and t0 >= 815 and not self.zauber.fehlt(sp, "SummonerTeleport", t0 + 1):
+            art = "SummonerTeleport"      # Top-Quest-TP (Saison 2026), auch ohne gewaehltes Teleport
+        else:
+            return
+        if t := self.zauber.benutzt(sp, art, t0 + 1.0, "Minimap"):
+            self.fernspruenge.append(t)
+
+    def tod_merken(self, p: Partie) -> None:
+        """Wer gerade tot ist - ein Wiedereinstieg in der Basis ist kein Teleport."""
+        for s in p.gegner():
+            if s.tot:
+                self._tode[s.name] = p.zeit
 
     def naehert_sich(self, sp: Spieler, ziel: tuple[float, float], jetzt: float, fenster: float = 2.5) -> float | None:
         """Um wie viel (Kartenanteil) ist `sp` in den letzten `fenster` Sekunden naeher an `ziel`

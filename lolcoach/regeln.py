@@ -557,9 +557,9 @@ class Regelwerk:
                 # Minimap-Spruenge sind weniger sicher als Carlos' Pings: laut nur fuer Lane-Gegner, Jungler und
                 # wer nah bei dir ist - die anderen laufen still mit (Dashboard, Fragen). Camille-Partie 26.09.:
                 # Anivia/Rakan-"Flashes" in Minute 2 fuellten die Sprechzeit.
-                if (t.quelle == "Minimap" and t.name not in wichtig and gl is not None
+                if (t.quelle == "Minimap" and t.zauber == "SummonerFlash" and t.name not in wichtig and gl is not None
                         and (gl.abstand is None or gl.abstand > 5000)):
-                    continue
+                    continue   # Teleport/globale Ult betrifft alle - die bleiben laut
                 if gl:
                     text = komponist.zauber_neu(self.b, gl, "Ult" if t.zauber == "R" else name,
                                                 t.zurueck - p.zeit, t.quelle)

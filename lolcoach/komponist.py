@@ -337,6 +337,11 @@ def zauber_neu(b: Bewertung, g: GegnerLage, zauber: str, dauer: float, quelle: s
     satz = (f"{g.champion} Ult weg, {sek(dauer)}" if ult
             else f"{g.champion} hat {zauber} benutzt, {sek(dauer)} weg" + (" - Minimap" if quelle == "Minimap" else ""))
     ist_lane = b.lane is not None and g.s.name == b.lane.s.name
+    if zauber == "Teleport":
+        wo = f" - er ist jetzt {g.ort}" if g.ort else ""
+        if ist_lane:
+            return satz + f"{wo}. Er kann nicht per TP zurück: deine Lane gehört dir, Welle rein und Turm."
+        return satz + f"{wo}. Dort ist jetzt einer mehr."
     if ist_lane and not g.s.tot and (zauber == "Flash" or ult):
         wert, _ = b.kraefte()
         v = b.vorsprung_satz()

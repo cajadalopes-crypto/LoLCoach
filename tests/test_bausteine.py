@@ -275,10 +275,40 @@ def platten_lesen():
     assert leser.stand[("CHAOS", "Top", "aussen")] == 2
 
 
+def teleport_von_der_minimap():
+    """Fernsprung: oben verschwunden, 6 s spaeter unten - Teleport. Laufen, ein falsches Einzelbild und der
+    Wiedereinstieg nach einem Tod sind keiner."""
+    from lolcoach import lage
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.zeit > 700)
+    shen = p.gegenueber()
+    teleporter = next(s for s in p.gegner() if "SummonerTeleport" in s.zauber or s.rolle == "TOP")
+    lb = lage.Lagebild()
+    sicht = lambda x, y: [minimap.Sichtung(teleporter.champion_id, teleporter.team, x, y, 0.95)]
+    lb.neu(700.0, sicht(0.08, 0.30), p)                 # oben in der Lane
+    lb.neu(706.0, sicht(0.70, 0.90), p)                 # 6 s spaeter unten: Kandidat
+    assert not lb.zauber.fehlt(teleporter, "SummonerTeleport", 707), "erst nach Bestaetigung"
+    lb.neu(707.0, sicht(0.71, 0.90), p)                 # zweites Bild am selben Ort: bestaetigt
+    # Teleport - oder, ohne Teleport, die globale Ult (Shen in dieser Partie hat kein TP)
+    art = "SummonerTeleport" if "SummonerTeleport" in teleporter.zauber or teleporter.champion_id not in lage.GLOBALE_ULTS else "R"
+    assert lb.zauber.fehlt(teleporter, art, 708), (art, "Fernsprung nicht erkannt")
+    # Laufen: 40 s fuer dieselbe Strecke - kein Teleport
+    lb2 = lage.Lagebild()
+    lb2.neu(700.0, sicht(0.08, 0.30), p)
+    lb2.neu(712.0, sicht(0.30, 0.55), p)
+    lb2.neu(713.0, sicht(0.30, 0.55), p)
+    assert not lb2.zauber.fehlt(teleporter, art, 714)
+    # ein einzelnes falsches Bild weit weg, dann wieder oben - kein Teleport
+    lb3 = lage.Lagebild()
+    lb3.neu(700.0, sicht(0.08, 0.30), p)
+    lb3.neu(706.0, sicht(0.70, 0.90), p)
+    lb3.neu(707.0, sicht(0.08, 0.31), p)
+    assert not lb3.zauber.fehlt(teleporter, art, 708)
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
-                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, platten_lesen):
+                 aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, platten_lesen, teleport_von_der_minimap):
         test()
         print(f"{test.__name__} OK")
