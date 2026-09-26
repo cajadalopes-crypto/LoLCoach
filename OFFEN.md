@@ -53,6 +53,13 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
 
 ## Als Naechstes
 
+- Minimap, gemessen 26.09. abends (eigene Flashes aus dem HUD als Wahrheit): von 12 eigenen Flashes
+  erkannte die Minimap 1, Fehlalarme 0 - im Kampf liegt das Icon unter anderen (physikalische Grenze).
+  Verbuendete galten nur in 57-94 % der Takte als sichtbar; mit "verdeckt/Brunnen/Tod/Recall" jetzt 88-100 %.
+  Offen: (1) Icons am Kartenrand (Brunnen-Ecke) im Verfolger mit dem sichtbaren Teil suchen; (2) Verwechslung
+  im Klumpen (13:07: Riven unten "gesehen", stand oben unter Heimerdinger) - nur an 60-Bilder/s-Live-Daten
+  nachstellbar, nicht an den 1-Bild/s-Aufnahmen.
+
 - Camp-/Buff-Timer des gegnerischen Junglers (Camp-Icons der Minimap) fuer die Jungler-Prognose.
 - Fragen per Maustaste: Claude braucht ueber die Kommandozeile ~2,5 s bis zum ersten Satz. Ein
   Anthropic-API-Schluessel wuerde das auf ~1 s druecken (kostet je Frage) - Carlos' Entscheidung.

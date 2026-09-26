@@ -276,9 +276,10 @@ def jungler_gesehen(b: Bewertung, j: GegnerLage, art: str, platten: bool) -> str
         gruende = verwundbar(b)
         if an is not None and an < 2 and b.zum_turm is not None and b.zum_turm >= 12:
             # direkt bei dir, der Turm ist weit: der Weg dorthin rettet nicht - raus, mit dem, was du hast
-            tun = ("Raus da, und halt dein Flash bereit." if b.flash is not None and b.flash <= 0
-                   else f"Raus da - dein Flash ist weg, also lauf nicht in {j.champion} hinein." if b.flash
-                   else "Raus da.")
+            grund = f"{_gross(gruende[0])}. " if gruende else ""
+            tun = grund + ("Raus da, und halt dein Flash bereit." if b.flash is not None and b.flash <= 0
+                           else f"Raus da - dein Flash ist weg, also lauf nicht in {j.champion} hinein." if b.flash
+                           else "Raus da.")
         elif art == "gefahr" or gruende:
             tun = _grund_und_rueckzug(b, gruende)
         else:

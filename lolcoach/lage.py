@@ -25,6 +25,8 @@ SICHTBAR_TOLERANZ = 1.6   # Sekunden: so alt darf eine Sichtung sein und gilt no
 
 
 VERLAUF = 15.0            # Sekunden Positionsverlauf je Spieler
+DECKUNG = 0.045           # Kartenanteil: so nah an der letzten Stelle liegt ein anderes Icon auf einem Verbuendeten
+BRUNNEN = {"ORDER": (0.035, 0.965), "CHAOS": (0.965, 0.035)}   # Minimap-Anteile, Wiedereinstieg
 
 
 class Lagebild:
@@ -149,6 +151,43 @@ class Lagebild:
                 v.append((zeit, s.x, s.y))
                 while v and v[0][0] < zeit - VERLAUF:
                     v.popleft()
+        self._verbuendete_halten(zeit, sichtungen, p)
+
+    def _verbuendete_halten(self, zeit: float, sichtungen: list[minimap.Sichtung], p: Partie) -> None:
+        """Verbuendete (und du) sind auf der Minimap IMMER zu sehen - fuer das eigene Team gibt es keinen Nebel.
+        Fehlt einer, liegt sein Icon unter einem anderen oder ist am Kartenrand abgeschnitten (Brunnen). Live
+        26.09.: Riven galt nur in 72 % der Takte als sichtbar, Braum in 57 %; um 2:00 lag Riven unter Heimerdinger,
+        von 11:45 bis 14:08 stand sie im Brunnen, halb ueber den Kartenrand. Dann gilt er als gesehen:
+          - unter einem Icon, das auf seiner letzten Stelle liegt: er laeuft mit ihm mit,
+          - zuletzt im Brunnen: er steht noch dort,
+          - seit der letzten Sichtung gestorben und wieder am Leben: er steht im Brunnen.
+        Ohne einen dieser Gruende bleibt er unbekannt (kein Raten)."""
+        if not p.ich or not p.mein_team:
+            return
+        gefunden = {sp.name for s in sichtungen if (sp := zuordnen(s, p)) is not None}
+        for sp in p.team(p.mein_team):
+            if sp.tot:
+                self._tode[sp.name] = p.zeit
+                continue
+            schl = (sp.name, sp.team)
+            alt = self.zuletzt.get(schl)
+            if sp.name in gefunden or alt is None:
+                continue
+            t0, x0, y0 = alt
+            if self._tode.get(sp.name, -1e9) >= t0 - 1:
+                bx, by = BRUNNEN.get(sp.team, (x0, y0))
+                self.zuletzt[schl] = (zeit, bx, by)     # nach dem Tod: Wiedereinstieg im Brunnen
+                continue
+            andere = [s for s in sichtungen if (sp2 := zuordnen(s, p)) is None or sp2.name != sp.name]
+            naechst = min(andere, key=lambda s: (s.x - x0) ** 2 + (s.y - y0) ** 2) if andere else None
+            deckung = (((naechst.x - x0) ** 2 + (naechst.y - y0) ** 2) ** 0.5, naechst) if naechst else None
+            if deckung is not None and deckung[0] <= DECKUNG:
+                self.zuletzt[schl] = (zeit, deckung[1].x, deckung[1].y)
+            elif "Basis" in minimap.ort(x0, y0, p.mein_team) and sp.team == p.mein_team:
+                self.zuletzt[schl] = (zeit, x0, y0)
+            elif zeit - t0 <= 3 and self.stand_still(sp):
+                bx, by = BRUNNEN.get(sp.team, (x0, y0))
+                self.zuletzt[schl] = (zeit, bx, by)     # stand 5,5 s still und ist weg: Recall, jetzt im Brunnen
 
     def _fernsprung(self, sp: Spieler, alt: tuple[float, float, float], zeit: float, x: float, y: float,
                     p: Partie) -> None:
@@ -193,8 +232,9 @@ class Lagebild:
             self.fernspruenge.append(t)
 
     def tod_merken(self, p: Partie) -> None:
-        """Wer gerade tot ist - ein Wiedereinstieg in der Basis ist kein Teleport."""
-        for s in p.gegner():
+        """Wer gerade tot ist - ein Wiedereinstieg in der Basis ist kein Teleport, und ein Verbuendeter steht
+        danach im Brunnen."""
+        for s in p.spieler:
             if s.tot:
                 self._tode[s.name] = p.zeit
 

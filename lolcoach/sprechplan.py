@@ -59,7 +59,9 @@ class Sprechplan:
                                and zeit - self.thema_zuletzt.get(WIDERSPRUCH[a.thema][0], -1e9) < WIDERSPRUCH[a.thema][1])]
         if not self.warte:
             return None
-        a = max(self.warte, key=lambda a: (a.prio, a.zeit))
+        # bei gleichem Vorrang geht eine Gefahr vor (Pruefpartie 2, 19:39: "Du hast 5900 Gold ... recall" verdraengte
+        # "Du stehst tief, Varus und Rakan seit 32 s weg" - 16 s vor dem Tod)
+        a = max(self.warte, key=lambda a: (a.prio, a.thema == "gefahr", a.zeit))
         frei = self.frei_ab + (RUHE_VOR_HINWEIS if a.prio == HINWEIS else 0.0)
         if zeit < frei and a.prio < SOFORT:
             return None

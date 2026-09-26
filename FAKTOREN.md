@@ -69,7 +69,7 @@ Sicherheit), `komponist.py` (Saetze je Anlass), `regeln.py` (wann).
 
 | Faktor | Status | Wo |
 |---|---|---|
-| alle Positionen, Tuerme, Platten, Objectives | rechnet | Minimap, Events, Platten-Ziffern (`platten.py`) |
+| alle Positionen, Tuerme, Platten, Objectives | rechnet | Minimap, Events, Platten-Ziffern (`platten.py`); Verbuendete unter anderen Icons/im Brunnen gehalten (`lage._verbuendete_halten`, 88-100 % statt 57-94 %) |
 | wer kann dich erreichen, wer nicht (plausibel) | rechnet | `bewertung.bedrohung/plausibel`, `regeln._tief_ohne_sicht` |
 | Ward-Vorschlag mit Zweck (Objective, Jungler-Weg) | rechnet | `regeln._ward`, `denker.ward_plan` |
 | eigene/gegnerische Wards, Kontroll-Augen auf der Karte | offen | Ward-Icons der Minimap; ein erster Versuch fand sie neben Champion-Icons und Vasallen schwer unterscheidbar |
