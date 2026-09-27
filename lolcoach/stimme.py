@@ -26,6 +26,7 @@ _ASYNC, _UNTERBRECHEN = 1, 2
 ZWEITE_ANFRAGE_NACH = 0.25   # Sekunden ohne Audio, bis eine zweite Synthese-Anfrage mitlaeuft
 # (gemessen 27.09.: erstes Audio im Median 0,19 s, jede vierte Anfrage 0,6 s und mehr)
 ENDE = object()              # _Strom.stueck: es kommt kein Stueck mehr
+ERSTER_TON_HOECHSTENS = 2.0  # Sekunden ohne Audio fuer den ersten Teil, dann spricht die Windows-Stimme
 # Live 26.09., 23:06-23:16 (Practice Tool): die Stimme blieb nach einem Antippen der Sprechtaste minutenlang
 # angehalten; danach kam "Milio hat Flash benutzt" 154 s spaet - Carlos: "sowas von in der Vergangenheit".
 PAUSE_HOECHSTENS = 15.0      # so lange darf die Stimme fuer eine Frage angehalten sein, dann geht sie von selbst weiter
@@ -271,7 +272,9 @@ class _Neural:
                     los(i + self.VORAUS)
                 n = 0
                 while True:
-                    bis = time.monotonic() + (8.0 if n == 0 else 3.0)
+                    # Haengt der Dienst beim ersten Teil, lieber gleich die Windows-Stimme als 8 s Stille (neuer Text
+                    # braucht ~0,45 s, 9 von 10 unter 1,4 s - Aktualitaet vor Klang, Carlos 26.09.)
+                    bis = time.monotonic() + (ERSTER_TON_HOECHSTENS if i == 0 and n == 0 else 4.0 if n == 0 else 3.0)
                     st = None
                     while st is None and time.monotonic() < bis:
                         st = s.stueck(n, min(bis, time.monotonic() + PRUEFEN_ALLE))
