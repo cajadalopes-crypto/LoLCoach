@@ -75,7 +75,9 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
   vorher 0,63 s); neuer Text ~0,45 s beim Dienst. Eigene Position aus dem Kamerarahmen, wenn das Icon verdeckt ist
   (5004a96), Verbuendete unter Icons 6 s (1bfb9cd). Satzanfaenge mit der Handlung vorn und vorgewaermt: 75-88 %
   der Ansagen beginnen aus dem Speicher (407c931). Haengt der Dienst beim ersten Teil > 2 s, spricht die
-  Windows-Stimme (ddb7bb2) - hoert Carlos sie oft, ist der Dienst live langsam: melden. LIVE PRUEFEN: klingt die
+  Windows-Stimme (ddb7bb2) - hoert Carlos sie oft, ist der Dienst live langsam: melden. Danach gerechnet statt
+  Vorlage: Jungler Level 6 (5b4c355), Vorwarnung tot/im Brunnen (40f8d97), Tod mit dem Rat davor (127c88a, c8f723b).
+  LIVE PRUEFEN: klingt die
   Stimme auf beiden Ohren, ohne Knacken/Aussetzer, und nicht abgeschnitten am Satzende? Sonst `_Neural._wasapi = False`
   setzen (MME) und melden. Danach `python werkzeuge/verzoegerung_live.py`.
   Satzlogik aus dem Nachlauf aller drei Partien (83e8923): kein zweites "geh zurueck" 12 s nach dem ersten (ausser
