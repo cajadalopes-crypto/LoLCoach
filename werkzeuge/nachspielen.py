@@ -54,6 +54,7 @@ class Takt:
     modus: str | None = None                # Modus des Kerns in diesem Takt (Schritt 2)
     plan: str | None = None                 # Plan-Art des Kerns (Schritt 3; im Folgeschritt die Art, der er entspricht)
     gefahr: bool = False                    # schlaegt das Gefahr-Modell an (7.5)?
+    plan_ptod: float | None = None          # p_tod des Kern-Plans in diesem Takt (Qualitaetsrunde 1, plan_p_tod_max)
 
 
 @dataclass
@@ -120,7 +121,8 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
                                frozenset(g.champion for g in b.gegner if g.sichtbar and g.abstand is not None
                                          and g.abstand <= NEU_SICHTBAR_RADIUS) if b else frozenset(),
                                werk.modus, kern.fuehrer.plan.als() if kern.fuehrer.plan is not None else None,
-                               kern.gefahr))
+                               kern.gefahr,
+                               kern.fuehrer.plan.handlung.p_tod if kern.fuehrer.plan is not None else None))
         while offen and p.zeit >= offen[0]:
             soll = offen.pop(0)
             lauf.halte[soll] = (p, b, lage_kurz(p, b, lb))

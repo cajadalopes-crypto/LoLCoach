@@ -52,6 +52,8 @@ class WellenStand:
     frisch: bool
     turm_dein: float = 0.35   # vorderster stehender Turm deiner Seite auf dieser Lane (s aus deiner Sicht)
     turm_ihr: float = 0.65
+    naechste_dein: float | None = None   # F1: deine naechste (nachlaufende) Welle, Spitze als s aus deiner Sicht
+    naechste_ihr: float | None = None
 
 
 @dataclass
@@ -185,13 +187,35 @@ def turm_s(lane: str, team: str, mein: str, stehen: dict, rueckfall: float) -> f
     return float(pr[1] if mein == BLAU else 1.0 - pr[1])
 
 
+def _ich_s(pos, lane: str, mein: str) -> float | None:
+    """Deine Lage auf `lane` als s aus deiner Sicht, oder None (nicht auf der Lane / unbekannt)."""
+    if pos is None:
+        return None
+    from ..bewertung import BREITE, HOEHE
+    from ..welle import _projektion
+    pr = _projektion(pos[0] / BREITE, 1.0 - pos[1] / HOEHE)
+    if pr is None or pr[0] != lane:
+        return None
+    return float(pr[1] if mein == BLAU else 1.0 - pr[1])
+
+
+@lru_cache(maxsize=4)
+def _icon_s(lane: str) -> float:
+    """Radius eines Champion-Icons samt Ring als s-Strecke auf `lane`."""
+    import math
+    from ..welle import ICON_RADIUS, LANES, RING_BIS
+    p = LANES[lane]
+    return ICON_RADIUS * RING_BIS / sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(p, p[1:]))
+
+
 class WellenPuffer:
     """Buch 1, 1.2/1.4: die Lesungen deiner Lane der letzten 20 s -> geglaettete Welle und ihr Zustand (Hysterese
     3 s, GECRASHT_BEI_IHM sofort - er ist ein Plan-Schritt)."""
 
     def __init__(self, cfg: dict):
         self.c = cfg["welle"]
-        self.lesungen: deque = deque()        # (Spielzeit, unsere, ihre, front aus deiner Sicht)
+        # (Spielzeit, unsere, ihre, front, Front-Vasallen unsere, ihre, naechste deine, ihre) - alles aus deiner Sicht
+        self.lesungen: deque = deque()
         self._letzte = None
         self.zustand, self.seit = "UNBEKANNT", 0.0
         self.kandidat, self.kandidat_seit = None, 0.0
@@ -206,7 +230,14 @@ class WellenPuffer:
         blau = mein == BLAU
         wir, die = (w.blau, w.rot) if blau else (w.rot, w.blau)
         front = None if w.front is None else (w.front if blau else 1.0 - w.front)
-        self.lesungen.append((lz, wir, die, front))
+        vb, vr = tuple(getattr(w, "vorn_blau", ())), tuple(getattr(w, "vorn_rot", ()))
+        nb, nr = getattr(w, "naechste_blau", None), getattr(w, "naechste_rot", None)
+        if blau:
+            vw, vd, nw, nd = vb, vr, nb, nr
+        else:
+            vw, vd = tuple(1.0 - s for s in vr), tuple(1.0 - s for s in vb)
+            nw, nd = (None if nr is None else 1.0 - nr), (None if nb is None else 1.0 - nb)
+        self.lesungen.append((lz, wir, die, front, vw, vd, nw, nd))
 
     def stand(self, zeit: float, lane: str, mein: str, pos, stehen: dict) -> WellenStand:
         c = self.c
@@ -240,19 +271,47 @@ class WellenPuffer:
         dein = turm_s(lane, mein, mein, stehen, c["turm_dein"])
         ihr = turm_s(lane, gegenteam(mein), mein, stehen, c["turm_ihr"])
         frisch = len(jung) >= 3
-        roh = self._roh(zeit, frisch, unsere, ihre, front, trend, dein, ihr)
+        # F1: Front-Vasallen je Turm-Zone - innerhalb crash_zone VOR dem vordersten Turm (was dahinter laeuft, zaehlt
+        # nicht; turm_toleranz: wer den Turm schlaegt, steht auf der Karte auch knapp dahinter)
+        z, tol = c.get("crash_zone", 0.08), c.get("turm_toleranz", 0.02)
+        am_dein = am_ihr = None
+        if quelle and len(quelle[0]) > 4:
+            ich = _ich_s(pos, lane, mein)
+            r = _icon_s(lane) if c.get("icon_deckung", True) else None
+            # Icon-Deckung (nicht im Buch, Qualitaetsrunde 1): steht DEIN Icon in der Zone, verdeckt es die Vasallen
+            # darunter (144655, 3:13 / 5:38: Riven farmt vor ihrem Turm, 1-2 gegnerische am Rand ihres Icons
+            # sichtbar). Dann reicht einer am Icon-Rand; gezaehlt wird bis knapp hinter den Rand.
+            bis_d = (dein + z if (r is None or ich is None or not dein - tol <= ich <= dein + z)
+                     else max(dein + z, ich + r + tol))
+            ab_i = (ihr - z if (r is None or ich is None or not ihr - z <= ich <= ihr + tol)
+                    else min(ihr - z, ich - r - tol))
+
+            def zone(x, i, von, bis):
+                return sum(von <= s <= bis for s in x[i])
+            am_dein = (statistics.median(zone(x, 4, dein - tol, dein + z) for x in quelle),
+                       statistics.median(zone(x, 5, dein - tol, bis_d) for x in quelle),
+                       bis_d > dein + z)
+            am_ihr = (statistics.median(zone(x, 4, ab_i, ihr + tol) for x in quelle),
+                      statistics.median(zone(x, 5, ihr - z, ihr + tol) for x in quelle),
+                      ab_i < ihr - z)
+        roh = self._roh(zeit, frisch, unsere, ihre, front, trend, dein, ihr, am_dein, am_ihr)
         if roh == self.zustand:
             self.kandidat = None
-        elif roh == "GECRASHT_BEI_IHM":
+        elif roh == "GECRASHT_BEI_IHM" or (roh == "GECRASHT_BEI_DIR" and c.get("crash_dir_sofort", True)):
+            # GECRASHT_BEI_DIR sofort (nicht im Buch, Qualitaetsrunde 1): mit der Front-Regel (>= 3 am Turm, F1) so
+            # scharf wie sein Spiegel - mit 3 s Hysterese kam 144655 5:17 erst 5:20
             self.zustand, self.seit, self.kandidat = roh, zeit, None
         else:
             if self.kandidat != roh:
                 self.kandidat, self.kandidat_seit = roh, zeit
             if zeit - self.kandidat_seit >= c["zustand_hysterese_s"]:
                 self.zustand, self.seit, self.kandidat = roh, zeit, None
-        return WellenStand(lane, unsere, ihre, front, trend, self.zustand, self.seit, frisch, dein, ihr)
+        nd = [x[6] for x in quelle if len(x) > 6 and x[6] is not None]
+        ni = [x[7] for x in quelle if len(x) > 7 and x[7] is not None]
+        return WellenStand(lane, unsere, ihre, front, trend, self.zustand, self.seit, frisch, dein, ihr,
+                           statistics.median(nd) if nd else None, statistics.median(ni) if ni else None)
 
-    def _roh(self, zeit, frisch, unsere, ihre, front, trend, dein, ihr) -> str:
+    def _roh(self, zeit, frisch, unsere, ihre, front, trend, dein, ihr, am_dein=None, am_ihr=None) -> str:
         """Buch 1, 1.4 - von oben nach unten, die erste passende Zeile."""
         c = self.c
         r = c["turm_reichweite_s"]
@@ -271,10 +330,19 @@ class WellenPuffer:
             self._halt_seit = zeit if self._halt_seit is None else self._halt_seit
         else:
             self._halt_seit = None
-        if front is not None and front >= ihr - r and unsere >= 1 and (ihre is None or ihre <= 1):
-            return "GECRASHT_BEI_IHM"
-        if front is not None and front <= dein + r and ihre is not None and ihre >= 1 and unsere <= 1:
-            return "GECRASHT_BEI_DIR"
+        n = c.get("crash_mindestens", 3)
+        if am_ihr is not None:
+            # F1: >= 3 eigene Front-Vasallen innerhalb crash_zone vor seinem vordersten Turm, <= 1 seine dort -
+            # egal, was dahinter laeuft; GECRASHT_BEI_DIR spiegelbildlich. Deckt dein Icon die Zone, reicht einer.
+            if am_ihr[0] >= (1 if am_ihr[2] else n) and (ihre is None or am_ihr[1] <= 1):
+                return "GECRASHT_BEI_IHM"
+            if ihre is not None and am_dein[1] >= (1 if am_dein[2] else n) and am_dein[0] <= 1:
+                return "GECRASHT_BEI_DIR"
+        else:
+            if front is not None and front >= ihr - r and unsere >= 1 and (ihre is None or ihre <= 1):
+                return "GECRASHT_BEI_IHM"
+            if front is not None and front <= dein + r and ihre is not None and ihre >= 1 and unsere <= 1:
+                return "GECRASHT_BEI_DIR"
         if unsere >= c["gross_ab"] and tr >= 0:
             return "GROSS_ZU_IHM"
         if ihre is not None and ihre >= c["gross_ab"] and tr <= 0:

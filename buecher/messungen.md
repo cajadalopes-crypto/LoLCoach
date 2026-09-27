@@ -4,6 +4,214 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Qualitätsrunde 1 – Prüfung vom 27.09.2026, A–F (27.09.2026)
+
+Auftrag: `buecher/protokolle/PRUEFUNG_2026-09-27.md`, A–F, noch nicht Schritt 5. Vorher committet: ef08644
+(Prüfungsdatei samt Stand). Offline gemessen, der Coach wurde nicht gestartet.
+
+### Umgesetzt
+
+- **A. Verlorene Lane:**
+  - Verloren heißt: Kräfte ≤ −1 oder zwei Tode gegen den Lane-Gegner (`modi.lane_verloren`).
+  - Der Kern sagt dann **einmal** den Schutzplan `WELLE_HALTEN`: „Gangplank ist vorn: lass die Top-Welle zu
+    deinem Turm kommen und farm dort, kein Trade bis Caulfields Kriegshammer.“
+    - Der Plan gilt nur bei Leben ≥ `leben_kritisch` und nur, solange kein anderer Gegner beiträgt.
+    - Er ersetzt FARMEN und streicht TRADE, ALL_IN und STAPELN.
+  - Gefahr am sicheren Ort (≤ 4 s) wird nicht gesagt, der Plan hält. Ebenso Gefahr, zu der nur der Lane-Gegner
+    einer verlorenen Lane beiträgt.
+  - Nach Tod oder Basis gilt ein Plan wieder als neu (`_angesagt` geleert).
+- **B. Plan-Wahl:**
+  - Die Gefahr-Regel wechselt auf den besten Kandidaten, den das Gate nicht auslöst.
+  - Hält die Hysterese einen schlechteren Plan, steht der Grund im Protokoll (`gehalten`).
+  - Test `neuer_plan_ist_der_beste` (600 Zufallslagen).
+- **C. BASIS/TOT:**
+  - WOHIN kommt zuerst aus der Karten-Rechnung, dann ein Objective, wenn es nehmbar ist (`mindestens`), dann
+    Seitenwelle oder Team.
+  - Jedes Ziel wird mit der Gefahr **bei Ankunft** gerechnet (`gefahr.p_tod_am`; E2).
+  - Ein Ziel je Aufenthalt in TOT und BASIS zusammen (`_wohin`). Es wechselt nur, wenn sich Kills, Strukturen
+    oder lebende Objectives ändern.
+  - Genannte Fenster sind ≥ Weg + Dauer (C3; Test `fenster_gruende_sprechen_dafuer`).
+- **D. Rückzug:**
+  - Ein Rückzug ist eine Episode (`RUECKZUG_EPISODE_S` = 15 s): ein Satz, einer mehr nur bei einem neu genannten
+    Gegner, der Back-Schritt einmal.
+  - „Jetzt back“ nur, wenn `nie_back` nichts dagegen hat. Kein „Denk dran“ in GEFAHR.
+  - Neue Kennzahl `fassungswechsel`. Der erste „Jetzt back“ nach „Raus“ ist der Plan-Schritt (D2).
+  - Beim Nachmessen gefunden: KAUFEN kam nach einem Teilkauf noch einmal. Die Sperre zählt ihn jetzt nach seinem
+    Weiterweg (133930, 17:45/17:57; Szenario `1745-kauf-einmal`, Gegenprobe rot).
+- **E. Sätze:**
+  - E1: Todesrückblick in zwei Sätzen, ≤ 25 Wörter, ohne Zahlen.
+    - Beteiligt ist auch, wer in der letzten Sekunde sichtbar in 2000 stand oder in den 10 s davor nah war.
+    - Der Rückblick wird nicht mehr vom Strategen umformuliert. Die Fakten liegen in `lage.letzter_tod` für
+      „warum bin ich gestorben?“.
+  - E3: keine Wellenbefehle in BASIS.
+  - E4: 20 s nach einer Gefahr keine Vorwärts-Handlung, außer die Gefahr ist sichtbar vorbei.
+  - E5: das genannte Item ist mit dem Gold bezahlbar (Test `gold_reicht_fuer_das_genannte_item`).
+  - E6: ohne Modus spricht keine alte Regel (nur mit Kern).
+  - E7: kein AFK in KAMPF; Gegner gelten nie als AFK (die API zeigt ihr Level veraltet).
+  - E8: Uhrzeiten als Wörter („acht Minuten“, „sieben siebenundfünfzig“), dazu „du bist pünktlich da“ statt
+    Sekundenrechnung.
+    - Gegenprobe mit edge-tts und Whisper: „7:57“ wurde vorher „sieben, fünf, sieben“ gehört.
+- **4.3 auch für den Ort:** Verliert die Minimap dich kurz, hält der Plan (102112, 36:06).
+- **F1** (Nachtrag Buch 1, Kapitel 7.1) und **F2**: siehe unten.
+
+### Abnahme
+
+| Abnahme | Soll | Ist |
+|---|---|---|
+| Szenarien zuerst rot | ja | **14 von 16 neuen rot** mit ef08644. Grün vorher waren 0349 (die Sätze stimmten: Rest 713 ≤ 1050, 1175 ≤ 1400) und 0900 (Riven stand 7 s vor ihrem Turm, der Gank kam 9:20) – beide bleiben als Wächter. |
+| `tests/alle.py` | grün | **grün** (8 / 8) |
+| alle Szenarien | grün | **29 / 30** (2 übersprungen, brauchen Claude). **Rot: `0843-todesrueckblick`** – die Daten widersprechen dem Szenario. Riven starb 8:34 (EventTime 514,1) an Yasuo allein, `Assisters []`. Brand war nicht beteiligt und stand laut Minimap etwa 4000 Einheiten weg, nicht zu sehen. `muss_nennen_eins = ["Brand", "zwei"]` kann nur ein erfundener Satz erfüllen. Der Rest des Szenarios ist grün (zwei Sätze, ≤ 25 Wörter, keine Zahlen). Ob Brand genannt werden soll, entscheidet Carlos. |
+| Konstruierte Lagen | grün | **38 / 38** (`test_kern`) |
+| Protokolle | 5 | `buecher/protokolle/` 102112, 133930, 140253, 144655, 145702 (neu erzeugt mit dem Endstand) |
+| Abgebrochene Sätze | nur durch GEFAHR | 144655 1, 140253 0, 102112 2, 133930 9, 145702 1 – **alle** durch einen Gefahr-Satz (ZURUECK, Anlauf, „Nimm keinen Kampf an … geh zurück“). Die 9 in 133930 sind alte Regeln in OBJECTIVE/KAMPF (Schritt 5). |
+| Fassungswechsel (D4) | 0 | **0** in 102112, 133930, 140253, 144655 (vor dem KAUFEN-Fix 133930: 1) |
+| F1: 144655 ≥ 8 von 10 eindeutigen richtig | ja | **9 von 11 (82 %)** |
+| F1: 3:13, 5:17, 5:38 sind GECRASHT_BEI_DIR | ja | **ja, alle drei** |
+| F1: 133930 ≥ 8 von 10 | ja | **nicht belegbar**, s. u.: die Minimap-Bilder sind weg. Mit den live erkannten Punkten 4 von 7. |
+| F2: ≥ 80 % der Sprünge erkannt, ≤ 1 falscher Flash je Partie | ja | **nicht erreicht**, s. u. |
+| F2: Dashboard zeigt jeden erkannten Flash mit Restzeit | ja | **ja** (Headless-Chrome im Nachspielen, 133930 2:09: „Gwen Flash 4:45“, „Xin Zhao Flash 4:24“) |
+
+### Kennzahlen (Kern; in Klammern Schritt 4)
+
+| Aufnahme | ungefragt je 30 min | Lane-Phase je 30 s | Kehrtwenden | Fassungswechsel | 9.4 1–4 | GEFAHR / PLAN / ERINNERUNG / BESTAETIGUNG |
+|---|---|---|---|---|---|---|
+| 2026-09-27_102112 | 53 (56) | 0,79 | 0 | 0 | 0 | 8 / 28 / 1 / 2 |
+| 2026-09-27_133930 | 85 (88) | 1,25 (1,21) | 0 | 0 | 0 | 9 / 17 / 2 / 1 (11 / 17 / 3 / 0) |
+| 2026-09-27_140253 | 53 (61) | 0,90 (1,04) | 0 | 0 | 0 | 2 / 13 / 0 / 1 (3 / 14 / 1 / 0) |
+| 2026-09-27_144655 | 62 (56) | 1,06 (0,96) | 0 | 0 | 0 | 2 / 11 / 1 / 1 (5 / 5 / 0 / 1) |
+
+144655 hat weniger Gefahr-Sätze und mehr Pläne: aus fünf „Raus“ sind zwei geworden, dazu der Schutzplan der
+verlorenen Lane. Er wird nach jedem Tod und jeder Basis neu gesagt (1:37, 2:14, 5:39, 7:10). Um 3:34 kam er ein
+fünftes Mal, weil sein Item wechselte („kein Trade bis Axiombogen“).
+
+### F1 – Welle: Front statt Summe
+
+Umgesetzt wie in der Prüfung (Nachtrag Buch 1, Kapitel 7.1): Gruppen entlang der Lane, die Front, nachlaufende
+Wellen als `naechste_dein`/`naechste_ihr`, `GECRASHT_*` ≥ 3 in 0,08 vor dem Turm, keine Zeitpunkte mit Tod oder
+Recall in der Eichung.
+
+Die drei Fälle kamen damit **nicht** grün. Die Ursachen lagen im Bild:
+
+- **3:13 und 5:38:** Riven farmt vor ihrem Turm, ihr Icon verdeckt die gegnerischen Vasallen. Sichtbar sind 1–2
+  am Rand, 0,085 vor dem Turm.
+- **5:17:** Rivens weiße Pfadlinie (1 px, dunkler Schatten) zerschneidet drei gegnerische Vasallen am Turm in
+  Stücke von 16/19/53 Flächeneinheiten. Gelesen wurde einer, um 5:15 waren es drei.
+- **Hysterese:** Mit ihr schaltet der Zustand erst 5:20.
+
+Drei Zusätze, je mit Schalter in `kern.toml [welle]`:
+
+- `SCHNITT_FLAECHE`: angeschnittene Stücke an weißen Linien zählen, Hälften einmal.
+- `icon_deckung`: dein Icon in der Zone, dann reicht einer am Rand.
+- `crash_dir_sofort`: GECRASHT_BEI_DIR ohne Hysterese, wie sein Spiegel.
+
+Gegenprobe für die Regel: Test `wellen_front`, mit der alten Summenregel ZU_IHM.
+
+**144655** (Bilder da, neu beschriftet; `buecher/wellen_eichung/2026-09-27_144655.json`):
+
+- 22 Zeitpunkte, 11 eindeutig, 9 richtig (82 %). Vorher waren es 4 von 10.
+- Falsch:
+  - 5:59: Kern ZU_IHM, wahr ZU_DIR.
+  - 8:59: Kern ZU_IHM, wahr MITTE. Die gegnerische Welle liegt unter Rivens Icon.
+- **Umbeschriftet:** 7:00 (3 gegnerische am Turm, 1 eigener) war bis F1 ZU_DIR. Nach der F1-Definition ist das
+  GECRASHT_BEI_DIR. Ohne diese Umbeschriftung: 8 von 11.
+
+**133930:** Die Minimap-Ausschnitte wurden am 27.09. um 17:26 aufgeräumt (`lage.bilder_aufraeumen`: nur die
+letzten drei Partien). Das tat Carlos' laufender Coach nach Partie 164326.
+
+- `wellen_eichung.py` rechnet deshalb mit den **live** erkannten Punkten (`ereignisse.jsonl.gz`). Das ist der
+  Leser von damals, mit Rauten- statt Ring-Maske und ohne Pfadlinie.
+- Ergebnis: 4 von 7 eindeutigen (57 %).
+- 4:00 (1 gegnerischer an deinem Turm, Rest unter Gwens Icon) ist nach F1 kein Crash mehr (≥ 3) und steht jetzt
+  auf „unklar“.
+- Eine echte Messung braucht eine neue Partie mit Bildern. Der Bilderordner lässt sich jetzt mit einer Datei
+  `BEHALTEN` schützen; gesetzt für 102112, 140253, 144655.
+
+**Grenze Vasallen unter fremden Icons:** Betroffen sind 6 Zeitpunkte ausdrücklich unter einem Icon (144655:
+1:40, 5:10, 5:52; 133930: 4:00, 4:41, 8:08). Dazu kommen 5, an denen Riven und Gangplank an der Welle stehen und
+keine Vasallen zu sehen sind (vermutlich darunter), und die zwei Fehler 5:59 und 8:59 (die Welle liegt unter
+Rivens Icon).
+
+### F2 – Flash: erst gemessen (`werkzeuge/flash_messung.py`)
+
+| | 144655 | 140253 | 133930 | zusammen |
+|---|---|---|---|---|
+| Sprünge 300–450 in ≤ 0,25 s (Sichtungen, F2.1) | 3 | 10 | 23 | 36 |
+| davon Gegner | 2 | 1 | 4 | **7** |
+| davon heute als Flash erkannt | 1 | 0 | 2 | **3 (43 %)** |
+| Dein Flash laut HUD (sichere Wahrheit) | 2 | 3 | 5 | **10** |
+| davon als Sprung auf der Minimap zu sehen | 0 | 0 | 0 | **0** |
+| Chat „<Champion> hat Blitz benutzt“ im gelesenen Text | 1 | 1 | 1 | **3**, alle 3 wurden Timer |
+| Flash-Timer im Nachspielen | 1 (Minimap) | 2 (Chat, Minimap) | 3 (Chat, 2 Minimap) | 6 |
+
+Die 7 gegnerischen Sprünge, und wo sie verloren gehen:
+
+- Erkannt: Gangplank 1:56 (144655), Gwen 1:54 und Tristana 14:50 (133930).
+- Kha'Zix 4:41: zwei Lesungen 0,2–0,25 s auseinander (die Live-Grenze ist 0,2 s).
+- Tahm Kench 1:01: nicht bestätigt, bleibt keine 0,2 s am Landepunkt.
+- Zoe 17:59 und 19:01: als Blink-Champion bewusst ausgenommen.
+
+Bis auf Gangplank haben alle einen eigenen Dash oder Blink. Die Sprünge, die die Minimap sieht, sind also
+überwiegend Dashes.
+
+**Gegenprobe an den behaltenen Ausschnitten** (1 Bild/s; 133930 hat keine mehr):
+
+- **Gangplank 1:56:** Kampf mit Riven, beide Icons übereinander. Der Flash ist echt: Carlos pingte ihn um 2:05,
+  und Riven flashte laut HUD im selben Moment.
+- **Kha'Zix 4:42:** Ein Ausschnitt genau im Sprung zeigt ihn am Landepunkt. Der Sprung ist echt, aber Flash und
+  sein E (Sprung 700) sind nicht zu unterscheiden.
+- **Tahm Kench 1:01:** Er liegt halb unter Zoes Icon; der „Sprung“ ist die wandernde Mitte des verdeckten Icons.
+  Das ist ein Verfolger-Fehler, und die Live-Kette verwarf ihn zu Recht.
+
+**Der Befund:** Ein Flash fällt fast immer in einen Kampf, und im Kampf liegen die Icons übereinander. Bei
+Rivens eigenen 10 Flashs, bei denen der Zeitpunkt feststeht, sah es so aus:
+
+- 8-mal führte der Verfolger ihr Icon nur als verdeckt (Güte 0, wird nie als Sprung gewertet) oder hatte es
+  nicht.
+- 2-mal sah er keinen Sprung.
+
+Für Gegner gilt dasselbe Bild. Der Bildschirmweg sieht die Kämpfe und liest sogar Namen (Xin Zhao, Zac, Yasuo).
+Er verwirft sie aber zu Recht, weil sie alle einen eigenen Dash haben („lieber stumm als falsch“).
+
+- **Einzige sichere Quelle:** der Chat-Ping aus der Anzeigetafel. 3 von 3 kamen an, einen davon hat Carlos
+  selbst gepingt.
+- **Falsche Flashs:** Drei Minimap-Timer betreffen Champions mit Dash (Yasuo 10:01, Gwen 1:54, Tristana 14:50).
+  Sie sind unbestätigt. Waren es Dashes, hat 133930 zwei falsche.
+
+**Abnahme nicht erreicht.** Mit Schwellen ist das nicht zu holen: jede Lockerung macht aus Dashes Flashs.
+Möglichkeiten, **Carlos' Entscheidung:**
+
+1. Die Minimap verwirft wie der Bildschirm Sprünge von Dash-Champions. Das ergibt weniger, aber sichere Timer.
+2. Den Flash-Effekt im Spielbild erkennen (gelber Blitz an Absprung und Landung). Das ist eine neue
+   Wahrnehmungsaufgabe und unterscheidet Flash von Dash.
+3. Carlos pingt gegnerische Flashs in der Anzeigetafel. Das kommt heute schon zu 100 % an.
+
+### Abweichungen vom Buch und Entscheidungen
+
+1. **F1-Zusätze:** Pfadlinie, Icon-Deckung und GECRASHT_BEI_DIR sofort (s. o.). Alle drei sind abschaltbar.
+2. **Umbeschriftung 7:00** (144655) und **4:00** (133930) nach der neuen Definition. Beide sind oben genannt,
+   mit Zahl ohne Umbeschriftung.
+3. **Todesrückblick nicht mehr situativ:** Der Stratege formuliert ihn bis Schritt 6 nicht mehr frei. Der Weg
+   zum Strategen bleibt und ist getestet (`test_stratege`).
+4. **Flash-Meldungen warten auf das Briefing**, statt es zu unterbrechen (nur GEFAHR unterbricht).
+5. **Gegner-AFK aus:** Die API zeigt fremde Level nur, wie zuletzt gesehen. Ein „AFK“-Gegner war ein Irrtum.
+6. **Konstanten nicht im Buch:**
+   - `SICHER_DORT_S` = 4 s, `NACH_GEFAHR_S` = 20 s, `RUECKZUG_EPISODE_S` = 15 s, `PUENKTLICH_S` = 5 s.
+   - `[modus] ort_halten_s`.
+   - `[welle] turm_toleranz` = 0,02, `icon_deckung`, `crash_dir_sofort`, `welle.SCHNITT_FLAECHE` = 10.
+7. **Tests an die Prüfung angepasst:**
+   - `modus_sperre_budget`: ohne Modus → stumm (E6).
+   - `test_stratege`: der lange Tod gibt zwei Sätze (E1).
+8. **Neue Werkzeuge:**
+   - `werkzeuge/flash_messung.py` (F2).
+   - `werkzeuge/dashboard_nachspielen.py`: das Dashboard mit dem Stand einer Aufnahme auf eigenem Port, neben
+     einem laufenden Coach.
+   - `wellen_eichung.py`: `--mit` für feste Zeitpunkte; ohne Bilder rechnet es mit den Live-Punkten.
+9. **Nebenbei:** Während der Arbeit lief Carlos' Coach (Start 16:43) und eine Partie (17:31). Schwere Läufe
+   liefen mit niedriger Priorität, der Coach wurde nicht angefasst. Die Minimap-Bilder von 140253 und 144655
+   sind vorsorglich gesichert.
+
+---
+
 ## Schritt 4 – SEITE, GRUPPE, UNTERWEGS, VERTEIDIGEN (27.09.2026)
 
 ### Umgesetzt

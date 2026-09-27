@@ -347,9 +347,32 @@ def teilsaetze(text: str) -> list[str]:
     return teile or [text]
 
 
+_EINER = ["null", "eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn", "elf", "zwölf",
+          "dreizehn", "vierzehn", "fünfzehn", "sechzehn", "siebzehn", "achtzehn", "neunzehn"]
+_ZEHNER = ["", "", "zwanzig", "dreißig", "vierzig", "fünfzig", "sechzig", "siebzig", "achtzig", "neunzig"]
+
+
+def zahl_wort(n: int) -> str:
+    """0-99 in Worten: 57 -> 'siebenundfünfzig'."""
+    if n < 20:
+        return _EINER[n]
+    z, e = divmod(n, 10)
+    return _ZEHNER[z] if e == 0 else ("ein" if e == 1 else _EINER[e]) + "und" + _ZEHNER[z]
+
+
+def spielzeit_wort(minute: int, sekunde: int) -> str:
+    """Eine Spielzeit so, dass die Stimme sie als Zeit liest (Qualitaetsrunde 1, E8 - mit edge-tts und Whisper
+    gemessen: "7 57" las Killian "sieben, fuenf, sieben", "8:00" als "acht Uhr"): 8:00 -> "acht Minuten",
+    7:57 -> "sieben siebenundfünfzig"."""
+    if sekunde == 0:
+        return "einer Minute" if minute == 1 else f"{zahl_wort(minute)} Minuten"
+    return f"{zahl_wort(minute)} {zahl_wort(sekunde)}"
+
+
 _SPRECHBAR = [
-    (re.compile(r"\b(\d{1,2}):00\b"), r"Minute \1"),            # Spielzeit "5:00" -> "Minute 5"
-    (re.compile(r"\b(\d{1,2}):(\d{2})\b"), r"\1 \2"),           # "2:45" -> "zwei fuenfundvierzig" (nicht "2 Uhr 45")
+    # Spielzeiten "5:00", "2:45" und die Schreibweise des Kerns "8 00", "7 57" -> Woerter (E8)
+    (re.compile(r"\b(\d{1,2})[: ]([0-5]\d)\b(?!\s*(?:%|Prozent|Gold|Sekunden|Vasallen))"),
+     lambda m: spielzeit_wort(int(m.group(1)), int(m.group(2)))),
     (re.compile(r"(\d+)\s?[-–]\s?(\d+)"), r"\1 bis \2"),        # "30-40" -> "30 bis 40"
     (re.compile(r"(\d+)\s?s\b"), r"\1 Sekunden"),              # "30 s" -> "30 Sekunden"
     (re.compile(r"(\d+)\+"), r"mehr als \1"),                  # "2500+" -> "mehr als 2500"

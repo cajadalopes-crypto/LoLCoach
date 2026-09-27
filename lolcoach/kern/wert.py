@@ -88,7 +88,12 @@ def bewerte(h: Handlung, m, cfg: dict, tk: float | None = None) -> Handlung:
     """p_tod (Gefahr-Modell ueber das Fenster der Handlung), EV und die sechs Fragen."""
     c = cfg["gefahr"]
     T = h.gefahr_t if h.gefahr_t is not None else h.dauer
-    p, wer = gefahr.p_tod(max(T, 1.0), m, c, am_turm=bool(h.daten.get("am_turm")), kampf_mit=h.daten.get("kampf_mit"))
+    if (am := h.daten.get("gefahr_am")) is not None:
+        # WOHIN aus Tod und Basis: die Gefahr am Ziel zur Ankunft, nicht hier (Pruefung E2)
+        p, wer = gefahr.p_tod_am(m, am[0], am[1], c, am_turm=bool(am[2]))
+    else:
+        p, wer = gefahr.p_tod(max(T, 1.0), m, c, am_turm=bool(h.daten.get("am_turm")),
+                              kampf_mit=h.daten.get("kampf_mit"))
     h.p_tod = min(1.0, p * h.schutz)
     if (kanal := h.daten.get("danach_kanal")):
         # erst raus, dann back (Buch 3, 2.2): der Kanal am sicheren Ort ist auch nicht umsonst - dort mit deinem Turm

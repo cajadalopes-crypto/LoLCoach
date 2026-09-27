@@ -1,0 +1,46 @@
+# Szenarien aus der Protokoll-Pruefung 27.09.2026 (buecher/protokolle/PRUEFUNG_2026-09-27.md), Partie 102112
+# (Bot-Partie, Riven Top gegen Sett). Format: Buch 0, 12.1.
+# Angelegt vor den Fixes der Qualitaetsrunde 1 - rot mit dem Stand von ef08644.
+
+aufnahme = "2026-09-27_102112"
+bots = true
+
+[[szenario]]
+id = "3002-basis-ein-ziel"
+zeit = "30:02"
+fenster = ["30:00", "31:55"]
+quelle = "Pruefung C: in der Basis Baron -> aeusserer Bot-Turm -> Baron -> Baron -> Bot-Turm"
+lage = "Riven 30:00-31:55 in der Basis (Kauf, dann Warten)."
+modus = ["BASIS"]
+ziele_max = 1
+darf_nicht_sagen = ["Baron lebt"]
+warum = """Ein Ziel je Basis-Aufenthalt, bis Carlos loslaeuft oder die Lage kippt. 'Baron lebt' ist kein Grund - ein
+Objective ist nur Ziel, wenn genug von euch rechtzeitig dort sind."""
+
+[[szenario]]
+id = "2547-grund-fuer-das-ziel"
+fenster = [["24:16", "24:36"], ["25:37", "25:57"], ["37:25", "37:45"]]
+quelle = "Pruefung C: 'fruehestens in 3 Sekunden kann einer von ihnen dort sein', '3 von ihnen sind noch 3 Sekunden tot', 'in 0 Sekunden'"
+lage = "Basis-Ziele nach der Lane-Phase."
+darf_nicht_sagen = ["in 0 Sekunden", "frühestens in 3 Sekunden", "noch 3 Sekunden tot"]
+muss_ziel = true
+warum = """Der gesprochene Grund muss fuer die Handlung sprechen: das genannte Fenster ist >= Weg + Dauer, sonst ist
+das Ziel falsch gewaehlt."""
+
+[[szenario]]
+id = "0554-kein-wellenbefehl-in-basis"
+fenster = ["5:52", "5:58"]
+quelle = "Pruefung E3: 5:54 'Top-Welle rein, dann back' im Modus LANE, Ort Basis"
+lage = "Riven ist gerade in die Basis gekommen (der Modus hinkt 1,5 s)."
+darf_nicht_sagen = ["Welle rein"]
+warum = "Buch 0, 9.4 Punkte 2 und 7 pruefen den Bereich, nicht nur den Modus: in der Basis kein Wellenbefehl."
+
+[[szenario]]
+id = "1048-keine-platte-nach-gefahr"
+fenster = ["10:40", "11:00"]
+quelle = "Pruefung E4: 10:39 'Raus ... Fiddlesticks kommt', 10:48 'Platte am aeusseren Top-Turm' bei 40 %"
+lage = "Riven 39-40 % auf ihrer Lane, Fiddlesticks kam."
+darf_nicht = ["PLATTEN"]
+darf_nicht_sagen = ["Platte"]
+warum = """Nach einer GEFAHR-Ansage 20 s keine vorwaerts gerichtete Handlung, ausser die Gefahr ist sichtbar vorbei (der
+Gegner tot oder gesehen > 3000 entfernt)."""

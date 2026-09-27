@@ -11,6 +11,11 @@ Erkennung:
   - nichts in der Naehe eines Champion-Portraets (dessen Ring hat dieselben Farben),
   - jeder Punkt wird auf die naechste Lane projiziert: s = 0 an der blauen, 1 an der roten Basis.
 Daraus je Lane: wo sich die Wellen treffen, wer wie viele hat, wer schiebt.
+
+Front statt Summe (Nachtrag zu Buch 1, 1.4; Qualitaetsrunde 1, F1): die Punkte einer Lane werden entlang der Lane in
+Gruppen geteilt (Luecke > `[welle] front_luecke`). Gezaehlt wird nur die Front - die Gruppe mit beiden Farben, sonst
+die vorderste blaue und die ihr naechste rote Gruppe. Nachlaufende Wellen zaehlen nicht (144655, 3:13/5:17/5:38:
+gegnerische Vasallen an deinem Turm, deine naechste Welle lief erst am inneren los - die Summe ergab ZU_IHM).
 """
 from __future__ import annotations
 
@@ -31,6 +36,7 @@ STATISCH_AB = 0.8             # Anteil der Zeit, ab dem ein Pixel als Icon gilt
 GEDAECHTNIS = 0.06            # Gewicht eines neuen Bildes im gleitenden Mittel (~1 Bild/s -> ~16 s)
 REF = 570                     # Minimap-Kante bei 4K; Flaechen skalieren mit (Kante/REF)^2
 ICON_RADIUS = 48 / 570 / 2    # Champion-Icon (minimap.PORTRAET) als Anteil der Minimap-Kante
+SCHNITT_FLAECHE = 10          # F1: so gross muss ein von einer weissen Linie angeschnittener Vasall noch sein
 RING_BIS = 1.1                # der farbige Ring reicht bis ~1,05 Icon-Radien (gemessen 27.09. an 314 freien Icons der
 #                               Partie 140253, 764 px: Ring bei 30-33 px, Icon-Radius 32 px, ab 34 px nichts mehr)
 
@@ -42,6 +48,12 @@ class LaneZustand:
     rot: int
     front: float | None       # s, wo sich die Wellen treffen / die vorderste Welle steht
     schiebt: str | None       # "blau", "rot" oder None (steht)
+    vorn_blau: tuple = ()     # s der Front-Vasallen (F1); blau/rot oben zaehlen nur sie
+    vorn_rot: tuple = ()
+    naechste_blau: float | None = None   # die naechste nachlaufende Welle (ihre Spitze), zaehlt nicht fuer den Zustand
+    naechste_rot: float | None = None
+    alle_blau: int = 0        # alle Vasallen der Lane, Front und nachlaufend
+    alle_rot: int = 0
 
     def worte(self, mein_team: str) -> str:
         """Aus Sicht des Spielers: 'eure 6 gegen seine 2, kurz vor seinem Turm'."""
@@ -112,15 +124,30 @@ class Wellenleser:
         r = int(round(ICON_RADIUS * RING_BIS * seite)) + 1
         for a, b in champions:
             cv2.circle(icons, (int(round(a * seite)), int(round(b * seite))), r, 255, -1)
+        # Weisse Linien (dein Laufweg, der Kamerarahmen) zerschneiden Vasallen in Stuecke unter der Mindestflaeche
+        # (144655, 5:17: drei gegnerische am Turm, Stuecke 19/16/53 - die 1-px-Linie mit dunklem Schatten darunter).
+        # Ein Stueck ab SCHNITT_FLAECHE, das eine weisse Linie beruehrt, zaehlt als Vasall.
+        linie = cv2.dilate(cv2.inRange(hsv, (0, 0, 170), (180, 70, 255)), np.ones((5, 5), np.uint8)) > 0
         aus = []
         for team, maske in (("blau", blau), ("rot", rot)):
             maske = maske.copy()
             maske[(statisch > 0) | (icons > 0)] = 0
-            n, _, st, cen = cv2.connectedComponentsWithStats(maske)
-            for s, (cx, cy) in zip(st[1:], cen[1:]):
+            n, marken, st, cen = cv2.connectedComponentsWithStats(maske)
+            stuecke: list[tuple[float, float]] = []
+            for k, (s, (cx, cy)) in enumerate(zip(st[1:], cen[1:]), 1):
                 flaeche, fuell = s[4], s[4] / max(1, s[2] * s[3])
-                if not (22 * f <= flaeche <= 75 * f and fuell >= 0.5 and max(s[2], s[3]) <= 13 * seite / REF):
+                if not (SCHNITT_FLAECHE * f <= flaeche <= 75 * f and fuell >= 0.5
+                        and max(s[2], s[3]) <= 13 * seite / REF):
                     continue
+                if flaeche < 22 * f:
+                    x0, y0, bw, bh = s[0], s[1], s[2], s[3]
+                    if not (linie[y0:y0 + bh, x0:x0 + bw] & (marken[y0:y0 + bh, x0:x0 + bw] == k)).any():
+                        continue
+                    # zwei Haelften DESSELBEN Vasallen (je eine Seite der Linie) zaehlen einmal
+                    nah = 7 * seite / REF
+                    if any((cx - a) ** 2 + (cy - b) ** 2 <= nah * nah for a, b in stuecke):
+                        continue
+                    stuecke.append((cx, cy))
                 aus.append((team, float(cx / seite), float(cy / seite)))
         return aus
 
@@ -130,24 +157,67 @@ class Wellenleser:
         return self.bilder >= 20
 
 
-def zustaende(punkte: list[tuple[str, float, float]], mein_team: str = "ORDER") -> dict[str, LaneZustand]:
+FRONT_LUECKE = 0.06           # Rueckfall fuer [welle] front_luecke
+
+
+def _gruppen(punkte: list[tuple[str, float]], luecke: float) -> list[list[tuple[str, float]]]:
+    """(team, s) entlang der Lane in Gruppen: eine Luecke > `luecke` trennt."""
+    aus: list[list[tuple[str, float]]] = []
+    for p in sorted(punkte, key=lambda q: q[1]):
+        if aus and p[1] - aus[-1][-1][1] <= luecke:
+            aus[-1].append(p)
+        else:
+            aus.append([p])
+    return aus
+
+
+def _front(punkte: list[tuple[str, float]], luecke: float) -> tuple:
+    """F1: (vorn_blau, vorn_rot, naechste_blau, naechste_rot) - s aufsteigend, blau schiebt zu s = 1."""
+    gruppen = _gruppen(punkte, luecke)
+    farben = [{t for t, _ in g} for g in gruppen]
+    gemischt = [i for i, f in enumerate(farben) if len(f) == 2]
+    if gemischt:
+        i = max(gemischt, key=lambda k: len(gruppen[k]))
+        vb = [s for t, s in gruppen[i] if t == "blau"]
+        vr = [s for t, s in gruppen[i] if t == "rot"]
+        hinter_b = [g for g, f in zip(gruppen[:i], farben[:i]) if f == {"blau"}]
+        hinter_r = [g for g, f in zip(gruppen[i + 1:], farben[i + 1:]) if f == {"rot"}]
+    else:
+        blaue = [g for g, f in zip(gruppen, farben) if f == {"blau"}]
+        rote = [g for g, f in zip(gruppen, farben) if f == {"rot"}]
+        vb = [s for _, s in blaue[-1]] if blaue else []
+        vr = [s for _, s in rote[0]] if rote else []
+        hinter_b, hinter_r = blaue[:-1], rote[1:]
+    nb = round(float(max(s for _, s in hinter_b[-1])), 3) if hinter_b else None
+    nr = round(float(min(s for _, s in hinter_r[0])), 3) if hinter_r else None
+    return (tuple(round(float(s), 3) for s in sorted(vb)), tuple(round(float(s), 3) for s in sorted(vr)), nb, nr)
+
+
+def zustaende(punkte: list[tuple[str, float, float]], mein_team: str = "ORDER",
+              luecke: float | None = None) -> dict[str, LaneZustand]:
     """Je Lane der Wellenstand. Die Minimap faerbt RELATIV: dein Team ist blau, der Gegner rot - egal auf welcher
     Seite. `blau`/`rot` im Ergebnis heissen aber Team ORDER / CHAOS (blaue Basis unten links, s = 0), wie ueberall
     im Coach; auf der roten Seite werden die Farben deshalb getauscht (echte Partie 140253, Riven Mid auf CHAOS: die
     eigenen Vasallen galten als seine, die Front lief falsch herum)."""
     if mein_team == "CHAOS":
         punkte = [("rot" if farbe == "blau" else "blau", x, y) for farbe, x, y in punkte]
-    je_lane: dict[str, dict[str, list[float]]] = {l: {"blau": [], "rot": []} for l in LANES}
+    if luecke is None:
+        try:
+            from .kern import konfig
+            luecke = float(konfig()["welle"].get("front_luecke", FRONT_LUECKE))
+        except Exception:
+            luecke = FRONT_LUECKE
+    je_lane: dict[str, list[tuple[str, float]]] = {l: [] for l in LANES}
     for team, x, y in punkte:
         # Basen (unten links / oben rechts) zaehlen nicht: dort liegen Nexus-/Inhibitor-Icons
         # (gemessen an Partie 3, Bild 900: "Bot: eure 1 ... tief bei deinem Turm" aus der Basis)
         if (x < 0.24 and y > 0.76) or (x > 0.76 and y < 0.24):
             continue
         if pr := _projektion(x, y):
-            je_lane[pr[0]][team].append(pr[1])
+            je_lane[pr[0]].append((team, pr[1]))
     aus = {}
     for lane, t in je_lane.items():
-        b, r = sorted(t["blau"]), sorted(t["rot"])
+        b, r, nb, nr = _front(t, luecke)
         if b and r:
             front = (b[-1] + r[0]) / 2 if b[-1] <= r[0] + 0.05 else (b[-1] + r[0]) / 2
             schiebt = "blau" if len(b) >= len(r) + 2 else "rot" if len(r) >= len(b) + 2 else None
@@ -157,7 +227,8 @@ def zustaende(punkte: list[tuple[str, float, float]], mein_team: str = "ORDER") 
             front, schiebt = r[0], "rot"
         else:
             front, schiebt = None, None
-        aus[lane] = LaneZustand(lane, len(b), len(r), None if front is None else round(front, 3), schiebt)
+        aus[lane] = LaneZustand(lane, len(b), len(r), None if front is None else round(front, 3), schiebt,
+                                b, r, nb, nr, sum(x[0] == "blau" for x in t), sum(x[0] == "rot" for x in t))
     return aus
 
 

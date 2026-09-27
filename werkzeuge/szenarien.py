@@ -3,10 +3,13 @@
 Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes Szenario:
 
   altes System (nur Text):  darf_nicht_sagen, muss_nennen_eins, muss_ziel, kehrtwenden_max, ansagen_max
-                            im Fenster ([zeit-2, zeit+15] oder `fenster`)
+                            im Fenster ([zeit-2, zeit+15] oder `fenster`, auch mehrere: [[von, bis], ...]);
+                            seit der Qualitaetsrunde 1: ziele_max, satz_mit (+ satz_mit_anzahl), fassung_einmal,
+                            woerter_max (+ woerter_schluessel), gold_reicht
   Kern (Modus, Plan-Art):   modus und [[modus_soll]] ab Schritt 2 (irgendein Takt in zeit +-2 s hat einen der
                             erlaubten Modi); soll (irgendein Takt in zeit +-2 s hat eine der Plan-Arten) und
-                            darf_nicht (kein Takt im Fenster) ab Schritt 3
+                            darf_nicht (kein Takt im Fenster) ab Schritt 3; plan_p_tod_max (ein Takt in zeit +-2 s
+                            mit einer soll-Art hat p_tod darunter)
   frage:                    wie per Sprechtaste, geprueft wird die Antwort - braucht Claude, nur mit --mit-claude
   typ = "review":           gegen das gespeicherte Review der Partie - nur mit --mit-claude
 
@@ -44,11 +47,100 @@ def hat_ziel(text: str, champions) -> bool:
     return bool(ZIEL.search(text)) or any(c and c in text for c in champions)
 
 
-def fenster(sz: dict) -> tuple[float, float]:
-    if "fenster" in sz:
-        return ns.sekunden(sz["fenster"][0]), ns.sekunden(sz["fenster"][1])
+def fenster_alle(sz: dict) -> list[tuple[float, float]]:
+    """Alle Fenster eines Szenarios: `fenster = [von, bis]`, mehrere als [[von, bis], ...], sonst [zeit-2, zeit+15]."""
+    f = sz.get("fenster")
+    if f and isinstance(f[0], list):
+        return [(ns.sekunden(a), ns.sekunden(b)) for a, b in f]
+    if f:
+        return [(ns.sekunden(f[0]), ns.sekunden(f[1]))]
     t = ns.sekunden(sz["zeit"])
-    return t - 2, t + 15
+    return [(t - 2, t + 15)]
+
+
+def fenster(sz: dict) -> tuple[float, float]:
+    """Die ganze Spanne (bei mehreren Fenstern vom ersten Anfang bis zum letzten Ende)."""
+    alle = fenster_alle(sz)
+    return alle[0][0], alle[-1][1]
+
+
+def im_fenster(sz: dict, t: float) -> bool:
+    return any(von <= t <= bis for von, bis in fenster_alle(sz))
+
+
+ZIEL_NAME = re.compile(r"(?:äußeren |inneren )?(?:Top|Mid|Bot)-(?:Inhibitor-Turm|Inhibitor|Tier-\d-Turm|Turm|Welle)|"
+                       r"Nexus-Turm|Nexus|Baron|Drache|Herold|Larven|Ältest\w*|nach (?:Top|Mid|Bot)|Seitenwelle|"
+                       r"(?:zu )?deinem Team")
+FASSUNG_VOR = re.compile(r"^(?:denk dran|ach nee|noch \d+ sekunden)\s*:\s*", re.I)
+GOLD_FUER = re.compile(r"(\d+) Gold für (?:den |die |das )?([A-ZÄÖÜ][^,.:]*?)(?=[,.:]| und | dann |$)")
+
+
+def ziele(text: str) -> set[str]:
+    """Die Ziele, die ein Satz nennt (ziele_max): Strukturen, Lanes, Objectives - normalisiert."""
+    aus = set()
+    for z in ZIEL_NAME.findall(text):
+        z = z.removeprefix("zu ").removeprefix("nach ").strip()
+        aus.add(z.lower())
+    return aus
+
+
+def fassung(text: str) -> str:
+    """Die Fassung eines Satzes (fassung_einmal): was vor dem ersten Doppelpunkt steht, ohne 'Denk dran:'."""
+    t = text
+    while (m := FASSUNG_VOR.match(t)):
+        t = t[m.end():]
+    return t.split(":", 1)[0].strip().lower()
+
+
+def gold_verstoesse(a) -> list[str]:
+    """gold_reicht: "N Gold fuer ITEM" - das Item kostet (abzueglich der Bauteile, die du hast) hoechstens N."""
+    from lolcoach import kaufplan
+    aus = []
+    b = getattr(a, "_b", None)
+    inventar = list(b.ich.items) if b is not None and b.ich is not None else []
+    for gold, name in GOLD_FUER.findall(a.text):
+        item = kaufplan._nach_name().get(name.strip())
+        if item is None:
+            aus.append(f"gold_reicht - Item '{name}' unbekannt")
+            continue
+        rest, _ = kaufplan._baum_kosten(item, list(inventar))
+        if rest > int(gold):
+            aus.append(f"gold_reicht - '{name}' kostet noch {rest}, genannt {gold} Gold: \"{a.text[:80]}\"")
+    return aus
+
+
+def neue_pruefungen(sz: dict, ansagen: list) -> list[str]:
+    """Die Pruefschluessel der Qualitaetsrunde 1 (Buch 0, 12.1) auf die gesprochenen Ansagen im Fenster."""
+    aus = []
+    texte = [a.text for a in ansagen]
+    if "ziele_max" in sz:
+        genannt = set().union(*(ziele(t) for t in texte)) if texte else set()
+        if len(genannt) > sz["ziele_max"]:
+            aus.append(f"ziele_max {sz['ziele_max']} - {len(genannt)}: {sorted(genannt)}")
+    if "satz_mit" in sz:
+        treffer = [t for t in texte if all(any(w.lower() in t.lower() for w in gruppe) for gruppe in sz["satz_mit"])]
+        soll = sz.get("satz_mit_anzahl")
+        if (soll is None and not treffer) or (soll is not None and len(treffer) != soll):
+            aus.append(f"satz_mit {sz['satz_mit']} - {len(treffer)} Saetze (soll {soll or '>= 1'})")
+    if sz.get("fassung_einmal"):
+        gesehen: dict[str, str] = {}
+        for t in texte:
+            f = fassung(t)
+            if f in gesehen:
+                aus.append(f"fassung_einmal - '{f}' zweimal: \"{gesehen[f][:50]}\" / \"{t[:50]}\"")
+                break
+            gesehen[f] = t
+    if "woerter_max" in sz:
+        for a in ansagen:
+            if sz.get("woerter_schluessel") and not a.schluessel.startswith(sz["woerter_schluessel"]):
+                continue
+            n = len(a.text.split())
+            if n > sz["woerter_max"]:
+                aus.append(f"woerter_max {sz['woerter_max']} - {n} Woerter: \"{a.text[:80]}\"")
+    if sz.get("gold_reicht"):
+        for a in ansagen:
+            aus += gold_verstoesse(a)
+    return aus
 
 
 def stehende_ansage(lauf: ns.Lauf, von: float) -> tuple[float, str] | None:
@@ -204,7 +296,8 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                     uebersprungen.append("frage (--mit-claude)")
             else:
                 von, bis = fenster(sz)
-                texte = [(ns.gesprochen_um(a), a.text) for a in lauf.gesagt if von <= ns.gesprochen_um(a) <= bis]
+                ansagen = [a for a in lauf.gesagt if im_fenster(sz, ns.gesprochen_um(a))]
+                texte = [(ns.gesprochen_um(a), a.text) for a in ansagen]
                 teile = [k for k in ("darf_nicht_sagen", "muss_nennen_eins", "muss_ziel") if sz.get(k)]
                 if teile:
                     geprueft += 1
@@ -219,7 +312,11 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                 if "ansagen_max" in sz:
                     geprueft += 1
                     if len(texte) > sz["ansagen_max"]:
-                        verstoesse.append(f"ansagen_max {sz['ansagen_max']} - {len(texte)}")
+                        verstoesse.append(f"ansagen_max {sz['ansagen_max']} - {len(texte)}: "
+                                          + " / ".join(f"{ns.uhr(t)} {s[:40]}" for t, s in texte))
+                if any(k in sz for k in ("ziele_max", "satz_mit", "fassung_einmal", "woerter_max", "gold_reicht")):
+                    geprueft += 1
+                    verstoesse += neue_pruefungen(sz, ansagen)
         if "modus" in sz and "zeit" in sz and nur != "alt":
             geprueft += 1
             modi = modi_um(lauf, ns.sekunden(sz["zeit"]))
@@ -239,6 +336,12 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
             plaene = plaene_um(lauf, t - 2, t + 2)
             if not set(plaene) & set(sz["soll"]):
                 verstoesse.append(f"soll {sz['soll']} - Kern-Plan: {plaene or 'keiner'}")
+            elif "plan_p_tod_max" in sz:
+                pt = [x.plan_ptod for x in lauf.takte if t - 2 <= x.zeit <= t + 2 and x.plan in sz["soll"]
+                      and x.plan_ptod is not None]
+                if not pt or min(pt) >= sz["plan_p_tod_max"]:
+                    verstoesse.append(f"plan_p_tod_max {sz['plan_p_tod_max']} - p_tod {min(pt) if pt else '?':.2f}"
+                                      if pt else f"plan_p_tod_max {sz['plan_p_tod_max']} - kein p_tod")
         if nur != "alt" and kern != "alt" and "darf_nicht" in sz and ("zeit" in sz or "fenster" in sz) \
                 and kern_modi is None:
             geprueft += 1

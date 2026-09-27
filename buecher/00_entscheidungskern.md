@@ -583,6 +583,23 @@ p_tod(h)      ≈ 1 − Π_g (1 − p_da(g, T) · p_verliere({g} ∪ sichtbare N
 
 Sonst gibt es keine Ansage, auch wenn jemand „frühestens in 8 s“ da sein könnte.
 
+> **Nachtrag (Qualitätsrunde 1, Prüfungen A, B, D, E4):**
+>
+> - **(A) Gefahr am sicheren Ort.** Ist der sichere Ort dein jetziger Ort (≤ `SICHER_DORT_S` = 4 s entfernt), wird
+>   die Gefahr nicht gesagt, und der Plan hält. Der Rückzug läuft stumm. Grund: „Raus da“ am eigenen Turm ist
+>   kein Rat (144655, 9:00).
+> - **(A) Verlorene Lane.** Gleiches gilt, wenn die Lane verloren ist und nur der Lane-Gegner beiträgt. Verloren
+>   heißt: Kräfte ≤ −1 oder zwei Tode gegen ihn. Dann sagt der Kern einmal den Schutzplan `WELLE_HALTEN`
+>   („… lass die Welle zu deinem Turm kommen …“), statt jede Welle neu zu warnen.
+>   - Den Schutzplan gibt es nur bei Leben ≥ `leben_kritisch`.
+>   - Er gilt nur, solange kein anderer Gegner beiträgt (`wer` ≥ 0,05).
+> - **(B) Die Gefahr-Regel wechselt auf den besten Kandidaten, den das Gate nicht auslöst**, nicht nur auf die
+>   Arten in `SICHER`. Grund: 144655, 6:44, STAPELN mit p_tod 0,51 hielt gegen FARMEN mit 0,02.
+> - **(D) Rückzug als Episode.** Ein Rückzug ist eine Episode (`RUECKZUG_EPISODE_S` = 15 s): ein Satz, einer mehr
+>   nur bei einem neu genannten Gegner, der Back-Schritt einmal, kein „Denk dran“ während der Gefahr.
+> - **(E4) Nach einer Gefahr.** Nach einer gesagten Gefahr gibt es 20 s lang (`NACH_GEFAHR_S`) keine Vorwärts-Handlung,
+>   außer die Gefahr ist sichtbar vorbei.
+
 **Umgekehrt ist Sicherheit ein Rat.** Wird der Jungler auf der anderen Kartenseite gesehen, fällt `p_da`
 für viele Sekunden auf fast 0. Das ist oft der wertvollste Satz der Lane-Phase: „Fiddlesticks ist unten
 – 25 Sekunden Fenster: Platte am äußeren Top-Turm.“
@@ -972,6 +989,13 @@ warum = "…"                           # die Begründung, Challenger-Sicht
 | `oben_eins` | mindestens einer dieser Texte steht in Lektion 1 oder 2; Zeitangaben gelten als Präfix („28:0“ = 28:00–28:09) |
 | `keine_position_in_luecke` | keine Zeitleisten-Zeile und kein Beleg im Lückenzeitraum enthält eine Ortsangabe („Du warst …“) |
 | `[[modus_soll]]` | außerhalb der Szenarien: `zeiten` + erlaubte `modus`; Grundlage der Modus-Quote (5.3) |
+| `fenster = [[von, bis], …]` | mehrere Fenster in einem Szenario (Qualitätsrunde 1); jede Prüfung gilt in jedem |
+| `plan_p_tod_max` | in zeit ±2 s hat der Kern-Plan in mindestens einem Takt p_tod unter diesem Wert |
+| `ziele_max` | höchstens so viele verschiedene Ziele (Lane, Objective, Turm) in den Ansagen des Fensters |
+| `satz_mit` | Liste von Wortgruppen; ein Satz im Fenster enthält aus jeder Gruppe ein Wort. Mit `satz_mit_anzahl`: genau so viele solche Sätze |
+| `fassung_einmal` | `true`: keine Fassung (Text vor dem ersten Doppelpunkt) kommt im Fenster zweimal |
+| `woerter_max` | kein Satz im Fenster hat mehr Wörter; mit `woerter_schluessel` nur Ansagen dieses Schlüssels (z. B. `tod`) |
+| `gold_reicht` | `true`: „N Gold für X“ – X kostet abzüglich deiner Bauteile höchstens N (`szenarien.gold_verstoesse`) |
 
 **Läufer `werkzeuge/szenarien.py`:**
 

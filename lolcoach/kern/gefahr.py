@@ -138,6 +138,31 @@ def p_tod(T: float, m, cfg: dict, am_turm: bool = False, kampf_mit: str | None =
     return 1.0 - rest, sorted(wer, key=lambda w: -w[1])
 
 
+def p_tod_am(m, ziel: tuple[float, float] | None, ankunft_s: float, cfg: dict,
+             am_turm: bool = False) -> tuple[float, list]:
+    """Pruefung E2 (Qualitaetsrunde 1): die Gefahr an `ziel`, wenn du in `ankunft_s` Sekunden dort bist - nach dem Tod
+    Respawn + Weg aus dem Brunnen, aus der Basis der Weg - statt an dem Ort, an dem du gerade liegst (144655 1:59:
+    "zurueck nach Top" mit p_tod 0,64, gerechnet am Todesort mit 0 % Leben; 140253 10:25: "zu den Larven" mit 0,97).
+    Jeder Gegner laeuft von seiner letzten Sichtung aus weiter; du kommst mit vollem Leben, wenn du tot bist."""
+    from dataclasses import replace
+    b = m.b
+    if b is None or ziel is None:
+        return 0.0, []
+
+    def weiter(g):
+        if g.s.tot:
+            return g
+        if g.pos is None or g.seit is None:
+            return replace(g, sichtbar=False, ankunft=None, abstand=None, kommt_naeher=False)
+        d = abstand(g.pos, ziel)
+        return replace(g, sichtbar=False, abstand=d, kommt_naeher=False,
+                       ankunft=max(0.0, d * 1.15 / (g.tempo or 350.0) - g.seit))
+    leben = 1.0 if m.tot or b.leben is None else b.leben
+    b2 = replace(b, gegner=[weiter(g) for g in b.gegner], pos=ziel, leben=leben, zum_turm=0.0 if am_turm else None)
+    m2 = replace(m, pos=ziel, b=b2, leben=leben, bereich=None)
+    return p_tod(ankunft_s + cfg["fenster_s"], m2, cfg, am_turm=am_turm)
+
+
 def alle_p_da(m, cfg: dict, T: float | None = None) -> dict[str, float]:
     """Champion -> p_da im Standardfenster (Dashboard, Protokoll, Eichung mit kennzahlen.py)."""
     if m.b is None:

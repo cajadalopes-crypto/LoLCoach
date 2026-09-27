@@ -105,6 +105,12 @@ durch denselben Code wie das Live-Spiel.
 - `python werkzeuge/wellen_eichung.py <aufnahme>` - Wellen-Eichung (Buch 1, 1.4) an den behaltenen Minimap-
   Ausschnitten: Bildtafel + `buecher/wellen_eichung/<stamm>.json` zum Beschriften, dann `--auswerten`. Die Ausschnitte
   der letzten drei Partien bleiben (`lage.bilder_aufraeumen`).
+  Eine Datei `BEHALTEN` im `_bilder`-Ordner schuetzt ihn vor dem Aufraeumen (133930 verlor seine Bilder mitten in
+  der Eichung). `--mit 3:13,5:17` nimmt feste Zeitpunkte dazu; ohne Bilder rechnet es mit den Live-Punkten.
+- `python werkzeuge/flash_messung.py <aufnahme> [--liste]` - Flash-Messung (Qualitaetsrunde 1, F2): Spruenge aus den
+  Sichtungen, wo die Live-Kette sie verliert, dein Flash aus dem HUD als Wahrheit, Chat-Pings, Timer im Nachspielen.
+- `python werkzeuge/dashboard_nachspielen.py <aufnahme> --bis 2:30 [--port 8799]` - das Dashboard mit dem Stand einer
+  Aufnahme auf eigenem Port (neben einem laufenden Coach auf 8790); Bild mit `Brainstone/werkzeuge/browserprobe.py`.
 - Neue Partie als Testfall: `python werkzeuge/testfall_aus_aufnahme.py aufnahmen/<x>.jsonl.gz tests/<name>.jsonl.gz`.
 
 ## Aufgaben: `OFFEN.md`

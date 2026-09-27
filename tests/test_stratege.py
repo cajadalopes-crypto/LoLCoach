@@ -61,9 +61,14 @@ def todesanalyse():
         tode += [(p, a) for a in werk.pruefe(p, lb) if a.schluessel == "tod"]
     kurz, lang = tode[0][1], tode[-1][1]
     assert not kurz.situativ and not kurz.kontext            # 1:40, kurze Todeszeit: Standardsatz sofort
-    assert lang.situativ and lang.frist == 25, lang
-    assert "TOD um 19:55" in lang.kontext and "Wiedereinstieg in 49 s" in lang.kontext, lang.kontext
-    assert "15 s vorher: dein Leben 96 %" in lang.kontext, lang.kontext
+    # Pruefung E1 (Qualitaetsrunde 1): auch nach langer Todeszeit zwei Saetze, hoechstens 25 Woerter, nicht mehr
+    # vom Strategen frei formuliert (bis Schritt 6). Die Fakten liegen fuer "warum bin ich gestorben?" bereit.
+    assert not lang.situativ and len(lang.text.split()) <= 25 and lang.text.count(".") == 2, lang
+    kontext = lb.letzter_tod[1]
+    assert "TOD um 19:55" in kontext and "Wiedereinstieg in 49 s" in kontext, kontext
+    assert "15 s vorher: dein Leben 96 %" in kontext, kontext
+    from dataclasses import replace
+    lang = replace(lang, situativ=True, frist=25, kontext=kontext)   # der Weg zum Strategen bleibt fuer Schritt 6
     plan = sprechplan.Sprechplan(stimme.Stumm())
     s = stratege.Stratege(plan)
     s.gehirn = GehirnAttrappe(0.1, "Du hast mit 6000 Gold weitergepusht. Erst kaufen, dann Mid.")

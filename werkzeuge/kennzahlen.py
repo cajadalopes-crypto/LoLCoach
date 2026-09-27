@@ -3,6 +3,9 @@
   - ungefragte Ansagen je 30 Minuten mit Daten (dazu, wie in Kapitel 1.2: Ankunftswarnungen "... bei dir" und
     Flash-Ansagen, Schluessel zauber/ohneflash/flashzurueck)
   - Kehrtwenden ohne neues Ereignis (Kapitel 9.4 Punkt 5)
+  - Fassungswechsel (Qualitaetsrunde 1, Pruefung D): derselbe Plan des Kerns (ZURUECK und sein Back zaehlen als einer)
+    kommt in <= 30 s mit anderem Satz wieder, ohne dass ein neuer Gegner genannt wird. Soll 0. Der erste "Jetzt back"
+    nach "Raus zu ..." ist der Schritt des Plans, keine neue Fassung (D2).
   - Verstoesse gegen 9.4 je Nummer:
       1 kein aufloesbares Ziel ("die Welle", "die Tuerme", "seinen Turm" ohne Lane)
       2 Lane-/Wellenbefehl ausserhalb LANE/SEITE - bis der Kern den Modus liefert, genaehert: nicht auf deiner
@@ -94,6 +97,34 @@ def brier_schlimmster_fall(lauf: ns.Lauf, fenster: float = 10.0, nah: float = 15
     return (fehler / n if n else math.nan), n, (treffer / n if n else math.nan)
 
 
+FAMILIE = {"kern:BACK_JETZT": "kern:ZURUECK"}     # ZURUECK mit und ohne Back ist EIN Plan (Pruefung D1)
+
+
+def fassungswechsel(lauf: ns.Lauf, fenster: float = 30.0) -> list[tuple[float, str, float, str]]:
+    """Pruefung D4: aufeinanderfolgende Kern-Saetze desselben Plans in <= `fenster` s mit anderer Fassung (was vor dem
+    ersten Doppelpunkt steht), ohne neuen Gegner im zweiten. [(t1, Satz 1, t2, Satz 2)]."""
+    from szenarien import fassung
+    kern = [a for a in lauf.gesagt if a.schluessel.startswith("kern:")]
+    aus = []
+    schritt_frei = True
+    for a1, a2 in zip(kern, kern[1:]):
+        f1, f2 = FAMILIE.get(a1.schluessel, a1.schluessel), FAMILIE.get(a2.schluessel, a2.schluessel)
+        t1, t2 = ns.gesprochen_um(a1), ns.gesprochen_um(a2)
+        if f1 != f2 or t2 - t1 > fenster:
+            schritt_frei = True
+            continue
+        if fassung(a1.text) == fassung(a2.text):
+            continue
+        if schritt_frei and a1.schluessel == "kern:ZURUECK" and a2.schluessel == "kern:BACK_JETZT":
+            # der Back-Schritt des Rueckzugs, einmal (Pruefung D2 erlaubt ihn, wenn dich im Kanal keiner erreicht)
+            schritt_frei = False
+            continue
+        neu = {c for c in lauf.champions if c and c in a2.text and c not in a1.text}
+        if not neu:
+            aus.append((t1, a1.text, t2, a2.text))
+    return aus
+
+
 def lane_phase_takt(lauf: ns.Lauf) -> tuple[int, float]:
     """(ungefragte Ansagen in der Lane-Phase, Sekunden Lane-Phase mit Daten) - Abnahme Schritt 3: <= 1 je 30 s."""
     ende = min([t.zeit for t in lauf.takte if t.modus in ("SEITE", "GRUPPE")] or [840.0])
@@ -131,7 +162,7 @@ def kennzahlen(pfad: Path, kern: str = "neu") -> dict:
             "je30": len(gesagt) / minuten * 30 if minuten else math.nan,
             "ankunft": sum("bei dir" in a.text for a in gesagt),
             "flash": sum(a.schluessel.split(":")[0] in FLASH_SCHL for a in gesagt),
-            "kehrtwenden": kw, "verstoesse": v, "brier": brier, "proben": n, "grundrate": grund,
+            "kehrtwenden": kw, "fassungswechsel": fassungswechsel(lauf), "verstoesse": v, "brier": brier, "proben": n, "grundrate": grund,
             "luecken": lauf.luecken, "quote": quote, "brier_kern": brier_kern, "lane_phase": (lp_n, lp_sek),
             "kategorien": dict(lauf.kern.sprecher.kategorien) if lauf.kern is not None else {},
             "staerken": list(lauf.kern.staerken) if lauf.kern is not None else [], "kern": kern}
@@ -146,6 +177,9 @@ def ausgeben(k: dict) -> None:
           f"(Abnahme Schritt 3: <= 1)")
     print(f"   Kehrtwenden ohne neues Ereignis: {len(k['kehrtwenden'])}")
     for t1, s1, t2, s2 in k["kehrtwenden"]:
+        print(f"      {ns.uhr(t1)} \"{s1[:55]}\" -> {ns.uhr(t2)} \"{s2[:55]}\"")
+    print(f"   Fassungswechsel (Pruefung D, Soll 0): {len(k['fassungswechsel'])}")
+    for t1, s1, t2, s2 in k["fassungswechsel"]:
         print(f"      {ns.uhr(t1)} \"{s1[:55]}\" -> {ns.uhr(t2)} \"{s2[:55]}\"")
     print("   Verstoesse 9.4: " + ", ".join(f"{nr}: {len(x)}" for nr, x in k["verstoesse"].items())
           + f", 5: {len(k['kehrtwenden'])}")

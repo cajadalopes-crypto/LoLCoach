@@ -114,6 +114,9 @@ unten:
 | `ZU_DIR` | `trend ≤ −trend_schwelle` oder `ihre − unsere ≥ 2` | die Welle wandert zu dir |
 | `MITTE` | sonst | neutral |
 
+> **Nachtrag (Qualitätsrunde 1):** `unsere`/`ihre` zählen nur noch die **Front**, und die beiden
+> `GECRASHT_*`-Zeilen gelten in der Fassung aus Kapitel 7.1.
+
 **Eichung (Schritt 3):** Claude Code beschriftet in 102112 und einer echten Partie je 20 Zeitpunkte von Hand
 mit dem Zustand. Grundlage sind die Minimap-Bilder, die in `_bilder/` liegen, solange sie nicht aufgeräumt
 sind. Abnahme: ≥ 80 % Treffer, und `GECRASHT_BEI_IHM` ≥ 90 %, weil es Plan-Schritte auslöst.
@@ -325,3 +328,51 @@ Echte Partien gibt es noch fast keine. Die Regeln dieses Buchs lassen sich aber 
 
 Konstruierte Lagen ersetzen keine echten Partien. Sie verhindern aber, dass eine Regel still kaputtgeht, und
 halten die Absicht dieses Buchs als Test fest.
+
+---
+
+## 7. Nachträge
+
+### 7.1 Front statt Summe (Qualitätsrunde 1, 27.09.2026; Prüfung F1)
+
+**Anlass.** In 144655 standen dreimal (3:13, 5:17, 5:38) gegnerische Vasallen an deinem äußeren Turm, während
+deine nächste Welle zwischen innerem und äußerem Turm loslief. 1.4 zählte alle Vasallen der Lane:
+`GECRASHT_BEI_DIR` verlangte `unsere ≤ 1`, die nachlaufende Welle (4–6) machte daraus `ZU_IHM`.
+
+**Regel** (`welle._front`, `merkmale.WellenPuffer`):
+
+1. Die Vasallen-Punkte einer Lane werden entlang der Lane projiziert (0 = dein Brunnen, 1 = seiner) und in
+   Gruppen geteilt. Eine Lücke > `[welle] front_luecke` (0,06) trennt.
+2. **Die Front:**
+   - Eine Gruppe mit beiden Farben ist die Front (der Zusammenstoß; bei mehreren die größte).
+   - Sonst: die vorderste eigene Gruppe und die dir nächste gegnerische Gruppe.
+3. **Nachlaufende Gruppen** zählen nicht für den Zustand: eigene hinter der Front auf deiner Seite, gegnerische
+   hinter der Front auf seiner. Die nächste davon steht im `WellenStand` als `naechste_dein` / `naechste_ihr`
+   (Lage ihrer Spitze, 0–1 aus deiner Sicht) – für „deine nächste Welle ist gleich da“.
+   `unsere`/`ihre` zählen nur die Front.
+4. `GECRASHT_BEI_DIR`: ≥ `crash_mindestens` (3) gegnerische Front-Vasallen in der Zone vor deinem vordersten
+   Turm, und ≤ 1 eigener Front-Vasall dort – egal, was dahinter läuft. `GECRASHT_BEI_IHM` spiegelbildlich.
+   - Zone: von `turm_toleranz` (0,02) hinter dem Turm bis `crash_zone` (0,08) davor. Wer den Turm schlägt, steht
+     auf der Karte auch knapp dahinter.
+5. `wellen_eichung.py` wählt keine Zeitpunkte, an denen du tot bist oder recallst. Recall heißt: dein Icon taucht
+   binnen 9 s im Brunnen auf, ohne dass du stirbst.
+
+**Drei Zusätze, nicht im Auftrag, nötig für die Abnahme** (je mit Schalter in `kern.toml [welle]`):
+
+- **Pfadlinie** (`welle.SCHNITT_FLAECHE`):
+  - Befund: dein weißer Laufweg auf der Minimap (1 px, mit dunklem Schatten) zerschneidet Vasallen in Stücke
+    unter der Mindestfläche. 144655, 5:16–5:17: drei gegnerische am Turm, gelesen wurde einer.
+  - Regel: Ein Stück ab 10 (statt 22) Flächeneinheiten, das eine weiße Linie berührt, zählt als Vasall. Zwei
+    Hälften desselben Vasallen (näher als 7 px bei 570) zählen einmal.
+- **Icon-Deckung** (`icon_deckung`):
+  - Befund: Steht dein eigenes Icon in der Zone, verdeckt es die Vasallen darunter. 144655, 3:13 und 5:38: Riven
+    farmt vor ihrem Turm, am Rand ihres Icons sind 1–2 gegnerische zu sehen.
+  - Regel: Dann reicht einer. Gezählt wird bis knapp hinter den Rand des Icons (Icon-Radius + `turm_toleranz`).
+  - Vasallen unter FREMDEN Icons bleiben eine Grenze (s. u.).
+- **Sofort** (`crash_dir_sofort`): `GECRASHT_BEI_DIR` gilt wie `GECRASHT_BEI_IHM` ohne 3 s Hysterese. Mit der
+  Regel „≥ 3 an deinem Turm“ ist er so scharf wie sein Spiegel. Mit Hysterese kam 5:17 erst um 5:20.
+
+**Grenze:** Vasallen unter einem fremden Icon (Gegner oder Mitspieler an der Lane) sind nicht zu sehen. In der
+Eichung ist das der häufigste Grund für „unklar“; die Zahl steht in `messungen.md`, Qualitätsrunde 1.
+
+**Ergebnis:** siehe `messungen.md`, Qualitätsrunde 1, F1.

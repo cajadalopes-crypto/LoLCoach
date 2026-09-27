@@ -2,8 +2,9 @@
 Modi, in denen ihre Frage zaehlt. INFO-Themen (Flash, Items, Level, CS - Kapitel 9.1) gehen aufs Dashboard und
 werden nur gesprochen, wenn sie den Lane-Gegner oder den Jungler in LANE/SEITE betreffen.
 
-`entscheide(regel, ansage, modus, b, kern_spricht)` -> "sprechen" | "info" | "stumm". Ohne Modus (keine Minimap) gilt
-nichts. Ab Schritt 3 (`--kern neu`): in den Modi, in denen der Kern spricht (LANE, BASIS, TOT), sind die alten Regeln
+`entscheide(regel, ansage, modus, b, kern_spricht)` -> "sprechen" | "info" | "stumm". Ohne Modus (keine Minimap) spricht
+seit der Qualitaetsrunde 1 keine alte Regel (Pruefung E6; vorher galt dann keine Sperre); ohne Kern ruft das Regelwerk
+die Sperre gar nicht. Ab Schritt 3 (`--kern neu`): in den Modi, in denen der Kern spricht (LANE, BASIS, TOT), sind die alten Regeln
 stumm - ausser dem Todesrueckblick (regeln._tod = TODESRUECKBLICK, einmal je Tod ab 14 s Todeszeit, Kapitel 6.3) und
 _afk (bis Schritt 8); INFO-Themen gehen dort nur noch aufs Dashboard (Kapitel 9.1)."""
 from __future__ import annotations
@@ -71,7 +72,10 @@ TODESRUECKBLICK_AB = 14.0     # Kapitel 6.3: einmal je Tod, ab so viel Todeszeit
 
 def entscheide(regel: str, a, modus: str | None, b, kern_spricht: bool = False) -> str:
     if modus is None:
-        return "sprechen"
+        # Pruefung E6 (Qualitaetsrunde 1): ohne Modus spricht keine alte Regel - vorher sprachen sie dann ungesperrt
+        # (140253, 0:00 im Brunnen: "Schieb die naechste Welle in den Turm und geh dann back"). TECHNIK und das
+        # Briefing laufen nicht durch das Regelwerk.
+        return "stumm"
     if kern_spricht:
         if a.schluessel.startswith(INFO):
             return "info"

@@ -27,6 +27,13 @@ from .modus import Modus, bereich_worte
 # Buch 5, Kapitel 2: Plaene mit einem Ort auf der Karte - laeufst du schon dorthin, schweigt der Coach; stehst du
 # ohne_plan_s ausserhalb der Lane, ohne naeher zu kommen, erinnert er einmal (Kapitel 6)
 ZIEL_ARTEN = ("DRUECKEN", "MIT_GRUPPE", "SEITENWELLE", "ZUR_GRUPPE")
+# Pruefung E4: nach einer GEFAHR-Ansage 20 s nichts, was nach vorn geht, ausser die Gefahr ist sichtbar vorbei
+VORWAERTS = frozenset(("TRADE", "ALL_IN", "PLATTEN", "DRUECKEN", "MIT_GRUPPE", "STAPELN", "WELLE_REIN_UND_BACK",
+                       "VORBEREITEN_OBJECTIVE"))
+NACH_GEFAHR_S = 20.0
+WELLEN_ARTEN = frozenset(("FARMEN", "WELLE_REIN_UND_BACK", "STAPELN", "WELLE_HALTEN", "PLATTEN", "UNTER_TURM_FARMEN",
+                          "VORBEREITEN_OBJECTIVE"))
+RUECKZUG_EPISODE_S = 15.0   # Pruefung D: so lange nach dem letzten ZURUECK-Plan gilt es als derselbe Rueckzug
 
 KERN_MODI_3 = ("LANE", "BASIS", "TOT")
 KERN_MODI_4 = KERN_MODI_3 + ("SEITE", "GRUPPE", "UNTERWEGS", "VERTEIDIGEN")     # Schritt 4 (Buch 5)
@@ -99,6 +106,9 @@ class Kern:
         self._basis = {"seit": None, "kauf": None, "n": 0, "zuletzt": None, "gold": None}
         self._angesagt: dict[tuple[str, str], float] = {}   # (Art, Ziel) -> zuletzt angesagt
         self._gefahr_gesagt: tuple[float, set] | None = None   # letzte GEFAHR: (Zeit, vor wem)
+        self._rueckzug_ep: dict | None = None   # Pruefung D: ein Rueckzug, ein Satz (+ einmal bei neuem Gegner)
+        self._wohin: dict = {}                  # Pruefung C4: das Ziel eines Tod/Basis-Aufenthalts
+        self.gate_grund: str | None = None      # Pruefung A: warum das Gefahr-Gate nicht anschlug
         self._datei = None
         if ablage is not None:
             try:
@@ -143,11 +153,23 @@ class Kern:
     def schritt(self, m: Merkmale, modus: str | None, p=None) -> list:
         """Ein Takt des Kerns auf fertigen Merkmalen (auch fuer Tests mit konstruierten Lagen)."""
         gesagt = self.transport.gesagt if self.transport is not None else []
+        if modus not in ("TOT", "BASIS", None):
+            self._wohin = {}           # draussen: der naechste Aufenthalt waehlt neu
+        if modus in ("TOT", "BASIS") and self._modus_vorher not in ("TOT", "BASIS"):
+            # Tod oder Back: danach ist ein Plan wieder neu - "derselbe Plan eben schon" (wiederholen_s) gilt fuer ein
+            # Flackern, nicht ueber einen Tod hinweg (Qualitaetsrunde 1, 144655 6:11/6:42: der Plan fuer die verlorene
+            # Lane kam nach dem Respawn nicht mehr)
+            self._angesagt.clear()
         self._ereignisse_merken(m, p)
         self._bestaetigung_merken(m, modus)
         if not m.daten_frisch and modus != "TOT":
             self._modus_vorher = modus
             return []          # 4.3: ohne frische Daten keine neuen Plaene
+        if m.pos is None and modus not in ("TOT", "BASIS", None) and self.fuehrer.plan is not None:
+            # 4.3 auch fuer den Ort: verliert die Minimap dich kurz, haelt der Plan (102112 36:06: ohne Ort kein Turm-
+            # Ziel, DRUECKEN kippte fuer 8 s auf FARMEN)
+            self._modus_vorher = modus
+            return []
         kand, self.gefahr = self._kandidaten(m, modus)
         self.kandidaten = kand
         ev = self.fuehrer.takt(m, kand, self.gefahr)
@@ -160,7 +182,10 @@ class Kern:
         if not aus and modus == "BASIS" and not start:
             if (a := self._basis_warten(m, gesagt)) is not None:
                 aus.append(a)
-        if not aus:
+        plan = self.fuehrer.plan
+        if plan is not None and plan.art in ("ZURUECK", "BACK_JETZT") and self._rueckzug_ep is not None:
+            self._rueckzug_ep["zuletzt"] = m.zeit
+        if not aus and not self.gefahr:       # "Denk dran" nie in GEFAHR (Pruefung D)
             er = self.fuehrer.erinnern(m, self._nicht_ausgefuehrt)
             if er is not None and (a := self._erinnerung(er, m, gesagt)) is not None:
                 aus.append(a)
@@ -186,13 +211,17 @@ class Kern:
             return [], False
         je_modus = {"LANE": lane, "BASIS": basis, "TOT": tot, "SEITE": seite, "GRUPPE": gruppe,
                     "UNTERWEGS": unterwegs, "VERTEIDIGEN": verteidigen}
-        kand = je_modus[modus].kandidaten(m, cfg)
+        if modus in ("BASIS", "TOT"):
+            # ein Ziel je Tod/Basis-Aufenthalt (C4): was 8 s vor dem Respawn gesagt wurde, gilt in der Basis weiter
+            kand = je_modus[modus].kandidaten(m, cfg, merker=self._wohin, lage=self._lage(m))
+        else:
+            kand = je_modus[modus].kandidaten(m, cfg)
         if modus not in ("BASIS", "TOT"):         # ZURUECK: in allen Modi ausser TOT und BASIS (Buch 0, 6.3)
             kand += zurueck(m, cfg, modus, back_gruende(m, cfg))
         tk = wert.todeskosten(m, cfg)
         for h in kand:
             wert.bewerte(h, m, cfg, tk)
-        bleiben = next((h for h in kand if h.art in ("FARMEN", "HALTEN")), None)
+        bleiben = next((h for h in kand if h.art in ("FARMEN", "HALTEN") or h.daten.get("verloren")), None)
         for h in kand:
             if h.art == "ZURUECK":
                 zurueck_saetze(h, m, bleiben)
@@ -202,8 +231,34 @@ class Kern:
             if h.art not in beste or h.ev > beste[h.art].ev:
                 beste[h.art] = h
         kand = list(beste.values())
-        farmen = next((h for h in kand if h.art in ("FARMEN", "HALTEN")), None)    # "bleiben, wo du bist"
+        # "bleiben, wo du bist" - bei verlorener Lane ist das der schuetzende Freeze (Pruefung A)
+        farmen = next((h for h in kand if h.art in ("FARMEN", "HALTEN") or h.daten.get("verloren")), None)
         gefahr = farmen is not None and gefahr_schlaegt_an(farmen, cfg["gefahr"])
+        self.gate_grund = None
+        if gefahr:
+            from .modi import am_sicheren_ort
+            wer = {n for n, x in farmen.daten.get("wer", []) if x >= 0.05}
+            if am_sicheren_ort(m):
+                # Buch 0, 7.5 (Nachtrag Qualitaetsrunde 1): eine Gefahr, deren sicherer Ort dein aktueller Ort ist,
+                # wird nicht gesagt - der Plan haelt
+                gefahr, self.gate_grund = False, "am sicheren Ort"
+            elif farmen.daten.get("verloren") and wer <= {farmen.daten.get("lane_gegner")}:
+                # Pruefung A: kommt nur der Lane-Gegner, waehrend du nach dem Plan an deinem Turm farmst, ist das
+                # keine Gefahr - genau das will der Plan
+                gefahr, self.gate_grund = False, f"nur {farmen.daten.get('lane_gegner')} - der Plan fuer die Lane haelt"
+        # der Plan fuer die verlorene Lane gilt gegen den Lane-Gegner allein - kommt noch wer, ist er keine Wahl
+        # (140253 8:15: "Yasuo ist vorn: ... farm dort", waehrend Brand und Yasuo kamen)
+        if farmen is not None and farmen.daten.get("verloren"):
+            andere = {n for n, x in farmen.daten.get("wer", []) if x >= 0.05} - {farmen.daten.get("lane_gegner")}
+            if andere:
+                kand = [h for h in kand if h is not farmen]
+        # Pruefung E4: nach einer GEFAHR-Ansage 20 s nichts nach vorn, ausser die Gefahr ist sichtbar vorbei
+        if self._gefahr_gesagt is not None and m.zeit - self._gefahr_gesagt[0] < NACH_GEFAHR_S and m.b is not None:
+            von = self._gefahr_gesagt[1]
+            vorbei = all(g.s.tot or (g.sichtbar and g.abstand is not None and g.abstand > 3000)
+                         for g in m.b.gegner if g.champion in von) if von else False
+            if not vorbei:
+                kand = [h for h in kand if h.art not in VORWAERTS]
         plan = self.fuehrer.plan
         als = plan.als() if plan is not None else None
         if gefahr:
@@ -230,6 +285,39 @@ class Kern:
             text = h.satz or h.kurz()
         if not text:
             return None
+        # Pruefung A / Buch 0 7.5: stehst du schon am sicheren Ort, wird der Rueckzug nicht gesagt - der Plan haelt
+        if ev.art != "schritt" and h.daten.get("dort"):
+            p.gesagt = m.zeit
+            return None
+        # Pruefung E3: in der Basis kein Wellenbefehl (der Modus hinkt, ein Plan von der Lane gilt noch)
+        if m.bereich == "basis_eigen" and (p.als() in WELLEN_ARTEN or h.art in WELLEN_ARTEN):
+            return None
+        # Pruefung D: ZURUECK mit und ohne Back ist EIN Plan - im selben Rueckzug kein neuer Satz, ausser ein neuer
+        # Gegner kommt dazu (einmal); "Jetzt back" einmal
+        # (die Merker werden erst gesetzt, wenn der Satz wirklich gesprochen ist - `nach_dem_sprechen`)
+        nach_dem_sprechen = None
+        ep = self._rueckzug_aktiv(m)
+        if p.art == "BACK_JETZT" and ev.art != "schritt" and ep is not None:
+            # ein Back gleich nach dem Rueckzug ist dessen zweiter Schritt: einmal (Pruefung D)
+            if ep["back"]:
+                p.gesagt = ep["t"]
+                return None
+            nach_dem_sprechen = lambda: ep.update(back=True)          # noqa: E731
+        if p.art == "ZURUECK":
+            von = set(h.daten.get("gefahr_von", []))
+            if ep is not None:
+                if ev.art == "schritt":
+                    if ep["back"]:
+                        return None
+                    nach_dem_sprechen = lambda: ep.update(back=True)      # noqa: E731
+                elif von - ep["wer"] and not ep["wechsel"]:
+                    nach_dem_sprechen = lambda: (ep.update(wechsel=True), ep["wer"].update(von))  # noqa: E731
+                else:
+                    p.gesagt = ep["t"]
+                    return None
+            elif ev.art != "schritt":
+                nach_dem_sprechen = lambda: setattr(self, "_rueckzug_ep", {      # noqa: E731
+                    "t": m.zeit, "zuletzt": m.zeit, "wer": set(von), "wechsel": False, "back": False})
         if ev.art == "neu" and self._laeuft_hin(h, m):
             # Buch 5, 2: "Laeufst du schon dorthin, schweigt der Coach" - der Plan gilt als gesagt, damit die
             # Erinnerung (Kapitel 6) greift, wenn du stehen bleibst
@@ -240,7 +328,12 @@ class Kern:
             return None
         # derselbe Plan kam eben schon (er fiel kurz weg und kam wieder): nichts Neues - der Plan gilt still weiter
         # (102112, 6:47/6:59: zweimal "Stapel die Top-Welle bis zur Kanone")
-        schl = (p.art, h.ziel.name if h.ziel else "")
+        # KAUFEN zaehlt nach seinem Weiterweg, nicht nach der Einkaufsliste: nach einem Teilkauf ist es derselbe Plan
+        # (Qualitaetsrunde 1, 133930 17:45 TOT "kauf Spitzhacke, Caulfields Kriegshammer ..., dann zur Top-Welle" ->
+        # 17:57 BASIS "Kauf Caulfields Kriegshammer, dann zur Top-Welle" - Pruefung D4)
+        weiter = h.daten.get("wohin") if p.art == "KAUFEN" else None
+        ziel = weiter.ziel if weiter is not None and getattr(weiter, "ziel", None) is not None else h.ziel
+        schl = (p.art, ziel.name if ziel else "")
         if kategorie == "PLAN" and ev.art != "schritt" and \
                 m.zeit - self._angesagt.get(schl, -1e9) < self.cfg["sprechen"]["wiederholen_s"]:
             p.gesagt = self._angesagt[schl]
@@ -258,8 +351,13 @@ class Kern:
             self._praefix = None
         a = self.sprecher.ansage(kategorie, p.art, text, m.zeit, self._pruefung(p), gesagt)
         if a is not None:
+            # die Lage der Entscheidung, fuer protokoll.py (gesprochen wird vielleicht spaeter - Pruefung B)
+            a._wahl = {"zeit": m.zeit, "plan": p.art, "ev": h.ev, "p_tod": h.p_tod, "gehalten": self.fuehrer.gehalten,
+                       "top": [(x.art, x.ev, x.p_tod) for x in self.fuehrer.top], "gate": self.gate_grund}
             p.gesagt = m.zeit
             self._angesagt[schl] = m.zeit
+            if nach_dem_sprechen is not None:
+                nach_dem_sprechen()
             if kategorie == "GEFAHR":
                 self._gefahr_gesagt = (m.zeit, set(h.daten.get("gefahr_von", [])))
             p.start = {"sicher_weg": m.b.sicherer_ort()[1] if m.b is not None else None, "pos": m.pos}
@@ -278,12 +376,23 @@ class Kern:
         v = [x for x in self.bau.verlauf if x[0] >= m.zeit - 3.0 and x[2] is not None]
         return bool(v) and abstand(v[0][2], h.ziel.pos) - abstand(m.pos, h.ziel.pos) >= 500
 
+    def _lage(self, m: Merkmale) -> tuple:
+        """Pruefung C4: die Lage kippt, wenn jemand stirbt, eine Struktur faellt oder ein Objective erscheint."""
+        p = m.p
+        if p is None:
+            return ()
+        return (len(p.kills_von("ChampionKill")), len(p.kills_von("TurretKilled")) + len(p.kills_von("InhibKilled")),
+                frozenset(o.schl for o in m.objectives if o.lebt))
+
     def _pruefung(self, p):
         """Die Ansage stimmt, solange der Kern-Plan derselbe ist (ersetzt _noch_wahr, Kapitel 9.6)."""
         schritt = p.schritt
 
         def pruefe() -> bool:
             q = self.fuehrer.plan
+            m = self.m
+            if m is not None and m.bereich == "basis_eigen" and p.als() in WELLEN_ARTEN:
+                return False       # Pruefung E3: in der Basis kein Wellenbefehl
             return q is p and q.schritt == schritt
         return pruefe
 
@@ -307,10 +416,22 @@ class Kern:
             return ra != r and self._ereignis_t < a.gesprochen
         return False
 
+    def _rueckzug_aktiv(self, m: Merkmale) -> dict | None:
+        ep = self._rueckzug_ep
+        return ep if ep is not None and m.zeit - ep["zuletzt"] <= RUECKZUG_EPISODE_S else None
+
     def _erinnerung(self, ev, m: Merkmale, gesagt: list):
         p = ev.plan
         h = p.handlung
-        if p.als() == "ZURUECK" and h.daten.get("ort"):     # erinnert wird nur, wer noch nicht dort ist: "raus zu"
+        ep = self._rueckzug_aktiv(m)
+        im_rueckzug = ep is not None and p.als() in ("ZURUECK", "BACK_JETZT")
+        if im_rueckzug:
+            # im Rueckzug ist der Back sein zweiter Schritt, keine Erinnerung - einmal (Pruefung D, 144655 4:52/5:00)
+            if ep["back"] or p.als() != "BACK_JETZT":
+                return None
+            gruende = h.daten.get("gruende") or ([h.grund] if h.grund else [])
+            text = "Jetzt back" + (f": {gruende[0]}." if gruende else ".")
+        elif p.als() == "ZURUECK" and h.daten.get("ort"):     # erinnert wird nur, wer noch nicht dort ist
             text = f"Denk dran: raus zu {h.daten['ort']}: {h.grund}."
         else:
             text = f"Denk dran: {h.satz}" if h.satz else None
@@ -318,6 +439,8 @@ class Kern:
             return None
         a = self.sprecher.ansage("ERINNERUNG", p.art, text, m.zeit, self._pruefung(p), gesagt)
         if a is not None:
+            if im_rueckzug:
+                ep["back"] = True
             self._gesprochen(a, "ERINNERUNG", m)
         return a
 
@@ -358,8 +481,9 @@ class Kern:
             return None
         if s["zuletzt"] is not None and m.zeit - s["zuletzt"] < c["basis_wieder_s"]:
             return None
-        z = basis.wohin(m, self.cfg, "BASIS")
-        text = z.satz if z.satz.startswith(("Geh", "TP")) else "Geh jetzt: " + z.satz[0].lower() + z.satz[1:]
+        z = basis.wohin(m, self.cfg, "BASIS", self._wohin, self._lage(m))     # dasselbe Ziel wie beim Kauf (C4)
+        text = z.satz if z.satz.startswith(("Geh", "TP", "Lauf", "Zurück")) else \
+            "Geh jetzt: " + z.satz[0].lower() + z.satz[1:]
         a = self.sprecher.ansage("PLAN", z.art, text, m.zeit, None, gesagt)
         if a is not None:
             s["n"] += 1
@@ -551,6 +675,7 @@ class Kern:
                          ziel=plan.handlung.ziel.name if plan and plan.handlung.ziel else None,
                          ev=round(plan.handlung.ev) if plan else None, gefahr=self.gefahr,
                          top=[(h.art, round(h.ev)) for h in self.fuehrer.top],
+                         gehalten=self.fuehrer.gehalten, gate=self.gate_grund,
                          welle=m.welle.zustand if m.welle is not None else None)
             if self._letzte is not None:
                 zeile["wuerde_sagen" if self.stellung == "schatten" else "sagt"] = list(self._letzte)

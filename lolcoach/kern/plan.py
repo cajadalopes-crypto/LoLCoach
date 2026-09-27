@@ -58,6 +58,7 @@ class PlanFuehrer:
         self.g = cfg["gefahr"]
         self.plan: Plan | None = None
         self._wechsel = -1e9
+        self.gehalten: str | None = None   # welche Regel den besseren Kandidaten hielt
         self._besser: tuple[str, float] | None = None
         self.top: list[Handlung] = []
 
@@ -69,6 +70,7 @@ class PlanFuehrer:
 
     def takt(self, m, kandidaten: list[Handlung], gefahr: bool) -> Ereignis | None:
         zeit = m.zeit
+        self.gehalten = None
         self.top = sorted(kandidaten, key=lambda h: -h.ev)[:3]
         if not kandidaten:
             if self.plan is not None:
@@ -94,25 +96,37 @@ class PlanFuehrer:
         if frisch is None or grund:
             return self._neu(beste, zeit, "gefahr" if gefahr and beste.art in SICHER else "neu", p)
         self._uebernehmen(p, frisch)
-        # 2. Gefahr: der Plan selbst ist zu gefaehrlich, und eine sicherere Handlung ist mehr wert
+        # 2. Gefahr: der Plan selbst ist zu gefaehrlich, und eine sicherere Handlung ist mehr wert - sicher ist, was
+        # das Gate nicht ausloest, nicht nur ZURUECK/BACK (Pruefung B, 144655 6:44: STAPELN p_tod 0,51 hielt gegen
+        # FARMEN p_tod 0,02, weil FARMEN keine "sichere Art" war)
         if gefahr_schlaegt_an(p.handlung, self.g) and p.art not in SICHER:
-            sicher = [h for h in kandidaten if h.art in SICHER]
+            sicher = [h for h in kandidaten if h.art in SICHER or not gefahr_schlaegt_an(h, self.g)]
             if sicher:
                 s = max(sicher, key=lambda h: h.ev)
                 if s.ev > p.handlung.ev:
-                    return self._neu(s, zeit, "gefahr", p)
+                    return self._neu(s, zeit, "gefahr" if s.art in SICHER else "neu", p)
         if schritt is not None:
             return schritt
-        # 4. besser? (Hysterese in GE, stabil, halten)
+        # 4. besser? (Hysterese in GE, stabil, halten) - welche Regel gegen den EV gewinnt, steht in `gehalten`
+        # (Pruefung B: _kern.jsonl und protokoll.py zeigen es)
         if beste.art != p.als():
             diff = beste.ev - p.handlung.ev
-            if diff >= max(self.c["hysterese_ge"], self.c["hysterese_anteil"] * abs(p.handlung.ev)):
+            schwelle = max(self.c["hysterese_ge"], self.c["hysterese_anteil"] * abs(p.handlung.ev))
+            if diff >= schwelle:
                 if self._besser is None or self._besser[0] != beste.art:
                     self._besser = (beste.art, zeit)
                 if zeit - self._besser[1] >= self.c["stabil_s"] and zeit - self._wechsel >= self.c["halten_s"]:
                     return self._neu(beste, zeit, "neu", p)
+                if zeit - self._wechsel < self.c["halten_s"]:
+                    self.gehalten = (f"Hysterese: {beste.art} ist {diff:.0f} besser, der Plan ist erst "
+                                     f"{zeit - self._wechsel:.0f} s alt (halten {self.c['halten_s']:.0f} s)")
+                else:
+                    self.gehalten = (f"Hysterese: {beste.art} ist {diff:.0f} besser, erst seit "
+                                     f"{zeit - self._besser[1]:.1f} s (stabil {self.c['stabil_s']:.0f} s)")
             else:
                 self._besser = None
+                if diff > 0:
+                    self.gehalten = f"Hysterese: {beste.art} nur {diff:.0f} besser (Schwelle {schwelle:.0f})"
         else:
             self._besser = None
         return None

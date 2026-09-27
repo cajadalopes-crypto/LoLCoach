@@ -155,6 +155,85 @@ def todespreis(b: Bewertung, mit_objective: bool = True) -> str:
     return satz
 
 
+TOD_WOERTER = 25     # Pruefung E1: zwei Saetze, hoechstens so viele Woerter zusammen
+
+
+def _leben_wort(leben: float | None) -> str:
+    if leben is None:
+        return ""
+    if leben <= 0.2:
+        return "fast ohne Leben"
+    if leben <= 0.4:
+        return "mit einem Drittel Leben"
+    if leben <= 0.65:
+        return "mit halbem Leben"
+    return "mit vollem Leben"
+
+
+def _wo(b) -> str:
+    if b is None:
+        return ""
+    if b.unter_gegnerturm:
+        return "unter seinem Turm"
+    if b.zum_turm is not None and b.zum_turm <= 4:
+        return "an deinem Turm"
+    if b.tiefe is not None and b.tiefe >= 0.6:
+        return "weit vorn"
+    return ""
+
+
+def todesrueckblick(b, beteiligt: list[str], jungler: str | None, turm: bool, leben: float | None = None) -> str:
+    """Pruefung E1 (Qualitaetsrunde 1): zwei Saetze, hoechstens TOD_WOERTER Woerter. Satz 1: was entschied, aus der Lage
+    in der letzten Sekunde davor (`b`). Satz 2: was naechstes Mal, als Handlung. Keine Schadenszahlen, kein Kopfgeld,
+    kein "hiess es" - vorher: "Solo gegen Yasuo verloren. 18 Sekunden davor hiess es: geh zurueck. Dagegen sprach:
+    Yasuo toetet dich schon mit einem Combo, mindestens 520 Schaden ..." (140253, 8:43, 28 Woerter).
+    `beteiligt`: wer dich getoetet hat oder sichtbar dabei war (Brand hatte 8:43 keine Beteiligung, stand aber da)."""
+    # dein Leben ~10 s davor (`leben`) - in der letzten Sekunde ist es immer niedrig, das ist die Folge, nicht der Grund
+    leben = _leben_wort(leben if leben is not None else (b.leben if b is not None else None))
+    wo = _wo(b)
+    if turm:
+        welle = b is not None and b.welle is not None and b.welle[0] == 0
+        s1 = "Sein Turm hat dich erwischt" + (", deine Welle war nicht vorn." if welle else ".")
+        s2 = "Unter seinen Turm nur, wenn deine Vasallen die Schüsse nehmen."
+    elif jungler and jungler in beteiligt:
+        j = b.jungler if b is not None else None
+        weg = j is not None and j.seit is not None and j.seit >= 15 and not j.sichtbar
+        s1 = f"Gank von {jungler}" + (f", {jungler} war {sek(j.seit)} nicht zu sehen" if weg else "") + \
+             (f", du standst {wo}" if wo in ("weit vorn", "unter seinem Turm") else "") + "."
+        s2 = f"Fehlt {jungler} länger als 20 Sekunden: bleib hinter deiner Welle."
+    elif len(beteiligt) >= 2:
+        wer = _namen(beteiligt[:2]) if len(beteiligt) == 2 else f"{len(beteiligt)} von ihnen"
+        s1 = (f"Du bist {leben} {wo} geblieben, {wer} zusammen töten dich dort." if leben and wo
+              else f"{wer} kamen zusammen, allein hast du gegen sie keine Chance.")
+        s2 = "Bei zwei Gegnern: back, bevor sie in Reichweite sind." if len(beteiligt) == 2 else \
+            "Gegen mehrere nur mit deinem Team kämpfen."
+    elif beteiligt:
+        x = beteiligt[0]
+        gruende = []
+        g = b.lane if b is not None and b.lane is not None and b.lane.champion == x else None
+        if g is not None and g.s.level > b.ich.level:
+            gruende.append(f"{g.s.level - b.ich.level} Level vorn" if g.s.level - b.ich.level > 1 else "ein Level vorn")
+        if g is not None and g.s.item_gold - b.ich.item_gold >= 700:
+            gruende.append("ein Item vorn")
+        if gruende:
+            s1 = f"{x} war {_namen(gruende)}, und du hast trotzdem gekämpft."
+            s2 = f"Gegen {x} erst wieder traden, wenn du nachgezogen hast."
+        elif wo == "unter seinem Turm":
+            s1 = f"Du hast {x} unter seinem Turm angegriffen."
+            s2 = "Unter seinen Turm nur, wenn deine Vasallen die Schüsse nehmen."
+        elif leben in ("fast ohne Leben", "mit einem Drittel Leben"):
+            s1 = f"Du bist {leben} {wo + ' ' if wo else ''}gegen {x} geblieben."
+            s2 = "Mit so wenig Leben kein Kampf: erst back."
+        else:
+            s1 = f"Der Zweikampf gegen {x} ging verloren, ihr wart gleichauf."
+            s2 = f"Gegen {x} nur traden, wenn seine Fähigkeiten weg sind."
+    else:
+        return ""
+    satz = f"{s1} {s2}"
+    worte = satz.split()
+    return satz if len(worte) <= TOD_WOERTER else f"{s1.split(',')[0].rstrip('.')}. {s2}"
+
+
 def tod_turm(b: Bewertung | None) -> str:
     """Tod am Turm, gerechnet aus der letzten Sekunde davor statt des Standardsatzes (Nachlauf 21:21, 6:10: "Vom
     Turm erwischt. Unter seinen Turm nur mit genug Leben ..."): dein Leben, sein Schuss, wie viele du ausgehalten

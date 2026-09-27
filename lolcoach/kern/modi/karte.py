@@ -15,7 +15,7 @@ from ...bewertung import BRUNNEN, TIER, TURM_DE, TUERME, WEGFAKTOR, abstand
 from ...zustand import BLAU, ROT, gegenteam, struktur
 from .. import wert
 from ..handlung import Handlung, Ziel
-from . import OBJ_NAME, liste, uhr, welle_name
+from . import OBJ_NAME, liste, puenktlich, uhr, welle_name
 
 ZUM = {"drache": "zum Drachen", "baron": "zum Baron", "herold": "zum Herold", "larven": "zu den Larven"}
 GRUBE_WORT = {"grube:drache": "zum Drachen", "grube:baron": "zum Baron"}
@@ -191,20 +191,26 @@ def dahinter(z: TurmZiel, m, cfg: dict, mit: int, ab: float) -> float:
     return turm_gewinn(z2, m, cfg) if schlaegt(m, rechtzeitig(z2, fertig)[:1], cfg["mitte"]) else 0.0
 
 
-def fenster_grund(z: TurmZiel, m) -> str:
-    """Der Grund fuer einen Turm: wer tot ist (mit Zeit), sonst ab wann einer dort sein kann, sonst wer woanders ist."""
+def fenster_grund(z: TurmZiel, m, bis: float, kommen: list) -> str:
+    """Der Grund fuer einen Turm - er muss FUER die Handlung sprechen (Pruefung C3): ein genanntes Fenster ist
+    >= `bis` (Weg + Dauer), sonst waere das Ziel falsch. `kommen`: wer vorher da ist (dann schlaegst du ihn).
+    Vorher: "fruehestens in 0 Sekunden kann einer von ihnen dort sein", "3 von ihnen sind noch 3 Sekunden tot"."""
+    teile = []
     tote = [(g.champion, g.s.respawn) for g, _ in z.ankunft if g.s.tot]
-    if tote:
+    erste = min((t for _, t in z.ankunft), default=None)
+    if tote and min(t for _, t in tote) >= bis:
         n = min(t for _, t in tote)
         wer = f"{len(tote)} von ihnen sind" if len(tote) >= 3 else f"{liste([c for c, _ in tote])} {'ist' if len(tote) == 1 else 'sind'}"
-        return f"{wer} noch {int(n)} Sekunden tot"
-    lebend = [(g, t) for g, t in z.ankunft if not g.s.tot]
-    if lebend and lebend[0][1] >= 10:
-        return f"frühestens in {int(lebend[0][1])} Sekunden kann einer von ihnen dort sein"
+        teile.append(f"{wer} noch {int(n)} Sekunden tot")
+    elif not kommen and erste is not None and erste >= bis:
+        teile.append(f"frühestens in {int(erste)} Sekunden kann einer von ihnen dort sein")
+    if kommen:
+        namen = liste([g.champion for g in kommen])
+        teile.append(f"{namen} schlägst du" if teile else f"du schlägst {namen}")
+    if teile:
+        return ", ".join(teile)
     if m.woanders >= 3:
         return f"{m.woanders} von ihnen sind woanders"
-    if m.antwort is not None:
-        return f"du schlägst {m.antwort.champion}"
     return "keiner von ihnen ist in der Nähe"
 
 
@@ -266,7 +272,7 @@ def turm_handlungen(m, cfg: dict, modus: str, art: str, split: bool) -> list[Han
         if fenster_um is not None:
             folge = 200.0 * ORDNUNG[z.stufe]        # die Reihenfolge aus Kapitel 8: das erste erreichbare gewinnt
             folge += dahinter(z, m, cfg, mit, z.weg + dauer)
-        grund = fenster_grund(z, m)
+        grund = fenster_grund(z, m, z.weg + dauer, kommen)
         name = z.name[4:] if z.name.startswith("den ") else z.name       # "inneren Top-Turm"
         if fenster_um is not None and z.stufe == "Inhib":
             satz = f"{z.lane}-Inhibitor-Turm jetzt: {grund}."
@@ -365,7 +371,8 @@ def welle_und_raus(m, cfg: dict, modus: str, lane: str, w) -> Handlung | None:
         ww = wert.wellenwert(m.zeit, cfg)
         name = welle_name(m, lane)
         kurz = name.split(" ", 1)[1]          # "Top-Welle"
-        grund = f"Spawn {uhr(m.zeit + o.spawn_in)}, du brauchst {int(weg)} Sekunden"
+        crash = 10.0
+        grund = f"Spawn um {uhr(m.zeit + o.spawn_in)}, {puenktlich(o.spawn_in - crash - weg)}"
         h = Handlung("WELLE_UND_RAUS", Ziel("objective", OBJ_NAME[o.schl], o.pos, weg), modus, 10.0 + weg,
                      gewinn=cr["vorlauf_bonus"] * cfg["objective_wert"].get(o.schl, 0) + 0.5 * ww, gefahr_t=10.0,
                      grund=grund, satz=f"{kurz[0].upper()}{kurz[1:]} rein, dann {ZUM[o.schl]}: {grund}.",

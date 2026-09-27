@@ -124,6 +124,16 @@ vasallen_tempo = 350
 freeze_stabil_s = 15            # GEHALTEN_BEI_DIR: so lange stabil (1.4)
 leer_ab_s = 4                   # LEER: so lange beide Wellen weg (1.4)
 front_sprung = 0.12             # so weit zwischen zwei Lesungen = eine andere Welle (Trend nur danach, 1.1)
+# Nachtrag 1.4 (Qualitaetsrunde 1, F1): Front statt Summe
+front_luecke = 0.06             # s-Luecke, die zwei Vasallen-Gruppen einer Lane trennt
+crash_zone = 0.08               # GECRASHT_*: Front-Vasallen so weit vor dem vordersten Turm (und dahinter) ...
+crash_mindestens = 3            # ... mindestens so viele der einen Seite, hoechstens 1 der anderen
+# nicht im Buch (Qualitaetsrunde 1): wer den Turm schlaegt, steht auf der Karte auch knapp dahinter
+turm_toleranz = 0.02
+# nicht im Buch (Qualitaetsrunde 1): steht dein Icon in der Zone, verdeckt es die Vasallen - dann reicht einer am Rand
+icon_deckung = true
+# nicht im Buch (Qualitaetsrunde 1): GECRASHT_BEI_DIR schaltet sofort wie GECRASHT_BEI_IHM (1.4 nennt nur diesen)
+crash_dir_sofort = true
 
 [recall]
 stand = "Buch 3, 27.09.2026 - Startwerte (Schaetzung), an Szenarien kalibrieren"

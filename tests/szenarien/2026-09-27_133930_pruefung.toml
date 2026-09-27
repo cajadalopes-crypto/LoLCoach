@@ -1,0 +1,16 @@
+# Szenario aus dem Nachmessen der Qualitaetsrunde 1 (Kennzahl fassungswechsel, Pruefung D4), Partie 133930
+# (Carlos live, Riven Top gegen Gwen, rote Seite). Format: Buch 0, 12.1.
+# Rot mit dem Stand vor dem Fix: das Protokoll vom 27.09. 17:47 (werkzeuge/protokoll.py) zeigt beide Saetze.
+
+aufnahme = "2026-09-27_133930"
+bots = false
+
+[[szenario]]
+id = "1745-kauf-einmal"
+fenster = ["17:40", "18:05"]
+quelle = "fassungswechsel 133930: 17:45 TOT 'Noch 8 Sekunden: kauf Spitzhacke, Caulfields Kriegshammer und ein Kontroll-Auge, dann zur Top-Welle' -> 17:57 BASIS 'Kauf Caulfields Kriegshammer, dann zur Top-Welle'"
+lage = "Riven tot, dann im Brunnen; kauft die Spitzhacke und hat noch 741 Gold."
+satz_mit = [["Kriegshammer"]]
+satz_mit_anzahl = 1
+warum = """Derselbe Plan (kaufen, dann Top-Welle) wird je Aufenthalt einmal gesagt. Nach einem Teilkauf ist die Liste
+kuerzer, der Plan derselbe (Pruefung D1/D4, C4)."""

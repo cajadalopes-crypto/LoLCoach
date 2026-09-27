@@ -1034,6 +1034,10 @@ def bilder_aufraeumen(behalte: int = 3) -> float:
     for pfad in aufnahmen:
         if pfad.name.removesuffix(".jsonl.gz") in schuetzen:
             continue
+        # eine Datei BEHALTEN im Bilderordner schuetzt ihn (Wellen-Eichung, Flash-Messung - Qualitaetsrunde 1: 133930
+        # verlor seine Bilder am 27.09. um 17:26, mitten in der Eichung)
+        if (pfad.with_name(pfad.name.removesuffix(".jsonl.gz") + "_bilder") / "BEHALTEN").exists():
+            continue
         bilder = aufzeichnung.bilder(pfad)
         if not bilder:
             continue

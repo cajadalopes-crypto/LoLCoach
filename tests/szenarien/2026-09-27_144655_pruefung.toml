@@ -1,0 +1,72 @@
+# Szenarien aus der Protokoll-Pruefung 27.09.2026 (buecher/protokolle/PRUEFUNG_2026-09-27.md), Partie 144655
+# (Carlos live, Riven Top gegen Gangplank, rote Seite, Coach bei 10:11 abgebrochen). Format: Buch 0, 12.1.
+# Angelegt vor den Fixes der Qualitaetsrunde 1 - rot mit dem Stand von ef08644 (ausser 0900, s. dort).
+
+aufnahme = "2026-09-27_144655"
+bots = false
+
+[[szenario]]
+id = "0701-lane-hinten-plan"
+zeit = "7:01"
+fenster = ["6:45", "7:40"]
+quelle = "Pruefung A: 'Raus zu deinem Top-Tier-1-Turm: Gangplank kommt' bei 100 % Leben, nie ein Plan fuer die Lane"
+lage = """Nachgespielt 27.09.: Riven 100 % Leben, 5 s vor ihrem Top-Tier-1-Turm, Kraft gegen Gangplank -2,7 (Tode 1:57
+und 6:22 gegen ihn). Gangplank 11 s ungesehen 320 entfernt, Kha'Zix 20 s ungesehen."""
+modus = ["LANE"]
+soll = ["WELLE_HALTEN", "FARMEN"]
+satz_mit = [["Gangplank"], ["zu deinem Turm kommen", "farm"]]
+satz_mit_anzahl = 1
+darf_nicht_sagen = ["Gangplank kommt."]
+warum = """Die Lane ist verloren (zwei Tode gegen ihn, -2,7). Der Plan dafuer ist der schuetzende Freeze (Buch 1, 3.4):
+Welle zu deinem Turm, dort farmen, kein Trade bis zum Bauteil - einmal gesagt, statt fuenfmal 'Raus'."""
+
+[[szenario]]
+id = "0900-kein-raus-am-turm"
+zeit = "9:00"
+fenster = ["8:55", "9:10"]
+quelle = "Pruefung A: 'Raus zu deinem Top-Tier-1-Turm: Gangplank und Kha'Zix kommen' bei 100 % Leben"
+lage = """Nachgespielt 27.09. (Ort festgehalten, wie die Pruefung verlangt): Riven 7,0 s VOR ihrem Top-Tier-1-Turm
+(nicht am Turm), Gangplank 8 s ungesehen 1270 entfernt, Kha'Zix 106 s ungesehen. Tod 9:20 durch Kha'Zix und
+Gangplank (Gank)."""
+darf_nicht_sagen = ["Bleib an deinem"]
+warum = """Steht Riven vor dem Turm und koennen Gangplank UND Kha'Zix kommen, ist 'Raus' erlaubt (Pruefung A) - hier
+richtig, 20 s spaeter kam genau dieser Gank. Verboten waere 'Bleib an' (sie steht nicht dort) oder 'Raus', wenn sie
+am Turm steht und nur Gangplank kommt. Mit dem Stand von ef08644 gruen: der Ort erlaubt das 'Raus'."""
+
+[[szenario]]
+id = "0647-kein-stapeln-bei-gefahr"
+zeit = "6:47"
+quelle = "Pruefung B: STAPELN (EV -315, p_tod 0,41) gewaehlt, FARMEN (EV -1) dahinter"
+lage = """Nachgespielt 27.09.: STAPELN um 6:42 gewaehlt (EV +174), danach schwankt es mit Kha'Zix' Sichtbarkeit
+zwischen -494 und +16; die Hysterese haelt es bis 6:50, gesprochen wurde es 6:47. Kha'Zix 6 s ungesehen, 13 s weg."""
+soll = ["FARMEN", "WELLE_HALTEN"]
+darf_nicht = ["STAPELN"]
+warum = """Buch 1, 3.3: kein STAPELN, wenn p_da(Jungler, 30 s) >= 0,4. Kha'Zix war 13 s entfernt."""
+
+[[szenario]]
+id = "0449-rueckzug-ein-satz"
+fenster = ["4:45", "5:10"]
+quelle = "Pruefung D: 'Jetzt back: 19 %' 4:51 -> 'Bleib an deinem Turm: Gangplank und Morgana kommen' 4:55 -> 'Jetzt back: 20 %' 5:03"
+lage = "Riven 19-22 % an ihrem Top-Tier-1-Turm, Gangplank und Morgana in der Naehe."
+ansagen_max = 2
+fassung_einmal = true
+warum = """ZURUECK mit und ohne Back ist EIN Plan. Ein Wechsel der Fassung nur bei einem neuen Gegner, einmal."""
+
+[[szenario]]
+id = "0159-wohin-risiko"
+zeit = "1:59"
+quelle = "Pruefung E2: 'Noch 8 Sekunden: zurueck nach Top' mit p_tod 0,64"
+lage = "Riven tot seit 1:57 (Gangplank), Wiedereinstieg 2:11 im Brunnen."
+soll = ["WOHIN"]
+plan_p_tod_max = 0.2
+warum = """WOHIN wird auf dem Weg aus dem Brunnen zur Wiederbelebungszeit gerechnet, nicht am Todesort. Der Weg zum
+eigenen Turm ist nicht gefaehrlich."""
+
+[[szenario]]
+id = "0338-keine-info-im-kampf"
+zeit = "3:38"
+fenster = ["3:36", "3:50"]
+quelle = "Pruefung E7: 'Mel ist AFK ...' im Modus KAMPF"
+lage = "Riven 59 % im Kampf auf ihrer Lane."
+darf_nicht_sagen = ["AFK"]
+warum = "In KAMPF spricht nur GEFAHR (Buch 0, 9.1). Die AFK-Info kommt nach dem Kampf, wenn sie dann noch gilt."

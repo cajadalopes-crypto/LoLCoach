@@ -32,6 +32,19 @@ def uhr(t: float) -> str:
     return komponist.uhr_gesprochen(t)
 
 
+PUENKTLICH_S = 5.0      # so viel Vorsprung heisst "pünktlich", darunter "knapp" (E8)
+
+
+def puenktlich(puffer: float) -> str:
+    """E8 (Qualitaetsrunde 1): die Folge statt zwei Zahlen zum Rechnen ("naechste Welle in 28 Sekunden, du brauchst
+    25"). `puffer`: Sekunden, die du vor dem Ereignis dort bist."""
+    if puffer >= PUENKTLICH_S:
+        return "du bist pünktlich da"
+    if puffer >= 0:
+        return "lauf direkt, sonst kommst du zu spät"
+    return "du kommst zu spät"
+
+
 def lane_von(m) -> str:
     return m.meine_lane or "Top"
 
@@ -165,6 +178,31 @@ def nie_back(m, cfg: dict) -> str | None:
     return None
 
 
+SICHER_DORT_S = 4.0     # so nah am sicheren Ort stehst du schon dort
+
+
+def am_sicheren_ort(m) -> bool:
+    """Du stehst am sicheren Ort (<= SICHER_DORT_S). Pruefung A / Buch 0, 7.5 (Nachtrag Qualitaetsrunde 1): eine Gefahr,
+    deren sicherer Ort dein aktueller Ort ist, wird nicht gesagt - der Plan haelt."""
+    if m.b is None:
+        return False
+    _, weg = m.b.sicherer_ort()
+    return weg is not None and weg <= SICHER_DORT_S
+
+
+def lane_verloren(m) -> tuple[bool, int]:
+    """Pruefung A: die Lane ist gegen dich - Kraft <= -1 gegen den Lane-Gegner oder zwei Tode gegen ihn.
+    Rueckgabe: (verloren, Tode gegen ihn)."""
+    b = m.b
+    g = b.lane if b is not None else None
+    if g is None or m.p is None or m.p.ich is None:
+        return False, 0
+    ich = m.p.ich.name
+    tode = sum(1 for e in m.p.kills_von("ChampionKill")
+               if e.opfer is not None and e.opfer.name == ich and e.taeter is not None and e.taeter.name == g.s.name)
+    return b.kraefte()[0] <= -1.0 or tode >= 2, tode
+
+
 def wer_kommt(h: Handlung, schwelle: float = 0.05) -> list[str]:
     return [n for n, x in h.daten.get("wer", []) if x >= schwelle]
 
@@ -175,6 +213,7 @@ def zurueck(m, cfg: dict, modus: str, gruende: list[BackGrund]) -> list[Handlung
     bessere. Der Kanal danach am sicheren Ort zaehlt mit (`danach_kanal`)."""
     b, c = m.b, cfg["recall"]
     ort, weg = b.sicherer_ort()
+    dort = weg is not None and weg <= SICHER_DORT_S     # stehst du schon dort, wird nichts gesagt (Pruefung A)
     weg = max(2.0, weg if weg is not None else 8.0)
     w = m.welle
     z = w.zustand if w is not None else "UNBEKANNT"
@@ -194,7 +233,8 @@ def zurueck(m, cfg: dict, modus: str, gruende: list[BackGrund]) -> list[Handlung
         h = Handlung("ZURUECK", Ziel("ort", ort, None, weg), modus, dauer, gewinn=gew, kosten=kosten,
                      gefahr_t=max(weg, cfg["gefahr"]["fenster_s"]) if dort else weg,
                      schutz=1.0 if dort else cfg["gefahr"]["rueckzug_faktor"], schritte=schritte)
-        h.daten.update(nur_bei_gefahr=True, ort=ort, gruende=[x.text for x in gruende] if mit_back else [])
+        h.daten.update(nur_bei_gefahr=True, ort=ort, gruende=[x.text for x in gruende] if mit_back else [],
+                       dort=dort)
         if mit_back:
             h.schritt_saetze[1] = "Jetzt back: " + back_grund_text(gruende, 1) + "."
             h.daten.update(folge_art={1: "BACK_JETZT"}, danach_kanal=c["kanal_s"])
@@ -204,11 +244,17 @@ def zurueck(m, cfg: dict, modus: str, gruende: list[BackGrund]) -> list[Handlung
 
 
 def _am_sicheren_ort(m, plan) -> bool:
-    """ZURUECK, Schritt "zurueck": du bist am sicheren Ort (<= 3 s)."""
+    """ZURUECK, Schritt "zurueck": du bist am sicheren Ort (<= 3 s). Mit Back danach erst, wenn dich kein sichtbarer
+    Gegner im Kanal erreicht (Buch 3, 2.2; Pruefung D: 140253 8:06 "Jetzt back", Brand und Yasuo kamen)."""
     if plan.schritt != 0 or m.b is None:
         return False
     _, weg = m.b.sicherer_ort()
-    return weg is not None and weg <= 3.0
+    if weg is None or weg > 3.0:
+        return False
+    if plan.handlung.daten.get("folge_art"):
+        from .. import konfig
+        return nie_back(m, konfig()) is None
+    return True
 
 
 def zurueck_saetze(h: Handlung, m=None, bleiben: Handlung | None = None) -> None:

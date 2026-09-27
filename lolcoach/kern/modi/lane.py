@@ -6,10 +6,12 @@ Timing - das erledigt der Kern mit dem Gefahr-Gate (Kandidaten mit `nur_bei_gefa
 from __future__ import annotations
 
 from ... import denker
+from ...kaufplan import _dat
 from .. import gefahr, wert
 from ..handlung import Handlung, Ziel
-from . import (OBJ_NAME, abwesenheit, back_gewinn, back_grund_text, back_gruende, gegner_fenster, lane_von,
-               liste, nie_back, objective_wert, objectives_meine_seite, turm_ihr_name, uhr, welle_name)
+from . import (OBJ_NAME, abwesenheit, back_gewinn, back_grund_text, back_gruende, gegner_fenster, lane_verloren,
+               lane_von, liste, nie_back, objective_wert, objectives_meine_seite, puenktlich, turm_ihr_name, uhr,
+               welle_name)
 
 ZUM = {"drache": "zum Drachen", "baron": "zum Baron", "herold": "zum Herold", "larven": "zu den Larven"}
 
@@ -38,8 +40,42 @@ def kandidaten(m, cfg: dict, lane: str | None = None, modus: str = "LANE", arten
     return aus if arten is None else [h for h in aus if h.art in arten]
 
 
+def _bauteil(m) -> str | None:
+    """Was die Lane wieder oeffnet: das naechste Bauteil aus dem Kaufplan (Pruefung A: "kein Trade bis zum
+    Brutalisierer")."""
+    from ... import kaufplan
+    b = m.b
+    try:
+        k = kaufplan.plan(b.ich.champion_id, tuple(b.ich.items), float(b.gold or 0))
+    except Exception:
+        return None
+    if k is None:
+        return None
+    if k.kaufen and k.kaufen[0] != "Stiefel":
+        return k.kaufen[0]
+    return k.naechstes[0] if k.naechstes else k.item
+
+
+def _lane_wieder_offen(m, plan) -> str | None:
+    """Der Plan fuer die verlorene Lane gilt, bis die Kraft wieder >= 0 ist oder das Bauteil gekauft ist."""
+    b = m.b
+    if b is None or b.lane is None:
+        return "kein Lane-Gegner"
+    if b.kraefte()[0] >= 0.0:
+        return "Kraft ausgeglichen"
+    teil = plan.handlung.daten.get("bauteil")
+    if teil:
+        from ... import ddragon
+        namen = {ddragon.items().get(i, {}).get("name") for i in b.ich.items}
+        if teil in namen:
+            return f"{teil} gekauft"
+    return None
+
+
 def _kandidaten(m, cfg: dict, lane: str, modus: str) -> list[Handlung]:
     b = m.b
+    if m.bereich == "basis_eigen":
+        return []          # der Modus hinkt 1,5 s: in der Basis kein Wellenbefehl (Pruefung E3, 102112 5:54)
     cw, cr, cg = cfg["welle"], cfg["recall"], cfg["gefahr"]
     w = m.welle
     z = w.zustand if w is not None else "UNBEKANNT"
@@ -135,10 +171,27 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str) -> list[Handlung]:
             h.daten.update(am_turm=True, schutz=schuetzend)
             aus.append(h)
 
+    # Pruefung A (Qualitaetsrunde 1): die Lane ist verloren (Kraft <= -1 oder zwei Tode gegen ihn) - dann ist der
+    # schuetzende Freeze der Plan (Buch 1, 3.4), einmal gesagt, mit Grund und Bauteil. Er ersetzt FARMEN; Trade,
+    # All-in und Stapeln (ein langsamer Push) gibt es bis dahin nicht.
+    verloren, tode = lane_verloren(m) if modus == "LANE" else (False, 0)
+    if b.leben is not None and b.leben < cr["leben_kritisch"]:
+        verloren = False        # dann ist nur noch back die Frage (Buch 3, 2) - der Plan fuer die Lane kommt danach
+    if verloren and g is not None and not g.s.tot:
+        teil = _bauteil(m)
+        grund = f"{g.champion} ist vorn"
+        satz = (f"{g.champion} ist vorn: lass die {lane}-Welle zu deinem Turm kommen und farm dort, "
+                + (f"kein Trade bis {_dat(teil)}." if teil else "kein Trade."))
+        h = Handlung("WELLE_HALTEN", Ziel("lane", welle), modus, 10.0, gewinn=fr * 10.0 + 0.5 * ww, gefahr_t=10.0,
+                     grund=grund, satz=satz)
+        h.daten.update(am_turm=True, schutz=True, verloren=True, lane_gegner=g.champion, bauteil=teil, tode=tode)
+        h.abbruch.append(_lane_wieder_offen)
+        aus = [x for x in aus if x.art not in ("FARMEN", "WELLE_HALTEN")] + [h]
+
     # STAPELN (Buch 1, 3.3): Objective auf deiner Seite in 45-100 s, Welle neutral, Jungler nicht wahrscheinlich hier
     j = b.jungler
     p_j30 = gefahr.p_da(j, 30.0, m, cg) if j is not None else 0.0
-    if z in ("MITTE", "ZU_IHM", "LEER") and p_j30 < cw["stapeln_gefahr_max"]:
+    if z in ("MITTE", "ZU_IHM", "LEER") and p_j30 < cw["stapeln_gefahr_max"] and not verloren:
         for o in objectives_meine_seite(m, lane):
             if o.lebt or not (45 <= o.spawn_in <= 100):
                 continue
@@ -162,9 +215,9 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str) -> list[Handlung]:
         dauer = max(5.0, o.spawn_in - weg)
         h = Handlung("VORBEREITEN_OBJECTIVE", Ziel("objective", OBJ_NAME[o.schl], o.pos, weg), modus, dauer,
                      gewinn=fr * dauer + cr["vorlauf_bonus"] * objective_wert(o, cfg), gefahr_t=min(dauer, 30.0),
-                     grund=f"Spawn {uhr(m.zeit + o.spawn_in)}",
-                     satz=f"{lane}-Welle rein, dann {ZUM[o.schl]}: Spawn {uhr(m.zeit + o.spawn_in)}, "
-                          f"du brauchst {int(weg)} Sekunden.",
+                     grund=f"Spawn um {uhr(m.zeit + o.spawn_in)}",
+                     satz=f"{lane}-Welle rein, dann {ZUM[o.schl]}: Spawn um {uhr(m.zeit + o.spawn_in)}, "
+                          f"{puenktlich(o.spawn_in - weg)}.",
                      schritte=["Welle rein", ZUM[o.schl]])
         h.daten["objective"] = o.schl
         aus.append(h)
@@ -184,7 +237,7 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str) -> list[Handlung]:
             aus.append(h)
 
     # TRADE / ALL_IN (Buch 0, 6.2/6.3): Lane-Gegner sichtbar <= 1000, das Urteil sagt Trade oder Kill
-    if g is not None and g.sichtbar and not g.s.tot and g.abstand is not None and g.abstand <= 1000:
+    if g is not None and g.sichtbar and not g.s.tot and g.abstand is not None and g.abstand <= 1000 and not verloren:
         try:
             u = denker.urteil(b)
         except Exception:

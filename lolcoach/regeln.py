@@ -194,8 +194,9 @@ class Regelwerk:
                       self._ward, self._recall_fenster, self._tief_ohne_sicht, self._kontrollauge,
                       self._objective_start, self._fenster, self._plan, self._wiedereinstieg, self._afk):
             for a in regel(p, v) or ():
+                # ohne Kern (reines altes System) gibt es keinen Modus und keine Sperre
                 weg = sperre.entscheide(regel.__name__, a, self.modus, self.b,
-                                        self.kern is not None and self.kern.spricht_in(self.modus))
+                                        self.kern.spricht_in(self.modus)) if self.kern is not None else "sprechen"
                 if weg == "info":
                     self.kern.info_dazu(p.zeit, a.text)
                     continue
@@ -419,6 +420,8 @@ class Regelwerk:
         """Einer ist AFK - einmal je Spieler sagen, mit Belegen und was es fuer dich heisst (Live 27.09.: Nasus
         stand ohne ein Item im Brunnen, gesagt hat es niemand, und auf Nachfrage hiess es "er cleart")."""
         from .lage import afk
+        if self.modus == "KAMPF":
+            return      # Pruefung E7: in KAMPF spricht nur GEFAHR (9.1) - die Meldung kommt danach, wenn sie noch gilt
         for s in p.spieler:
             if ("afk", s.name) in self._gemeldet or not (grund := afk(s, p, self.lage)):
                 continue
@@ -1381,45 +1384,30 @@ class Regelwerk:
             if g is None:
                 return f"{s.champion} war nicht zu sehen"
             return "" if p.zeit - g[0] < 5 else f"{s.champion} war {komponist.sek(p.zeit - g[0])} nicht zu sehen"
-        if kill.taeter is None and struktur(kill.daten.get("KillerName", "")):
-            st = struktur(kill.daten.get("KillerName", ""))
-            from . import rechnung
-            schuss = rechnung.turm_schaden(st.stufe if st.stufe in ("aussen", "innen", "Inhib") else "aussen", p.zeit,
-                                           rechnung.ruestung(v))
-            text = komponist.tod_turm(davor) or (
-                f"Vom Turm erwischt: du hattest eben noch {hp // 10 * 10} Leben, sein Turm trifft dich mit etwa "
-                f"{int(schuss) // 10 * 10}. Unter seinen Turm nur, wenn deine Vasallen die Schüsse nehmen."
-                if hp else cfg["turm"])
-        elif j and p.ich.rolle != "JUNGLE" and any(s is j for s in beteiligt):
-            u = ungesehen(j)
-            text = (komponist.tod_gank(davor, j.champion, p.zeit - self._rueckzug_zuletzt) if davor is not None
-                    else cfg["gank"].format(champion=j.champion) if u is None
-                    else f"Gank von {j.champion}: " + (u or f"{j.champion} war zu sehen")
-                    + f" - fehlt {j.champion}, bleib hinter deiner Welle.")
-        elif len(beteiligt) >= 2:
-            weg = [x for x in (ungesehen(s) for s in beteiligt) if x]
-            ohne_karte = all(ungesehen(s) is None for s in beteiligt)
-            text = (komponist.tod_ueberzahl(davor, [s.champion for s in beteiligt], p.zeit - self._rueckzug_zuletzt)
-                    or f"Gestorben gegen {_namen(beteiligt)}" + (": " + " und ".join(weg[:2]) + "." if weg
-                                                                  else "." if ohne_karte
-                                                                  else ", alle waren zu sehen - gegen mehrere nur mit Hilfe."))
-        elif kill.taeter:
-            t = kill.taeter
-            gruende = []
-            if t.level > p.ich.level:
-                gruende.append(f"{t.level - p.ich.level} Level vorne")
-            if t.item_gold - p.ich.item_gold >= 500:
-                gruende.append(f"{(t.item_gold - p.ich.item_gold) // 100 * 100} Gold an Items vorne")
-            rat = ((self._fenster_art, p.zeit - self._fenster_gesagt)
-                   if getattr(self, "_fenster_art", None) else None)
-            # ohne Befund: statt "Denk an seine Cooldowns" das Konter-Wissen genau zu ihm (Lexikon, einmal je Partie)
-            tipp = denker.tipp(t.champion_id, "trade", self._tipps_gesagt) if not gruende else ""
-            text = (komponist.tod_solo(davor, t.champion, rat)
-                    or (cfg["solo_nachteil"].format(champion=t.champion, grund=" und ".join(gruende)) if gruende
-                        else f"Solo gegen {t.champion} verloren, ihr wart gleichauf. Gegen {t.champion}: {tipp}" if tipp
-                        else cfg["solo"].format(champion=t.champion)))
-        else:
+        # Pruefung E1 (Qualitaetsrunde 1): zwei Saetze, hoechstens 25 Woerter - was entschied, was naechstes Mal.
+        # Beteiligt ist auch, wer in der letzten Sekunde sichtbar in 2000 stand (140253 8:43: Brand ohne Assist).
+        turm = kill.taeter is None and bool(struktur(kill.daten.get("KillerName", "")))
+        namen = [s.champion for s in beteiligt]
+        if davor is not None:
+            for g in davor.gegner:
+                if (not g.s.tot and g.sichtbar and g.abstand is not None and g.abstand <= 2000
+                        and g.champion not in namen):
+                    namen.append(g.champion)
+        # ... und wer in den 10 s davor sichtbar bei dir war (Rueckblick), dazu dein Leben 10 s davor
+        from .todesanalyse import NAH as TOD_NAH
+        champ = {s.name: s.champion for s in p.spieler}
+        for bl in self.rueckblick.blicke:
+            if bl.zeit < p.zeit - 10 or bl.ort is None:
+                continue
+            for name, g in bl.gegner.items():
+                if g and g[0] and abs(g[2] - bl.ort[0]) + abs(g[3] - bl.ort[1]) < TOD_NAH                         and (c := champ.get(name)) and c not in namen:
+                    namen.append(c)
+        zehn = self.rueckblick.vor(p.zeit, 10)
+        if not turm and not namen:
             return
+        text = komponist.todesrueckblick(davor, namen, j.champion if j and p.ich.rolle != "JUNGLE" else None, turm,
+                                         zehn.leben if zehn is not None else None) \
+            or (cfg["turm"] if turm else cfg["solo"].format(champion=namen[0]))
         # Lange genug tot: der Stratege sagt statt des Standardsatzes den eigentlichen Grund
         # (todesanalyse.py) - Zeit dafuer ist die Todeszeit selbst.
         cfg_a = self.m["todesanalyse"]
@@ -1429,8 +1417,6 @@ class Regelwerk:
             kontext += "\n\nBEWERTUNG IN DER LETZTEN SEKUNDE VOR DEM TOD:\n" + vorher.text()
         if self.lage is not None:
             self.lage.letzter_tod = (p.zeit, kontext)   # fuer Fragen danach ("warum bin ich gestorben?")
-        if p.ich.respawn >= cfg_a["ab_sekunden"]:
-            yield Ansage(text, WICHTIG, "tod", gueltig=p.ich.respawn, sperre=5, situativ=True, kontext=kontext,
-                         frist=min(p.ich.respawn - cfg_a["puffer"], cfg_a["hoechstens"]))
-        else:
-            yield Ansage(text, WICHTIG, "tod", gueltig=15, sperre=5)
+        # nicht mehr "situativ" (der Stratege formulierte frei und lang): bis Schritt 6 gilt der Satz, wie er ist -
+        # der Kontext bleibt fuer die Frage "warum bin ich gestorben?" (lage.letzter_tod)
+        yield Ansage(text, WICHTIG, "tod", gueltig=max(15.0, p.ich.respawn), sperre=5)

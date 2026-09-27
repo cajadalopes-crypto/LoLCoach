@@ -1,0 +1,67 @@
+# Szenarien aus der Protokoll-Pruefung 27.09.2026 (buecher/protokolle/PRUEFUNG_2026-09-27.md), Partie 140253
+# (Carlos live, Riven Mid gegen Yasuo, rote Seite). Format: Buch 0, 12.1.
+# Angelegt vor den Fixes der Qualitaetsrunde 1 - rot mit dem Stand von ef08644.
+
+aufnahme = "2026-09-27_140253"
+bots = false
+
+[[szenario]]
+id = "0806-kein-back-gegner-kommen"
+fenster = ["8:00", "8:40"]
+quelle = "Pruefung D: 8:01 'Raus: Brand kommt' -> 8:06 'Jetzt back' -> 8:15 'Bleib an: Brand und Yasuo' -> 8:31 'Denk dran: Bleib ...', tot 8:43"
+lage = "Riven 56 -> 33 % an ihrem Mid-Tier-1-Turm, Brand und Yasuo kommen."
+darf_nicht_sagen = ["Jetzt back", "Back jetzt", "Denk dran"]
+ansagen_max = 2
+warum = """'Jetzt back' ist verboten, solange ein sichtbarer Gegner dich waehrend des Kanals (8 s) erreicht (Buch 3,
+2.2). 'Denk dran' nie in GEFAHR - wer in Gefahr ist, braucht die Handlung."""
+
+[[szenario]]
+id = "0843-todesrueckblick"
+fenster = ["8:43", "8:55"]
+quelle = "Pruefung E1: 'Solo gegen Yasuo verloren. 18 Sekunden davor hiess es: geh zurueck. Dagegen sprach: ... mindestens 520 Schaden ...'"
+lage = "Riven stirbt 8:43 mit einem Drittel Leben an ihrem Turm gegen Brand und Yasuo."
+darf_nicht_sagen = ["hieß es", "mindestens", "Kopfgeld"]
+muss_nennen_eins = ["Brand", "zwei"]
+woerter_max = 25
+woerter_schluessel = "tod"
+warum = """Zwei Saetze, hoechstens 25 Woerter: was entschied (aus der Lage), was naechstes Mal (als Handlung). Keine
+Schadenszahlen, kein Kopfgeld, kein Vorwurf."""
+# ROT MIT GRUND (Qualitaetsrunde 1): die Daten widersprechen muss_nennen_eins. Der Tod war 8:34 (EventTime 514,1):
+# ChampionKill FeedingMonkey (Yasuo) -> Nevir, Assisters []. Brand war nicht beteiligt und laut Minimap ~4000
+# Einheiten weg, nicht zu sehen. Der Rueckblick nennt deshalb nur Yasuo (zwei Saetze, <= 25 Woerter, ohne Zahlen
+# - der Rest des Szenarios ist gruen). Ob Brand trotzdem genannt werden soll, entscheidet Carlos.
+
+[[szenario]]
+id = "1005-tod-ohne-kopfgeld"
+fenster = ["10:05", "10:15"]
+quelle = "Pruefung E1: '... mindestens 690 Schaden und auf dir liegen 0 Gold Kopfgeld - ein Tod kostet mehr, als der Kill bringt'"
+lage = "Riven stirbt 10:05 gegen Yasuo."
+darf_nicht_sagen = ["hieß es", "mindestens", "Kopfgeld"]
+woerter_max = 25
+woerter_schluessel = "tod"
+warum = "Wie 0843: Lehre statt Zahlen."
+
+[[szenario]]
+id = "1025-wohin-nicht-in-den-tod"
+zeit = "10:25"
+quelle = "Pruefung E2: 'Noch 8 Sekunden: zu den Larven: Larven leben' mit p_tod 0,97"
+lage = "Riven tot, Wiedereinstieg im Brunnen; an den Larven stehen die Gegner."
+darf_nicht_sagen = ["Larven"]
+muss_ziel = true
+warum = "WOHIN wird gegen die Gefahr auf dem Weg aus dem Brunnen gerechnet. Die Larven waren der Tod."
+
+[[szenario]]
+id = "0349-bauteil-nennen"
+fenster = [["3:45", "3:55"], ["7:48", "7:58"]]
+quelle = "Pruefung E5: '1050 Gold fuer Axiombogen' (3:49), '1400 Gold fuer Endloser Hunger' (7:52)"
+lage = "Back-Saetze mit Gold und Item."
+gold_reicht = true
+warum = "Der Satz nennt, was mit diesem Gold JETZT gekauft wird (Bauteil aus dem Kaufplan), nicht das Endziel."
+
+[[szenario]]
+id = "0000-nichts-vor-spielbeginn"
+fenster = ["0:00", "0:25"]
+quelle = "Pruefung E6: 0:00 alte Regel gold 'Schieb die naechste Welle in den Turm und geh dann back, du hast 1400 Gold'"
+lage = "Spielbeginn im Brunnen, kein Modus."
+ansagen_max = 0
+warum = "Ohne Modus spricht keine alte Regel ausser TECHNIK und dem Briefing (das Briefing kommt beim Nachspielen nicht)."

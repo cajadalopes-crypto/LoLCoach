@@ -35,6 +35,34 @@ def wellen():
     assert z.blau == 4 and z.rot == 0 and z.schiebt == "blau"
     assert "tief bei seinem Turm" in z.worte("ORDER") and "tief bei deinem Turm" in z.worte("CHAOS"), z.worte("ORDER")
     assert welle.zustaende([])["Mid"].worte("ORDER") == "keine Welle zu sehen"
+    wellen_front()
+
+
+def wellen_front():
+    """F1 (Qualitaetsrunde 1, Nachtrag Buch 1 1.4): Front statt Summe. 144655 3:13/5:17/5:38: gegnerische Vasallen an
+    deinem Turm, deine naechste Welle laeuft erst dahinter los - die Summe ergab ZU_IHM."""
+    from lolcoach.kern import konfig
+    from lolcoach.kern.merkmale import WellenPuffer, lane_punkt
+
+    def auf(team, *s_werte):
+        return [(team, *lane_punkt("Top", s)) for s in s_werte]
+    # Zusammenstoss (beide Farben in einer Gruppe) ist die Front, die blaue Gruppe dahinter laeuft nach
+    z = welle.zustaende(auf("blau", 0.47, 0.48) + auf("rot", 0.50, 0.51, 0.52) + auf("blau", 0.28, 0.30, 0.31))["Top"]
+    assert (z.blau, z.rot, z.alle_blau) == (2, 3, 5) and z.naechste_blau is not None and abs(z.naechste_blau - 0.31) < 0.01, z
+    # drei gegnerische vor deinem Turm (Rueckfall 0,35), fuenf eigene hinter ihm: GECRASHT_BEI_DIR
+    z = welle.zustaende(auf("rot", 0.37, 0.39, 0.41) + auf("blau", 0.15, 0.17, 0.19, 0.21, 0.23))["Top"]
+    wp = WellenPuffer(konfig())
+    for t in range(8):
+        wp.lesen(100.0 + t, z, 100.0 + t, "ORDER")
+        st = wp.stand(100.0 + t, "Top", "ORDER", None, {})
+    assert st.zustand == "GECRASHT_BEI_DIR", st
+    # zwei gegnerische reichen nicht (>= 3), solange dein Icon die Zone nicht verdeckt
+    z = welle.zustaende(auf("rot", 0.37, 0.39) + auf("blau", 0.15, 0.17, 0.19, 0.21, 0.23))["Top"]
+    wp = WellenPuffer(konfig())
+    for t in range(8):
+        wp.lesen(100.0 + t, z, 100.0 + t, "ORDER")
+        st = wp.stand(100.0 + t, "Top", "ORDER", None, {})
+    assert st.zustand != "GECRASHT_BEI_DIR", st
 
 
 def mitspieler_leiste():
@@ -94,7 +122,12 @@ def sprechbar():
     from lolcoach.stimme import sprechbar as s
     assert s("Jungler/Laner seit 30-40 s weg, ab 2500+ Gold") == \
         "Jungler oder Laner seit 30 bis 40 Sekunden weg, ab mehr als 2500 Gold"
-    assert s("Gank zwischen 2:45 und 3:30, Drache um 5:00") == "Gank zwischen 2 45 und 3 30, Drache um Minute 5"
+    # Spielzeiten als Woerter (E8, gemessen: "7 57" las die Stimme "sieben, fuenf, sieben")
+    assert s("Gank zwischen 2:45 und 3:30, Drache um 5:00") == \
+        "Gank zwischen zwei fünfundvierzig und drei dreißig, Drache um fünf Minuten"
+    assert s("Stapel die Top-Welle bis zur Kanone um 7 57: dann crashen.") == \
+        "Stapel die Top-Welle bis zur Kanone um sieben siebenundfünfzig: dann crashen."
+    assert s("Spawn um 8 00, 21 Uhr") == "Spawn um acht Minuten, 21 Uhr"
     for gleich in ("Mid-Lane", "Level 6", "Tri-Bush", "80 %", "KDA 27/6/4", "5 sind weg"):
         assert s(gleich) == gleich, s(gleich)
 
@@ -1104,7 +1137,7 @@ def modus_sperre_budget():
     assert sperre.entscheide("_cs", regeln.Ansage("Minute 10", regeln.HINWEIS, "cs10"), "LANE", b) == "info"
     w = regeln.Ansage("Geh auf den Mid-Turm", regeln.WICHTIG, "plan:wohin")
     assert sperre.entscheide("_plan", w, "LANE", b) == "stumm" and sperre.entscheide("_plan", w, "BASIS", b) == "sprechen"
-    assert sperre.entscheide("_lane_tot", a, None, b) == "sprechen"   # ohne Modus (keine Minimap): wie bisher
+    assert sperre.entscheide("_lane_tot", a, None, b) == "stumm"      # ohne Modus: keine alte Regel (Pruefung E6)
     # Budget: 12 s zwischen zwei Ansagen ausser SOFORT; wer nur daran wartet, kommt danach noch, wenn er gilt
     plan = sprechplan.Sprechplan(stimme.Stumm())
     plan.neu([regeln.Ansage("Erste", regeln.WICHTIG, "a", zeit=100)])
