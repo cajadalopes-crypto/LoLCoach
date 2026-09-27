@@ -239,7 +239,7 @@ def tod_solo(b: Bewertung | None, champion: str, rat: tuple[str, float] | None =
     # dein Leben kurz vor dem Tod ist immer niedrig - das ist die Folge, nicht der Grund
     gegen = sorted((x for x in u.faktoren if x.wert <= -0.8 and x.art != "leben"), key=lambda x: x.wert)[:2] if u else []
     teile = []
-    if rat is not None and rat[1] <= 20 and rat[0] in RAT_WORTE:
+    if rat is not None and 3 <= rat[1] <= 20 and rat[0] in RAT_WORTE:
         teile.append(f"{sek(rat[1])} davor hieß es: {RAT_WORTE[rat[0]]}")
     if b.unter_gegnerturm:
         teile.append("du standst unter seinem Turm" + (f", der mit etwa {int(schuss)} trifft"
