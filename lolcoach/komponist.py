@@ -180,8 +180,15 @@ def tod_turm(b: Bewertung | None) -> str:
     return satz + f". Unter seinen Turm erst mit etwa {int(drei) // 100 * 100} Leben, und nur, wenn deine Vasallen vorn sind."
 
 
-def tod_gank(b: Bewertung | None, champion: str) -> str:
-    """Tod durch den gegnerischen Jungler, gerechnet: wie lange er ungesehen war, wo du standest, dein Flash."""
+def _gewarnt(rueckzug_vor: float | None) -> str:
+    """' 8 Sekunden davor hiess es: geh zurueck.' - wenn der Coach kurz vor dem Tod zum Rueckzug geraten hatte."""
+    # erst ab 3 s: "1 Sekunde davor hiess es: geh zurueck" war keine Warnung mehr, sondern schon der Tod (230520, 19:15)
+    return f" {sek(rueckzug_vor)} davor hieß es: geh zurück." if rueckzug_vor is not None and 3 <= rueckzug_vor <= 20 else ""
+
+
+def tod_gank(b: Bewertung | None, champion: str, rueckzug_vor: float | None = None) -> str:
+    """Tod durch den gegnerischen Jungler, gerechnet: wie lange er ungesehen war, wo du standest, dein Flash - und ob
+    der Coach kurz davor zum Rueckzug geraten hatte (dann statt der allgemeinen Lehre)."""
     j = b.jungler if b is not None else None
     teile = []
     if j is not None and j.seit and j.seit >= 15:
@@ -193,12 +200,14 @@ def tod_gank(b: Bewertung | None, champion: str) -> str:
     if b is not None and b.flash is not None and b.flash > 0:
         teile.append("dein Flash war weg")
     satz = f"Gank von {champion}" + (": " + _namen(teile) if teile else "")
+    if gewarnt := _gewarnt(rueckzug_vor):
+        return satz + "." + gewarnt
     if j is not None and j.seit is not None and j.seit < 5:
         return satz + f". {champion} war zu sehen - läuft {champion} auf dich zu, geh sofort zurück."
     return satz + ". Fehlt der Jungler länger als 20 Sekunden, bleib hinter deiner Welle."
 
 
-def tod_ueberzahl(b: Bewertung | None, namen: list[str]) -> str:
+def tod_ueberzahl(b: Bewertung | None, namen: list[str], rueckzug_vor: float | None = None) -> str:
     """Gegen mehrere gestorben: wer, und wer davon vorher nicht zu sehen war ("Gestorben gegen 2" war der alte Satz)."""
     if len(namen) < 2:
         return ""
@@ -208,6 +217,8 @@ def tod_ueberzahl(b: Bewertung | None, namen: list[str]) -> str:
             if g.champion in namen and not g.sichtbar and g.seit and g.seit >= 8:
                 ungesehen.append(f"{g.champion} war {sek(g.seit)} nicht zu sehen")
     satz = f"Gestorben gegen {_namen(namen)}"
+    if gewarnt := _gewarnt(rueckzug_vor):
+        return satz + (": " + _namen(ungesehen[:2]) if ungesehen else "") + "." + gewarnt
     if ungesehen:
         return satz + ": " + _namen(ungesehen[:2]) + ". Fehlen Gegner so lange, rechne damit, dass sie zu dir kommen."
     return satz + f", {'beide' if len(namen) == 2 else 'alle'} waren zu sehen - gegen mehrere nur mit Hilfe kämpfen."

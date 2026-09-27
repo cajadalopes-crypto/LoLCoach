@@ -1241,9 +1241,10 @@ class Regelwerk:
         if kill.taeter is None and struktur(kill.daten.get("KillerName", "")):
             text = komponist.tod_turm(davor) or cfg["turm"]
         elif j and p.ich.rolle != "JUNGLE" and any(s is j for s in beteiligt):
-            text = komponist.tod_gank(davor, j.champion) if davor is not None else cfg["gank"].format(champion=j.champion)
+            text = (komponist.tod_gank(davor, j.champion, p.zeit - self._rueckzug_zuletzt) if davor is not None
+                    else cfg["gank"].format(champion=j.champion))
         elif len(beteiligt) >= 2:
-            text = (komponist.tod_ueberzahl(davor, [s.champion for s in beteiligt])
+            text = (komponist.tod_ueberzahl(davor, [s.champion for s in beteiligt], p.zeit - self._rueckzug_zuletzt)
                     or cfg["ueberzahl"].format(anzahl=len(beteiligt)))
         elif kill.taeter:
             t = kill.taeter
