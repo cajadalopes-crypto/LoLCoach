@@ -16,6 +16,11 @@ man mit ihm redet. Anforderungen: `ANFORDERUNGEN.md`. Bedienung fuer Carlos:
 - **Keine Eingaben, keine Automatisierung.** Der Coach beobachtet und redet.
   Er drueckt keine Taste und klickt nichts - auch nicht "nur zum Testen".
   Push-to-Talk liest nur den Tastenzustand (GetAsyncKeyState).
+- **Der Coach wird nie gestartet, waehrend Code geaendert wird.** Er laedt Teile erst beim Partiestart oder im
+  ersten Takt nach (Kern, Sperre, Kaufplan, `kern.toml`) - was dann halb umgebaut auf der Platte liegt, spricht in
+  Carlos' Partie mit. Erst fertig, getestet und committet, dann starten. Laeuft er (League offen, Port 8790), wird
+  nicht an ihm gebaut, und schwere Laeufe gehen mit niedriger Prioritaet. Bewiesen wird offline: nachspielen
+  (`werkzeuge/nachspielen.py`, Stimme in Spielzeit), `werkzeuge/protokoll.py`, Szenarien.
 
 ## Aufbau
 
@@ -88,6 +93,8 @@ durch denselben Code wie das Live-Spiel.
   `tests/szenarien/*.toml` gegen das nachgespielte System (`--mit-claude`: auch Fragen und
   Review, `--lage`: nachgespielte Lage je Szenario, `--konstruiert`: die konstruierten Lagen aus
   `tests/szenarien/konstruiert/` ohne Aufnahme, `kern/testlage.py`). Buch 0, Kapitel 12.
+- `python werkzeuge/protokoll.py [aufnahme ...]` - jede ungefragte Ansage mit Zeit, Modus, Plan, Ort, Leben, Gold
+  und den zwei naechstbesten Optionen nach `buecher/protokolle/<stamm>.md`; abgebrochene Saetze markiert
 - `python werkzeuge/kennzahlen.py [aufnahme ...]` - Ansagen je 30 min, Kehrtwenden, Verstoesse
   gegen Kapitel 9.4, Gefahr-Brier, Datenluecken, Szenario-Quote (ersetzt `sinnpruefung.py`).
 - `python werkzeuge/generalprobe.py --ab 13.9 --minuten 2.5` - der komplette

@@ -30,9 +30,14 @@ Offen aus Schritt 4:
   (kein Modus = keine Sperre). "Schieb die Welle in seinen Turm" (`_lane_tot`, `_gold`, `jetzt:drache`) ohne Lane -
   mit Schritt 8 weg oder vorher die Lane in den Satz.
 - Lane-Phase 133930: 1,21 Ansagen je 30 s (Abnahme Schritt 3: <= 1) - ansehen.
-- Aus Partie 144655 (Carlos 27.09., 14:46): **Stimme stottert / bricht nach jedem Wort ab** (6:28, 6:51, 10:11) und
-  **keine Flash-Timer auf dem Dashboard** (10:11) - beides nicht untersucht. (Viego-"Partie vorbei" und falsches
-  Gegner-AFK sind behoben, messungen.md.)
+- **Carlos testet live erst wieder, wenn es offline nachgewiesen gut ist** (27.09., nach Partie 144655). Beweise:
+  `werkzeuge/nachspielen.py` (Stimme in Spielzeit, Abbrueche), `werkzeuge/protokoll.py` (`buecher/protokolle/`),
+  Szenarien. Der Coach wird nie gestartet, waehrend Code geaendert wird (CLAUDE.md).
+- **Flash-Erkennung findet zu wenig** (144655: 1 Flash in 9,5 min; 3 echte Partien: 27 Spruenge auf dem Bildschirm,
+  keiner wurde ein Timer): Spruenge von Champions mit Dash/Blink werden bewusst verworfen, Namen ueber den
+  Lebensbalken sind selten lesbar, auf der Minimap fehlen Spruenge im Kampfgewuehl. Der Weg zum Dashboard stimmt
+  (Headless-Chrome mit dem Code der Partie: Gangplanks Flash 1:56-6:56 stand im Gegner-Kasten). Naechster Schritt
+  waere eine Wahrnehmungsaufgabe (Flash-Effekt im Spielbild erkennen) - Carlos' Entscheidung.
 - Alter Zielsatz "fruehestens in 0 Sekunden kann einer von ihnen dort sein" (komponist.ziel_satz, BASIS-Ziel ohne
   Karten-Ziel) - bei 0 den Grund weglassen.
 
@@ -223,6 +228,13 @@ Notizen und Review durchsehen und nachschaerfen.
 
 ## Erledigt
 
+- Stimme "stottert" (Partie 144655, 27.09.): nicht die Stimme, der Coach widerrief seine Saetze mitten im Sprechen -
+  11 von 18 brachen ab, die Kern-Gefahr "Bleib an deinem Top-Tier-1-Turm" nach 0,3 s, weil ihr Plan-Schritt im
+  naechsten Takt erledigt war (dann "Ach nee: ..."). Jetzt bricht nur eine Gefahr einen Satz ab; ein Satz, der beim
+  Sprechen falsch wird, wird zu Ende gesagt (bei einer Gefahr folgt die Korrektur mit "Ach nee"). Nachgespielt:
+  alter Stand 10 von 19 abgebrochen, neuer keiner ausser durch eine Gefahr. Dashboard zeigt jetzt auch Ult-Timer.
+  Gegner gelten nie mehr als AFK (Stufe und Items zeigt die API nur, wie er zuletzt gesehen wurde - Kha'Zix bis 3:34
+  "Stufe 1"); SEITENWELLE erst nach der Lane-Phase (0:58: "Welle gerettet - kein Turm verloren").
 - Minimap-Groesse aus der game.cfg: Partie 27.09. 13:03 lief mit MinimapScale 2,91 statt 1,5 - der Coach
   schnitt die alte 570er-Karte aus, sah in 1629 von 1717 Bildern niemanden und sagte deshalb staendig
   "ich erkenne niemanden, rechne ohne Karte". Jetzt liest er MinimapScale (nur lesen, alle 2 s per stat),
