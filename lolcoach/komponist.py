@@ -889,6 +889,39 @@ def inhib_satz(b: Bewertung, lane: str, eigen: bool, zurueck: float) -> str:
                    else ", also spielt auf die andere Seite: Baron, Drache oder die Türme dort.")
 
 
+def gegner_item(b: Bewertung, neu, alt, item_id: int) -> str:
+    """Ein Gegner (Lane oder Jungler) hat ein grosses Item fertig - was es fuer DICH aendert: das Kraeftverhaeltnis
+    vorher/nachher (Level, Item-Gold, dein Leben ausgeklammert) und, ist es Ruestung/Magieresistenz, gegen deinen
+    Schaden. Vorher: "Heimerdinger hat Schwarzfeuer-Fackel fertig." (Nachlauf 194524, 15:11)."""
+    import copy
+    from . import ddragon
+    it = ddragon.items().get(item_id, {})
+    satz = f"{neu.champion} hat {it.get('name', item_id)} fertig"
+    g = next((x for x in b.gegner if x.s.name == neu.name), None)
+    if g is None:
+        return satz + "."
+    voll = copy.copy(b)
+    voll.leben = 1.0
+    g_alt = copy.copy(g)
+    g_alt.s = alt
+    jetzt, vorher = voll.kraft_gegen([g], mit_verbuendeten=False), voll.kraft_gegen([g_alt], mit_verbuendeten=False)
+    if jetzt < 1.0 <= vorher:
+        folge = f" - damit ist {neu.champion} jetzt stärker als du: keine langen Trades mehr, bis du nachziehst"
+    elif jetzt >= STAERKER:
+        folge = " - du bist trotzdem klar vorn"
+    elif jetzt < 1 / STAERKER:
+        folge = f" - {neu.champion} ist dir damit deutlich über"
+    else:
+        folge = " - ihr seid jetzt etwa gleichauf"
+    st = it.get("stats", {})
+    p = b.partie
+    ap = p is not None and float(p.werte.get("abilityPower") or 0) > float(p.werte.get("attackDamage") or 0)
+    abwehr = st.get("FlatSpellBlockMod", 0) if ap else st.get("FlatArmorMod", 0)
+    if abwehr >= 30:
+        folge += f", und {int(abwehr)} {'Magieresistenz' if ap else 'Rüstung'} gegen deinen Schaden"
+    return satz + folge + "."
+
+
 def lane_recall(b: Bewertung, champion: str, platten: bool) -> str:
     """Der Lane-Gegner recallt (stand still, dann weg): was du mit den ~15 s machst."""
     satz = f"{champion} recallt gerade"

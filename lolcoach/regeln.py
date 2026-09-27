@@ -619,8 +619,9 @@ class Regelwerk:
                     yield Ansage(tipp["satz"].format(champion=s.champion, item=name), HINWEIS,
                                  f"item:{s.name}:{item}", gueltig=30, sperre=10_000)
                 elif s.name in beobachtet and _legendaer(item, ab):
-                    yield Ansage(self.m["items"]["fertig"].format(champion=s.champion, item=name), HINWEIS,
-                                 f"item:{s.name}:{item}", gueltig=30, sperre=10_000)
+                    text = (komponist.gegner_item(self.b, s, alt, item) if self.b is not None
+                            else self.m["items"]["fertig"].format(champion=s.champion, item=name))
+                    yield Ansage(text, HINWEIS, f"item:{s.name}:{item}", gueltig=30, sperre=10_000)
 
     def _gold(self, p: Partie, v: Partie):
         cfg = self.m["gold"]
