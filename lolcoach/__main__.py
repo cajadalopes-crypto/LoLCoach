@@ -243,7 +243,27 @@ def _nur_einmal(port: int = 8789) -> bool:
     return True
 
 
+_ABSTURZ = None   # offene Datei fuer faulthandler
+
+
+def _absturz_mitschreiben() -> None:
+    """Stirbt der Prozess im nativen Code (Zugriffsverletzung), gibt es keinen Traceback, und das Fenster ist zu:
+    die vier Abstuerze vom 26./27.09.2026 liessen nur einen Eintrag in der Windows-Ereignisanzeige zurueck. Mit
+    faulthandler steht der Python-Stapel aller Faeden in aufnahmen/absturz.log."""
+    import faulthandler
+    global _ABSTURZ
+    try:
+        aufzeichnung.ORDNER.mkdir(parents=True, exist_ok=True)
+        _ABSTURZ = open(aufzeichnung.ORDNER / "absturz.log", "a", encoding="utf-8")
+        _ABSTURZ.write(f"--- Coach gestartet {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        _ABSTURZ.flush()
+        faulthandler.enable(_ABSTURZ, all_threads=True)
+    except OSError:
+        pass
+
+
 def live(args) -> None:
+    _absturz_mitschreiben()
     if not _nur_einmal():
         print("Der Coach laeuft schon in einem anderen Fenster (Dashboard http://127.0.0.1:8790).\n"
               "Dieses Fenster wird nicht gebraucht - es schliesst sich in 10 Sekunden.")

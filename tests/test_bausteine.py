@@ -984,6 +984,41 @@ def verzoegerung_bis_zum_ohr():
     assert eilig.ton is not None and 0.05 <= eilig.ton - 101.0 <= 0.5 and eilig.ganz is True, (eilig.ton, eilig.ganz)
 
 
+_FESTHALTEN: list = []   # Zeiger, die erst beim Beenden sterben duerfen (dann gibt comtypes nichts mehr frei)
+
+
+def kamera_gibt_nur_einmal_frei():
+    """dxcam gab die Staging-Textur zweimal frei - von Hand und spaeter noch einmal durch den Garbage Collector -,
+    und der Coach baute sie ~25-mal je Sekunde neu: 26./27.09.2026 viermal Zugriffsverletzung in _ctypes.pyd.
+    Jetzt: eine Textur je Ausschnittgroesse, und nach release() + gc.collect() fehlt keine Referenz."""
+    import ctypes
+    import gc
+    try:
+        from comtypes import IUnknown
+        from lolcoach import lage
+    except ImportError:
+        return
+    k = lage._Kamera()
+    if k._dx is None:
+        return   # ohne Desktop-Duplizierung (kein Bildschirm) gibt es nichts zu pruefen
+    for box in [(0, 0, 200, 100), (0, 0, 100, 200), (0, 0, 200, 100), (0, 0, 100, 200)]:
+        k.hole(box)
+    assert sorted(k._flaechen) == [(100, 200), (200, 100)], sorted(k._flaechen)
+    s = k._flaechen[(200, 100)]
+    assert (s.width, s.height) == (200, 100), (s.width, s.height)
+    p = ctypes.cast(ctypes.cast(s.texture, ctypes.c_void_p).value, ctypes.POINTER(IUnknown))
+    _FESTHALTEN.append(p)
+    for _ in range(3):
+        p.AddRef()      # Schutzreferenzen: nichts wird wirklich zerstoert, solange wir zaehlen
+    s.release()
+    gc.collect()
+    n = p.AddRef() - 1
+    p.Release()
+    for _ in range(n):
+        p.Release()
+    assert n == 3, f"{3 - n} Freigabe(n) zu viel"
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
@@ -994,7 +1029,7 @@ if __name__ == "__main__":
                  satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
                  konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler, eigene_position_aus_dem_kamerarahmen,
                  satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah, baron_aeltester_inhibitor,
-                 minimap_blind_wird_gesagt,
+                 minimap_blind_wird_gesagt, kamera_gibt_nur_einmal_frei,
                  sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")

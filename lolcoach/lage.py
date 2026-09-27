@@ -420,6 +420,33 @@ def ereignis_aus_json(d: dict) -> tuple:
     return (d["art"], d["w"], d["text"])
 
 
+def _dxcam_flicken() -> None:
+    """dxcam 0.3.0 gibt seine COM-Objekte ein zweites Mal frei: `release()` ruft Release() von Hand, und das
+    Python-Objekt haengt in einem Zyklus - der Garbage Collector ruft spaeter, in irgendeinem Faden, noch einmal
+    Release() auf dem laengst zerstoerten Objekt auf (gemessen: nach release() + gc.collect() eine Referenz zu
+    wenig). Jeder Wechsel der Ausschnittgroesse baut die Staging-Textur neu, und der Coach wechselte ~25-mal je
+    Sekunde (Minimap, Spielbild, Leiste, Chat): 26./27.09.2026 viermal Zugriffsverletzung in _ctypes.pyd, Coach
+    weg, ohne Traceback. Hier geben nur noch die comtypes-Zeiger selbst frei - genau einmal, wenn sie sterben."""
+    from dxcam.core import dxgi_duplicator, stagesurf
+    if getattr(stagesurf.StageSurface, "_geflickt", False):
+        return
+
+    def textur_los(self) -> None:
+        if self.texture is not None:
+            self.width = self.height = 0
+            self.texture = None
+            self.interface = None
+
+    def duplikator_los(self) -> None:
+        if self.duplicator is not None:
+            self.release_frame()
+            self.duplicator = None
+
+    stagesurf.StageSurface.release = textur_los
+    dxgi_duplicator.DXGIDuplicator.release = duplikator_los
+    stagesurf.StageSurface._geflickt = True
+
+
 class _Kamera:
     """Bildschirmausschnitte: Desktop-Duplizierung (dxcam, 2-5 ms), sonst GDI (~110 ms)."""
 
@@ -427,15 +454,28 @@ class _Kamera:
         self._dx = None
         try:
             import dxcam
+            _dxcam_flicken()
             self._dx = dxcam.create(output_color="BGR")
         except Exception:
             self._dx = None
         self._letzt: dict[tuple, np.ndarray] = {}
+        # je Ausschnittgroesse eine eigene Staging-Textur: dxcam baut sonst bei jedem Groessenwechsel neu
+        # (ein 4K-Spielbild sind 33 MB, ~12-mal je Sekunde) - und jeder Neubau war ein Absturzlos (s. oben)
+        self._flaechen: dict[tuple[int, int], object] = {}
+        self._duplikator = None
 
     def hole(self, box: tuple[int, int, int, int]) -> np.ndarray | None:
         if self._dx is not None:
             try:
-                bild = self._dx.grab(region=box)
+                dx = self._dx
+                if dx._duplicator is not self._duplikator:   # neu aufgebaut (Alt-Tab, Aufloesung): Texturen weg
+                    self._flaechen, self._duplikator = {}, dx._duplicator
+                groesse = (box[2] - box[0], box[3] - box[1])
+                if (f := self._flaechen.get(groesse)) is None:
+                    from dxcam.core.stagesurf import StageSurface
+                    f = self._flaechen[groesse] = StageSurface(output=dx._output, device=dx._device)
+                dx._stagesurf = f      # dxcam baut sie beim ersten Mal auf `groesse` um, danach nie wieder
+                bild = dx.grab(region=box)
                 if bild is None:          # Bildschirm unveraendert seit dem letzten Mal
                     return self._letzt.get(box)
                 self._letzt[box] = bild
