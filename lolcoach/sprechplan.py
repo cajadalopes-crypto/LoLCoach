@@ -191,8 +191,10 @@ class Sprechplan:
         self.warte.remove(a)
         # "Ach nee - Ekko ist beim Drachen": der Satz davor wurde mitten drin widerrufen (Carlos' Wunsch 26.09.)
         w = self._widerruf
+        # nur, wenn der neue Satz die neue Fassung des alten ist: dieselbe Art, oder beide eine Gefahr (Position) -
+        # nicht "Ach nee: Vi hat kein Flash" nach einem abgebrochenen "nimm den Kampf an" (Stimmprobe 27.09.)
         if w is not None and time.monotonic() - w[0] <= ACH_NEE and (
-                (a.thema and a.thema == w[1]) or a.schluessel.split(":")[0] == w[2]):
+                a.schluessel.split(":")[0] == w[2] or (a.thema == "gefahr" and w[1] == "gefahr")):
             # eigener Teil "Ach nee:" (vorgewaermt), dahinter der Satz wie sonst - sein Anfang liegt im Speicher.
             # Grossschreibung bleibt: meist beginnt der Satz mit einem Champion
             a.text = "Ach nee: " + a.text
