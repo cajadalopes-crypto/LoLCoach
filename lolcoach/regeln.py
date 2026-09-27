@@ -172,7 +172,7 @@ class Regelwerk:
                 if not getattr(self, "_bewertung_fehler", False):
                     self._bewertung_fehler = True
                     print(f"!! Bewertung: {type(e).__name__}: {e}", flush=True)
-        for regel in (self._vorwarnung, self._zahlen, self._jungler_tot, self._lane_tot,
+        for regel in (self._grosse_objectives, self._vorwarnung, self._zahlen, self._jungler_tot, self._lane_tot,
                       self._level, self._items, self._gold, self._cs, self._tod,
                       self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf,
                       self._ward, self._recall_fenster, self._tief_ohne_sicht, self._kontrollauge,
@@ -418,6 +418,28 @@ class Regelwerk:
         return sum(1 for w in werte if w >= schwelle) + (1 if ich_fit else 0)
 
     # --- einzelne Regeln ------------------------------------------------------
+
+    def _grosse_objectives(self, p: Partie, v: Partie):
+        """Baron- und Aeltester-Buff (bis wann, was du tust) und gefallene Inhibitoren (bis wann, deine Lane oder
+        nicht) - vorher kannte der Coach weder die Buff-Dauer noch den Inhibitor-Respawn."""
+        if self.b is None:
+            return
+        obj = wissen.objektive()
+        for e in p.ereignisse:
+            if ("gross", e.id) in self._gemeldet or p.zeit - e.zeit > 10:
+                continue
+            if e.art == "BaronKill" or (e.art == "DragonKill" and e.daten.get("DragonType") == "Elder"):
+                self._gemeldet.add(("gross", e.id))
+                art = "baron" if e.art == "BaronKill" else "aeltester"
+                dauer = obj["baron"].get("buff", 180) if art == "baron" else obj["aeltester"].get("buff", 150)
+                eigen = e.team == p.mein_team
+                yield Ansage(komponist.buff_satz(self.b, art, eigen, e.zeit + dauer), SOFORT if not eigen else WICHTIG,
+                             f"buff:{art}", gueltig=8, sperre=30, thema="objective")
+            elif e.art == "InhibKilled" and (st := struktur(e.daten.get("InhibKilled", ""))):
+                self._gemeldet.add(("gross", e.id))
+                zurueck = e.zeit + obj["inhibitor"].get("respawn", 300)
+                yield Ansage(komponist.inhib_satz(self.b, st.lane, st.team == p.mein_team, zurueck), WICHTIG,
+                             f"inhib:{st.team}:{st.lane}", gueltig=10, sperre=20, thema="objective")
 
     def _vorwarnung(self, p: Partie, v: Partie):
         vorlauf = self.m["vorwarnung"]["vorlauf"]

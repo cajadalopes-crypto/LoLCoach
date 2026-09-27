@@ -623,6 +623,26 @@ def stimme_spielt_ab_dem_ersten_stueck():
         edge_tts.Communicate = alt
 
 
+def baron_aeltester_inhibitor():
+    """Buff-Dauer und Inhibitor-Respawn: vorher kannte der Coach beides nicht. Inhibitor gegen die echte Partie
+    125902 geprueft (gefallen 21:11, InhibRespawned 26:11,6)."""
+    from types import SimpleNamespace as N
+    from lolcoach import komponist, regeln, wissen
+    obj = wissen.objektive()
+    assert obj["baron"]["buff"] == 180 and obj["aeltester"]["buff"] == 150 and obj["inhibitor"]["respawn"] == 300
+    b = N(ich=N(rolle="TOP", tot=False, respawn=0.0), mitspieler_nah=[], gold=500, kauf=None, partie=None)
+    assert komponist.inhib_satz(b, "Top", False, 1571.0) == \
+        "Sein Top-Inhibitor ist bis 26 11 weg - eure Supervasallen drücken Top: lass sie laufen und hol dir die Türme dahinter."
+    assert komponist.inhib_satz(b, "Bot", True, 1740.0).startswith("Dein Bot-Inhibitor ist bis 29 00 weg")
+    p = N(gegner=lambda: [], mein_team="ORDER")
+    b.partie = p
+    assert komponist.buff_satz(b, "baron", False, 1500.0).startswith(
+        "Sie haben den Baron-Buff bis 25 00: kein Kampf allein")
+    assert komponist.buff_satz(b, "aeltester", True, 1500.0).startswith("Ihr habt den Ältesten bis 25 00 - jetzt kämpfen")
+    # der Rest der Kette: die Regel liest die Ereignisse (hier nur, dass es sie gibt)
+    assert hasattr(regeln.Regelwerk, "_grosse_objectives")
+
+
 def wecker_bei_sprung_und_gegner_nah():
     """Der Kern wartet sonst bis zu 0,25 s (Takt): ein Sprung oder ein Gegner, der neben dir neu auftaucht, weckt ihn
     sofort - ein Verbuendeter oder ein weit entfernter Gegner nicht, und hoechstens alle 0,1 s."""
@@ -943,7 +963,7 @@ if __name__ == "__main__":
                  faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht,
                  satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
                  konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler, eigene_position_aus_dem_kamerarahmen,
-                 satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah,
+                 satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah, baron_aeltester_inhibitor,
                  sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")

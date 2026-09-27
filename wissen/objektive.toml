@@ -28,6 +28,7 @@ respawn = 300
 name = "Aeltester Drache"
 erster = 300                 # nach dem 4. Drachen
 respawn = 360
+buff = 150                   # Aspekt des Drachen, Sekunden (Wiki Elder Dragon; ungeprueft 26.x)
 
 [larven]
 name = "Leerenlarven"
@@ -47,6 +48,7 @@ name = "Baron"
 event = "BaronKill"
 erster = 1200
 respawn = 360
+buff = 180                   # Hand des Barons, Sekunden (Wiki Baron Nashor; seit Jahren so, ungeprueft 26.x)
 
 [inhibitor]
 name = "Inhibitor"

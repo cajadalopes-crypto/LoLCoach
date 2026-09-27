@@ -841,6 +841,52 @@ def jungler6(b: Bewertung) -> str:
     return f"{satz} - ab jetzt tötet dich ein Gank von {j.champion}. Schieb nicht ohne Sicht{wo}."
 
 
+def buff_satz(b: Bewertung, art: str, eigen: bool, bis: float) -> str:
+    """Baron- oder Aeltester-Buff genommen: bis wann, und was DU jetzt tust - tot, im Brunnen, mit Gold, auf welcher
+    Lane noch Tuerme stehen, wie viele von ihnen tot sind."""
+    from .bewertung import stehende_tuerme
+    p = b.partie
+    name = "den Baron-Buff" if art == "baron" else "den Ältesten"
+    satz = f"{'Ihr habt' if eigen else 'Sie haben'} {name} bis {uhr_gesprochen(bis)}"
+    tote = [s for s in p.gegner() if s.tot] if p is not None else []
+    if eigen:
+        if art == "aeltester":
+            return satz + " - jetzt kämpfen: wer unter 20 Prozent fällt, stirbt sofort" + (
+                f", und {_namen([s.champion for s in tote])} {'ist' if len(tote) == 1 else 'sind'} noch tot." if tote else ".")
+        feind = gegenteam(p.mein_team)
+        je_lane = {}
+        for (team, lane, _), _pos in stehende_tuerme(p).items():
+            if team == feind:
+                je_lane[lane] = je_lane.get(lane, 0) + 1
+        ziel = min(je_lane, key=lambda l: (je_lane[l], l)) if je_lane else None
+        wohin = f"geht zusammen {ziel} rein, dort stehen nur noch {je_lane[ziel]} Türme" if ziel else "drückt zusammen"
+        if b.ich.tot:
+            tun = f"du bist in {sek(b.ich.respawn)} wieder da - dann {wohin}"
+        elif b.gold >= RECALL_GOLD and b.kauf is not None and b.kauf.kaufen:
+            tun = f"recall jetzt, du hast {b.gold // 100 * 100} Gold, und dann {wohin}"
+        else:
+            tun = wohin
+        return f"{satz}: {tun}" + (f" - {len(tote)} von ihnen sind noch tot." if tote else ".")
+    if art == "aeltester":
+        return satz + ": kein Kampf, bis er ausläuft - räumt die Wellen mit Abstand."
+    allein = not b.mitspieler_nah and not b.ich.tot
+    return satz + (": kein Kampf allein, geh zu deinem Team und räumt die Wellen unter euren Türmen." if allein
+                   else ": bleibt zusammen und räumt die Wellen unter euren Türmen, kein Kampf in ihrem Buff.")
+
+
+def inhib_satz(b: Bewertung, lane: str, eigen: bool, zurueck: float) -> str:
+    """Ein Inhibitor ist gefallen: wessen, bis wann, und was das fuer DICH heisst (deine Lane oder eine andere)."""
+    meine = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}.get(b.ich.rolle)
+    wann = uhr_gesprochen(zurueck)
+    if eigen:     # dein Inhibitor
+        satz = f"Dein {lane}-Inhibitor ist bis {wann} weg - auf {lane} laufen jetzt Supervasallen"
+        return satz + (": halte die Welle vor deinem Turm und geh nicht tief." if lane == meine
+                       else f", einer muss die {lane}-Welle klären, bevor sie eure Türme frisst.")
+    satz = f"Sein {lane}-Inhibitor ist bis {wann} weg - eure Supervasallen drücken {lane}"
+    return satz + (": lass sie laufen und hol dir die Türme dahinter." if lane == meine
+                   else ", also spielt auf die andere Seite: Baron, Drache oder die Türme dort.")
+
+
 def lane_recall(b: Bewertung, champion: str, platten: bool) -> str:
     """Der Lane-Gegner recallt (stand still, dann weg): was du mit den ~15 s machst."""
     satz = f"{champion} recallt gerade"
