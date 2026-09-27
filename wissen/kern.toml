@@ -1,0 +1,57 @@
+# Schwellen und Startwerte des Entscheidungskerns (buecher/00_entscheidungskern.md, Kapitel 7.7).
+# Startwerte sind Schaetzungen - an Szenarien kalibrieren, jeder Abschnitt traegt seinen Stand.
+# Schritt 2 bringt [modus] und [sprechen]; [gefahr] und [objective_wert] sind nur mit den Werten dabei, die
+# Schritt 2 schon braucht (Kill-Beleg 6.2, Objective-Auswahl nach Wert) - der Rest folgt in Schritt 3.
+stand = "Buch 0, 27.09.2026 - Startwerte (Schaetzung), an Szenarien kalibrieren"
+
+[modus]
+stand = "Buch 0 Kapitel 7.7, Schritt 2"
+hysterese_s = 1.5
+kampf_radius = 1000
+kampf_ende_s = 3.0
+lane_phase_bis_s = 840          # 14:00, wie makro.toml [sicht] lane_phase_bis und der Wellentakt-Wechsel in mechanik.toml
+gruppe_radius = 2000
+gruppe_mindestens = 2
+objective_vorlauf_s = 60
+objective_nah_s = 25
+# nicht im Buch, Schritt 2: "ein Mitspieler ist an der Grube" braucht einen Radius; Grube samt Eingang
+grube_radius = 1500
+# nicht im Buch, Schritt 2: VERTEIDIGEN (Kapitel 5.1) - Bedrohung an einer eigenen Struktur
+verteidigen_radius = 2500
+verteidigen_weg_s = 15
+verteidigen_welle_front = 0.2   # gegnerische Welle so nah an eurer Basis (0 = eure Basis .. 1 = seine), Lane ohne Inhibitor
+# nicht im Buch, Schritt 2: KAMPF - "sein Balken faellt" / "dein Leben faellt" in 3 s
+kampf_leben_trend = -0.10
+kampf_balken_faellt = 0.05
+# nicht im Buch, Schritt 2: Minimap gilt als frisch (daten_frisch, Kapitel 4.2)
+minimap_frisch_s = 5.0
+
+[sprechen]
+stand = "Buch 0 Kapitel 7.7, Schritt 2"
+abstand_s = 12
+max_je_minute = 3               # Kapitel 9.2 - kommt mit dem Kern (Schritt 3); Schritt 2 setzt nur abstand_s
+ziel_je_30min = 45
+max_woerter = 18
+max_woerter_gefahr = 10
+
+[gefahr]
+stand = "Buch 0 Kapitel 7.7 - in Schritt 2 nur der Kill-Beleg (6.2); der Rest mit Schritt 3"
+kill_ueberlegen = 3.0           # kraefte()[0], Skala Level/600 Gold
+kill_leben_frisch_s = 1.0       # "sein Leben ist frisch gelesen" (6.2)
+
+[objective_wert]                # fuer dein Team; Startwerte, Buch 6 eicht sie
+stand = "Buch 0 Kapitel 7.7 - vorgezogen fuer die Objective-Auswahl in Schritt 2"
+drache = 600
+drache_seele = 1500
+larven = 500
+herold = 700
+baron = 2500
+aeltester = 3000
+inhibitor = 1000
+turm_extra = 250
+nexus = 10000
+# nicht im Buch, Schritt 2: so viele von euch muessen rechtzeitig an der Grube sein (Buch 6 eicht)
+mindestens = { drache = 2, larven = 2, herold = 2, baron = 3 }
+# nicht im Buch, Schritt 2 (vorgezogen aus Schritt 5): geschaetzte Toetungszeit mit genug Leuten (Buch 6 eicht) -
+# erreichbar ist ein Objective nur, wenn dein Weg + diese Dauer vor den ersten Gegner an der Grube passt
+dauer_s = { drache = 15, larven = 15, herold = 20, baron = 35 }

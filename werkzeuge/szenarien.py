@@ -4,8 +4,8 @@ Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes
 
   altes System (nur Text):  darf_nicht_sagen, muss_nennen_eins, muss_ziel, kehrtwenden_max, ansagen_max
                             im Fenster ([zeit-2, zeit+15] oder `fenster`)
-  Kern (Modus, Plan-Art):   modus, soll, darf_nicht, [[modus_soll]] - den Kern gibt es erst ab Schritt 2/3,
-                            bis dahin "uebersprungen"
+  Kern (Modus, Plan-Art):   modus und [[modus_soll]] ab Schritt 2 (irgendein Takt in zeit +-2 s hat einen der
+                            erlaubten Modi); soll und darf_nicht (Plan-Art) ab Schritt 3, bis dahin "uebersprungen"
   frage:                    wie per Sprechtaste, geprueft wird die Antwort - braucht Claude, nur mit --mit-claude
   typ = "review":           gegen das gespeicherte Review der Partie - nur mit --mit-claude
 
@@ -125,6 +125,15 @@ def antwort(frage: str, p, lb, wand: float, stamm: str) -> str:
     return antworten.mit_claude(frage, p, lb, "sonnet", [], g, [bild] if bild else None)
 
 
+def modi_um(lauf: ns.Lauf, t: float, um: float = 2.0) -> list[str]:
+    """Die Modi des Kerns in den Takten zeit +-um (Reihenfolge wie gesehen, ohne Wiederholung)."""
+    aus = []
+    for x in lauf.takte:
+        if t - um <= x.zeit <= t + um and x.modus not in aus:
+            aus.append(x.modus)
+    return aus
+
+
 def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lauf: ns.Lauf | None = None) -> dict:
     """`lauf`: schon nachgespielt (kennzahlen.py) - dann ohne Fragen an Claude."""
     cfg = tomllib.loads(datei.read_text(encoding="utf-8"))
@@ -142,7 +151,7 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
     if lauf is None:
         lauf = ns.durchspielen(ns.pfad_zu(stamm), halte_bei=halte, rueckruf=bei_halt)
     print(f"== {stamm}{' (Bot-Partie)' if cfg.get('bots') else ''}: {len(lauf.gesagt)} Ansagen nachgespielt")
-    ergebnis = {"gruen": 0, "rot": 0, "uebersprungen": 0, "rot_ids": [], "gruen_ids": []}
+    ergebnis = {"gruen": 0, "rot": 0, "uebersprungen": 0, "rot_ids": [], "gruen_ids": [], "modus": None}
     for sz in szen:
         verstoesse, geprueft, uebersprungen = [], 0, []
         if sz.get("typ") == "review":
@@ -179,8 +188,13 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                     geprueft += 1
                     if len(texte) > sz["ansagen_max"]:
                         verstoesse.append(f"ansagen_max {sz['ansagen_max']} - {len(texte)}")
-        if any(k in sz for k in ("modus", "soll", "darf_nicht")):
-            uebersprungen.append("Kern (modus/soll/darf_nicht, ab Schritt 2/3)")
+        if "modus" in sz and "zeit" in sz and nur != "alt":
+            geprueft += 1
+            modi = modi_um(lauf, ns.sekunden(sz["zeit"]))
+            if not set(modi) & set(sz["modus"]):
+                verstoesse.append(f"modus {sz['modus']} - Kern: {modi or 'kein Modus'}")
+        if any(k in sz for k in ("soll", "darf_nicht")):
+            uebersprungen.append("Kern-Plan (soll/darf_nicht, ab Schritt 3)")
         status = "rot" if verstoesse else ("gruen" if geprueft else "uebersprungen")
         ergebnis[status] += 1
         if status in ("rot", "gruen"):
@@ -195,9 +209,21 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
         if lage and halt in lauf.halte:
             print("          Szenario: " + " ".join(sz.get("lage", "").split())[:300])
             print(f"          Nachgespielt ({ns.uhr(halt)}): " + lauf.halte[halt][2].replace("\n", " | "))
-    if cfg.get("modus_soll"):
-        n = sum(len(m["zeiten"]) for m in cfg["modus_soll"])
-        print(f"  --    Modus-Sollwerte ({n} Zeitpunkte): uebersprungen (Kern, ab Schritt 2)")
+    if cfg.get("modus_soll") and nur != "alt":
+        treffer, alle, daneben = 0, 0, []
+        for m in cfg["modus_soll"]:
+            for z in m["zeiten"]:
+                alle += 1
+                modi = modi_um(lauf, ns.sekunden(z))
+                if set(modi) & set(m["modus"]):
+                    treffer += 1
+                else:
+                    daneben.append(f"{z}: soll {'/'.join(m['modus'])}, Kern {'/'.join(str(x) for x in modi) or '-'}")
+        ergebnis["modus"] = (treffer, alle)
+        print(f"  Modus-Sollwerte: {treffer} / {alle} getroffen ({100 * treffer / alle:.0f} %; Abnahme Schritt 2: "
+              f">= 90 %)")
+        for d in daneben:
+            print(f"          daneben {d}")
     gepr = ergebnis["gruen"] + ergebnis["rot"]
     print(f"  Quote altes System: {ergebnis['gruen']} gruen / {gepr} geprueft, {ergebnis['rot']} rot, "
           f"{ergebnis['uebersprungen']} uebersprungen")
@@ -220,7 +246,7 @@ def main() -> None:
             gesamt[k] += e[k]
     gepr = gesamt["gruen"] + gesamt["rot"]
     print(f"\nGesamt: {gesamt['gruen']} gruen / {gepr} geprueft ({gesamt['rot']} rot, {gesamt['uebersprungen']} "
-          f"uebersprungen)" + ("" if args.nur == "alt" else " - Kern: noch nicht gebaut (Schritt 2/3)"))
+          f"uebersprungen)" + ("" if args.nur == "alt" else " - Kern-Plan (soll/darf_nicht): ab Schritt 3"))
 
 
 if __name__ == "__main__":

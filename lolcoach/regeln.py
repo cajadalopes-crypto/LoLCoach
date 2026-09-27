@@ -124,6 +124,8 @@ class Regelwerk:
         self._in_grube: dict[tuple[str, str], float] = {}   # (Jungler, Objective) -> seit wann in der Grube
         self._am_pit: dict[str, float] = {}                 # Objective -> seit wann zwei Mitspieler dort stehen
         self._teamrufe: dict[str, list[float]] = {}        # Objective -> Spielzeiten der "Nehmt jetzt"-Rufe
+        self.kern = None        # kern.Kern (Buch 0, Schritt 2): bestimmt den Modus, sperrt die Regeln danach
+        self.modus: str | None = None
         self._obj_gesagt: dict[tuple[str, str], float] = {}  # (Objective, team/anlauf/gegner) -> zuletzt gesagt
         self._spikes: list[str] = []                   # eben fertig gewordene eigene Items (noch nicht gesagt)
         self._spike_bei = 0.0
@@ -173,12 +175,31 @@ class Regelwerk:
                 if not getattr(self, "_bewertung_fehler", False):
                     self._bewertung_fehler = True
                     print(f"!! Bewertung: {type(e).__name__}: {e}", flush=True)
+        # Buch 0, Schritt 2: der Modus ("was ist gerade dein Job?") - danach spricht jede Regel nur in ihren Modi
+        # (Kapitel 14), INFO-Themen gehen aufs Dashboard
+        self.modus = None
+        if self.kern is not None:
+            try:
+                self.modus = self.kern.modus_bestimmen(p, self.b, lage)
+            except Exception as e:
+                if not getattr(self, "_kern_fehler", False):
+                    self._kern_fehler = True
+                    print(f"!! Kern: {type(e).__name__}: {e}", flush=True)
+            if lage is not None:
+                lage.kern = self.kern               # fuer Claude (antworten) und das Dashboard
+        from .kern import sperre
         for regel in (self._grosse_objectives, self._vorwarnung, self._zahlen, self._jungler_tot, self._lane_tot,
                       self._level, self._items, self._gold, self._cs, self._tod,
                       self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf,
                       self._ward, self._recall_fenster, self._tief_ohne_sicht, self._kontrollauge,
                       self._objective_start, self._fenster, self._plan, self._wiedereinstieg, self._afk):
             for a in regel(p, v) or ():
+                weg = sperre.entscheide(regel.__name__, a, self.modus, self.b)
+                if weg == "info":
+                    self.kern.info_dazu(p.zeit, a.text)
+                    continue
+                if weg == "stumm":
+                    continue
                 a.zeit = p.zeit
                 if a.pruefe is None:
                     try:
@@ -310,10 +331,11 @@ class Regelwerk:
                 # und Ekko allein schwaecher (Nachlauf 230520, 18:06/18:08): ueberholt, wenn keiner der Genannten
                 # mehr vor dir am Turm sein kann
                 b = self.b
-                if b is None or not genannt or b.zum_turm is None:
+                weg = b.sicherer_ort()[1] if b is not None else None     # Turm, Basis oder Gruppe (7.5)
+                if b is None or not genannt or weg is None:
                     return True
                 return any(g.s.name in genannt and not g.s.tot and g.ankunft is not None
-                           and g.ankunft < b.zum_turm + 3 for g in b.gegner)
+                           and g.ankunft < weg + 3 for g in b.gegner)
             return rueckzug_gilt
         if s.startswith(("fenster", "level")) and u0 is not None and lane is not None:
             def urteil_gilt() -> bool:
@@ -499,6 +521,36 @@ class Regelwerk:
         self._teamrufe[objective] = rufe + [p.zeit]
         return True
 
+    def _objective_waehlen(self, kandidaten: list[str], fenster: float) -> tuple[str | None, float | None]:
+        """Buch 0, 1.3 Punkt 5: nicht mehr Baron zuerst, sobald er lebt (feste Reihenfolge in _lebende_objectives),
+        sondern das wertvollste erreichbare Objective. Erreichbar: dein Weg + seine Toetungszeit passen vor den
+        ersten Gegner an der Grube (bewertung.verteidiger_ab: Lebende mit Weg, Tote mit Respawn + Weg aus dem
+        Brunnen; nicht das Todesfenster `fenster` der Regel - 102112, 25:22: Baron 26 s entfernt bei 29 s Fenster),
+        und genug von euch sind bis dahin dort. (Objective, DEINE Laufzeit genau dorthin); ohne Minimap das erste."""
+        b = self.b
+        if not kandidaten:
+            return None, None
+        if b is None or b.pos is None:
+            return kandidaten[0], None
+        from .kern import konfig
+        cfg = konfig()["objective_wert"]
+        beste = None
+        for o in kandidaten:
+            grube = bewertung.einheiten(*bewertung.GRUBEN[o])
+            weg = bewertung.abstand(b.pos, grube) * bewertung.WEGFAKTOR / b.mein_tempo
+            frei, _, _ = bewertung.verteidiger_ab(b, grube, weg)
+            frei = frei if frei is not None else 1e9
+            if weg + cfg["dauer_s"].get(o, 20) > frei:
+                continue
+            n = 1 + sum(1 for _, wo, *_ in b.mitspieler
+                        if wo is not None and bewertung.abstand(wo, grube) * bewertung.WEGFAKTOR / 380.0 <= frei)
+            if n < cfg["mindestens"].get(o, 2):
+                continue
+            wert = cfg.get(o, 0)
+            if beste is None or (wert, -weg) > (beste[2], -beste[1]):
+                beste = (o, weg, wert)
+        return (beste[0], beste[1]) if beste else (None, None)
+
     def _gegner_tot(self, p: Partie, min_s: float) -> list[Spieler]:
         return [s for s in p.gegner() if s.tot and s.respawn >= min_s]
 
@@ -510,12 +562,13 @@ class Regelwerk:
             wir, die = self._lebend(p)
             objs = [o for o in self._objectives(p) if self._objective_machbar(p, o, z["vorsprung_mindestens"])]
             namen = [s.champion for s in sorted(tot, key=lambda s: s.respawn)]
-            if objs:
-                text = (komponist.zahlen(self.b, namen, fenster, objs[0], wir, die) if self.b is not None
+            obj, weg = self._objective_waehlen(objs, fenster)
+            if obj:
+                text = (komponist.zahlen(self.b, namen, fenster, obj, wir, die, weg=weg) if self.b is not None
                         else z["vorteil_objective"].format(anzahl=len(tot), sekunden=fenster,
-                                                           objective=_objective_name(objs[0], p)))
-                if self._teamruf_frei(objs[0], p):
-                    yield Ansage(text, SOFORT, f"jetzt:{objs[0]}", gueltig=6, sperre=45)   # 20 s: 14:58/15:19 zweimal
+                                                           objective=_objective_name(obj, p)))
+                if self._teamruf_frei(obj, p):
+                    yield Ansage(text, SOFORT, f"jetzt:{obj}", gueltig=6, sperre=45)   # 20 s: 14:58/15:19 zweimal
             elif wir > die:
                 text = (komponist.zahlen(self.b, namen, fenster, None, wir, die) if self.b is not None
                         else z["vorteil_turm"].format(anzahl=len(tot), sekunden=fenster))
@@ -537,12 +590,13 @@ class Regelwerk:
             return  # die Zahlen-Regel sagt es besser
         objs = [o for o in self._objectives(p, bis=j.respawn - 10) if self._objective_machbar(p, o, 0)]
         mit_b = self.b is not None and p.ich.rolle != "JUNGLE" and not self._ich_weg(p)
-        if objs and not self._ich_weg(p) and self._teamruf_frei(objs[0], p):
-            nah = p.ich.rolle in self.m["seiten"][objs[0]]
-            text = (komponist.jungler_tot(self.b, int(j.respawn), objs[0], nah, self._platten_moeglich(p)) if mit_b
-                    else self.m["jungler_tot_objective"]["nah" if nah else "fern"].format(
-                        champion=j.champion, sekunden=int(j.respawn), objective=_objective_name(objs[0], p)))
-            yield Ansage(text, SOFORT if nah else WICHTIG, f"jetzt:{objs[0]}", gueltig=6, sperre=45)
+        obj, weg = self._objective_waehlen(objs, j.respawn)
+        if obj and not self._ich_weg(p) and self._teamruf_frei(obj, p):
+            nah = p.ich.rolle in self.m["seiten"][obj]
+            text = (komponist.jungler_tot(self.b, int(j.respawn), obj, nah, self._platten_moeglich(p), weg=weg)
+                    if mit_b else self.m["jungler_tot_objective"]["nah" if nah else "fern"].format(
+                        champion=j.champion, sekunden=int(j.respawn), objective=_objective_name(obj, p)))
+            yield Ansage(text, SOFORT if nah else WICHTIG, f"jetzt:{obj}", gueltig=6, sperre=45)
         elif mit_b:
             yield Ansage(komponist.jungler_tot(self.b, int(j.respawn), None, False, self._platten_moeglich(p)),
                          WICHTIG, "jungler_tot", gueltig=8)

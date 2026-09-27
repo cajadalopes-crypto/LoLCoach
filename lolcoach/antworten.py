@@ -487,11 +487,13 @@ def lage_text(p: Partie, lagebild=None) -> str:
         try:
             from . import bewertung
             if b := bewertung.bewerte(p, lagebild):
-                zeilen.append(b.text())
+                modus = getattr(getattr(getattr(lagebild, "kern", None), "modus", None), "aktuell", None)
+                zeilen.append(b.text(modus))
                 # das Kampf-Urteil mit allen Faktoren - live 235433, 6:46: "Wie hast du mein Damage kalkuliert?" ->
                 # Claude: "grobe Schaetzung", obwohl der Coach es gerechnet hatte
                 from . import denker
-                if b.lane is not None and b.lane_nah and (u := denker.urteil(b)) is not None:
+                if b.lane is not None and (b.lane_nah or modus in ("LANE", "SEITE")) \
+                        and (u := denker.urteil(b)) is not None:
                     zeilen.append(
                         f"KAMPF-URTEIL DES COACHS gegen {b.lane.champion}: {u.art} (Summe {u.wert:+.1f}); Faktoren: "
                         + "; ".join(f"{x.satz} ({x.wert:+.1f})" for x in sorted(u.faktoren, key=lambda x: -abs(x.wert)))
@@ -563,12 +565,27 @@ def laden_liste() -> str:
     return f"FERTIG: {', '.join(fertig)}\nBAUTEILE: {', '.join(bauteile)}"
 
 
+BEZUG = re.compile(r"was meinst du|wie meinst du|was hei(ß|ss)t|was bedeutet|was soll das hei|du hast (gerade |eben )?"
+                   r"gesagt|du sagtest|hast du (gerade |eben )?gesagt|warum hast du|wieso hast du|weshalb hast du|"
+                   r"deine (letzte )?ansage|was war (das|damit)", re.I)
+
+
+def bezieht_sich_auf_ansage(frage: str) -> bool:
+    """Zeigt die Frage auf eine Ansage des Coachs ("was meinst du damit", "warum hast du gesagt ...")? Nur dann
+    bekommt Claude die letzte Ansage mit (Buch 0, 10.2)."""
+    return bool(BEZUG.search(frage))
+
+
 def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", letzte=(), gehirn=None,
                bilder: list[bytes] | None = None, bei_satz=None, vorhalten: bool = False) -> str:
     """`gehirn`: wenn da, bekommt Claude Spielakte + passende Lexikon-Abschnitte dazu.
     `bilder`: der Spielbildschirm im Moment der Frage (JPEG). `vorhalten`: danach gleich den naechsten
     Claude-Prozess vorstarten (live - die naechste Frage spart den Start)."""
     zusatz = ""
+    if letzte and bezieht_sich_auf_ansage(frage):   # sonst beisst sich Claude an alten Ansagen fest (Buch 0, 10.2)
+        letzte = list(letzte)[-1:]
+    else:
+        letzte = []
     if letzte:
         zusatz += "\n\nDeine letzten Ansagen: " + " | ".join(
             f"{int((a.gesprochen or a.zeit) // 60)}:{int((a.gesprochen or a.zeit) % 60):02d} {a.text}" for a in letzte)
@@ -578,6 +595,9 @@ def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", let
                    f"und was spaeter dazukommt):\n{laden_liste()}")
     lage = lage_text(p, lagebild) + zusatz
     inhalt = gehirn.kontext(frage, p, lage) if gehirn else f"Lage:\n{lage}"
+    # der Modus als erste Zeile jeder Frage (Buch 0, 5.2 / Schritt 2): "MODUS: BASIS - du stehst in eurer Basis"
+    if (kern := getattr(lagebild, "kern", None)) is not None and (kopf := kern.kopfzeile()):
+        inhalt = f"{kopf}\n\n{inhalt}"
     try:
         from .itemnamen import absichern
         if bei_satz is not None:   # Satz fuer Satz sprechen, sobald er fertig ist

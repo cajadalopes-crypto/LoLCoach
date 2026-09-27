@@ -72,7 +72,19 @@ def zustand_json(p: Partie, lagebild=None, ansagen=()) -> dict:
         "wellen": {l: z.worte(wir) for l in ("Top", "Mid", "Bot")
                    if lagebild is not None and hasattr(lagebild, "welle") and (z := lagebild.welle(l, p.zeit))} if wir else {},
         "ansagen": [{"zeit": uhr(a.gesprochen or a.zeit), "text": a.text, "prio": a.prio} for a in list(ansagen)[-7:]][::-1],
+        "kern": _kern(lagebild),
     }
+
+
+def _kern(lagebild) -> dict | None:
+    """Buch 0, Schritt 2: Modus (was gerade dein Job ist) und die INFO-Zeilen, die nicht mehr gesprochen werden
+    (Flash, Items, Level, CS - Kapitel 9.1)."""
+    k = getattr(lagebild, "kern", None)
+    if k is None:
+        return None
+    s = k.stand()
+    return {"modus": s["modus"], "bereich": s["bereich"], "grund": s["grund"],
+            "info": [{"zeit": uhr(i["zeit"]), "text": i["text"]} for i in s["info"]]}
 
 
 def _jetzt(p: Partie, lagebild) -> dict | None:

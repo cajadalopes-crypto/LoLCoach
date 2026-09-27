@@ -69,6 +69,17 @@ ACH_NEE = 8.0     # Sekunden: so lange nach einem widerrufenen Satz beginnt der 
 # die Worte "geh zurueck" im Satz fallen - kommt ein neues vorher, ist es das direktere und darf abbrechen.
 # Eine Gefahr (SOFORT: "Vi ist direkt bei dir") kommt immer.
 RUECKZUG_SPERRE = 12.0
+# Buch 0, Schritt 2 (Kapitel 9.2): zwischen zwei Ansagen ausser SOFORT liegen mindestens `abstand_s` Sekunden
+# (wissen/kern.toml [sprechen]) - das Briefing ausgenommen
+GEFAHR_EBEN = 10.0     # so lange nach einer Gefahr-Ansage wirft der Stratege nichts ein (Kapitel 14)
+
+
+def _abstand_s() -> float:
+    try:
+        from .kern import konfig
+        return float(konfig()["sprechen"]["abstand_s"])
+    except Exception:
+        return 12.0
 
 
 class Sprechplan:
@@ -86,6 +97,8 @@ class Sprechplan:
         self._ich_tot = False
         self._widerruf: tuple[float, str, str] | None = None   # (Wanduhr, Thema, Schluessel-Art) des abgebrochenen
         self._rueckzug_gehoert = -1e9    # Spielzeit, zu der das letzte "geh zurueck" beim Spieler ankommt
+        self.kern = None                 # kern.Kern: Modus fuer die Einwuerfe des Strategen (Kapitel 14)
+        self.abstand_s = _abstand_s()
 
     def _melder(self, a: Ansage, ab: float):
         """Die Stimme meldet ersten Ton und Ende in Wanduhr; umgerechnet auf Spielzeit ab dem Moment der Abgabe.
@@ -140,6 +153,13 @@ class Sprechplan:
     def neu(self, ansagen: list[Ansage]) -> None:
         with self._schloss:
             eingeworfen, self._einwurf = self._einwurf, []
+        # Stratege (Kapitel 14): das Briefing einmal; Midgame-Plan und situative Saetze nur ausserhalb von KAMPF
+        # und nicht direkt nach einer Gefahr
+        modus = getattr(getattr(self.kern, "modus", None), "aktuell", None)
+        jetzt = getattr(self, "_jetzt", None)
+        if modus == "KAMPF" or (self.gesagt and self.gesagt[-1].thema == "gefahr" and self.gesagt[-1].gesprochen
+                                is not None and jetzt is not None and jetzt - self.gesagt[-1].gesprochen < GEFAHR_EBEN):
+            eingeworfen = [a for a in eingeworfen if a.schluessel == "briefing"]
         for a in [*eingeworfen, *ansagen]:
             if a.zeit - self.zuletzt.get(a.schluessel, -1e9) < a.sperre:
                 continue
@@ -149,9 +169,11 @@ class Sprechplan:
             self.warte.append(a)
 
     def takt(self, zeit: float, ich_tot: bool = False) -> Ansage | None:
+        self._jetzt = zeit
         # Dasselbe Thema eben erst gesagt ("2000 Gold: ... back" 9:47 und 9:53, Camille-Partie 26.09.):
         # die zweite faellt weg - ausser sie ist SOFORT (Gefahr darf immer)
-        self.warte = [a for a in self.warte if zeit - a.zeit <= a.gueltig
+        self.warte = [a for a in self.warte
+                      if zeit - a.zeit <= a.gueltig + (self.abstand_s if getattr(a, "_budget", False) else 0.0)
                       and not (a.thema and a.prio < SOFORT
                                and zeit - self.thema_zuletzt.get(a.thema, -1e9) < THEMA_SPERRE_JE.get(a.thema, THEMA_SPERRE))
                       and not (a.thema in WIDERSPRUCH
@@ -195,6 +217,17 @@ class Sprechplan:
         if a.prio < SOFORT and getattr(self.sprecher, "beschaeftigt", False) and not abbrechen:
             self._vorbereiten(a)
             return None     # die Stimme spricht noch (live exakt statt geschaetzt)
+        # Budget (Buch 0, 9.2): mindestens abstand_s seit der letzten Ansage - ausser SOFORT und dem Briefing
+        letzte = next((x.gesprochen for x in reversed(self.gesagt) if x.gesprochen is not None), None)
+        if (a.prio < SOFORT and a.schluessel != "briefing" and letzte is not None
+                and zeit - letzte < self.abstand_s):
+            # "wird gesagt, sobald wieder Platz ist und er dann noch gilt" (9.2): wer nur am Budget wartet, darf
+            # abstand_s laenger warten - ob er noch stimmt, prueft weiter seine Pruefung (_stimmt)
+            for w in self.warte:
+                if w.prio < SOFORT:
+                    w._budget = True
+            self._vorbereiten(a)
+            return None
         self.warte.remove(a)
         # "Ach nee - Ekko ist beim Drachen": der Satz davor wurde mitten drin widerrufen (Carlos' Wunsch 26.09.)
         w = self._widerruf

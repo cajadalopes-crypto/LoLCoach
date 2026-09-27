@@ -17,10 +17,11 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
-**Buch 0, Schritt 1** (`buecher/00_entscheidungskern.md`, Kapitel 13): Messen, nichts am Verhalten aendern -
-`werkzeuge/szenarien.py`, `kennzahlen.py`, `szenario_aus_notizen.py`, Grundlinie in `buecher/messungen.md`,
-Datenluecke 102112 geklaert + Wachhund. Danach: Carlos spielt 2-3 echte Partien (gern `--stumm`) und haelt
-Momente per "Notiz ..." fest; dann Schritt 2 (Modus, Sofortmassnahmen am alten System).
+**Buch 0, Schritt 2 umgesetzt** (`buecher/00_entscheidungskern.md`, Kapitel 13): Modus (`lolcoach/kern/`), Modus-
+Sperre der alten Regeln, Objective nach Erreichbarkeit und Wert, Team-Befehle nur rechtzeitig, Kill nur mit
+Beleg, 12 s Abstand zwischen Ansagen, INFO aufs Dashboard, Claude-Kontext mit Modus. Zahlen in
+`buecher/messungen.md`. Jetzt: Carlos spielt echte Partien mit Stimme und haelt Momente per "Notiz ..." fest;
+danach Schritt 3 (der Kern uebernimmt LANE, BASIS, TOT). Schritt 1 (Messen) ist erledigt (fd59e03).
 
 Carlos' Ziel 26.09. (/goal): Challenger-Coach, individuelle Ansagen aus vielen Faktoren, keine
 Standardsaetze; Grundlage `Reasoning/LoL Reasoning.txt` (Entscheidungskette Zustand -> Welle ->

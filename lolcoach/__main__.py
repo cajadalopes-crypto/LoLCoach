@@ -24,7 +24,7 @@ from . import (ansicht, aufzeichnung, bericht, komponist, lage, liveapi, llm, pr
 
 def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, sicht=None,
               anzeigen=(), alle: int = 5, nur_coach: bool = False, gehirn: bool = False,
-              gehirn_ablage=None) -> sprechplan.Sprechplan:
+              gehirn_ablage=None, kern_ablage=None) -> sprechplan.Sprechplan:
     """Gemeinsamer Kern fuer Live und Aufnahme.
 
     `quelle` liefert (Wanduhr, Rohdaten); `sicht` hat `zwischen(bis, champions)`
@@ -34,6 +34,10 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
     gesehen: set[int] = set()
     rollen_gezeigt = False
     werk, plan = regeln.Regelwerk(), sprechplan.Sprechplan(sprecher)
+    # Buch 0: der Entscheidungskern - ab Schritt 2 in jeder Stellung von --kern (Modus, Sperre, _kern.jsonl)
+    from .kern import Kern
+    kern_ = Kern(kern_ablage)
+    werk.kern = plan.kern = kern_
     lagebild = lage.Lagebild() if sicht else None
     stratege_ = None
     if gehirn:
@@ -101,6 +105,7 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
 
     def schritt_coach(p):
         ansagen = werk.pruefe(p, lagebild)
+        ansagen += kern_.takt(p, lagebild)          # Schritt 2: nur Protokoll, noch keine eigenen Ansagen
         if any(a.schluessel == "tod" for a in ansagen) and getattr(sicht, "b", None) is not None:
             sicht.b.puffer_sichern()   # die Sekunden vor dem Tod als Bilder fuers Review
         if stratege_:
@@ -143,6 +148,7 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
                 time.sleep(takt)
             elif wecker.wait(takt):
                 wecker.clear()
+    kern_.schliessen()
     return plan
 
 
@@ -348,7 +354,9 @@ def live(args) -> None:
                              schreiber=schreiber, sicht=_LiveSicht(beobachter) if beobachter else None,
                              anzeigen=anzeigen, gehirn=not args.ohne_gehirn, alle=20,
                              gehirn_ablage=schreiber.pfad.with_name(
-                                 schreiber.pfad.name.removesuffix(".jsonl.gz") + "_spielakte.md") if schreiber else None)
+                                 schreiber.pfad.name.removesuffix(".jsonl.gz") + "_spielakte.md") if schreiber else None,
+                             kern_ablage=schreiber.pfad.with_name(
+                                 schreiber.pfad.name.removesuffix(".jsonl.gz") + "_kern.jsonl") if schreiber else None)
         finally:
             hund.halt()
             if beobachter:
@@ -591,13 +599,14 @@ def main() -> None:
     lm.add_argument("--modell", default="haiku")
     for sub in (lv, ab):   # Entscheidungskern (buecher/00_entscheidungskern.md, Kapitel 3)
         sub.add_argument("--kern", choices=("alt", "schatten", "neu"), default="alt",
-                         help="alt = Regelwerk spricht (Schritt 1-2); schatten ab Schritt 2, neu ab Schritt 3")
+                         help="alt/schatten = Regelwerk spricht, der Kern bestimmt den Modus und schreibt "
+                              "<stamm>_kern.jsonl (Schritt 2); neu ab Schritt 3")
     args = ap.parse_args()
     if args.befehl is None:
         args = ap.parse_args(sys.argv[1:] + ["live"])  # ohne Befehl: live mit allen Voreinstellungen
-    if getattr(args, "kern", "alt") != "alt":
-        sys.exit(f"--kern {args.kern} gibt es erst ab Schritt 2 (schatten) bzw. 3 (neu) - "
-                 f"buecher/00_entscheidungskern.md. Jetzt: --kern alt.")
+    if getattr(args, "kern", "alt") == "neu":
+        sys.exit("--kern neu gibt es erst ab Schritt 3 (buecher/00_entscheidungskern.md). Jetzt: --kern alt "
+                 "oder schatten (in Schritt 2 gleich: das Regelwerk spricht, der Kern bestimmt den Modus).")
     {"live": live, "abspielen": abspielen, "bericht": bericht_befehl, "status": status,
      "llm": frage_llm, "frage": frage_an_aufnahme, "mikrotest": mikrotest, "review": review_befehl}[args.befehl](args)
 

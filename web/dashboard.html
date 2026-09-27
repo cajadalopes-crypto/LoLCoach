@@ -57,6 +57,9 @@
       <span>Items <b class="zahl" id="itemgold">±0</b></span>
       <span>Gold <b class="zahl" id="gold">–</b></span>
     </div>
+    <div class="kasten" id="moduskasten" hidden><h2>Modus</h2>
+      <div><b class="zahl" id="modus"></b> <span class="klein" id="modusgrund"></span></div>
+      <ul class="ansagen klein" id="info" style="margin-top:6px"></ul></div>
     <div class="kasten" id="jetztkasten" hidden style="border-color: var(--gut)"><h2>Jetzt</h2>
       <div id="jetztplan" style="font-size:1.15em;margin-bottom:6px"></div><div id="jetztzahlen" class="klein"></div></div>
     <div class="kasten" id="plankasten" hidden><h2>Dein Lane-Plan</h2><div id="laneplan" class="plan"></div></div>
@@ -191,6 +194,13 @@ function zeige(z) {
   $('fokuskasten').hidden = !z.fokus;               // aus dem Review der letzten Partie
   if (z.fokus) $('fokus').textContent = z.fokus;
   $('ansagen').innerHTML = z.ansagen.map(a => `<li class="p${a.prio}"><span class="klein">${a.zeit}</span> ${a.text}</li>`).join('');
+  const k = z.kern;                                  // Buch 0: Modus + INFO, die nur hier steht (nicht gesprochen)
+  $('moduskasten').hidden = !(k && k.modus);
+  if (k && k.modus) {
+    $('modus').textContent = k.modus;
+    $('modusgrund').textContent = k.grund ? ' – ' + k.grund : '';
+    $('info').innerHTML = (k.info || []).map(i => `<li><span class="klein">${i.zeit}</span> ${i.text}</li>`).join('');
+  }
   aufsetzen(z);
   zeichne(z);
 }

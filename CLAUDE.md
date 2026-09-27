@@ -48,8 +48,10 @@ man mit ihm redet. Anforderungen: `ANFORDERUNGEN.md`. Bedienung fuer Carlos:
 
 `python -m lolcoach` = live. Weitere Befehle: `abspielen`, `review`, `bericht`,
 `frage`, `mikrotest`, `status`, `llm` (siehe `--help`). `live` und `abspielen` nehmen
-`--kern alt|schatten|neu` (Entscheidungskern, Buch 0 Kapitel 3): bis Schritt 2 gibt es nur
-`alt` (das Regelwerk spricht), `schatten` kommt mit Schritt 2, `neu` mit Schritt 3.
+`--kern alt|schatten|neu` (Entscheidungskern, Buch 0 Kapitel 3): seit Schritt 2 bestimmt der Kern
+(`lolcoach/kern/`) in jeder Stellung den Modus, sperrt die alten Regeln danach (Kapitel 14) und schreibt live
+`aufnahmen/<stamm>_kern.jsonl`; `alt` und `schatten` sind in Schritt 2 gleich (das Regelwerk spricht),
+`neu` kommt mit Schritt 3. Schwellen und Startwerte: `wissen/kern.toml`.
 
 ## Umbau nach den Buechern: `buecher/`
 

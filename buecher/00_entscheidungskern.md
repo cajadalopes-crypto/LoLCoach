@@ -801,7 +801,9 @@ den Kern, oder als `grund`, wenn sie zum Plan passen. `minimap_gesund` wird `TEC
      „Geh rein|nimm den Kampf an|Halte deine Stellung|Bleib an deiner Welle|Trade|Spiel auf|Geh auf|Drück|Nehmt“.
 
    Als neues Ereignis gilt:
-   - neuer Gegner sichtbar,
+   - ein Gegner wird in ≤ 3000 um dich neu sichtbar (in den 5 s davor war er nicht sichtbar) – Entscheidung
+     Carlos, 27.09.2026 (`buecher/messungen.md`, Schritt 1, Abweichung 1); „irgendein Gegner neu sichtbar“ traf in
+     dichten Phasen fast immer zu,
    - Kill oder Tod,
    - dein Leben fällt um > 15 %,
    - ein Objective ist gefallen.

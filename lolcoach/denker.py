@@ -68,6 +68,7 @@ class Urteil:
     art: str                  # "kill", "kill_schnell", "turm", "trade", "halten", "weg"
     wert: float
     faktoren: list[Faktor]
+    beleg: Faktor | None = None   # beim Kill: der eine tragende Beleg (Buch 0, 6.2) - gesagt wird nur er
 
     @property
     def arten(self) -> set[str]:
@@ -350,7 +351,34 @@ def urteil(b: Bewertung) -> Urteil | None:
         art = "trade"
         f.append(Faktor(-1.6, "kopfgeld", "auf dir", "liegen", f"{ev[2]} Gold Kopfgeld - ein Tod kostet mehr, "
                                                               f"als der Kill bringt"))
-    return Urteil(art, wert, f)
+    # Kill-Ruf nur mit Beleg (Buch 0, 6.2) - sonst heisst es Trade
+    beleg = kill_beleg(b, f) if art in ("kill", "kill_schnell") else None
+    if art in ("kill", "kill_schnell") and beleg is None:
+        art = "trade"
+    return Urteil(art, wert, f, beleg)
+
+
+def kill_beleg(b: Bewertung, f: list[Faktor]) -> Faktor | None:
+    """Buch 0, 6.2: ein Kill-Ruf braucht mindestens einen von drei Belegen - (1) die Combo-Rechnung reicht,
+    (2) sein Leben ist frisch gelesen (<= 1 s), (3) klare Ueberlegenheit (kraefte()[0] >= kill_ueberlegen).
+    Sagt die Rechnung "reicht knapp nicht", ist es kein Kill (102112, 11:33: "Das ist ein Kill: dein Combo macht
+    110, Sett hat noch 130"). Rueckgabe: der tragende Beleg als Faktor, sonst None."""
+    arten = {x.art for x in f}
+    if {"combo_knapp", "combo_zu_wenig"} & arten:
+        return None
+    if beleg := next((x for x in f if x.art in ("combo_kill", "zuenden_kill")), None):
+        return beleg
+    from .kern import konfig
+    cfg = konfig()["gefahr"]
+    g = b.lane
+    if (g is not None and g.leben is not None and g.leben_alter is not None
+            and g.leben_alter <= cfg["kill_leben_frisch_s"]):
+        return Faktor(2.0, "leben", g.champion, "hat", f"nur noch {int(g.leben * 100)} Prozent Leben")
+    wert, gruende = b.kraefte()
+    if wert >= cfg["kill_ueberlegen"]:
+        return Faktor(wert, "ueberlegen", "du", "bist", "klar überlegen: " + _liste(gruende[:2]) if gruende
+                      else "klar überlegen")
+    return None
 
 
 def erwartung(b: Bewertung, wert: float) -> tuple[float, int, int] | None:
@@ -454,6 +482,8 @@ def fenster_satz(b: Bewertung, u: Urteil, anlass: str = "", ohne: set[str] = fro
         # Naehe" (Probe 26.09. nachts)
         haupt = [x for x in haupt if x.art not in ("jungler_nah", "dritter")]
     gruende = haupt[:2]      # zwei, nicht drei: Nachlauf 21:21 - Fenster-Saetze im Schnitt 190 Zeichen, 19 % der Sprechzeit
+    if u.art in ("kill", "kill_schnell") and u.beleg is not None:
+        gruende = [u.beleg]  # beim Kill der tragende Beleg, keine Sammlung (Buch 0, 6.2)
     aber = []
     if fuer_dich and u.art != "kill_schnell":
         # was dagegen spricht - der Turm steckt schon in der Handlung

@@ -228,6 +228,27 @@ def eigene_inhibs_weg(p: Partie) -> list[tuple[str, float]]:
     return aus
 
 
+def verteidiger_ab(b: "Bewertung", ziel: tuple[float, float], weg: float) -> tuple[float | None, int, list]:
+    """Bis wann niemand vom Gegner an `ziel` sein kann (Buch 0, 4.2 `fenster_gegner`): (fruehester bekannter
+    Verteidiger in s, Zahl der Unbekannten, wer bis zu deiner Ankunft `weg` + 15 s dort sein kann). Tote: Respawn +
+    Weg aus ihrem Brunnen. Wer laenger als 15 s nicht gesehen wurde, zaehlt als unbekannt - nicht als "schon dort".
+    Genutzt von `ziele` und vom Kern (kern/merkmale.py)."""
+    feind = gegenteam(b.partie.mein_team) if b.partie is not None else ROT
+    zeiten, unbekannt, rechtzeitig = [], 0, []
+    for g in b.gegner:
+        if g.s.tot:
+            t = g.s.respawn + abstand(BRUNNEN[feind], ziel) * 1.15 / 380.0
+        elif g.pos is None or g.seit is None or g.seit > 15:
+            unbekannt += 1
+            continue
+        else:
+            t = max(0.0, abstand(g.pos, ziel) * 1.15 / (g.tempo or 350.0) - g.seit)
+        zeiten.append(t)
+        if t <= weg + 15:
+            rechtzeitig.append(g)
+    return (min(zeiten) if zeiten else None), unbekannt, rechtzeitig
+
+
 def ziele(b: "Bewertung") -> list[Ziel]:
     """Tuerme, die ihr jetzt angreifen koennt, und eure Lanes mit Supervasallen - jedes mit deiner Laufzeit, wann
     der erste Verteidiger da sein kann (Tote: Respawn + Weg aus dem Brunnen) und wer von euch schon dort steht.
@@ -240,21 +261,7 @@ def ziele(b: "Bewertung") -> list[Ziel]:
     aus: list[Ziel] = []
 
     def verteidiger(ziel: tuple[float, float], weg: float) -> tuple[float | None, int, list]:
-        """(fruehester bekannter Verteidiger in s, Zahl der Unbekannten, wer bis zu deiner Ankunft + 15 s dort
-        sein kann). Wer laenger als 15 s nicht gesehen wurde, zaehlt als unbekannt - nicht als "schon dort"."""
-        zeiten, unbekannt, rechtzeitig = [], 0, []
-        for g in b.gegner:
-            if g.s.tot:
-                t = g.s.respawn + abstand(BRUNNEN[feind], ziel) * 1.15 / 380.0
-            elif g.pos is None or g.seit is None or g.seit > 15:
-                unbekannt += 1
-                continue
-            else:
-                t = max(0.0, abstand(g.pos, ziel) * 1.15 / (g.tempo or 350.0) - g.seit)
-            zeiten.append(t)
-            if t <= weg + 15:
-                rechtzeitig.append(g)
-        return (min(zeiten) if zeiten else None), unbekannt, rechtzeitig
+        return verteidiger_ab(b, ziel, weg)
 
     def freunde(ziel: tuple[float, float]) -> int:
         return sum(1 for s, wo, *_ in b.mitspieler if wo is not None and abstand(wo, ziel) <= 4000)
@@ -300,6 +307,7 @@ class GegnerLage:
     shutdown: bool = False       # auf ihm liegt ein Shutdown (K/D)
     leben: float | None = None   # 0..1 aus seinem Lebensbalken im Spielbild (frisch), sonst unbekannt
     mana: float | None = None    # 0..1 aus dem Manabalken darunter (frisch), sonst unbekannt
+    leben_alter: float | None = None   # Sekunden seit dem Lesen seines Balkens (Kill-Beleg, Buch 0 6.2: <= 1 s)
 
     @property
     def champion(self) -> str:
@@ -379,6 +387,24 @@ class Bewertung:
     @property
     def in_basis(self) -> bool:
         return "eurer Basis" in (self.ort or "")
+
+    def sicherer_ort(self) -> tuple[str, float | None]:
+        """Buch 0, 7.5: der sichere Ort mit der kuerzesten Laufzeit - dein naechster stehender Turm oder die Basis
+        (`turm_name`/`zum_turm` kennen beide schon) oder deine Gruppe (>= 2 Mitspieler beieinander).
+        102112, 35:35: "zurueck zu deinem Top-Tier-3-Turm, 31 Sekunden", waehrend drei Mitspieler 8 s entfernt
+        standen. (Ziel im Dativ fuer "zu ...", Laufzeit)."""
+        beste: tuple[str, float | None] = (self.turm_name, self.zum_turm)
+        if self.pos is None:
+            return beste
+        freunde = [(s, wo) for s, wo, *_ in self.mitspieler if wo is not None]
+        for _, wo in freunde:
+            gruppe = [x.champion for x, w2 in freunde if abstand(w2, wo) <= 1500]
+            if len(gruppe) < 2:
+                continue
+            weg = abstand(self.pos, wo) * WEGFAKTOR / self.mein_tempo
+            if beste[1] is None or weg < beste[1]:
+                beste = (", ".join(gruppe[:-1]) + " und " + gruppe[-1], weg)
+        return beste
 
     @property
     def auf_lane(self) -> bool:
@@ -496,7 +522,9 @@ class Bewertung:
 
     # --- fuer Claude ------------------------------------------------------------
 
-    def text(self) -> str:
+    def text(self, modus: str | None = None) -> str:
+        """Die Bewertung fuer Claude. `modus` (Buch 0, Schritt 2): Lane-Gegner und Lane-Welle nur in LANE/SEITE
+        oder wenn er <= 3500 entfernt ist; ohne Modus wie bisher nach deiner Position."""
         z = []
         ich = []
         if self.leben is not None:
@@ -547,7 +575,7 @@ class Bewertung:
             z.append(f"- {g.champion} ({g.s.rolle or '?'}): {wo}{an}" + (f"; {', '.join(extra)}" if extra else ""))
         # Wo DU stehst - der Anker fuer alles (Live 27.09., Minute 25-38: "Sett, Sett, Top, Top, schieb die Welle",
         # waehrend er in der Basis oder auf Mid stand)
-        lane_bezug = self.auf_lane or self.lane_nah
+        lane_bezug = (modus in ("LANE", "SEITE") or self.lane_nah) if modus else (self.auf_lane or self.lane_nah)
         z.append(f"DEINE POSITION: {self.ort or '?'} - " + (
             "auf deiner Lane." if self.auf_lane else
             "in eurer Basis, NICHT auf deiner Lane: deine Welle und dein Lane-Gegner sind kein Thema, ausser er "
@@ -798,7 +826,9 @@ def _gegner_lage(s: Spieler, p: Partie, lb, ich_pos) -> GegnerLage:
                       leben=lb.gegner_leben_jetzt(s, p.zeit) if lb is not None and hasattr(lb, "gegner_leben_jetzt")
                       else None,
                       mana=lb.gegner_mana_jetzt(s, p.zeit) if lb is not None and hasattr(lb, "gegner_mana_jetzt")
-                      else None)
+                      else None,
+                      leben_alter=(p.zeit - lb.gegner_leben[s.name][0]) if lb is not None
+                      and s.name in getattr(lb, "gegner_leben", {}) else None)
 
 
 # --- Kampf um ein Objective --------------------------------------------------------

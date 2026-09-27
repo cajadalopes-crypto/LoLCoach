@@ -11,6 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from lolcoach import aufzeichnung, bewertung, lage, minimap, regeln, sprechplan, stimme, zustand  # noqa: E402
+from lolcoach.kern import Kern  # noqa: E402
 
 AUFNAHMEN = aufzeichnung.ORDNER
 LUECKE_AB = 5.0        # Sekunden ohne Schnappschuss (Wanduhr) = Datenluecke (Kapitel 12.3)
@@ -20,6 +21,10 @@ ZURUECK = (regeln.RUECKZUG, regeln.BACK)
 VOR = re.compile(r"Geh rein|nimm den Kampf an|Halte deine Stellung|Bleib an deiner Welle|Trade|Spiel auf|Geh auf|"
                  r"Drück|Nehmt", re.I)
 OBJ_EVENTS = ("DragonKill", "BaronKill", "HeraldKill", "HordeKill", "TurretKilled", "InhibKilled")
+# Neues Ereignis fuer Kehrtwenden (Kapitel 9.4 Punkt 5, Entscheidung Carlos 27.09.): ein Gegner, der in <= 3000 um
+# dich neu sichtbar wird - in den 5 s davor nirgends sichtbar
+NEU_SICHTBAR_RADIUS = 3000.0
+NEU_SICHTBAR_VORHER_S = 5.0
 
 
 def uhr(t: float) -> str:
@@ -45,6 +50,8 @@ class Takt:
     sichtbar: frozenset          # sichtbare Gegner (Champion)
     kills: int                   # ChampionKill bis hier
     objectives: int              # gefallene Objectives/Strukturen bis hier
+    nah_sichtbar: frozenset = frozenset()   # sichtbare Gegner in NEU_SICHTBAR_RADIUS um dich
+    modus: str | None = None                # Modus des Kerns in diesem Takt (Schritt 2)
 
 
 @dataclass
@@ -66,6 +73,8 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None) 
     lauf = Lauf(pfad)
     sicht = lage.sicht_fuer(pfad)
     werk, plan = regeln.Regelwerk(), sprechplan.Sprechplan(stimme.Stumm())
+    kern = Kern()                  # wie live (__main__._verfolge): Modus, Sperre - ohne Protokolldatei
+    werk.kern = plan.kern = kern
     lb = lage.Lagebild() if sicht else None
     offen = sorted(halte_bei)
     vorher = None
@@ -77,6 +86,7 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None) 
                 lb.neu(p.zeit - (w - wb), s, p)
             lb.ereignisse(lambda wb: p.zeit - (w - wb), sicht.ereignisse(), p)
         neu = werk.pruefe(p, lb)
+        neu += kern.takt(p, lb)
         for a in neu:
             a._b = werk.b
         plan.neu(neu)
@@ -93,7 +103,10 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None) 
         lauf.takte.append(Takt(p.zeit, w, b.leben if b else None,
                                frozenset(g.champion for g in b.gegner if g.sichtbar) if b else frozenset(),
                                len(p.kills_von("ChampionKill")),
-                               sum(len(p.kills_von(e)) for e in OBJ_EVENTS)))
+                               sum(len(p.kills_von(e)) for e in OBJ_EVENTS),
+                               frozenset(g.champion for g in b.gegner if g.sichtbar and g.abstand is not None
+                                         and g.abstand <= NEU_SICHTBAR_RADIUS) if b else frozenset(),
+                               werk.modus))
         while offen and p.zeit >= offen[0]:
             soll = offen.pop(0)
             lauf.halte[soll] = (p, b, lage_kurz(p, b, lb))
@@ -120,15 +133,17 @@ def richtung(text: str) -> str | None:
 
 
 def neues_ereignis(lauf: Lauf, t1: float, t2: float) -> bool:
-    """Kapitel 9.4 Punkt 5: neuer Gegner sichtbar, Kill oder Tod, dein Leben faellt um > 15 %, Objective gefallen."""
+    """Kapitel 9.4 Punkt 5: ein Gegner wird in <= 3000 um dich neu sichtbar (in den 5 s davor nirgends sichtbar),
+    Kill oder Tod, dein Leben faellt um > 15 %, ein Objective ist gefallen."""
     im = [t for t in lauf.takte if t1 <= t.zeit <= t2]
     if len(im) < 2:
         return False
     a = im[0]
-    gesehen = set(a.sichtbar)
     for t in im[1:]:
-        if t.sichtbar - gesehen:
-            return True
+        for g in t.nah_sichtbar:
+            vorher = [x for x in lauf.takte if t.zeit - NEU_SICHTBAR_VORHER_S <= x.zeit < t.zeit]
+            if vorher and not any(g in x.sichtbar for x in vorher):
+                return True
         if t.kills > a.kills or t.objectives > a.objectives:
             return True
         if a.leben is not None and t.leben is not None and a.leben - t.leben > 0.15:

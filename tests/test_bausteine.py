@@ -281,13 +281,25 @@ def denkkette():
     b.jungler = gl(j, sichtbar=False, seit=5.0, ort="in seinem unteren Jungle", abstand=9000.0, ankunft=25.0)
     b.gegner = [b.lane, b.jungler]
     u = denker.urteil(b)
-    assert u.art == "kill", (u.art, u.wert, [(x.art, x.wert) for x in u.faktoren])
-    satz = denker.fenster_satz(b, u, anlass=f"Du bist jetzt Level 6, {g.champion} erst 5", ohne={"ult"})
+    # Buch 0, 6.2: ohne Beleg kein Kill-Ruf - kein Leben im Bild, keine Combo-Rechnung, Ueberlegenheit 2,5 < 3,0
+    assert u.art == "trade" and u.beleg is None, (u.art, u.wert, [(x.art, x.wert) for x in u.faktoren])
+    # sein Leben eben (0,4 s) gelesen, aber die Combo-Rechnung sagt "reicht nicht": kein Kill (6.2, 11:33)
+    b.lane = gl(g, flash=200.0, leben=0.45, leben_alter=0.4)
+    b.gegner = [b.lane, b.jungler]
+    assert denker.urteil(b).art == "trade", denker.urteil(b).art
+    # klare Ueberlegenheit (3 Level vorn + der Level-6-Sprung): Kill - gesagt wird der tragende Beleg, keine Sammlung
+    b.ich = replace(ich, level=8)
+    b.lane = gl(g, flash=200.0, level_vorsprung=g.level - 8)
+    b.gegner = [b.lane, b.jungler]
+    u = denker.urteil(b)
+    assert u.art == "kill" and u.beleg is not None and u.beleg.art == "ueberlegen", \
+        (u.art, u.wert, [(x.art, x.wert) for x in u.faktoren])
+    satz = denker.fenster_satz(b, u, anlass=f"Du bist jetzt Level 8, {g.champion} erst 5", ohne={"ult"})
     # Handlung zuerst, Gruende in einem Satz (Live 21:21: ~300 Zeichen je Ansage, der Coach redete 74 % der Zeit)
     # ... und der Anlass ist der erste Grund, nicht der Satzanfang (Nachlauf 194524: 3,5 s bis zum "geh rein")
-    assert satz.startswith(f"Geh rein, das ist ein Kill: du bist jetzt Level 6, {g.champion} erst 5"), satz
-    assert "kein Flash" in satz and len(satz) <= 190, (len(satz), satz)
-    assert satz.count("Level 6") == 1, satz                      # der Anlass sagt das Level, nicht zweimal
+    assert satz.startswith(f"Geh rein, das ist ein Kill: du bist jetzt Level 8, {g.champion} erst 5"), satz
+    assert "klar überlegen" in satz and "kein Flash" not in satz and len(satz) <= 190, (len(satz), satz)
+    assert satz.count("Level 8") == 1, satz                      # der Anlass sagt das Level, nicht zweimal
     # dieselbe Lage als Frage per Sprechtaste: sofort aus dem Urteil, nicht ~3 s ueber Claude
     from types import SimpleNamespace
     from lolcoach import antworten
@@ -302,6 +314,7 @@ def denkkette():
         assert antworten.sofort(f"Kann ich {andere.champion} killen?", p, lb) is None   # nicht der Lane-Gegner
     finally:
         bewertung.bewerte = alt
+    b.ich = ich                 # zurueck auf Level 6 gegen 5 fuer die folgenden Faelle
     # am Turm: warten (kein Dive - Live 11:00/11:08), mit dem Jungler nah: kein All-in
     b.lane = gl(g, flash=200.0, pos=bewertung.TUERME[(zustand.gegenteam(p.mein_team), "Top", "aussen")])
     assert denker.urteil(b).art == "turm", denker.urteil(b).art
@@ -1043,6 +1056,60 @@ def verzoegerung_bis_zum_ohr():
     assert eilig.ton is not None and 0.05 <= eilig.ton - 101.0 <= 0.5 and eilig.ganz is True, (eilig.ton, eilig.ganz)
 
 
+def modus_sperre_budget():
+    """Buch 0, Schritt 2: ein Modus je Takt (Prioritaet, Hysterese 1,5 s, KAMPF sofort - und vorbei, sobald kein
+    Gegner mehr in Reichweite ist), die alten Regeln sprechen nur in ihren Modi (Kapitel 14), Flash/Items/Level/CS
+    gehen aufs Dashboard, zwischen zwei Ansagen ausser SOFORT liegen 12 s, und Claude bekommt die letzte Ansage nur,
+    wenn die Frage darauf zeigt."""
+    from types import SimpleNamespace as N
+    from lolcoach import antworten, regeln, sprechplan, stimme
+    from lolcoach.kern import konfig, sperre
+    from lolcoach.kern.merkmale import Merkmale
+    from lolcoach.kern.modus import Modus
+    mo = Modus(konfig())
+
+    def m(zeit, **kw):
+        a = dict(zeit=zeit, tot=False, pos=(1000.0, 12000.0), bereich="lane_eigen", meine_lane="Top", lane_phase=True,
+                 leben=0.9, leben_trend=0.0, im_kampf=False)
+        a.update(kw)
+        return Merkmale(**a)
+    assert mo.neu(m(100)) == "LANE"
+    assert mo.neu(m(101, bereich="basis_eigen")) == "LANE"          # Hysterese: erst nach 1,5 s
+    assert mo.neu(m(102.6, bereich="basis_eigen")) == "BASIS"
+    assert mo.neu(m(103, bereich="lane_eigen", im_kampf=True, gegner_im_radius=True)) == "KAMPF"   # sofort
+    assert mo.neu(m(104, gegner_im_radius=True)) == "KAMPF"         # 3 s Nachlauf, solange er da ist
+    assert mo.neu(m(104.5, gegner_im_radius=False)) == "KAMPF"      # Gegner weg: Kandidat LANE ...
+    assert mo.neu(m(106.1, gegner_im_radius=False)) == "LANE"       # ... nach der Hysterese, nicht erst nach 3 s
+    assert mo.neu(m(107, tot=True)) == "TOT"
+    assert Modus(konfig()).neu(m(108, bereich=None)) is None         # Ort unbekannt: kein Modus, keine Sperre (4.3)
+    # Sperre: Lane-Regel in der Basis stumm, Flash des Lane-Gegners in LANE gesprochen, sonst Dashboard
+    b = N(lane=N(s=N(name="Sett")), jungler=N(s=N(name="Fiddle")), lane_nah=True)
+    a = regeln.Ansage("Sett ist tot", regeln.WICHTIG, "lane_tot")
+    assert sperre.entscheide("_lane_tot", a, "BASIS", b) == "stumm" and sperre.entscheide("_lane_tot", a, "LANE", b) == "sprechen"
+    f = regeln.Ansage("Sett hat Flash benutzt", regeln.WICHTIG, "zauber:Sett:SummonerFlash")
+    assert sperre.entscheide("_zauber", f, "LANE", b) == "sprechen"
+    assert sperre.entscheide("_zauber", f, "UNTERWEGS", b) == "info"
+    g = regeln.Ansage("Galio hat Flash benutzt", regeln.WICHTIG, "zauber:Galio:SummonerFlash")
+    assert sperre.entscheide("_zauber", g, "LANE", b) == "info"      # nicht Lane-Gegner, nicht Jungler
+    assert sperre.entscheide("_cs", regeln.Ansage("Minute 10", regeln.HINWEIS, "cs10"), "LANE", b) == "info"
+    w = regeln.Ansage("Geh auf den Mid-Turm", regeln.WICHTIG, "plan:wohin")
+    assert sperre.entscheide("_plan", w, "LANE", b) == "stumm" and sperre.entscheide("_plan", w, "BASIS", b) == "sprechen"
+    assert sperre.entscheide("_lane_tot", a, None, b) == "sprechen"   # ohne Modus (keine Minimap): wie bisher
+    # Budget: 12 s zwischen zwei Ansagen ausser SOFORT; wer nur daran wartet, kommt danach noch, wenn er gilt
+    plan = sprechplan.Sprechplan(stimme.Stumm())
+    plan.neu([regeln.Ansage("Erste", regeln.WICHTIG, "a", zeit=100)])
+    assert plan.takt(100) is not None
+    plan.neu([regeln.Ansage("Zweite", regeln.WICHTIG, "b", zeit=103)])
+    assert plan.takt(104) is None and plan.takt(111) is None      # Budget
+    assert plan.takt(112.5).text == "Zweite"                         # sobald Platz ist - obwohl 9,5 s alt
+    plan.neu([regeln.Ansage("Gefahr", regeln.SOFORT, "c", zeit=113)])
+    assert plan.takt(113).text == "Gefahr"                           # SOFORT: kein Abstand
+    # Claude: die letzte Ansage nur, wenn die Frage auf sie zeigt
+    assert antworten.bezieht_sich_auf_ansage("Was meinst du damit?")
+    assert antworten.bezieht_sich_auf_ansage("Warum hast du gesagt, dass ich back soll?")
+    assert not antworten.bezieht_sich_auf_ansage("Was ist mein nächstes To-Do?")
+
+
 def wachhund_meldet_datenluecke():
     """Buch 0, Kapitel 4.3: kommen keine Schnappschuesse, laeuft der Takt nicht - der Coach schwieg (Partie 102112,
     15:55-24:24). Der Wachhund nach Wanduhr sagt es einmal, meldet die Rueckkehr und traegt die Luecke ein; ist
@@ -1098,8 +1165,12 @@ def von_deiner_position_aus():
     assert not any(o.name.startswith("back") for o in entscheider.Entscheider().optionen(basis, False))
     wohin = [s for s in saetze if s.startswith("Geh auf den ") or s.startswith("Geh ") and "Supervasallen" in s]
     assert wohin and "Sekunden von dir" in wohin[0], saetze
-    zahl = komponist.zahlen(basis, ["Sett", "Galio"], 30, None, 5, 3)
+    zahl = komponist.zahlen(basis, ["Sett", "Galio"], 45, None, 5, 3)
     assert zahl.startswith("Drückt jetzt den ") and "Sekunden entfernt" in zahl, zahl
+    # Team-Befehl nur, wenn du rechtzeitig dort bist (Buch 0, Schritt 2): 30 s Fenster, der Turm 37 s weg ->
+    # kein "Drueckt jetzt", sondern dein eigenes Ziel
+    zahl = komponist.zahlen(basis, ["Sett", "Galio"], 30, None, 5, 3)
+    assert not zahl.startswith("Drückt") and "Geh auf den " in zahl and "Sekunden von dir" in zahl, zahl
     assert "DEINE POSITION: in eurer Basis" in basis.text() and "Deine Welle:" not in basis.text()
     # Team-Ruf: zweimal, dann nur noch, wenn einer von euch an der Grube steht
     rw = regeln.Regelwerk()
@@ -1238,7 +1309,7 @@ if __name__ == "__main__":
                  konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler, eigene_position_aus_dem_kamerarahmen,
                  satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah, baron_aeltester_inhibitor,
                  minimap_blind_wird_gesagt, kamera_gibt_nur_einmal_frei, antwort_ab_dem_ersten_teilsatz, afk_erkannt,
-                 von_deiner_position_aus, wachhund_meldet_datenluecke,
+                 von_deiner_position_aus, wachhund_meldet_datenluecke, modus_sperre_budget,
                  sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")

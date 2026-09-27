@@ -135,10 +135,11 @@ class Entscheider:
         # 1) Gefahr: jemand, den du nicht siehst, ist vor dir am Turm - und du kannst es dir nicht leisten.
         #    Der Lane-Gegner kurz im Busch ist kein Gank (Test 26.09.: "Shen kann schon da sein" alle 2 min);
         #    er zaehlt allein nur, wenn du wenig Leben hast und er staerker ist.
-        if b.zum_turm is not None and b.zum_turm >= 5 and not b.unter_eigenem_turm:
+        sicher, zum_sicheren = b.sicherer_ort()      # Turm, Basis oder deine Gruppe (Buch 0, 7.5)
+        if zum_sicheren is not None and zum_sicheren >= 5 and not b.unter_eigenem_turm:
             fremde = [x for x in gefahr if not (g and x.s.name == g.s.name)]
             # nur wer eben (<= 15 s) nah gesehen wurde: lange Fehlende sind Sache der Tief-Regel (regeln._tief_ohne_sicht)
-            knapp = [x for x in fremde if x.ankunft is not None and x.ankunft < b.zum_turm - 1
+            knapp = [x for x in fremde if x.ankunft is not None and x.ankunft < zum_sicheren - 1
                      and x.seit is not None and x.seit <= 15]
             lane_allein = (not fremde and g is not None and any(x.s.name == g.s.name for x in gefahr)
                            and b.leben is not None and b.leben < 0.45 and wert_kraefte <= -0.5)
@@ -154,7 +155,7 @@ class Entscheider:
                     wann = "können schon da sein" if (x.ankunft or 0) < 2 else f"können in {sek(x.ankunft)} da sein"
                 grund = verwundbar[0] if verwundbar else komponist.todespreis(b)
                 # die Handlung zuerst (Nachlauf 194524, 6:23: "Geh jetzt zurueck" kam erst nach 5 s)
-                aus.append(Option("zurueck", f"Geh jetzt zurück zu {b.turm_name}, das sind {sek(b.zum_turm)}: "
+                aus.append(Option("zurueck", f"Geh jetzt zurück zu {sicher}, das sind {sek(zum_sicheren)}: "
                                              f"{wer} {wann}" + (f" - {grund}." if grund else "."),
                                   200, 2 + bool(verwundbar), dringend=True))
 

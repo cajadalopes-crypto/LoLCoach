@@ -338,9 +338,10 @@ def _rueckzug(b: Bewertung) -> str:
         return f"Geh hinter {turm} und dann back"   # mit 5 Prozent "bleib am Turm" hilft nichts (13:21)
     if b.unter_eigenem_turm:
         return f"Bleib an {turm}"
-    if b.zum_turm is not None and b.zum_turm >= 6:
-        return f"Geh zurück zu {turm}, das sind {sek(b.zum_turm)}"
-    return f"Geh zurück zu {turm}"
+    ziel, weg = b.sicherer_ort()          # Turm, Basis oder deine Gruppe - das naechste (Buch 0, 7.5)
+    if weg is not None and weg >= 6:
+        return f"Geh zurück zu {ziel}, das sind {sek(weg)}"
+    return f"Geh zurück zu {ziel}"
 
 
 def _grund_und_rueckzug(b: Bewertung, gruende: list[str]) -> str:
@@ -718,8 +719,9 @@ def tief(b: Bewertung, namen: str, sind: str, sekunden: int, sie: str, fehlende:
     preis = todespreis(b, mit_objective=False)
     if preis:
         return satz + f" Geh zurück - {preis}."
-    if b.zum_turm and b.zum_turm >= 6:
-        ziel = f" Geh zurück, bis zu {b.turm_name} sind es {sek(b.zum_turm)}"
+    sicher, weg = b.sicherer_ort()
+    if weg and weg >= 6:
+        ziel = f" Geh zurück, bis zu {sicher} sind es {sek(weg)}"
     else:
         ziel = f" Geh zurück, bis du {sie} siehst"
     return satz + ziel + (f" - {gruende[0]}." if gruende else ".")
@@ -770,17 +772,30 @@ def vorwarnung(b: Bewertung, schl: str, rolle: str, seele: bool, meine_seite: bo
     return f"{satz}. {tun}"
 
 
-def jungler_tot(b: Bewertung, sekunden: int, objective: str | None, nah: bool, platten: bool) -> str:
+def _team_info(b: Bewertung, objective: str, weg: float | None) -> str:
+    """Team-Befehl, an dem du nicht teilnehmen kannst (Buch 0, 6.2): als Information, mit deiner Alternative."""
+    z = bestes_ziel(b)
+    return (f"Dein Team kann {OBJ_AKK[objective]} nehmen - du bist {sek(weg)} weg" if weg is not None else
+            f"Dein Team kann {OBJ_AKK[objective]} nehmen") + (f". {ziel_satz(b, z)}" if z is not None else
+                                                                ": drück solange deine Seite.")
+
+
+def jungler_tot(b: Bewertung, sekunden: int, objective: str | None, nah: bool, platten: bool,
+                weg: float | None = None) -> str:
     """Der gegnerische Jungler ist tot. `objective`: Schluessel eines machbaren Objectives (oder None),
-    `nah`: es liegt auf deiner Seite."""
+    `nah`: es liegt auf deiner Seite, `weg`: deine Laufzeit zu GENAU diesem Objective (Buch 0, 1.3 Punkt 5 -
+    vorher stand hier die Laufzeit zum naechsten Objective, auch wenn ein anderes genannt wurde)."""
     # die Handlung zuerst - und ein Anfang, der sich wiederholt ("Nehmt jetzt den Drachen,"): er liegt vorgewaermt
     # bereit und klingt sofort (stimme.teilsaetze, anfaenge)
     j = b.jungler.champion if b.jungler else "Der Jungler"
     satz = f"{j} ist für {sekunden} Sekunden tot"
+    weg = weg if weg is not None else b.zum_objective
     if objective:
+        if nah and weg is not None and weg > sekunden:     # du kommst nicht rechtzeitig: Info statt Befehl
+            return f"{satz}. {_team_info(b, objective, weg)}"
         if nah:
-            weg = f" - du bist {sek(b.zum_objective)} entfernt" if b.zum_objective and b.zum_objective >= 8 else ""
-            return f"Nehmt jetzt {OBJ_AKK[objective]}, niemand kann kontern: {satz}{weg}."
+            dauer = f" - du bist {sek(weg)} entfernt" if weg and weg >= 8 else ""
+            return f"Nehmt jetzt {OBJ_AKK[objective]}, niemand kann kontern: {satz}{dauer}."
         tun = chance(b, platten)
         return f"Ping {OBJ_AKK[objective]} für dein Team, {satz}." + (f" {tun}." if tun else "")
     tun = chance(b, platten)
@@ -812,12 +827,15 @@ def ziel_satz(b: Bewertung, z) -> str:
     return f"Geh auf {z.name}, {z.satz_weg()}: {grund}{mit}."
 
 
-def zahlen(b: Bewertung, tote: list[str], sekunden: int, objective: str | None, wir: int, die: int) -> str:
+def zahlen(b: Bewertung, tote: list[str], sekunden: int, objective: str | None, wir: int, die: int,
+           weg: float | None = None) -> str:
     """Zwei oder mehr Gegner tot: was jetzt - mit Namen, Zahl und ob DU es rechtzeitig schaffst. Ohne Objective:
-    WELCHER Turm (Live 27.09.: "Drueckt jetzt die Tuerme" viermal - "welche Tuerme, du Bastard?")."""
+    WELCHER Turm (Live 27.09.: "Drueckt jetzt die Tuerme" viermal - "welche Tuerme, du Bastard?"). `weg`: deine
+    Laufzeit zu GENAU diesem Objective (Buch 0, 1.3 Punkt 5)."""
     tot = f"{_namen(tote)} {'ist' if len(tote) == 1 else 'sind'} für {sekunden} Sekunden tot"
+    weg = weg if weg is not None else b.zum_objective
     if objective:
-        if b.zum_objective is not None and b.zum_objective > sekunden:
+        if weg is not None and weg > sekunden:
             satz = (f"Dein Team nimmt {OBJ_AKK[objective]}: {tot}, ihr seid {wir} gegen {die}, und du schaffst es "
                     f"nicht rechtzeitig hin")
             if b.auf_lane:
@@ -826,7 +844,7 @@ def zahlen(b: Bewertung, tote: list[str], sekunden: int, objective: str | None, 
             return f"{satz}. {ziel_satz(b, z)}" if z is not None else f"{satz}."
         return f"Nehmt jetzt {OBJ_AKK[objective]}, ihr seid {wir} gegen {die}: {tot}."
     z = bestes_ziel(b)
-    if z is not None and z.art == "turm":
+    if z is not None and z.art == "turm" and z.weg <= sekunden:     # Team-Befehl nur, wenn du rechtzeitig dort bist
         return (f"Drückt jetzt {z.name}, ihr seid {wir} gegen {die}: {tot} - du bist "
                 f"{int(round(z.weg))} Sekunden entfernt.")
     if z is not None:
