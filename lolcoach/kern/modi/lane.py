@@ -115,7 +115,8 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None, plan=None) -> 
         timing = z in ("GECRASHT_BEI_IHM", "LEER") or (z == "UNBEKANNT" and leben) or kritisch
         h = Handlung("BACK_JETZT", Ziel("basis", "Basis"), modus, kanal + einkauf, gewinn=back_g,
                      kosten=abwesenheit(m, cfg, z), gefahr_t=kanal, grund=grund_text,
-                     satz=f"Back jetzt: {grund_text}.", schritte=["back", "kaufen", "zurück"])
+                     satz=f"Back jetzt: {back_grund_text(gruende, vorn='Back jetzt:', woerter=cfg['sprechen']['max_woerter_gefahr'])}.",
+                     schritte=["back", "kaufen", "zurück"])
         h.daten["nur_bei_gefahr"] = not timing
         aus.append(h)
 
@@ -133,7 +134,8 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None, plan=None) -> 
                 if p < cg["p_min"]:        # die Kanone lebt am Turm lange - sie verlaengert dein Fenster
                     warten = m.kanone_in
                     extra = wert.wellenwert(m.zeit, cfg, kanone=True) - ww
-                    satz = f"Kanone kommt {uhr(m.zeit + m.kanone_in)}: die noch rein, dann back. {grund_text}."
+                    vorn = f"Kanone kommt {uhr(m.zeit + m.kanone_in)}: die noch rein, dann back."
+                    satz = f"{vorn} {back_grund_text(gruende, vorn=vorn, woerter=cfg['sprechen']['max_woerter'])}."
             h = Handlung("WELLE_REIN_UND_BACK", Ziel("lane", welle), modus, warten + crash + kanal + einkauf,
                          gewinn=back_g + (w.ihre or 0) * vw + extra, kosten=abwesenheit(m, cfg, "GECRASHT_BEI_IHM"),
                          gefahr_t=warten + crash + kanal, grund=grund_text, satz=satz,
@@ -204,7 +206,8 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None, plan=None) -> 
         teil = schutz["teil"] if schutz else _bauteil(m)
         grund = f"{g.champion} ist vorn"
         # <= 18 Woerter (G1); die kurze Fassung nach Tod oder Basis steht in daten["kurz_satz"]
-        satz = (f"{g.champion} ist vorn: Welle zu deinem Turm ziehen, dort farmen, "
+        # Auftrag 002, S2.3: hoechstens 14 Woerter ("Welle zu deinem Turm ziehen, dort farmen" waren 15)
+        satz = (f"{g.champion} ist vorn: Welle zum Turm ziehen, farmen, "
                 + (f"kein Trade bis {_dat(teil)}." if teil else "kein Trade."))
         h = Handlung("WELLE_HALTEN", Ziel("lane", welle), modus, 10.0, gewinn=fr * 10.0 + 0.5 * ww, gefahr_t=10.0,
                      grund=grund, satz=satz)

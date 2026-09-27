@@ -133,6 +133,12 @@ class Kern:
         self._fokus_bestaetigt = False
         self._mitte_wache: dict = {}        # Buch 5, 9: Art -> (zuletzt, ...) - Plaene, deren Ausgang bestaetigt wird
         self._basis = {"seit": None, "kauf": None, "n": 0, "zuletzt": None, "gold": None}
+        # Auftrag 002, S3: INFO_FLASH - offene und gemeldete Flash-Timer der Gegner ((Name, Zeit) -> Timer)
+        self._lagebild = None
+        self._flash_offen: dict = {}
+        self._flash_gemeldet: set = set()
+        self._flash_zuletzt = -1e9
+        self._kampf_zuletzt = -1e9
         self._angesagt: dict[tuple[str, str], float] = {}   # (Art, Ziel) -> zuletzt angesagt
         self._gefahr_gesagt: tuple[float, set] | None = None   # letzte GEFAHR: (Zeit, vor wem)
         self._rueckzug_ep: dict | None = None   # Pruefung D: ein Rueckzug, ein Satz (+ einmal bei neuem Gegner)
@@ -171,6 +177,7 @@ class Kern:
     def takt(self, p, lagebild=None) -> list:
         """Rueckgabe: Ansagen des Kerns (nur in Stellung `neu`)."""
         m = self.m
+        self._lagebild = lagebild
         ansagen = []
         self._letzte = None
         self._stumm_takt = None
@@ -208,6 +215,8 @@ class Kern:
         self._schutz_episode(m)
         if m.b is not None and not m.tot:
             self.proben.takt(m, self.cfg)
+        if modus == "KAMPF":
+            self._kampf_zuletzt = m.zeit          # Auftrag 002, S3: INFO_FLASH erst 3 s nach dem Kampf
         if modus == "KAMPF" and "KAMPF" in self.modi:
             self._modus_vorher = modus
             return self._kampf_schritt(m)
@@ -262,8 +271,42 @@ class Kern:
             if (a := self.sprecher.nachholen(m.zeit, gesagt)) is not None:
                 self._gesprochen(a, "PLAN", m)
                 aus.append(a)
+        if not aus:
+            if (a := self._flash_info(m, modus, gesagt)) is not None:
+                aus.append(a)
         self._modus_vorher = modus
         return aus
+
+    def _flash_info(self, m: Merkmale, modus: str | None, gesagt: list):
+        """Auftrag 002, S3: ein bestaetigter Flash eines Gegners, kurz - "Ziggs ohne Flash." (213624 19:41: "du sagst
+        nicht, wenn jemand geflasht hat ... dann kann ich als Riven besser entscheiden, auf wen ich draufflashe").
+        Bestaetigt ist jeder Flash-Timer des Lagebilds: Chat-Ping, oder ein Sprung auf Minimap bzw. Bildschirm bei einem
+        Champion ohne eigenen Dash (Entscheidung 3 der Pruefung b, `lage.ereignisse`). Nicht in KAMPF - dann 3 s nach
+        dem Kampf, wenn der Flash noch weg ist; hoechstens einer je abstand_s, mehrere in einem Satz."""
+        z = getattr(self._lagebild, "zauber", None)
+        if z is None or m.p is None or modus == "KAMPF":
+            return None
+        c = self.cfg["info_flash"]
+        feinde = {s.name for s in m.p.gegner()}
+        for t in list(z.timer.values()):
+            schl = (t.name, round(t.seit))
+            if t.zauber == "SummonerFlash" and t.name in feinde and t.zurueck > m.zeit \
+                    and schl not in self._flash_gemeldet:
+                self._flash_offen[schl] = t
+        self._flash_offen = {k: t for k, t in self._flash_offen.items() if t.zurueck > m.zeit + c["rest_min_s"]}
+        if not self._flash_offen or m.zeit - self._kampf_zuletzt < c["nach_kampf_s"] \
+                or m.zeit - self._flash_zuletzt < c["abstand_s"]:
+            return None
+        from .modi import liste
+        namen = list(dict.fromkeys(t.champion for t in sorted(self._flash_offen.values(), key=lambda t: t.seit)))
+        text = f"{liste(namen)} ohne Flash."
+        a = self.sprecher.ansage("INFO_FLASH", "INFO_FLASH", text, m.zeit, None, gesagt)
+        if a is not None:
+            self._flash_gemeldet |= set(self._flash_offen)
+            self._flash_offen = {}
+            self._flash_zuletzt = m.zeit
+            self._gesprochen(a, "INFO_FLASH", m)
+        return a
 
     # --- Kandidaten --------------------------------------------------------------------
 
@@ -351,6 +394,10 @@ class Kern:
                 # Pruefung c, R5: der Lane-Gegner allein ist keine Gefahr, solange du genug Leben hast und nicht
                 # schwaecher bist (173159 7:45: "Raus ...: Cho'Gath kommt" bei 100 %) - bis Buch 2 die Matchups bringt
                 gefahr, self.gate_grund = False, f"nur {m.b.lane.champion}, Leben und Kraft reichen"
+            elif (einer := self._klar_unterlegen(m, wer)) is not None:
+                # Auftrag 002, S5.2: genau ein Gegner, den du klar ueberragst, ist keine Gefahr (213624 15:15, 17:32,
+                # 21:37 "Ziggs kommt" - Riven mit 20+ Kills); verallgemeinert R5 ueber den Lane-Gegner hinaus
+                gefahr, self.gate_grund = False, f"nur {einer}, du liegst klar vorn"
         # der Plan fuer die verlorene Lane gilt gegen den Lane-Gegner allein - kommt noch wer, ist er keine Wahl
         # (140253 8:15: "Yasuo ist vorn: ... farm dort", waehrend Brand und Yasuo kamen)
         if farmen is not None and farmen.daten.get("verloren"):
@@ -512,6 +559,9 @@ class Kern:
             self.gate_grund = grund
             return None
         text = self._kurzform(p, h, text)        # Pruefung c, R6
+        if kategorie != "GEFAHR":
+            from .modi import kuerze
+            text = kuerze(text, self.cfg["sprechen"]["max_woerter"])      # Auftrag 002, S2.3
         if modus == "BASIS" and self._praefix is not None and m.zeit - self._praefix[0] <= 15:
             text = f"{self._praefix[1]} {text}"
             self._praefix = None
@@ -626,6 +676,13 @@ class Kern:
         if art in ("REIN", "DREHEN") and not self.cfg["kampf"].get("geeicht", False):
             self._stumm(m, art, satz, "KAMPF")        # Entscheidung 2: Modell nicht geeicht
             return []
+        if art == "RAUS" and not self.cfg["kampf"].get("geeicht", False):
+            from .modi.kampf import raus_beleg
+            if not raus_beleg(m, self.cfg):
+                # Auftrag 002, S5.3: RAUS nur mit robustem Beleg, bis die Kampf-Eichung besteht (213624 1:11/1:17:
+                # zweimal "Raus, zum Turm!" in einem Level-1/2-Kampf, den Riven gewann)
+                self._stumm(m, art, satz, "KAMPF")
+                return []
         a = self.sprecher.ansage("GEFAHR", art, satz, m.zeit, None, [])
         if a is None:
             return []
@@ -634,6 +691,24 @@ class Kern:
         self.proben.ansage(m.zeit, "raus" if art == "RAUS" else "rein")
         self._gesprochen(a, "GEFAHR", m)
         return [a]
+
+    def _klar_unterlegen(self, m: Merkmale, wer: set) -> str | None:
+        """Auftrag 002, S5.2: kommt genau ein Gegner, dein Leben ist >= gefahr_einzel_leben_min und du liegst >=
+        gefahr_einzel_level Level UND >= gefahr_einzel_gold Item-Gold vor ihm, ist er keine Gefahr. Seine Werte nach
+        Buch 7, 3.2 geschaetzt, wenn sie veraltet sind (kampf.gegner_werte). Rueckgabe: sein Name."""
+        from .kampf import gegner_werte
+        cs = self.cfg["schranken"]
+        if len(wer) != 1 or m.b is None or m.p is None or m.p.ich is None or m.leben is None \
+                or m.leben < cs["gefahr_einzel_leben_min"]:
+            return None
+        g = next((g for g in m.b.gegner if g.champion in wer), None)
+        if g is None:
+            return None
+        level, gold, _ = gegner_werte(g, m, self.cfg["kampf"])
+        ich = m.p.ich
+        if ich.level - level >= cs["gefahr_einzel_level"] and ich.item_gold - gold >= cs["gefahr_einzel_gold"]:
+            return g.champion
+        return None
 
     def _back_sperre(self, m: Merkmale, text: str) -> str | None:
         """Pruefung c, R4: ein Back-Ruf nicht unter back_leben_min und nicht in KAMPF (dort gilt RAUS); hoechstens
@@ -838,6 +913,9 @@ class Kern:
             return None      # G1: der Schutzplan erinnert sich selbst (kurze Fassung nach Tod oder Basis)
         else:
             text = f"Denk dran: {h.satz}" if h.satz else None
+            if text:
+                from .modi import kuerze
+                text = kuerze(text, self.cfg["sprechen"]["max_woerter"])      # Auftrag 002, S2.3
         if not text:
             return None
         if self._back_sperre(m, text) is not None:
@@ -894,6 +972,8 @@ class Kern:
         text = z.satz if z.satz.startswith(("Geh", "TP", "Lauf", "Zurück")) else \
             "Geh jetzt: " + z.satz[0].lower() + z.satz[1:]
         text = self._kurzform(None, z, text)       # Pruefung c, R6: "Dann Top-Welle."
+        from .modi import kuerze
+        text = kuerze(text, self.cfg["sprechen"]["max_woerter"])        # Auftrag 002, S2.3
         a = self.sprecher.ansage("PLAN", z.art, text, m.zeit, None, gesagt)
         if a is not None:
             s["n"] += 1

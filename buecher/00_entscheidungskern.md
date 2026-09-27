@@ -795,10 +795,13 @@ den Kern, oder als `grund`, wenn sie zum Plan passen. `minimap_gesund` wird `TEC
 
 ### 9.3 Form
 
-- **PLAN:** `<Handlung> <Ziel>: <Grund mit Zahl>.` Höchstens 18 Wörter. Beispiel: „Mid-Inhibitor-Turm jetzt:
-  vier von ihnen sind noch 15 Sekunden tot.“
-- **GEFAHR:** höchstens 10 Wörter, die Handlung zuerst. Beispiel: „Raus zum Top-Turm: Sett, Galio und
-  Fiddlesticks kommen.“
+- **PLAN:** `<Handlung> <Ziel>: <Grund mit Zahl>.` Höchstens 14 Wörter (bis Auftrag 002: 18). Beispiel:
+  „Mid-Inhibitor-Turm jetzt: vier von ihnen sind noch 15 Sekunden tot.“ Ist ein Satz länger, fällt zuerst der
+  Grund hinter dem letzten Doppelpunkt weg (`modi.kuerze`) – das Wichtigste steht vorn.
+- **GEFAHR:** höchstens 8 Wörter (bis Auftrag 002: 10), die Handlung zuerst. Beispiel: „Raus zum Top-Turm: Sett,
+  Galio und Fiddlesticks kommen.“ Passen die Namen nicht, wird gezählt: „Raus zu deinem Mid-Tier-1-Turm: drei von
+  ihnen kommen.“
+- **INFO_FLASH** (Auftrag 002, S3): höchstens 4 Wörter je Gegner, „Ziggs ohne Flash.“, mehrere in einem Satz.
 - **BASIS:** Kauf und Ziel in einem Satz. Beispiel: „Kauf Seryldas Bitterkeit und ein Kontroll-Auge, dann Mid:
   Drache in 50 Sekunden.“
 - Die Satzanfänge bleiben vorgewärmt (`komponist.anfaenge`). Sie werden auf die neuen Formen umgestellt.

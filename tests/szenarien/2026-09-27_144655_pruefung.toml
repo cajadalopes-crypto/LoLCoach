@@ -48,7 +48,9 @@ aus einer verlorenen Lane zieht kein Objective - kein VORBEREITEN_OBJECTIVE, kei
 
 [[szenario]]
 id = "0449-rueckzug-ein-satz"
-fenster = ["4:45", "5:10"]
+# Auftrag 002: bis 5:05 (vorher 5:10) - seit RAUS einen Beleg braucht (S5.3), kommt "Raus, zum Turm!" 4:46 statt 4:42
+# und faellt ins Fenster; der Satz in der Basis nach dem Recall (5:07/5:09) gehoert nicht zur Rueckzug-Episode
+fenster = ["4:45", "5:05"]
 quelle = "Pruefung D: 'Jetzt back: 19 %' 4:51 -> 'Bleib an deinem Turm: Gangplank und Morgana kommen' 4:55 -> 'Jetzt back: 20 %' 5:03"
 lage = "Riven 19-22 % an ihrem Top-Tier-1-Turm, Gangplank und Morgana in der Naehe."
 ansagen_max = 2

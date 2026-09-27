@@ -1,0 +1,91 @@
+# Szenarien aus Carlos' Partie 213624 (Auftrag 002): Bot-Partie, Riven Top gegen Rumble, CLASSIC, 25 min, 29/1/3.
+# Sie pruefen nur Verdrahtung und Form (S1, S3, S5) - geeicht wird an Bot-Kaempfen nichts. Angelegt vor den Fixes.
+
+aufnahme = "2026-09-27_213624"
+spielmodus = "CLASSIC"
+bots = true
+
+# --- S1: Zahlen so sprechen, wie Spieler sie sagen ---
+
+[[szenario]]
+id = "s1-zahlen-gesprochen"
+fenster = ["0:00", "26:00"]
+quelle = "Auftrag 002, S1: 11:12 'Du sagst 3-0-0-0, das heisst aber 3.000'; 7:00 'dieses Schraegstrich ist auch falsch'"
+lage = "Ganze Partie."
+gesprochen_ohne = ["\\d{4}", "\\d ?/ ?\\d"]
+warum = "Gold und grosse Zahlen als Zahlwort (die Stimme las '3550' Ziffer fuer Ziffer), Kill-Bilanzen ohne Schraegstrich."
+
+# --- S2.3: Satzlaenge ---
+
+[[szenario]]
+id = "s23-plan-hoechstens-14"
+fenster = ["0:00", "26:00"]
+quelle = "Auftrag 002, S2.3: 16:02 'du redest viel zu lange und dazu auch noch viel zu langsam ... immer zu spaet'"
+lage = "Ganze Partie."
+woerter_max = 14
+woerter_schluessel = "kern:"
+warum = "Buch 0, 9.3: PLAN hoechstens 14 Woerter, das Wichtigste vorn."
+
+[[szenario]]
+id = "s23-gefahr-hoechstens-8"
+fenster = ["0:00", "26:00"]
+quelle = "Auftrag 002, S2.3"
+lage = "Ganze Partie."
+woerter_max = 8
+woerter_schluessel = "kern:ZURUECK"
+warum = "Buch 0, 9.3: GEFAHR hoechstens 8 Woerter; passen die Namen nicht, wird gezaehlt."
+
+# --- S3: Flash ---
+
+[[szenario]]
+id = "0455-sona-ohne-flash"
+fenster = ["4:40", "5:20"]
+quelle = "Auftrag 002, S3: 19:41 'du sagst nicht, wenn jemand geflasht hat'"
+lage = "Sona flasht in der Bot-Lane (bestaetigter Timer)."
+muss_nennen_eins = ["Sona ohne Flash"]
+warum = "Ein bestaetigter Flash eines Gegners wird kurz gesagt: 'Sona ohne Flash.'"
+
+[[szenario]]
+id = "0841-rumble-ohne-flash"
+fenster = ["8:30", "9:10"]
+quelle = "Auftrag 002, S3: um 9:13 wusste der Coach 'Rumble hat keinen Flash mehr, noch 267 Sekunden' - gesagt hatte er es nicht"
+lage = "Rumble flasht auf der Top-Lane."
+muss_nennen_eins = ["Rumble ohne Flash"]
+warum = "Carlos entscheidet damit, auf wen er als Riven geht."
+
+[[szenario]]
+id = "2322-flashes-frage"
+zeit = "23:22"
+frage = "Wie sieht's mit den Flashes aus?"
+sofort = true
+quelle = "Auftrag 002, S3.2: 23:22 'Dazu hab ich keine Daten' - um 9:13 wusste er es noch"
+lage = "Spaetes Spiel, kein Flash-Timer laeuft gerade."
+darf_nicht_sagen = ["keine Daten"]
+muss_nennen_eins = ["Rumble", "Sona"]
+warum = "Die Antwort nennt jeden Gegner mit bekanntem Stand und sagt ehrlich, von wem nichts bekannt ist."
+
+# --- S5: falsche Warnungen ---
+
+[[szenario]]
+id = "0111-raus-ohne-beleg"
+fenster = ["1:05", "1:25"]
+quelle = "Auftrag 002, S5.3: 1:11 und 1:17 zweimal 'Raus, zum Turm!' in einem Level-1/2-Kampf, den Riven gewann"
+lage = "Riven gegen Rumble, Level 1 bis 2."
+darf_nicht_sagen = ["Raus, zum Turm"]
+warum = "RAUS im Kampf nur mit robustem Beleg (ein Kopf mehr bei ihnen, oder dein Leben unter 30 % und unter seinem), bis die Kampf-Eichung besteht."
+
+[[szenario]]
+id = "ziggs-allein-keine-gefahr"
+fenster = [["15:10", "15:22"], ["17:27", "17:40"], ["21:32", "21:45"]]
+quelle = "Auftrag 002, S5.2: 15:15, 17:32, 21:37 'Ziggs kommt', als Riven 20+ Kills hatte"
+lage = "Riven weit vorn, Ziggs allein."
+darf_nicht_sagen = ["Ziggs kommt"]
+warum = "Genau ein Gegner, dein Leben >= 60 %, du >= 2 Level und >= 1500 Item-Gold vor ihm: keine Gefahr."
+
+[[szenario]]
+id = "towerdive-lass-ihn"
+fenster = [["15:14", "15:24"], ["16:44", "16:52"]]
+quelle = "Auftrag 002, S5.3: 15:25 'Ich habe Ziggs getowerdived und das ist easy' - der Coach sagte 'Lass ihn, Turm!'"
+lage = "Riven verfolgt Ziggs unter seinen Turm."
+darf_nicht_sagen = ["Lass ihn, Turm"]
+warum = "Auch 'Lass ihn, Turm!' ist ein RAUS - ohne robusten Beleg stumm."

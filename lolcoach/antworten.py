@@ -34,6 +34,44 @@ ZAUBER_DE = {"SummonerFlash": "Flash", "SummonerTeleport": "Teleport", "Summoner
              "SummonerSmite": "Zerschmettern", "SummonerHaste": "Geist", "SummonerBoost": "Reinigen"}
 
 
+def flash_stand(p: Partie, lagebild) -> list[tuple[str, str, float | None]]:
+    """Auftrag 002, S3.2: der Flash-Stand JEDES Gegners - (Champion, "weg" | "da" | "unbekannt" | "ohne", Rest in s).
+    "da": benutzt gesehen und wieder zurueck; "unbekannt": nie ein Verbrauch gesehen; "ohne": spielt kein Flash.
+    213624 23:22: "Dazu hab ich keine Daten" - um 9:13 wusste er es noch; die Lage nannte nur laufende Timer."""
+    z = getattr(lagebild, "zauber", None)
+    aus = []
+    for s in p.gegner():
+        if "SummonerFlash" not in s.zauber:
+            aus.append((s.champion, "ohne", None))
+            continue
+        t = z.timer.get((s.name, "SummonerFlash")) if z is not None else None
+        if t is None:
+            aus.append((s.champion, "unbekannt", None))
+        elif t.zurueck > p.zeit:
+            aus.append((s.champion, "weg", t.zurueck - p.zeit))
+        else:
+            aus.append((s.champion, "da", p.zeit - t.zurueck))
+    return aus
+
+
+def flash_satz(p: Partie, lagebild) -> str:
+    """Die gesprochene Antwort auf "Wie sieht's mit den Flashes aus?": jeder mit bekanntem Stand, dann ehrlich, von wem
+    nichts bekannt ist."""
+    st = flash_stand(p, lagebild)
+    weg = [f"{c} ohne Flash, noch {_dauer(r)}" for c, a, r in sorted(st, key=lambda x: x[2] or 0) if a == "weg"]
+    da = [c for c, a, _ in st if a == "da"]
+    unbekannt = [c for c, a, _ in st if a == "unbekannt"]
+    teile = weg + ([f"{_liste(da)} {'hat' if len(da) == 1 else 'haben'} Flash wieder"] if da else [])
+    satz = ("; ".join(teile) + ".") if teile else "Von keinem Gegner habe ich einen Flash gesehen."
+    if unbekannt and teile:
+        satz += f" Von {_liste(unbekannt)} weiß ich nichts."
+    return satz
+
+
+def _liste(namen: list[str]) -> str:
+    return namen[0] if len(namen) == 1 else ", ".join(namen[:-1]) + " und " + namen[-1]
+
+
 def _dauer(sek: float) -> str:
     s = int(round(sek))
     if s < 90:
@@ -353,6 +391,8 @@ def sofort(frage: str, p: Partie, lagebild=None) -> str | None:
             if rest:
                 return f"{s.champion}s Ult ist noch {_dauer(rest)} weg."
             return f"Einen Ult-Verbrauch von {s.champion} habe ich nicht mitbekommen - rechne damit, dass sie bereit ist."
+    if ziel is None and (menge & {"flashes", "flashs"} or ("flash" in menge and menge & {"gegner", "alle", "gegnern"})):
+        return flash_satz(p, lagebild)          # Auftrag 002, S3.2: alle Gegner, nicht nur der Lane-Gegner
     if menge & {"flash", "zauber", "summoner", "teleport", "tp", "zünden", "ignite", "heal", "cooldown", "cooldowns"}:
         s = ziel or p.gegenueber()
         if s:
@@ -460,7 +500,9 @@ def lage_text(p: Partie, lagebild=None) -> str:
         zeilen.append(f"{wer}:")
         for s in p.team(team):
             fertig = [it[i]["name"] for i in s.items if i in it and it[i]["gold"]["total"] >= 900]
-            teile = [f"- {s.champion} {ROLLE_DE.get(s.rolle, '?')} L{s.level} {s.kills}/{s.tode}/{s.assists} "
+            # Auftrag 002, S1: keine Schraegstriche - Claude las "6/0" vor ("du stehst sechs null")
+            teile = [f"- {s.champion} {ROLLE_DE.get(s.rolle, '?')} L{s.level} Kills {s.kills} Tode {s.tode} "
+                     f"Assists {s.assists} "
                      f"CS {s.cs}, Items: {', '.join(fertig) or ('GAR KEINE' if not s.items else 'keine grossen')}"]
             if s.name in abwesend:
                 teile.append("AFK")
@@ -479,9 +521,16 @@ def lage_text(p: Partie, lagebild=None) -> str:
     obj = [_timer(k, p) for k in ("drache", "larven", "herold", "baron")]
     zeilen.append("Objectives: " + " ".join(obj))
     zeilen.append(f"Drachen: wir {len(p.drachen(p.mein_team))}, Gegner {len(p.drachen(gegenteam(p.mein_team)))}.")
-    if lagebild is not None and hasattr(lagebild, "zauber") and (aktiv := lagebild.zauber.aktiv(p.zeit)):
-        zeilen.append("Beschwoererzauber weg (Gegner): " + ", ".join(
-            f"{t.champion} {ZAUBER_DE.get(t.zauber, t.zauber)} noch {int(t.zurueck - p.zeit)} s ({t.quelle})" for t in aktiv))
+    if lagebild is not None and hasattr(lagebild, "zauber"):
+        # Auftrag 002, S3.2: der Flash-Stand ALLER Gegner, auch "unbekannt" - sonst sagt Claude "keine Daten"
+        wort = {"weg": "OHNE Flash, noch {r} s", "da": "Flash wieder da (seit {r} s)", "unbekannt": "unbekannt",
+                "ohne": "spielt kein Flash"}
+        zeilen.append("FLASH-STAND DER GEGNER (vollstaendig; nenne jeden mit bekanntem Stand, 'unbekannt' ehrlich so): "
+                      + "; ".join(f"{c}: " + wort[a].format(r=int(r or 0)) for c, a, r in flash_stand(p, lagebild)))
+        if aktiv := [t for t in lagebild.zauber.aktiv(p.zeit) if t.zauber != "SummonerFlash"]:
+            zeilen.append("Andere Zauber weg (Gegner): " + ", ".join(
+                f"{t.champion} {ZAUBER_DE.get(t.zauber, t.zauber)} noch {int(t.zurueck - p.zeit)} s ({t.quelle})"
+                for t in aktiv))
     # Die berechnete Lage (Laufzeiten, Fenster, Kraefte) - Claude soll rechnen lassen, nicht raten
     if lagebild is not None and getattr(lagebild, "aktiv", False):
         try:
@@ -543,7 +592,12 @@ SYSTEM = SYSTEM.replace("{BILD}", BILD_HINWEIS) + (
     "DEINER POSITION mit Lane, Turm und Sekunden. Sag nie 'die Welle', 'die Tuerme' oder 'seinen Turm', ohne "
     "Lane und Turm zu nennen. Das Schmuckstueck (Getarntes Auge, Linse) ist nicht verkaufbar und belegt keinen "
     "der sechs Plaetze. Enthaelt seine Aussage eine Frage - auch mit Fluechen -, beantworte sie konkret; "
-    "'Notiert' nur, wenn gar keine Frage darin steht.")
+    "'Notiert' nur, wenn gar keine Frage darin steht."
+    # Auftrag 002, S3.3 (213624 23:45: "Das ist doch extrem gut, wenn die kein Flash haben") und S1
+    " Ein Gegner OHNE Flash ist ein Grund FUER einen Angriff auf ihn, nie dagegen. Fragt er nach den Flashes, "
+    "nenne jeden Gegner aus FLASH-STAND mit bekanntem Stand und sag ehrlich, von wem nichts bekannt ist."
+    " Kill-Bilanzen ohne Schraegstrich, so wie Spieler sie sagen: 'du stehst sechs null', 'ihr fuehrt sieben zu "
+    "drei'. Gold gerundet: 'dreitausend Gold'.")
 
 
 AUFWAND = "low"   # gleich fuer Frage und vorgehaltenen Prozess (llm.vorhalten), sonst passt er nicht

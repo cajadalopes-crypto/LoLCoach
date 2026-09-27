@@ -353,11 +353,24 @@ _ZEHNER = ["", "", "zwanzig", "dreißig", "vierzig", "fünfzig", "sechzig", "sie
 
 
 def zahl_wort(n: int) -> str:
-    """0-99 in Worten: 57 -> 'siebenundfünfzig'."""
+    """0-999999 in Worten: 57 -> 'siebenundfünfzig', 3100 -> 'dreitausendeinhundert'."""
     if n < 20:
         return _EINER[n]
-    z, e = divmod(n, 10)
-    return _ZEHNER[z] if e == 0 else ("ein" if e == 1 else _EINER[e]) + "und" + _ZEHNER[z]
+    if n < 100:
+        z, e = divmod(n, 10)
+        return _ZEHNER[z] if e == 0 else ("ein" if e == 1 else _EINER[e]) + "und" + _ZEHNER[z]
+    if n < 1000:
+        h, r = divmod(n, 100)
+        return ("ein" if h == 1 else _EINER[h]) + "hundert" + (zahl_wort(r) if r else "")
+    t, r = divmod(n, 1000)
+    return ("ein" if t == 1 else zahl_wort(t)) + "tausend" + (zahl_wort(r) if r else "")
+
+
+def gold_wort(n: int) -> str:
+    """Gold, wie Spieler es sagen (Auftrag 002, S1 - 213624 11:12: "3000" kam als "drei null null null", die
+    Zahlenprobe hoerte "3550 Gold" als "3, 5, 5, 0"): auf Hunderter abgerundet, als Zahlwort - "dreitausend",
+    "dreitausendeinhundert". Abgerundet, damit der Satz nie mehr Gold verspricht, als da ist."""
+    return zahl_wort(n // 100 * 100) if n >= 100 else str(n)
 
 
 def spielzeit_wort(minute: int, sekunde: int) -> str:
@@ -366,10 +379,14 @@ def spielzeit_wort(minute: int, sekunde: int) -> str:
     7:57 -> "sieben siebenundfünfzig"."""
     if sekunde == 0:
         return "einer Minute" if minute == 1 else f"{zahl_wort(minute)} Minuten"
-    return f"{zahl_wort(minute)} {zahl_wort(sekunde)}"
+    # Auftrag 002, S1: "33 02" war "dreiunddreissig zwei" (Whisper: "33,2") - die Null wird gesprochen
+    return f"{zahl_wort(minute)} {'null ' if sekunde < 10 else ''}{zahl_wort(sekunde)}"
 
 
 _SPRECHBAR = [
+    # Auftrag 002, S1: Kill-Bilanzen ohne Schraegstrich (213624 6:27 "mit 6/0 oben") - "sechs null", "null sechs eins"
+    (re.compile(r"\b(\d{1,2}) ?/ ?(\d{1,2})(?: ?/ ?(\d{1,2}))?\b"),
+     lambda m: " ".join(zahl_wort(int(g)) for g in m.groups() if g is not None)),
     # Spielzeiten "5:00", "2:45" und die Schreibweise des Kerns "8 00", "7 57" -> Woerter (E8)
     (re.compile(r"\b(\d{1,2})[: ]([0-5]\d)\b(?!\s*(?:%|Prozent|Gold|Sekunden|Vasallen))"),
      lambda m: spielzeit_wort(int(m.group(1)), int(m.group(2)))),
@@ -378,6 +395,11 @@ _SPRECHBAR = [
     (re.compile(r"(\d+)\+"), r"mehr als \1"),                  # "2500+" -> "mehr als 2500"
     (re.compile(r"\s*→\s*"), ": "),                             # Lexikon-Pfeil: "E verbraucht -> er hat ..."
     (re.compile(r"(?<=[^\W\d])\s?/\s?(?=[^\W\d])"), " oder "),  # "Recall/Kauf" -> "Recall oder Kauf" (KDA 27/6/4 bleibt)
+    (re.compile(r"\b(\d+) ?/ ?(\d+)\b"), r"\1 von \2"),      # "1200/2000" -> "1200 von 2000" (Kills oben)
+    # Auftrag 002, S1: Gold als Zahlwort, auf Hunderter abgerundet ("3.000 Gold", "3550 Gold" -> "dreitausend...")
+    (re.compile(r"\b(\d{1,3}(?:\.\d{3})+|\d{3,6})(?= ?Gold\b)"), lambda m: gold_wort(int(m.group(1).replace(".", "")))),
+    # ... und jede andere Zahl ab 1000 genau in Worten (die Stimme las vierstellige Zahlen Ziffer fuer Ziffer)
+    (re.compile(r"\b(\d{1,3}(?:\.\d{3})+|\d{4,6})\b(?![.,]\d)"), lambda m: zahl_wort(int(m.group(1).replace(".", "")))),
 ]
 
 

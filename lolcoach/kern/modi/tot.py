@@ -16,4 +16,6 @@ def kandidaten(m, cfg: dict, merker: dict | None = None, lage=None) -> list[Hand
     if not h.satz:
         return []            # Pruefung c, R6: kein sicheres Ziel und nichts zu kaufen - kein Satz
     h.satz = f"Noch {int(round(m.respawn))} Sekunden: " + h.satz[0].lower() + h.satz[1:]
+    from . import kuerze
+    h.satz = kuerze(h.satz, cfg["sprechen"]["max_woerter"])     # Auftrag 002, S2.3
     return [h]

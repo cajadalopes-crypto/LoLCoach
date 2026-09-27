@@ -110,6 +110,25 @@ def _dive_ok(m, cfg: dict, ziel, fast_tot: bool, p: float) -> bool:
             and p >= c["dive_allein_p_min"])
 
 
+def raus_beleg(m, cfg: dict) -> bool:
+    """Auftrag 002, S5.3: ein robuster Beleg fuer RAUS ohne das ungeeichte p_gewinn - in kampf_radius stehen >= 1
+    Gegner mehr als ihr (du mitgezaehlt), ODER dein Leben liegt unter raus_leben_max und unter dem Balken des
+    naechsten Gegners."""
+    b, c = m.b, cfg["kampf"]
+    if b is None or b.pos is None:
+        return False
+    r = c["kampf_radius"]
+    gegner = [g for g in sichtbare(m) if abstand(g.pos, b.pos) <= r]
+    wir = 1 + sum(1 for s, wo, *_ in b.mitspieler if wo is not None and not s.tot and abstand(wo, b.pos) <= r)
+    if len(gegner) >= wir + 1:
+        return True
+    if b.leben is not None and b.leben < cfg["schranken"]["raus_leben_max"] and gegner:
+        naechster = min(gegner, key=lambda g: abstand(g.pos, b.pos))
+        le = _leben(naechster)
+        return le is not None and b.leben < le
+    return False
+
+
 def entscheide(m, cfg: dict, weg_von: bool, hin_zu) -> tuple[str, str, str | None]:
     """(Art, Satz, Ziel-Name) nach Tabelle 5.1. `weg_von`: du bewegst dich von den Gegnern weg; `hin_zu(g)`: du
     naeherst dich g."""
@@ -272,7 +291,7 @@ def annehmen(m, cfg: dict, modus: str, plan=None, schon: set | None = None) -> H
     name = g.champion
     satz = (f"{name} allein: nimm den Kampf." if len(kommen) == 1 and wir <= 1
             else f"Zu {ZAHL.get(wir, str(wir))} gegen {name}: rein." if len(kommen) == 1
-            else f"{name} und {kommen[1].champion} kommen: nimm den Kampf.")
+            else f"{name} und {next(x for x in kommen if x is not g).champion} kommen: nimm den Kampf.")
     h = Handlung("ANNEHMEN", Ziel("gegner", name, g.pos, abstand(g.pos, b.pos) / (b.mein_tempo or 345.0)), modus,
                  c["fenster_s"], gewinn=float(kill_gold(g.s, p=m.p)), p_erfolg=p, grund="nimm den Kampf", satz=satz)
     h.daten.update(kampf_mit=g.s.name, gruppe=[x.champion for x in kommen], p_gewinn=round(p, 2))

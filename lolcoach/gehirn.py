@@ -206,6 +206,13 @@ BEWERTUNG_HINWEIS = (
     "Sekunden da sein'); rechne sie nicht neu und widersprich ihnen nicht.")
 SITUATIV_SYSTEM = SITUATIV_SYSTEM.replace("{BEWERTUNG}", BEWERTUNG_HINWEIS)
 
+# Auftrag 002, S1 und S3.3: gilt fuer alles, was gesprochen wird
+SPRECHREGELN = (" Kill-Bilanzen ohne Schraegstrich, so wie Spieler sie sagen: 'du stehst sechs null', 'ihr fuehrt "
+                "sieben zu drei'. Ein Gegner ohne Flash ist ein Grund FUER einen Angriff auf ihn, nie dagegen.")
+SITUATIV_SYSTEM += SPRECHREGELN
+MIDGAME_SYSTEM += SPRECHREGELN
+BRIEFING_SYSTEM += SPRECHREGELN
+
 
 BRIEFING_WOERTER = 75   # ~25 s Sprechzeit; der Fokus-Satz kommt dazu (Partie 4: 120 Woerter = 45 s)
 

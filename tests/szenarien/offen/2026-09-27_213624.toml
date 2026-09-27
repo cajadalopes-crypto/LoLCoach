@@ -1,0 +1,198 @@
+# Stubs aus Carlos' Notizen (27.09.2026, werkzeuge/szenario_aus_notizen.py) - noch nicht beschriftet.
+# Beschriften (soll / darf_nicht / darf_nicht_sagen / warum), dann nach tests/szenarien/ verschieben.
+
+aufnahme = "2026-09-27_213624"
+bots = true
+
+[[szenario]]
+id = "0441-notiz"
+zeit = "4:41"
+quelle = "Notiz 4:41"
+notiz = '''
+Ja, Xin Zhao habe ich sowas von easy weggebummst. Ich habe sogar in der Zeit geschafft, hier irgendeine Ansage zu machen. Also das kannst du immer noch sehr, sehr schwer einschätzen. Außerdem war Rumble tot und er war noch nicht mal auf der Lane, weil er noch zurücklaufen muss. Lange.'''
+gesagt = '''
+4:29 [kern:ZURUECK] Raus zu deinem Top-Tier-1-Turm: Rumble kommt.
+4:41 [antwort] „Ja, Xin Zhao habe ich sowas von easy weggebummst. Ich habe sogar in der Zeit geschafft, hier irgendeine Ansage zu machen. Also das kannst du immer noch sehr, sehr schwer einschätzen. Außerdem war Rumble tot und er war noch nicht mal auf der Lane, weil er noch zurücklaufen muss. Lange.“ – Notiert.
+4:58 [antwort] „Soll ich meinem Team irgendwann helfen? Soll ich die Lane verlassen? Soll ich die ganze Zeit durchpushen bis zum Ende des Spiels? Wie sollte mein Spiel aussehen?“ – Bleib jetzt oben, push deine Top-Welle rein und hol dir Caulfields Kriegshammer, da Rumble grad eh im Fluss steht und der Drache ein Münzwurf ohne dich ist. Erst nach diesem Back Richtung Skirmish mit Xin oder Pantheon suchen, nicht einfach durchpushen ohne Plan.'''
+lage = '''
+Riven L5, 100 % Leben, 1450 Gold, in eurer Basis
+Welle 6:0, ihr schiebt
+Gegner: Rumble sichtbar oben (12200); Xin Zhao vor 20 s in seiner Basis (11410); Ziggs vor 14 s auf der Mid-Lane (11676); Caitlyn vor 26 s in seiner Basis (11525); Sona sichtbar in eurem unteren Jungle (8822)
+Mitspieler: Pantheon in eurem oberen Jungle; Malzahar in eurer Basis; Dr. Mundo unten; Karma in eurem unteren Jungle
+Objectives: drache in 18 s, 21 s von dir; baron in 918 s, 22 s von dir; herold in 618 s, 22 s von dir; larven in 198 s, 22 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "0700-notiz"
+zeit = "7:00"
+quelle = "Notiz 7:00"
+notiz = '''
+Übrigens, dieses Schrägstrich ist auch falsch. Man würde dann einfach sagen 6-0. Also wenn du, ne, 6-0 würde niemand in League of Legends sagen, sondern einfach nur 6-0 oder ihr steht 7-3, also dass wir 7 Kills haben und Gegner 3. Also dieses Schrägstrich ist Quatsch.'''
+gesagt = '''
+7:00 [antwort] „Übrigens, dieses Schrägstrich ist auch falsch. Man würde dann einfach sagen 6-0. Also wenn du, ne, 6-0 würde niemand in League of Legends sagen, sondern einfach nur 6-0 oder ihr steht 7-3, also dass wir 7 Kills haben und Gegner 3. Also dieses Schrägstrich ist Quatsch.“ – Notiert.'''
+lage = '''
+Riven L7, 99 % Leben, 127 Gold, oben, auf deiner Lane
+Welle 2:0, ihr schiebt
+Gegner: Rumble sichtbar in der Flussmitte (7357); Xin Zhao vor 3 s im oberen Fluss (6363); Ziggs vor 14 s unten (13998); Caitlyn sichtbar unten (14413); Sona vor 11 s unten (13874)
+Mitspieler: Pantheon im unteren Fluss; Malzahar in der Flussmitte; Dr. Mundo unten; Karma unten
+Objectives: drache lebt, 36 s von dir; baron in 779 s, 10 s von dir; herold in 479 s, 10 s von dir; larven in 59 s, 10 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "1149-notiz"
+zeit = "11:49"
+quelle = "Notiz 11:49"
+notiz = '''
+Du, ich habe dir jetzt, glaube ich, zehnmal dieselbe Frage gestellt, du antwortest einfach nicht. Notiert das mal bitte, dass das irgendwie nervt.'''
+gesagt = '''
+11:35 [antwort] „Warum sollte ich jetzt zur Top-Rain gehen und warum sollte ich meinem Team nicht beim Drachen helfen?“ – Push jetzt deine Welle und geh auf den inneren Top-Turm, der ist in 13 Sekunden bei dir und noch 26 Sekunden frei, Rumble ist tot und kann ihn nicht verteidigen. Zum Drachen bist du 35 Sekunden entfernt, das ist zu weit, also bringt dein Druck oben mehr als hinzurennen.
+11:49 [antwort] „Du, ich habe dir jetzt, glaube ich, zehnmal dieselbe Frage gestellt, du antwortest einfach nicht. Notiert das mal bitte, dass das irgendwie nervt.“ – Notiert.
+12:00 [kern:ZURUECK] Raus zu deinem Mid-Tier-1-Turm: Rumble und Sona kommen.
+12:05 [antwort] „Gerade als ich in der Base war, habe ich dich gefragt, was soll ich als nächstes tun? Und du meintest, geh nach oben zur Toplane. Warum hast du das gesagt? Warum hast du nicht gesagt, dass ich zum Drachen gehen soll?“ – Damals stand Rumble frisch vor dir am Turm oben und war die schnellere, sichere Beute, der Drache war von deiner Position aus noch zu weit weg. Jetzt ist die Lage anders: Rumble ist tot bei dir, also nutz das Fenster und geh danach mit deinem Team zum Drachen, den ihr klar nehmen könnt.'''
+lage = '''
+Riven L11, 80 % Leben, 963 Gold, oben, auf deiner Lane
+Welle 6:1, ihr schiebt
+Gegner: Rumble tot (noch 0 s); Xin Zhao sichtbar im unteren Fluss (9320); Ziggs vor 35 s in eurem unteren Jungle (8410); Caitlyn vor 36 s im unteren Fluss (10618); Sona vor 20 s unten (11209)
+Mitspieler: Pantheon im unteren Fluss; Malzahar in eurem unteren Jungle; Dr. Mundo in eurer Basis; Karma im unteren Fluss
+Objectives: drache lebt, 31 s von dir; baron in 490 s, 11 s von dir; herold in 190 s, 11 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "1323-notiz"
+zeit = "13:23"
+quelle = "Notiz 13:23"
+notiz = '''
+Du ignorierst mich schon wieder die ganze Zeit. Notier das bitte alles, was du wieder für Scheiße baust.'''
+gesagt = '''
+13:12 [antwort] „Was mache ich jetzt?“ – Schieb jetzt die Welle rein und geh back: der Herold kommt in 1 Minute 45, sei spätestens um 14 30 an der Grube. Mid hat Prio.
+13:16 [antwort] „Welche Welle, auf welcher Leine ich bin beim Drachen?“ – Drache lebt.
+13:23 [antwort] „Du ignorierst mich schon wieder die ganze Zeit. Notier das bitte alles, was du wieder für Scheiße baust.“ – Notiert.
+13:36 [antwort] „Okay, Drache ist tot, wo gehe ich jetzt hin?“ – Drache in 4 Minuten 57.'''
+lage = '''
+Riven L11, 99 % Leben, 1059 Gold, im unteren Fluss, Flash weg (noch 283 s)
+Welle 5:0, ihr schiebt
+Gegner: Rumble vor 6 s oben (10913); Xin Zhao tot (noch 2 s); Ziggs vor 24 s in seiner Basis (1875); Caitlyn sichtbar im unteren Fluss (1640); Sona sichtbar in eurem unteren Jungle (3039)
+Mitspieler: Pantheon im unteren Fluss; Malzahar auf der Mid-Lane; Dr. Mundo im unteren Fluss; Karma in eurem unteren Jungle
+Objectives: drache lebt, 1 s von dir; baron in 396 s, 24 s von dir; herold in 96 s, 24 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "1420-notiz"
+zeit = "14:20"
+quelle = "Notiz 14:20"
+notiz = '''
+Du bedenkst übrigens nie und planst auch nie meinen Teleport ein, den ich durch meine Toplane-Quest bekomme, by the way. Das muss auch mal notiert werden. Also, dass du Quests mal vernünftig einkalkulierst.'''
+gesagt = '''
+14:20 [antwort] „Du bedenkst übrigens nie und planst auch nie meinen Teleport ein, den ich durch meine Toplane-Quest bekomme, by the way. Das muss auch mal notiert werden. Also, dass du Quests mal vernünftig einkalkulierst.“ – Notiert.
+14:37 [antwort] „Okay, was mache ich jetzt?“ – Lass deine Welle crashen und geh zum Team, das sind 9 Sekunden: Der Herold kommt in 23 Sekunden.'''
+lage = '''
+Riven L11, 99 % Leben, 126 Gold, oben, Flash weg (noch 226 s), auf deiner Lane
+Welle 2:2
+Gegner: Rumble vor 39 s in seiner Basis (566); Xin Zhao vor 23 s auf der Mid-Lane (6376); Ziggs sichtbar in der Flussmitte (6247); Caitlyn sichtbar unten (12887); Sona vor 35 s unten (13440)
+Mitspieler: Pantheon in eurem unteren Jungle; Malzahar auf der Mid-Lane; Dr. Mundo im unteren Fluss; Karma auf der Mid-Lane
+Objectives: drache in 253 s, 33 s von dir; baron in 339 s, 10 s von dir; herold in 39 s, 10 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "1525-notiz"
+zeit = "15:25"
+quelle = "Notiz 15:25"
+notiz = '''
+Ich habe Ziggs getowerdived und das ist easy.'''
+gesagt = '''
+15:15 [kern:ZURUECK] Raus zu deinem Mid-Tier-1-Turm: Ziggs kommt.
+15:25 [antwort] „Ich habe Ziggs getowerdived und das ist easy.“ – Notiert.
+15:31 [kern:ZURUECK] Raus zu deinem Mid-Tier-1-Turm: Xin Zhao kommt.'''
+lage = '''
+Riven L12, 51 % Leben, 1205 Gold, auf der Mid-Lane, Flash weg (noch 161 s)
+Welle 6:0, ihr schiebt
+Gegner: Rumble tot (noch 6 s); Xin Zhao vor 37 s in seiner Basis (1595); Ziggs tot (noch 19 s); Caitlyn sichtbar in eurem unteren Jungle (6191); Sona sichtbar oben (5254)
+Mitspieler: Pantheon im unteren Fluss; Malzahar auf der Mid-Lane; Dr. Mundo unten; Karma in eurem unteren Jungle
+Objectives: drache in 188 s, 17 s von dir; baron in 274 s, 17 s von dir; herold lebt, 17 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "1602-notiz"
+zeit = "16:02"
+quelle = "Notiz 16:02"
+notiz = '''
+Ich habe das Gefühl, du redest viel zu lange und dazu auch noch viel zu langsam. Bitte notieren, dass das alles mal viel schneller vonstatten gehen soll, weil so bist du immer zu spät.'''
+gesagt = '''
+16:02 [antwort] „Ich habe das Gefühl, du redest viel zu lange und dazu auch noch viel zu langsam. Bitte notieren, dass das alles mal viel schneller vonstatten gehen soll, weil so bist du immer zu spät.“ – Notiert.
+16:21 [kern:ZURUECK] Raus zu deinem Mid-Tier-1-Turm: Caitlyn und Sona kommen.'''
+lage = '''
+Riven L13, 54 % Leben, 1795 Gold, in seinem unteren Jungle, Flash weg (noch 124 s)
+Welle 3:5, er schiebt
+Gegner: Rumble vor 3 s auf der Mid-Lane (2229); Xin Zhao vor 15 s im oberen Fluss (3604); Ziggs sichtbar auf der Mid-Lane (1823); Caitlyn vor 36 s in seiner Basis (4910); Sona vor 16 s in seiner Basis (2148)
+Mitspieler: Pantheon auf der Mid-Lane; Malzahar auf der Mid-Lane; Dr. Mundo auf der Mid-Lane; Karma auf der Mid-Lane
+Objectives: drache in 151 s, 9 s von dir; baron in 237 s, 19 s von dir; herold lebt, 19 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "1708-notiz"
+zeit = "17:08"
+quelle = "Notiz 17:08"
+notiz = '''
+Notier mal bitte, dass du die nächsten Schritte schon ein bisschen früher kommunizieren musst, weil so ist das absolut Arsch. Wenn du irgendwie, weil man hat ständig irgendwie einen Leerlauf, man wartet auf Anweisungen, aber die kommen einfach nicht auch und ich muss dir immer aus der Nase ziehen. Das ist Quatsch. Du musst in der Lage sein, ein, zwei oder zwei, drei Minuten in die Zukunft zu gucken und mir dann dementsprechend Tipps zu geben.'''
+gesagt = '''
+17:08 [antwort] „Notier mal bitte, dass du die nächsten Schritte schon ein bisschen früher kommunizieren musst, weil so ist das absolut Arsch. Wenn du irgendwie, weil man hat ständig irgendwie einen Leerlauf, man wartet auf Anweisungen, aber die kommen einfach nicht auch und ich muss dir immer aus der Nase ziehen. Das ist Quatsch. Du musst in der Lage sein, ein, zwei oder zwei, drei Minuten in die Zukunft zu gucken und mir dann dementsprechend Tipps zu geben.“ – Notiert.'''
+lage = '''
+Riven L13, 64 % Leben, 2731 Gold, in seinem unteren Jungle, Flash weg (noch 58 s)
+Welle 2:3
+Gegner: Rumble tot (noch 16 s); Xin Zhao sichtbar auf der Mid-Lane (3785); Ziggs tot (noch 5 s); Caitlyn sichtbar auf der Mid-Lane (3474); Sona sichtbar unten (5496)
+Mitspieler: Pantheon in seinem unteren Jungle; Karma auf der Mid-Lane
+Objectives: drache in 85 s, 10 s von dir; baron in 171 s, 23 s von dir; herold lebt, 23 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "1941-notiz"
+zeit = "19:41"
+quelle = "Notiz 19:41"
+notiz = '''
+Du sagst doch gar nicht mehr die Flash-Timer an oder die Position. Also noch Position machst du, glaube ich, manchmal, aber du sagst nicht, wenn jemand geflasht hat. Das ist sehr schlecht, erst recht, wenn halt das mit zu Late-Game kommt und jeder halt so ein bisschen roamed. Dann kann ich als Riven einfach so ein bisschen besser entscheiden, ob wen ich draufflaschen kann und das ist sehr wichtig. Bitte notieren.'''
+gesagt = '''
+19:41 [antwort] „Du sagst doch gar nicht mehr die Flash-Timer an oder die Position. Also noch Position machst du, glaube ich, manchmal, aber du sagst nicht, wenn jemand geflasht hat. Das ist sehr schlecht, erst recht, wenn halt das mit zu Late-Game kommt und jeder halt so ein bisschen roamed. Dann kann ich als Riven einfach so ein bisschen besser entscheiden, ob wen ich draufflaschen kann und das ist sehr wichtig. Bitte notieren.“ – Notiert.
+19:45 [kern:KAUFEN] Noch 8 Sekunden: kauf Tiamat, dann zum Top-Inhibitor-Turm: bleib am Turm, Rumble war zuletzt in der Mitte.
+19:59 [kern:WELLE_REIN_UND_BACK] Mid-Welle rein, dann back: 2550 Gold für Tiamat.'''
+lage = '''
+Riven L14, 0 % Leben, 2536 Gold, Ort ?, Flash weg (noch 249 s)
+Welle 9:1, ihr schiebt
+Gegner: Rumble vor 2 s auf der Mid-Lane; Xin Zhao vor 60 s in seiner Basis; Ziggs sichtbar auf der Mid-Lane; Caitlyn sichtbar in seinem unteren Jungle; Sona sichtbar auf der Mid-Lane
+Objectives: drache in 290 s; baron in 18 s; herold lebt'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "2032-notiz"
+zeit = "20:32"
+quelle = "Notiz 20:32"
+notiz = '''
+Also wie gesagt, das muss ganz, ganz klar angesprochen werden. Du bist überhaupt nicht am Helfen. Du sagst nicht, was die nächsten Schritte sind. Du bist einfach die ganze Zeit still und sagst nicht, yo, mach das, mach jenes und dann hab ein Auge darauf. Wenn das und das passiert, machst du das und so. Also so, dass man so weiß, wo man die nächsten Moves hinmacht, damit man sich effizient bewegen kann und intelligent. Das machst du einfach alles nicht. Du bist einfach ruhig und guckst dir das einfach ganz entspannt an. kann ich ja genauso gut meine Perle als meinen Coach einstellen, dann ist das ja der gleiche Scheiß.'''
+gesagt = '''
+20:32 [antwort] „Also wie gesagt, das muss ganz, ganz klar angesprochen werden. Du bist überhaupt nicht am Helfen. Du sagst nicht, was die nächsten Schritte sind. Du bist einfach die ganze Zeit still und sagst nicht, yo, mach das, mach jenes und dann hab ein Auge darauf. Wenn das und das passiert, machst du das und so. Also so, dass man so weiß, wo man die nächsten Moves hinmacht, damit man sich effizient bewegen kann und intelligent. Das machst du einfach alles nicht. Du bist einfach ruhig und guckst dir das einfach ganz entspannt an. kann ich ja genauso gut meine Perle als meinen Coach einstellen, dann ist das ja der gleiche Scheiß.“ – Notiert.'''
+lage = '''
+Riven L14, 96 % Leben, 3008 Gold, unten, Flash weg (noch 198 s)
+Welle 2:2
+Gegner: Rumble tot (noch 33 s); Xin Zhao tot (noch 10 s); Ziggs sichtbar auf der Mid-Lane (8302); Caitlyn sichtbar auf der Mid-Lane (8842); Sona sichtbar unten (2779)
+Mitspieler: Pantheon auf der Mid-Lane; Malzahar auf der Mid-Lane; Karma auf der Mid-Lane
+Objectives: drache in 239 s, 11 s von dir; baron lebt, 37 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''

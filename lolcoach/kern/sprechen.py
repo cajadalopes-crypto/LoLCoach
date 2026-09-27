@@ -12,18 +12,21 @@ sobald wieder Platz ist - wenn er dann noch gilt.
 | PLAN         | WICHTIG  | Unterbrechbares   | ja            |
 | ERINNERUNG   | HINWEIS  | nein              | ja            |
 | BESTAETIGUNG | HINWEIS  | nein              | ja (nie voll) |
-| TECHNIK      | SOFORT   | ja                | frei          |"""
+| TECHNIK      | SOFORT   | ja                | frei          |
+| INFO_FLASH   | HINWEIS  | nein              | frei, eigene Grenze (1 je 20 s) |"""
 from __future__ import annotations
 
 from ..regeln import HINWEIS, SOFORT, WICHTIG, Ansage
 
-PRIO = {"GEFAHR": SOFORT, "PLAN": WICHTIG, "ERINNERUNG": HINWEIS, "BESTAETIGUNG": HINWEIS, "TECHNIK": SOFORT}
-FREI = ("GEFAHR", "TECHNIK")        # zaehlen nicht zum Budget
+PRIO = {"GEFAHR": SOFORT, "PLAN": WICHTIG, "ERINNERUNG": HINWEIS, "BESTAETIGUNG": HINWEIS, "TECHNIK": SOFORT,
+        "INFO_FLASH": HINWEIS}
+FREI = ("GEFAHR", "TECHNIK", "INFO_FLASH")        # zaehlen nicht zum Budget (INFO_FLASH: eigene Grenze, Auftrag 002)
 
 
 def zaehlt(a: Ansage) -> bool:
     """Zaehlt eine gesprochene Ansage zum Budget (9.2)? Nicht: GEFAHR (Thema gefahr / SOFORT), Briefing, TECHNIK."""
-    return not (a.prio >= SOFORT or a.thema == "gefahr" or a.schluessel in ("briefing", "kern:technik", "tod"))
+    return not (a.prio >= SOFORT or a.thema == "gefahr"
+                or a.schluessel in ("briefing", "kern:technik", "tod", "kern:INFO_FLASH"))
 
 
 class Sprecher:
@@ -32,7 +35,8 @@ class Sprecher:
         self.bc = cfg["bestaetigung"]
         self.wartet: tuple | None = None   # (Kategorie, Art, Text, Pruefung, danach) - Budget voll
         self.bestaetigt_zuletzt = -1e9
-        self.kategorien: dict[str, int] = {"GEFAHR": 0, "PLAN": 0, "ERINNERUNG": 0, "BESTAETIGUNG": 0}
+        self.kategorien: dict[str, int] = {"GEFAHR": 0, "PLAN": 0, "ERINNERUNG": 0, "BESTAETIGUNG": 0,
+                                           "INFO_FLASH": 0}
 
     def platz(self, zeit: float, gesagt: list) -> bool:
         """Budget frei? (Kapitel 9.2) - gemessen an allem, was gesprochen wurde (auch den alten Regeln)."""

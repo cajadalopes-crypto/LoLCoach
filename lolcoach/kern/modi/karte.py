@@ -244,7 +244,7 @@ def fenster_grund(z: TurmZiel, m, bis: float, kommen: list) -> str:
         wer = f"{len(tote)} von ihnen sind" if len(tote) >= 3 else f"{liste([c for c, _ in tote])} {'ist' if len(tote) == 1 else 'sind'}"
         teile.append(f"{wer} noch {int(n)} Sekunden tot")
     elif not kommen and erste is not None and erste >= bis:
-        teile.append(f"frühestens in {int(erste)} Sekunden kann einer von ihnen dort sein")
+        teile.append(f"{int(erste)} Sekunden, bis einer kommt")      # Auftrag 002, S2.3 (vorher 10 Woerter)
     if kommen:
         # hoechstens zwei Namen, ab drei wird gezaehlt (Buch 6, 9). Pruefung c, R2: kein "du schlaegst X" mehr - ein
         # Ziel, das nur ueber den Kampf traegt, ist stumm (turm_handlungen: modell_stumm); hier steht nur, wer kommt
@@ -355,7 +355,7 @@ def turm_handlungen(m, cfg: dict, modus: str, art: str, split: bool) -> list[Han
         elif fenster_um is not None and z.stufe in HINTEN:
             satz = f"{name[0].upper()}{name[1:]} jetzt: {grund}."
         elif art == "MIT_GRUPPE":
-            satz = f"Mit der Gruppe auf den {name}: {grund}."
+            satz = f"Mit der Gruppe zum {name}: {grund}."
         else:
             satz = f"Drück den {name}: {grund}."
         if fenster_um is not None and mit == 0 and art == "DRUECKEN" and len(m.tote_gegner) >= 3:

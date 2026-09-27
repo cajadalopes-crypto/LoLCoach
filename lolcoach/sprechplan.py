@@ -15,7 +15,17 @@ import time
 
 from .regeln import HINWEIS, RUECKZUG, SOFORT, WICHTIG, Ansage
 
-ZEICHEN_PRO_SEKUNDE = 14.0   # Killian +25 % gemessen 26.09. nachts: 14,3 Zeichen/s; live fragt der Plan die Stimme
+def _zeichen_pro_s() -> float:
+    try:
+        from . import wissen
+        return float(wissen.lade("kern").get("stimme", {}).get("zeichen_pro_s", 14.0))
+    except Exception:
+        return 14.0
+
+
+# Killian +25 % gemessen 26.09. nachts: 14,3 Zeichen/s; seit Auftrag 002 aus [stimme] (Killian +50 %: 16,6); live fragt
+# der Plan die Stimme
+ZEICHEN_PRO_SEKUNDE = _zeichen_pro_s()
 PAUSE = 1.5                  # zwischen zwei Saetzen (2,0 bis 26.09.; die Schaetzung ist jetzt ehrlicher)
 RUHE_VOR_HINWEIS = 8.0       # Hinweise nur, wenn es so lange still war
 THEMA_SPERRE = 30.0          # zwei Ansagen zum selben Thema (back, druck, gefahr, objective) nicht so kurz hintereinander

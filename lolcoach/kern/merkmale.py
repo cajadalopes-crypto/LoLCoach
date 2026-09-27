@@ -15,12 +15,15 @@ from functools import lru_cache
 from .. import bewertung, minimap
 from ..bewertung import BRUNNEN, GRUBEN, TUERME, WEGFAKTOR, abstand, einheiten
 from ..zustand import BLAU, ROT, gegenteam
+from .quest_tp import QuestTP
 
 OBJ_GRUBE = {"drache": "drache", "baron": "baron", "herold": "baron", "larven": "baron",
              "aeltester": "drache"}   # Grube je Objective (Buch 6, 3.1: der Aelteste in der unteren)
 LANE_DER_ROLLE = bewertung.LANE_DER_ROLLE
 NEXUS = {BLAU: (1700.0, 1700.0), ROT: (13100.0, 13100.0)}   # grob; Bedrohung wird mit 2500 Radius geprueft
 VERLAUF_S = 20.0
+# mit der Top-Quest wird ein gewaehltes TP zu "S12_SummonerTeleportUpgrade" (API, 133930: ab 8:02)
+TP_ZAUBER = ("SummonerTeleport", "S12_SummonerTeleportUpgrade")
 
 
 @dataclass
@@ -422,6 +425,7 @@ class MerkmalBau:
         self._jungler_wir: deque = deque()  # (Zeit, Ort eures Junglers) - Buch 6, Kapitel 6
         self._mitspieler_orte: deque = deque()   # (Zeit, {Name: Ort}) - "geht hin" fuer alle (Buch 6)
         self._obj_gedaechtnis: dict = {}         # Buch 6, 1.6: das Urteil haelt, bis ein Ereignis es kippt
+        self._quest_tp = QuestTP(cfg.get("quest_tp"))   # Top ohne Teleport: Quest-TP (Saison 2026)
 
     def neu(self, p, b, lb) -> Merkmale | None:
         c = self.cfg["modus"]
@@ -514,8 +518,10 @@ class MerkmalBau:
             w = jungle.wahrscheinlich(m.zeit)
             seite = meine_seite(m)
             m.p_jungler = max(w.values()) if seite is None else w.get(seite, 0.5)
-        if b.zweiter and b.zweiter[0] == "SummonerTeleport":
+        if b.zweiter and b.zweiter[0] in TP_ZAUBER:
             m.tp_in = b.zweiter[1]
+        else:                                                # Top ohne TP: das Quest-TP (kern/quest_tp.py)
+            m.tp_in = self._quest_tp.tp_in(p, lb, m.zeit)
         m.kauf = kauf_info(b)
         g = b.lane
         m.lane_im_brunnen = bool(g is not None and not g.s.tot and not g.sichtbar and lb is not None

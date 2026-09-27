@@ -220,9 +220,15 @@ def struktur(name: str) -> Struktur | None:
                     "Inhib" if art == "Inhib" else STUFE.get(stufe, stufe))
 
 
+# Auftrag 002, S4: mit der Top-Quest wird ein gewaehltes Teleport zu "S12_SummonerTeleportUpgrade" (133930 ab 8:02) -
+# es bleibt ein Teleport; ueberall wurde nur "SummonerTeleport" gesucht, und das TP war nach der Quest verschwunden
+ZAUBER_GLEICH = {"S12_SummonerTeleportUpgrade": "SummonerTeleport"}
+
+
 def _zauber_schluessel(z: dict) -> str:
     m = _ZAUBER.search(z.get("rawDisplayName", ""))
-    return m.group(1) if m else z.get("displayName", "?")
+    s = m.group(1) if m else z.get("displayName", "?")
+    return ZAUBER_GLEICH.get(s, s)
 
 
 def _champion_id(roh: dict) -> str:

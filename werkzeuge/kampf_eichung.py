@@ -13,8 +13,10 @@
    AUC (P(zufaellige gewonnene Probe hat den hoeheren Wert als eine verlorene), Gleichstand halb; 0,5 = trennt nicht).
    level_diff/gold_diff: Mittel eurer Beteiligten minus Mittel der nahen Gegner, Gegner mit K.gegner_werte (G7).
    --json schreibt {"proben": [...], "trennschaerfe": [...]}; --aus liest das und die alte Liste.
+8. --roh: Gegner mit den rohen API-Werten (Stand der letzten Sichtung) statt K.gegner_werte - im ganzen Nachspielen,
+   also in p UND in level_diff/gold_diff. Ohne Schalter wie bisher.
 
-    python werkzeuge/kampf_eichung.py 2026-09-27_133930 2026-09-27_140253 ... [--json <datei>] [--aus <datei>]
+    python werkzeuge/kampf_eichung.py 2026-09-27_133930 2026-09-27_140253 ... [--json <datei>] [--aus <datei>] [--roh]
 """
 from __future__ import annotations
 
@@ -130,7 +132,12 @@ def main() -> None:
     ap.add_argument("aufnahmen", nargs="+")
     ap.add_argument("--json")
     ap.add_argument("--aus", help="Proben aus einer frueheren --json-Datei statt Nachspielen")
+    ap.add_argument("--roh", action="store_true", help="Gegner mit rohen API-Werten statt kampf.gegner_werte (G7)")
     a = ap.parse_args()
+    if a.roh:
+        from lolcoach.kern import kampf as K
+        K.gegner_werte = lambda g, m, c: (g.s.level, float(g.s.item_gold), False)
+        print("Gegnerwerte: roh (API, Stand der letzten Sichtung)")
     cfg = konfig()
     c = cfg["kampf"]
     alle = []

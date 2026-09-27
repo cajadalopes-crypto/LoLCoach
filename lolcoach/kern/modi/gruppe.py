@@ -46,7 +46,8 @@ def _back_ohne_lane(m, cfg: dict, modus: str) -> list[Handlung]:
     text = back_grund_text(gruende)
     return [Handlung("BACK_JETZT", Ziel("basis", "Basis"), modus, cr["kanal_s"] + cr["einkauf_s"],
                      gewinn=back_gewinn(m, cfg, gruende), gefahr_t=cr["kanal_s"], grund=text,
-                     satz=f"Back jetzt: {text}.", schritte=["back", "kaufen", "zurück"])]
+                     satz=f"Back jetzt: {back_grund_text(gruende, vorn='Back jetzt:', woerter=cfg['sprechen']['max_woerter_gefahr'])}.",
+                     schritte=["back", "kaufen", "zurück"])]
 
 
 __all__ = ["kandidaten", "objectives_meine_seite"]

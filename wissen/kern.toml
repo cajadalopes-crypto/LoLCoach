@@ -43,6 +43,25 @@ gefahr_lane_leben_min = 0.6      # R5: kommt nur der Lane-Gegner, ist das ab so 
 gefahr_lane_kraft_min = -0.5     # ... und wenn kraefte() mindestens so hoch ist (bis Buch 2 die Matchups bringt)
 sicher_naeher = 300              # R5: laeufst du in 2 s so viel naeher an den sicheren Ort, kein Gefahr-Satz
 welle_min = 4                    # R7: SEITENWELLE und WELLE_KLAEREN erst ab so vielen Vasallen (oder Supervasallen)
+# Auftrag 002, S5.2: genau ein Gegner ist keine Gefahr, wenn du ihn klar ueberragst (213624 "Ziggs kommt" bei 20+ Kills)
+gefahr_einzel_leben_min = 0.6
+gefahr_einzel_level = 2          # ... du liegst so viele Level vor ihm ...
+gefahr_einzel_gold = 1500        # ... UND so viel Item-Gold (seine Werte nach Buch 7, 3.2 geschaetzt)
+# Auftrag 002, S5.3: RAUS im Kampf nur mit robustem Beleg, bis die Kampf-Eichung besteht - sie sind in kampf_radius
+# >= 1 mehr als ihr, oder dein Leben liegt unter raus_leben_max und unter dem Balken des naechsten Gegners
+raus_leben_max = 0.3
+
+[stimme]
+stand = "Auftrag 002, S2 (27.09.2026)"
+name = "de-DE-KillianNeural"    # Carlos waehlt aus aufnahmen/stimmproben/ (LIESMICH.md); bis dahin bleibt Killian
+tempo = "+50%"                  # S2.2: 20 % schneller als bisher (+25 %); --tempo ueberschreibt es
+zeichen_pro_s = 16.6            # Killian +50 %, gemessen an den Stimmproben (mit Pausen) - Schaetzung des Sprechplans
+
+[info_flash]
+stand = "Auftrag 002, S3 (27.09.2026)"
+abstand_s = 20                  # hoechstens eine Flash-Ansage je so viele Sekunden, mehrere in einem Satz
+nach_kampf_s = 3                # nicht in KAMPF; danach so viele Sekunden warten
+rest_min_s = 10                 # kommt der Flash in weniger als so vielen Sekunden zurueck, lohnt der Satz nicht mehr
 
 [sprechen]
 stand = "Buch 0 Kapitel 7.7, Schritt 2/3"
@@ -50,8 +69,8 @@ abstand_s = 12
 schutz_erinnern_s = 180         # G1 (Qualitaetsrunde 2): die kurze Fassung des Schutzplans hoechstens so oft
 max_je_minute = 3               # Kapitel 9.2 (ab Schritt 3 prueft der Kern es selbst)
 ziel_je_30min = 45
-max_woerter = 18
-max_woerter_gefahr = 10
+max_woerter = 14                # Auftrag 002, S2.3 (vorher 18): "redest viel zu lange ... immer zu spaet"
+max_woerter_gefahr = 8          # Auftrag 002, S2.3 (vorher 10)
 # nicht im Buch, Schritt 3 (messungen.md): derselbe Plan (Art + Ziel) wird so lange nicht erneut angesagt, wenn er
 # kurz wegfiel und wiederkam - "Schweigen ist ein Rat" (Leitsatz 7)
 wiederholen_s = 60
@@ -256,6 +275,20 @@ platten_annahme = 2
 kampf_wert_je_gegner = 300
 # ... mit der Gruppe faellt ein Turm schneller (je Mitspieler dabei)
 gruppe_turm_faktor = 0.6
+
+[quest_tp]
+# Quest-TP der Toplane ohne Teleport (saison2026.md, Rollenquests; kern/quest_tp.py) -> m.tp_in
+stand = "Messung 27.09.2026 an Riven-Partien 164326, 173159, 213624, 102112 (Quest-Slot V im Schirmbild)"
+modi = ["CLASSIC"]              # Swiftplay hat die Quest auch (TP-Upgrade 8:02 in 133930), aber keine belegte Frist
+quest_ende_s = 815              # 13:35 spaetestens (Regel); gemessen fertig 9:46, ~11:20, ~11:40, ~12:00
+abklingzeit_s = 390             # 26.19; gemessen 390, mit Ionischen Stiefeln 355 (Zauber-Tempo) - eher zu lang
+# eigener Teleport = das eigene Icon springt: so weit binnen fenster_s, schneller als Laufen, nicht in die Basis
+sprung_ab_s = 420               # vorher ist die Quest nicht fertig (fruehestens gemessen 9:46)
+fenster_s = 15
+sprung_min = 3500               # Einheiten, wie lage._fernsprung
+tempo_min = 750                 # Einheiten/s; Laufen gemessen bis 590, Teleports 880-4250
+tempo_basis_min = 1100          # aus der Basis (Heimgarde): Laufen gemessen bis 780
+bestaetigt_s = 2.5              # steht ein Bild binnen so vieler s wieder naeher am Absprung: Einzelbild, verworfen
 
 [kampf]
 stand = "Buch 7, 27.09.2026 - Startwerte (Schaetzung), an Aufnahmen kalibrieren (Kapitel 3.3)"

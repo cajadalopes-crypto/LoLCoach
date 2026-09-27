@@ -4,6 +4,273 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 002 – Sofort-Fixes aus Carlos' Partie 213624 (27.09.2026)
+
+Quelle: `aufnahmen/2026-09-27_213624_notizen.md`, `_sprechtaste.log`, `_ansagen.json`. Bot-Partie, Riven gegen Rumble,
+CLASSIC, 25 min. Jeder Punkt wurde am heutigen Stand (d9fd85e) geprüft, nicht an dem Zwischenstand, mit dem der Coach
+in der Partie lief. Offline gemessen, der Coach wurde nicht gestartet.
+
+### Zuerst rot
+
+Neue Datei `tests/szenarien/2026-09-27_213624.toml` (`bots = true`, nur Verdrahtung und Form) mit 9 Szenarien.
+**8 von 9 waren mit d9fd85e rot.** Grün war nur `s23-gefahr-hoechstens-8`: Die Rückzüge in 213624 hatten schon
+höchstens 8 Wörter. Es bleibt als Wächter.
+
+Neue Prüfschlüssel (`werkzeuge/szenarien.py`):
+- `gesprochen_ohne = ["regex", ...]`: Was die Stimme bekommt (`stimme.sprechbar`), passt auf keins der Muster.
+- `frage` mit `sofort = true`: Geprüft wird die Sofort-Antwort ohne Claude. Das läuft immer; gibt es keine
+  Sofort-Antwort, ist das Szenario rot.
+
+Dazu zwei Tests in `tests/test_kern.py`: `info_flash_kurz_und_gebuendelt` und `zahlen_wie_spieler`.
+
+### S1. Zahlen
+
+Die Probe aus E8 (edge-tts und Whisper) gibt es jetzt als Werkzeug: `werkzeuge/zahlenprobe.py`. Es nimmt je
+Zahl-Umfeld ein Beispiel aus den Live-Ansagen und dazu die Fälle aus 213624.
+
+Befund vorher, mit Killian bei +25 %:
+- **„3550 Gold“ kam als „3, 5, 5, 0“, also Ziffer für Ziffer.** Das passierte am Satzanfang nach „dann back.“.
+  „3000 Gold“ mitten im Satz kam richtig. Carlos' 11:12 („3-0-0-0“) kam aus einer Claude-Antwort mit „3000 Gold
+  Vorsprung“.
+- „33 02“ wurde „dreiunddreißig zwei“, Whisper hörte „33,2“. Genauso „21 07“ („21,7“).
+- „6/0“ stand so in Claudes Antwort. Der Kontext für Claude schrieb jede Bilanz als „6/0/3“.
+
+Umgesetzt:
+- `stimme.sprechbar`:
+  - Gold als Zahlwort, auf Hunderter abgerundet („dreitausendfünfhundert Gold“). Abgerundet, damit ein Satz nie
+    mehr Gold verspricht, als da ist.
+  - Jede andere Zahl ab 1000 genau in Worten.
+  - Kill-Bilanzen ohne Schrägstrich („sechs null“, „null sechs eins“). Andere Brüche als „von“ („1200 von 2000“).
+  - Uhrzeiten mit der Null („einundzwanzig null sieben“). `zahl_wort` reicht jetzt bis 999999.
+- Der Kontext für Claude schreibt „Kills 6 Tode 0 Assists 3“ statt „6/0/3“.
+- Die Systemprompts für Antworten, Briefing, Midgame und situative Sätze enthalten die Regel: „du stehst sechs
+  null“, „ihr führt sieben zu drei“, Gold gerundet.
+
+Befund nachher, mit Killian bei +50 %:
+- „3550 Gold“ wird „dreitausendfünfhundert“. Whisper hört bei dem Tempo „Dreit aus N500“, also nicht mehr Ziffer
+  für Ziffer.
+- „6/0“ kommt als „sechs null“, „21 07“ als „einundzwanzig null sieben“ (Whisper: „2107“).
+
+### S2. Stimme und Tempo
+
+- **Proben:** `aufnahmen/stimmproben/` enthält 8 Sätze je Stimme, normal (+25 %) und schnell (+50 %).
+  `LIESMICH.md` hat die Tabelle, das Werkzeug ist `werkzeuge/stimmproben.py`.
+  - edge-tts bietet nur zwei mehrsprachige deutsche Stimmen: Florian und Seraphina.
+  - Die mehrsprachigen Stimmen bekommen die Namen im Original, Killian weiter mit deutscher Lautschrift.
+  - **Carlos wählt.** Bis dahin bleibt Killian (`[stimme] name` in `wissen/kern.toml`).
+- **Tempo:** `[stimme] tempo = "+50%"`, als Schalter `--tempo` bei `live` und `abspielen`. Das ist 20 % schneller
+  als bisher (+25 %). Siehe Abweichung 1.
+  - Der Sprechplan schätzt die Satzlänge jetzt mit 16,6 Zeichen/s statt 14 (`[stimme] zeichen_pro_s`, gemessen an
+    den Proben).
+- **Befund zur Pause:** Killian hat etwa 0,95 s Stille je Satz, Florian 0,57 s, Seraphina 0,50 s.
+  - Ohne diese Stille sprechen Killian und Florian gleich schnell (21,3 und 20,7 Zeichen/s).
+  - +50 % beschleunigt nur das Sprechen, nicht die Stille.
+  - „Zu langsam“ kommt also auch von den Pausen. Nicht umgebaut, siehe Offen.
+- **Satzlängen (Buch 0, 9.3):** PLAN höchstens 14 Wörter (vorher 18), GEFAHR höchstens 8 (vorher 10). Vorher lagen
+  in den sieben Protokollen 56 Sätze darüber:
+  - ZURUECK 21 von 93,
+  - BACK_JETZT 18 von 29,
+  - WELLE_HALTEN 5,
+  - KAUFEN 4,
+  - MIT_GRUPPE 3,
+  - DRUECKEN 2,
+  - WELLE_REIN_UND_BACK 2,
+  - WOHIN 1.
+
+  Gekürzt:
+  - Rückzug: „Raus zum Mid-Tier-1-Turm“ statt „Raus zu deinem …“. Passen die Namen nicht, wird gezählt: „drei von
+    ihnen kommen“.
+  - Back: nur so viele Gründe, wie in 8 Wörter passen.
+  - WELLE_HALTEN ohne „dort farmen“.
+  - Turm-Fenster: „35 Sekunden, bis einer kommt“ statt „frühestens in 35 Sekunden kann einer von ihnen dort sein“.
+  - „Mit der Gruppe zum …“.
+  - Jeder PLAN- und Erinnerungs-Satz über 14 Wörtern verliert zuerst den Grund hinter dem letzten Doppelpunkt
+    (`modi.kuerze`).
+
+### S3. Flash
+
+- **Ansage INFO_FLASH** (`Kern._flash_info`, `[info_flash]`):
+  - Ein bestätigter Flash eines Gegners wird kurz gesagt: „Sona ohne Flash.“
+  - Bestätigt ist jeder Flash-Timer des Lagebilds: Chat-Ping, oder ein Sprung auf Minimap bzw. Bildschirm bei einem
+    Champion ohne eigenen Dash. So legt es `lage.ereignisse` schon an.
+  - Nicht in KAMPF, sondern 3 s nach dem Kampf.
+  - Höchstens einer je 20 s, mehrere in einem Satz („Sona und Caitlyn ohne Flash.“).
+  - Kommt der Flash in weniger als 10 s zurück, fällt der Satz weg.
+  - Zählt nicht zum Budget. In 213624 kommt er dreimal: 4:55 Sona, 8:41 Rumble, 11:21 Sona.
+- **Antworten:**
+  - Die Lage für Claude enthält jetzt den Flash-Stand ALLER Gegner: ohne Flash mit Restzeit, wieder da,
+    unbekannt, spielt kein Flash.
+  - Die Frage „Wie sieht's mit den Flashes aus?“ beantwortet der Coach sofort aus dieser Tabelle. 213624 23:22:
+    „Rumble und Sona haben Flash wieder. Von Xin Zhao, Ziggs und Caitlyn weiß ich nichts.“ Vorher kam „Dazu hab ich
+    keine Daten“, weil die Lage nur laufende Timer nannte.
+- **Logik:** In allen Systemprompts steht jetzt: Ein Gegner ohne Flash ist ein Grund FÜR einen Angriff auf ihn, nie
+  dagegen.
+
+### S4. Quest-TP
+
+**Messung** an 164326, 173159, 213624, 102112 (CLASSIC, Riven ohne TP) und 133930 (Swiftplay, mit TP). Als Wahrheit
+dient der Quest-Platz im Schirmbild.
+
+- **Die API zeigt ohne TP nichts:** keinen Quest-Platz, gleiche Beschwörerzauber, kein Ereignis, gleiche Runen.
+  Indirekt gibt es nur Level 19/20, weil die Quest das Level-Cap hebt. In 164326 kam das erst 26:14, zu spät zum
+  Planen.
+- **Mit TP als Zauber** heißt der Schlüssel nach der Quest `S12_SummonerTeleportUpgrade` (133930 ab 8:02).
+  - Der Coach suchte überall nur `SummonerTeleport`, das TP war danach verschwunden.
+  - Behoben beim Einlesen (`zustand.ZAUBER_GLEICH`).
+  - Die Quest gibt es also auch in Swiftplay.
+- **HUD:** Der Quest-Platz V liegt rechts neben den Items. Ein türkiser Ring heißt, die Quest läuft. Das violette
+  TP-Symbol heißt bereit. Dunkel mit Zahl heißt Abklingzeit.
+  - Die Quest war früher fertig als nach der Regel (spätestens 13:35): 213624 9:31–9:46, 102112 11:10–11:36,
+    173159 11:30–11:51, 164326 11:51–12:07.
+  - Abklingzeit: 390 s, mit Ionischen Stiefeln 355 s. Zaubertempo wirkt also auf das Quest-TP.
+- **Benutzung:** Rivens Icon springt schneller als 880 Einheiten/s. Laufen kommt auf höchstens 590, aus der Basis
+  auf 780.
+  - Fünf Benutzungen: 164326 18:55 und 39:21, 173159 ~12:58 und 23:22, 102112 ~38:16. In 213624 keine.
+  - Alle fünf erkannt, 0 Fehlmeldungen. Die Gegenprobe über 17 Aufnahmen vom 26./27.09. ergab keine Fehlmeldung.
+  - Gemessene Fallen:
+    - Lane, Recall, wieder raus binnen 15 s sah wie ein Sprung aus (164326 7:51).
+    - Das Lagebild hält dich unter fremden Icons fest (164326 35:15). Deshalb zählen nur echte Sichtungen.
+    - Nach dem TP ist das Icon oft 30 s weg.
+
+**Umbau** (`kern/quest_tp.py`, `[quest_tp]` in `wissen/kern.toml`):
+- Für Top ohne TP als Zauber in CLASSIC ist `m.tp_in` ab 13:35 bereit und nach einem erkannten eigenen Teleport
+  390 s weg.
+- Damit greifen die TP-Regeln aus Buch 5, Kapitel 5 und Buch 6, 4.7 von selbst.
+- `karte.py` und `basis.py` sind unverändert. Test: `tests/test_quest_tp.py`.
+
+### S5. Falsche Warnungen
+
+1. **16:21 „Raus zu deinem Mid-Tier-1-Turm: Caitlyn und Sona kommen.“ Tote Gegner zählten nicht.**
+   - Rumble, Xin Zhao und Ziggs waren tot und gingen mit p_da 0 ein.
+   - Caitlyn lebte noch, mit 32 % direkt an Riven, und starb eine Sekunde später. Sona war seit 36 s ungesehen.
+   - Riven lag fünf bzw. sieben Level und 3150 bzw. 3500 Item-Gold vorn.
+   - Die Regel aus 2. greift nicht, weil es zwei Gegner sind. Siehe Offen.
+2. **Ein einzelner, klar unterlegener Gegner ist keine Gefahr** (`Kern._klar_unterlegen`):
+   - Bedingungen: genau ein Gegner, dein Leben ≥ 60 %, du liegst ≥ 2 Level UND ≥ 1500 Item-Gold vor ihm.
+   - Seine Werte werden nach Buch 7, 3.2 geschätzt, wenn sie veraltet sind.
+   - Die Warnungen 15:15, 17:32 und 21:37 „Ziggs kommt“ sind weg.
+3. **RAUS im Kampf nur mit robustem Beleg** (`modi.kampf.raus_beleg`):
+   - Robust heißt: In `kampf_radius` stehen ≥ 1 Gegner mehr als ihr, ODER dein Leben liegt unter 30 % und unter
+     dem Balken des nächsten Gegners.
+   - Sonst ist RAUS stumm wie REIN. Das gilt auch für „Lass ihn, Turm!“ (15:18, 16:47; Carlos 15:25: „Ich habe
+     Ziggs getowerdived und das ist easy“).
+   - In 213624 sind so 1:11 (mit der Wiederholung 1:17), 15:18, 16:47 und 19:00 stumm. Gesprochen wird dort kein
+     RAUS mehr.
+   - 19:00 war „Raus, zum Turm!“ bei 12 % Leben, zwei Sekunden bevor das Leben auf 1 % fiel.
+     - Sichtbar war nur Sona, 825 entfernt, ihr Balken unbekannt.
+     - Xin Zhao, der Riven dann tötete, war nicht zu sehen.
+     - Nach der Regel ist das kein Beleg. Siehe Offen.
+4. Nebenbei behoben: „Sona und Sona kommen: nimm den Kampf.“ (stummes ANNEHMEN, 18:28). Der zweite Name ist jetzt
+   ein anderer Gegner als der nächste.
+
+### S6. Gold trennt verkehrt (AUC 0,30)
+
+**Der Verdacht bestätigt den Mechanismus, erklärt die AUC aber nicht.**
+
+- **Nachrechnung** (`kampf_eichung.py`, neuer Schalter `--roh`), dieselben 6 Partien, 112 Proben, 41 entschieden:
+
+  | | geschätzt (Buch 7, 3.2) | roh (API) |
+  |---|---|---|
+  | Brier (Grundrate 0,249) | 0,320 | 0,318 |
+  | gold_diff AUC (Mittel gewonnen / verloren) | 0,30 (+431 / +1438) | 0,30 (gleich) |
+  | level_diff AUC | 0,43 | 0,43 |
+  | p AUC | 0,40 | 0,41 |
+
+  - Eine Probe zählt nur sichtbare nahe Gegner, also mit `seit = 0`. Dort schätzt `gegner_werte` nie nach.
+  - Die Schätzung wirkt nur über ungesehene Gegner auf p: in 23 Proben, um höchstens 0,02.
+- **Back-Test** (`werkzeuge/back_test.py`): 219 Änderungen des Item-Golds nach der ersten Sichtung.
+  - 181 (83 %) liegen höchstens 3 s um den Moment, in dem die Minimap den Gegner wieder zeigt.
+  - Keine fällt in eine Todeszeit, obwohl man nach dem Tod im Brunnen kauft.
+  - Die API zeigt die Items also im Stand der letzten Sichtung und springt beim Auftauchen. Beispiel: 133930 6:20
+    Gwen +2150 nach 31 s ungesehen.
+  - 36 Änderungen fallen in den Nebel. Möglich wären verpasste Sichtungen; die Ursache ist nicht geprüft.
+- **An den Proben:** 0 von 41 hatten einen nahen Gegner mit veraltetem Stand.
+  - Kämpfe direkt nach dem Auftauchen gehen nicht öfter verloren: 5 von 19 verlorenen, 8 von 22 gewonnenen.
+  - gold_diff trennt also auch mit echten Werten verkehrt. Die Ursache liegt woanders. Die Deutung „mit Vorsprung
+    mutiger“ ist weiter ungeprüft.
+- Die Rufe bleiben stumm.
+
+### S7. Szenarien und Wünsche
+
+- `szenario_aus_notizen.py` hat für 213624 10 Stubs angelegt (`tests/szenarien/offen/2026-09-27_213624.toml`).
+- Die konkreten Szenarien stehen oben (S1, S2.3, S3, S5).
+- Carlos' Wünsche aus der Partie stehen in `OFFEN.md`, jeweils mit dem Auftrag bzw. Buch, das sie abdeckt.
+
+### Abnahme
+
+| Abnahme | Soll | Ist |
+|---|---|---|
+| `tests/alle.py` | grün | **10 / 10** (neu: `test_quest_tp`; in `test_kern` neu: `info_flash_kurz_und_gebuendelt`, `zahlen_wie_spieler`) |
+| Szenarien, alle 13 Dateien (`--kern neu`) | grün | **95 / 95** (2 übersprungen, brauchen Claude); konstruierte Lagen **40 / 40** |
+| Neue Szenarien zuerst rot | rot mit d9fd85e | **8 / 9**; der neunte (`s23-gefahr-hoechstens-8`) bleibt als Wächter |
+| Protokolle | 213624, 164326, 173159 | **ja**, `buecher/protokolle/` |
+| Schranken-, Kampf-Verstöße, Objective ohne Chance | 0 | **0** in allen sieben |
+
+Geändert, mit Grund:
+- `test_bausteine.sprechbar`: „2500 Gold“ und „KDA 27/6/4“ werden jetzt gewollt in Worten gesprochen.
+- `test_bausteine.live_partie_2121`: Das Briefing ist dort jetzt 43 s lang gemessen am Tempo, nicht 600 Zeichen.
+  Mit 16,6 Zeichen/s war es sonst vor 67 s zu Ende.
+- `144655_pruefung`:
+  - `0701` verlangt „farm“ im Satz. WELLE_HALTEN heißt jetzt „Welle zum Turm ziehen, farmen, kein Trade bis …“
+    (13 Wörter).
+  - `0449` hat das Fenster bis 5:05 statt 5:10. RAUS kommt jetzt 4:46 statt 4:42 (S5.3), und der Satz in der Basis
+    nach dem Recall gehört nicht zur Rückzug-Episode.
+- `102112_pruefung` `2547`: Der neue Wortlaut „0 Sekunden, bis einer“ ist mit bewacht.
+
+**Kennzahlen** (Kern, `kennzahlen.py --nur-kern`; INFO_FLASH neu in der Ausgabe):
+
+| Aufnahme | ungefragt (je 30 min) | davon INFO_FLASH | ohne INFO_FLASH je 30 min | Lane-Phase je 30 s | Kehrtwenden | Fassungswechsel | GEFAHR / PLAN / ERINNERUNG / BESTÄTIGUNG |
+|---|---|---|---|---|---|---|---|
+| 102112 | 50 (49) | 5 | 44 | 0,72 | 0 | 1 | 8 / 35 / 0 / 1 |
+| 133930 | 43 (59) | 1 | 58 | 1,14 | 0 | 0 | 15 / 20 / 1 / 1 |
+| 140253 | 15 (42) | 1 | 39 | 0,71 | 0 | 0 | 4 / 8 / 0 / 0 |
+| 144655 | 16 (50) | 1 | 46 | 0,85 | 0 | 0 | 9 / 4 / 1 / 0 |
+| 164326 | 69 (48) | 12 | 40 | 0,82 | 0 | 0 | 25 / 27 / 2 / 3 |
+| 173159 | 72 (56) | 9 | 49 | 0,64 | 0 | 0 | 30 / 26 / 1 / 4 |
+| 213624 | 39 (47) | 3 | 43 | 0,61 | 0 | 1 | 7 / 27 / 0 / 1 |
+
+- **Stand vorher** (Qualitätsrunde 3): 164326 46 und 173159 52 je 30 min, GEFAHR 32 und 34.
+  - S5.2/S5.3 nehmen GEFAHR auf 25 und 30 herunter.
+  - INFO_FLASH kommt neu dazu, 12 und 9 Sätze. Ohne ihn liegen beide unter 50 (40 und 49).
+  - 213624 hatte vor den Fixes 43 Sätze, jetzt 39.
+- **Fassungswechsel:**
+  - 102112 38:01 „Dann zu deinem Team.“ → 38:15 „Dann Top-Welle.“ ist der begründete Fall aus Qualitätsrunde 3
+    (Kills dazwischen).
+  - 213624 12:47 „Zum Drachen: ihr seid drei.“ → 12:59 „Dann Drachen.“ gab es schon vor Auftrag 002. Das Ziel ist
+    dasselbe, nach einem neuen Basis-Besuch kommt die Kurzform. Das Vergessen beim Betreten der Basis
+    (`_angesagt.clear()`) lässt ihn zu. Nicht umgebaut, siehe Offen.
+
+### Offen
+
+1. **Zwei klar unterlegene Gegner** (213624 16:21, Caitlyn mit 32 % und Sona, beide 5 bis 7 Level hinter Riven):
+   S5.2 gilt nur für genau einen Gegner. Entscheidung: auch für zwei, wenn jeder einzeln klar unterlegen ist?
+2. **RAUS bei < 30 % Leben, wenn der Balken des Gegners unbekannt ist** (213624 19:00, 12 %): Heute ist das kein
+   Beleg, der Ruf bleibt stumm. Entscheidung: Soll ein unbekannter Balken bei sehr wenig Leben reichen?
+3. **Stimme:**
+   - Carlos wählt aus `aufnahmen/stimmproben/`.
+   - Die Stille um jeden Satz (Killian ~0,95 s) ließe sich beim Abspielen abschneiden. Nicht umgebaut, weil
+     `stimme.py` dafür neu gemessen werden muss (`werkzeuge/stimmprobe.py`).
+4. **Quest-TP:**
+   - Es gilt erst ab 13:35 als bereit, obwohl die Quest 1,5 bis 4 min früher fertig war. Das behebt erst das Lesen
+     des Quest-Platzes V im HUD (`hud.py`).
+   - Die Abklingzeit steht fest auf 390 s, mit Ionischen Stiefeln sind es 355 s.
+5. **Kurzform nach einem neuen Basis-Besuch** (213624 12:47/12:59) zählt als Fassungswechsel, siehe oben.
+6. **S6:**
+   - Die Ursache der Gold-AUC 0,30 ist weiter offen.
+   - 36 Item-Änderungen im Nebel sind ungeklärt, möglich wären verpasste Sichtungen.
+
+### Abweichungen und Entscheidungen
+
+1. **Tempo +50 % statt +20 %:** Der Auftrag sagt „Standard +20 %“. Die Stimme lief aber schon mit +25 %, und Carlos
+   findet sie zu langsam. Deshalb ist +50 % gesetzt: 20 % schneller als bisher. Ein Wert in `wissen/kern.toml`.
+2. **Gold abgerundet**, nicht gerundet: „850 Gold für Axiombogen“ wird „achthundert“, nicht „neunhundert“.
+3. **S5.1 war kein Fehler der Toten:** Die Warnung 16:21 kam von zwei lebenden Gegnern, siehe oben. Nichts umgebaut,
+   die Frage steht unter Offen.
+4. **Gefahr-Sätze nennen ab drei Namen eine Zahl.** Der Grund ist die Grenze von 8 Wörtern. Zwei Namen passen
+   meistens („Raus zum Mid-Tier-1-Turm: Xin Zhao und Ziggs kommen.“).
+
+---
+
 ## Qualitätsrunde 3 – Prüfung vom 27.09.2026 (c), R1–R10 (27.09.2026)
 
 Auftrag 001 aus `buecher/auftraege/`. Grundlage: `buecher/protokolle/PRUEFUNG_2026-09-27c.md`, vorher committet in

@@ -1,7 +1,7 @@
 """Der Entscheidungskern an konstruierten Lagen (Buch 1, 6.2; Buch 3, 7.2): tests/szenarien/konstruiert/*.toml.
 
 Jede Lage: ein Takt des Kerns, Plan gegen soll / darf_nicht / satz_enthaelt - dazu die Satzform (Buch 0, 9.3):
-PLAN hoechstens 18 Woerter, GEFAHR hoechstens 10.
+PLAN hoechstens 14 Woerter, GEFAHR hoechstens 8 (Auftrag 002, S2.3; vorher 18 und 10).
 
     python tests/test_kern.py
 """
@@ -141,9 +141,52 @@ def gold_reicht_fuer_das_genannte_item():
             assert rest <= gold, (name, rest, gold, inventar)
 
 
+def info_flash_kurz_und_gebuendelt():
+    """Auftrag 002, S3.1: ein bestaetigter Flash eines Gegners kurz ("Ziggs ohne Flash."), nicht in KAMPF, danach 3 s
+    warten, hoechstens einer je 20 s, mehrere in einem Satz."""
+    from types import SimpleNamespace as NS
+    from lolcoach.kern import Kern
+    from lolcoach.zauber import Timer
+    k = Kern(stellung="neu")
+    gegner = [NS(name="z", champion="Ziggs"), NS(name="s", champion="Sona"), NS(name="c", champion="Caitlyn")]
+    p = NS(gegner=lambda: gegner)
+    timer: dict = {}
+    k._lagebild = NS(zauber=NS(timer=timer))
+
+    def m(t):
+        return NS(zeit=t, p=p, leben=1.0)
+
+    timer[("z", "SummonerFlash")] = Timer("z", "Ziggs", "SummonerFlash", 400.0, "Minimap", 100.0)
+    assert k._flash_info(m(101), "KAMPF", []) is None                       # nicht in KAMPF
+    k._kampf_zuletzt = 101.0
+    assert k._flash_info(m(102), "LANE", []) is None                        # 3 s nach dem Kampf
+    a = k._flash_info(m(104.5), "LANE", [])
+    assert a is not None and a.text == "Ziggs ohne Flash.", a
+    assert len(a.text.split()) <= 4
+    timer[("s", "SummonerFlash")] = Timer("s", "Sona", "SummonerFlash", 410.0, "Chat", 110.0)
+    timer[("c", "SummonerFlash")] = Timer("c", "Caitlyn", "SummonerFlash", 420.0, "Chat", 112.0)
+    assert k._flash_info(m(115), "LANE", []) is None                        # hoechstens einer je 20 s
+    a = k._flash_info(m(125), "LANE", [])
+    assert a is not None and a.text == "Sona und Caitlyn ohne Flash.", a    # zusammengefasst, Ziggs nicht noch einmal
+    assert k._flash_info(m(150), "LANE", []) is None                        # nichts Neues
+
+
+def zahlen_wie_spieler():
+    """Auftrag 002, S1: was die Stimme bekommt - Gold als Zahlwort auf Hunderter, Kill-Bilanzen ohne Schraegstrich,
+    Uhrzeiten mit der Null (Probe mit edge-tts und Whisper: werkzeuge/zahlenprobe.py)."""
+    from lolcoach.stimme import sprechbar
+    assert sprechbar("3000 Gold Vorsprung") == "dreitausend Gold Vorsprung"
+    assert sprechbar("3.100 Gold") == "dreitausendeinhundert Gold"
+    assert sprechbar("dann back. 3550 Gold für Hydra") == "dann back. dreitausendfünfhundert Gold für Hydra"
+    assert sprechbar("mit 6/0 oben") == "mit sechs null oben"
+    assert sprechbar("Kanone kommt 21 07: rein") == "Kanone kommt einundzwanzig null sieben: rein"
+    assert sprechbar("Recall/Kauf") == "Recall oder Kauf"
+    assert "/" not in sprechbar("Leben 1200/2000")
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
-                 gold_reicht_fuer_das_genannte_item):
+                 gold_reicht_fuer_das_genannte_item, info_flash_kurz_und_gebuendelt, zahlen_wie_spieler):
         test()
         print(f"{test.__name__} OK")

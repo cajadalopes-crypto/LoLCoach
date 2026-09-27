@@ -17,6 +17,25 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 002 (Sofort-Fixes aus 213624) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 002"), Bericht in
+`buecher/auftraege/002_bericht.md`. Carlos' Wuensche aus der Partie 213624 (Notizen und Sprechtaste), je mit dem, was
+sie abdeckt:
+- **Vorausplanung, naechste Schritte frueher** (17:08, 20:32: "zwei, drei Minuten in die Zukunft gucken", "Leerlauf,
+  man wartet auf Anweisungen"): **Buch 11** (Claude schreibt es). Nicht in Auftrag 002.
+- **Fragen werden nicht beantwortet** (11:49, 13:23: "zehnmal dieselbe Frage, du antwortest einfach nicht"):
+  **Buch 11** (Schritt 6, Fragen per Sprechtaste). Nicht in Auftrag 002.
+- **Aussprache** der Champion- und Item-Namen (5:59: "englische Woerter auch wirklich auf Englisch"): Auftrag 002, S2 -
+  Stimmproben in `aufnahmen/stimmproben/`, **Carlos waehlt** (`[stimme] name` in `wissen/kern.toml`).
+- **Tempo** (16:02: "viel zu lange und viel zu langsam ... immer zu spaet"): Auftrag 002, S2 - +50 %, PLAN <= 14,
+  GEFAHR <= 8 Woerter. Offen: Killian hat ~0,95 s Stille je Satz (Florian 0,57 s), die +50 % nicht kuerzt.
+- **Flash** (19:41: "du sagst nicht, wenn jemand geflasht hat"; 23:22 "keine Daten"; 23:45 "extrem gut, wenn die kein
+  Flash haben"): Auftrag 002, S3 - INFO_FLASH, Flash-Stand aller Gegner, Regel "ohne Flash = Grund fuer Angriff".
+- **Quest-TP** (14:20: "du planst nie meinen Teleport ein"): Auftrag 002, S4.
+- **Zahlen** (7:00 Schraegstrich, 11:12 "3-0-0-0"): Auftrag 002, S1.
+- Offen aus Auftrag 002 (Entscheidung): 16:21 zwei klar unterlegene Gegner (Caitlyn 32 %, Sona) loesten GEFAHR aus -
+  gilt die Regel "klar unterlegen" auch fuer zwei? RAUS bei < 30 % Leben, wenn der Balken des Gegners unbekannt ist
+  (213624 19:00) - Beleg oder nicht?
+
 **Qualitaetsrunde 3 (Pruefung 27.09. c, R1-R10, Auftrag 001) umgesetzt** - Zahlen in `buecher/messungen.md`
 ("Qualitaetsrunde 3"), Protokolle neu in `buecher/protokolle/`, Bericht in `buecher/auftraege/001_bericht.md`.
 Schranken-Verstoesse 0 in allen sechs Partien, 86 / 86 Szenarien gruen.

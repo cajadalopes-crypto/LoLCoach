@@ -11,7 +11,9 @@ Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes
                             (Buch 6, 13): max_woerter (kein gesprochener Satz im Fenster laenger), alte_regeln_max
                             (so viele gesprochene Saetze alter Regeln im Fenster hoechstens); seit der
                             Qualitaetsrunde 3: je_10min_max = { "muster" = n } (in keinem 10-Minuten-Fenster mehr
-                            als n Treffer), kategorie_max = { "GEFAHR" = n } (Kern-Saetze einer Kategorie)
+                            als n Treffer), kategorie_max = { "GEFAHR" = n } (Kern-Saetze einer Kategorie); seit
+                            Auftrag 002: gesprochen_ohne = ["regex", ...] (was die Stimme bekommt, stimme.sprechbar,
+                            passt auf keins - "6/0", "3000" Ziffer fuer Ziffer)
   Datei:                    spielmodus = "CLASSIC" | "SWIFTPLAY" (Vorgabe CLASSIC) - muss zum gameMode der Aufnahme
                             passen, sonst rot (Qualitaetsrunde 2, G6: 133930 und 140253 sind Swiftplay)
   Kern (Modus, Plan-Art):   modus und [[modus_soll]] ab Schritt 2 (irgendein Takt in zeit +-2 s hat einen der
@@ -20,7 +22,8 @@ Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes
                             mit einer soll-Art hat p_tod darunter); soll_ziel (Buch 6, 13: ein Takt in zeit +-2 s bzw.
                             im Fenster hat einen Plan, dessen Ziel oder Objective diesen Text enthaelt). ANLAUFEN gilt
                             als NEHMEN (Buch 6, 4.3: eine Handlung mit zwei Schritten)
-  frage:                    wie per Sprechtaste, geprueft wird die Antwort - braucht Claude, nur mit --mit-claude
+  frage:                    wie per Sprechtaste, geprueft wird die Antwort - braucht Claude, nur mit --mit-claude;
+                            mit sofort = true die Sofort-Antwort ohne Claude (immer geprueft, keine = rot)
   typ = "review":           gegen das gespeicherte Review der Partie - nur mit --mit-claude
 
 Ein Szenario ist rot, wenn ein gepruefter Teil verletzt ist; gruen, wenn mindestens ein Teil geprueft wurde und
@@ -322,7 +325,10 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
 
     def bei_halt(soll, p, b, lb, wand):
         for s in szen:
-            if s.get("frage") and mit_claude and ns.sekunden(s["zeit"]) == soll and nur != "kern":
+            if s.get("frage") and s.get("sofort") and ns.sekunden(s["zeit"]) == soll and nur != "kern":
+                from lolcoach import antworten
+                antworten_[s["id"]] = antworten.sofort(s["frage"], p, lb) or "(keine Sofort-Antwort)"
+            elif s.get("frage") and mit_claude and ns.sekunden(s["zeit"]) == soll and nur != "kern":
                 antworten_[s["id"]] = antwort(s["frage"], p, lb, wand, stamm)
 
     if lauf is None:
@@ -370,6 +376,13 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                     if len(kw) > sz["kehrtwenden_max"]:
                         verstoesse.append(f"kehrtwenden_max {sz['kehrtwenden_max']} - {len(kw)}: " + "; ".join(
                             f"{ns.uhr(a)} \"{s1[:40]}\" -> {ns.uhr(b)} \"{s2[:40]}\"" for a, s1, b, s2 in kw))
+                if "gesprochen_ohne" in sz:
+                    geprueft += 1
+                    from lolcoach.stimme import sprechbar
+                    for muster in sz["gesprochen_ohne"]:
+                        treffer = next(((t, sprechbar(s)) for t, s in texte if re.search(muster, sprechbar(s))), None)
+                        if treffer is not None:
+                            verstoesse.append(f"gesprochen_ohne '{muster}' - {ns.uhr(treffer[0])} \"{treffer[1][:100]}\"")
                 if "ansagen_max" in sz:
                     geprueft += 1
                     if len(texte) > sz["ansagen_max"]:

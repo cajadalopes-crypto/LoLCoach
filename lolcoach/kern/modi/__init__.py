@@ -145,11 +145,28 @@ def back_gewinn(m, cfg: dict, gruende: list[BackGrund]) -> float:
     return sum(x.gewinn for x in gruende) + heil_wert(m, cfg)
 
 
-def back_grund_text(gruende: list[BackGrund], hoechstens: int = 2) -> str:
+def back_grund_text(gruende: list[BackGrund], hoechstens: int = 2, vorn: str = "", woerter: int | None = None) -> str:
     """Die tragenden Gruende mit Zahl - Gold nur einmal ("1550 Gold fuer den Brutalisierer", nicht dazu noch
-    "1500 Gold im Beutel")."""
+    "1500 Gold im Beutel"). Mit `woerter`: nur so viele Gruende, dass `vorn` + Gruende hineinpassen (Auftrag 002,
+    S2.3: "Back jetzt: 850 Gold fuer den naechsten Kauf, Teemo ist tot." waren 11 Woerter) - mindestens einer."""
     teile = [x for x in gruende if not (x.art == "GOLD_HORTEN" and any(y.art == "GOLD_STUFE" for y in gruende))]
-    return ", ".join(x.text for x in teile[:hoechstens])
+    n = hoechstens
+    while woerter is not None and n > 1 and len(f"{vorn} {', '.join(x.text for x in teile[:n])}".split()) > woerter:
+        n -= 1
+    return ", ".join(x.text for x in teile[:n])
+
+
+def kuerze(satz: str, woerter: int) -> str:
+    """Auftrag 002, S2.3: ein Satz ueber der Grenze verliert zuerst den Grund hinter dem letzten Doppelpunkt ("Kauf X,
+    dann zur Top-Welle: dort nimmt sie sonst niemand." -> "Kauf X, dann zur Top-Welle.") - das Wichtigste steht vorn.
+    Nur, wenn davor mehr als ein Vorsatz bleibt ("Noch 8 Sekunden:" allein ist kein Satz)."""
+    while len(satz.split()) > woerter and ": " in satz:
+        kopf = satz.rsplit(": ", 1)[0]
+        rest = kopf.split(": ", 1)[1] if kopf.startswith("Noch ") and ": " in kopf else kopf
+        if len(rest.split()) < 3:
+            break
+        satz = kopf.rstrip(".,;") + "."
+    return satz
 
 
 def abwesenheit(m, cfg: dict, zustand: str) -> float:
@@ -294,16 +311,30 @@ def _am_sicheren_ort(m, plan) -> bool:
     return True
 
 
+GEFAHR_WOERTER = 8          # Buch 0, 9.3 (Auftrag 002, S2.3) - wie [sprechen] max_woerter_gefahr
+_ZAHL = {2: "zwei", 3: "drei"}
+
+
 def zurueck_saetze(h: Handlung, m=None, bleiben: Handlung | None = None) -> None:
-    """Satz fuer ZURUECK (GEFAHR: hoechstens 10 Woerter, die Handlung zuerst). Der Grund ist, wer dich toetet, wenn du
+    """Satz fuer ZURUECK (GEFAHR: hoechstens 8 Woerter, die Handlung zuerst). Der Grund ist, wer dich toetet, wenn du
     BLEIBST (`bleiben` = FARMEN) - nicht das kleine Restrisiko des Rueckzugs selbst (094832, 4:54: "Raus ...: du hast
     100 Prozent Leben", waehrend Swain auf Riven zulief). Stehst du schon fast dort: "Bleib an ..."."""
     quelle = bleiben if bleiben is not None else h
     wer = wer_kommt(quelle) or wer_kommt(quelle, 0.01)[:2]
     ort = h.daten["ort"]
+    # Auftrag 002, S2.3: "Raus zum Mid-Tier-1-Turm" wie in Buch 0, 9.3 - ein Wort kuerzer als "zu deinem", damit zwei
+    # Namen in 8 Woerter passen
+    raus = f"Raus zum {ort[len('deinem '):]}" if ort.startswith("deinem ") else f"Raus zu {ort}"
     leben = m.leben if m is not None else None
     if wer:
         h.grund = f"{liste(wer[:3])} {'kommt' if len(wer) == 1 else 'kommen'}"
+        # Auftrag 002, S2.3: GEFAHR hoechstens 8 Woerter - sonst wird gezaehlt ("Raus zu deinem Mid-Tier-1-Turm: Zac,
+        # Gwen und Xin Zhao kommen." waren 10)
+        n = min(len(wer), 3)
+        for grund in (h.grund, f"{_ZAHL.get(n, n)} von ihnen kommen", f"{_ZAHL.get(n, n)} kommen"):
+            h.grund = grund
+            if len(f"{raus}: {grund}.".split()) <= GEFAHR_WOERTER or n == 1:
+                break
     elif h.daten["gruende"]:
         h.grund = h.daten["gruende"][0]
     else:
@@ -314,7 +345,7 @@ def zurueck_saetze(h: Handlung, m=None, bleiben: Handlung | None = None) -> None
         praep = "an" if ort.startswith("deinem") else "in" if ort.startswith("deiner") else "bei"
         h.satz = f"Bleib {praep} {ort}: {h.grund}."
     else:
-        h.satz = f"Raus zu {ort}: {h.grund}."
+        h.satz = f"{raus}: {h.grund}."
 
 
 def satz_kurz(text: str, woerter: int) -> str:

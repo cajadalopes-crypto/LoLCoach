@@ -299,8 +299,8 @@ def ausgeben(k: dict) -> None:
             print(f"      {nr} {ns.uhr(ns.gesprochen_um(a))} {a.text[:110]}")
     kat = k["kategorien"]
     if kat and k["kern"] == "neu":
-        print("   Kern: GEFAHR / PLAN / ERINNERUNG / BESTAETIGUNG = "
-              + " / ".join(str(kat.get(x, 0)) for x in ("GEFAHR", "PLAN", "ERINNERUNG", "BESTAETIGUNG"))
+        print("   Kern: GEFAHR / PLAN / ERINNERUNG / BESTAETIGUNG / INFO_FLASH = "
+              + " / ".join(str(kat.get(x, 0)) for x in ("GEFAHR", "PLAN", "ERINNERUNG", "BESTAETIGUNG", "INFO_FLASH"))
               + (f"; Staerken: " + "; ".join(f"{ns.uhr(t)} {s}" for t, s in k["staerken"]) if k["staerken"] else ""))
     print(f"   Kampf-Verstoesse (Buch 7, Soll 0): {len(k['kampf'])}")
     for t, s in k["kampf"][:5]:

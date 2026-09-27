@@ -130,14 +130,16 @@ def profil_ueber_partien():
 def sprechbar():
     from lolcoach.stimme import sprechbar as s
     assert s("Jungler/Laner seit 30-40 s weg, ab 2500+ Gold") == \
-        "Jungler oder Laner seit 30 bis 40 Sekunden weg, ab mehr als 2500 Gold"
+        "Jungler oder Laner seit 30 bis 40 Sekunden weg, ab mehr als zweitausendfünfhundert Gold"   # Auftrag 002, S1
+    # Auftrag 002, S1: Kill-Bilanzen ohne Schraegstrich ("du stehst sechs null")
+    assert s("KDA 27/6/4") == "KDA siebenundzwanzig sechs vier"
     # Spielzeiten als Woerter (E8, gemessen: "7 57" las die Stimme "sieben, fuenf, sieben")
     assert s("Gank zwischen 2:45 und 3:30, Drache um 5:00") == \
         "Gank zwischen zwei fünfundvierzig und drei dreißig, Drache um fünf Minuten"
     assert s("Stapel die Top-Welle bis zur Kanone um 7 57: dann crashen.") == \
         "Stapel die Top-Welle bis zur Kanone um sieben siebenundfünfzig: dann crashen."
     assert s("Spawn um 8 00, 21 Uhr") == "Spawn um acht Minuten, 21 Uhr"
-    for gleich in ("Mid-Lane", "Level 6", "Tri-Bush", "80 %", "KDA 27/6/4", "5 sind weg"):
+    for gleich in ("Mid-Lane", "Level 6", "Tri-Bush", "80 %", "5 sind weg"):
         assert s(gleich) == gleich, s(gleich)
 
 
@@ -481,7 +483,9 @@ def live_partie_2121():
     # 1) ein langes Briefing bricht nur eine Gefahr ab (seit 27.09., Partie 144655: keine Satzfetzen) - eine
     #    Flash-Meldung wartet (sie steht ohnehin auf dem Dashboard, Kapitel 9.1)
     plan = sprechplan.Sprechplan(stimme.Stumm())
-    plan.neu([regeln.Ansage("B" * 600, regeln.WICHTIG, "briefing", zeit=26.0, gueltig=90, sperre=600,
+    # ~43 s Briefing, egal wie schnell die Stimme ist (Auftrag 002: [stimme] zeichen_pro_s)
+    plan.neu([regeln.Ansage("B" * int(43 * sprechplan.ZEICHEN_PRO_SEKUNDE), regeln.WICHTIG, "briefing", zeit=26.0,
+                            gueltig=90, sperre=600,
                             unterbrechbar=True)])
     assert plan.takt(26.0).schluessel == "briefing"
     plan.neu([regeln.Ansage("Gragas hat Flash benutzt.", regeln.WICHTIG, "zauber:x", zeit=67.0, gueltig=20)])

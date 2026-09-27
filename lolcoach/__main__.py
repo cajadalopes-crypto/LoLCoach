@@ -179,11 +179,22 @@ def _fokus() -> str | None:
     except Exception:
         return None
 
-STIMME = "de-DE-KillianNeural"  # Partie 3: "viel zu roboterhaft"; Carlos hat Killian aus sechs Proben gewaehlt
+def _stimm_cfg() -> dict:
+    """[stimme] aus wissen/kern.toml (Auftrag 002, S2): Name und Tempo - Carlos waehlt die Stimme aus den Proben."""
+    try:
+        from . import wissen
+        return wissen.lade("kern").get("stimme", {})
+    except Exception:
+        return {}
 
 
-def _stimme(name: str, warten: bool = False):
-    return stimme.Stimme(warten=warten, neural=None if name == "windows" else name)
+# Partie 3: "viel zu roboterhaft"; Carlos hat Killian aus sechs Proben gewaehlt - seit Auftrag 002 in der toml
+STIMME = _stimm_cfg().get("name", "de-DE-KillianNeural")
+TEMPO = _stimm_cfg().get("tempo", "+25%")
+
+
+def _stimme(name: str, warten: bool = False, tempo: str | None = None):
+    return stimme.Stimme(warten=warten, neural=None if name == "windows" else name, tempo=tempo or TEMPO)
 
 
 def _dashboard():
@@ -308,7 +319,7 @@ def live(args) -> None:
               "Dieses Fenster wird nicht gebraucht - es schliesst sich in 10 Sekunden.")
         time.sleep(10)
         return
-    sprecher = stimme.Stumm() if args.stumm else _stimme(args.stimme)
+    sprecher = stimme.Stumm() if args.stumm else _stimme(args.stimme, tempo=args.tempo)
     anzeigen = [] if args.ohne_dashboard else [d for d in [_dashboard()] if d]
     try:
         from . import review_server
@@ -490,7 +501,7 @@ def abspielen(args) -> None:
     if not pfad:
         sys.exit("Keine Aufnahme gefunden.")
     print(f"Aufnahme: {pfad}")
-    sprecher = _stimme(args.stimme, warten=True) if args.laut else stimme.Stumm()
+    sprecher = _stimme(args.stimme, warten=True, tempo=args.tempo) if args.laut else stimme.Stumm()
     sicht = None if args.ohne_bilder else lage.sicht_fuer(pfad)
     if sicht:
         print(f"Minimap: {len(sicht.bilder)} Bilder")
@@ -590,6 +601,7 @@ def main() -> None:
     lv.add_argument("--ohne-bilder", action="store_true", help="keine Minimap (weder Erkennung noch Bilder)")
     lv.add_argument("--stumm", action="store_true")
     lv.add_argument("--stimme", default=STIMME, help="neuronale Stimme (de-DE-KatjaNeural, ...) oder windows")
+    lv.add_argument("--tempo", default=TEMPO, help="Sprechtempo der Stimme, z. B. +50%% (Standard aus wissen/kern.toml)")
     lv.add_argument("--ohne-dashboard", action="store_true")
     lv.add_argument("--ohne-sprache", action="store_true", help="keine Fragen per Mikrofon")
     lv.add_argument("--ohne-gehirn", action="store_true", help="kein Briefing, keine situativen Saetze (spart Claude-Aufrufe)")
@@ -602,6 +614,7 @@ def main() -> None:
     ab.add_argument("--nur-coach", action="store_true", help="nur die Ansagen des Coaches")
     ab.add_argument("--laut", action="store_true", help="Ansagen vorlesen (wartet, bis jede gesprochen ist)")
     ab.add_argument("--stimme", default=STIMME, help="neuronale Stimme (de-DE-KatjaNeural, ...) oder windows")
+    ab.add_argument("--tempo", default=TEMPO, help="Sprechtempo der Stimme, z. B. +50%%")
     ab.add_argument("--ohne-bilder", action="store_true", help="Minimap-Bilder nicht auswerten")
     ab.add_argument("--dashboard", action="store_true", help="Dashboard mitlaufen lassen (sinnvoll mit --takt)")
     be = unter.add_parser("bericht")
