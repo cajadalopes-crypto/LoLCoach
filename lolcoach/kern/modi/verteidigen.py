@@ -44,9 +44,12 @@ def kandidaten(m, cfg: dict) -> list[Handlung]:
         wir = 1 + m.team_nah(vorn[2], cmo["verteidigen_radius"])
         wo = STUFE_WORT[vorn[1]]
         turmwert = karte.turm_gewinn(karte.TurmZiel("", lane, vorn[1], vorn[2], "", weg, [], 0), m, cfg)
+        supervasallen = lane in [l for l, _ in bewertung.eigene_inhibs_weg(m.p)]
+        if len(dort) <= 1 and not supervasallen and (w.ihre or 0) < cfg["schranken"]["welle_min"]:
+            continue        # Pruefung c, R7: kleine Wellen sind keine Ansage (173159 33:56 "1 Vasallen")
         if len(dort) <= 1:
             grund = "keiner von ihnen dort" if not dort else f"nur {dort[0].champion} dort"
-            was = "Supervasallen" if lane in [l for l, _ in bewertung.eigene_inhibs_weg(m.p)] else f"{w.ihre} Vasallen"
+            was = "Supervasallen" if supervasallen else f"{w.ihre} Vasallen"
             h = Handlung("WELLE_KLAEREN", Ziel("lane", f"die {lane}-Welle", vorn[2], weg), "VERTEIDIGEN", weg + 10,
                          gewinn=turmwert, gefahr_t=weg + 10, grund=grund,
                          satz=f"Klär die {lane}-Welle {wo}: {was}, {grund}.")

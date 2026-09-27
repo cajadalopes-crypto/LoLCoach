@@ -219,6 +219,17 @@ def dahinter(z: TurmZiel, m, cfg: dict, mit: int, ab: float) -> float:
 
 
 ZAHL_WORT = {3: "drei", 4: "vier", 5: "fünf"}
+# Pruefung c, R2.2: wohin der Kampf ist (Bereich -> Richtung im Satz)
+ORT_RICHTUNG = {"fluss_oben": "in den oberen Fluss", "fluss_unten": "in den unteren Fluss",
+                "fluss_mitte": "in den Mid-Fluss", "grube:drache": "zum Drachen", "grube:baron": "zum Baron",
+                "jungle_eigen_oben": "in euren oberen Jungle", "jungle_eigen_unten": "in euren unteren Jungle",
+                "jungle_fremd_oben": "in ihren oberen Jungle", "jungle_fremd_unten": "in ihren unteren Jungle",
+                "lane:Top": "auf die Top-Lane", "lane:Mid": "auf die Mid-Lane", "lane:Bot": "auf die Bot-Lane",
+                "lane_eigen": "auf deine Lane", "basis_fremd": "in ihre Basis", "basis_eigen": "in eure Basis"}
+
+
+def _zahl(n: int) -> str:
+    return {1: "einer", 2: "zwei", 3: "drei", 4: "vier", 5: "fünf"}.get(n, str(n))
 
 
 def fenster_grund(z: TurmZiel, m, bis: float, kommen: list) -> str:
@@ -235,10 +246,11 @@ def fenster_grund(z: TurmZiel, m, bis: float, kommen: list) -> str:
     elif not kommen and erste is not None and erste >= bis:
         teile.append(f"frühestens in {int(erste)} Sekunden kann einer von ihnen dort sein")
     if kommen:
-        # hoechstens zwei Namen, ab drei wird gezaehlt (Buch 6, 9)
+        # hoechstens zwei Namen, ab drei wird gezaehlt (Buch 6, 9). Pruefung c, R2: kein "du schlaegst X" mehr - ein
+        # Ziel, das nur ueber den Kampf traegt, ist stumm (turm_handlungen: modell_stumm); hier steht nur, wer kommt
         namen = (liste([g.champion for g in kommen]) if len(kommen) <= 2
-                 else f"die {ZAHL_WORT.get(len(kommen), len(kommen))}, die rechtzeitig kommen")
-        teile.append(f"{namen} schlägst du" if teile else f"du schlägst {namen}")
+                 else f"{ZAHL_WORT.get(len(kommen), len(kommen))} von ihnen")
+        teile.append(f"{namen} {'kommt' if len(kommen) == 1 else 'kommen'} vorher")
     if teile:
         return ", ".join(teile)
     if m.woanders >= 3:
@@ -354,7 +366,10 @@ def turm_handlungen(m, cfg: dict, modus: str, art: str, split: bool) -> list[Han
                      gefahr_t=z.weg + dauer, grund=grund, satz=satz,
                      schritte=[f"zu {z.name}", "Turm", "danach back" if fenster_um is not None else "weiter"])
         h.daten.update(turm=(z.team, z.lane, z.stufe), umwandeln=fenster_um is not None, ziel_pos=z.pos,
-                       nexus_weg=nexus_tuerme_weg(m.p, z.team) if z.stufe == "Nexus-Turm" else 0)
+                       nexus_weg=nexus_tuerme_weg(m.p, z.team) if z.stufe == "Nexus-Turm" else 0,
+                       # Pruefung c, R2.3: gesprochen nur, wenn das Ziel VOR dem ersten Verteidiger faellt - traegt es nur
+                       # ueber den Kampf ("du schlaegst X"), ist es stumm, bis die Kampf-Eichung besteht
+                       modell_stumm=bool(kommen))
         aus.append(h)
     return aus
 
@@ -371,6 +386,11 @@ def seitenwelle(m, cfg: dict, modus: str, lane: str, w) -> Handlung | None:
     pos = bewertung.einheiten(*lane_punkt(lane, front if blau else 1.0 - front))
     weg = m.weg(pos) or 0.0
     ihre = w.ihre if w.ihre is not None else c["seitenwelle_min"]
+    # Pruefung c, R7: erst ab welle_min Vasallen (oder Supervasallen, wenn euer Inhibitor dieser Lane fehlt) - 173159
+    # 32:32 "1 Vasallen", 164326 33:02 "0 Vasallen" (die Zahl des Takts war 0, der Zustand kam aus dem Puffer)
+    supervasallen = m.p is not None and lane in [l for l, _ in bewertung.eigene_inhibs_weg(m.p)]
+    if ihre < cfg["schranken"]["welle_min"] and not supervasallen:
+        return None
     ww = wert.wellenwert(m.zeit, cfg)
     gewinn = ww * min(3.0, ihre / 6.0) + c["seitenwelle_turmschutz"]
     name = welle_name(m, lane)
@@ -399,10 +419,19 @@ def zur_gruppe(m, cfg: dict, modus: str) -> list[Handlung]:
         zahlen = f"ihr seid {k.eigene} gegen {k.gegner}"
         wert_ = c["kampf_wert_je_gegner"] * k.gegner
         if k.dein_weg is not None and k.dein_weg <= c["tp_zu_fuss_ab_s"]:
+            # Pruefung c, R2.2: "Zu Graves in den Mid-Fluss: mit dir drei gegen zwei." - Ort und Namen statt "Zum Kampf,
+            # jetzt"; gesprochen nur mit >= zur_kampf_mehr_koepfe Koepfen mehr nach deiner Ankunft und genug Leben
+            cs = cfg["schranken"]
+            freunde = [s.champion for s, wo, *_ in (m.b.mitspieler if m.b is not None else [])
+                       if wo is not None and not s.tot and abstand(wo, k.pos) <= c["teamkampf_radius"]]
+            zu = f"Zu {liste(freunde[:2])}" if 1 <= len(freunde) <= 2 else "Zu deinem Team"
+            richtung = ORT_RICHTUNG.get(k.ort or "", "")
+            satz = f"{zu}{' ' + richtung if richtung else ''}: mit dir {_zahl(k.eigene + 1)} gegen {_zahl(k.gegner)}."
             h = Handlung("ZUR_GRUPPE", Ziel("gruppe", ort, k.pos, k.dein_weg), modus, k.dein_weg + 5, gewinn=wert_,
-                         gefahr_t=min(k.dein_weg + 5, 30.0), grund=zahlen,
-                         satz=f"{ort[0].upper()}{ort[1:]}, jetzt: {zahlen}, mit dir {k.eigene + 1} gegen {k.gegner}.")
+                         gefahr_t=min(k.dein_weg + 5, 30.0), grund=zahlen, satz=satz)
             h.daten["ziel_pos"] = k.pos
+            h.daten["modell_stumm"] = (k.eigene + 1 - k.gegner < cs["zur_kampf_mehr_koepfe"]
+                                       or m.leben is None or m.leben < cs["zur_kampf_leben_min"])
             aus.append(h)
         tp = m.tp_in == 0
         laeuft_noch = k.seit <= 3.0

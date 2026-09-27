@@ -13,5 +13,7 @@ def kandidaten(m, cfg: dict, merker: dict | None = None, lage=None) -> list[Hand
     z = wohin(m, cfg, "TOT", merker, lage)       # dasselbe Ziel gilt danach in der Basis (C4)
     k = kaufen(m, cfg, "TOT", z)
     h = k or z
+    if not h.satz:
+        return []            # Pruefung c, R6: kein sicheres Ziel und nichts zu kaufen - kein Satz
     h.satz = f"Noch {int(round(m.respawn))} Sekunden: " + h.satz[0].lower() + h.satz[1:]
     return [h]

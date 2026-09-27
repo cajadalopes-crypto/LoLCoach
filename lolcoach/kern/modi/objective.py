@@ -64,10 +64,12 @@ def _handlung(art: str, m, cfg: dict, modus: str, o, u, satz: str, grund: str, s
     h = Handlung(art, Ziel("objective", OBJ_NAME[o.schl], o.pos, weg), modus, weg,
                  gewinn=u.anteil * u.wert_uns, folgewert=u.folgewert, p_erfolg=1.0,
                  gefahr_t=weg + max(u.dauer, rest), grund=grund, satz=satz, schritte=schritte)
+    from ..merkmale import OBJ_GRUBE
     h.daten.update(objective=o.schl, ziel_pos=o.pos, spawn=spawn_zeit(m, o), zieht=u.zieht,
                    p_erfolg_obj=round(u.p_erfolg, 3), anteil=round(u.anteil, 3), an_objective=o.schl,
                    gefahr_am=(o.pos, max(0.0, weg + max(u.dauer, rest) - cfg["gefahr"]["fenster_s"]), False),
-                   ev_min=0.0)
+                   ev_min=0.0, P_kampf=round(u.P_kampf, 3), faellt_in=round(u.t1, 1),
+                   in_grube=m.bereich == f"grube:{OBJ_GRUBE[o.schl]}")
     if karte.umwandeln(m, cfg) is not None and o.schl in ORDNUNG:
         h.folgewert += 200.0 * ORDNUNG[o.schl]      # wie turm_handlungen: die Reihenfolge aus Kapitel 8
     return h
@@ -132,7 +134,10 @@ def nehmen(m, cfg: dict, modus: str, o) -> Handlung | None:
         # Buch 6, 3.3 Nachtrag: wer mit dir kommt, steht im Satz ("Drache mit Tryndamere: ...")
         from . import liste
         kopf = f"{kopf.rsplit(' ', 1)[0] if o.lebt else kopf} mit {liste(u.mit[:2])}"
-    return _handlung("NEHMEN", m, cfg, modus, o, u, _satz(kopf, g), g, ["hin", "nehmen"])
+    h = _handlung("NEHMEN", m, cfg, modus, o, u, _satz(kopf, g), g, ["hin", "nehmen"])
+    # Pruefung c, R2.4: NEHMEN mit Kampf (P_kampf >= 0,1) haengt am ungeeichten p_gewinn - stumm
+    h.daten["modell_stumm"] = u.P_kampf >= 0.1
+    return h
 
 
 def sie_dort(m, o, cfg: dict) -> int:

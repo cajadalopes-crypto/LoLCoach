@@ -391,7 +391,8 @@ def grund(m, o, u: Urteil, art: str) -> str:
         wir = max(1, u.n)                     # die, die es nehmen (n*), nicht jeder, der irgendwann kaeme
     if wir < 2:
         die = sorted(u.auf.get("die", []) if u.auf else [], key=lambda x: -x[1] * x[2])
-        return f"du schlägst {die[0][0]}" if die and u.p_gewinn >= 0.5 else "du bist zuerst dort"
+        # Pruefung c, R2: kein "du schlaegst X" (das Modell ist nicht geeicht) - wer kommt, wird nur benannt
+        return f"{die[0][0]} kommt dazu" if die else "du bist zuerst dort"
     satz = f"ihr seid {ZAHL.get(wir, str(wir))}"
     if u.auf and all(not x[3] for x in u.auf.get("wir", [])) and any(x[3] for x in u.auf.get("die", [])):
         satz += " mit Ults"

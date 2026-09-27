@@ -1002,6 +1002,8 @@ warum = "…"                           # die Begründung, Challenger-Sicht
 | `soll_ziel` | Buch 6, 13: in zeit ±2 s (oder im Fenster) hat ein Kern-Plan ein Ziel oder Objective, das diesen Text enthält |
 | `max_woerter` | Buch 6, 13: kein gesprochener Satz im Fenster ist länger (ohne Schlüssel-Filter, anders als `woerter_max`) |
 | `alte_regeln_max` | Buch 6, 13: so viele gesprochene Sätze alter Regeln (Regelwerk, nicht Kern) im Fenster höchstens |
+| `je_10min_max = { "muster" = n }` | Qualitätsrunde 3 (R4): in keinem 10-Minuten-Abschnitt des Fensters mehr als n gesprochene Sätze, die auf das Muster passen (Regex) – etwa `"\\bback\\b" = 3` |
+| `kategorie_max = { "GEFAHR" = n }` | Qualitätsrunde 3 (R5): höchstens n gesprochene Kern-Sätze dieser Kategorie (GEFAHR, PLAN, ERINNERUNG, BESTAETIGUNG) im Fenster |
 
 `soll = ["ANLAUFEN", …]` gilt seit Schritt 5 auch mit dem Plan `NEHMEN` (Buch 6, 4.3: eine Handlung mit zwei
 Schritten).

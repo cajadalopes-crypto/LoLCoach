@@ -1,0 +1,113 @@
+# Szenarien aus der Protokoll-Pruefung 27.09.2026, dritte Runde (buecher/protokolle/PRUEFUNG_2026-09-27c.md),
+# Partie 164326 (Carlos live, Riven Top gegen Teemo, CLASSIC, gewonnen). Angelegt vor den Fixes - rot mit 842b502.
+
+aufnahme = "2026-09-27_164326"
+spielmodus = "CLASSIC"
+bots = false
+
+# --- R1 ---
+
+[[szenario]]
+id = "4113-kein-drache-von-baron"
+zeit = "41:13"
+fenster = ["41:10", "41:26"]
+quelle = "Pruefung c, R1: 'Drache bestreiten: ihr seid drei.' - Riven an der Baron-Grube, p_tod 0,64"
+lage = "Riven an der Baron-Grube."
+darf_nicht = ["BESTREITEN"]
+darf_nicht_sagen = ["Drache bestreiten"]
+warum = "Eine Vorwaerts-Handlung mit p_tod >= 0,3 wird nie gesagt; BESTREITEN ist stumm, bis die Kampf-Eichung besteht."
+
+# --- R2 ---
+
+[[szenario]]
+id = "1737-kein-du-schlaegst"
+fenster = ["17:30", "19:30"]
+quelle = "Pruefung c, R2: 'du schlaegst Teemo' - eine Behauptung ohne Beleg (Gold trennt verkehrt, AUC 0,30)"
+lage = "Riven nach der Lane-Phase."
+darf_nicht_sagen = ["schlägst"]
+warum = "Das Wort 'schlaegst' faellt aus allen Satzbausteinen, bis die Kampf-Eichung besteht."
+
+[[szenario]]
+id = "zur-gruppe-mit-ort"
+fenster = ["0:00", "45:00"]
+quelle = "Pruefung c, R2: 'Zum Kampf, jetzt' ohne Ort"
+lage = "Ganze Partie."
+darf_nicht_sagen = ["Zum Kampf, jetzt", "schlägst"]
+warum = "ZUR_GRUPPE zu einem Kampf nennt den Ort; 'schlaegst' faellt aus allen Saetzen."
+
+# --- R3 ---
+
+[[szenario]]
+id = "2626-kauf-passt-zum-build"
+fenster = [["26:20", "26:35"], ["38:05", "38:40"]]
+quelle = "Pruefung c, R3: bis 38:09 'Kauf Caulfields Kriegshammer'; 38:33 bei vollem Inventar 'Kauf Langschwert und Stiefel'"
+lage = "Carlos hat Axiombogen, Eklipse, Ionische Stiefel, Gefraessige Hydra, Schutzengel, dann Tanz des Todes und Seryldas."
+darf_nicht_sagen = ["Caulfields", "Stiefel"]
+warum = "Der Kaufplan folgt Carlos' echtem Build; bei vollem Inventar kein Kauf-Satz ausser Kontroll-Auge oder Elixier."
+
+# --- R4 ---
+
+[[szenario]]
+id = "0853-kein-back-bei-0"
+fenster = ["8:45", "9:05"]
+quelle = "Pruefung c, R4: 'Back jetzt: 0 Prozent Leben.' - Riven stirbt gerade"
+lage = "Riven stirbt."
+darf_nicht_sagen = [": 0 Prozent"]
+warum = "Kein Back-Ruf unter 10 % Leben oder in KAMPF - dort gilt RAUS."
+
+[[szenario]]
+id = "back-dauerton"
+fenster = ["25:00", "40:00"]
+quelle = "Pruefung c, R4: 11 Back-Rufe zwischen 25:27 und 39:49"
+lage = "Riven nach der Lane-Phase."
+je_10min_max = { "\\bback\\b" = 3 }
+warum = "Hoechstens 3 Back-Rufe je 10 Minuten."
+
+# --- R5 ---
+
+[[szenario]]
+id = "2239-keine-doppelwarnung"
+fenster = ["22:30", "23:20"]
+quelle = "Pruefung c, R5: 22:39 und 23:12 zweimal 'Teemo und Naafiri kommen'"
+lage = "Riven auf der Top-Lane."
+kategorie_max = { "GEFAHR" = 2 }
+text_max = { "Teemo und Naafiri" = 1 }
+warum = "Dieselbe Gegnermenge wird in 45 s nicht erneut gewarnt, ausser p_tod steigt um >= 0,15."
+
+# --- R6 ---
+
+[[szenario]]
+id = "wohin-kurz"
+fenster = ["0:00", "45:00"]
+quelle = "Pruefung c, R6: 'Geh zur Top-Welle: dort nimmt sie sonst niemand.' 8-12 Mal je Partie"
+lage = "Ganze Partie."
+text_max = { "nimmt sie sonst niemand" = 1 }
+warum = "Nach der ersten Nennung die Kurzform."
+
+[[szenario]]
+id = "0748-nicht-zu-spaet"
+fenster = ["7:40", "8:00"]
+quelle = "Pruefung c, R6: 'Zu den Larven: Spawn um 8 00, du kommst zu spaet'"
+lage = "Riven in der Basis bzw. tot."
+darf_nicht_sagen = ["zu spät"]
+warum = "Ein Objective ist nie WOHIN, wenn du zu spaet kommst."
+
+# --- R7 ---
+
+[[szenario]]
+id = "3302-keine-null-welle"
+fenster = ["32:55", "33:10"]
+quelle = "Pruefung c, R7: 'Hol deine Top-Welle: 0 Vasallen laufen in deinen Turm.'"
+lage = "Nach der Lane-Phase."
+darf_nicht_sagen = [": 0 Vasallen", "0 Vasallen laufen"]
+warum = "Ein Satz mit 0 Vasallen ist ein Fehler; kleine Wellen sind keine Ansage."
+
+# --- R8 ---
+
+[[szenario]]
+id = "1142-mehrzahl"
+fenster = ["11:35", "11:50"]
+quelle = "Pruefung c, R8: 'Gut raus - da war er.' nach einer Warnung vor mehreren Gegnern"
+lage = "Nach einem Rueckzug."
+darf_nicht_sagen = ["da war er"]
+warum = "Ohne Pronomen: 'Gut raus.'"

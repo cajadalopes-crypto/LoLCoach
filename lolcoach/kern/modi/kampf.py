@@ -336,7 +336,8 @@ def _namen(n: list[str]) -> str:
     return n[0] if len(n) == 1 else ", ".join(n[:-1]) + " und " + n[-1]
 
 
-def rueckblick(probe: dict | None, taeter: str | None, beteiligt: list[str], turm: bool, leben: float | None) -> str | None:
+def rueckblick(probe: dict | None, taeter: str | None, beteiligt: list[str], turm: bool, leben: float | None,
+               jungler: str | None = None) -> str | None:
     """Buch 7, 8: zwei Saetze aus der Probe am letzten Entscheidungspunkt - was entschied, was naechstes Mal. None: die
     Probe erkennt keine der Lagen, dann gilt der Rueckblick der Qualitaetsrunde (komponist.todesrueckblick)."""
     if probe is None:
@@ -346,7 +347,9 @@ def rueckblick(probe: dict | None, taeter: str | None, beteiligt: list[str], tur
         return ("Allein unter seinem Turm – der Turm hat entschieden. Tauch nur, wenn er fast tot ist und du mehr als "
                 "die Hälfte Leben hast.")
     if taeter and probe["p_da_vorher"].get(taeter, 1.0) < 0.3 and taeter not in probe["gegner"]:
-        return f"{taeter} kam aus dem Nebel, keiner hatte ihn gesehen. Ohne Sicht auf ihren Jungler nicht so tief stehen."
+        # Pruefung c, R9: keine Pronomen; "Jungler" nur, wenn der Taeter ihr Jungler ist (173159 35:24: Kai'Sa, ADC)
+        sicht = "ihren Jungler" if jungler is not None and taeter == jungler else taeter
+        return f"{taeter} kam aus dem Nebel, niemand hatte {taeter} gesehen. Ohne Sicht auf {sicht} nicht so tief stehen."
     if not wer:
         return None
     if probe["ansage"] == "raus":

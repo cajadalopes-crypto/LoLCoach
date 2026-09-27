@@ -126,6 +126,10 @@ def back_gruende(m, cfg: dict) -> list[BackGrund]:
             and m.welle.zustand in ("GECRASHT_BEI_IHM", "ZU_IHM", "GROSS_ZU_IHM", "MITTE"):
         aus.append(BackGrund("GEGNER_ZURUECK", c["tempo_bonus"],
                              f"{g.champion} ist {'tot' if g.s.tot else 'gebackt'}"))
+    # Pruefung c, R4: ein toter oder gebackter Lane-Gegner ist ein Grund fuer Platten oder Druecken - fuer einen Back
+    # nur zusammen mit Gold oder Leben (173159 28:11: "Back ...: Cho'Gath ist tot")
+    if not any(x.art in ("LEBEN", "GOLD_STUFE", "GOLD_HORTEN") for x in aus):
+        aus = [x for x in aus if x.art != "GEGNER_ZURUECK"]
     # der tragende Grund zuerst: Leben, dann Gold, dann Tempo
     reihe = ("LEBEN", "GOLD_STUFE", "GOLD_HORTEN", "OBJECTIVE_VORLAUF", "GEGNER_ZURUECK")
     return sorted(aus, key=lambda x: reihe.index(x.art))

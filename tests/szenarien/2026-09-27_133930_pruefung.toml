@@ -11,10 +11,11 @@ id = "1745-kauf-einmal"
 fenster = ["17:40", "18:05"]
 quelle = "fassungswechsel 133930: 17:45 TOT 'Noch 8 Sekunden: kauf Spitzhacke, Caulfields Kriegshammer und ein Kontroll-Auge, dann zur Top-Welle' -> 17:57 BASIS 'Kauf Caulfields Kriegshammer, dann zur Top-Welle'"
 lage = "Riven tot, dann im Brunnen; kauft die Spitzhacke und hat noch 741 Gold."
-satz_mit = [["Kriegshammer"]]
+satz_mit = [["kauf "]]
 satz_mit_anzahl = 1
 warum = """Derselbe Plan (kaufen, dann Top-Welle) wird je Aufenthalt einmal gesagt. Nach einem Teilkauf ist die Liste
-kuerzer, der Plan derselbe (Pruefung D1/D4, C4)."""
+kuerzer, der Plan derselbe (Pruefung D1/D4, C4). Seit Pruefung c, R3 folgt der Kaufplan Carlos' eigenem Build - das
+Item ist nicht mehr der Kriegshammer, gezaehlt wird der Kauf-Satz."""
 
 # --- Qualitaetsrunde 2 (buecher/protokolle/PRUEFUNG_2026-09-27b.md), angelegt vor den Fixes: rot mit 705a6a6 ---
 
@@ -49,8 +50,8 @@ fenster = ["15:05", "15:35"]
 quelle = "Pruefung G2: 15:16 'Noch 8 Sekunden: geh zur Top-Welle: dort nimmt sie sonst niemand.' mit p_tod 0,67"
 lage = "Riven tot, die Gegner stehen oben."
 darf_nicht_sagen = ["nimmt sie sonst niemand", "Lauf direkt"]
-muss_ziel = true
-warum = "wie 1230"
+warum = """wie 1230. Pruefung c, R6.2: ein Rueckfall-Ziel mit p_tod >= 0,3 wird nicht gesagt - dann kein Ziel (muss_ziel
+entfaellt; vorher: "Warte am inneren ...-Turm auf dein Team")."""
 
 [[szenario]]
 id = "swiftplay-keine-classic-zeiten"

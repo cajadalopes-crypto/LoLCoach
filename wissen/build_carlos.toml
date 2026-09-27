@@ -1,0 +1,21 @@
+# Carlos' eigener Build je Champion - aus seinen Aufnahmen abgeleitet, NICHT von Hand pflegen:
+#     python werkzeuge/build_aus_aufnahmen.py
+# folge: Schritte in der haeufigsten Reihenfolge; ein Schritt = gleichwertige Items (haeufigstes zuerst),
+# belege: in wie vielen Partien der Schritt vorkam. Genutzt von lolcoach/kaufplan.py (vor dem Lexikon).
+stand = "2026-09-27"
+
+[Camille]
+quelle = "1 Partien ohne Uebungsmodus, aufnahmen/*.jsonl.gz"
+partien = 1
+aufnahmen = ["2026-09-26_162345"]
+stiefel = ""
+folge = [["Stärke der Dreieinigkeit"], ["Gefräßige Hydra"]]
+belege = [1, 1]
+
+[Riven]
+quelle = "11 Partien ohne Uebungsmodus, aufnahmen/*.jsonl.gz"
+partien = 11
+aufnahmen = ["2026-09-26_113210", "2026-09-26_120049", "2026-09-26_125902", "2026-09-26_155643", "2026-09-26_164809", "2026-09-27_102112", "2026-09-27_130355", "2026-09-27_133930", "2026-09-27_140253", "2026-09-27_164326", "2026-09-27_173159"]
+stiefel = "Ionische Stiefel der Deutlichkeit"
+folge = [["Axiombogen"], ["Eklipse", "Endloser Hunger"], ["Gefräßige Hydra", "Gottlose Hydra"], ["Schutzengel"], ["Tanz des Todes"], ["Gespaltener Himmel"], ["Seryldas Bitterkeit"]]
+belege = [8, 11, 5, 3, 7, 3, 3]

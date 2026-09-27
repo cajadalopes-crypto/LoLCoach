@@ -9,7 +9,9 @@ Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes
                             text_max = { "muster|muster" = n } (hoechstens n Saetze mit einem der Muster),
                             planwechsel_max (Wechsel der Plan-Art zwischen gesprochenen Kern-Saetzen); seit Schritt 5
                             (Buch 6, 13): max_woerter (kein gesprochener Satz im Fenster laenger), alte_regeln_max
-                            (so viele gesprochene Saetze alter Regeln im Fenster hoechstens)
+                            (so viele gesprochene Saetze alter Regeln im Fenster hoechstens); seit der
+                            Qualitaetsrunde 3: je_10min_max = { "muster" = n } (in keinem 10-Minuten-Fenster mehr
+                            als n Treffer), kategorie_max = { "GEFAHR" = n } (Kern-Saetze einer Kategorie)
   Datei:                    spielmodus = "CLASSIC" | "SWIFTPLAY" (Vorgabe CLASSIC) - muss zum gameMode der Aufnahme
                             passen, sonst rot (Qualitaetsrunde 2, G6: 133930 und 140253 sind Swiftplay)
   Kern (Modus, Plan-Art):   modus und [[modus_soll]] ab Schritt 2 (irgendein Takt in zeit +-2 s hat einen der
@@ -166,6 +168,21 @@ def neue_pruefungen(sz: dict, ansagen: list, stehend: tuple | None = None) -> li
         treffer = [t for t in texte if re.search(muster, t, re.I)]
         if len(treffer) > n:
             aus.append(f"text_max '{muster}' {n} - {len(treffer)}: " + " / ".join(t[:45] for t in treffer))
+    # Qualitaetsrunde 3: hoechstens n Treffer in jedem 10-Minuten-Fenster (R4: "hoechstens 3 Back-Rufe je 10 Minuten")
+    for muster, n in (sz.get("je_10min_max") or {}).items():
+        zeiten = sorted(ns.gesprochen_um(a) for a in ansagen if re.search(muster, a.text, re.I))
+        for i, t0 in enumerate(zeiten):
+            drin = [t for t in zeiten[i:] if t < t0 + 600]
+            if len(drin) > n:
+                aus.append(f"je_10min_max '{muster}' {n} - {len(drin)} ab {ns.uhr(t0)}: "
+                           + ", ".join(ns.uhr(t) for t in drin))
+                break
+    # Qualitaetsrunde 3: hoechstens n Kern-Saetze einer Kategorie (R5: "hoechstens 2 GEFAHR-Saetze")
+    for kat, n in (sz.get("kategorie_max") or {}).items():
+        treffer = [a for a in ansagen if getattr(a, "_kategorie", None) == kat]
+        if len(treffer) > n:
+            aus.append(f"kategorie_max {kat} {n} - {len(treffer)}: "
+                       + " / ".join(f"{ns.uhr(ns.gesprochen_um(a))} {a.text[:40]}" for a in treffer))
     if "planwechsel_max" in sz:
         arten = [a.schluessel.split(":", 1)[1] for a in ansagen
                  if a.schluessel.startswith("kern:") and a.schluessel not in NICHT_PLAN]
@@ -359,7 +376,8 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                         verstoesse.append(f"ansagen_max {sz['ansagen_max']} - {len(texte)}: "
                                           + " / ".join(f"{ns.uhr(t)} {s[:40]}" for t, s in texte))
                 if any(k in sz for k in ("ziele_max", "satz_mit", "fassung_einmal", "woerter_max", "gold_reicht",
-                                         "text_max", "planwechsel_max", "max_woerter", "alte_regeln_max")):
+                                         "text_max", "planwechsel_max", "max_woerter", "alte_regeln_max",
+                                         "je_10min_max", "kategorie_max")):
                     geprueft += 1
                     verstoesse += neue_pruefungen(sz, ansagen, stehende_ansage(lauf, von) if kern != "alt" else None)
         if "modus" in sz and "zeit" in sz and nur != "alt":
@@ -379,6 +397,8 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
             geprueft += 1
             von, bis = (ns.sekunden(sz["zeit"]) - 2, ns.sekunden(sz["zeit"]) + 2) if "zeit" in sz else fenster(sz)
             ziele_ = {x.plan_ziel for x in lauf.takte if von <= x.zeit <= bis and x.plan_ziel}
+            # Pruefung c, R2: auch das Ziel eines berechneten, aber stummen Rufs ("NEHMEN: Drache jetzt: ...")
+            ziele_ |= {x.stumm for x in lauf.takte if von <= x.zeit <= bis and x.stumm}
             if not any(sz["soll_ziel"].lower() in z.lower() for z in ziele_):
                 verstoesse.append(f"soll_ziel '{sz['soll_ziel']}' - Plan-Ziele: {sorted(ziele_) or 'keins'}")
         if nur != "alt" and kern != "alt" and "soll" in sz and "zeit" in sz and kern_modi is None:

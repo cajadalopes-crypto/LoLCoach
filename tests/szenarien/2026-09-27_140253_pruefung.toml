@@ -49,9 +49,9 @@ zeit = "10:25"
 quelle = "Pruefung E2: 'Noch 8 Sekunden: zu den Larven: Larven leben' mit p_tod 0,97"
 lage = "Riven tot, Wiedereinstieg im Brunnen; die Gegner stehen oben. (Swiftplay - Larven gibt es dort nicht, G6.)"
 darf_nicht_sagen = ["Larven", "nimmt sie sonst niemand", "Lauf direkt"]
-muss_ziel = true
 warum = """WOHIN wird gegen die Gefahr auf dem Weg aus dem Brunnen gerechnet. Die Larven waren der Tod - und gibt es in
-Swiftplay gar nicht. Qualitaetsrunde 2, G2: auch die Mid-Welle (p_tod 0,73) nicht, sondern ein sicheres Ziel."""
+Swiftplay gar nicht. Qualitaetsrunde 2, G2: auch die Mid-Welle (p_tod 0,73) nicht. Pruefung c, R6.2: ist auch der
+Rueckfall (Team, Turm) >= 0,3, wird kein Ziel gesagt - muss_ziel entfaellt."""
 
 [[szenario]]
 id = "0349-bauteil-nennen"

@@ -111,8 +111,8 @@ def _objective_option(m, cfg: dict, modus: str, o) -> Handlung | None:
     if o.lebt:
         grund = obj.grund(m, o, u, "NEHMEN")
     else:
-        if o.spawn_in > 100 or ankunft > o.spawn_in + 10:
-            return None
+        if o.spawn_in > 100 or ankunft > o.spawn_in:
+            return None          # Pruefung c, R6: nie, wenn du zu spaet kommst (164326 7:48 "du kommst zu spaet")
         grund = f"Spawn um {uhr(m.zeit + o.spawn_in)}, {puenktlich(o.spawn_in - ankunft)}"
     h = Handlung("WOHIN", Ziel("objective", OBJ_NAME[o.schl], o.pos, weg), modus, weg, grund=grund,
                  satz=f"{ZUM[o.schl][0].upper()}{ZUM[o.schl][1:]}: {grund}.")
@@ -302,12 +302,22 @@ def wohin(m, cfg: dict, modus: str, merker: dict | None = None, lage=None) -> Ha
     return wahl
 
 
+def _kein_ziel(modus: str) -> Handlung:
+    """Pruefung c, R6: kein sicheres Ziel - ein WOHIN ohne Satz; der Kauf-Satz nennt dann kein Ziel."""
+    h = Handlung("WOHIN", None, modus, 5.0, grund="", satz="")
+    h.daten["kurz"] = None
+    return h
+
+
 def _sicherer(m, cfg: dict, modus: str, erstes, p_am, grenze: float) -> Handlung:
     """G2: kein Ziel unter der Grenze - dein Team (>= 2), dann dein Turm auf der Seite des Ziels weiter hinten (mit
     Schutz-Zusatz), sonst am inneren Turm der Seite mit den wenigsten Gegnern auf dein Team warten."""
     gruppe = _team(m, modus)
-    if gruppe is not None and len(gruppe[0]) >= 2 and p_am(gruppe[1])[0] < grenze:
-        return gruppe[1]
+    if gruppe is not None and len(gruppe[0]) >= 2:
+        # Pruefung c, R6: sind >= 2 Mitspieler zusammen, ist das Ziel dein Team - ist es dort zu gefaehrlich, gibt es
+        # kein Ziel (dann bleibt es beim Kauf-Satz), und nicht "warte am Turm" (173159 36:06: "vier von ihnen sind
+        # unten", dein Team vermutlich genau dort)
+        return gruppe[1] if p_am(gruppe[1])[0] < grenze else _kein_ziel(modus)
     h0, wer = erstes if erstes is not None else (None, [])
     zuletzt = _zuletzt(m, wer[0][0] if wer else None)
     kurz = h0.daten.get("kurz") if h0 is not None else None
@@ -332,17 +342,16 @@ def _sicherer(m, cfg: dict, modus: str, erstes, p_am, grenze: float) -> Handlung
     meiste = max(je, key=je.get)
     n = je[meiste]
     wort = {"Top": "oben", "Mid": "in der Mitte", "Bot": "unten"}[meiste]
-    grund = f"{ZAHL.get(n, str(n))} von ihnen sind {wort}" if n else "keiner von ihnen ist zu sehen"
+    grund = (f"{ZAHL.get(n, str(n))} von ihnen {'ist' if n == 1 else 'sind'} {wort}" if n
+             else "keiner von ihnen ist zu sehen")                    # Pruefung c, R6: Einzahl und Mehrzahl
     for stufe in ("innen", "Inhib", "aussen"):
-        name = {"innen": "inneren ", "Inhib": "Inhibitor-", "aussen": "äußeren "}[stufe]
-        h = _turm_option(m, modus, seite, stufe, f"Warte am {name}{seite}-Turm auf dein Team: {grund}.",
-                         f"warte dort auf dein Team, {grund}", f"zum {name}{seite}-Turm")
-        if h is not None:
+        # Pruefung c, R6: "Top-Inhibitor-Turm", nie "Inhibitor-Top-Turm"
+        name = {"innen": f"inneren {seite}-Turm", "Inhib": f"{seite}-Inhibitor-Turm", "aussen": f"äußeren {seite}-Turm"}[stufe]
+        h = _turm_option(m, modus, seite, stufe, f"Warte am {name} auf dein Team: {grund}.",
+                         f"warte dort auf dein Team, {grund}", f"zum {name}")
+        if h is not None and p_am(h)[0] < grenze:
             return h
-    h = Handlung("WOHIN", Ziel("basis", "Basis"), modus, 5.0, grund=f"warte auf dein Team, {grund}",
-                 satz=f"Warte in der Basis auf dein Team: {grund}.")
-    h.daten["kurz"] = "in der Basis"
-    return h
+    return _kein_ziel(modus)      # Pruefung c, R6: ein Rueckfall-Ziel mit p_tod >= 0,3 wird nicht gesagt
 
 
 def _karten_ziele(m, cfg: dict, modus: str) -> list[Handlung]:
@@ -412,7 +421,8 @@ def kaufen(m, cfg: dict, modus: str, ziel: Handlung) -> Handlung | None:
     teile = teile[:3]
     was = liste(teile)
     verkauf = f"Verkauf {k.verkaufen}, dann k" if k.verkaufen else "K"
-    satz = f"{verkauf}auf {was}, dann {ziel.daten['kurz']}: {ziel.grund}."
+    satz = (f"{verkauf}auf {was}, dann {ziel.daten['kurz']}: {ziel.grund}." if ziel.daten.get("kurz")
+            else f"{verkauf}auf {was}.")           # Pruefung c, R6: kein sicheres Ziel - der Kauf-Satz ohne Ziel
     h = Handlung("KAUFEN", Ziel("basis", was), modus, 5.0, gewinn=k.kosten * cfg["kauf"]["kauf_faktor"] + 1000.0,
                  grund=ziel.grund, satz=satz, schritte=["kaufen", ziel.art])
     if ziel.daten.get("gefahr_am") is not None:
@@ -434,7 +444,7 @@ def kandidaten(m, cfg: dict, merker: dict | None = None, lage=None) -> list[Hand
     aus = [z]
     if (k := kaufen(m, cfg, "BASIS", z)) is not None:
         aus.append(k)
-    elif kontrollauge_dazu(m) and m.b.gold >= 75:
+    elif kontrollauge_dazu(m) and m.b.gold >= 75 and z.satz:
         mit = z.satz.rstrip(".") + ", nimm ein Kontroll-Auge mit."
         if len(mit.split()) <= cfg["sprechen"]["max_woerter"]:
             z.satz = mit

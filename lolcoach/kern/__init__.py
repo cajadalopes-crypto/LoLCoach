@@ -35,7 +35,16 @@ GUT_RAUS_S = 10.0          # G4: so lange nach dem Rueckzug-Satz wird "Gut raus"
 GUT_RAUS_VERLUST = 0.20    # ... und dein Leben darf darin nicht um so viel fallen
 WELLEN_ARTEN = frozenset(("FARMEN", "WELLE_REIN_UND_BACK", "STAPELN", "WELLE_HALTEN", "PLATTEN", "UNTER_TURM_FARMEN",
                           "VORBEREITEN_OBJECTIVE"))
-RUECKZUG_EPISODE_S = 15.0   # Pruefung D: so lange nach dem letzten ZURUECK-Plan gilt es als derselbe Rueckzug
+RUECKZUG_EPISODE_S = 15.0
+# Qualitaetsrunde 3, R1: Vorwaerts-Handlungen - unter vor_leben_min kein Kandidat, mit p_tod >= vor_p_tod_max nie gesagt
+VOR_SCHRANKE = frozenset(("DRUECKEN", "MIT_GRUPPE", "NEHMEN", "BESTREITEN", "ZUR_GRUPPE", "TP_SPIEL", "PLATTEN",
+                          "SEITENWELLE", "WELLE_KLAEREN", "VORBEREITEN_OBJECTIVE", "ANNEHMEN"))
+# R2: haengen am ungeeichten p_gewinn - berechnet, protokolliert, stumm (bis die Kampf-Eichung besteht)
+MODELL_STUMM = frozenset(("BESTREITEN", "TP_SPIEL"))
+BACK_RUF = re.compile(r"\bback\b", re.I)     # R4: ein Back-Ruf (Back jetzt, Jetzt back, ... dann back)
+VORWAERTS_RUF = frozenset(("DRUECKEN", "MIT_GRUPPE", "NEHMEN", "BESTREITEN", "ZUR_GRUPPE", "TP_SPIEL", "ANNEHMEN",
+                           "VORBEREITEN_OBJECTIVE", "PLATTEN", "SEITENWELLE", "WELLE_KLAEREN", "REIN", "DREHEN",
+                           "TRADE", "ALL_IN"))       # R9: ein Ruf nach vorn vor einem Tod   # Pruefung D: so lange nach dem letzten ZURUECK-Plan gilt es als derselbe Rueckzug
 
 KERN_MODI_3 = ("LANE", "BASIS", "TOT")
 KERN_MODI_4 = KERN_MODI_3 + ("SEITE", "GRUPPE", "UNTERWEGS", "VERTEIDIGEN")     # Schritt 4 (Buch 5)
@@ -103,6 +112,13 @@ class Kern:
         # Entscheidung 2 (Carlos, 27.09.): Kampf-Rufe des ungeeichten Modells - berechnet, nicht gesprochen
         self.stumm_modell: list[dict] = []     # {"zeit", "art", "text", "modus"}
         self._stumm_takt: str | None = None
+        self._schranke_takt: list | None = None     # R1: was die Vorwaerts-Schranke in diesem Takt strich
+        self._back_rufe: list[float] = []            # R4: Spielzeiten gesprochener Back-Rufe
+        self._back_stufe: bool = False               # R4: Ziel-Item beim letzten Back-Ruf komplett kaufbar?
+        self._back_recall = -1e9                     # R4: zuletzt in die Basis gekommen
+        self._sicher_weg: deque = deque()            # R5: (Zeit, Laufzeit zum sicheren Ort) der letzten Sekunden
+        self._wohin_genannt: set = set()             # R6: schon einmal genannte Ziele (Kurzform danach)
+        self._ruf_vor_tod: tuple | None = None       # R9: (Zeit des Todes, Ruf) fuer _kern.jsonl
         self._stumm_annehmen: tuple[float, set] = (-1e9, set())   # das stumme Urteil haelt wie ein Plan (Buch 7, 4)
         self._obj_gesagt: dict[tuple, str] = {}   # Buch 6, 9: (Objective, Spawn) -> Art des gesagten Urteils
         self._modus_vorher: str | None = None
@@ -174,6 +190,12 @@ class Kern:
         gesagt = self.transport.gesagt if self.transport is not None else []
         if modus not in ("TOT", "BASIS", None):
             self._wohin = {}           # draussen: der naechste Aufenthalt waehlt neu
+        if modus == "BASIS" and self._modus_vorher not in ("TOT", "BASIS"):
+            self._back_recall = m.zeit               # R4: recallt - der letzte Back-Ruf war nicht ignoriert
+        if m.b is not None and m.pos is not None:
+            self._sicher_weg.append((m.zeit, m.b.sicherer_ort()[1]))
+            while self._sicher_weg and self._sicher_weg[0][0] < m.zeit - 2.5:
+                self._sicher_weg.popleft()
         if modus in ("TOT", "BASIS") and self._modus_vorher not in ("TOT", "BASIS"):
             # Tod oder Back: danach ist ein Plan wieder neu - "derselbe Plan eben schon" (wiederholen_s) gilt fuer ein
             # Flackern, nicht ueber einen Tod hinweg (Qualitaetsrunde 1, 144655 6:11/6:42: der Plan fuer die verlorene
@@ -293,6 +315,7 @@ class Kern:
             wert.bewerte(h, m, cfg, tk)
         # Buch 6, 4.3: eine Objective-Handlung nur mit EV > 0 (nicht bloss besser als HALTEN)
         kand = [h for h in kand if h.daten.get("ev_min") is None or h.ev > h.daten["ev_min"]]
+        kand = self._schranken(m, kand, modus)
         bleiben = next((h for h in kand if h.art in ("FARMEN", "HALTEN") or h.daten.get("verloren")), None)
         for h in kand:
             if h.art == "ZURUECK":
@@ -322,6 +345,12 @@ class Kern:
                 # Pruefung A: kommt nur der Lane-Gegner, waehrend du nach dem Plan an deinem Turm farmst, ist das
                 # keine Gefahr - genau das will der Plan
                 gefahr, self.gate_grund = False, f"nur {farmen.daten.get('lane_gegner')} - der Plan fuer die Lane haelt"
+            elif m.b.lane is not None and wer <= {m.b.lane.champion} and m.leben is not None \
+                    and m.leben >= cfg["schranken"]["gefahr_lane_leben_min"] \
+                    and m.b.kraefte()[0] >= cfg["schranken"]["gefahr_lane_kraft_min"]:
+                # Pruefung c, R5: der Lane-Gegner allein ist keine Gefahr, solange du genug Leben hast und nicht
+                # schwaecher bist (173159 7:45: "Raus ...: Cho'Gath kommt" bei 100 %) - bis Buch 2 die Matchups bringt
+                gefahr, self.gate_grund = False, f"nur {m.b.lane.champion}, Leben und Kraft reichen"
         # der Plan fuer die verlorene Lane gilt gegen den Lane-Gegner allein - kommt noch wer, ist er keine Wahl
         # (140253 8:15: "Yasuo ist vorn: ... farm dort", waehrend Brand und Yasuo kamen)
         if farmen is not None and farmen.daten.get("verloren"):
@@ -365,7 +394,7 @@ class Kern:
             if h.stumm:
                 return None
             kategorie = "GEFAHR" if (ev.art == "gefahr" and h.art in SICHER) or h.art == "ANNEHMEN" else "PLAN"
-            text = h.satz or h.kurz()
+            text = h.satz or (h.kurz() if h.art != "WOHIN" else "")   # R6: ein WOHIN ohne Ziel sagt nichts
             if h.art == "ANNEHMEN":
                 # Buch 7, 4: hoechstens einmal je Gegner und annehmen_wiederholen_s
                 g = h.daten.get("kampf_mit")
@@ -452,10 +481,21 @@ class Kern:
         # dieselbe Warnung vor denselben Gegnern eben erst gesagt: nichts Neues (235433, 6:12-7:04: fuenfmal "Raus zu
         # deinem Top-Tier-1-Turm" in 52 s) - kommt ein neuer Gegner dazu, darf sie wieder
         if kategorie == "GEFAHR" and ev.art != "schritt":
+            cs = self.cfg["schranken"]
             von = set(h.daten.get("gefahr_von", []))
             alt = self._gefahr_gesagt
-            if alt is not None and m.zeit - alt[0] < self.cfg["sprechen"]["gefahr_wiederholen_s"] and von <= alt[1]:
+            # Pruefung c, R5: dieselbe Gegnermenge gefahr_gleiche_s (45 s) nicht erneut - ausser p_tod steigt deutlich
+            # (164326 22:39/23:12: zweimal "Teemo und Naafiri kommen")
+            if alt is not None and m.zeit - alt[0] < cs["gefahr_gleiche_s"] and von <= alt[1] \
+                    and h.p_tod < alt[2] + cs["gefahr_anstieg"]:
                 p.gesagt = alt[0]
+                return None
+            # Pruefung c, R5: kein Gefahr-Satz, waehrend du schon zum sicheren Ort laeufst
+            if h.art in ("ZURUECK", "RAUS") and len(self._sicher_weg) >= 2 and self._sicher_weg[0][1] is not None \
+                    and self._sicher_weg[-1][1] is not None and m.zeit - self._sicher_weg[0][0] >= 1.5 \
+                    and (self._sicher_weg[0][1] - self._sicher_weg[-1][1]) * (m.mein_tempo or 340.0) \
+                    >= cs["sicher_naeher"]:
+                p.gesagt = m.zeit
                 return None
         # Buch 6, 9: das Urteil zu einem Objective hoechstens einmal je Spawn - ein zweites Mal nur, wenn es kippt
         # (NEHMEN/BESTREITEN <-> ABGEBEN_TAUSCHEN); VORBEREITEN -> NEHMEN wird nicht angesagt (4.2)
@@ -467,6 +507,11 @@ class Kern:
             if alt is not None and (alt == "ABGEBEN_TAUSCHEN") == (h.art == "ABGEBEN_TAUSCHEN"):
                 p.gesagt = m.zeit
                 return None
+        if (grund := self._back_sperre(m, text)) is not None:
+            p.gesagt = m.zeit                    # Pruefung c, R4: der Plan gilt still weiter
+            self.gate_grund = grund
+            return None
+        text = self._kurzform(p, h, text)        # Pruefung c, R6
         if modus == "BASIS" and self._praefix is not None and m.zeit - self._praefix[0] <= 15:
             text = f"{self._praefix[1]} {text}"
             self._praefix = None
@@ -476,6 +521,9 @@ class Kern:
             self._angesagt[schl] = zeit
             if okey is not None:
                 self._obj_gesagt[okey] = h.art
+            if BACK_RUF.search(text):
+                self._back_gesagt(m)
+            self._wohin_merken(h)
             if nach_dem_sprechen is not None:
                 if h.daten.get("verloren"):
                     nach_dem_sprechen(ansage)
@@ -495,7 +543,7 @@ class Kern:
             elif p.art == "ANNEHMEN":
                 self.proben.ansage(m.zeit, "rein")
             if kategorie == "GEFAHR":
-                self._gefahr_gesagt = (m.zeit, set(h.daten.get("gefahr_von", [])))
+                self._gefahr_gesagt = (m.zeit, set(h.daten.get("gefahr_von", [])), h.p_tod)
             p.start = {"sicher_weg": m.b.sicherer_ort()[1] if m.b is not None else None, "pos": m.pos}
             if h.art == "ZURUECK":
                 self._rueckzug = (m.zeit, m.pos, [n for n, x in h.daten.get("wer", []) if x >= 0.05],
@@ -532,6 +580,9 @@ class Kern:
                 return False       # Pruefung E3: in der Basis kein Wellenbefehl
             if self.modus.aktuell == "KAMPF":
                 return False       # Buch 7, 11.3: in KAMPF kein Plan-Satz von vorher (nur die Kampf-Rufe, <= 5 Woerter)
+            if p.art in VOR_SCHRANKE and m is not None and m.leben is not None \
+                    and m.leben < self.cfg["schranken"]["vor_leben_min"]:
+                return False       # Pruefung c, R1: das Leben fiel, bevor der Satz dran war
             obj = p.handlung.daten.get("objective")
             if obj and m is not None and m.obj_urteile and obj in m.obj_urteile and not m.obj_urteile[obj].zieht                     and p.art not in ("BESTREITEN", "ABGEBEN_TAUSCHEN"):
                 return False       # Buch 6, 14.4: zieht das Objective beim Sprechen nicht mehr, faellt der Satz weg
@@ -539,6 +590,7 @@ class Kern:
         return pruefe
 
     def _gesprochen(self, a, kategorie: str, m: Merkmale) -> None:
+        a._kategorie = kategorie          # fuer Szenarien (kategorie_max) und Kennzahlen
         self.gesagt.append((m.zeit, kategorie, a.text))
         self._letzte = (kategorie, a.text)
         self._leben_bei_ansage = m.leben
@@ -581,14 +633,95 @@ class Kern:
         self._gesprochen(a, "GEFAHR", m)
         return [a]
 
-    def _stumm(self, m: Merkmale, art: str, text: str, modus: str | None) -> None:
+    def _back_sperre(self, m: Merkmale, text: str) -> str | None:
+        """Pruefung c, R4: ein Back-Ruf nicht unter back_leben_min und nicht in KAMPF (dort gilt RAUS); hoechstens
+        back_max_je_10min je 10 Minuten; nach einem Back-Ruf ohne Recall ein neuer erst nach back_ignoriert_s - ausser
+        dein Leben faellt unter back_ausnahme_leben oder das Ziel-Item wird komplett kaufbar. Rueckgabe: der Grund."""
+        if not BACK_RUF.search(text or ""):
+            return None
+        cs = self.cfg["schranken"]
+        le = m.leben
+        if le is not None and le < cs["back_leben_min"]:
+            return "Back gesperrt: Leben unter 10 %"
+        if self.modus.aktuell == "KAMPF":
+            return "Back gesperrt: KAMPF"
+        rufe = [t for t in self._back_rufe if m.zeit - t < 600]
+        if len(rufe) >= cs["back_max_je_10min"]:
+            return f"Back gesperrt: {len(rufe)} in 10 min"
+        if rufe and m.zeit - rufe[-1] < cs["back_ignoriert_s"] and self._back_recall < rufe[-1]:
+            stufe = bool(m.kauf is not None and m.kauf.kern_fertig)
+            if not ((le is not None and le < cs["back_ausnahme_leben"]) or (stufe and not self._back_stufe)):
+                return "Back gesperrt: der letzte wurde ignoriert"
+        return None
+
+    def _back_gesagt(self, m: Merkmale) -> None:
+        self._back_rufe.append(m.zeit)
+        self._back_stufe = bool(m.kauf is not None and m.kauf.kern_fertig)
+
+    def _wohin_ziel(self, h) -> str | None:
+        """R6: das Weiterweg-Ziel eines KAUFEN- oder WOHIN-Satzes ("zur Top-Welle", "Top", ...)."""
+        if h.art == "KAUFEN":
+            w = h.daten.get("wohin")
+            return w.daten.get("kurz") if w is not None else None
+        if h.art in ("WOHIN", "WOHIN_TP_LANE"):
+            return h.daten.get("kurz")
+        return None
+
+    def _wohin_merken(self, h) -> None:
+        if (z := self._wohin_ziel(h)) is not None:
+            self._wohin_genannt.add(z)
+
+    def _kurzform(self, p, h, text: str) -> str:
+        """Pruefung c, R6: nach der ersten Nennung je Partie nur noch die Kurzform - "Dann Top-Welle." bzw. "Kauf X,
+        dann Top-Welle." statt jedes Mal "dort nimmt sie sonst niemand"."""
+        z = self._wohin_ziel(h)
+        if z is None or z not in self._wohin_genannt:
+            return text
+        kurz = re.sub(r"^(zur|zum|zu den|zu) ", "", z)
+        kurz = kurz[0].upper() + kurz[1:] if h.art != "KAUFEN" else kurz
+        if h.art == "KAUFEN" and ", dann " in text:
+            return text.rsplit(", dann ", 1)[0] + f", dann {kurz}."     # das letzte ", dann" ist der Weiterweg
+        if h.art in ("WOHIN", "WOHIN_TP_LANE"):
+            praefix = re.match(r"^(Noch \d+ Sekunden: )", text)
+            return (praefix.group(1) if praefix else "") + f"Dann {kurz}."
+        return text
+
+    def _schranken(self, m: Merkmale, kand: list, modus: str | None) -> list:
+        """Qualitaetsrunde 3.
+        R1: unter vor_leben_min ist keine Vorwaerts-Handlung Kandidat (Ausnahme: NEHMEN in der Grube ohne Kampf, das in
+        <= 5 s faellt); eine Vorwaerts-Handlung mit p_tod >= vor_p_tod_max ist keiner.
+        R2: was am ungeeichten Kampfmodell haengt (BESTREITEN, TP_SPIEL, daten["modell_stumm"]), wird berechnet und
+        protokolliert, aber nicht Kandidat - bis [kampf].geeicht."""
+        cs = self.cfg["schranken"]
+        le = m.leben
+        aus, weg = [], []
+        for h in kand:
+            if h.art in VOR_SCHRANKE:
+                ausnahme = (h.art == "NEHMEN" and h.daten.get("in_grube") and h.daten.get("P_kampf", 1.0) < 0.1
+                            and h.daten.get("faellt_in", 99.0) <= 5.0)
+                if le is not None and le < cs["vor_leben_min"] and not ausnahme:
+                    weg.append(f"{h.art}: Leben {le:.2f}")
+                    continue
+                if h.p_tod >= cs["vor_p_tod_max"]:
+                    weg.append(f"{h.art}: p_tod {h.p_tod:.2f}")
+                    continue
+            if not self.cfg["kampf"].get("geeicht", False) and (h.art in MODELL_STUMM or h.daten.get("modell_stumm")):
+                self._stumm(m, h.art, h.satz or h.kurz(), modus, schluessel=h.ziel.name if h.ziel else None)
+                continue
+            aus.append(h)
+        self._schranke_takt = weg or None
+        return aus
+
+    def _stumm(self, m: Merkmale, art: str, text: str, modus: str | None, schluessel: str | None = None) -> None:
         """Entscheidung 2: ein Kampf-Ruf des ungeeichten Modells - ins Protokoll, nicht in die Stimme. Derselbe Ruf
-        (Art und Text) steht hoechstens alle annehmen_wiederholen_s einmal darin."""
-        alt = next((x for x in reversed(self.stumm_modell) if x["art"] == art and x["text"] == text), None)
+        (Art und Text, oder Art und `schluessel`, etwa das Ziel) steht hoechstens alle annehmen_wiederholen_s einmal
+        darin."""
+        alt = next((x for x in reversed(self.stumm_modell) if x["art"] == art
+                    and (x.get("schluessel") == schluessel if schluessel else x["text"] == text)), None)
         if alt is not None and m.zeit - alt["zeit"] < self.cfg["kampf"]["annehmen_wiederholen_s"]:
             self._stumm_takt = self._stumm_takt or f"{art}: {text}"
             return
-        self.stumm_modell.append({"zeit": m.zeit, "art": art, "text": text, "modus": modus})
+        self.stumm_modell.append({"zeit": m.zeit, "art": art, "text": text, "modus": modus, "schluessel": schluessel})
         self._stumm_takt = f"{art}: {text}"
 
     def rueckblick_text(self, zeit: float, taeter: str | None, beteiligt: list[str], turm: bool,
@@ -598,6 +731,24 @@ class Kern:
         from .modi.kampf import rueckblick
         if self.stellung != "neu" or "KAMPF" not in self.modi:
             return sonst
+        # Pruefung c, R9: kam in den 20 s vor dem Tod ein Ruf des Coaches nach vorn, lehrt der Rueckblick nicht dagegen -
+        # er beschreibt die Lage nuechtern, und der Ruf steht in _kern.jsonl als "Ruf vor Tod"
+        gesagt = self.transport.gesagt if self.transport is not None else []
+        ruf = next((a for a in reversed(gesagt) if a.schluessel.startswith("kern:") and a.gesprochen is not None
+                    and zeit - 20.0 <= a.gesprochen <= zeit
+                    and a.schluessel.split(":", 1)[1] in VORWAERTS_RUF), None)
+        if ruf is not None:
+            self._ruf_vor_tod = (zeit, ruf.text)
+            wer = [n for n in beteiligt if n] or ([taeter] if taeter else [])
+            plan = self.fuehrer.plan
+            obj = plan.handlung.daten.get("objective") if plan is not None else None
+            from .modi.objective import AM
+            wo = AM.get(obj, "Dort") if obj else "Dort"
+            wo = wo[0].upper() + wo[1:]
+            zahl = {2: "zwei", 3: "drei", 4: "vier", 5: "fünf"}
+            s1 = (f"{wo} kamen {zahl.get(len(wer), len(wer))} von ihnen zusammen." if len(wer) >= 2
+                  else f"{wo} kam {wer[0]} dazu." if wer else f"{wo} kam es zum Kampf.")
+            return s1 + " Schau es dir im Review an."
         probe = self.proben.letzte(zeit)
         if probe is not None:
             # was zuletzt GESPROCHEN wurde, zaehlt - uebergeben ist nicht gesagt, und nach "Raus" kann "Dreh um" und
@@ -612,7 +763,8 @@ class Kern:
                 elif a.schluessel in ("kern:REIN", "kern:ANNEHMEN", "kern:DREHEN"):
                     richtung = "rein"
             probe = dict(probe, ansage=richtung)
-        text = rueckblick(probe, taeter, beteiligt, turm, leben)
+        j = self.m.b.jungler if self.m is not None and self.m.b is not None else None
+        text = rueckblick(probe, taeter, beteiligt, turm, leben, jungler=j.champion if j is not None else None)
         if text is None or len(text.split()) > self.cfg["kampf"]["max_woerter_rueckblick"]:
             return sonst
         return text
@@ -682,10 +834,14 @@ class Kern:
             text = f"Denk dran: {h.satz}" if h.satz else None
         if not text:
             return None
+        if self._back_sperre(m, text) is not None:
+            return None                          # Pruefung c, R4
         a = self.sprecher.ansage("ERINNERUNG", p.art, text, m.zeit, self._pruefung(p), gesagt)
         if a is not None:
             if im_rueckzug:
                 ep["back"] = True
+            if BACK_RUF.search(text):
+                self._back_gesagt(m)
             self._gesprochen(a, "ERINNERUNG", m)
         return a
 
@@ -727,12 +883,16 @@ class Kern:
         if s["zuletzt"] is not None and m.zeit - s["zuletzt"] < c["basis_wieder_s"]:
             return None
         z = basis.wohin(m, self.cfg, "BASIS", self._wohin, self._lage(m))     # dasselbe Ziel wie beim Kauf (C4)
+        if not z.satz:
+            return None          # Pruefung c, R6: kein sicheres Ziel
         text = z.satz if z.satz.startswith(("Geh", "TP", "Lauf", "Zurück")) else \
             "Geh jetzt: " + z.satz[0].lower() + z.satz[1:]
+        text = self._kurzform(None, z, text)       # Pruefung c, R6: "Dann Top-Welle."
         a = self.sprecher.ansage("PLAN", z.art, text, m.zeit, None, gesagt)
         if a is not None:
             s["n"] += 1
             s["zuletzt"] = m.zeit
+            self._wohin_merken(z)
             self._gesprochen(a, "PLAN", m)
         return a
 
@@ -839,7 +999,7 @@ class Kern:
                 self._rueckzug = None
             elif zeit - t0 >= GUT_RAUS_S and da and m.pos is not None and am_sicheren_ort(m) \
                     and abstand(pos, m.pos) >= 600:
-                text = "Gut raus - da war er." if len(da) == 1 else "Gut raus - da waren sie."
+                text = "Gut raus."        # Pruefung c, R8: ohne Pronomen (gewarnt vor mehreren, gesehen einer)
                 self._rueckzug = None
         plan = self.fuehrer.plan
         if text is None and plan is not None and plan.art == "STAPELN" and m.welle is not None \
@@ -942,6 +1102,10 @@ class Kern:
                 zeile["plan_objective"] = plan.handlung.daten["objective"]
             if self._stumm_takt:
                 zeile["stumm"] = f"Modell nicht geeicht - {self._stumm_takt}"
+            if self._schranke_takt:
+                zeile["schranke"] = self._schranke_takt
+            if self._ruf_vor_tod is not None and abs(self._ruf_vor_tod[0] - p.zeit) <= 1.0:
+                zeile["ruf_vor_tod"] = self._ruf_vor_tod[1]
             if self._letzte is not None:
                 zeile["wuerde_sagen" if self.stellung == "schatten" else "sagt"] = list(self._letzte)
         try:

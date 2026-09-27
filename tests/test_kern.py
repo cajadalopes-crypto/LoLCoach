@@ -113,7 +113,8 @@ def fenster_gruende_sprechen_dafuer():
         for zahl in re.findall(r"(\d+) Sekunden", satz):
             assert int(zahl) >= int(bis), (satz, bis)
         if kommen:
-            assert "schlägst" in satz, satz
+            # Pruefung c, R2: kein "du schlaegst X" mehr - wer vorher kommt, wird nur benannt (der Satz ist stumm)
+            assert "schlägst" not in satz and "vorher" in satz, satz
 
 
 def gold_reicht_fuer_das_genannte_item():

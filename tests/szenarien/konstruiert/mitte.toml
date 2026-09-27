@@ -29,9 +29,10 @@ gegner = [
 ]
 tuerme = { ihre = ["Top:innen", "Top:Inhib", "Mid:aussen", "Mid:innen", "Mid:Inhib", "Bot:aussen", "Bot:innen", "Bot:Inhib"] }
 objectives = [ { schl = "drache", spawn_in = 90, weg = 45, seite = "andere" } ]
-soll = ["DRUECKEN"]
-satz_enthaelt = ["inneren Top-Turm"]
-warum = "Du schlaegst Sett, drei sind unten gesehen, TP ist bereit fuer den Drachen: drueck den inneren Top-Turm."
+darf_nicht = ["DRUECKEN"]
+warum = """Du schlaegst Sett, drei sind unten gesehen, TP ist bereit fuer den Drachen: drueck den inneren Top-Turm - so
+Buch 5. Pruefung c, R2.3: ein Turm, der nur ueber "du schlaegst Sett" traegt (Sett kommt vor dem Fall), ist stumm, bis
+die Kampf-Eichung besteht (das Gold trennt verkehrt herum). Vorher: soll DRUECKEN."""
 
 [[lage]]
 id = "m-split-zu-tief"
@@ -110,9 +111,9 @@ mitspieler = [
 ]
 teamkampf = { ort = "grube:drache", eigene = 4, gegner = 4, seit = 2, tote_eigene = 0, tote_gegner = 0, dein_weg = 45 }
 objectives = [ { schl = "drache", spawn_in = 0, lebt = true, weg = 45, seite = "andere" } ]
-soll = ["TP_SPIEL"]
-satz_enthaelt = ["TP"]
-warum = """Der Kampf am Drachen faengt gerade an, 4 gegen 4, zu Fuss 45 s: TP macht es 5 gegen 4 und aendert das
+darf_nicht = ["TP_SPIEL"]
+warum = """Pruefung c, R2.1: TP_SPIEL haengt am ungeeichten p_gewinn - berechnet, protokolliert, stumm, bis die
+Kampf-Eichung besteht. Vorher soll TP_SPIEL: Der Kampf am Drachen faengt gerade an, 4 gegen 4, zu Fuss 45 s: TP macht es 5 gegen 4 und aendert das
 Urteil (Buch 6, 4.7: p_gewinn mit dir - ohne dich >= 0,15). Vorher 4 gegen 5: dort aendert dein TP das Urteil nur um
 0,14 (0,29 -> 0,43), der Kampf bleibt verloren - dafuer m-tp-kampf-bleibt-verloren."""
 

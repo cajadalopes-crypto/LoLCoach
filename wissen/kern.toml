@@ -27,6 +27,23 @@ kampf_balken_faellt = 0.05
 # nicht im Buch, Schritt 2: Minimap gilt als frisch (daten_frisch, Kapitel 4.2)
 minimap_frisch_s = 5.0
 
+[schranken]
+stand = "Pruefung 27.09.2026 c (Qualitaetsrunde 3), R1-R7"
+vor_leben_min = 0.4              # R1: darunter keine Vorwaerts-Handlung (Kandidat und Ansage)
+vor_p_tod_max = 0.3              # R1: eine Vorwaerts-Handlung mit p_tod darueber wird nie gesagt
+zur_kampf_leben_min = 0.6        # R2: ZUR_GRUPPE zu einem Kampf nur mit so viel Leben ...
+zur_kampf_mehr_koepfe = 1        # ... und wenn ihr nach deiner Ankunft so viele Koepfe mehr seid
+back_ignoriert_s = 90            # R4: nach einem Back-Ruf ohne Recall kommt ein neuer erst danach
+back_max_je_10min = 3            # R4
+back_leben_min = 0.10            # R4: darunter kein Back-Ruf (dann gilt RAUS)
+back_ausnahme_leben = 0.3        # R4: faellt das Leben darunter, darf ein neuer Back-Ruf frueher kommen
+gefahr_gleiche_s = 45            # R5: dieselbe Gegnermenge wird so lange nicht erneut gewarnt ...
+gefahr_anstieg = 0.15            # ... ausser p_tod steigt um so viel
+gefahr_lane_leben_min = 0.6      # R5: kommt nur der Lane-Gegner, ist das ab so viel Leben keine Gefahr ...
+gefahr_lane_kraft_min = -0.5     # ... und wenn kraefte() mindestens so hoch ist (bis Buch 2 die Matchups bringt)
+sicher_naeher = 300              # R5: laeufst du in 2 s so viel naeher an den sicheren Ort, kein Gefahr-Satz
+welle_min = 4                    # R7: SEITENWELLE und WELLE_KLAEREN erst ab so vielen Vasallen (oder Supervasallen)
+
 [sprechen]
 stand = "Buch 0 Kapitel 7.7, Schritt 2/3"
 abstand_s = 12

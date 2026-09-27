@@ -1,0 +1,150 @@
+# Szenarien aus der Protokoll-Pruefung 27.09.2026, dritte Runde (buecher/protokolle/PRUEFUNG_2026-09-27c.md),
+# Partie 173159 (Carlos live, Riven Top gegen Cho'Gath, CLASSIC). Angelegt vor den Fixes - rot mit 842b502.
+
+aufnahme = "2026-09-27_173159"
+spielmodus = "CLASSIC"
+bots = false
+
+# --- R1: keine Vorwaerts-Handlung mit wenig Leben oder hohem Risiko ---
+
+[[szenario]]
+id = "3512-kein-aeltester-mit-15"
+zeit = "35:12"
+fenster = ["35:05", "35:24"]
+quelle = "Pruefung c, R1: 'Zum Aeltesten mit Graves und Trundle: ihr seid vier.' - Riven 15 %, in ihrer Basis, Tod 35:24"
+lage = "Riven 15 % Leben in ihrer Basis."
+darf_nicht = ["NEHMEN"]
+darf_nicht_sagen = ["Ältesten"]
+warum = "Unter 40 % Leben ist keine Vorwaerts-Handlung Kandidat oder Ansage (vor_leben_min)."
+
+[[szenario]]
+id = "2850-kein-aeltester-bestreiten"
+zeit = "28:50"
+fenster = ["28:45", "29:03"]
+quelle = "Pruefung c, R1: 'Aeltester bestreiten: ihr seid vier.' (p_tod 0,34), Tod 29:03"
+lage = "Aeltester lebt, Riven p_tod 0,34."
+darf_nicht = ["BESTREITEN"]
+darf_nicht_sagen = ["bestreiten"]
+warum = "Eine Vorwaerts-Handlung mit p_tod >= 0,3 wird nie gesagt (vor_p_tod_max); BESTREITEN ist stumm, bis die Kampf-Eichung besteht (R2)."
+
+[[szenario]]
+id = "1423-kein-kampf-mit-16"
+zeit = "14:23"
+fenster = ["14:16", "14:40"]
+quelle = "Pruefung c, R1: 'Zum Kampf, jetzt: ihr seid 2 gegen 2, mit dir 3 gegen 2.' bei 16 % Leben"
+lage = "Riven 16 % Leben."
+darf_nicht = ["ZUR_GRUPPE"]
+darf_nicht_sagen = ["Zum Kampf"]
+warum = "Unter 40 % Leben kein ZUR_GRUPPE; zu einem Kampf nur mit >= 60 % (R2)."
+
+[[szenario]]
+id = "2200-kein-druecken-mit-36"
+zeit = "22:00"
+fenster = ["21:55", "22:19"]
+quelle = "Pruefung c, R1: 'Drueck den inneren Top-Turm: du schlaegst Zilean.' bei 36 % Leben"
+lage = "Riven 36 % Leben."
+darf_nicht = ["DRUECKEN"]
+darf_nicht_sagen = ["Drück"]
+warum = "Unter 40 % Leben keine Vorwaerts-Handlung."
+
+# --- R2: wo der Kampf entscheidet, spricht das ungeeichte Modell nicht ---
+
+[[szenario]]
+id = "2109-zur-gruppe-mit-ort"
+fenster = ["0:00", "40:00"]
+quelle = "Pruefung c, R2: 'Zum Kampf, jetzt ...' (21:09) ohne Ort"
+lage = "Ganze Partie."
+darf_nicht_sagen = ["Zum Kampf, jetzt", "schlägst"]
+warum = "ZUR_GRUPPE zu einem Kampf nennt den Ort; 'schlaegst' faellt aus allen Saetzen, bis die Kampf-Eichung besteht."
+
+# --- R3: Kaufplan ---
+
+[[szenario]]
+id = "1204-kein-spitzhacke-dauerton"
+fenster = ["12:00", "24:30"]
+quelle = "Pruefung c, R3: zwoelf Minuten '... Gold fuer Spitzhacke' - Carlos hat Vampirisches Zepter, Gottlose Hydra, Endloser Hunger"
+lage = "Riven 12-24 min."
+text_max = { "Spitzhacke" = 2 }
+warum = "Der Kaufplan folgt Carlos' echtem Build; ein Bauteil, das nicht ins Ziel-Item gehoert, wird nicht im Dauerton genannt."
+
+# --- R4: Back-Rufe ---
+
+[[szenario]]
+id = "back-dauerton"
+fenster = ["12:00", "35:00"]
+quelle = "Pruefung c, R4: 12 Back-Rufe zwischen 12:04 und 34:59, die meisten ignoriert"
+lage = "Riven nach der Lane-Phase."
+je_10min_max = { "\\bback\\b" = 3 }
+warum = "Hoechstens 3 Back-Rufe je 10 Minuten; nach einem ignorierten Back 90 s Ruhe."
+
+# --- R5: der Lane-Gegner allein ist keine Gefahr ---
+
+[[szenario]]
+id = "0745-cho-allein"
+fenster = ["7:40", "7:50"]
+quelle = "Pruefung c, R5: 'Raus zu deinem Top-Tier-1-Turm: Cho'Gath kommt.' bei 100 % Leben"
+lage = "Riven 100 %, Cho'Gath laeuft zur Welle."
+darf_nicht_sagen = ["Cho'Gath kommt"]
+warum = "Kommt nur der Lane-Gegner, ist das bei Leben >= 60 % und kraefte >= -0,5 keine Gefahr."
+
+# --- R6: WOHIN ---
+
+[[szenario]]
+id = "wohin-kurz"
+fenster = ["0:00", "40:00"]
+quelle = "Pruefung c, R6: 'Geh zur Top-Welle: dort nimmt sie sonst niemand.' 8-12 Mal je Partie"
+lage = "Ganze Partie."
+text_max = { "nimmt sie sonst niemand" = 1 }
+warum = "Nach der ersten Nennung die Kurzform ('Dann Top-Welle.')."
+
+[[szenario]]
+id = "3606-zum-team"
+fenster = ["36:00", "36:15"]
+quelle = "Pruefung c, R6: 'warte am Inhibitor-Top-Turm auf dein Team: vier von ihnen sind unten' (p_tod 0,90)"
+lage = "Riven tot bzw. in der Basis, das Team unten."
+darf_nicht_sagen = ["warte am", "Inhibitor-Top-Turm"]
+warum = "Sind >= 2 Mitspieler zusammen, ist das Ziel dein Team; ein Rueckfall-Ziel mit p_tod >= 0,3 wird nicht gesagt."
+
+[[szenario]]
+id = "2258-einzahl"
+fenster = ["22:50", "23:05"]
+quelle = "Pruefung c, R6: 'warte am inneren Top-Turm auf dein Team: einer von ihnen sind oben'"
+lage = "Riven tot."
+darf_nicht_sagen = ["einer von ihnen sind", "warte am"]
+warum = "Einzahl/Mehrzahl stimmen; p_tod 0,85 ist kein Ziel."
+
+# --- R7: kleine Wellen ---
+
+[[szenario]]
+id = "3232-keine-kleine-welle"
+fenster = ["32:25", "34:05"]
+quelle = "Pruefung c, R7: 'Hol die Bot-Welle: 1 Vasallen laufen in deinen Turm.' (32:32), 'Klaer die Top-Welle ... 1 Vasallen' (33:56)"
+lage = "Nach der Lane-Phase."
+darf_nicht_sagen = ["1 Vasall"]
+warum = "SEITENWELLE und WELLE_KLAEREN erst ab 4 Vasallen oder mit Kanone/Supervasall; die Zahl passt zur Grammatik."
+
+# --- R8, R9: Bestaetigung und Rueckblick ---
+
+[[szenario]]
+id = "0932-mehrzahl"
+fenster = [["9:25", "9:40"], ["13:20", "13:35"]]
+quelle = "Pruefung c, R8: 'Gut raus - da war er.' nach einer Warnung vor zwei oder drei Gegnern (9:32, 13:26)"
+lage = "Nach einem Rueckzug."
+darf_nicht_sagen = ["da war er"]
+warum = "Ohne Pronomen: 'Gut raus.'"
+
+[[szenario]]
+id = "3524-rueckblick-ohne-jungler"
+fenster = ["35:24", "35:45"]
+quelle = "Pruefung c, R9: 'Kai'Sa kam aus dem Nebel, keiner hatte ihn gesehen. Ohne Sicht auf ihren Jungler ...'"
+lage = "Riven stirbt 35:24, Taeterin Kai'Sa (ADC)."
+darf_nicht_sagen = ["ihren Jungler", "hatte ihn gesehen"]
+warum = "Keine Pronomen fuer Champions; 'Jungler' nur, wenn der Taeter der Jungler ist."
+
+[[szenario]]
+id = "2903-rueckblick-nach-ruf"
+fenster = ["29:03", "29:25"]
+quelle = "Pruefung c, R9: 'allein hast du gegen sie keine Chance' - 13 s vorher sagte der Coach 'Aeltester bestreiten'"
+lage = "Riven stirbt 29:03 am Aeltesten."
+darf_nicht_sagen = ["keine Chance"]
+warum = "Kam in den 20 s vor dem Tod ein Vorwaerts-Ruf des Coaches, lehrt der Rueckblick nicht dagegen."

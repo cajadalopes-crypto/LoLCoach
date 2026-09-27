@@ -83,9 +83,11 @@ kanone_in = 25
 lane_gegner = { level = 6, im_brunnen = true }
 jungler = { p_meine_seite = 0.2, seit = 25 }
 kauf = { lohnt = false }
-soll = ["WELLE_REIN_UND_BACK", "PLATTEN"]
-darf_nicht = ["FARMEN"]
-warum = "Sett ist gebackt: Welle in seinen Turm (er verliert Vasallen), Platte, dann selbst back - Tempo ohne Verlust."
+soll = ["FARMEN", "PLATTEN"]
+darf_nicht = ["WELLE_REIN_UND_BACK", "BACK_JETZT"]
+warum = """Sett ist gebackt: Welle in seinen Turm (er verliert Vasallen), dann Platten. Pruefung c, R4.4: ein gebackter
+Lane-Gegner ist ein Grund fuer Platten oder Druecken, fuer einen Back nur zusammen mit Gold oder Leben - hier ist weder
+Gold (900, kein lohnender Kauf) noch Leben (70 %) ein Grund. Vorher: soll WELLE_REIN_UND_BACK."""
 
 [[lage]]
 id = "k-back-vor-larven"

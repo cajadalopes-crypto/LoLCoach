@@ -23,6 +23,9 @@
     mehr als 3 Ansagen je Episode, ein Wechsel des Kampf-Rufs ohne Kampf-Ereignis (Kill/Tod oder neuer Gegner in 1500)
   - Objective-Ansagen ohne Chance (Buch 6, 14.4; Soll 0): eine Ansage von VORBEREITEN_OBJECTIVE, NEHMEN, STAPELN,
     WELLE_UND_RAUS, ZUR_GRUPPE oder WOHIN mit Objective, waehrend objective_zieht dafuer falsch war
+  - Schranken-Verstoesse (Pruefung c, Soll 0): eine Vorwaerts-Ansage des Kerns mit Leben < vor_leben_min oder
+    p_tod >= vor_p_tod_max im Takt des Sprechens, das Wort "schlaegst", ein Kauf-Satz mit einem Item, das nicht zum
+    Inventar passt (kaufplan.kaufbar)
   - Datenluecken > 5 s (Wanduhr)
   - Szenario-Quote (tests/szenarien/<stamm>.toml, ohne Claude)
 
@@ -186,6 +189,45 @@ def kampf_verstoesse(lauf: ns.Lauf) -> list[tuple[float, str]]:
     return aus
 
 
+KAUF_ITEMS = re.compile(r"(?:^|[\s:])[Kk]auf ([^,.:]+?)(?:, dann|[.:]|$)")    # nicht "Verkauf"
+
+
+def schranken_verstoesse(lauf: ns.Lauf) -> list[tuple[float, str]]:
+    """Pruefung c, Ziel 3: in keinem Protokoll eine Vorwaerts-Handlung mit Leben < 40 % oder p_tod >= 0,3, kein
+    "schlaegst", kein Kauf-Satz mit einem Item, das nicht zum Inventar passt."""
+    from lolcoach.kern import konfig
+    from lolcoach.kern import VOR_SCHRANKE
+    cs = konfig()["schranken"]
+    aus = []
+    try:
+        from lolcoach.kaufplan import kaufbar, _nach_name
+    except ImportError:
+        kaufbar = None
+    for a in lauf.gesagt:
+        t = ns.gesprochen_um(a)
+        if "schlägst" in a.text:
+            aus.append((t, f"schlaegst: {a.text[:60]}"))
+        if a.schluessel.startswith("kern:") and a.schluessel.split(":", 1)[1] in VOR_SCHRANKE:
+            x = _takt_um(lauf, t)
+            if x is not None and x.leben is not None and x.leben < cs["vor_leben_min"]:
+                aus.append((t, f"Leben {x.leben:.2f}: {a.text[:50]}"))
+            elif x is not None and x.plan_ptod is not None and x.plan_ptod >= cs["vor_p_tod_max"]:
+                aus.append((t, f"p_tod {x.plan_ptod:.2f}: {a.text[:50]}"))
+        if kaufbar is not None and a.schluessel in ("kern:KAUFEN",):
+            b = getattr(a, "_b", None)
+            inventar = list(b.ich.items) if b is not None and b.ich is not None else []
+            treffer = KAUF_ITEMS.search(a.text)
+            if treffer:
+                for name in re.split(r", | und ", treffer.group(1)):
+                    name = re.sub(r"^(ein |eine |einen |den |die |das )", "", name.strip())
+                    if name in ("Kontroll-Auge",) or name not in _nach_name():
+                        continue
+                    ok, grund = kaufbar(name, inventar)
+                    if not ok:
+                        aus.append((t, f"Kauf {name}: {grund}"))
+    return aus
+
+
 def objective_ohne_chance(lauf: ns.Lauf) -> list[tuple[float, str]]:
     """Buch 6, 14.4: Objective-Ansagen, waehrend objective_zieht falsch war."""
     aus = []
@@ -233,7 +275,8 @@ def kennzahlen(pfad: Path, kern: str = "neu") -> dict:
             "luecken": lauf.luecken, "quote": quote, "brier_kern": brier_kern, "lane_phase": (lp_n, lp_sek),
             "kategorien": dict(lauf.kern.sprecher.kategorien) if lauf.kern is not None else {},
             "staerken": list(lauf.kern.staerken) if lauf.kern is not None else [], "kern": kern,
-            "kampf": kampf_verstoesse(lauf), "ohne_chance": objective_ohne_chance(lauf)}
+            "kampf": kampf_verstoesse(lauf), "ohne_chance": objective_ohne_chance(lauf),
+            "schranken": schranken_verstoesse(lauf)}
 
 
 def ausgeben(k: dict) -> None:
@@ -262,6 +305,9 @@ def ausgeben(k: dict) -> None:
     print(f"   Kampf-Verstoesse (Buch 7, Soll 0): {len(k['kampf'])}")
     for t, s in k["kampf"][:5]:
         print(f"      {ns.uhr(t)} {s}")
+    print(f"   Schranken-Verstoesse (Pruefung c, Soll 0): {len(k['schranken'])}")
+    for t, s in k["schranken"][:6]:
+        print(f"      {ns.uhr(t)} {s[:100]}")
     print(f"   Objective-Ansagen ohne Chance (Buch 6, Soll 0): {len(k['ohne_chance'])}")
     for t, s in k["ohne_chance"][:5]:
         print(f"      {ns.uhr(t)} {s[:90]}")

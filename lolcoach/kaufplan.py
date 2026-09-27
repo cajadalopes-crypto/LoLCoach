@@ -4,15 +4,24 @@ Reasoning (Abschnitt 1/8): "Gold bis Item, Gold bis Power Spike, naechster Compo
 wenn ich jetzt recall mache: was kaufe ich?". Statt "1300 Gold: back" sagt der Coach "reicht fuer
 den Brutalisierer" oder "noch 150 bis Caulfields - Kanone mitnehmen, dann back".
 
-Der Build kommt aus dem Champion-Lexikon (Abschnitt "## Build 26.19", Zeile "Kern: A -> B -> C"),
-Preise und Bauteile aus Data Dragon. Was schon im Inventar liegt, zaehlt als bezahlt (auch als
-Bauteil im Baum des naechsten Items).
+Das naechste Item (Pruefung 27.09.c, R3 - 164326 sagte 13 Minuten "Caulfields", Carlos baute Hydra und Schutzengel):
+1. das Item, dessen Bauteile du schon hast (Data Dragon from/into gegen dein Inventar - wer Tiamat hat, baut Hydra);
+2. sonst der naechste Schritt aus DEINEM Build (wissen/build_carlos.toml, abgeleitet aus deinen Aufnahmen mit
+   werkzeuge/build_aus_aufnahmen.py; ein Schritt nennt Gleichwertiges: "Gefraessige oder Gottlose Hydra");
+3. erst als letzter Rueckfall der statische Plan aus dem Champion-Lexikon (Abschnitt "## Build 26.19", "Kern: A -> B").
+Preise und Bauteile aus Data Dragon. Was schon im Inventar liegt, zaehlt als bezahlt (auch als Bauteil im Baum).
+
+Jedes genannte Item muss kaufbar sein (kaufbar()): ein Platz frei - oder es verbraucht eigene Bauteile, oder ein
+Start-Item (Dorans) wird dafuer verkauft; nicht schon im Inventar; baut ins Ziel-Item ein. Volles Inventar ohne das:
+kein Kauf (164326 38:33 sagte bei sechs fertigen Items "Kauf Langschwert und Stiefel").
 """
 from __future__ import annotations
 
 import re
+import tomllib
 from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 
 from . import ddragon
 
@@ -145,59 +154,201 @@ def folge(champion_id: str) -> tuple[int, ...]:
     return tuple(i for i in _items_in(zeile.split(":", 1)[-1]) if i not in k)
 
 
-def _verkaufbar(items: tuple[int, ...], behalten: set) -> tuple[int, int] | None:
-    """(Item, Verkaufswert) des billigsten Items, das nicht zum Build gehoert (das Start-Item), sonst None."""
+PLAETZE = 6                                   # Item-Plaetze ohne Schmuckstueck
+GRUPPEN = {3077: "Hydra", 3035: "Letztes Flüstern"}   # Spielregel: nur ein Item, das dieses Bauteil enthaelt
+BUILD = Path(__file__).resolve().parent.parent / "wissen" / "build_carlos.toml"
+
+
+@lru_cache(maxsize=1024)
+def _baum(item: int) -> frozenset[int]:
+    """Alle Bauteile im Rezept (rekursiv), ohne das Item selbst."""
+    aus = set()
+    for f in ddragon.items().get(item, {}).get("from") or []:
+        aus |= {int(f)} | _baum(int(f))
+    return frozenset(aus)
+
+
+def gruppe(item: int) -> str | None:
+    """Hydra fuer alles mit Tiamat im Rezept usw. - davon traegt man nur eins."""
+    return next((g for teil, g in GRUPPEN.items() if teil in _baum(item)), None)
+
+
+@lru_cache(maxsize=64)
+def carlos_build(champion_id: str) -> tuple[tuple[int, ...], ...]:
+    """Carlos' eigener Build: Schritte, je Schritt die gleichwertigen Items (haeufigstes zuerst). Leer ohne Eintrag."""
+    try:
+        eintrag = tomllib.loads(BUILD.read_text(encoding="utf-8")).get(champion_id) or {}
+    except (OSError, ValueError):
+        return ()
+    namen = _nach_name()
+    schritte = (tuple(namen[n] for n in s if n in namen) for s in eintrag.get("folge", []))
+    return tuple(s for s in schritte if s)
+
+
+def schritte(champion_id: str) -> list[tuple[int, ...]]:
+    """Carlos' Build, dahinter der statische Plan (Lexikon Kern + Folge) - ohne Stiefel und ohne das, was sein Build
+    schon nennt."""
     it = ddragon.items()
-    kandidaten = [(it[i]["gold"]["total"], i) for i in items if i in it and i not in behalten
-                  and not {"Trinket", "Consumable", "Boots"} & set(it[i].get("tags", []))]
-    if not kandidaten:
-        return None
-    _, i = min(kandidaten)
-    return i, int(it[i]["gold"].get("sell", 0))
+    eigen = list(carlos_build(champion_id))
+    schon = {i for s in eigen for i in s}
+    return eigen + [(i,) for i in (*kern(champion_id), *folge(champion_id))
+                    if i not in schon and "Boots" not in it.get(i, {}).get("tags", [])]
+
+
+def _tags(i: int) -> set:
+    return set(ddragon.items().get(i, {}).get("tags", []))
+
+
+def _belegt(items) -> int:
+    return sum(1 for i in items if "Trinket" not in _tags(i))
+
+
+def _start_item(items) -> int | None:
+    """Ein Start-Item (Dorans ...), das man fuer einen Platz verkauft: kein Rezept, baut in nichts, <= 500 Gold."""
+    it = ddragon.items()
+    kand = [i for i in items if i in it and not it[i].get("from") and not it[i].get("into")
+            and it[i]["gold"]["total"] <= 500 and not {"Trinket", "Consumable", "Boots"} & _tags(i)]
+    return min(kand, key=lambda i: it[i]["gold"]["total"], default=None)
+
+
+def _verbraucht(item: int, inventar) -> int:
+    """Wie viele Inventar-Stuecke das Item beim Kauf verbraucht (eigene Bauteile)."""
+    inv = list(inventar)
+    for f in ddragon.items().get(item, {}).get("from") or []:
+        _baum_kosten(int(f), inv)
+    return len(inventar) - len(inv)
+
+
+def _noch_zu_kaufen(item: int, inventar: list) -> list[int]:
+    """Das Item und die Bauteile darunter, die nicht im Inventar liegen (Inventar-Stuecke werden verbraucht)."""
+    if item in inventar:
+        inventar.remove(item)
+        return []
+    aus = [item]
+    for f in ddragon.items().get(item, {}).get("from") or []:
+        aus += _noch_zu_kaufen(int(f), inventar)
+    return aus
+
+
+def kaufbar(name: str, inventar, ziel: str | None = None) -> tuple[bool, str]:
+    """(kaufbar, Grund wenn nicht) fuer ein genanntes Item - Pruefung 27.09.c, R3, Soll 3:
+    passt ins Inventar (Platz frei, oder es verbraucht eigene Bauteile, oder ein Start-Item wird dafuer verkauft),
+    liegt nicht schon im Inventar (ausser das Ziel braucht noch eins), baut ins Ziel-Item ein oder ist es.
+    Kontroll-Auge und Elixiere: immer (das Auge stapelt, das Elixier wird getrunken). Stiefel: ohne Ziel-Pruefung.
+    Bei True ist der Grund leer oder nennt den noetigen Verkauf ("nach Verkauf von Dorans Klinge")."""
+    it = ddragon.items()
+    inventar = [int(i) for i in inventar]
+    i = _nach_name().get(name)
+    if i is None:
+        return False, f"{name} ist kein kaufbares Item"
+    z = _nach_name().get(ziel) if ziel else None
+    frei = PLAETZE - _belegt(inventar)
+    if "Consumable" in _tags(i):
+        if it[i].get("consumed") or i in inventar or frei >= 1:
+            return True, ""
+        return False, "Inventar voll"
+    stiefel = "Boots" in _tags(i)
+    if stiefel and any("Boots" in _tags(j) and j not in _baum(i) for j in inventar):
+        return False, "Stiefel liegen schon im Inventar"
+    if i in inventar and not (z is not None and i in _noch_zu_kaufen(z, list(inventar))):
+        return False, f"{name} liegt schon im Inventar"
+    g = gruppe(i)
+    if g is not None and any(j != i and gruppe(j) == g and not it.get(j, {}).get("into") for j in inventar):
+        return False, f"schon eine {g} im Inventar"
+    if z is not None and not stiefel and i != z:
+        if i not in _baum(z):
+            return False, f"{name} baut nicht in {ziel} ein"
+        if i not in _noch_zu_kaufen(z, list(inventar)):
+            return False, f"{ziel} braucht kein weiteres {name}"
+    if frei + _verbraucht(i, inventar) >= 1:
+        return True, ""
+    start = _start_item(inventar)
+    if start is not None:
+        return True, f"nach Verkauf von {it[start]['name']}"
+    return False, "Inventar voll, und es verbraucht keine eigenen Bauteile"
+
+
+def _reihe(champion_id: str, items: tuple[int, ...]) -> list[int]:
+    """Die offenen Ziel-Items, bestes zuerst: meiste eigene Bauteile (Gold), dann Carlos' Build, dann Lexikon."""
+    it = ddragon.items()
+    gruppen = {gruppe(i) for i in items if i in it and not it[i].get("into")} - {None}
+    offen = []
+    for n, schritt in enumerate(schritte(champion_id)):
+        if any(i in items for i in schritt):
+            continue
+        for m, i in enumerate(schritt):
+            if i in it and gruppe(i) not in gruppen:
+                gedeckt = it[i]["gold"]["total"] - _baum_kosten(i, list(items))[0]
+                offen.append((-gedeckt, n, m, i))
+    return [i for *_, i in sorted(offen)]
+
+
+def _versuch(ziel: int, items: tuple[int, ...], gold: float, frei: int, stiefel_fehlt: bool) -> Kauf | None:
+    """Was das Gold fuer dieses Ziel kauft - nur was in die freien Plaetze passt, und jedes Stueck auch fuer sich
+    im JETZIGEN Inventar (sonst sagt kaufbar() nein: Stiefel "passen" erst nach der Hydra, die zwei Bauteile
+    verbraucht - der Spieler hoert beides in einem Satz). None: gar nichts davon passt."""
+    it = ddragon.items()
+    name = it[ziel]["name"]
+    rest, fehlend = _baum_kosten(ziel, list(items))
+    platz = frei + _verbraucht(ziel, items)          # Plaetze nach dem Kauf des ganzen Items
+    if gold >= rest and platz >= 1:
+        extra = ["Stiefel"] if stiefel_fehlt and gold - rest >= 300 and platz >= 2 and frei >= 1 else []
+        return Kauf(name, [name] + extra, rest + 300 * len(extra), None)
+    # Bauteile: das teuerste bezahlbare zuerst, dann auffuellen. Ein eigenes Bauteil zaehlt nur EINMAL (173159 16:10:
+    # Caulfields und Zepter "verbrauchten" beide dasselbe Langschwert - 1518 Gold sollten fuer 1600 reichen)
+    kandidaten = [(_baum_kosten(f, list(items))[0], f, _verbraucht(f, items)) for f in fehlend]
+    kaufen, kosten, geld, plaetze, uebrig = [], 0, gold, frei, list(items)
+    for _, f, v_jetzt in sorted(kandidaten, reverse=True):
+        probe = list(uebrig)
+        k, _ = _baum_kosten(f, probe)
+        v = len(uebrig) - len(probe)
+        if 0 < k <= geld and k >= 300 and plaetze + v >= 1 and frei + v_jetzt >= 1:
+            kaufen.append(it[f]["name"])
+            kosten += k
+            geld -= k
+            plaetze += v - 1
+            uebrig = probe
+    if stiefel_fehlt and geld >= 300 and plaetze >= 1 and frei >= 1 and (kaufen or gold < 700):
+        kaufen.append("Stiefel")
+        kosten += 300
+    if kaufen:
+        return Kauf(name, kaufen, kosten, None)
+    erreichbar = [(k, f) for k, f, v in kandidaten if k > gold and frei + v >= 1]
+    if erreichbar:
+        k, f = min(erreichbar)
+        return Kauf(name, [], 0, (it[f]["name"], int(k - gold)))
+    if platz >= 1:
+        return Kauf(name, [], 0, (name, int(rest - gold)))
+    return None
+
+
+def _erster(reihe: list[int], items: tuple[int, ...], gold: float, frei: int, stiefel_fehlt: bool) -> Kauf | None:
+    for ziel in reihe:
+        if (k := _versuch(ziel, items, gold, frei, stiefel_fehlt)) is not None:
+            return k
+    return None
 
 
 def plan(champion_id: str, items: tuple[int, ...], gold: float) -> Kauf | None:
+    """Was dein Gold jetzt kauft (Reihenfolge der Ziele: _reihe). None: nichts zu kaufen - auch bei vollem Inventar,
+    wenn kein Ziel eigene Bauteile verbraucht und kein Start-Item zu verkaufen ist (kein "Gold fuer ..." mehr)."""
     it = ddragon.items()
-    stiefel = [i for i in kern(champion_id) if "Boots" in it.get(i, {}).get("tags", [])]
-    nach_kern = folge(champion_id)
-    belegt = [i for i in items if i in it and not {"Trinket", "Consumable"} & set(it[i].get("tags", []))]
-    for ziel in [i for i in (*kern(champion_id), *nach_kern) if i not in stiefel]:
-        verkauf = None
-        if ziel in nach_kern and len(belegt) >= 6:
-            # Inventar voll: fuer ein Item nach dem Kern das Start-Item verkaufen (sein Wert zaehlt zum Gold)
-            v = _verkaufbar(items, set(kern(champion_id)) | set(nach_kern))
-            if v is None:
-                return None
-            verkauf = it[v[0]]["name"]
-            gold = gold + v[1]
-        inventar = list(items)
-        rest, fehlend = _baum_kosten(ziel, inventar)
-        if rest <= 0:
-            continue    # schon fertig
-        name = it[ziel]["name"]
-        hat_stiefel = any("Boots" in it.get(i, {}).get("tags", []) for i in items)
-        if gold >= rest:
-            extra = ["Stiefel"] if not hat_stiefel and gold - rest >= 300 else []
-            return Kauf(name, [name] + extra, rest + 300 * len(extra), None, verkauf)
-        # Bauteile: das teuerste bezahlbare zuerst, dann auffuellen
-        kaufen, kosten, frei = [], 0, gold
-        kandidaten = []
-        for f in fehlend:
-            inv = list(items)
-            k, _ = _baum_kosten(f, inv)
-            kandidaten.append((k, f))
-        for k, f in sorted(kandidaten, reverse=True):
-            if 0 < k <= frei and k >= 300:
-                kaufen.append(it[f]["name"])
-                kosten += k
-                frei -= k
-        if not hat_stiefel and frei >= 300 and (kaufen or gold < 700):
-            kaufen.append("Stiefel")
-            kosten += 300
-            frei -= 300
-        billigstes = min(((k, f) for k, f in kandidaten if k > gold), default=None)
-        naechstes = (it[billigstes[1]]["name"], int(billigstes[0] - gold)) if billigstes and not kaufen else None
-        if not kaufen and naechstes is None:
-            naechstes = (name, int(rest - gold))
-        return Kauf(name, kaufen, kosten, naechstes, verkauf if kaufen else None)
-    return None
+    items = tuple(int(i) for i in items)
+    frei = PLAETZE - _belegt(items)
+    stiefel_fehlt = not any("Boots" in _tags(i) for i in items)
+    reihe = _reihe(champion_id, items)
+    ohne = _erster(reihe, items, gold, frei, stiefel_fehlt)
+    start = _start_item(items) if frei <= 0 else None
+    if start is not None and (ohne is None or not ohne.kaufen):
+        # Inventar voll: fuer den PLATZ das Start-Item verkaufen - 164326 29:15 hat Carlos genau das getan (Dorans
+        # weg, Stahlsiegel fuer den Schutzengel). Sein Verkaufswert zaehlt nicht: "Verkauf Dorans" nur, wo der Platz
+        # fehlt, nicht wo 68 Gold fehlen (173159 16:16 - Caulfields verbraucht das Langschwert, passt also so)
+        rest = list(items)
+        rest.remove(start)
+        mit = _erster(reihe, tuple(rest), gold, frei + 1, stiefel_fehlt)
+        if mit is not None and mit.kaufen:
+            mit.verkaufen = it[start]["name"]
+            return mit
+        if ohne is None:
+            return mit
+    return ohne
