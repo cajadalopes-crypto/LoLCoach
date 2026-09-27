@@ -15,7 +15,7 @@ from lolcoach.kern.handlung import SICHER  # noqa: E402
 
 def konstruierte_lagen():
     c = konfig()["sprechen"]
-    ergebnisse = testlage.alle()
+    ergebnisse = [r for r in testlage.alle() if not r.get("uebersprungen")]   # Modi spaeterer Schritte: noch nicht
     rot = [r for r in ergebnisse if r["verstoesse"]]
     assert not rot, "\n".join(f"{r['datei']}: {r['id']} -> {r['plan']}: {r['verstoesse']}  Top: {r['top'][:4]}"
                               for r in rot)

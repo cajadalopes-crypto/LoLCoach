@@ -35,7 +35,7 @@ zeit = "13:15"
 quelle = "Nachspielen 27.09.: Crash mit 11 Vasallen an seinem inneren Top-Turm, Recall ~13:15, Basis 13:23"
 lage = """Riven L12, 47 % Leben, 1899 Gold, an seinem inneren Top-Turm (sein aeusserer ist gefallen -> keine Lane-Phase,
 Modus SEITE). Welle 11:1 fuer dich, Front ~0,80 (am inneren Turm). Sett lebt, ~4200 entfernt."""
-modus = ["SEITE"]
+modus = ["SEITE", "OBJECTIVE"]   # OBJECTIVE ergaenzt (Carlos, nach Schritt 3): der Kern sieht dort das Objective
 soll = ["BACK_JETZT", "WELLE_REIN_UND_BACK"]
 darf_nicht = ["PLATTEN"]
 warum = """Die Welle ist drin, Gold und Leben sagen back - das Lehrbuch-Fenster. Platten mit 47 % und Sett in der

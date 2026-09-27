@@ -1,0 +1,146 @@
+{
+ "aufnahme": "2026-09-27_133930",
+ "mein_team": "CHAOS",
+ "welle_py": "Icon+Ring ausgeblendet, relativ",
+ "punkte": [
+  {
+   "nr": 1,
+   "zeit": "4:00",
+   "kern": "ZU_IHM",
+   "unsere": 0,
+   "ihre": 1,
+   "front": 0.47,
+   "trend": null,
+   "wahr": "GECRASHT_BEI_DIR",
+   "notiz": "ein gegnerischer Vasall an deinem aeusseren Turm, keine eigenen"
+  },
+  {
+   "nr": 2,
+   "zeit": "4:20",
+   "kern": "ZU_IHM",
+   "unsere": 5,
+   "ihre": 0,
+   "front": 0.32,
+   "trend": 0.058,
+   "wahr": "ZU_IHM"
+  },
+  {
+   "nr": 3,
+   "zeit": "4:41",
+   "kern": "MITTE",
+   "unsere": 4,
+   "ihre": 0,
+   "front": 0.22,
+   "trend": null,
+   "wahr": "unklar",
+   "notiz": "Kampf an der Ecke, Welle unter den Icons"
+  },
+  {
+   "nr": 4,
+   "zeit": "5:22",
+   "kern": "ZU_IHM",
+   "unsere": 6,
+   "ihre": 0,
+   "front": 0.34,
+   "trend": 0.133,
+   "wahr": "ZU_IHM"
+  },
+  {
+   "nr": 5,
+   "zeit": "5:46",
+   "kern": "ZU_IHM",
+   "unsere": 5,
+   "ihre": 0,
+   "front": 0.47,
+   "trend": null,
+   "wahr": "ZU_IHM"
+  },
+  {
+   "nr": 6,
+   "zeit": "6:07",
+   "kern": "ZU_IHM",
+   "unsere": 1,
+   "ihre": 0,
+   "front": 0.07,
+   "trend": null,
+   "wahr": "GECRASHT_BEI_IHM",
+   "notiz": "eigene Vasallen an seinem aeusseren Turm, Riven im Recall (Leuchtring)"
+  },
+  {
+   "nr": 7,
+   "zeit": "6:28",
+   "kern": "GECRASHT_BEI_IHM",
+   "unsere": 5,
+   "ihre": 0,
+   "front": 0.52,
+   "trend": -0.059,
+   "wahr": "ZU_IHM",
+   "notiz": "neue eigene Welle an der Ecke, noch nicht am Turm"
+  },
+  {
+   "nr": 8,
+   "zeit": "6:48",
+   "kern": "ZU_IHM",
+   "unsere": 5,
+   "ihre": 0,
+   "front": 0.27,
+   "trend": 0.186,
+   "wahr": "ZU_IHM"
+  },
+  {
+   "nr": 9,
+   "zeit": "7:09",
+   "kern": "ZU_IHM",
+   "unsere": 2,
+   "ihre": 1,
+   "front": 0.29,
+   "trend": null,
+   "wahr": "ZU_DIR",
+   "notiz": "gegnerische Vasallen vor deinem aeusseren Turm, eigene nicht zu sehen"
+  },
+  {
+   "nr": 10,
+   "zeit": "7:30",
+   "kern": "ZU_IHM",
+   "unsere": 1,
+   "ihre": 2,
+   "front": 0.46,
+   "trend": 0.089,
+   "wahr": "unklar",
+   "notiz": "Kampf an der Ecke, eigene unter Riven"
+  },
+  {
+   "nr": 11,
+   "zeit": "8:08",
+   "kern": "GECRASHT_BEI_IHM",
+   "unsere": 3,
+   "ihre": 0,
+   "front": 0.56,
+   "trend": null,
+   "wahr": "unklar",
+   "notiz": "Kampf an seinem Turm, Vasallen unter drei Icons"
+  },
+  {
+   "nr": 12,
+   "zeit": "8:29",
+   "kern": "ZU_IHM",
+   "unsere": 4,
+   "ihre": 0,
+   "front": 0.51,
+   "trend": 0.267,
+   "wahr": "ZU_IHM"
+  },
+  {
+   "nr": 13,
+   "zeit": "9:19",
+   "kern": "ZU_IHM",
+   "unsere": 7,
+   "ihre": 2,
+   "front": 0.45,
+   "trend": 0.01,
+   "wahr": "unklar",
+   "notiz": "eigene an seinem Turm UND eine Welle an deinem"
+  }
+ ],
+ "beschriftet": "27.09.2026 von Claude Code an den 764-px-Ausschnitten (Top-Lane, rote Seite)"
+}

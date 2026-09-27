@@ -25,10 +25,11 @@ Wahrscheinlichkeit, Welle als Plan-Schritt, Kauf mit Namen und Ziel, Bestaetigun
 sind erledigt.
 
 Offen aus Schritt 3:
-- **Wellen-Eichung (Buch 1, 1.4) nicht erreicht:** am Kampfort liegen die Vasallen unter den Champion-Icons, und
-  `welle.py` blendet dort den ganzen Kreis aus (wegen der Ringfarbe) - dann fehlt "ihre", fast alles wird ZU_IHM.
-  Naechster Schritt: nur den Ring ausblenden, nicht den Kreis; Minimap-Ausschnitte einer echten Partie behalten
-  (die Aufraeumung am Partieende verschieben), dann 20 Zeitpunkte neu beschriften (GECRASHT_BEI_IHM >= 90 %).
+- **Wellen-Eichung (Buch 1, 1.4) nicht erreicht** (Nachtrag in messungen.md): Icon+Ring-Maske und behaltene
+  Ausschnitte sind erledigt; Zwischenstand an 133930: 5 von 9 (56 %), GECRASHT_BEI_IHM 0/2. **An der naechsten echten
+  Partie wiederholen:** `python werkzeuge/wellen_eichung.py <stamm>`, Tafel beschriften, `--auswerten`. Uebrige
+  Fehlerquellen: Hysterese des WellenPuffers haelt GECRASHT zu lange (Kern - Carlos' Entscheidung), Recall-/TP-
+  Leuchtring um das eigene Icon schluckt Vasallen, halb verdeckte Vasallen kippen die Zaehlung.
 - Generalprobe mit `--kern neu` (lief nicht, Carlos spielte).
 - Bestaetigung "Puenktlich zurueck" (Ankunft der Welle am Turm) und der zweite STAPELN-Ausloeser (Back/Roam im Plan).
 - Stub-Notizen aus der echten Partie 140253 (9:09-10:25) nach `tests/szenarien/offen/` (werkzeuge/

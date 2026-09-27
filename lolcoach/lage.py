@@ -558,7 +558,10 @@ CHAT = (0.0, 0.70, 0.32, 0.95)
 BILDSCHIRM_BREITE = 1600   # fuer Claude: Lebensbalken und Namen noch lesbar, ~150 KB je Bild
 SCHIRM_ALLE = 5.0          # Sekunden: so oft ein Spielbild auf die Platte (Review), ~45 MB je 30-min-Partie
 SPUR_ALLE = 0.08           # Sekunden: so oft sucht die Balkenspur Flash-Spruenge auf dem Spielbild (~12/s)
-BILDER_BEHALTEN = 20 * 60     # Sekunden: aeltere Minimap-Bilder der laufenden Partie werden entfernt
+# Sekunden: aeltere Minimap-Bilder der laufenden Partie werden entfernt. Bis 27.09. 20 min - dann war die Lane-Phase
+# einer 35-min-Partie weg, bevor man die Welle daran eichen konnte (Buch 1, 1.4). Jetzt die ganze Partie; aufgeraeumt
+# wird nach der Partie (bilder_aufraeumen: alles ausser den letzten drei Partien).
+BILDER_BEHALTEN = 90 * 60
 
 
 class Beobachter(threading.Thread):
@@ -991,15 +994,41 @@ def sicht_fuer(pfad):
     return None
 
 
+def _aufgenommen(pfad: Path) -> float:
+    """Aufgenommene Spielzeit einer Aufnahme (letzter minus erster Schnappschuss, Sekunden) - nicht die Spieluhr:
+    ein Coach, der mitten in der Partie startet, nimmt vielleicht nur eine Minute auf."""
+    from . import aufzeichnung
+    zeiten = []
+    for zeile in aufzeichnung.gz_text(pfad).splitlines():
+        try:
+            zeiten.append(float((json.loads(zeile)["d"].get("gameData") or {}).get("gameTime") or 0.0))
+        except (ValueError, KeyError, AttributeError):
+            continue
+    return max(zeiten) - min(zeiten) if zeiten else 0.0
+
+
 def bilder_aufraeumen(behalte: int = 3) -> float:
     """Minimap-Bilder brauchen 120-180 MB je Partie. Nach der Auswertung reicht
     `sichtungen.json` (~1 MB) zum Nachspielen. Die Bilder der letzten `behalte`
-    Partien bleiben (fuer neue Erkennungsstaende), aelteren bleibt nur die
-    Sichtungsdatei. Gibt die freigegebenen MB zurueck."""
+    PARTIEN bleiben (fuer neue Erkennungsstaende und die Wellen-Eichung, Buch 1 1.4), aelteren bleibt nur die
+    Sichtungsdatei. Gezaehlt werden echte Partien (ab profil.KURZ) - Bruchstuecke von Neustarts und Tests
+    schoben sie vorher hinaus (27.09.: 130355 verlor seine Bilder an 132154 und 133930). Die juengste Aufnahme
+    bleibt immer. Gibt die freigegebenen MB zurueck."""
     from . import aufzeichnung, zustand
     aufnahmen = sorted(aufzeichnung.ORDNER.glob("*.jsonl.gz"))
+    try:
+        from .profil import KURZ
+        mit_bildern = [p for p in aufnahmen if aufzeichnung.bilder(p)]
+        partien = [p for p in mit_bildern if _aufgenommen(p) >= KURZ]
+        schuetzen = {p.name.removesuffix(".jsonl.gz") for p in partien[-behalte:]} if behalte else set()
+    except Exception:          # im Zweifel wie frueher: die letzten `behalte` Aufnahmen
+        schuetzen = {p.name.removesuffix(".jsonl.gz") for p in aufnahmen[-behalte:]} if behalte else set()
+    if aufnahmen:
+        schuetzen.add(aufnahmen[-1].name.removesuffix(".jsonl.gz"))
     frei = 0.0
-    for pfad in aufnahmen[:-behalte] if behalte else aufnahmen:
+    for pfad in aufnahmen:
+        if pfad.name.removesuffix(".jsonl.gz") in schuetzen:
+            continue
         bilder = aufzeichnung.bilder(pfad)
         if not bilder:
             continue

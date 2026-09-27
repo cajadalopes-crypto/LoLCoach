@@ -4,6 +4,41 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Nachtrag zu Schritt 3 – Wellen-Wahrnehmung (27.09.2026)
+
+Auftrag Carlos: kein Umbau am Kern; `welle.py` nur Icon und Ring ausblenden, Minimap-Ausschnitte der letzten drei
+Partien behalten, `1315` auch OBJECTIVE erlauben, Eichung (Buch 1, 1.4) an der nächsten echten Partie wiederholen.
+
+- **Icon und Ring statt Raute** (`welle.py`): Der Ring eines Champion-Icons liegt bei 30–33 px (Icon-Radius 32 px,
+  764-px-Minimap; gemessen an 314 freien Icons der Partie 140253), ab 34 px ist nichts mehr davon. Jetzt werden je
+  Champion Icon und Ring (1,1 Icon-Radien + 1 px) in den Farbmasken geschwärzt, danach wird gezählt. Vorher: eine
+  Raute 0,05 um die Icon-Mitte, am Schwerpunkt geprüft – auf den Diagonalen enger als der Ring, auf den Achsen weiter.
+  An allen 613 Ausschnitten von 140253: Punkte im Ring (≤ 36 px) **vorher 14, jetzt 0**; Vasallen direkt neben dem
+  Ring (37–40 px) vorher 227, jetzt 394; insgesamt 8956 → 9089. Stichprobe von 12 der neuen Punkte am Ring: 11 echte
+  Vasallen, 1 auf dem hellblauen Leuchtring eines Recalls/Teleports. Test `wellenleser_ring_und_nachbar` (fällt mit
+  dem alten Stand durch: Ringstück gezählt, Vasall bei 38 px verloren).
+  Was das nicht kann: Vasallen **unter** einem Icon sind im Bild verdeckt – die bekommt keine Maske zurück.
+- **Ausschnitte behalten:** `lage.bilder_aufraeumen` schützt die Bilder der letzten drei *Partien* – gezählt nach
+  aufgenommener Spielzeit (≥ 5 min), nicht nach der Spieluhr; Coach-Neustarts und Bruchstücke schoben echte Partien
+  vorher hinaus (130355 verlor seine Bilder an 132154 und 133930). Während der Partie wird nicht mehr nach 20 min
+  gelöscht (`BILDER_BEHALTEN` 90 min), sonst fehlte die Lane-Phase jeder längeren Partie. ~100–180 MB je Partie.
+- **`1315-crash-dann-back`:** `modus = ["SEITE", "OBJECTIVE"]`, soll/darf_nicht unverändert – jetzt grün (der
+  Kern-Plan-Teil bleibt übersprungen, bis der Kern OBJECTIVE/SEITE führt).
+- **Werkzeug `werkzeuge/wellen_eichung.py`:** rechnet die Welle aus den behaltenen Ausschnitten einer Aufnahme neu
+  (aktuelles `welle.py` + WellenPuffer des Kerns), legt eine Bildtafel und `buecher/wellen_eichung/<stamm>.json` an;
+  `--auswerten` gibt die Quote.
+- **Zwischenstand an 133930** (echte Partie, Riven Top gegen Gwen, rote Seite, 1073 Ausschnitte – die erste lag vor
+  dem Umbau und war bisher nicht bekannt): 13 Zeitpunkte der Lane-Phase (die ersten ~4 min hatte die alte 20-min-Regel
+  schon gelöscht). **9 eindeutig, 5 richtig (56 %); GECRASHT_BEI_IHM 0 / 2.** Richtig sind nur die leichten Fälle
+  („deine Welle läuft los“, ZU_IHM); falsch alle aussagekräftigen: GECRASHT_BEI_DIR (4:00), GECRASHT_BEI_IHM (6:07,
+  Riven im Recall – der Leuchtring schluckt die Vasallen daneben), ZU_IHM statt gehaltenem GECRASHT_BEI_IHM (6:28 –
+  die Zustands-Hysterese im WellenPuffer hält den Crash zu lange), ZU_DIR (7:09 – die gegnerischen Vasallen halb unter
+  Gwen, die Zählung kippt). Abnahme weiter **nicht erreicht**. Die Eichung an der **nächsten** echten Partie steht aus.
+- Nebenbei: `tests/test_kern.py` und `szenarien.py --konstruiert` prüfen nur Lagen in Modi, die der Kern schon führt;
+  die neuen Lagen aus `mitte.toml` (Buch 5, Schritt 4) stehen als „übersprungen“ und werden mit Schritt 4 geprüft.
+
+---
+
 ## Schritt 3 – Der Kern übernimmt LANE, BASIS, TOT (27.09.2026)
 
 ### Umgesetzt

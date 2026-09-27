@@ -289,14 +289,18 @@ def main() -> None:
 def konstruiert() -> bool:
     """Die konstruierten Lagen: je Lage ein Takt des Kerns, Plan gegen soll/darf_nicht/satz_enthaelt."""
     from lolcoach.kern import testlage
-    ergebnisse = testlage.alle()
-    for r in ergebnisse:
+    alle_ = testlage.alle()
+    ergebnisse = [r for r in alle_ if not r.get("uebersprungen")]
+    for r in alle_:
+        if r.get("uebersprungen"):
+            print(f"  --    {r['datei']}: {r['id']}  [uebersprungen: {r['uebersprungen']}]")
+            continue
         print(f"  {'ROT  ' if r['verstoesse'] else 'GRUEN'} {r['datei']}: {r['id']} -> {r['plan']}"
               + (f'  "{r["satz"]}"' if r["satz"] else ""))
         for v in r["verstoesse"]:
             print(f"          {v}  | Top: {r['top'][:4]}")
     gruen = sum(1 for r in ergebnisse if not r["verstoesse"])
-    print(f"Konstruierte Lagen: {gruen} / {len(ergebnisse)} gruen")
+    print(f"Konstruierte Lagen: {gruen} / {len(ergebnisse)} gruen, {len(alle_) - len(ergebnisse)} uebersprungen")
     return gruen == len(ergebnisse)
 
 

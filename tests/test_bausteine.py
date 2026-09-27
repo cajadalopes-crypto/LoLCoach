@@ -1359,6 +1359,26 @@ def minimap_farben_relativ():
     assert lage.zuordnen(minimap.Sichtung("Braum", "ORDER", 0.5, 0.5, 1.0), p).team == "CHAOS"   # blauer Ring
 
 
+def wellenleser_ring_und_nachbar():
+    """welle.py blendet an einem Champion-Icon nur Icon und Ring aus (gemessen an 140253: Ring bei 30-33 px, Icon-Radius
+    32 px bei 764 px Kante). Ein Stueck Ring zaehlt nie als Vasall - vorher lagen 14 Punkte im Ring -, ein Vasall direkt
+    neben dem Ring zaehlt (vorher fiel er in die Raute um die Icon-Mitte)."""
+    import numpy as np
+    seite = 764
+    karte = np.full((seite, seite, 3), 40, np.uint8)
+    mitte = (380, 380)
+    blau = (255, 140, 40)                                      # BGR, im Farbbereich von welle.py
+    cv2.ellipse(karte, mitte, (31, 31), 0, 38, 52, blau, 5)     # ein kompaktes Ringstueck auf der Diagonale
+    cv2.circle(karte, (380 + 38, 380), 5, blau, -1)             # ein Vasall 38 px neben der Icon-Mitte (Achse)
+    cv2.circle(karte, (380 - 29, 380 + 29), 5, blau, -1)        # ... und einer diagonal, 41 px
+    leser = welle.Wellenleser()
+    for _ in range(25):                                         # erst leere Karten: die Turm-Maske lernt, was steht
+        leser.punkte(np.full((seite, seite, 3), 40, np.uint8))
+    punkte = leser.punkte(karte, [(mitte[0] / seite, mitte[1] / seite)])
+    abstaende = sorted(round(((x * seite - 380) ** 2 + (y * seite - 380) ** 2) ** 0.5) for _, x, y in punkte)
+    assert len(punkte) == 2 and all(d >= 38 for d in abstaende), abstaende
+
+
 def bestaetigung_back_im_fenster():
     """Buch 3, 5 / 7.2: Crash an seinem Turm -> Recall -> Basis. Der Kern lobt einmal, vor dem Kauf-Satz ("Sauber:
     Welle drin, dann back."), und merkt es als Staerke fuers Review. Ohne Crash davor kein Lob."""
@@ -1400,6 +1420,6 @@ if __name__ == "__main__":
                  minimap_blind_wird_gesagt, kamera_gibt_nur_einmal_frei, antwort_ab_dem_ersten_teilsatz, afk_erkannt,
                  von_deiner_position_aus, wachhund_meldet_datenluecke, modus_sperre_budget,
                  sofort_back_und_objective, minimap_groesse_aus_der_einstellung,
-                 bestaetigung_back_im_fenster, minimap_farben_relativ):
+                 bestaetigung_back_im_fenster, minimap_farben_relativ, wellenleser_ring_und_nachbar):
         test()
         print(f"{test.__name__} OK")

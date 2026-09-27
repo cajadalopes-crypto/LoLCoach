@@ -30,6 +30,9 @@ TURM_AUSSEN = (0.35, 0.65)    # grob: s der aeusseren Tuerme (blau, rot)
 STATISCH_AB = 0.8             # Anteil der Zeit, ab dem ein Pixel als Icon gilt
 GEDAECHTNIS = 0.06            # Gewicht eines neuen Bildes im gleitenden Mittel (~1 Bild/s -> ~16 s)
 REF = 570                     # Minimap-Kante bei 4K; Flaechen skalieren mit (Kante/REF)^2
+ICON_RADIUS = 48 / 570 / 2    # Champion-Icon (minimap.PORTRAET) als Anteil der Minimap-Kante
+RING_BIS = 1.1                # der farbige Ring reicht bis ~1,05 Icon-Radien (gemessen 27.09. an 314 freien Icons der
+#                               Partie 140253, 764 px: Ring bei 30-33 px, Icon-Radius 32 px, ab 34 px nichts mehr)
 
 
 @dataclass(frozen=True)
@@ -102,19 +105,23 @@ class Wellenleser:
         self.bilder += 1
         statisch = cv2.dilate((self._mittel > STATISCH_AB).astype(np.uint8), np.ones((5, 5), np.uint8))
         f = (seite / REF) ** 2
+        # Champion-Icons samt Ring schwaerzen - nur die, nicht ihren Umkreis: der Ring hat die Vasallenfarben, ein
+        # Vasall direkt daneben bleibt ganz (vorher: Raute 0,05 um die Icon-Mitte, am Schwerpunkt getestet - auf den
+        # Diagonalen enger als der Ring, auf den Achsen weiter)
+        icons = np.zeros(blau.shape, np.uint8)
+        r = int(round(ICON_RADIUS * RING_BIS * seite)) + 1
+        for a, b in champions:
+            cv2.circle(icons, (int(round(a * seite)), int(round(b * seite))), r, 255, -1)
         aus = []
         for team, maske in (("blau", blau), ("rot", rot)):
             maske = maske.copy()
-            maske[statisch > 0] = 0
+            maske[(statisch > 0) | (icons > 0)] = 0
             n, _, st, cen = cv2.connectedComponentsWithStats(maske)
             for s, (cx, cy) in zip(st[1:], cen[1:]):
                 flaeche, fuell = s[4], s[4] / max(1, s[2] * s[3])
                 if not (22 * f <= flaeche <= 75 * f and fuell >= 0.5 and max(s[2], s[3]) <= 13 * seite / REF):
                     continue
-                x, y = cx / seite, cy / seite
-                if any(abs(x - a) + abs(y - b) < 0.05 for a, b in champions):
-                    continue
-                aus.append((team, float(x), float(y)))
+                aus.append((team, float(cx / seite), float(cy / seite)))
         return aus
 
     @property

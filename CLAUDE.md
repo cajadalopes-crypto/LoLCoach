@@ -91,6 +91,9 @@ durch denselben Code wie das Live-Spiel.
   Minimap-Bildern; der Coach laeuft als Prozess dagegen (`aufnahmen_probe/`).
   Hat bisher jeden Verdrahtungsfehler vor Carlos gefunden.
 - Oberflaeche ohne Browserfenster: `Brainstone/werkzeuge/browserprobe.py <url> name 3`.
+- `python werkzeuge/wellen_eichung.py <aufnahme>` - Wellen-Eichung (Buch 1, 1.4) an den behaltenen Minimap-
+  Ausschnitten: Bildtafel + `buecher/wellen_eichung/<stamm>.json` zum Beschriften, dann `--auswerten`. Die Ausschnitte
+  der letzten drei Partien bleiben (`lage.bilder_aufraeumen`).
 - Neue Partie als Testfall: `python werkzeuge/testfall_aus_aufnahme.py aufnahmen/<x>.jsonl.gz tests/<name>.jsonl.gz`.
 
 ## Aufgaben: `OFFEN.md`

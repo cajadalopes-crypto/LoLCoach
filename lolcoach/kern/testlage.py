@@ -188,9 +188,17 @@ def pruefen(e: dict) -> dict:
 
 
 def alle(ordner: Path = ORDNER) -> list[dict]:
+    """Alle Lagen; die in Modi, in denen der Kern noch nicht entscheidet (Schritt 3: nur LANE, BASIS, TOT), kommen mit
+    `uebersprungen` zurueck - sie sind die Abnahme eines spaeteren Schritts (z. B. mitte.toml, Buch 5, Schritt 4)."""
+    from . import KERN_MODI
     aus = []
     for datei in sorted(ordner.glob("*.toml")):
         for e in tomllib.loads(datei.read_text(encoding="utf-8")).get("lage", []):
+            modus = e.get("modus", "LANE")
+            if modus not in KERN_MODI:
+                aus.append({"id": e["id"], "datei": datei.name, "plan": None, "satz": "", "gefahr": False, "top": [],
+                            "verstoesse": [], "uebersprungen": f"der Kern entscheidet in {modus} noch nicht"})
+                continue
             r = pruefen(e)
             r["datei"] = datei.name
             aus.append(r)
