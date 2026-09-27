@@ -492,6 +492,18 @@ def lane_fehlt(b: Bewertung, g: GegnerLage, sekunden: int, platten: bool, richtu
             satz += f" - bis Mid braucht {n} von dort noch etwa {sek(bis_mid)}"
         else:
             satz += f" - {n} kann schon Mid sein"
+    # lebt ein Objective (oder kommt gleich) und er verschwand in dessen Naehe: er hilft vermutlich dort - das sind
+    # deine Platten, und dein Team muss es wissen
+    ob = b.objective
+    if ob and ob[1] <= 30 and g.pos is not None:
+        from .bewertung import GRUBEN, abstand, einheiten
+        if ob[0] in GRUBEN and abstand(g.pos, einheiten(*GRUBEN[ob[0]])) <= 4500:
+            if jungler_offen(b) or gefahr(b):
+                # sein Jungler unbekannt oder nah: nicht schieben (Nachlauf 194524, 8:23 - zugleich "Vi im oberen
+                # Fluss, geh zurueck")
+                return satz + f" - vermutlich {ZUM[ob[0]]}: sag es deinem Team und bleib hinter deiner Welle."
+            tun = f"hol dir {_platten(b)}" if platten else "schieb die Welle rein"
+            return satz + f" - vermutlich {ZUM[ob[0]]}: sag es deinem Team und {tun}."
     if j := jungler_offen(b):
         return satz + f", {j.champion} auch. Bleib hinter deiner Welle und {ping}."
     j = b.jungler
