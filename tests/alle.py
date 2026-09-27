@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 
 HIER = Path(__file__).parent
-TESTS = ["test_grundlage", "test_regeln", "test_zauber", "test_stratege", "test_champions", "test_bausteine", "test_flash"]
+TESTS = ["test_grundlage", "test_regeln", "test_zauber", "test_stratege", "test_champions", "test_bausteine", "test_flash", "test_kern"]
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")

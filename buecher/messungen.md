@@ -4,6 +4,153 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Schritt 3 – Der Kern übernimmt LANE, BASIS, TOT (27.09.2026)
+
+### Umgesetzt
+
+- `lolcoach/kern/`: `handlung.py` (Ziel, Handlung, vor/zurück/stumm/sicher), `gefahr.py` (p_da, p_verliere, p_tod
+  nach 7.5), `wert.py` (EV, Todeskosten 7.3, Wellenwert, Zeitwert, sechs Fragen), `plan.py` (halten / Gefahr /
+  Schritt / besser mit Hysterese / Erinnerung, 8.2), `sprechen.py` (Kategorien, Budget 9.2 im Kern selbst,
+  wartender PLAN), `modi/lane.py`, `modi/basis.py`, `modi/tot.py`, `testlage.py` (konstruierte Lagen, Buch 1 6.2).
+- `kern/merkmale.py`: `WellenStand` (Buch 1, 1.2–1.4: Median 6 s, Trend 20 s, Nebel, vorderster stehender Turm,
+  Zustände mit Hysterese 3 s, GECRASHT_BEI_IHM sofort), Kanonen-Uhr, Jungler-Seite (`jungle.wahrscheinlich`), TP,
+  Kaufplan, Lane-Gegner im Brunnen, Welle beim Verlassen der Lane.
+- Buch 1 (Welle): FARMEN, WELLE_REIN_UND_BACK (mit Kanone), STAPELN, WELLE_HALTEN (angreifend/schützend),
+  UNTER_TURM_FARMEN, PLATTEN; Buch 3 (Recall, Tempo, Kauf): die fünf Back-Gründe, „nie back“ (2.2), die Welle
+  entscheidet den Zeitpunkt (2), Gefahr schlägt Timing (2.1), KAUFEN mit Namen und Kontroll-Auge (3), WOHIN mit
+  Wellen-Uhr / Objective / TP zur Lane (4), BESTAETIGUNG (5): Back im Fenster, Rückzug gelohnt, Platte mit Fenster,
+  unter dem Turm gefarmt, Stapel zur Kanone, Fokus Kontroll-Auge.
+- `--kern neu` ist Default. In LANE, BASIS und TOT sind die alten Regeln stumm (Sperre), außer dem
+  Todesrückblick (einmal je Tod ab 14 s) und `_afk`. Stellung `schatten` rechnet mit und schreibt „würde sagen“ in
+  `_kern.jsonl`, `alt` ist der Stand von Schritt 2.
+- Sprechplan-Weiche (9.6): `kern:`-Ansagen laufen an Themen-, Widerspruchs- und Rückzugssperre vorbei, das Budget
+  prüft der Kern. Midgame-Plan des Strategen → INFO (9.1). `minimap_gesund` → TECHNIK durch den Sprechplan.
+- Dashboard (9.5): Plan mit Grund, Top-3 mit EV, Gefahr-Markierung; Claude bekommt den Plan als zweite Kopfzeile.
+- `_kern.jsonl`: je Takt dazu Plan, Schritt, Ziel, EV, Top-3, Gefahr, Wellenzustand und was gesagt wurde.
+- Werkzeuge: `szenarien.py` prüft `soll`/`darf_nicht` gegen den Kern-Plan (überspringt Modi, die der Kern noch nicht
+  führt), `--kern`, `--konstruiert`; `kennzahlen.py` misst alt und Kern nebeneinander (Lane-Phase je 30 s,
+  GEFAHR/PLAN/ERINNERUNG/BESTAETIGUNG, p_da-Brier auf denselben Proben).
+- Tests: `tests/test_kern.py` (alle konstruierten Lagen + Satzlängen 9.3), `bestaetigung_back_im_fenster`,
+  `minimap_farben_relativ`.
+- Die drei Szenarien aus Buch 3, 7.1 liegen in `tests/szenarien/2026-09-27_102112_buch3.toml`.
+
+### Abnahme Schritt 3
+
+| Abnahme | Soll | Ist |
+|---|---|---|
+| `0517-platte-ohne-flash`, `0850-kein-hin-und-her`, `0904-drei-kommen`, `3100-basis-braucht-ziel` (Kern) | grün | **alle grün** (5:18 „Back jetzt: 38 Prozent Leben, Sett ist tot.“; 9:02 ZURUECK) |
+| `3004-basis-kauf-und-ziel` ohne `frage` | grün | **grün** (KAUFEN: Letzter Atemzug + Sonnenköcher) |
+| Buch 3: `0545-back-bei-40-prozent`, `0600-basis-kauf` | grün | **grün** (`1315` gehört zu Schritt 4, s. u.) |
+| konstruierte Lagen `lane.toml` + `recall.toml` | alle grün | **25 / 25** |
+| Kehrtwenden | 0 | **0** in allen fünf Aufnahmen und in der echten Partie (alt 102112: 3) |
+| Lane-Phase: ungefragte Ansagen je 30 s | ≤ 1 im Mittel | **0,83** (102112), 0,94 / 0,65 / 0,89 / 0,00 (andere); echte Partie 140253 **1,04** (alt 1,33) |
+| `p_da` schlägt den schlimmsten Fall (Brier) | ja | **ja, überall**: 102112 0,059 gegen 0,317; echte Partie 0,044 gegen 0,273 |
+| mindestens eine echte Partie ausgewertet | ja | **ja**: 140253 (Riven Mid gegen Yasuo, 10,8 min, vom alten System gespielt, mit dem Kern nachgespielt) |
+| `tests/alle.py` | grün | **grün** (neu: `test_kern`) |
+| Buch 1, 1.4: Wellen-Eichung ≥ 80 %, GECRASHT_BEI_IHM ≥ 90 % | ja | **nicht erreicht**, s. u. |
+| Generalprobe | – | **nicht gelaufen**: Carlos spielte währenddessen (eigenes Fenster mit Spieltitel) |
+
+Szenarien 102112 mit Kern: 11 grün / 13 geprüft. Rot bleiben `3632-ende-statt-back` (UNTERWEGS/GRUPPE,
+Abnahme Schritt 4; das alte System sagt dort weiter „Geh jetzt back“) und `1315-crash-dann-back` (der Modus ist
+um 13:15 OBJECTIVE, das Szenario sagt SEITE; Abnahme Schritt 4).
+
+### Kennzahlen (Stand Schritt 3; alt = `--kern alt`, Kern = `--kern neu`)
+
+| Aufnahme | ungefragt je 30 min alt → Kern | „… bei dir“ | Lane-Phase je 30 s | Kehrtwenden | 9.4-Verstöße 1–4, 7 | GEFAHR / PLAN / ERINNERUNG / BESTAETIGUNG | p_da-Brier schlimmster Fall → Kern |
+|---|---|---|---|---|---|---|---|
+| 2026-09-26_235433 | 74 → 58 | 3 → 0 | 1,21 → 0,94 | 0 → 0 | 4 → 0 | 6 / 10 / 2 / 0 | 0,198 → 0,069 |
+| 2026-09-27_001155 | 29 → 39 | 2 → 2 | 0,49 → 0,65 | 0 → 0 | 2 → 0 | 0 / 4 / 0 / 0 | 0,213 → 0,198 |
+| 2026-09-27_094832 | 71 → 53 | 3 → 0 | 1,18 → 0,89 | 0 → 0 | 2 → 0 | 4 / 5 / 2 / 0 | 0,229 → 0,047 |
+| 2026-09-27_101832 | 27 → 0 | 0 → 0 | 0,45 → 0,00 | 0 → 0 | 0 → 0 | 0 / 0 / 0 / 0 | 0,308 → 0,144 |
+| 2026-09-27_102112 | 61 → 57 | 11 → 3 | 1,18 → 0,83 | 3 → 0 | 2 → 1 | 5 / 23 / 1 / 1 | 0,317 → 0,059 |
+| **2026-09-27_140253 (echt)** | 78 → 61 | 3 → 0 | 1,33 → 1,04 | 0 → 0 | 4 → 0 | 4 / 11 / 1 / 0 | 0,273 → 0,044 |
+
+Die ungefragten Ansagen je 30 min liegen außer in 001155 unter dem alten System, aber noch über dem Ziel 45 aus
+Kapitel 9.2 – der Rest kommt außerhalb der Kern-Modi (SEITE, OBJECTIVE, UNTERWEGS: Schritte 4/5). Der eine
+9.4-Verstoß in 102112 ist `_afk` (1:30, „Euer Jungle ist leer“ ohne Lane), bis Schritt 8 eine alte Regel.
+
+**Echte Partie 140253** (Carlos, Riven Mid auf der roten Seite, Coach um 10:45 von Carlos beendet: „ich bin jetzt
+gerade zweimal gestorben wegen dir“): Das alte System sagte 9:25 „Schieb die Welle rein und geh dann zum
+Drachen“, 10:05 starb Riven an Yasuo. Der Kern sagt an denselben Stellen „Bleib an deinem Mid-Tier-1-Turm:
+Brand und Yasuo kommen“ (8:15) bzw. „Raus zu deinem Mid-Tier-1-Turm: Brand und Yasuo kommen“ (9:50) – in beiden
+Todesfenstern die Warnung, nie ein „rein“. Dazu kamen die Wahrnehmungsfehler der roten Seite (unten, Punkt 10).
+
+### Buch 1, 1.4: Wellen-Eichung – nicht erreicht
+
+- **102112** hat keine Minimap-Ausschnitte mehr (am Partieende aufgeräumt), nur Spielbilder mit einer Minimap von
+  237 px – Vasallen 1–3 px, nicht ehrlich zu beschriften.
+- **Echte Partie 140253**: 20 Zeitpunkte der Lane-Phase aus den 764-px-Ausschnitten (während der Partie gesichert,
+  nur lesend kopiert). Eindeutig beschriftbar waren 6 der 20 – am Kampfort liegen die Vasallen fast immer unter den
+  Champion-Icons, und `welle.py` blendet Punkte am Icon bewusst aus (der Ring hat dieselben Farben). Davon 2 richtig
+  (ZU_IHM 3:48, ZU_DIR 5:30), 4 falsch (4:00 ohne jede Lesung noch ZU_IHM statt UNBEKANNT/LEER; 4:12 und 5:42
+  eigene Welle kommt, Kern ZU_DIR/MITTE; 4:49 die Wellen treffen sich an Rivens Turm, Kern ZU_IHM).
+- Ursachen: (1) Die rote Seite war vertauscht (Punkt 10, behoben); (2) der Trend lief über Sprünge der Front
+  (behoben: nur der letzte zusammenhängende Abschnitt, `[welle] front_sprung`); (3) die gegnerischen Vasallen am
+  Kampfort fehlen (unter den Icons, im Nebel) – dann gilt `unsere − ihre ≥ 2`, und fast alles ist ZU_IHM. Das ist
+  Wahrnehmung, kein Kern-Fehler.
+- Folge für die Entscheidungen: WELLE_REIN_UND_BACK hängt an ZU_IHM/MITTE und damit praktisch nur am Back-Grund;
+  BACK_JETZT, PLATTEN und STAPELN hängen an GECRASHT_BEI_IHM/LEER/MITTE und sind seltener als sie sein sollten.
+  GECRASHT_BEI_IHM ließ sich nicht getrennt eichen (in der Stichprobe einmal, ohne Bild-Wahrheit).
+- Offen (OFFEN.md): `welle.py` braucht eine Zählung, die unter den Icons nur den Ring ausblendet, nicht den ganzen
+  Kreis, und eine echte Partie mit behaltenen Minimap-Ausschnitten (die Aufräumung am Partieende verschieben).
+
+### Abweichungen vom Buch und Entscheidungen
+
+1. **Gefahr-Gate (Buch 3, 2.1):** Schlägt die Gefahr beim Bleiben an (7.5), sind nur sichere Handlungen (ZURUECK,
+   BACK_JETZT) und der schützende Freeze (Buch 1, 3.7) Kandidaten – sonst gewann „Welle rein, dann back“ mit
+   Sett 900 entfernt (`k-nicht-back-gegner-nah`).
+2. **`p_kampf` (nicht im Buch, `[gefahr] kampf_ohne_anlauf = 0.3`):** Mit p_da = 1 für jeden sichtbaren Gegner in
+   1500 war jede ausgeglichene Lane „Gefahr“ (p_tod 0,3). Ein Sichtbarer, der nicht auf dich zuläuft, kämpft nur mit
+   0,3; dein Lane-Gegner, der auf dich zuläuft, ebenso – außer er ist stärker (`kraefte()[0] ≤ −1`) oder du bist
+   unter 50 % (echte Partie 140253, 0:38: „Raus zu deinem Turm“ zu Spielbeginn). Wer ungesehen ankommt oder als
+   Jungler/Roamer auf dich zuläuft, kommt zum Kämpfen.
+3. **„Menge der Ankommenden“ (7.5):** gerechnet gegen alle, die sichtbar in 1500 stehen oder im Fenster
+   wahrscheinlich da sind (p_da ≥ 0,5) – nicht nur die Sichtbaren in 1500 (9:04: einzeln gerechnet war jeder der
+   drei „schwächer“).
+4. **ZURUECK:** zwei Fassungen (nur raus / raus, dann back), die bessere zählt; `[gefahr] rueckzug_faktor = 0.6` auf
+   den Weg; mit Back zählt der Kanal danach am sicheren Ort mit (sonst war „erst raus“ fast immer besser als
+   BACK_JETZT, gegen `k-back-40-prozent`). Der Grund ist, wer dich beim Bleiben tötet; stehst du schon dort:
+   „Bleib an …“.
+5. **WELLE_REIN_UND_BACK bei GECRASHT_BEI_IHM** (Buch 1, 3.2 zählt es dazu) ist BACK_JETZT (Buch 3, 2 und die Lage
+   `k-back-bei-crash` mit `darf_nicht`): der erste Schritt ist schon erledigt.
+6. **GEGNER_ZURUECK** (Buch 3, 1) gilt auch bei ZU_IHM/MITTE, nicht nur gecrasht – sonst hat „Sett ist gebackt:
+   Welle rein, Platte, dann back“ (4.3, Lage `k-gegner-gebackt`) keinen Back-Grund.
+7. **TP zur Lane (4.1):** Die Regel „kein Objective innerhalb der TP-Abklingzeit“ (300 s) widerspricht dem Beispiel
+   im selben Kapitel („Drache erst in 4 Minuten“) und der Lage `k-tp-zur-lane` (250 s). Entschieden: das TP muss
+   zum Kampf ums Objective zurück sein – Spawn + `tp_objective_nachlauf_s` (60) ≥ Abklingzeit.
+8. **Kritisches Leben** (`[recall] leben_kritisch = 0.3`, Riven-Lexikon „außer Leben < 30 %“): kein
+   WELLE_REIN_UND_BACK, BACK_JETZT unabhängig von der Welle (094832, 4:26: „Welle rein“ bei 11 %).
+9. **Kaufplan nach dem Kern-Build:** Bei fertigem Kern kannte der Kaufplan kein Item mehr (3004: 3007 Gold, kein
+   Kauf-Satz). Jetzt die Lexikon-Zeile „Item 4–6“, bei vollem Inventar mit „Verkauf <Start-Item>“ davor
+   (`kaufplan.folge`).
+10. **Minimap-Farben sind relativ** (Wahrnehmung, gefunden bei der Eichung): dein Team ist blau, der Gegner rot –
+    der Code las blau als Team ORDER. Auf der roten Seite waren dadurch eigene und gegnerische Vasallen vertauscht
+    (samt Richtung der Front), die Platten-Ziffern wurden in der falschen Farbe gesucht, und bei doppelten Champions
+    kippte die Zuordnung. Behoben an den Einstiegen (`welle.zustaende(…, mein_team)`, `Plattenleser.lies_karte(…,
+    mein_team)`, `lage.zuordnen`); dahinter heißt blau weiter ORDER. Test `minimap_farben_relativ`. Alte Aufnahmen
+    der roten Seite: Wellen stimmen beim Nachspielen, aufgezeichnete Platten nicht.
+11. **Wiederholen:** derselbe Plan (Art + Ziel) nicht vor 60 s erneut (`[sprechen] wiederholen_s`), dieselbe Warnung
+    vor denselben Gegnern nicht vor 30 s (`gefahr_wiederholen_s`); in der Basis vor 1:00 schweigt der Kern
+    (Spielbeginn, Briefing). Sonst lag die Lane-Phase über 1 je 30 s (6:47/6:59 zweimal „Stapel …“).
+12. **Erinnerung (8.2 Punkt 5)** nur, wo „nicht ausgeführt“ messbar ist: BACK (nicht in der Basis und du läufst herum)
+    und ZURUECK (Gefahr besteht, du bist nicht am sicheren Ort, der Weg wurde nicht kürzer).
+13. **Bestätigungen:** „Pünktlich zurück“ fehlt (braucht die Ankunft der Welle am Turm); die Stärken stehen im Kern
+    (`Kern.staerken`) und in `_kern.jsonl`, das Review nimmt sie ab Schritt 7.
+14. **STAPELN** nur vor einem Objective auf deiner Seite; der zweite Auslöser („der Plan sieht einen Back oder Roam in
+    60–90 s vor“) fehlt – es gibt noch keinen Plan, der so weit vorausschaut.
+15. **Welle (1.2):** Trend nur über den letzten zusammenhängenden Abschnitt (`front_sprung = 0.12`), s. Eichung.
+16. **`kern.toml`-Schlüssel, die nicht im Buch stehen** (alle so markiert): `[gefahr] kampf_ohne_anlauf`,
+    `rueckzug_faktor`; `[sprechen] wiederholen_s`, `gefahr_wiederholen_s`; `[welle] lane_laenge_mid`,
+    `vasallen_tempo`, `freeze_stabil_s`, `leer_ab_s`, `front_sprung`; `[recall] tempo_bonus`, `voll_ab`, `rueckweg_s`,
+    `leben_kritisch`, `tp_objective_nachlauf_s`, `tp_abklingzeit_s`, `basis_warten_s`, `basis_wieder_s`,
+    `basis_hoechstens`, `kauf_sprung`.
+17. **Einfluss auf eine laufende Partie:** Carlos spielte 140253, während Schritt 3 entstand. Sein Coach lief seit
+    13:39 im Stand von Schritt 2; spät geladene Module (`sperre`, `kaufplan`, `kern.toml`) kamen im neuen Stand,
+    sind aber mit dem alten Ablauf verträglich (die Sperre ohne `kern_spricht`, der Kaufplan mit mehr Items). Der
+    Kern selbst sprach nicht mit.
+
+---
+
 ## Schritt 2 – Modus und Sofortmaßnahmen am alten System (27.09.2026)
 
 ### Umgesetzt

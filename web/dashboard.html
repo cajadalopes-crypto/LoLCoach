@@ -59,6 +59,7 @@
     </div>
     <div class="kasten" id="moduskasten" hidden><h2>Modus</h2>
       <div><b class="zahl" id="modus"></b> <span class="klein" id="modusgrund"></span></div>
+      <div id="kernplan" style="margin-top:6px"></div><div id="kerntop" class="klein"></div>
       <ul class="ansagen klein" id="info" style="margin-top:6px"></ul></div>
     <div class="kasten" id="jetztkasten" hidden style="border-color: var(--gut)"><h2>Jetzt</h2>
       <div id="jetztplan" style="font-size:1.15em;margin-bottom:6px"></div><div id="jetztzahlen" class="klein"></div></div>
@@ -199,6 +200,10 @@ function zeige(z) {
   if (k && k.modus) {
     $('modus').textContent = k.modus;
     $('modusgrund').textContent = k.grund ? ' – ' + k.grund : '';
+    const pl = k.plan;                               // Schritt 3: Plan mit Grund, Top-3 mit EV (Kapitel 9.5)
+    $('kernplan').innerHTML = pl ? `<b>${pl.art}</b>${pl.ziel ? ' → ' + pl.ziel : ''}${pl.grund ? ': ' + pl.grund : ''}`
+      + (k.gefahr ? ' <b style="color:var(--feind)">Gefahr</b>' : '') : '';
+    $('kerntop').innerHTML = (k.top || []).map(h => `${h.art} ${h.ev >= 0 ? '+' : ''}${h.ev}${h.grund ? ' (' + h.grund + ')' : ''}`).join(' · ');
     $('info').innerHTML = (k.info || []).map(i => `<li><span class="klein">${i.zeit}</span> ${i.text}</li>`).join('');
   }
   aufsetzen(z);

@@ -1,7 +1,7 @@
 # Schwellen und Startwerte des Entscheidungskerns (buecher/00_entscheidungskern.md, Kapitel 7.7).
 # Startwerte sind Schaetzungen - an Szenarien kalibrieren, jeder Abschnitt traegt seinen Stand.
-# Schritt 2 bringt [modus] und [sprechen]; [gefahr] und [objective_wert] sind nur mit den Werten dabei, die
-# Schritt 2 schon braucht (Kill-Beleg 6.2, Objective-Auswahl nach Wert) - der Rest folgt in Schritt 3.
+# Schritt 2 brachte [modus] und [sprechen]; Schritt 3 den Rest aus Kapitel 7.7 ([zeitwert], [gefahr], [plan],
+# [kauf]) und die Abschnitte aus Buch 1 ([welle]) und Buch 3 ([recall], [bestaetigung]).
 stand = "Buch 0, 27.09.2026 - Startwerte (Schaetzung), an Szenarien kalibrieren"
 
 [modus]
@@ -27,17 +27,58 @@ kampf_balken_faellt = 0.05
 minimap_frisch_s = 5.0
 
 [sprechen]
-stand = "Buch 0 Kapitel 7.7, Schritt 2"
+stand = "Buch 0 Kapitel 7.7, Schritt 2/3"
 abstand_s = 12
-max_je_minute = 3               # Kapitel 9.2 - kommt mit dem Kern (Schritt 3); Schritt 2 setzt nur abstand_s
+max_je_minute = 3               # Kapitel 9.2 (ab Schritt 3 prueft der Kern es selbst)
 ziel_je_30min = 45
 max_woerter = 18
 max_woerter_gefahr = 10
+# nicht im Buch, Schritt 3 (messungen.md): derselbe Plan (Art + Ziel) wird so lange nicht erneut angesagt, wenn er
+# kurz wegfiel und wiederkam - "Schweigen ist ein Rat" (Leitsatz 7)
+wiederholen_s = 60
+# nicht im Buch, Schritt 3: dieselbe Warnung vor denselben Gegnern nicht vor Ablauf dieser Zeit (ein neuer Gegner darf)
+gefahr_wiederholen_s = 30
+
+[zeitwert]                      # GE je Sekunde deiner Zeit
+stand = "Buch 0 Kapitel 7.7, Schritt 3"
+bis_14 = 8
+bis_25 = 12
+danach = 15
+xp_ge = 0.5
 
 [gefahr]
-stand = "Buch 0 Kapitel 7.7 - in Schritt 2 nur der Kill-Beleg (6.2); der Rest mit Schritt 3"
+stand = "Buch 0 Kapitel 7.7, Schritt 3 - geeicht an kennzahlen.py (p_da-Brier) und den konstruierten Lagen"
+fenster_s = 10
+anlauf_spielraum_s = 25
+unbekannt_faktor = 0.35
+roam_basis = 0.3
+schwelle_ge = 120
+p_min = 0.15
+kampf_exponent = 2.0            # p_verliere = 1 / (1 + kraft_gegen ** k)
+flucht_flash = 0.6
+flucht_turm = 0.5
+ueberzahl_sicher = 2.5          # kraft_gegen-Verhaeltnis
 kill_ueberlegen = 3.0           # kraefte()[0], Skala Level/600 Gold
 kill_leben_frisch_s = 1.0       # "sein Leben ist frisch gelesen" (6.2)
+objective_risiko = 0.5          # Kapitel 7.3: p(Gegner nimmt das Objective, solange du tot bist)
+# nicht im Buch, Schritt 3 (messungen.md): ein sichtbarer Gegner in 1500, der NICHT auf dich zulaeuft, ist da -
+# aber kaempft nicht sicher. Mit p_da = 1 hiess jede Lane gegen einen gleich starken Gegner "Gefahr" (p_tod 0,3).
+kampf_ohne_anlauf = 0.3
+# nicht im Buch, Schritt 3: auf dem Rueckzug zum sicheren Ort bist du so viel sicherer als stehend (du laeufst weg)
+rueckzug_faktor = 0.6
+
+[plan]
+stand = "Buch 0 Kapitel 7.7, Schritt 3"
+hysterese_ge = 150
+hysterese_anteil = 0.3
+stabil_s = 2.0
+halten_s = 8.0
+erinnern_nach_s = 15
+
+[kauf]
+stand = "Buch 0 Kapitel 7.7, Schritt 3"
+kauf_faktor = 0.25
+heil_faktor = 1.0               # GE je fehlendem Lebenspunkt beim Back (grob)
 
 [objective_wert]                # fuer dein Team; Startwerte, Buch 6 eicht sie
 stand = "Buch 0 Kapitel 7.7 - vorgezogen fuer die Objective-Auswahl in Schritt 2"
@@ -55,3 +96,65 @@ mindestens = { drache = 2, larven = 2, herold = 2, baron = 3 }
 # nicht im Buch, Schritt 2 (vorgezogen aus Schritt 5): geschaetzte Toetungszeit mit genug Leuten (Buch 6 eicht) -
 # erreichbar ist ein Objective nur, wenn dein Weg + diese Dauer vor den ersten Gegner an der Grube passt
 dauer_s = { drache = 15, larven = 15, herold = 20, baron = 35 }
+
+[welle]
+stand = "Buch 1, 27.09.2026 - Startwerte (Schaetzung), an Szenarien und Handbeschriftung kalibrieren"
+median_s = 6
+trend_fenster_s = 20
+zustand_hysterese_s = 3
+turm_dein = 0.35                # s aus deiner Sicht, nur Rueckfall: gilt ist der vorderste stehende Turm (1.3)
+turm_ihr = 0.65
+turm_reichweite_s = 0.06
+lane_laenge = 20000             # Einheiten, Top/Bot; Mid ~ 10500 (welle.LANES)
+gross_ab = 7
+trend_schwelle = 0.02           # s je 10 s
+nebel_ab = 0.55                 # front, ab der "ihre = 0" unbekannt heisst ...
+nebel_abstand = 1500            # ... wenn du weiter als das von der Front weg bist
+crash_max_s = 15
+kanone_warten_s = 15
+stapeln_gefahr_max = 0.4
+stapel_verlust_min = 150        # GE
+gross_zuschlag = 60             # GE je Welle ueber 6 Vasallen
+quest_je_s_lane = 1.5           # GE, Top-Rollenquest (saison2026.md)
+platten_dauer = 8               # s fuer eine Platte mit Vasallen (grob)
+# nicht im Buch, Schritt 3: die Mid-Lane ist kuerzer (Kommentar zu lane_laenge), Vasallen laufen 350 (mechanik.toml)
+lane_laenge_mid = 10500
+vasallen_tempo = 350
+freeze_stabil_s = 15            # GEHALTEN_BEI_DIR: so lange stabil (1.4)
+leer_ab_s = 4                   # LEER: so lange beide Wellen weg (1.4)
+front_sprung = 0.12             # so weit zwischen zwei Lesungen = eine andere Welle (Trend nur danach, 1.1)
+
+[recall]
+stand = "Buch 3, 27.09.2026 - Startwerte (Schaetzung), an Szenarien kalibrieren"
+leben_back = 0.4
+horten_ab = 1500
+horten_zuschlag = 100           # GE je 500 Gold ueber horten_ab
+spike_bonus = 300               # GE, wenn ein Kern-Item fertig wird
+vorlauf_bonus = 0.3             # Anteil am Objective-Wert
+kanal_s = 8
+einkauf_s = 3
+tp_lane_wert_min = 180          # GE, verlorene Welle/Platten, ab dem TP zur Lane lohnt
+nie_back_gegner_abstand = 1500
+# nicht im Buch, Schritt 3 (messungen.md): Gegner-Tempo-Bonus beim gleichzeitigen Back (GEGNER_ZURUECK, Tabelle 1)
+tempo_bonus = 100
+# nicht im Buch, Schritt 3: "du bist voll" (2.2) und Rueckweg vom Brunnen zur Lane (Abwesenheit, Buch 1 Kapitel 2)
+voll_ab = 0.9
+# nicht im Buch, Schritt 3: kritisches Leben - dann zaehlt die Welle nicht mehr (Buch 1 3.5, Lage
+# k-leben-kritisch-trotz-welle): kein "Welle rein", back sofort; Riven-Lexikon "ausser Leben < 30 %"
+leben_kritisch = 0.3
+rueckweg_s = 25
+# nicht im Buch, Schritt 3 (messungen.md): das TP muss zum Kampf ums Objective zurueck sein - Kampf bis so lange
+# nach dem Spawn (Buch 3 4.1: "Drache erst in 4 Minuten" reicht bei 300 s Abklingzeit)
+tp_objective_nachlauf_s = 60
+tp_abklingzeit_s = 300          # bis 10:00 (saison2026.md); danach Unleashed 330-240 je Level
+# nicht im Buch, Schritt 3: BASIS - so lange nach Kauf/Eintritt, dann das Ziel wieder (Buch 0 6.3: 20 s, alle 30 s,
+# hoechstens dreimal); ein Kauf ist ein Goldsprung um mindestens so viel
+basis_warten_s = 20
+basis_wieder_s = 30
+basis_hoechstens = 3
+kauf_sprung = 250
+
+[bestaetigung]
+stand = "Buch 3, 27.09.2026"
+abstand_s = 180
+max_woerter = 8

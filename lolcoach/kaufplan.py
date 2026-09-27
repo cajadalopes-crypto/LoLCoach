@@ -92,6 +92,7 @@ class Kauf:
     kaufen: list[str]            # was das Gold jetzt kauft (leer = nichts Sinnvolles)
     kosten: int
     naechstes: tuple[str, int] | None   # (Bauteil oder Item, fehlendes Gold), das als naechstes erreichbar wird
+    verkaufen: str | None = None        # Inventar voll: dieses Item zuerst verkaufen (Start-Item)
 
     def satz(self) -> str:
         if self.kaufen:
@@ -133,10 +134,42 @@ def _baum_kosten(item: int, inventar: list[int]) -> tuple[int, list[int]]:
     return rest, fehlend
 
 
+@lru_cache(maxsize=256)
+def folge(champion_id: str) -> tuple[int, ...]:
+    """Die Items nach dem Kern (Lexikon, Zeile "Item 4-6"), ohne Stiefel und ohne die schon im Kern - sonst hatte ein
+    fertiger Kern-Build nichts mehr zu kaufen (102112, 30:04: 3007 Gold in der Basis, der Coach wusste nichts)."""
+    from .gehirn import abschnitt
+    zeile = next((z.lstrip("- ") for z in abschnitt(champion_id, "Build", 4000).splitlines()
+                  if z.lstrip("- ").startswith("Item 4")), "")
+    k = kern(champion_id)
+    return tuple(i for i in _items_in(zeile.split(":", 1)[-1]) if i not in k)
+
+
+def _verkaufbar(items: tuple[int, ...], behalten: set) -> tuple[int, int] | None:
+    """(Item, Verkaufswert) des billigsten Items, das nicht zum Build gehoert (das Start-Item), sonst None."""
+    it = ddragon.items()
+    kandidaten = [(it[i]["gold"]["total"], i) for i in items if i in it and i not in behalten
+                  and not {"Trinket", "Consumable", "Boots"} & set(it[i].get("tags", []))]
+    if not kandidaten:
+        return None
+    _, i = min(kandidaten)
+    return i, int(it[i]["gold"].get("sell", 0))
+
+
 def plan(champion_id: str, items: tuple[int, ...], gold: float) -> Kauf | None:
     it = ddragon.items()
     stiefel = [i for i in kern(champion_id) if "Boots" in it.get(i, {}).get("tags", [])]
-    for ziel in [i for i in kern(champion_id) if i not in stiefel]:
+    nach_kern = folge(champion_id)
+    belegt = [i for i in items if i in it and not {"Trinket", "Consumable"} & set(it[i].get("tags", []))]
+    for ziel in [i for i in (*kern(champion_id), *nach_kern) if i not in stiefel]:
+        verkauf = None
+        if ziel in nach_kern and len(belegt) >= 6:
+            # Inventar voll: fuer ein Item nach dem Kern das Start-Item verkaufen (sein Wert zaehlt zum Gold)
+            v = _verkaufbar(items, set(kern(champion_id)) | set(nach_kern))
+            if v is None:
+                return None
+            verkauf = it[v[0]]["name"]
+            gold = gold + v[1]
         inventar = list(items)
         rest, fehlend = _baum_kosten(ziel, inventar)
         if rest <= 0:
@@ -145,7 +178,7 @@ def plan(champion_id: str, items: tuple[int, ...], gold: float) -> Kauf | None:
         hat_stiefel = any("Boots" in it.get(i, {}).get("tags", []) for i in items)
         if gold >= rest:
             extra = ["Stiefel"] if not hat_stiefel and gold - rest >= 300 else []
-            return Kauf(name, [name] + extra, rest + 300 * len(extra), None)
+            return Kauf(name, [name] + extra, rest + 300 * len(extra), None, verkauf)
         # Bauteile: das teuerste bezahlbare zuerst, dann auffuellen
         kaufen, kosten, frei = [], 0, gold
         kandidaten = []
@@ -166,5 +199,5 @@ def plan(champion_id: str, items: tuple[int, ...], gold: float) -> Kauf | None:
         naechstes = (it[billigstes[1]]["name"], int(billigstes[0] - gold)) if billigstes and not kaufen else None
         if not kaufen and naechstes is None:
             naechstes = (name, int(rest - gold))
-        return Kauf(name, kaufen, kosten, naechstes)
+        return Kauf(name, kaufen, kosten, naechstes, verkauf if kaufen else None)
     return None

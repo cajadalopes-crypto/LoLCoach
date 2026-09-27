@@ -60,7 +60,8 @@ def maske(karte: np.ndarray, team: str, gx: float, gy: float) -> np.ndarray | No
 
 
 def lies(karte: np.ndarray, team: str, gx: float, gy: float) -> tuple[int | None, float]:
-    """(Platten, Guete) eines Turms; (None, Guete) wenn nichts sicher passt."""
+    """(Platten, Guete) eines Turms; (None, Guete) wenn nichts sicher passt. `team` ist die FARBE des Turms auf der
+    Minimap ("CHAOS" = rot, sonst blau) - fuer die rote Seite dreht `Plattenleser.lies_karte` sie um."""
     m = maske(karte, team, gx, gy)
     if m is None or not _V or m.sum() < 8:
         return None, 0.0
@@ -86,13 +87,15 @@ class Plattenleser:
         self.stand: dict[tuple[str, str, str], int] = {}
         self._kandidat: dict[tuple[str, str, str], int] = {}
 
-    def lies_karte(self, karte: np.ndarray, stehend=None) -> dict[tuple[str, str, str], int]:
-        """`stehend`: Schluessel der Tuerme, die noch stehen (sonst alle). Gibt den Stand zurueck."""
+    def lies_karte(self, karte: np.ndarray, stehend=None, mein_team: str = "ORDER") -> dict[tuple[str, str, str], int]:
+        """`stehend`: Schluessel der Tuerme, die noch stehen (sonst alle). Gibt den Stand zurueck. Die Minimap faerbt
+        relativ (deine Tuerme blau, seine rot) - auf der roten Seite sind CHAOS-Tuerme blau (echte Partie 140253)."""
         for schl, (gx, gy) in TUERME.items():
             if stehend is not None and schl not in stehend:
                 self.stand.pop(schl, None)
                 continue
-            z, _ = lies(karte, schl[0], gx, gy)
+            farbe = schl[0] if mein_team != "CHAOS" else ("ORDER" if schl[0] == "CHAOS" else "CHAOS")
+            z, _ = lies(karte, farbe, gx, gy)
             if z is None:
                 continue
             alt = self.stand.get(schl)

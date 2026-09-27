@@ -123,7 +123,13 @@ class Wellenleser:
         return self.bilder >= 20
 
 
-def zustaende(punkte: list[tuple[str, float, float]]) -> dict[str, LaneZustand]:
+def zustaende(punkte: list[tuple[str, float, float]], mein_team: str = "ORDER") -> dict[str, LaneZustand]:
+    """Je Lane der Wellenstand. Die Minimap faerbt RELATIV: dein Team ist blau, der Gegner rot - egal auf welcher
+    Seite. `blau`/`rot` im Ergebnis heissen aber Team ORDER / CHAOS (blaue Basis unten links, s = 0), wie ueberall
+    im Coach; auf der roten Seite werden die Farben deshalb getauscht (echte Partie 140253, Riven Mid auf CHAOS: die
+    eigenen Vasallen galten als seine, die Front lief falsch herum)."""
+    if mein_team == "CHAOS":
+        punkte = [("rot" if farbe == "blau" else "blau", x, y) for farbe, x, y in punkte]
     je_lane: dict[str, dict[str, list[float]]] = {l: {"blau": [], "rot": []} for l in LANES}
     for team, x, y in punkte:
         # Basen (unten links / oben rechts) zaehlen nicht: dort liegen Nexus-/Inhibitor-Icons

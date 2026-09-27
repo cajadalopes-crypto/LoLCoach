@@ -6,8 +6,8 @@ danach programmiert, und werden in dieser Reihenfolge gelesen und umgesetzt.
 | Buch | Thema | Stand |
 |---|---|---|
 | **0** | [Der Entscheidungskern](00_entscheidungskern.md): Modus, Plan, Wert, Sprechen, Messen, Umbauplan | fertig (27.09.2026) |
-| 1 | Welle | kommt nach Schritt 2 |
-| 3 | Recall, Tempo, Kauf | kommt nach Schritt 2 |
+| 1 | [Welle](01_welle.md) | fertig (27.09.2026), umgesetzt in Schritt 3 |
+| 3 | [Recall, Tempo, Kauf](03_recall_tempo_kauf.md) | fertig (27.09.2026), umgesetzt in Schritt 3 |
 | 2 | Lane: Trading und Top-Matchups | kommt in Schritt 3 |
 | 4 | Jungler-Wahrscheinlichkeit und Sicht | kommt in Schritt 3 |
 | 5 | Mid-Game als Toplaner | kommt vor Schritt 4 |

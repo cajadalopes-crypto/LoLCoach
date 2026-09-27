@@ -1,0 +1,43 @@
+# Szenarien zu Buch 3 aus Partie 2026-09-27_102112 (Format: buecher/00_entscheidungskern.md, Kapitel 12.1).
+# Eigene Datei, damit die Hauptdatei dieser Partie unangetastet bleibt; der Laeufer liest alle *.toml.
+
+aufnahme = "2026-09-27_102112"
+bots = true
+[[szenario]]
+id = "0545-back-bei-40-prozent"
+zeit = "5:45"
+fenster = ["5:40", "5:58"]
+quelle = "Nachspielen 27.09.: 5:54 'Kommt Fiddlesticks, nimm den Kampf an' bei 40 %; Recall ab ~5:47"
+lage = """Riven L6, 39 % Leben, Flash weg, 1537 Gold. Fiddlesticks 5:37 oben gesehen ("in 3 Sekunden bei dir").
+Welle 7:0 fuer dich, Front ~0,57. Sett lebt, ~900 entfernt. Beide aeusseren Top-Tuerme stehen (Lane-Phase)."""
+modus = ["LANE"]
+soll = ["ZURUECK", "BACK_JETZT", "WELLE_REIN_UND_BACK"]
+darf_nicht = ["TRADE", "ALL_IN"]
+darf_nicht_sagen = ["Kampf an"]
+warum = """40 % ohne Flash, Gold fuer ein Bauteil im Beutel, der Jungler war eben oben: zurueck und back. Sett steht
+900 entfernt - gegen einen Menschen erst aus seiner Reichweite, dann den Kanal. 'Nimm den Kampf an' ist hier falsch."""
+
+[[szenario]]
+id = "0600-basis-kauf"
+zeit = "6:00"
+fenster = ["5:56", "6:12"]
+quelle = "Nachspielen 27.09.: in der Basis kein Kauf-Satz"
+lage = """Riven L6 in eurer Basis, voll Leben, 1567 Gold. Im Inventar Dorans Klinge, 2 Langschwerter, Schmuckstueck,
+kein Kontroll-Auge."""
+modus = ["BASIS"]
+soll = ["KAUFEN"]
+muss_ziel = true
+warum = """In der Basis gibt es genau zwei Fragen: was kaufst du (Namen aus dem Kaufplan) und wohin danach."""
+
+[[szenario]]
+id = "1315-crash-dann-back"
+zeit = "13:15"
+quelle = "Nachspielen 27.09.: Crash mit 11 Vasallen an seinem inneren Top-Turm, Recall ~13:15, Basis 13:23"
+lage = """Riven L12, 47 % Leben, 1899 Gold, an seinem inneren Top-Turm (sein aeusserer ist gefallen -> keine Lane-Phase,
+Modus SEITE). Welle 11:1 fuer dich, Front ~0,80 (am inneren Turm). Sett lebt, ~4200 entfernt."""
+modus = ["SEITE"]
+soll = ["BACK_JETZT", "WELLE_REIN_UND_BACK"]
+darf_nicht = ["PLATTEN"]
+warum = """Die Welle ist drin, Gold und Leben sagen back - das Lehrbuch-Fenster. Platten mit 47 % und Sett in der
+Naehe waeren Gier. Beim Eintritt in die Basis darf der Coach bestaetigen ('Sauber: Welle drin, dann back').
+Abnahme mit Schritt 4 (SEITE)."""

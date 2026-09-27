@@ -5,7 +5,8 @@ Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes
   altes System (nur Text):  darf_nicht_sagen, muss_nennen_eins, muss_ziel, kehrtwenden_max, ansagen_max
                             im Fenster ([zeit-2, zeit+15] oder `fenster`)
   Kern (Modus, Plan-Art):   modus und [[modus_soll]] ab Schritt 2 (irgendein Takt in zeit +-2 s hat einen der
-                            erlaubten Modi); soll und darf_nicht (Plan-Art) ab Schritt 3, bis dahin "uebersprungen"
+                            erlaubten Modi); soll (irgendein Takt in zeit +-2 s hat eine der Plan-Arten) und
+                            darf_nicht (kein Takt im Fenster) ab Schritt 3
   frage:                    wie per Sprechtaste, geprueft wird die Antwort - braucht Claude, nur mit --mit-claude
   typ = "review":           gegen das gespeicherte Review der Partie - nur mit --mit-claude
 
@@ -13,8 +14,11 @@ Ein Szenario ist rot, wenn ein gepruefter Teil verletzt ist; gruen, wenn mindest
 alle halten; sonst uebersprungen. Am Ende die Quote.
 
     python werkzeuge/szenarien.py [tests/szenarien/<datei>.toml ...] [--nur alt|kern] [--mit-claude] [--lage]
+                                  [--kern alt|schatten|neu] [--konstruiert]
 
 --lage zeigt je Szenario die nachgespielte Lage neben der aus dem Szenario (Bestaetigung, Schritt 1).
+--kern wie beim Coach (Default neu: der Kern spricht in LANE, BASIS, TOT).
+--konstruiert prueft die konstruierten Lagen (tests/szenarien/konstruiert/, Buch 1 6.2) statt der Aufnahmen.
 """
 from __future__ import annotations
 
@@ -134,7 +138,17 @@ def modi_um(lauf: ns.Lauf, t: float, um: float = 2.0) -> list[str]:
     return aus
 
 
-def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lauf: ns.Lauf | None = None) -> dict:
+def plaene_um(lauf: ns.Lauf, von: float, bis: float) -> list[str]:
+    """Die Plan-Arten des Kerns in den Takten [von, bis] (Reihenfolge wie gesehen, ohne Wiederholung)."""
+    aus = []
+    for x in lauf.takte:
+        if von <= x.zeit <= bis and x.plan not in aus:
+            aus.append(x.plan)
+    return aus
+
+
+def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lauf: ns.Lauf | None = None,
+                 kern: str = "neu") -> dict:
     """`lauf`: schon nachgespielt (kennzahlen.py) - dann ohne Fragen an Claude."""
     cfg = tomllib.loads(datei.read_text(encoding="utf-8"))
     stamm = cfg["aufnahme"]
@@ -149,7 +163,7 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                 antworten_[s["id"]] = antwort(s["frage"], p, lb, wand, stamm)
 
     if lauf is None:
-        lauf = ns.durchspielen(ns.pfad_zu(stamm), halte_bei=halte, rueckruf=bei_halt)
+        lauf = ns.durchspielen(ns.pfad_zu(stamm), halte_bei=halte, rueckruf=bei_halt, kern_stellung=kern)
     print(f"== {stamm}{' (Bot-Partie)' if cfg.get('bots') else ''}: {len(lauf.gesagt)} Ansagen nachgespielt")
     ergebnis = {"gruen": 0, "rot": 0, "uebersprungen": 0, "rot_ids": [], "gruen_ids": [], "modus": None}
     for sz in szen:
@@ -193,8 +207,27 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
             modi = modi_um(lauf, ns.sekunden(sz["zeit"]))
             if not set(modi) & set(sz["modus"]):
                 verstoesse.append(f"modus {sz['modus']} - Kern: {modi or 'kein Modus'}")
-        if any(k in sz for k in ("soll", "darf_nicht")):
-            uebersprungen.append("Kern-Plan (soll/darf_nicht, ab Schritt 3)")
+        # Kern-Plan: nur wo der Kern schon entscheidet (Schritt 3: LANE, BASIS, TOT) - sonst "uebersprungen" mit dem
+        # Modus, in dem es stand (dessen Schritt kommt noch)
+        kern_modi = None
+        if nur != "alt" and kern != "alt" and ("soll" in sz or "darf_nicht" in sz) and ("zeit" in sz or "fenster" in sz):
+            von, bis = (ns.sekunden(sz["zeit"]) - 2, ns.sekunden(sz["zeit"]) + 2) if "zeit" in sz else fenster(sz)
+            if not any(p for p in plaene_um(lauf, von, bis)):
+                kern_modi = sorted({str(x.modus) for x in lauf.takte if von <= x.zeit <= bis})
+                uebersprungen.append(f"Kern-Plan (der Kern entscheidet in {'/'.join(kern_modi)} noch nicht)")
+        if nur != "alt" and kern != "alt" and "soll" in sz and "zeit" in sz and kern_modi is None:
+            geprueft += 1
+            t = ns.sekunden(sz["zeit"])
+            plaene = plaene_um(lauf, t - 2, t + 2)
+            if not set(plaene) & set(sz["soll"]):
+                verstoesse.append(f"soll {sz['soll']} - Kern-Plan: {plaene or 'keiner'}")
+        if nur != "alt" and kern != "alt" and "darf_nicht" in sz and ("zeit" in sz or "fenster" in sz) \
+                and kern_modi is None:
+            geprueft += 1
+            von, bis = fenster(sz)
+            falsch = [x for x in lauf.takte if von <= x.zeit <= bis and x.plan in sz["darf_nicht"]]
+            if falsch:
+                verstoesse.append(f"darf_nicht {sz['darf_nicht']} - {ns.uhr(falsch[0].zeit)} Plan {falsch[0].plan}")
         status = "rot" if verstoesse else ("gruen" if geprueft else "uebersprungen")
         ergebnis[status] += 1
         if status in ("rot", "gruen"):
@@ -225,7 +258,7 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
         for d in daneben:
             print(f"          daneben {d}")
     gepr = ergebnis["gruen"] + ergebnis["rot"]
-    print(f"  Quote altes System: {ergebnis['gruen']} gruen / {gepr} geprueft, {ergebnis['rot']} rot, "
+    print(f"  Quote (--kern {kern}): {ergebnis['gruen']} gruen / {gepr} geprueft, {ergebnis['rot']} rot, "
           f"{ergebnis['uebersprungen']} uebersprungen")
     return ergebnis
 
@@ -237,16 +270,34 @@ def main() -> None:
     ap.add_argument("--nur", choices=("alt", "kern"))
     ap.add_argument("--mit-claude", action="store_true", help="Fragen echt an Claude, Review pruefen")
     ap.add_argument("--lage", action="store_true", help="nachgespielte Lage je Szenario zeigen")
+    ap.add_argument("--kern", choices=("alt", "schatten", "neu"), default="neu")
+    ap.add_argument("--konstruiert", action="store_true", help="die konstruierten Lagen (Buch 1, 6.2)")
     args = ap.parse_args()
+    if args.konstruiert:
+        sys.exit(0 if konstruiert() else 1)
     dateien = [Path(d) for d in args.dateien] or sorted(SZENARIEN.glob("*.toml"))
     gesamt = {"gruen": 0, "rot": 0, "uebersprungen": 0}
     for d in dateien:
-        e = pruefe_datei(d, args.nur, args.mit_claude, args.lage)
+        e = pruefe_datei(d, args.nur, args.mit_claude, args.lage, kern=args.kern)
         for k in gesamt:
             gesamt[k] += e[k]
     gepr = gesamt["gruen"] + gesamt["rot"]
     print(f"\nGesamt: {gesamt['gruen']} gruen / {gepr} geprueft ({gesamt['rot']} rot, {gesamt['uebersprungen']} "
-          f"uebersprungen)" + ("" if args.nur == "alt" else " - Kern-Plan (soll/darf_nicht): ab Schritt 3"))
+          f"uebersprungen)")
+
+
+def konstruiert() -> bool:
+    """Die konstruierten Lagen: je Lage ein Takt des Kerns, Plan gegen soll/darf_nicht/satz_enthaelt."""
+    from lolcoach.kern import testlage
+    ergebnisse = testlage.alle()
+    for r in ergebnisse:
+        print(f"  {'ROT  ' if r['verstoesse'] else 'GRUEN'} {r['datei']}: {r['id']} -> {r['plan']}"
+              + (f'  "{r["satz"]}"' if r["satz"] else ""))
+        for v in r["verstoesse"]:
+            print(f"          {v}  | Top: {r['top'][:4]}")
+    gruen = sum(1 for r in ergebnisse if not r["verstoesse"])
+    print(f"Konstruierte Lagen: {gruen} / {len(ergebnisse)} gruen")
+    return gruen == len(ergebnisse)
 
 
 if __name__ == "__main__":

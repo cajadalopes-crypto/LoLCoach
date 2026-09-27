@@ -17,11 +17,22 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
-**Buch 0, Schritt 2 umgesetzt** (`buecher/00_entscheidungskern.md`, Kapitel 13): Modus (`lolcoach/kern/`), Modus-
-Sperre der alten Regeln, Objective nach Erreichbarkeit und Wert, Team-Befehle nur rechtzeitig, Kill nur mit
-Beleg, 12 s Abstand zwischen Ansagen, INFO aufs Dashboard, Claude-Kontext mit Modus. Zahlen in
-`buecher/messungen.md`. Jetzt: Carlos spielt echte Partien mit Stimme und haelt Momente per "Notiz ..." fest;
-danach Schritt 3 (der Kern uebernimmt LANE, BASIS, TOT). Schritt 1 (Messen) ist erledigt (fd59e03).
+**Buch 0, Schritt 3 umgesetzt** (`buecher/00_entscheidungskern.md`, Kapitel 13; Buch 1 Welle, Buch 3 Recall/Kauf):
+in LANE, BASIS und TOT entscheidet und spricht der Kern (`--kern neu` ist Default) - Plan statt Reflex, Gefahr als
+Wahrscheinlichkeit, Welle als Plan-Schritt, Kauf mit Namen und Ziel, Bestaetigungen. Zahlen und Abweichungen in
+`buecher/messungen.md`. Jetzt: Carlos spielt echte Partien mit Stimme (Coach neu starten) und haelt Momente per
+"Notiz ..." fest; danach Schritt 4 (SEITE, GRUPPE, UNTERWEGS, VERTEIDIGEN). Schritte 1 (fd59e03) und 2 (382ce9f)
+sind erledigt.
+
+Offen aus Schritt 3:
+- **Wellen-Eichung (Buch 1, 1.4) nicht erreicht:** am Kampfort liegen die Vasallen unter den Champion-Icons, und
+  `welle.py` blendet dort den ganzen Kreis aus (wegen der Ringfarbe) - dann fehlt "ihre", fast alles wird ZU_IHM.
+  Naechster Schritt: nur den Ring ausblenden, nicht den Kreis; Minimap-Ausschnitte einer echten Partie behalten
+  (die Aufraeumung am Partieende verschieben), dann 20 Zeitpunkte neu beschriften (GECRASHT_BEI_IHM >= 90 %).
+- Generalprobe mit `--kern neu` (lief nicht, Carlos spielte).
+- Bestaetigung "Puenktlich zurueck" (Ankunft der Welle am Turm) und der zweite STAPELN-Ausloeser (Back/Roam im Plan).
+- Stub-Notizen aus der echten Partie 140253 (9:09-10:25) nach `tests/szenarien/offen/` (werkzeuge/
+  szenario_aus_notizen.py) und beschriften.
 
 Carlos' Ziel 26.09. (/goal): Challenger-Coach, individuelle Ansagen aus vielen Faktoren, keine
 Standardsaetze; Grundlage `Reasoning/LoL Reasoning.txt` (Entscheidungskette Zustand -> Welle ->

@@ -77,13 +77,14 @@ def zustand_json(p: Partie, lagebild=None, ansagen=()) -> dict:
 
 
 def _kern(lagebild) -> dict | None:
-    """Buch 0, Schritt 2: Modus (was gerade dein Job ist) und die INFO-Zeilen, die nicht mehr gesprochen werden
-    (Flash, Items, Level, CS - Kapitel 9.1)."""
+    """Buch 0: Modus (was gerade dein Job ist), ab Schritt 3 der Plan des Kerns mit Grund und die Top-3 mit EV (9.5),
+    dazu die INFO-Zeilen, die nicht mehr gesprochen werden (Flash, Items, Level, CS - Kapitel 9.1)."""
     k = getattr(lagebild, "kern", None)
     if k is None:
         return None
     s = k.stand()
-    return {"modus": s["modus"], "bereich": s["bereich"], "grund": s["grund"],
+    return {"modus": s["modus"], "bereich": s["bereich"], "grund": s["grund"], "plan": s.get("plan"),
+            "top": s.get("top", []), "gefahr": s.get("gefahr", False),
             "info": [{"zeit": uhr(i["zeit"]), "text": i["text"]} for i in s["info"]]}
 
 

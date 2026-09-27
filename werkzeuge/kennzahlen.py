@@ -11,16 +11,19 @@
       4 Team-Befehl, an dem du nicht teilnehmen kannst (dein Weg zum genannten Objective > sein Todesfenster)
       5 = Kehrtwenden; 6 (Widerspruch zum Plan) gibt es erst mit dem Kern
       7 "geh back" / "zurueck zu deiner Basis" in der Basis
-  - Anteil GEFAHR / PLAN / ERINNERUNG - erst mit dem Kern
-  - p_da-Brier gegen den schlimmsten Fall (7.5): bis Schritt 3 nur der schlimmste Fall selbst (p = 1, wenn
-    frueheste Ankunft <= 10 s) - die Latte, die das Gefahr-Modell unterbieten muss. Wahrheit: der Gegner war in
-    den naechsten 10 s sichtbar in 1500 um dich (wer ungesehen kam, zaehlt nicht - Grenze der Messung)
+  - Anteil GEFAHR / PLAN / ERINNERUNG / BESTAETIGUNG (Kern)
+  - in der Lane-Phase: ungefragte Ansagen je 30 s (Abnahme Schritt 3: <= 1 im Mittel)
+  - p_da-Brier (Kern, 7.5) gegen den schlimmsten Fall (p = 1, wenn frueheste Ankunft <= 10 s), auf denselben
+    Proben. Wahrheit: der Gegner war in den naechsten 10 s sichtbar in 1500 um dich (wer ungesehen kam, zaehlt
+    nicht - Grenze der Messung)
   - Datenluecken > 5 s (Wanduhr)
   - Szenario-Quote (tests/szenarien/<stamm>.toml, ohne Claude)
 
 Geht in sinnpruefung.py auf (deren Pruefungen stecken in 1-4 und 7).
 
-    python werkzeuge/kennzahlen.py [aufnahme ...]      (ohne Angabe: die 5 juengsten)
+    python werkzeuge/kennzahlen.py [aufnahme ...] [--nur-kern]     (ohne Angabe: die 5 juengsten)
+
+Altes System = --kern alt (Regelwerk mit der Modus-Sperre aus Schritt 2), Kern = --kern neu (Schritt 3).
 """
 from __future__ import annotations
 
@@ -71,26 +74,40 @@ def verstoesse(a, b) -> list[int]:
     return aus
 
 
-def brier_schlimmster_fall(lauf: ns.Lauf, fenster: float = 10.0, nah: float = 1500.0) -> tuple[float, int, float]:
-    """(Brier, Zahl der Proben, Grundrate) fuer p = 1 wenn frueheste Ankunft <= fenster."""
+def brier_schlimmster_fall(lauf: ns.Lauf, fenster: float = 10.0, nah: float = 1500.0,
+                           kern: bool = False) -> tuple[float, int, float]:
+    """(Brier, Zahl der Proben, Grundrate) fuer p = 1 wenn frueheste Ankunft <= fenster - oder, mit `kern`, fuer das
+    p_da des Gefahr-Modells (7.5) auf denselben Proben (lebende Gegner mit bekannter fruehester Ankunft)."""
     proben = lauf.proben
     fehler, n, treffer = 0.0, 0, 0
     for i, (t, ich, gegner) in enumerate(proben):
         spaeter = [pr for pr in proben[i + 1:i + 1 + int(fenster) + 2] if t < pr[0] <= t + fenster]
-        for name, ankunft, sichtbar, seit, pos, tot in gegner:
-            if tot or ankunft is None:
+        for name, ankunft, sichtbar, seit, pos, tot, p_da in gegner:
+            if tot or ankunft is None or (kern and p_da is None):
                 continue
-            p = 1.0 if ankunft <= fenster else 0.0
+            p = p_da if kern else (1.0 if ankunft <= fenster else 0.0)
             da = any(s2 and pos2 is not None and bewertung.abstand(ich2, pos2) <= nah
-                     for _, ich2, g2 in spaeter for n2, _, s2, _, pos2, _ in g2 if n2 == name)
+                     for _, ich2, g2 in spaeter for n2, _, s2, _, pos2, _, _ in g2 if n2 == name)
             fehler += (p - float(da)) ** 2
             n += 1
             treffer += da
     return (fehler / n if n else math.nan), n, (treffer / n if n else math.nan)
 
 
-def kennzahlen(pfad: Path) -> dict:
-    lauf = ns.durchspielen(pfad, proben=True)
+def lane_phase_takt(lauf: ns.Lauf) -> tuple[int, float]:
+    """(ungefragte Ansagen in der Lane-Phase, Sekunden Lane-Phase mit Daten) - Abnahme Schritt 3: <= 1 je 30 s."""
+    ende = min([t.zeit for t in lauf.takte if t.modus in ("SEITE", "GRUPPE")] or [840.0])
+    ende = min(ende, 840.0)
+    sek = 0.0
+    for a, b in zip(lauf.takte, lauf.takte[1:]):
+        if b.zeit <= ende and b.wand - a.wand <= ns.LUECKE_AB:
+            sek += max(0.0, b.zeit - a.zeit)
+    n = sum(1 for a in lauf.gesagt if ns.gesprochen_um(a) <= ende and a.schluessel not in ("briefing", "kern:technik"))
+    return n, sek
+
+
+def kennzahlen(pfad: Path, kern: str = "neu") -> dict:
+    lauf = ns.durchspielen(pfad, proben=True, kern_stellung=kern)
     minuten = lauf.sekunden_mit_daten / 60
     gesagt = lauf.gesagt
     v = {k: [] for k in (1, 2, 3, 4, 7)}
@@ -99,6 +116,8 @@ def kennzahlen(pfad: Path) -> dict:
             v[nr].append(a)
     kw = ns.kehrtwenden(lauf)
     brier, n, grund = brier_schlimmster_fall(lauf)
+    brier_kern = brier_schlimmster_fall(lauf, kern=True)[0] if kern != "alt" else math.nan
+    lp_n, lp_sek = lane_phase_takt(lauf)
     quote = None
     szen = Path(__file__).resolve().parent.parent / "tests" / "szenarien" / f"{pfad.name.removesuffix('.jsonl.gz')}.toml"
     if szen.exists():
@@ -106,43 +125,54 @@ def kennzahlen(pfad: Path) -> dict:
         import contextlib
         import szenarien
         with contextlib.redirect_stdout(io.StringIO()):
-            e = szenarien.pruefe_datei(szen, "alt", False, False, lauf=lauf)
+            e = szenarien.pruefe_datei(szen, None, False, False, lauf=lauf, kern=kern)
         quote = (e["gruen"], e["gruen"] + e["rot"])
     return {"stamm": pfad.name.removesuffix(".jsonl.gz"), "minuten": minuten, "ansagen": len(gesagt),
             "je30": len(gesagt) / minuten * 30 if minuten else math.nan,
             "ankunft": sum("bei dir" in a.text for a in gesagt),
             "flash": sum(a.schluessel.split(":")[0] in FLASH_SCHL for a in gesagt),
             "kehrtwenden": kw, "verstoesse": v, "brier": brier, "proben": n, "grundrate": grund,
-            "luecken": lauf.luecken, "quote": quote}
+            "luecken": lauf.luecken, "quote": quote, "brier_kern": brier_kern, "lane_phase": (lp_n, lp_sek),
+            "kategorien": dict(lauf.kern.sprecher.kategorien) if lauf.kern is not None else {},
+            "staerken": list(lauf.kern.staerken) if lauf.kern is not None else [], "kern": kern}
 
 
 def ausgeben(k: dict) -> None:
-    print(f"== {k['stamm']}: {k['minuten']:.1f} Minuten mit Daten")
+    print(f"== {k['stamm']} (--kern {k['kern']}): {k['minuten']:.1f} Minuten mit Daten")
     print(f"   ungefragte Ansagen: {k['ansagen']} ({k['je30']:.0f} je 30 min; Ziel <= 45) - davon "
-          f"Ankunft '... bei dir' {k['ankunft']}, Flash {k['flash']}   | Kern: -")
-    print(f"   Kehrtwenden ohne neues Ereignis: {len(k['kehrtwenden'])}   | Kern: -")
+          f"Ankunft '... bei dir' {k['ankunft']}, Flash {k['flash']}")
+    n, sek = k["lane_phase"]
+    print(f"   Lane-Phase: {n} Ansagen in {sek / 60:.1f} min = {n / (sek / 30) if sek else math.nan:.2f} je 30 s "
+          f"(Abnahme Schritt 3: <= 1)")
+    print(f"   Kehrtwenden ohne neues Ereignis: {len(k['kehrtwenden'])}")
     for t1, s1, t2, s2 in k["kehrtwenden"]:
         print(f"      {ns.uhr(t1)} \"{s1[:55]}\" -> {ns.uhr(t2)} \"{s2[:55]}\"")
     print("   Verstoesse 9.4: " + ", ".join(f"{nr}: {len(x)}" for nr, x in k["verstoesse"].items())
-          + f", 5: {len(k['kehrtwenden'])}, 6: -   | Kern: -")
+          + f", 5: {len(k['kehrtwenden'])}")
     for nr, x in k["verstoesse"].items():
         for a in x[:3]:
             print(f"      {nr} {ns.uhr(ns.gesprochen_um(a))} {a.text[:110]}")
-    print("   GEFAHR / PLAN / ERINNERUNG: - (Kern)")
+    kat = k["kategorien"]
+    if kat and k["kern"] == "neu":
+        print("   Kern: GEFAHR / PLAN / ERINNERUNG / BESTAETIGUNG = "
+              + " / ".join(str(kat.get(x, 0)) for x in ("GEFAHR", "PLAN", "ERINNERUNG", "BESTAETIGUNG"))
+              + (f"; Staerken: " + "; ".join(f"{ns.uhr(t)} {s}" for t, s in k["staerken"]) if k["staerken"] else ""))
     print(f"   p_da-Brier: schlimmster Fall {k['brier']:.3f} ({k['proben']} Proben, Grundrate {k['grundrate']:.3f})"
-          f"   | Kern: -")
+          + (f"   | Kern p_da {k['brier_kern']:.3f}" if not math.isnan(k["brier_kern"]) else ""))
     print("   Datenluecken > 5 s: " + (", ".join(f"{ns.uhr(a)}-{ns.uhr(b)} ({int(w)} s Wanduhr)"
                                           for a, b, w in k["luecken"]) or "keine"))
-    print("   Szenario-Quote (altes System): " + (f"{k['quote'][0]} gruen / {k['quote'][1]} geprueft"
-                                                    if k["quote"] else "keine Szenarien"))
+    print("   Szenario-Quote: " + (f"{k['quote'][0]} gruen / {k['quote'][1]} geprueft" if k["quote"]
+                                     else "keine Szenarien"))
 
 
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
-    args = sys.argv[1:]
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    nur_kern = "--nur-kern" in sys.argv
     pfade = [ns.pfad_zu(x) for x in args] or sorted(ns.AUFNAHMEN.glob("*.jsonl.gz"))[-5:]
     for p in pfade:
-        ausgeben(kennzahlen(p))
+        for kern in (("neu",) if nur_kern else ("alt", "neu")):
+            ausgeben(kennzahlen(p, kern))
 
 
 if __name__ == "__main__":

@@ -194,7 +194,8 @@ class Regelwerk:
                       self._ward, self._recall_fenster, self._tief_ohne_sicht, self._kontrollauge,
                       self._objective_start, self._fenster, self._plan, self._wiedereinstieg, self._afk):
             for a in regel(p, v) or ():
-                weg = sperre.entscheide(regel.__name__, a, self.modus, self.b)
+                weg = sperre.entscheide(regel.__name__, a, self.modus, self.b,
+                                        self.kern is not None and self.kern.spricht_in(self.modus))
                 if weg == "info":
                     self.kern.info_dazu(p.zeit, a.text)
                     continue

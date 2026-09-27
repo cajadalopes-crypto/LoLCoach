@@ -45,6 +45,11 @@ BEIWERK = ("gold", "plan:back", "objstart", "objgegner", "vorwarnung", "cs", "au
            "ward:", "wiedereinstieg", "recallfenster", "tipp", "wardplan", "item:", "jungler6", "lane_tot")
 
 
+def kern(a: Ansage) -> bool:
+    """Eine Ansage des Entscheidungskerns (Buch 0, 9.6)."""
+    return a.schluessel.startswith("kern:")
+
+
 def unterbrechbar(a: Ansage) -> bool:
     """Lange Saetze (ueber ~14 s) duerfen immer von etwas Wichtigem abgebrochen werden - sonst wartet alles."""
     return a.unterbrechbar or a.schluessel.startswith(UNTERBRECHBAR) or len(a.text) > 180 or a.prio == HINWEIS
@@ -160,6 +165,11 @@ class Sprechplan:
         if modus == "KAMPF" or (self.gesagt and self.gesagt[-1].thema == "gefahr" and self.gesagt[-1].gesprochen
                                 is not None and jetzt is not None and jetzt - self.gesagt[-1].gesprochen < GEFAHR_EBEN):
             eingeworfen = [a for a in eingeworfen if a.schluessel == "briefing"]
+        # Buch 0, 9.1 ab Schritt 3: der Midgame-Plan des Strategen laeuft als INFO durch den Kern (Dashboard)
+        if getattr(self.kern, "stellung", "alt") == "neu":
+            for a in [a for a in eingeworfen if a.schluessel == "midgame"]:
+                self.kern.info_dazu(a.zeit, a.text)
+            eingeworfen = [a for a in eingeworfen if a.schluessel != "midgame"]
         for a in [*eingeworfen, *ansagen]:
             if a.zeit - self.zuletzt.get(a.schluessel, -1e9) < a.sperre:
                 continue
@@ -172,14 +182,17 @@ class Sprechplan:
         self._jetzt = zeit
         # Dasselbe Thema eben erst gesagt ("2000 Gold: ... back" 9:47 und 9:53, Camille-Partie 26.09.):
         # die zweite faellt weg - ausser sie ist SOFORT (Gefahr darf immer)
+        # Kern-Ansagen (Buch 0, 9.6) laufen an Themen-, Widerspruchs- und Rueckzugssperre vorbei - der Kern haelt
+        # seinen Plan selbst und prueft sein Budget selbst
         self.warte = [a for a in self.warte
                       if zeit - a.zeit <= a.gueltig + (self.abstand_s if getattr(a, "_budget", False) else 0.0)
-                      and not (a.thema and a.prio < SOFORT
+                      and (kern(a) or (
+                          not (a.thema and a.prio < SOFORT
                                and zeit - self.thema_zuletzt.get(a.thema, -1e9) < THEMA_SPERRE_JE.get(a.thema, THEMA_SPERRE))
-                      and not (a.thema in WIDERSPRUCH
-                               and zeit - self.thema_zuletzt.get(WIDERSPRUCH[a.thema][0], -1e9) < WIDERSPRUCH[a.thema][1])
-                      and not (a.prio < SOFORT and 0 <= zeit - self._rueckzug_gehoert < RUECKZUG_SPERRE
-                               and RUECKZUG.search(a.text))]
+                          and not (a.thema in WIDERSPRUCH
+                                   and zeit - self.thema_zuletzt.get(WIDERSPRUCH[a.thema][0], -1e9) < WIDERSPRUCH[a.thema][1])
+                          and not (a.prio < SOFORT and 0 <= zeit - self._rueckzug_gehoert < RUECKZUG_SPERRE
+                                   and RUECKZUG.search(a.text))))]
         self._ich_tot = ich_tot
         if ich_tot:
             self.warte = [a for a in self.warte if not a.schluessel.startswith(NUR_LEBEND)]
@@ -219,7 +232,7 @@ class Sprechplan:
             return None     # die Stimme spricht noch (live exakt statt geschaetzt)
         # Budget (Buch 0, 9.2): mindestens abstand_s seit der letzten Ansage - ausser SOFORT und dem Briefing
         letzte = next((x.gesprochen for x in reversed(self.gesagt) if x.gesprochen is not None), None)
-        if (a.prio < SOFORT and a.schluessel != "briefing" and letzte is not None
+        if (a.prio < SOFORT and a.schluessel != "briefing" and not kern(a) and letzte is not None
                 and zeit - letzte < self.abstand_s):
             # "wird gesagt, sobald wieder Platz ist und er dann noch gilt" (9.2): wer nur am Budget wartet, darf
             # abstand_s laenger warten - ob er noch stimmt, prueft weiter seine Pruefung (_stimmt)

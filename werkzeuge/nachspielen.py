@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from lolcoach import aufzeichnung, bewertung, lage, minimap, regeln, sprechplan, stimme, zustand  # noqa: E402
-from lolcoach.kern import Kern  # noqa: E402
+from lolcoach.kern import Kern, ansage_richtung, gefahr  # noqa: E402
 
 AUFNAHMEN = aufzeichnung.ORDNER
 LUECKE_AB = 5.0        # Sekunden ohne Schnappschuss (Wanduhr) = Datenluecke (Kapitel 12.3)
@@ -52,6 +52,8 @@ class Takt:
     objectives: int              # gefallene Objectives/Strukturen bis hier
     nah_sichtbar: frozenset = frozenset()   # sichtbare Gegner in NEU_SICHTBAR_RADIUS um dich
     modus: str | None = None                # Modus des Kerns in diesem Takt (Schritt 2)
+    plan: str | None = None                 # Plan-Art des Kerns (Schritt 3; im Folgeschritt die Art, der er entspricht)
+    gefahr: bool = False                    # schlaegt das Gefahr-Modell an (7.5)?
 
 
 @dataclass
@@ -64,17 +66,21 @@ class Lauf:
     luecken: list = field(default_factory=list)         # (von Spielzeit, bis Spielzeit, Sekunden Wanduhr)
     sekunden_mit_daten: float = 0.0
     champions: set = field(default_factory=set)
+    kern: object = None                                  # der Kern nach dem Lauf (Kategorien, Staerken)
 
 
-def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None) -> Lauf:
+def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, kern_stellung: str = "neu") -> Lauf:
     """Die Aufnahme wie live, nur stumm. `halte_bei`: Spielzeiten, zu denen Partie und Bewertung festgehalten
     werden (der erste Takt ab dieser Zeit). `proben`: je Sekunde Gegner-Ankunft und Positionen (Gefahr-Eichung).
-    `rueckruf(soll, p, b, lb, wand)`: an jeder Haltezeit, solange das Lagebild noch diesen Stand hat (Fragen)."""
+    `rueckruf(soll, p, b, lb, wand)`: an jeder Haltezeit, solange das Lagebild noch diesen Stand hat (Fragen).
+    `kern_stellung`: wie --kern (Schritt 3: neu = der Kern spricht in LANE, BASIS, TOT)."""
     lauf = Lauf(pfad)
     sicht = lage.sicht_fuer(pfad)
     werk, plan = regeln.Regelwerk(), sprechplan.Sprechplan(stimme.Stumm())
-    kern = Kern()                  # wie live (__main__._verfolge): Modus, Sperre - ohne Protokolldatei
+    kern = Kern(stellung=kern_stellung)    # wie live (__main__._verfolge) - ohne Protokolldatei
     werk.kern = plan.kern = kern
+    kern.transport = plan
+    lauf.kern = kern
     lb = lage.Lagebild() if sicht else None
     offen = sorted(halte_bei)
     vorher = None
@@ -106,7 +112,8 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None) 
                                sum(len(p.kills_von(e)) for e in OBJ_EVENTS),
                                frozenset(g.champion for g in b.gegner if g.sichtbar and g.abstand is not None
                                          and g.abstand <= NEU_SICHTBAR_RADIUS) if b else frozenset(),
-                               werk.modus))
+                               werk.modus, kern.fuehrer.plan.als() if kern.fuehrer.plan is not None else None,
+                               kern.gefahr))
         while offen and p.zeit >= offen[0]:
             soll = offen.pop(0)
             lauf.halte[soll] = (p, b, lage_kurz(p, b, lb))
@@ -114,8 +121,9 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None) 
                 rueckruf(soll, p, b, lb, w)
         if proben and b is not None and b.pos is not None and p.zeit - letzte_probe >= 1.0:
             letzte_probe = p.zeit
-            lauf.proben.append((p.zeit, b.pos, [(g.champion, g.ankunft, g.sichtbar, g.seit, g.pos, g.s.tot)
-                                                for g in b.gegner]))
+            p_da = gefahr.alle_p_da(kern.m, kern.cfg["gefahr"]) if kern.m is not None and kern.m.b is b else {}
+            lauf.proben.append((p.zeit, b.pos, [(g.champion, g.ankunft, g.sichtbar, g.seit, g.pos, g.s.tot,
+                                                 p_da.get(g.champion)) for g in b.gegner]))
     lauf.gesagt = plan.gesagt
     return lauf
 
@@ -124,10 +132,13 @@ def gesprochen_um(a) -> float:
     return a.gesprochen if a.gesprochen is not None else a.zeit
 
 
-def richtung(text: str) -> str | None:
-    if any(m.search(text) for m in ZURUECK):
+def richtung(a) -> str | None:
+    """vor / zurueck einer Ansage (Kapitel 9.4 Punkt 5): Kern nach Plan-Art, altes System nach Text."""
+    if not isinstance(a, str):
+        return ansage_richtung(a)
+    if any(m.search(a) for m in ZURUECK):
         return "zurueck"
-    if VOR.search(text):
+    if VOR.search(a):
         return "vor"
     return None
 
@@ -153,7 +164,7 @@ def neues_ereignis(lauf: Lauf, t1: float, t2: float) -> bool:
 
 def kehrtwenden(lauf: Lauf, von: float = 0.0, bis: float = 1e9) -> list[tuple]:
     """(Zeit 1, Satz 1, Zeit 2, Satz 2) - vor <-> zurueck in <= 30 s ohne neues Ereignis (altes System, Text)."""
-    saetze = [(gesprochen_um(a), a.text, r) for a in lauf.gesagt if (r := richtung(a.text))]
+    saetze = [(gesprochen_um(a), a.text, r) for a in lauf.gesagt if (r := richtung(a))]
     aus = []
     for (t1, s1, r1), (t2, s2, r2) in zip(saetze, saetze[1:]):
         if r1 != r2 and t2 - t1 <= 30 and von <= t2 <= bis and not neues_ereignis(lauf, t1, t2):

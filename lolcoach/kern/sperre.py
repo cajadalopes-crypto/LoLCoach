@@ -2,7 +2,10 @@
 Modi, in denen ihre Frage zaehlt. INFO-Themen (Flash, Items, Level, CS - Kapitel 9.1) gehen aufs Dashboard und
 werden nur gesprochen, wenn sie den Lane-Gegner oder den Jungler in LANE/SEITE betreffen.
 
-`entscheide(regel, ansage, modus, b)` -> "sprechen" | "info" | "stumm". Ohne Modus (keine Minimap) gilt nichts."""
+`entscheide(regel, ansage, modus, b, kern_spricht)` -> "sprechen" | "info" | "stumm". Ohne Modus (keine Minimap) gilt
+nichts. Ab Schritt 3 (`--kern neu`): in den Modi, in denen der Kern spricht (LANE, BASIS, TOT), sind die alten Regeln
+stumm - ausser dem Todesrueckblick (regeln._tod = TODESRUECKBLICK, einmal je Tod ab 14 s Todeszeit, Kapitel 6.3) und
+_afk (bis Schritt 8); INFO-Themen gehen dort nur noch aufs Dashboard (Kapitel 9.1)."""
 from __future__ import annotations
 
 ALLE = frozenset(("TOT", "KAMPF", "OBJECTIVE", "VERTEIDIGEN", "BASIS", "LANE", "SEITE", "GRUPPE", "UNTERWEGS"))
@@ -63,9 +66,21 @@ def _name(schluessel: str) -> str:
     return teile[1] if len(teile) > 1 else ""
 
 
-def entscheide(regel: str, a, modus: str | None, b) -> str:
+TODESRUECKBLICK_AB = 14.0     # Kapitel 6.3: einmal je Tod, ab so viel Todeszeit
+
+
+def entscheide(regel: str, a, modus: str | None, b, kern_spricht: bool = False) -> str:
     if modus is None:
         return "sprechen"
+    if kern_spricht:
+        if a.schluessel.startswith(INFO):
+            return "info"
+        if regel == "_tod":
+            respawn = b.ich.respawn if b is not None and b.ich is not None else 0.0
+            return "sprechen" if modus == "TOT" and respawn >= TODESRUECKBLICK_AB else "stumm"
+        if regel == "_afk":
+            return "sprechen"
+        return "stumm"
     s = a.schluessel
     if regel == "_plan":
         art = s.split(":", 1)[1] if ":" in s else s

@@ -120,7 +120,7 @@ class Lagebild:
                         neu.append(t)
             elif e[0] == "wellen":
                 from . import welle
-                self.wellen = welle.zustaende(e[2])
+                self.wellen = welle.zustaende(e[2], p.mein_team)     # Farben relativ: blau = dein Team
                 self.wellen_zeit = zeit_von_wand(e[1])
             elif e[0] == "platten":
                 self.platten.update(e[2])
@@ -435,7 +435,11 @@ def zuordnen(s: minimap.Sichtung, p: Partie) -> Spieler | None:
     kandidaten = [sp for sp in p.spieler if sp.champion_id == s.champion_id]
     if len(kandidaten) == 1:
         return kandidaten[0]
-    return next((sp for sp in kandidaten if sp.team == s.team), None) if s.team else None
+    if not s.team:
+        return None
+    # die Ringfarbe ist relativ (blau = dein Team): auf der roten Seite heisst ein blauer Ring CHAOS
+    team = s.team if p.mein_team != "CHAOS" else ("CHAOS" if s.team == "ORDER" else "ORDER")
+    return next((sp for sp in kandidaten if sp.team == team), None)
 
 
 def champions(p: Partie) -> list[tuple[str, str]]:
@@ -715,7 +719,8 @@ class Beobachter(threading.Thread):
                                     self._ereignisse.append(("hud", start, hud.lies(leiste, hoehe, k)))
                             if karte is not None and start - platten_bei >= 2.0:
                                 platten_bei = start
-                                stand = plattenleser.lies_karte(karte)
+                                stand = plattenleser.lies_karte(
+                                    karte, mein_team=(getattr(self, "ich", None) or (None, None))[1] or "ORDER")
                                 if stand != platten_gemeldet:
                                     platten_gemeldet = stand
                                     with self._schloss:

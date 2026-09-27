@@ -1332,6 +1332,61 @@ def minimap_groesse_aus_der_einstellung():
     assert hud.bereich(3840, 2160, 1.0) == hud.bereich(3840, 2160)   # ohne Faktor wie vermessen
 
 
+def minimap_farben_relativ():
+    """Die Minimap faerbt relativ: dein Team blau, der Gegner rot (echte Partie 140253, Riven Mid auf der roten Seite:
+    die eigenen Vasallen galten als seine, die Platten-Ziffern wurden in der falschen Farbe gesucht). Im Coach heisst
+    `blau` aber Team ORDER - auf der roten Seite werden die Farben getauscht."""
+    from types import SimpleNamespace
+    from lolcoach import lage, platten
+    from lolcoach.bewertung import TUERME
+    punkte = [("blau", 0.66, 0.34), ("blau", 0.64, 0.36), ("blau", 0.62, 0.38), ("rot", 0.55, 0.45)]   # Mid
+    z = welle.zustaende(punkte, "CHAOS")["Mid"]
+    assert (z.blau, z.rot) == (1, 3), z                  # drei eigene (CHAOS) Vasallen, ein gegnerischer
+    assert z.worte("CHAOS").startswith("eure 3 gegen seine 1"), z.worte("CHAOS")
+    assert (welle.zustaende(punkte)["Mid"].blau, welle.zustaende(punkte)["Mid"].rot) == (3, 1)   # blaue Seite
+    farben = []
+    alt = platten.lies
+    try:
+        platten.lies = lambda karte, team, gx, gy: (farben.append(team), (None, 0.0))[1]
+        platten.Plattenleser().lies_karte(None, mein_team="CHAOS")
+    finally:
+        platten.lies = alt
+    tuerme = list(TUERME)
+    assert all(f != t[0] for f, t in zip(farben, tuerme)), "CHAOS-Tuerme sind fuer die rote Seite blau"
+    sp = [SimpleNamespace(champion_id="Braum", team="ORDER", name="a"), SimpleNamespace(champion_id="Braum",
+                                                                                         team="CHAOS", name="b")]
+    p = SimpleNamespace(spieler=sp, mein_team="CHAOS")
+    assert lage.zuordnen(minimap.Sichtung("Braum", "ORDER", 0.5, 0.5, 1.0), p).team == "CHAOS"   # blauer Ring
+
+
+def bestaetigung_back_im_fenster():
+    """Buch 3, 5 / 7.2: Crash an seinem Turm -> Recall -> Basis. Der Kern lobt einmal, vor dem Kauf-Satz ("Sauber:
+    Welle drin, dann back."), und merkt es als Staerke fuers Review. Ohne Crash davor kein Lob."""
+    from lolcoach.kern import Kern, testlage
+    lane = {"zeit": "6:10", "ich": {"level": 6, "leben": 0.7, "gold": 1350},
+            "welle": {"zustand": "GECRASHT_BEI_IHM", "unsere": 5, "ihre": 0, "front": 0.66},
+            "kanone_in": 50, "lane_gegner": {"level": 6, "abstand": 2600},
+            "jungler": {"p_meine_seite": 0.3, "seit": 30}, "kauf": {"lohnt": True}}
+    basis = {"zeit": "6:24", "modus": "BASIS", "ich": {"level": 6, "leben": 1.0, "gold": 1350},
+             "inventar": {"kontrollauge": False, "frei": 5}, "kanone_in": 30, "kauf": {"lohnt": True}}
+
+    def lauf(welle: str) -> tuple[list, Kern]:
+        k = Kern(stellung="neu")
+        for zeit in ("6:10", "6:14"):                   # Crash, dann steht er im Kanal
+            e = dict(lane, zeit=zeit, welle=dict(lane["welle"], zustand=welle))
+            m, modus = testlage.bauen(e)
+            k.schritt(m, modus)
+        m, modus = testlage.bauen(basis)                 # 8 s spaeter im Brunnen: Recall, kein Tod
+        return k.schritt(m, modus), k
+    ansagen, k = lauf("GECRASHT_BEI_IHM")
+    assert ansagen and ansagen[0].text.startswith("Sauber: Welle drin, dann back.") and "Kauf" in ansagen[0].text, \
+        [a.text for a in ansagen]
+    assert k.staerken and k.staerken[0][1].startswith("Sauber"), k.staerken
+    ansagen, k = lauf("ZU_DIR")                          # die Welle war nicht drin: kein Lob
+    assert ansagen and not ansagen[0].text.startswith("Sauber"), [a.text for a in ansagen]
+    assert not k.staerken
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
@@ -1344,6 +1399,7 @@ if __name__ == "__main__":
                  satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah, baron_aeltester_inhibitor,
                  minimap_blind_wird_gesagt, kamera_gibt_nur_einmal_frei, antwort_ab_dem_ersten_teilsatz, afk_erkannt,
                  von_deiner_position_aus, wachhund_meldet_datenluecke, modus_sperre_budget,
-                 sofort_back_und_objective, minimap_groesse_aus_der_einstellung):
+                 sofort_back_und_objective, minimap_groesse_aus_der_einstellung,
+                 bestaetigung_back_im_fenster, minimap_farben_relativ):
         test()
         print(f"{test.__name__} OK")

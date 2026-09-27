@@ -1,0 +1,125 @@
+"""Gefahr: Wahrscheinlichkeit statt schlimmster Fall (Buch 0, Kapitel 7.5).
+
+Je lebendem Gegner `p_da` - die Wahrscheinlichkeit, dass er im Fenster T bei dir ist - aus seiner fruehesten
+Ankunft (`GegnerLage.ankunft`, vorhanden), ob er sichtbar ist, seit wann nicht, und der Seite, auf der er
+wahrscheinlich ist (Jungler: `jungle.wahrscheinlich`, geeicht). Wer dich toetet, ist die Menge der Ankommenden:
+`p_verliere` aus `kraft_gegen` (ein Verhaeltnis), gemindert durch Flash und deinen Turm.
+
+    p_tod = 1 - Prod_g (1 - p_da(g, T) * p_kampf(g) * p_verliere({g} + sichtbare Nahe))
+
+`p_kampf` ist nicht im Buch (Schritt 3, messungen.md): ein sichtbarer Gegner in 1500, der nicht auf dich zulaeuft,
+ist da, kaempft aber nicht sicher - wer ungesehen ankommt oder auf dich zulaeuft, kommt zum Kaempfen."""
+from __future__ import annotations
+
+from ..bewertung import BRUNNEN, abstand
+from ..zustand import gegenteam
+
+NAH = 1500.0            # "sichtbare Nahe" und "abstand <= 1500" (7.5)
+UNBEKANNT_AB = 45.0     # g unbekannt (> 45 s)
+
+
+def rampe(x: float, cfg: dict) -> float:
+    return max(0.0, min(1.0, x / cfg["anlauf_spielraum_s"]))
+
+
+def ist_lane(g, m) -> bool:
+    b = m.b
+    return b is not None and b.lane is not None and g.s.name == b.lane.s.name
+
+
+def p_seite(g, m, cfg: dict) -> float:
+    """Wie wahrscheinlich ist er auf deiner Kartenseite (7.5)? Jungler: geeichte Prognose; Lane-Gegner: 1, wenn er
+    fehlt (der Brunnen steckt schon in seiner Ankunft); Mid/Support ab 4:00 und alle nach der Lane-Phase: roam_basis."""
+    rolle = g.s.rolle
+    if ist_lane(g, m):
+        return 1.0
+    if rolle == "JUNGLE":
+        return m.p_jungler if m.p_jungler is not None else 0.5
+    if rolle in ("MIDDLE", "UTILITY") and m.zeit >= 240:
+        return cfg["roam_basis"]
+    return 0.0 if m.lane_phase else cfg["roam_basis"]
+
+
+def _weg_vom_brunnen(g, m) -> float:
+    """Sekunden, bis ein Toter aus seinem Brunnen bei dir ist."""
+    if m.pos is None or m.p is None:
+        return 30.0
+    feind = gegenteam(m.p.mein_team)
+    return abstand(BRUNNEN[feind], m.pos) * 1.15 / (g.tempo or 350.0)
+
+
+def p_da(g, T: float, m, cfg: dict) -> float:
+    """Kapitel 7.5: sichtbar -> 1, wenn er in T da sein kann und naeher kommt oder schon in 1500 steht; unsichtbar
+    (<= 45 s) -> Seite x Rampe; unbekannt -> Seite x unbekannt_faktor; tot -> nur, wenn Respawn + Weg <= T."""
+    if g.s.tot:
+        rest = g.s.respawn + _weg_vom_brunnen(g, m)
+        return p_seite(g, m, cfg) * rampe(T - rest, cfg) if rest <= T else 0.0
+    t_min = g.ankunft if g.ankunft is not None else 0.0
+    if g.sichtbar:
+        if t_min <= T and (g.kommt_naeher or (g.abstand is not None and g.abstand <= NAH)):
+            return 1.0
+        return rampe(T - t_min, cfg)
+    if g.seit is None or g.seit > UNBEKANNT_AB:
+        return p_seite(g, m, cfg) * cfg["unbekannt_faktor"]
+    return p_seite(g, m, cfg) * rampe(T - t_min, cfg)
+
+
+def p_kampf(g, m, cfg: dict, kampf_mit: str | None = None) -> float:
+    """Kommt er zum Kaempfen? Ungesehen Ankommende und wer auf dich zulaeuft: ja. Ein Sichtbarer, der nur da
+    steht: kampf_ohne_anlauf - ausser du suchst den Kampf mit ihm (`kampf_mit`, TRADE/ALL_IN). Dein Lane-Gegner,
+    der auf dich zulaeuft, laeuft meist nur zu seiner Welle (echte Partie 140253, 0:38: "Raus zu deinem Turm" zu
+    Spielbeginn) - er kommt sicher zum Kaempfen nur, wenn er staerker ist oder du unter der Haelfte bist."""
+    if kampf_mit is not None and g.s.name == kampf_mit:
+        return 1.0
+    if not g.sichtbar or g.s.tot:
+        return 1.0
+    if g.kommt_naeher:
+        b = m.b
+        if ist_lane(g, m) and b is not None and (b.leben is None or b.leben >= 0.5) and b.kraefte()[0] > -1.0:
+            return cfg["kampf_ohne_anlauf"]
+        return 1.0
+    return cfg["kampf_ohne_anlauf"]
+
+
+def p_verliere(gruppe: list, m, cfg: dict, am_turm: bool = False) -> float:
+    """1 / (1 + kraft_gegen(S)^k), gemindert durch Flash (bereit) und deinen Turm (<= 5 s oder `am_turm`)."""
+    b = m.b
+    r = b.kraft_gegen(gruppe)
+    p = 1.0 / (1.0 + r ** cfg["kampf_exponent"]) if r < 99 else 0.0
+    if b.flash == 0:
+        p *= cfg["flucht_flash"]
+    if am_turm or (b.zum_turm is not None and b.zum_turm <= 5.0):
+        p *= cfg["flucht_turm"]
+    return p
+
+
+def p_tod(T: float, m, cfg: dict, am_turm: bool = False, kampf_mit: str | None = None) -> tuple[float, list]:
+    """(p_tod im Fenster T, [(Champion, Anteil)] - wer dich toeten koennte, der Groesste zuerst)."""
+    b = m.b
+    if b is None:
+        return 0.0, []
+    da = {g.s.name: p_da(g, T, m, cfg) for g in b.gegner}
+    # "Wer dich wirklich toetet, ist die Menge der Ankommenden" (7.5): gerechnet wird gegen alle, die sichtbar in 1500
+    # stehen oder im Fenster wahrscheinlich (p_da >= 0,5) da sind - nicht jeder Ankommende fuer sich (102112, 9:04:
+    # Sett, Galio und Fiddlesticks laufen zusammen auf Riven zu; einzeln gerechnet war jeder "schwaecher")
+    nahe = [g for g in b.gegner if not g.s.tot and ((g.sichtbar and g.abstand is not None and g.abstand <= NAH)
+                                                    or da[g.s.name] >= 0.5)]
+    rest, wer = 1.0, []
+    for g in b.gegner:
+        pd = da[g.s.name]
+        if pd <= 0.0:
+            continue
+        gruppe = [g] + [x for x in nahe if x is not g]
+        x = pd * p_kampf(g, m, cfg, kampf_mit) * p_verliere(gruppe, m, cfg, am_turm)
+        if x > 0:
+            rest *= 1.0 - x
+            wer.append((g.champion, x))
+    return 1.0 - rest, sorted(wer, key=lambda w: -w[1])
+
+
+def alle_p_da(m, cfg: dict, T: float | None = None) -> dict[str, float]:
+    """Champion -> p_da im Standardfenster (Dashboard, Protokoll, Eichung mit kennzahlen.py)."""
+    if m.b is None:
+        return {}
+    T = cfg["fenster_s"] if T is None else T
+    return {g.champion: round(p_da(g, T, m, cfg), 3) for g in m.b.gegner}

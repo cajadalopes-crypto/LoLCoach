@@ -24,7 +24,8 @@ from . import (ansicht, aufzeichnung, bericht, komponist, lage, liveapi, llm, pr
 
 def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, sicht=None,
               anzeigen=(), alle: int = 5, nur_coach: bool = False, gehirn: bool = False,
-              gehirn_ablage=None, kern_ablage=None) -> sprechplan.Sprechplan:
+              gehirn_ablage=None, kern_ablage=None, kern_stellung: str = "neu",
+              fokus: str | None = None) -> sprechplan.Sprechplan:
     """Gemeinsamer Kern fuer Live und Aufnahme.
 
     `quelle` liefert (Wanduhr, Rohdaten); `sicht` hat `zwischen(bis, champions)`
@@ -34,10 +35,15 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
     gesehen: set[int] = set()
     rollen_gezeigt = False
     werk, plan = regeln.Regelwerk(), sprechplan.Sprechplan(sprecher)
-    # Buch 0: der Entscheidungskern - ab Schritt 2 in jeder Stellung von --kern (Modus, Sperre, _kern.jsonl)
+    # Buch 0: der Entscheidungskern - ab Schritt 2 in jeder Stellung von --kern (Modus, Sperre, _kern.jsonl); ab
+    # Schritt 3 spricht er mit --kern neu (Default) in LANE, BASIS und TOT selbst
     from .kern import Kern
-    kern_ = Kern(kern_ablage)
+    kern_ = Kern(kern_ablage, stellung=kern_stellung)
+    kern_.fokus = fokus
     werk.kern = plan.kern = kern_
+    kern_.transport = plan
+    technik: list = []            # TECHNIK-Ansagen (Kapitel 9.1): Minimap nicht erkannt - durch den Sprechplan
+    war_tot = [False]
     lagebild = lage.Lagebild() if sicht else None
     stratege_ = None
     if gehirn:
@@ -93,12 +99,14 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
         if blind and not minimap_stumm[0]:
             minimap_stumm[0] = True
             print("!! Minimap: seit 30 s niemand aus deinem Team erkannt - Minimap-Groesse/Fenster pruefen", flush=True)
-            sprecher.sage("Ich erkenne auf der Minimap gerade niemanden aus deinem Team. Ist die Minimap verdeckt oder "
-                          "anders groß als sonst? Bis dahin rechne ich ohne Karte.")
+            technik.append(regeln.Ansage("Ich erkenne auf der Minimap gerade niemanden aus deinem Team. Ist die Minimap "
+                                         "verdeckt oder anders groß als sonst? Bis dahin rechne ich ohne Karte.",
+                                         regeln.SOFORT, "kern:technik", zeit=p.zeit, gueltig=20, sperre=0))
         elif not blind and minimap_stumm[0]:
             minimap_stumm[0] = False
             print("Minimap wieder erkannt.", flush=True)
-            sprecher.sage("Die Minimap ist wieder da.")
+            technik.append(regeln.Ansage("Die Minimap ist wieder da.", regeln.SOFORT, "kern:technik", zeit=p.zeit,
+                                         gueltig=20, sperre=0))
 
     def schritt_ereignisse(p):
         for e in p.ereignisse:
@@ -110,9 +118,13 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
 
     def schritt_coach(p):
         ansagen = werk.pruefe(p, lagebild)
-        ansagen += kern_.takt(p, lagebild)          # Schritt 2: nur Protokoll, noch keine eigenen Ansagen
-        if any(a.schluessel == "tod" for a in ansagen) and getattr(sicht, "b", None) is not None:
+        ansagen += kern_.takt(p, lagebild)          # Schritt 3: in LANE, BASIS, TOT spricht der Kern
+        ansagen += technik
+        technik.clear()
+        tot = bool(p.ich and p.ich.tot)
+        if tot and not war_tot[0] and getattr(sicht, "b", None) is not None:
             sicht.b.puffer_sichern()   # die Sekunden vor dem Tod als Bilder fuers Review
+        war_tot[0] = tot
         if stratege_:
             for a in [a for a in ansagen if a.situativ]:
                 stratege_.veredle(a)
@@ -158,6 +170,14 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
 
 
 LIVE_TAKT = 0.25   # Sekunden zwischen zwei Abfragen der Live-API im Spiel
+
+
+def _fokus() -> str | None:
+    """Fokus des Tages aus dem letzten Review (Buch 3, 3.3: ist es das Kontroll-Auge, steht es im Kauf-Satz zuerst)."""
+    try:
+        return profil.fokus()
+    except Exception:
+        return None
 
 STIMME = "de-DE-KillianNeural"  # Partie 3: "viel zu roboterhaft"; Carlos hat Killian aus sechs Proben gewaehlt
 
@@ -361,7 +381,8 @@ def live(args) -> None:
                              gehirn_ablage=schreiber.pfad.with_name(
                                  schreiber.pfad.name.removesuffix(".jsonl.gz") + "_spielakte.md") if schreiber else None,
                              kern_ablage=schreiber.pfad.with_name(
-                                 schreiber.pfad.name.removesuffix(".jsonl.gz") + "_kern.jsonl") if schreiber else None)
+                                 schreiber.pfad.name.removesuffix(".jsonl.gz") + "_kern.jsonl") if schreiber else None,
+                             kern_stellung=args.kern, fokus=_fokus())
         finally:
             hund.halt()
             if beobachter:
@@ -475,7 +496,7 @@ def abspielen(args) -> None:
     plan = _verfolge(aufzeichnung.lies_mit_zeit(pfad), args.ich, takt=args.takt, sprecher=sprecher,
                      sicht=sicht,
                      anzeigen=[d for d in [_dashboard() if args.dashboard else None] if d],
-                     alle=args.alle, nur_coach=args.nur_coach)
+                     alle=args.alle, nur_coach=args.nur_coach, kern_stellung=args.kern)
     print(f"\n{len(plan.gesagt)} Ansagen.")
 
 
@@ -603,15 +624,13 @@ def main() -> None:
     lm.add_argument("frage")
     lm.add_argument("--modell", default="haiku")
     for sub in (lv, ab):   # Entscheidungskern (buecher/00_entscheidungskern.md, Kapitel 3)
-        sub.add_argument("--kern", choices=("alt", "schatten", "neu"), default="alt",
-                         help="alt/schatten = Regelwerk spricht, der Kern bestimmt den Modus und schreibt "
-                              "<stamm>_kern.jsonl (Schritt 2); neu ab Schritt 3")
+        sub.add_argument("--kern", choices=("alt", "schatten", "neu"), default="neu",
+                         help="neu (Default, Schritt 3) = der Kern spricht in LANE, BASIS, TOT, die alten Regeln "
+                              "dort nicht; schatten = das Regelwerk spricht, der Kern rechnet mit und schreibt "
+                              "'wuerde sagen' in <stamm>_kern.jsonl; alt = nur Modus und Sperre (Schritt 2)")
     args = ap.parse_args()
     if args.befehl is None:
         args = ap.parse_args(sys.argv[1:] + ["live"])  # ohne Befehl: live mit allen Voreinstellungen
-    if getattr(args, "kern", "alt") == "neu":
-        sys.exit("--kern neu gibt es erst ab Schritt 3 (buecher/00_entscheidungskern.md). Jetzt: --kern alt "
-                 "oder schatten (in Schritt 2 gleich: das Regelwerk spricht, der Kern bestimmt den Modus).")
     {"live": live, "abspielen": abspielen, "bericht": bericht_befehl, "status": status,
      "llm": frage_llm, "frage": frage_an_aufnahme, "mikrotest": mikrotest, "review": review_befehl}[args.befehl](args)
 

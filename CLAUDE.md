@@ -48,10 +48,14 @@ man mit ihm redet. Anforderungen: `ANFORDERUNGEN.md`. Bedienung fuer Carlos:
 
 `python -m lolcoach` = live. Weitere Befehle: `abspielen`, `review`, `bericht`,
 `frage`, `mikrotest`, `status`, `llm` (siehe `--help`). `live` und `abspielen` nehmen
-`--kern alt|schatten|neu` (Entscheidungskern, Buch 0 Kapitel 3): seit Schritt 2 bestimmt der Kern
-(`lolcoach/kern/`) in jeder Stellung den Modus, sperrt die alten Regeln danach (Kapitel 14) und schreibt live
-`aufnahmen/<stamm>_kern.jsonl`; `alt` und `schatten` sind in Schritt 2 gleich (das Regelwerk spricht),
-`neu` kommt mit Schritt 3. Schwellen und Startwerte: `wissen/kern.toml`.
+`--kern alt|schatten|neu` (Entscheidungskern, Buch 0 Kapitel 3): der Kern (`lolcoach/kern/`) bestimmt in jeder
+Stellung den Modus, sperrt die alten Regeln danach (Kapitel 14) und schreibt live `aufnahmen/<stamm>_kern.jsonl`.
+Seit Schritt 3 ist `neu` Default: in LANE, BASIS und TOT entscheidet und spricht der Kern (Kandidaten je Modus in
+`kern/modi/`, Wert und Gefahr in `wert.py`/`gefahr.py`, gehaltener Plan in `plan.py`, Budget in `sprechen.py`;
+Welle nach Buch 1, Recall/Kauf nach Buch 3), die alten Regeln schweigen dort; `schatten` = das Regelwerk spricht,
+der Kern schreibt "wuerde sagen"; `alt` = Stand Schritt 2. Schwellen und Startwerte: `wissen/kern.toml`.
+Minimap-Farben sind relativ (dein Team blau) - im Coach heisst `blau` Team ORDER; `welle.zustaende` und der
+Plattenleser drehen fuer die rote Seite um.
 
 ## Umbau nach den Buechern: `buecher/`
 
@@ -78,7 +82,8 @@ durch denselben Code wie das Live-Spiel.
 - `python tests/alle.py` - alle Tests (echte Partien als Testfaelle, ~10 s).
 - `python werkzeuge/szenarien.py` - war der Rat in dieser Lage richtig? Szenarien aus
   `tests/szenarien/*.toml` gegen das nachgespielte System (`--mit-claude`: auch Fragen und
-  Review, `--lage`: nachgespielte Lage je Szenario). Buch 0, Kapitel 12.
+  Review, `--lage`: nachgespielte Lage je Szenario, `--konstruiert`: die konstruierten Lagen aus
+  `tests/szenarien/konstruiert/` ohne Aufnahme, `kern/testlage.py`). Buch 0, Kapitel 12.
 - `python werkzeuge/kennzahlen.py [aufnahme ...]` - Ansagen je 30 min, Kehrtwenden, Verstoesse
   gegen Kapitel 9.4, Gefahr-Brier, Datenluecken, Szenario-Quote (ersetzt `sinnpruefung.py`).
 - `python werkzeuge/generalprobe.py --ab 13.9 --minuten 2.5` - der komplette
