@@ -61,12 +61,35 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
             return None
 
     def schritt_sicht(p, w):
-        if (bb := getattr(sicht, "b", None)) is not None and p.ich:
+        bb = getattr(sicht, "b", None)
+        if bb is not None and p.ich:
             bb.ich = (p.ich.champion_id, p.ich.team)      # live: der Beobachter ergaenzt das eigene Icon
         for wb, sichtungen in sicht.zwischen(w, lage.champions(p)):
             lagebild.neu(p.zeit - (w - wb), sichtungen, p)
         for t in lagebild.ereignisse(lambda wb: p.zeit - (w - wb), sicht.ereignisse(), p):
             print(f"{ansicht.uhr(t.seit)}  [{t.quelle}] {t.champion}: {t.zauber} weg bis {ansicht.uhr(t.zurueck)}")
+        if bb is not None:
+            minimap_gesund(p)
+
+    minimap_stumm = [False]
+
+    def minimap_gesund(p):
+        """Live: Verbuendete sind auf der Minimap immer zu sehen. Sieht der Coach 30 s lang niemanden aus deinem Team,
+        obwohl du lebst, liest er die Minimap nicht (Minimap-Groesse in den Einstellungen, verdeckt, Fenster) - dann
+        rechnet alles ohne Karte und faellt auf feste Saetze zurueck. Das sagt er einmal, statt still weiterzumachen."""
+        if p.zeit < 90 or not p.ich or p.ich.tot:
+            return
+        zuletzt = max((g[0] for s in p.team(p.mein_team) if (g := lagebild.gesehen(s))), default=None)
+        blind = zuletzt is None or p.zeit - zuletzt > 30
+        if blind and not minimap_stumm[0]:
+            minimap_stumm[0] = True
+            print("!! Minimap: seit 30 s niemand aus deinem Team erkannt - Minimap-Groesse/Fenster pruefen", flush=True)
+            sprecher.sage("Ich erkenne auf der Minimap gerade niemanden aus deinem Team. Ist die Minimap verdeckt oder "
+                          "anders groß als sonst? Bis dahin rechne ich ohne Karte.")
+        elif not blind and minimap_stumm[0]:
+            minimap_stumm[0] = False
+            print("Minimap wieder erkannt.", flush=True)
+            sprecher.sage("Die Minimap ist wieder da.")
 
     def schritt_ereignisse(p):
         for e in p.ereignisse:

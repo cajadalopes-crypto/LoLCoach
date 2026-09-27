@@ -623,6 +623,36 @@ def stimme_spielt_ab_dem_ersten_stueck():
         edge_tts.Communicate = alt
 
 
+def minimap_blind_wird_gesagt():
+    """Liest der Coach live die Minimap nicht (Groesse, verdeckt, Fenster), rechnet er still ohne Karte - er muss es
+    sagen. Verbuendete sind immer zu sehen: 30 s niemand aus dem Team = blind. (Ohne Fehlalarm an 3 echten Partien.)"""
+    import contextlib
+    import io
+    from types import SimpleNamespace
+    from lolcoach import __main__ as m, stimme
+
+    class Blind:
+        b = SimpleNamespace()
+
+        def zwischen(self, bis, champions):
+            return []
+
+        def ereignisse(self):
+            return []
+
+    class Merker(stimme.Stumm):
+        def __init__(self):
+            self.gesagt = []
+
+        def sage(self, text, dringend=False, melde=None, noch_wahr=None):
+            self.gesagt.append(text)
+    sp = Merker()
+    with contextlib.redirect_stdout(io.StringIO()):
+        m._verfolge(aufzeichnung.lies_mit_zeit(HIER / "botspiel_riven_1.jsonl.gz"), None, takt=0, sprecher=sp,
+                    sicht=Blind(), alle=10**9, nur_coach=True)
+    assert sum("Minimap" in t for t in sp.gesagt) == 1, sp.gesagt
+
+
 def baron_aeltester_inhibitor():
     """Buff-Dauer und Inhibitor-Respawn: vorher kannte der Coach beides nicht. Inhibitor gegen die echte Partie
     125902 geprueft (gefallen 21:11, InhibRespawned 26:11,6)."""
@@ -964,6 +994,7 @@ if __name__ == "__main__":
                  satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
                  konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler, eigene_position_aus_dem_kamerarahmen,
                  satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah, baron_aeltester_inhibitor,
+                 minimap_blind_wird_gesagt,
                  sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")
