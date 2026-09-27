@@ -226,7 +226,7 @@ def tod_ueberzahl(b: Bewertung | None, namen: list[str], rueckzug_vor: float | N
     return satz + f", {'beide' if len(namen) == 2 else 'alle'} waren zu sehen - gegen mehrere nur mit Hilfe kämpfen."
 
 
-RAT_WORTE = {"turm": "noch nicht rein, er steht an seinem Turm", "halten": "kein All-in", "weg": "geh zurück"}
+RAT_WORTE = {"turm": "noch nicht rein, {n} steht an seinem Turm", "halten": "kein All-in", "weg": "geh zurück"}
 
 
 def tod_solo(b: Bewertung | None, champion: str, rat: tuple[str, float] | None = None) -> str:
@@ -242,7 +242,7 @@ def tod_solo(b: Bewertung | None, champion: str, rat: tuple[str, float] | None =
     gegen = sorted((x for x in u.faktoren if x.wert <= -0.8 and x.art != "leben"), key=lambda x: x.wert)[:2] if u else []
     teile = []
     if rat is not None and 3 <= rat[1] <= 20 and rat[0] in RAT_WORTE:
-        teile.append(f"{sek(rat[1])} davor hieß es: {RAT_WORTE[rat[0]]}")
+        teile.append(f"{sek(rat[1])} davor hieß es: " + RAT_WORTE[rat[0]].format(n=champion))
     if b.unter_gegnerturm:
         teile.append("du standst unter seinem Turm" + (f", der dich mit etwa {int(schuss)} trifft"
                                                        if (schuss := _turm_schuss(b)) else ""))
