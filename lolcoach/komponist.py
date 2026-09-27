@@ -213,18 +213,39 @@ def tod_ueberzahl(b: Bewertung | None, namen: list[str]) -> str:
     return satz + f", {'beide' if len(namen) == 2 else 'alle'} waren zu sehen - gegen mehrere nur mit Hilfe kämpfen."
 
 
-def tod_solo(b: Bewertung | None, champion: str) -> str:
-    """Solo verloren: was die Denkkette in der Sekunde davor gegen dich zaehlte (die zwei staerksten Faktoren).
-    '' ohne Urteil oder ohne Gegen-Faktor - dann bleibt der Standardsatz."""
+RAT_WORTE = {"turm": "noch nicht rein, er steht an seinem Turm", "halten": "kein All-in", "weg": "geh zurück"}
+
+
+def tod_solo(b: Bewertung | None, champion: str, rat: tuple[str, float] | None = None) -> str:
+    """Solo verloren: was die Denkkette in der Sekunde davor gegen dich zaehlte (die zwei staerksten Faktoren), ob
+    du unter seinem Turm standest und was der Coach kurz davor geraten hatte (`rat` = (Urteil, vor Sekunden)).
+    '' ohne jeden Befund - dann bleibt der Standardsatz (Nachlauf 194524, 11:08: "Denk an seine Cooldowns ..."
+    nach "noch nicht rein, Heimerdinger steht an seinem Turm" 8 s davor)."""
     from .denker import urteil
     if b is None or b.lane is None or b.lane.champion != champion:
         return ""
     u = urteil(b)
     # dein Leben kurz vor dem Tod ist immer niedrig - das ist die Folge, nicht der Grund
     gegen = sorted((x for x in u.faktoren if x.wert <= -0.8 and x.art != "leben"), key=lambda x: x.wert)[:2] if u else []
-    if not gegen:
+    teile = []
+    if rat is not None and rat[1] <= 20 and rat[0] in RAT_WORTE:
+        teile.append(f"{sek(rat[1])} davor hieß es: {RAT_WORTE[rat[0]]}")
+    if b.unter_gegnerturm:
+        teile.append("du standst unter seinem Turm" + (f", der mit etwa {int(schuss)} trifft"
+                                                       if (schuss := _turm_schuss(b)) else ""))
+    if gegen:
+        teile.append("dagegen sprach: " + _namen([x.satz for x in gegen]))
+    if not teile:
         return ""
-    return f"Solo gegen {champion} verloren. In der Sekunde davor: " + _namen([x.satz for x in gegen]) + "."
+    return f"Solo gegen {champion} verloren. " + ". ".join(_gross(t) for t in teile) + "."
+
+
+def _turm_schuss(b: Bewertung) -> float | None:
+    from . import rechnung
+    try:
+        return rechnung.turm_schaden("aussen", b.zeit) // 10 * 10
+    except Exception:
+        return None
 
 
 def verwundbar(b: Bewertung) -> list[str]:

@@ -1252,7 +1252,9 @@ class Regelwerk:
                 gruende.append(f"{t.level - p.ich.level} Level vorne")
             if t.item_gold - p.ich.item_gold >= 500:
                 gruende.append(f"{(t.item_gold - p.ich.item_gold) // 100 * 100} Gold an Items vorne")
-            text = (komponist.tod_solo(davor, t.champion)
+            rat = ((self._fenster_art, p.zeit - self._fenster_gesagt)
+                   if getattr(self, "_fenster_art", None) else None)
+            text = (komponist.tod_solo(davor, t.champion, rat)
                     or (cfg["solo_nachteil"].format(champion=t.champion, grund=" und ".join(gruende)) if gruende
                         else cfg["solo"].format(champion=t.champion)))
         else:
