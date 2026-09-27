@@ -1260,14 +1260,40 @@ class Regelwerk:
         # die Lage in der letzten Sekunde davor: damit rechnen die Saetze statt Standardsaetze zu sagen
         davor = getattr(self, "_b_lebend", None)
         davor = davor if davor is not None and p.zeit - davor.zeit <= 5 else None
+        # ohne Bewertung davor (keine Minimap, Neustart): trotzdem aus dem, was feststeht - dein Leben eben noch
+        # (API), wie lange der Jungler / die Taeter ungesehen waren (Lagebild), statt der festen Saetze
+        hp = int(v.werte.get("currentHealth") or 0)
+
+        def ungesehen(s) -> str | None:
+            """'Vi war 40 Sekunden nicht zu sehen', '' wenn eben gesehen, None ohne Minimap (dann keine Behauptung)."""
+            if self.lage is None or not getattr(self.lage, "aktiv", False):
+                return None
+            g = self.lage.gesehen(s)
+            if g is None:
+                return f"{s.champion} war nicht zu sehen"
+            return "" if p.zeit - g[0] < 5 else f"{s.champion} war {komponist.sek(p.zeit - g[0])} nicht zu sehen"
         if kill.taeter is None and struktur(kill.daten.get("KillerName", "")):
-            text = komponist.tod_turm(davor) or cfg["turm"]
+            st = struktur(kill.daten.get("KillerName", ""))
+            from . import rechnung
+            schuss = rechnung.turm_schaden(st.stufe if st.stufe in ("aussen", "innen", "Inhib") else "aussen", p.zeit,
+                                           rechnung.ruestung(v))
+            text = komponist.tod_turm(davor) or (
+                f"Vom Turm erwischt: du hattest eben noch {hp // 10 * 10} Leben, sein Turm trifft dich mit etwa "
+                f"{int(schuss) // 10 * 10}. Unter seinen Turm nur, wenn deine Vasallen die Schüsse nehmen."
+                if hp else cfg["turm"])
         elif j and p.ich.rolle != "JUNGLE" and any(s is j for s in beteiligt):
+            u = ungesehen(j)
             text = (komponist.tod_gank(davor, j.champion, p.zeit - self._rueckzug_zuletzt) if davor is not None
-                    else cfg["gank"].format(champion=j.champion))
+                    else cfg["gank"].format(champion=j.champion) if u is None
+                    else f"Gank von {j.champion}: " + (u or f"{j.champion} war zu sehen")
+                    + f" - fehlt {j.champion}, bleib hinter deiner Welle.")
         elif len(beteiligt) >= 2:
+            weg = [x for x in (ungesehen(s) for s in beteiligt) if x]
+            ohne_karte = all(ungesehen(s) is None for s in beteiligt)
             text = (komponist.tod_ueberzahl(davor, [s.champion for s in beteiligt], p.zeit - self._rueckzug_zuletzt)
-                    or cfg["ueberzahl"].format(anzahl=len(beteiligt)))
+                    or f"Gestorben gegen {_namen(beteiligt)}" + (": " + " und ".join(weg[:2]) + "." if weg
+                                                                  else "." if ohne_karte
+                                                                  else ", alle waren zu sehen - gegen mehrere nur mit Hilfe."))
         elif kill.taeter:
             t = kill.taeter
             gruende = []
