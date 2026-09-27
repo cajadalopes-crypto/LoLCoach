@@ -1,0 +1,233 @@
+# Szenarien aus Partie 2026-09-27_102112 (Riven gegen Sett, 39:04, Bot-Partie)
+# Format und Bedeutung: buecher/00_entscheidungskern.md, Kapitel 12.1.
+#
+# Jede "lage" wurde am 27.09.2026 durch Nachspielen der Aufnahme mit dem damaligen Code geprueft
+# (Bewertung des Takts: Ort, Leben, Gold, Gegner mit Ort/Abstand/"seit", Tote, Objectives).
+# Schritt 1 des Umbaus prueft sie erneut; weicht eine ab, wird das Szenario korrigiert und die
+# Abweichung in buecher/messungen.md notiert.
+#
+# Pruefregeln des Laeufers (werkzeuge/szenarien.py):
+#   zeit             Zeitpunkt fuer modus/soll/darf_nicht (Plan des Kerns, +-2 s) und fuer "frage"
+#   fenster          Zeitraum fuer darf_nicht_sagen, kehrtwenden_max, ansagen_max, muss_ziel;
+#                    fehlt es, gilt [zeit-2, zeit+15]
+#   modus            erlaubte Modi (nur Kern)
+#   soll             mindestens eine dieser Plan-Arten (nur Kern)
+#   darf_nicht       keine dieser Plan-Arten im Fenster (nur Kern)
+#   darf_nicht_sagen kein gesprochener Satz im Fenster enthaelt einen dieser Texte (Gross/klein egal;
+#                    altes System UND Kern)
+#   frage            wie per Sprechtaste zur Zeit "zeit"; darf_nicht_sagen/muss_* gelten dann fuer die Antwort
+#   muss_nennen_eins mindestens einer dieser Texte kommt vor
+#   muss_ziel        ein gesprochener Satz nennt ein aufloesbares Ziel (Lane+Turm, Objective, Name, Ort)
+#   muss_item        die Antwort nennt ein Item aus der Ladenliste
+#
+# Bot-Partie: Kampf-Urteile ("nimm den Kampf an") sind hier nur eingeschraenkt pruefbar. Die Szenarien
+# pruefen deshalb vor allem Modus, Ziel, Plan-Treue und Objective-Wahl - das gilt gegen Menschen genauso.
+
+aufnahme = "2026-09-27_102112"
+bots = true
+
+
+[[szenario]]
+id = "0517-platte-ohne-flash"
+zeit = "5:17"
+quelle = "Nachspielen 27.09.: Ansage 5:17 'nimm die Platte mit', Gank 5:37"
+lage = """Riven L6, 37 % Leben, Flash weg (noch ~48 s), 1258 Gold (Lane-Plan: erster Back ab 1337).
+Sett seit eben tot (noch 14 s). Welle 7:4 fuer dich, Front in der Mitte.
+Fiddlesticks vor 30 s im oberen Fluss gesehen, 5976 Einheiten entfernt. Galio vor 6 s in der Flussmitte.
+Kai'Sa und Sona unten sichtbar."""
+modus = ["LANE"]
+soll = ["WELLE_REIN_UND_BACK", "BACK_JETZT"]
+darf_nicht = ["PLATTEN", "ALL_IN", "TRADE"]
+darf_nicht_sagen = ["Platte"]
+warum = """Der gegnerische Jungler war zuletzt auf deiner Seite; mit 37 % ohne Flash ist ein Gank ein sicherer
+Tod mit Kopfgeld. Welle schnell rein und sofort back kostet nichts und bringt dich mit dem Brutalisierer
+zurueck. Die Platte ist den Tod nicht wert. Fiddlesticks kam 5:37."""
+
+
+[[szenario]]
+id = "0850-kein-hin-und-her"
+fenster = ["8:50", "9:30"]
+quelle = "Nachspielen 27.09.: 8:56 'nimm den Kampf an', 9:00 'Halte deine Stellung', 9:02 'Geh zurueck', 9:24 'Bleib an deiner Welle'"
+lage = """8:56: Riven 100 %, Galio sichtbar im oberen Fluss (3724), Sett vor 56 s im oberen Fluss, Fiddlesticks lange ungesehen.
+9:04: Sett 1413 (vor 1 s), Galio 1654 (sichtbar), Fiddlesticks 2228 (vor 2 s) - alle drei laufen zusammen.
+9:24: Riven 70 %, Galio 1257 sichtbar, Sett 3778 sichtbar, Fiddlesticks vor 22 s bei 2448."""
+kehrtwenden_max = 1
+warum = """Ein Coach, der in 28 Sekunden viermal die Richtung wechselt, ist wertlos - man kann keinem Satz folgen.
+Hoechstens ein Wechsel: zurueck, sobald die drei zusammenlaufen."""
+
+
+[[szenario]]
+id = "0904-drei-kommen"
+zeit = "9:04"
+fenster = ["9:02", "9:30"]
+quelle = "Nachspielen 27.09."
+lage = """Sett (1413), Galio (1654) und Fiddlesticks (2228) laufen auf dich zu. Riven L8, alle drei L6."""
+soll = ["ZURUECK"]
+darf_nicht = ["ALL_IN", "TRADE"]
+darf_nicht_sagen = ["schwächer als du", "Kampf an", "Halte deine Stellung", "Bleib an deiner Welle"]
+warum = """1 gegen 3 ist gegen Menschen ein Tod, egal mit wie viel Vorsprung. Zurueck zum Top-Turm, und dort bleiben -
+kein 'zusammen schwaecher als du', solange zwei von ihnen in Reichweite sind."""
+
+
+[[szenario]]
+id = "2522-kein-baron-drache-lebt"
+zeit = "25:22"
+quelle = "Nachspielen 27.09.: 'Nehmt jetzt Baron Nashor, ihr seid 5 gegen 2'"
+lage = """Riven L17, 74 % Leben, 1888 Gold, im eigenen unteren Jungle.
+Drache lebt (seit 15 s), 17 s von dir. Baron 23 s von dir.
+Kai'Sa, Sona und Galio seit eben tot (~29-35 s). Sett oben (11.400 entfernt), Fiddlesticks lange ungesehen.
+Tryndamere bei dir im unteren Jungle, Corki oben, Nasus und Brand in der Basis."""
+modus = ["OBJECTIVE", "UNTERWEGS"]
+soll = ["ANLAUFEN", "NEHMEN"]
+darf_nicht_sagen = ["Baron"]
+warum = """Drei Gegner tot, der Drache lebt 17 Sekunden von dir, Tryndamere steht daneben: das ist ein freier Drache.
+Baron ist weiter weg, dauert viel laenger, und zwei deiner Mitspieler sind in der Basis.
+Code-Fehler dahinter: regeln._lebende_objectives liefert Baron immer zuerst; komponist.zahlen prueft die
+Laufzeit zum Drachen (b.zum_objective), sagt aber Baron."""
+
+
+[[szenario]]
+id = "2601-frage-to-do"
+zeit = "26:01"
+frage = "Okay, Coach, was ist mein nächstes To-Do?"
+quelle = "Live 27.09.: 'Geh sofort auf Sett drauf und suche den Kill'"
+lage = """Riven L17, 100 % Leben, auf der Mid-Lane. Sett oben, vor 24 s gesehen, 10.700 entfernt.
+Fiddlesticks sichtbar unten (7900). Galio tot. Kai'Sa und Sona vor ~50 s in ihrer Basis.
+Drache lebt, 15 s von dir."""
+darf_nicht_sagen = ["Sett"]
+muss_ziel = true
+warum = """Sett ist auf der anderen Kartenseite - er ist nicht dein Thema. Von der Mid-Lane aus: Drache
+(15 s, Galio tot, Kai'Sa und Sona weit weg) oder der naechste Turm."""
+
+
+[[szenario]]
+id = "2847-baron-statt-drache"
+zeit = "28:47"
+quelle = "Live 27.09.: 'Nehmt jetzt Baron Nashor, niemand kann kontern ... du bist 15 Sekunden entfernt'"
+lage = """Riven L18, 82 % Leben, 2755 Gold, auf der Mid-Lane vor ihrem inneren Mid-Turm (7 s zum Mid-Inhibitor-Turm).
+Fiddlesticks tot (noch 42 s). Drache lebt, 14 s. Baron 13 s.
+Sett in seiner Basis, Galio in eurem unteren Jungle, Kai'Sa unten. Tryndamere in eurer Basis, Corki oben."""
+soll = ["DRUECKEN", "ANLAUFEN", "NEHMEN"]
+darf_nicht_sagen = ["Baron"]
+warum = """Baron allein oder zu zweit mit Galio und Kai'Sa lebend ist kein Take. Die '15 Sekunden' waren die Laufzeit
+zum Drachen, nicht zu Baron (derselbe Code-Fehler wie 25:22)."""
+
+
+[[szenario]]
+id = "3004-basis-kauf-und-ziel"
+zeit = "30:04"
+frage = "Ich bin jetzt in meiner Base, was soll ich machen?"
+quelle = "Live 27.09.: 'Kauf jetzt im Shop erst Kontroll-Auge, dann den Rest deines Golds' - Carlos: 'Bist du eigentlich ...?'"
+lage = """Riven L18, in eurer Basis, 100 % Leben, 3007 Gold. Drache eben genommen. Baron lebt."""
+modus = ["BASIS"]
+soll = ["KAUFEN"]
+muss_item = true
+muss_ziel = true
+darf_nicht_sagen = ["Schieb die Welle", "Rest deines Golds", "in seinen Turm"]
+warum = """In der Basis gibt es genau zwei Fragen: was kaufst du (mit Namen) und wohin gehst du danach (konkret)."""
+
+
+[[szenario]]
+id = "3100-basis-braucht-ziel"
+fenster = ["30:30", "32:00"]
+quelle = "Live 27.09., Carlos 31:59: 'Ich steh seit 10 Minuten in meiner Base, ich weiss nicht, was ich machen soll'"
+lage = """Riven L18 in eurer Basis, voll Leben, 310-420 Gold (hat eingekauft). Von ihren Tuermen stehen noch Bot aussen,
+Bot innen, Bot-Inhibitor-Turm und Mid-Inhibitor-Turm."""
+modus = ["BASIS"]
+muss_ziel = true
+darf_nicht_sagen = ["Welle in seinen Turm", "zurück zu deiner Basis", "geh dann back", "geh back"]
+warum = """Steht er in der Basis und weiss nicht wohin, ist das DIE Aufgabe des Coachs: ein Ziel mit Lane, Turm oder
+Objective und dem Grund."""
+
+
+[[szenario]]
+id = "3500-drache-solo"
+zeit = "35:00"
+frage = "Soll ich den Drachen solo machen?"
+quelle = "Live 27.09.: 'Nein, lass den Drachen ... push die Kanonenwelle in Setts Turm' - Carlos nahm ihn trotzdem"
+lage = """Riven L20, in der Drachengrube, 72 % Leben, Flash weg, 3264 Gold. Drache lebt (seit 7 s).
+Tot: Sett (noch 2 s), Kai'Sa (6 s), Fiddlesticks (10 s), Galio (44 s). Sona sichtbar unten, 7420 entfernt.
+Weg aus ihrem Brunnen zur Drachengrube ~30 s."""
+modus = ["OBJECTIVE"]
+soll = ["NEHMEN"]
+muss_nennen_eins = ["Ja", "nimm", "Nimm", "mach"]
+darf_nicht_sagen = ["Setts Turm", "lass den Drachen", "Top"]
+warum = """Der erste Gegner kann fruehestens in ~30 s an der Grube sein (Respawn + Weg), Sona allein ist keine Gefahr.
+Riven L20 toetet den Drachen deutlich schneller. Und er steht an der Drachengrube, nicht oben."""
+
+
+[[szenario]]
+id = "3535-rueckzug-31s"
+zeit = "35:35"
+quelle = "Nachspielen 27.09.: 'Geh jetzt zurueck zu deinem Top-Tier-3-Turm, das sind 31 Sekunden'"
+lage = """Riven im unteren Fluss bei der Drachengrube, 63 % Leben, Flash weg. Kai'Sa vor 7 s unten (6200),
+Sett vor 26 s unten, Sona vor 20 s unten. Brand, Corki und Tryndamere im eigenen unteren Jungle.
+Naechster eigener stehender Turm: der Top-Inhibitor-Turm, 31 s."""
+soll = ["ZURUECK"]
+darf_nicht_sagen = ["Top-Tier-3-Turm", "Top-Inhibitor-Turm"]
+warum = """Sicherer Ort ist der naechste - hier die eigene Gruppe im unteren Jungle, nicht ein Turm auf der anderen
+Kartenseite (Buch 0, Kapitel 7.5)."""
+
+
+[[szenario]]
+id = "3632-ende-statt-back"
+zeit = "36:32"
+quelle = "Nachspielen 27.09.: 'Geh jetzt back, du hast 4400 Gold'"
+lage = """Riven L20, 99 % Leben, 4461 Gold, auf der Mid-Lane an der Stelle ihres gefallenen aeusseren Mid-Turms.
+Tot: Fiddlesticks (20 s), Galio (19 s), Kai'Sa (17 s), Sona (14 s). Sett oben.
+Von ihren Tuermen steht nur noch der Mid-Inhibitor-Turm (+ Nexus-Tuerme), ~10 s von dir.
+Brand, Corki, Tryndamere im eigenen unteren Jungle."""
+modus = ["UNTERWEGS", "GRUPPE"]
+soll = ["DRUECKEN", "MIT_GRUPPE"]
+darf_nicht = ["BACK_JETZT"]
+darf_nicht_sagen = ["Geh jetzt back", "Welle in seinen Turm"]
+muss_nennen_eins = ["Mid", "Inhibitor"]
+warum = """Vier Gegner tot, der erste ist fruehestens in ~24 s zurueck am Turm (14 s Respawn + ~10 s Weg). Du bist 10 s
+davon entfernt. Das ist das Fenster, in dem das Spiel endet - Gold im Beutel kann danach ausgegeben werden."""
+
+
+[[szenario]]
+id = "review-102112"
+typ = "review"
+quelle = "Review 27.09. (Sonnet): Lektion 1 'Kein Kontroll-Auge', Lektion 3 'Du warst oben' waehrend der Datenluecke"
+datenluecke = ["15:55", "24:24"]
+lektion_1_nicht = ["Kontroll-Auge"]
+oben_eins = ["36:32", "28:0", "Basis"]
+keine_position_in_luecke = true
+warum = """Die Rangfolge muss nach Wirkung gehen: das verpasste Ende-Fenster und zehn Minuten Basis ohne Ziel
+kosten mehr als ein fehlendes Kontroll-Auge. Fuer 15:55-24:24 gibt es keine Daten - also keine Aussage,
+wo Carlos war."""
+
+
+# Modus-Sollwerte (Buch 0, Kapitel 5.3) - Abnahme Schritt 2: >= 90 % getroffen
+[[modus_soll]]
+zeiten = ["1:30", "3:00", "5:17", "7:24", "12:00"]
+modus = ["LANE"]
+
+[[modus_soll]]
+zeiten = ["6:06", "13:30", "30:04"]
+modus = ["BASIS"]
+
+[[modus_soll]]
+zeiten = ["37:54"]
+modus = ["BASIS", "VERTEIDIGEN"]     # eigener Mid-Inhibitor fehlt seit 33:18
+
+[[modus_soll]]
+zeiten = ["14:53"]
+modus = ["SEITE", "OBJECTIVE"]       # Lane-Phase endet 14:00
+
+[[modus_soll]]
+zeiten = ["15:31"]
+modus = ["OBJECTIVE", "KAMPF"]
+
+[[modus_soll]]
+zeiten = ["24:40", "25:22"]
+modus = ["OBJECTIVE", "UNTERWEGS"]
+
+[[modus_soll]]
+zeiten = ["29:14", "35:00"]
+modus = ["OBJECTIVE"]                # 35:00: OBJECTIVE hat Vorrang vor VERTEIDIGEN
+
+[[modus_soll]]
+zeiten = ["36:32"]
+modus = ["GRUPPE", "UNTERWEGS"]
