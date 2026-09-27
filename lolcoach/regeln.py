@@ -44,6 +44,10 @@ RICHTUNG = {"kill": "rein", "kill_schnell": "rein", "trade": "rein", "turm": "tu
 # 10:12). Nicht: Flash- und Item-Meldungen, Todesanalyse, Gold (der Kauf gilt weiter).
 STIRBT_UEBERHOLT = ("fenster", "level", "jungler_tot", "lane_fehlt", "tief", "plan:", "anlauf", "ohneflash",
                     "objgegner", "jungler_sicht", "leben")
+# Objective im Satz -> Kill-Ereignis, das ihn ueberholt; und Arten, die ein Objective nur erwaehnen (Rueckblick,
+# Zauber, Items), fuer die das nicht gilt
+OBJECTIVE_WORTE = (("Drache", "DragonKill"), ("Herold", "HeraldKill"), ("Baron", "BaronKill"), ("Larven", "HordeKill"))
+OBJECTIVE_EGAL = ("tod", "zauber:", "item:", "flashzurueck", "briefing", "midgame", "tipp", "cs", "spike")
 TIPP_BIS = 280      # Zeichen: nur so kurze Ansagen bekommen einen Konter-Tipp dazu (sonst > 25 s Sprechzeit)
 
 
@@ -180,6 +184,8 @@ class Regelwerk:
                         a.pruefe = self._noch_wahr(a, p)
                         if a.schluessel.startswith(STIRBT_UEBERHOLT):
                             a.pruefe = _und(a.pruefe, self._alle_leben(a, p))
+                        if not a.schluessel.startswith(OBJECTIVE_EGAL):
+                            a.pruefe = _und(a.pruefe, self._objective_offen(a, p))
                     except Exception:   # die Pruefung darf keine Ansage verhindern
                         a.pruefe = None
                 ansagen.append(a)
@@ -192,6 +198,16 @@ class Regelwerk:
         return ansagen
 
     # --- Hilfen ---------------------------------------------------------------
+
+    def _objective_offen(self, a: Ansage, p: Partie):
+        """Nennt der Satz Drache, Herold, Baron oder Larven, stimmt er nur, bis das genommen ist (Live 235433, 10:43 -
+        Carlos: "Waehrend du gesagt hast, dass ich zum Drachen gehen soll und ich 13 Sekunden brauche, ist der
+        Drache schon lange fertig"). None, wenn keins genannt ist."""
+        arten = {art for wort, art in OBJECTIVE_WORTE if wort in a.text}
+        if not arten:
+            return None
+        n0 = {art: len(p.kills_von(art)) for art in arten}
+        return lambda: all(len((self.vorher or p).kills_von(art)) == n for art, n in n0.items())
 
     def _alle_leben(self, a: Ansage, p: Partie):
         """Die im Satz genannten Gegner, die bei seiner Entstehung lebten, leben noch (ganzes Wort: "Vi", nicht
@@ -999,6 +1015,7 @@ class Regelwerk:
             else:
                 self._am_pit.pop(schl, None)
             text = None
+            laeuft = True       # sie sind schon dabei (nicht erst auf dem Weg)
             if (len(dort) >= 2 and p.zeit - self._am_pit.get(schl, p.zeit) >= cfg["bleiben"]
                     and frei(schl, "team")):
                 self._obj_gesagt[(schl, "team")] = p.zeit
@@ -1012,6 +1029,7 @@ class Regelwerk:
                 laufen = [s for s in freunde if nah(s, gx, gy, cfg["anlauf_nah"])
                           and (self.lage.naehert_sich(s, (gx, gy), p.zeit) or 0) >= 0.03]
                 if len(laufen) >= cfg["anlauf_ab"]:
+                    laeuft = False
                     self._obj_gesagt[(schl, "anlauf")] = p.zeit
                     text = cfg["anlauf"].format(namen=_namen(laufen), grube=grube, objective=name,
                                                 objective_akk=komponist.OBJ_AKK[schl])
@@ -1024,7 +1042,7 @@ class Regelwerk:
                         kl = bewertung.kampf_um(p, self.lage, schl)
                     except Exception:
                         kl = None
-                    dazu = komponist.obj_dazu(self.b, ich_weit <= cfg["hin_bis"], tp, kl)
+                    dazu = komponist.obj_dazu(self.b, ich_weit <= cfg["hin_bis"], tp, kl, laeuft)
                 yield Ansage(f"{text} {dazu}".strip(), WICHTIG, f"objstart:{schl}", gueltig=15, sperre=20,
                              thema="objective")
 

@@ -626,7 +626,7 @@ BUFF_OBEN = {BLAU: "Blau-Buff", ROT: "Rot-Buff"}      # der Buff eines Teams auf
 BUFF_UNTEN = {BLAU: "Rot-Buff", ROT: "Blau-Buff"}
 
 
-def ward_plan(b: Bewertung, jungle, vorn: bool) -> str:
+def ward_plan(b: Bewertung, jungle, vorn: bool, kontroll_kommt: bool = False) -> str:
     """Wohin die Wards auf dem Weg, als Satzrest nach 'setzt du': an das Objective deiner Seite, wenn es bald
     kommt, und - bist du vorn - tief an seinen Buff auf deiner Seite, sonst an den Gank-Weg (Pixel/Tri);
     dazu, wann sein Jungler dort sein kann."""
@@ -636,7 +636,8 @@ def ward_plan(b: Bewertung, jungle, vorn: bool) -> str:
     feind = gegenteam(b.partie.mein_team)
     teile = []
     ob = b.objective
-    if ob and 0 < ob[1] <= 150 and ((ob[0] == "drache") == (seite == "unten")):
+    # nicht "denn die Larven kommen in 1 Sekunde" beim Verlassen des Brunnens (Nachlauf 235433, 8:03)
+    if ob and 20 <= ob[1] <= 150 and ((ob[0] == "drache") == (seite == "unten")):
         grube = "Drachengrube" if ob[0] == "drache" else "Baron-Grube"
         teile.append(f"ein Ward an die {grube}, denn {'die ' if ob[0] == 'larven' else 'der '}"
                      f"{OBJ_NAME[ob[0]]} {'kommen' if ob[0] == 'larven' else 'kommt'} in {sek(ob[1])}")
@@ -646,7 +647,12 @@ def ward_plan(b: Bewertung, jungle, vorn: bool) -> str:
     # Rot-Buff: Vi war vor 1 Sekunde auf deiner Seite")
     tief_ok = vorn and not (bis == 0.0 and "auf deiner Seite" in prog)
     ziel = f"an seinen {buff}" if tief_ok else ("in den Pixel-Busch" if seite == "oben" else "in den Tri-Busch")
-    teile.append(("eins " if teile else "ein Ward ") + ziel)
+    # zwei Wards nur mit Kontroll-Auge: das Schmuckstueck hat eins (Live 235433, 8:26 - "Ich habe doch nur eins.")
+    kontroll = kontroll_kommt or 2055 in b.ich.items
+    if not teile:
+        teile.append("ein Ward " + ziel)
+    elif kontroll:
+        teile.append("dein Kontroll-Auge " + ziel)
     satz = ", und ".join(teile)
     if prog and bis is not None and bis <= 60:
         satz += f": {prog}"
@@ -719,7 +725,7 @@ def aufbruch(b: Bewertung, jungle, gekauft: list[str]) -> str:
         saetze.append("Seine Welle läuft auf deinen Turm - geh direkt in die Lane.")
     else:
         vorn = g is not None and b.kraft_gegen([g], mit_verbuendeten=False) >= 1.3
-        if w := ward_plan(b, jungle, vorn):
+        if w := ward_plan(b, jungle, vorn, kontroll_kommt="Nimm noch ein Kontroll-Auge mit." in saetze):
             saetze.append(f"Auf dem Weg setzt du {w}.")
     if len(saetze) < 2 and not gekauft:
         return ""

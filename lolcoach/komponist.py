@@ -777,8 +777,19 @@ def zahlen_nachteil(b: Bewertung, tote: list[str], sekunden: int) -> str:
     return f"Nimm keinen Kampf an, ihr seid {zu}: {tot}. {_rueckzug(b)}."
 
 
-def obj_dazu(b: Bewertung, nah: bool, tp_moeglich: bool, kl=None) -> str:
-    """Dein Team faengt ein Objective an - was du tust. `kl`: bewertung.Kampflage an der Grube."""
+LAEUFT_HIN_BIS = 8.0   # Sekunden: laeuft das Objective schon, lohnt nur ein so kurzer Weg
+
+
+def obj_dazu(b: Bewertung, nah: bool, tp_moeglich: bool, kl=None, laeuft: bool = False) -> str:
+    """Dein Team faengt ein Objective an - was du tust. `kl`: bewertung.Kampflage an der Grube. `laeuft`: sie sind
+    schon dabei (nicht erst auf dem Weg) - dann lohnt nur ein kurzer Weg (Live 235433, 10:22: "Du brauchst 13
+    Sekunden dorthin, also geh hin" - 7 s spaeter war der Drache tot; Carlos hatte 35 Prozent Leben)."""
+    zu_spaet = laeuft and b.zum_objective is not None and b.zum_objective > LAEUFT_HIN_BIS
+    unbestritten = kl is not None and kl.urteil()[0] == "nehmen"
+    if zu_spaet and (unbestritten or kl is None):
+        recall = (b.leben is not None and b.leben < 0.5) or b.gold >= RECALL_GOLD
+        return (f"Bis du dort bist ({sek(b.zum_objective)}), ist es vorbei - "
+                + ("nutz die Zeit für deinen Recall." if recall else "mach Druck auf deiner Seite."))
     if nah:
         return "Du bist nah genug, geh hin" + (f" - das sind {sek(b.zum_objective)}." if b.zum_objective and b.zum_objective >= 5 else ".")
     # Kann keiner von ihnen es streitig machen, braucht das Team deinen Teleport nicht (Nachlauf 194524, 13:58:
