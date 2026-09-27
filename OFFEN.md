@@ -77,6 +77,9 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
   der Ansagen beginnen aus dem Speicher (407c931). Haengt der Dienst beim ersten Teil > 2 s, spricht die
   Windows-Stimme (ddb7bb2) - hoert Carlos sie oft, ist der Dienst live langsam: melden. Danach gerechnet statt
   Vorlage: Jungler Level 6 (5b4c355), Vorwarnung tot/im Brunnen (40f8d97), Tod mit dem Rat davor (127c88a, c8f723b).
+  Aus Carlos' Live-Fragen: Objective laeuft und du bist zu weit -> Recall/Druck statt "geh hin" (178e2e7), zwei
+  Wards nur mit Kontroll-Auge, Kauf-Fragen sofort aus dem Kaufplan (d4babb0). Turmschuss mit Ruestung (36c099e),
+  Wecker fuer Flash/Gegner nah (47ca6b8).
   LIVE PRUEFEN: klingt die
   Stimme auf beiden Ohren, ohne Knacken/Aussetzer, und nicht abgeschnitten am Satzende? Sonst `_Neural._wasapi = False`
   setzen (MME) und melden. Danach `python werkzeuge/verzoegerung_live.py`.
