@@ -300,6 +300,15 @@ def _wann(g: GegnerLage) -> str:
     return f"kann in {sek(g.ankunft or 0)} da sein"
 
 
+def _wie_weit_vor(b: Bewertung) -> str:
+    """Wie weit du nach vorn darfst, wenn einer fehlt - aus deiner Stellung in der Lane (0 dein Turm .. 1 seiner)."""
+    if b.tiefe is not None and b.tiefe >= 0.55:
+        return "geh ein Stück zurück, du stehst schon weit vorn"
+    if b.tiefe is not None and b.tiefe >= 0.4:
+        return "bleib, wo du bist, nicht weiter vor"
+    return "schieb nicht über die Mitte deiner Lane"
+
+
 def _platten(b: Bewertung) -> str:
     """'die Platten' - mit Zahl, wenn die Minimap sie zeigt: 'die Platten, es stehen noch 3'."""
     n = b.platten_gegner
@@ -467,8 +476,10 @@ def jungler_gesehen(b: Bewertung, j: GegnerLage, art: str, platten: bool) -> str
     satz = _ist(j) + (f", frühestens in {sek(ruhe)} bei dir" if ruhe and ruhe >= 10 else "")
     andere = gefahr(b, ausser=j)
     if andere:
-        n = [g.champion for g in andere]
-        return satz + f". Aber {_namen(n)} {'fehlt' if len(n) == 1 else 'fehlen'} auf der Karte, also bleib vorsichtig."
+        # statt "fehlt auf der Karte, also bleib vorsichtig" (6x in 6 Partien): wer, wie lange, wann bei dir - und
+        # wie weit du nach vorn darfst
+        x = andere[0]
+        return satz + f". Aber {x.champion} {_wann(x)} - {_wie_weit_vor(b)}."
     if tun := chance(b, platten):
         return f"{satz}. {tun}."
     return satz + "."
@@ -990,7 +1001,7 @@ def jungler_spaet(b: Bewertung, j: GegnerLage, seite: str) -> str:
         return f"{satz}. Das ist eine Chance auf {OBJ_AKK[ob[0]]}, aber nur, wenn dein Team in der Nähe ist."
     if andere_g := gefahr(b, ausser=j):
         x = andere_g[0]
-        return f"{satz}. Aber {x.champion} {_wann(x)} - lauf nicht vor."
+        return f"{satz}. Aber {x.champion} {_wann(x)} - {_wie_weit_vor(b)}."
     if ruhe and ruhe >= 20:
         return f"{satz}. Drück deine Seitenwelle und geh auf den Turm, du hast mindestens {sek(ruhe)}."
     return satz + "."
