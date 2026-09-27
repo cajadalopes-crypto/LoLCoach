@@ -239,11 +239,14 @@ def bewertung_und_plan():
     assert [x.s.name for x in b.bedrohung(8)] == [b.lane.s.name, j.name], "ADC in Minute 12 bot ist keine Gefahr"
     satz = komponist.jungler_gesehen(b, b.jungler, "gefahr", platten=True)
     assert "zurück zu deinem nächsten Turm" in satz and "35 Prozent Leben" in satz and "3 Sekunden" in satz, satz
-    # Sofort-Antwort aus dem Entscheider, Kauf-Frage bleibt bei Claude
+    # Sofort-Antwort aus dem Entscheider; Kauf-Fragen seit 27.09. aus dem Kaufplan (Claude widersprach sich live:
+    # "zuerst Kontroll-Auge kaufen" und gleich darauf "kauf jetzt kein Kontroll-Auge"), das Warum bei Claude
     plan = entscheider.Option("druck", "Spiel auf Shen: du bist 2 Level vorn.", 100, 2)
     lb = S(entscheider=S(aktuell=plan))
     assert antworten.sofort("Was soll ich jetzt machen?", p, lb) == plan.satz
-    assert antworten.sofort("Was soll ich kaufen?", p, lb) is None
+    kauf = antworten.sofort("Was soll ich kaufen?", p, lb)
+    assert kauf is not None and "Ziel ist" in kauf, kauf
+    assert antworten.sofort("Warum soll ich das kaufen?", p, lb) is None
     assert komponist.sek(105) == "1 Minute 45" and komponist.sek(1) == "1 Sekunde"
     # Todeszeit (Wiki Death): L9 @20:00 = 29,2 s, L18 @55:00 = 78,75 s
     assert round(bewertung.todeszeit(9, 1200), 1) == 29.2 and round(bewertung.todeszeit(18, 3300), 2) == 78.75

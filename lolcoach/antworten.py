@@ -221,6 +221,45 @@ def _back(w: list[str], roh: str, p: Partie, lagebild) -> str | None:
     return f"Noch nicht: du hast {gold}{leben}. Bleib und farm." + ob_satz
 
 
+KAUF_FRAGE = {"kaufen", "kauf", "kaufe", "holen", "hole", "item", "items", "bauen", "baue", "shop"}
+
+
+def _kauf(w: list[str], roh: str, p: Partie, lagebild) -> str | None:
+    """'Was soll ich kaufen?' / 'Soll ich mir den Brutalisierer holen?' - sofort aus dem Kaufplan (denselben, den
+    die Ansagen benutzen) statt ueber Claude. Live 235433, 4:07-4:34: Claude sagte erst "zuerst Kontroll-Auge
+    kaufen" und dann "kauf jetzt kein Kontroll-Auge" - der Kaufplan widerspricht sich nicht."""
+    from . import ddragon, kaufplan
+    menge = set(w)
+    if not menge & KAUF_FRAGE or menge & {"warum", "wieso", "weshalb"} or not p.ich:
+        return None
+    gold = int(p.gold or 0)
+    try:
+        k = kaufplan.plan(p.ich.champion_id, p.ich.items, gold)
+    except Exception:
+        return None
+    if k is None:
+        return None
+    # ein genanntes Item: steht es im Plan?
+    namen = {v.get("name", ""): i for i, v in ddragon.items().items() if isinstance(v, dict)}
+    def kern(n: str) -> str:            # "Der Brutalisierer" steht in der Frage als "den Brutalisierer"
+        return n.split(" ", 1)[1] if n.split(" ", 1)[0] in ("Der", "Die", "Das") and " " in n else n
+    genannt = next((n for n in namen if len(kern(n)) >= 5 and kern(n).lower() in roh), None)
+    ziel = f"Ziel ist {k.item}"
+    kontroll = 2055 not in p.ich.items and gold - (k.kosten if k.kaufen else 0) >= 75
+    ka = ", und ein Kontroll-Auge" if kontroll else ""
+    if k.kaufen:
+        teile = [kaufplan._akk(n) for n in k.kaufen]
+        liste = teile[0] if len(teile) == 1 else ", ".join(teile[:-1]) + " und " + teile[-1]
+        if genannt and genannt not in k.kaufen:
+            return f"Nicht {kaufplan._akk(genannt)}: mit {gold} Gold kauf {liste}{ka} - {ziel}."
+        return (f"Ja, mit {gold} Gold kauf {liste}{ka} - {ziel}." if genannt
+                else f"Mit {gold} Gold kauf {liste}{ka} - {ziel}.")
+    if k.naechstes:
+        return (f"Noch nichts Sinnvolles: dir fehlen {k.naechstes[1]} Gold bis {kaufplan._dat(k.naechstes[0])}{ka}. "
+                f"{ziel}.")
+    return None
+
+
 def _objective(w: list[str], roh: str, p: Partie, lagebild) -> str | None:
     """'Sollen wir Drache machen?' - die Kampflage an der Grube (wer ist in 15 s dort, beide Seiten, Flash, Ults,
     Gold) und dein Weg dorthin, sofort."""
@@ -263,7 +302,7 @@ def sofort(frage: str, p: Partie, lagebild=None) -> str | None:
     aussage = roh.startswith(("ich bin", "ich habe", "ich hab ", "ich war", "nein", "doch", "du weißt", "du weisst",
                               "ja,", "ja ", "ich bringe", "ich hatte")) or len(w) > 12
     if not aussage:
-        for weg in (_kampf, _back, _objective):
+        for weg in (_kampf, _back, _objective, _kauf):
             if antwort := weg(w, roh, p, lagebild):
                 return antwort
     if menge & ENTSCHEIDUNG:
