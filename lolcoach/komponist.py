@@ -479,6 +479,12 @@ def lane_fehlt(b: Bewertung, g: GegnerLage, sekunden: int, platten: bool, richtu
     wie schnell?") - bis Mid, wenn er Richtung Fluss lief - und was du mit der Zeit machst."""
     n = g.champion
     satz = f"{n} fehlt seit {sekunden} Sekunden in deiner Lane" + (f", zuletzt {richtung}" if richtung else "")
+    # wen er erreicht: Richtung Fluss/Mid -> dein Mid-Laner, namentlich ("ping es fuer Ahri" statt "ping es")
+    ping = "ping es"
+    if richtung and ("Fluss" in richtung or "Mid" in richtung) and b.partie is not None and b.ich.rolle != "MIDDLE":
+        mid = next((s for s in b.partie.team(b.partie.mein_team) if s.rolle == "MIDDLE" and not s.tot), None)
+        if mid is not None:
+            ping = f"ping es für {mid.champion} auf Mid"
     if g.pos is not None and b.ich.rolle in ("TOP", "BOTTOM", "UTILITY") and richtung and "Fluss" in richtung:
         from .bewertung import abstand, einheiten
         bis_mid = abstand(g.pos, einheiten(0.5, 0.5)) / (g.tempo * GEGNER_TEMPO_RESERVE) - sekunden
@@ -487,16 +493,16 @@ def lane_fehlt(b: Bewertung, g: GegnerLage, sekunden: int, platten: bool, richtu
         else:
             satz += f" - {n} kann schon Mid sein"
     if j := jungler_offen(b):
-        return satz + f", {j.champion} auch. Bleib hinter deiner Welle und ping es."
+        return satz + f", {j.champion} auch. Bleib hinter deiner Welle und {ping}."
     j = b.jungler
     if j and (j.s.tot or (j.ankunft is not None and not j.unbekannt and j.ankunft >= RUHE_SEKUNDEN)):
         wo = "tot" if j.s.tot else j.ort
         tun = f"schieb die Welle in seinen Turm und hol dir {_platten(b)}" if platten else "schieb die Welle rein"
-        return satz + f". {j.champion} ist {wo}: {tun} und ping es."
+        return satz + f". {j.champion} ist {wo}: {tun} und {ping}."
     gruende = verwundbar(b)
     if gruende:
-        return satz + f". {_gross(gruende[0])} - bleib hinten und ping es."
-    return satz + ". Bleib hinter deiner Welle und ping es."
+        return satz + f". {_gross(gruende[0])} - bleib hinten und {ping}."
+    return satz + f". Bleib hinter deiner Welle und {ping}."
 
 
 def anlauf(b: Bewertung, kommen: list[tuple[GegnerLage, str]]) -> str:
