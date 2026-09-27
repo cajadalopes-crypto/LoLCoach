@@ -859,7 +859,9 @@ def buff_satz(b: Bewertung, art: str, eigen: bool, bis: float) -> str:
             if team == feind:
                 je_lane[lane] = je_lane.get(lane, 0) + 1
         ziel = min(je_lane, key=lambda l: (je_lane[l], l)) if je_lane else None
-        wohin = f"geht zusammen {ziel} rein, dort stehen nur noch {je_lane[ziel]} Türme" if ziel else "drückt zusammen"
+        n = je_lane.get(ziel, 0)
+        wohin = (f"geht zusammen {ziel} rein, dort " + ("steht nur noch ein Turm" if n == 1 else f"stehen nur noch {n} Türme")
+                 if ziel else "drückt zusammen")
         if b.ich.tot:
             tun = f"du bist in {sek(b.ich.respawn)} wieder da - dann {wohin}"
         elif b.gold >= RECALL_GOLD and b.kauf is not None and b.kauf.kaufen:
