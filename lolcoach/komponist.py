@@ -101,7 +101,9 @@ def anfaenge(p) -> list[str]:
             "Schieb noch die Kanonenwelle in seinen Turm und geh dann back,", "Schieb die Welle nur bis zum Turm,",
             "Schieb die Welle in seinen Turm:", "Schieb die Welle in seinen Turm und nimm die Platte mit:",
             "Schieb die Welle in seinen Turm und nimm die Platte mit,", "Schieb die Welle nur bis zum Turm:",
-            "Vom Turm erwischt:", "Geht zusammen rein,", "Geh sofort hin,"]
+            "Vom Turm erwischt:", "Geht zusammen rein,", "Geh sofort hin,", "Geh hin, wenn der Kampf dann noch läuft:",
+            "Geh sofort zurück,", "Geh zurück,", "Schieb die Welle noch rein und geh dann back,", "Nur kurze Trades,",
+            "Kein All-in,"]
     aus += [f"{n} kommt in einer Minute." for n in ("Der Drache", "Der Herold", "Baron Nashor")]
     aus += ["Die Larven kommen in einer Minute.", "Drache in einer Minute."]
     aus += [f"Minute {m}:" for m in (5, 10, 15, 20)]
@@ -116,7 +118,9 @@ def anfaenge(p) -> list[str]:
         aus += [f"{j.champion} ist {o}," for o in ORTE]
     lane = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}.get(p.ich.rolle)
     for turm in ([f"{lane}-Tier-1", f"{lane}-Tier-2"] if lane else []) + (["Mid-Tier-1"] if lane != "Mid" else []):
-        aus += [f"Geh jetzt zurück zu deinem {turm}-Turm,", f"Geh erst zurück zu deinem {turm}-Turm und recall dort:"]
+        aus += [f"Geh jetzt zurück zu deinem {turm}-Turm,", f"Geh erst zurück zu deinem {turm}-Turm und recall dort:",
+                f"Geh zurück zu deinem {turm}-Turm,", f"Geh zurück zu deinem {turm}-Turm:",
+                f"Bleib an deinem {turm}-Turm:", f"Bleib an deinem {turm}-Turm,"]
     aus += [f"{s.champion} hat Flash benutzt," for s in p.gegner()]
     if (g := p.gegenueber()) is not None:
         aus += [f"{g.champion} ist {o}," for o in ORTE[:6]]
@@ -493,21 +497,22 @@ def anlauf(b: Bewertung, kommen: list[tuple[GegnerLage, str]]) -> str:
 
 
 def leben(b: Bewertung, prozent: int) -> str:
-    satz = f"Du hast nur noch {prozent} Prozent Leben"
+    # die Handlung zuerst - ihr Anfang wiederholt sich (vorgewaermt), die Prozente stehen dahinter
+    satz = f"du hast nur noch {prozent} Prozent Leben"
     nah = [g for g in b.bedrohung(12) if not g.s.tot and g.seit is not None and g.seit <= 15]
     if nah:
         g = nah[0]
-        return satz + f", und {g.champion} {_wann(g)}. {_rueckzug(b)}."
+        return f"{_rueckzug(b)}: {satz}, und {g.champion} {_wann(g)}."
     if prozent < 15:
-        return satz + " - geh sofort zurück, jeder Treffer kann dich töten."
+        return f"Geh sofort zurück, {satz} - jeder Treffer kann dich töten."
     j = b.jungler
     niemand = (j is None or j.s.tot or (j.ankunft is not None and not j.unbekannt and j.ankunft >= RUHE_SEKUNDEN))
     offen = [g for g in b.unbekannte() if not g.s.tot]
     if niemand and len(offen) <= 1 and b.welle and b.welle[0] >= b.welle[1] + 2:
-        return satz + ", aber niemand ist in Reichweite: schieb die Welle noch rein und geh dann back."
+        return f"Schieb die Welle noch rein und geh dann back, {satz} - aber niemand ist in Reichweite."
     if jo := jungler_offen(b):
-        return satz + f", und {jo.champion} ist nicht zu sehen. Geh zurück."
-    return satz + f". {_rueckzug(b)}, bevor dich jemand erwischt."
+        return f"Geh zurück, {satz}, und {jo.champion} ist nicht zu sehen."
+    return f"{_rueckzug(b)} - {satz}."
 
 
 def lane_tot(b: Bewertung, champion: str, sekunden: int, platten: bool) -> str:
@@ -743,6 +748,33 @@ def obj_dazu(b: Bewertung, nah: bool, tp_moeglich: bool, kl=None) -> str:
     if b.zum_objective is not None and b.zum_objective <= 25:
         return f"Du brauchst {sek(b.zum_objective)} dorthin, also geh hin."
     return "Für dich zu weit - mach Druck auf deiner Seite."
+
+
+def jungler6(b: Bewertung) -> str:
+    """Der gegnerische Jungler hat Level 6 - was seine Ult fuer DICH heisst, gerechnet: allein, mit deinem
+    Lane-Gegner zusammen, und wo er zuletzt war. Vorher fest: "Ganks werden gefaehrlicher - pushen nur mit Sicht"."""
+    j, g = b.jungler, b.lane
+    if j is None:
+        return ""
+    # gerechnet mit deinem vollen Leben: es geht um Level und Items, nicht um den Moment (Nachlauf 212105, 10:29:
+    # "ab jetzt toetet dich sein Gank" - Riven Level 11 gegen 6, nur gerade mit 21 Prozent Leben)
+    import copy
+    voll = copy.copy(b)
+    voll.leben = 1.0
+    satz = f"{j.champion} ist Level 6"
+    allein = voll.kraft_gegen([j], mit_verbuendeten=False)
+    zusammen = voll.kraft_gegen([j, g], mit_verbuendeten=False) if g is not None and not g.s.tot else None
+    wo = (f" - zuletzt {j.ort}, vor {sek(j.seit)}" if j.ort and j.seit is not None and j.seit >= 3
+          else f" - er ist {j.ort}" if j.ort else "")
+    jetzt = (f" Gerade hast du aber nur {int(b.leben * 100)} Prozent Leben." if b.leben is not None and b.leben < 0.5
+             else "")
+    if zusammen is not None and zusammen >= STAERKER:
+        return (f"{satz}, aber auch mit {g.champion} zusammen schlägt er dich nicht: "
+                f"{voll.ueberlegen_satz([j, g]).split(', ')[0]}.{jetzt}")
+    if allein >= STAERKER:
+        mit = f", mit {g.champion} zusammen schon" if zusammen is not None else ""
+        return f"{satz}. Allein schlägt er dich nicht{mit} - schieb nur, wenn du weißt, wo er ist{wo}.{jetzt}"
+    return f"{satz} - ab jetzt tötet dich sein Gank. Schieb nicht ohne Sicht{wo}."
 
 
 def lane_recall(b: Bewertung, champion: str, platten: bool) -> str:

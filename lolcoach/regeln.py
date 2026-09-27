@@ -534,7 +534,7 @@ class Regelwerk:
                     yield Ansage(text, WICHTIG, f"level{stufe}", gueltig=8, thema="druck")
         j, j_alt = p.jungler(gegenteam(p.mein_team)), v.jungler(gegenteam(v.mein_team))
         if j and j_alt and j.level >= 6 > j_alt.level and p.ich.rolle != "JUNGLE":
-            text = cfg["jungler_6"].format(champion=j.champion)
+            text = (komponist.jungler6(self.b) if self.b is not None else "") or cfg["jungler_6"].format(champion=j.champion)
             if warnung := self.ult_warnungen.get(j.champion):
                 text += " " + warnung
             yield Ansage(text, HINWEIS, "jungler6", gueltig=20)

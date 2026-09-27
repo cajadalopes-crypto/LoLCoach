@@ -286,9 +286,9 @@ class Entscheider:
             ziel = min(nah_gegner, key=lambda x: x.abstand)
             dazu = f", und {ziel.champion} hat kein Flash" if ziel.flash and ziel.flash > 20 else ""
             freunde = _namen_kurz_s(b.mitspieler_nah)
-            aus.append(Option("ueberzahl", f"Du und {freunde} gegen {_namen_kurz(nah_gegner)}"
-                                           f"{' allein' if die_n == 1 else ''}, das sind {wir_n} gegen {die_n}{dazu}. "
-                                           f"Geht zusammen rein!", 150, 3, dringend=True))
+            aus.append(Option("ueberzahl", f"Geht zusammen rein, du und {freunde} gegen {_namen_kurz(nah_gegner)}"
+                                           f"{' allein' if die_n == 1 else ''}: {wir_n} gegen {die_n}{dazu}.",
+                              150, 3, dringend=True))
 
         # 5b) Ein Mitspieler wird angegriffen: zwei Gegner sichtbar bei ihm (oder einer und er hat wenig Leben).
         #     Wer kann zuerst helfen? Du, wenn du rechtzeitig da bist - sonst die Gegenseite nutzen.
@@ -303,12 +303,12 @@ class Entscheider:
                 namen = _namen_kurz(bei)
                 lz = f" ({int(leben * 100)} Prozent)" if leben is not None else ""
                 if weg <= 10:
-                    aus.append(Option("hilfe", f"{s.champion}{lz} kämpft {ort} gegen {namen}, und du bist nur "
-                                               f"{sek(weg)} entfernt - geh sofort hin!", 160, 3, dringend=True))
+                    aus.append(Option("hilfe", f"Geh sofort hin, {s.champion}{lz} kämpft {ort} gegen {namen} - "
+                                               f"du bist nur {sek(weg)} entfernt.", 160, 3, dringend=True))
                 elif weg <= 25 and not lane_phase and (leben is None or leben >= 0.35):
                     # mit 6 Prozent ist er tot, bevor du nach 20 s ankommst (Camille-Partie 17:27)
-                    aus.append(Option("hilfe", f"{s.champion}{lz} kämpft {ort} gegen {namen}, {sek(weg)} von dir "
-                                               f"entfernt. Geh hin, wenn der Kampf dann noch läuft.", 110, 3))
+                    aus.append(Option("hilfe", f"Geh hin, wenn der Kampf dann noch läuft: {s.champion}{lz} kämpft "
+                                               f"{ort} gegen {namen}, {sek(weg)} von dir.", 110, 3))
                 elif g is not None and g.s.name not in {x.s.name for x in bei} and not g.s.tot:
                     continue    # dein Lane-Gegner ist nicht dabei - nichts gewonnen
                 elif len(bei) >= 2:
