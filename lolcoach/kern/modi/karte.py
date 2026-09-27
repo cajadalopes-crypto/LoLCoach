@@ -290,8 +290,9 @@ def turm_handlungen(m, cfg: dict, modus: str, art: str, split: bool) -> list[Han
 
 
 def seitenwelle(m, cfg: dict, modus: str, lane: str, w) -> Handlung | None:
-    """SEITENWELLE (Buch 5, 3.2/4): eine Welle laeuft auf euren Turm - hol sie."""
-    if w is None:
+    """SEITENWELLE (Buch 5, 3.2/4): eine Welle laeuft auf euren Turm - hol sie. Erst nach der Lane-Phase (Buch 5 ist
+    das Mid-Game; 144655, 0:58 auf dem Weg zur Lane: "Welle gerettet - kein Turm verloren")."""
+    if w is None or m.lane_phase:
         return None
     c = cfg["mitte"]
     blau = m.p is None or m.p.mein_team == "ORDER"

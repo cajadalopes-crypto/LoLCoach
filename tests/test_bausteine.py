@@ -436,14 +436,18 @@ def live_partie_2121():
     """Aus der Live-Partie 26.09. 21:21 (Riven gegen Gragas): Briefing unterbrechbar, Siegquote statt Kurve,
     Jungler-Frage mit Schluss aus der Spielzeit."""
     from lolcoach import antworten, denker, lage, regeln, sprechplan, stimme
-    # 1) ein langes Briefing haelt eine Flash-Meldung nicht mehr auf
+    # 1) ein langes Briefing bricht nur eine Gefahr ab (seit 27.09., Partie 144655: keine Satzfetzen) - eine
+    #    Flash-Meldung wartet (sie steht ohnehin auf dem Dashboard, Kapitel 9.1)
     plan = sprechplan.Sprechplan(stimme.Stumm())
     plan.neu([regeln.Ansage("B" * 600, regeln.WICHTIG, "briefing", zeit=26.0, gueltig=90, sperre=600,
                             unterbrechbar=True)])
     assert plan.takt(26.0).schluessel == "briefing"
     plan.neu([regeln.Ansage("Gragas hat Flash benutzt.", regeln.WICHTIG, "zauber:x", zeit=67.0, gueltig=20)])
-    a = plan.takt(67.0)
-    assert a is not None and a.schluessel == "zauber:x", "die Flash-Meldung wartet nicht ~50 s auf das Briefing"
+    assert plan.takt(67.0) is None, "keine Gefahr: bricht das Briefing nicht ab"
+    plan.neu([regeln.Ansage("Gragas kommt auf dich zu.", regeln.WICHTIG, "gank", zeit=68.0, gueltig=20,
+                            thema="gefahr")])
+    a = plan.takt(68.0)
+    assert a is not None and a.schluessel == "gank", "eine Gefahr wartet nicht ~50 s auf das Briefing"
     plan.neu([regeln.Ansage("C" * 200, regeln.WICHTIG, "cs5", zeit=70.0, gueltig=40)])
     assert plan.takt(70.0) is None, "was nicht unterbrechbar ist, wird auch nicht unterbrochen"
     # 2) die Siegquote des konkreten Duells (Lexikon, lolalytics) statt der allgemeinen Kurve
@@ -607,11 +611,12 @@ def sprechtaste_ist_stummtaste():
         stimme._Sapi = alt
 
 
-def satz_bricht_ab_wenn_er_nicht_mehr_stimmt():
+def satz_wird_zu_ende_gesagt_dann_korrigiert():
     """Carlos, Live 26.09. 23:20: "Wenn er mitten im Satz sieht, dass Ekko beim Drachen ist, muss er abbrechen und
-    sagen: Ekko, ach nee, Ekko ist gerade beim Drachen." Die Stimme fragt waehrend des Sprechens, ob der Satz noch
-    stimmt; tut er es nicht, bricht sie ab, die Sperren fallen, der neue Satz zum Thema beginnt mit 'Ach nee'.
-    Was schon vor dem ersten Ton nicht mehr stimmt, wird gar nicht gesagt."""
+    sagen: Ekko, ach nee, Ekko ist gerade beim Drachen." Abbrechen ergab Satzfetzen (Partie 144655: 11 von 18 Saetzen
+    nach ein, zwei Woertern weg) - seit 27.09. bricht nur eine Gefahr einen Satz ab. Wird er beim Sprechen falsch,
+    spricht die Stimme ihn zu Ende; dann fallen die Sperren, und die Korrektur beginnt mit 'Ach nee'. Was schon vor
+    dem ersten Ton nicht mehr stimmt, wird gar nicht gesagt."""
     import time
     from lolcoach import regeln, sprechplan, stimme
     gesprochen = []
@@ -645,10 +650,11 @@ def satz_bricht_ab_wenn_er_nicht_mehr_stimmt():
         time.sleep(0.3)
         ekko_oben[0] = False                     # mitten im Satz: Ekko taucht am Drachen auf
         time.sleep(0.5)
-        assert gesprochen and gesprochen[0][0] == "abgebrochen" and a.ganz is False, (gesprochen, a.ganz)
+        time.sleep(1.4)
+        assert gesprochen and gesprochen[0][0] == "ganz" and a.ganz is True, (gesprochen, a.ganz)
         neu = regeln.Ansage("Ekko ist gerade beim Drachen.", regeln.SOFORT, "jungler_sicht", zeit=101.0,
                             sperre=30, thema="gefahr")
-        plan.neu([neu])                          # die Sperre (30 s) ist mit dem Widerruf gefallen
+        plan.neu([neu])                          # die Sperre (30 s) ist gefallen: der Satz stimmte am Ende nicht
         plan.takt(101.0)
         assert neu.text == "Ach nee: Ekko ist gerade beim Drachen.", neu.text
         assert stimme.teilsaetze("Ach nee: Ekko ist oben, in 9 Sekunden bei dir.") == \
@@ -1212,12 +1218,12 @@ def afk_erkannt():
     mensch = replace(laeufer, bot=False, items=())
     assert "kein einziges Item" in lage.afk(mensch, p, None)
     assert lage.afk(replace(laeufer, bot=True, items=()), p, None) is None
-    # Gegner: die API zeigt ihre Items nicht - "ohne Item" ist kein Beleg (133930 Zac, 144655 Kha'Zix, beide
-    # gankten); ein Gegner gilt erst als AFK, wenn er ab 2:30 noch Stufe 1 ist
-    feind = replace(p.gegner()[0], bot=False, items=(), level=3)
+    # Gegner nie: die API zeigt ihre Items nicht, und Stufe/Items stehen nur so, wie er zuletzt gesehen wurde
+    # (144655: Kha'Zix bis 3:34 "Stufe 1, 0 Items" - im ersten Moment auf der Karte Stufe 4; 1:30 hiess es live
+    # "Kha'Zix ist AFK ... spiel deine Lane nach vorn", 1:57 war Riven tot)
+    feind = replace(p.gegner()[0], bot=False, items=(), level=1, cs=0)
     assert lage.afk(feind, p, None) is None
-    assert lage.afk(replace(feind, level=1), p, None) is None                        # 1:59: noch zu frueh
-    assert "noch Stufe 1" in lage.afk(replace(feind, level=1), replace(p, zeit=160.0), None)
+    assert lage.afk(feind, replace(p, zeit=214.0), None) is None
     # von selbst: einmal je Spieler
     rw = regeln.Regelwerk()
     rw.lage = lb
@@ -1417,6 +1423,63 @@ def bestaetigung_back_im_fenster():
     assert not k.staerken
 
 
+def nur_gefahr_bricht_saetze_ab():
+    """Partie 144655: live brachen 11 von 18 Saetzen nach ein, zwei Woertern ab - die Kern-Gefahr "Bleib an deinem
+    Top-Tier-1-Turm" 0,3 s nach dem Start, weil ihr Plan-Schritt im naechsten Takt erledigt war, danach "Ach nee: ...".
+    Jetzt bricht die eigene Pruefung keinen Satz ab, eine andere Ansage nur, wenn sie eine Gefahr ist - gemessen mit
+    der Stimme des Nachspielens (spricht in Spielzeit wie live)."""
+    from lolcoach import regeln, sprechplan, stimme
+    st = stimme.Nachgespielt(sprechplan.ZEICHEN_PRO_SEKUNDE)
+    plan = sprechplan.Sprechplan(st)
+
+    def takte(*zeiten):
+        for t in zeiten:
+            st.takt(t)
+            plan.takt(t)
+    gilt = [True]
+    a = regeln.Ansage("Bleib an deinem Top-Tier-1-Turm: Gangplank und Kha'Zix kommen.", regeln.SOFORT,
+                      "kern:ZURUECK", zeit=205.9, sperre=0.0, thema="gefahr", pruefe=lambda: gilt[0])
+    plan.neu([a])
+    takte(205.9)
+    assert st.beschaeftigt
+    gilt[0] = False                              # naechster Takt: der Plan-Schritt ist erledigt
+    plan.neu([regeln.Ansage("Setz ein Ward am Pixel-Bush oben.", regeln.WICHTIG, "ward:x", zeit=206.5, gueltig=20)])
+    takte(206.2, 206.5, 207.0, 208.0, 209.0, 210.0, 211.0)
+    assert not st.abbrueche and a.ganz is True, (st.abbrueche, a.ganz)
+    e = regeln.Ansage("Raus zu deinem Top-Tier-1-Turm: Gangplank kommt.", regeln.SOFORT, "kern:ZURUECK", zeit=212.0,
+                      sperre=0.0, thema="gefahr")
+    plan.neu([e])
+    takte(212.0)
+    assert not e.text.startswith("Ach nee"), e.text          # der Kern-Satz davor war nicht falsch
+    # eine Gefahr darf einen laufenden Satz abbrechen
+    takte(230.0)
+    c = regeln.Ansage("C" * 120, regeln.WICHTIG, "cs5", zeit=240.0, gueltig=40)
+    plan.neu([c])
+    takte(240.0)
+    plan.neu([regeln.Ansage("Kha'Zix kommt auf dich zu.", regeln.SOFORT, "anlauf:x", zeit=241.0, gueltig=3)])
+    takte(241.0)
+    assert c.ganz is False and st.abbrueche and st.abbrueche[-1][2].startswith("verdraengt"), st.abbrueche
+
+
+def zauber_timer_auf_dem_dashboard():
+    """Carlos 27.09. (144655, 10:11): "Ich sehe keinen einzigen Flash-Timer auf dem Dashboard." Der Weg vom
+    Lagebild zum Dashboard stimmt (nachgespielt mit dem Code der Partie: Gangplanks Flash 1:56-6:56 stand im
+    Gegner-Kasten) - bekannt war in 9,5 Minuten nur dieser eine. Hier: ein Flash-Timer von der Minimap und eine Ult
+    aus dem Chat kommen im Dashboard an (die Ult kam bis 27.09. nie an), abgelaufene nicht mehr."""
+    from dataclasses import replace
+    from lolcoach import dashboard, lage
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.zeit > 400)
+    g = p.gegner()[0]
+    lb = lage.Lagebild()
+    lb.zauber.benutzt(g, "SummonerFlash", p.zeit - 20, "Minimap")
+    lb.zauber.benutzt(replace(g, level=max(6, g.level)), "R", p.zeit - 10, "Chat", zurueck=p.zeit + 50)
+    z = dashboard.zustand_json(p, lb)
+    weg = {x["name"]: x["rest"] for s in z["spieler"] if s["name"] == g.name for x in s["zauber_weg"]}
+    assert "Flash" in weg and 250 <= weg["Flash"] <= 300 and weg.get("Ult") == 50, weg
+    z = dashboard.zustand_json(replace(p, zeit=p.zeit + 400), lb)
+    assert not any(s["zauber_weg"] for s in z["spieler"]), "abgelaufene Timer verschwinden"
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
@@ -1424,12 +1487,13 @@ if __name__ == "__main__":
                  aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121, combo_rechnung,
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr,
                  faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht, sprechtaste_ist_stummtaste,
-                 satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
+                 satz_wird_zu_ende_gesagt_dann_korrigiert, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
                  konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler, eigene_position_aus_dem_kamerarahmen,
                  satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah, baron_aeltester_inhibitor,
                  minimap_blind_wird_gesagt, kamera_gibt_nur_einmal_frei, antwort_ab_dem_ersten_teilsatz, afk_erkannt,
                  von_deiner_position_aus, wachhund_meldet_datenluecke, modus_sperre_budget,
                  sofort_back_und_objective, minimap_groesse_aus_der_einstellung,
-                 bestaetigung_back_im_fenster, minimap_farben_relativ, wellenleser_ring_und_nachbar):
+                 bestaetigung_back_im_fenster, minimap_farben_relativ, wellenleser_ring_und_nachbar,
+                 nur_gefahr_bricht_saetze_ab, zauber_timer_auf_dem_dashboard):
         test()
         print(f"{test.__name__} OK")

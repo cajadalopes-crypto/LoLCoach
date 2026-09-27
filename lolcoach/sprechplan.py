@@ -9,6 +9,7 @@ Alles in Spielzeit - so laeuft eine Aufnahme exakt wie das Live-Spiel.
 """
 from __future__ import annotations
 
+import re
 import threading
 import time
 
@@ -48,6 +49,20 @@ BEIWERK = ("gold", "plan:back", "objstart", "objgegner", "vorwarnung", "cs", "au
 def kern(a: Ansage) -> bool:
     """Eine Ansage des Entscheidungskerns (Buch 0, 9.6)."""
     return a.schluessel.startswith("kern:")
+
+
+_RAUS = re.compile(r"\bjetzt zurück|\braus zu\b", re.I)
+
+
+def gefahr(a: Ansage) -> bool:
+    """Nur eine Gefahr darf einen laufenden Satz abbrechen (Partie 144655: Saetze brachen nach ein, zwei Woertern ab -
+    "Satzfetzen"): Thema Gefahr (Kern-GEFAHR, Unterzahl, Jungler), ein Gegner, der auf dich zulaeuft, oder ein Rat zum
+    Rueckzug ("Vi seit 6 Sekunden weg ... Jetzt zurueck" - vor dem Tod 19:55, Testpartie 2). Der Todesrueckblick nicht,
+    auch wenn er "geh zurueck" zitiert (140253, 8:34: "... 18 Sekunden davor hiess es: geh zurueck")."""
+    if a.schluessel.startswith(("tod", "wiedereinstieg")):
+        return False
+    return (a.thema == "gefahr" or a.schluessel.startswith("anlauf") or bool(RUECKZUG.search(a.text))
+            or bool(_RAUS.search(a.text)))
 
 
 def unterbrechbar(a: Ansage) -> bool:
@@ -100,7 +115,7 @@ class Sprechplan:
         self._laeuft: Ansage | None = None      # was gerade gesprochen wird (bis frei_ab)
         self._reden: list[tuple[float, float]] = []   # (Beginn, geschaetzte Dauer) - fuer das Sprechbudget
         self._ich_tot = False
-        self._widerruf: tuple[float, str, str] | None = None   # (Wanduhr, Thema, Schluessel-Art) des abgebrochenen
+        self._widerruf: tuple[float, str, str] | None = None   # (Spielzeit, Thema, Schluessel-Art) des widerrufenen
         self._rueckzug_gehoert = -1e9    # Spielzeit, zu der das letzte "geh zurueck" beim Spieler ankommt
         self.kern = None                 # kern.Kern: Modus fuer die Einwuerfe des Strategen (Kapitel 14)
         self.abstand_s = _abstand_s()
@@ -112,7 +127,12 @@ class Sprechplan:
             if art == "ton":
                 a.ton = round(a.gesprochen + (jetzt - ab), 2)
                 return
-            a.ganz = art == "ende"
+            a.ganz = art in ("ende", "ende_widerrufen")
+            # Spielzeit des Endes: live die gemessene Dauer, beim Nachspielen (Wanduhr steht fast) mindestens die
+            # geschaetzte - sonst galt "Ach nee" (8 s Wanduhr) dort fuer Minuten Spielzeit
+            spiel = a.gesprochen + (jetzt - ab)
+            if art in ("ende", "ende_widerrufen"):
+                spiel = max(spiel, a.gesprochen + len(a.text) / ZEICHEN_PRO_SEKUNDE)
             if art == "verworfen" and a.ton is None:
                 # nie erklungen (Frage an der Sprechtaste, veraltet): die Sperre faellt - stimmt es nach der
                 # Antwort noch, darf das Regelwerk es frisch sagen
@@ -120,13 +140,21 @@ class Sprechplan:
                 if a.thema:
                     self.thema_zuletzt.pop(a.thema, None)
                 return
+            # ganz gesagt, stimmte am Ende aber nicht mehr ("Ekko ist oben" - er taucht am Drachen auf): die Sperre
+            # faellt, die Korrektur beginnt mit "Ach nee". Nur bei einer Gefahr - ein Ward-Hinweis, an dem du vorbei
+            # bist, wird nicht wiederholt (144655, 8:43/8:59). Nicht beim Kern: seine Pruefung heisst "derselbe Plan",
+            # nicht "wahr" (144655, 4:49: "Ach nee: Bleib an deinem Top-Tier-1-Turm" nach einem erledigten Schritt)
+            if art == "ende_widerrufen" and not kern(a) and a.thema == "gefahr":
+                self.zuletzt.pop(a.schluessel, None)
+                self.thema_zuletzt.pop(a.thema, None)
+                self._widerruf = (spiel, a.thema, a.schluessel.split(":")[0])
             if art == "widerrufen":
                 if RUECKZUG.search(a.text):
                     self._rueckzug_gehoert = -1e9
                 self.zuletzt.pop(a.schluessel, None)
                 if a.thema:
                     self.thema_zuletzt.pop(a.thema, None)
-                self._widerruf = (time.monotonic(), a.thema, a.schluessel.split(":")[0])
+                self._widerruf = (spiel, a.thema, a.schluessel.split(":")[0])
         return melde
 
     def _vorbereiten(self, a: Ansage) -> None:
@@ -213,7 +241,9 @@ class Sprechplan:
         laeuft = self._laeuft
         # Jede Ansage beginnt mit der Handlung - nach GESAGT_NACH Sekunden ist das Entscheidende heraus. Dann darf
         # eine gleich wichtige Neuigkeit den Rest abbrechen (Live 21:21: Sonas Flash wartete 17 s hinter zwei Saetzen).
-        abbrechen = (laeuft is not None and zeit < self.frei_ab and a.prio >= WICHTIG and not unterbrechbar(a)
+        # (eine Gefahr darf auch lang sein - "Du stehst tief, und Varus und Rakan ..." hat ueber 180 Zeichen, Testpartie 2,
+        # 19:38, 16 s vor dem Tod)
+        abbrechen = (laeuft is not None and zeit < self.frei_ab and gefahr(a) and a.prio >= WICHTIG
                      and (unterbrechbar(laeuft)
                           or (laeuft.gesprochen is not None and zeit - laeuft.gesprochen >= GESAGT_NACH
                               and a.prio >= laeuft.prio)))
@@ -227,12 +257,13 @@ class Sprechplan:
                 and laeuft.gesprochen is not None and zeit - laeuft.gesprochen < GESAGT_NACH):
             self._vorbereiten(a)
             return None
-        if a.prio < SOFORT and getattr(self.sprecher, "beschaeftigt", False) and not abbrechen:
+        # was keine Gefahr ist, wartet, bis die Stimme frei ist - auch SOFORT (Zahlen, Buff, Technik)
+        if (a.prio < SOFORT or not gefahr(a)) and getattr(self.sprecher, "beschaeftigt", False) and not abbrechen:
             self._vorbereiten(a)
             return None     # die Stimme spricht noch (live exakt statt geschaetzt)
         # Budget (Buch 0, 9.2): mindestens abstand_s seit der letzten Ansage - ausser SOFORT und dem Briefing
         letzte = next((x.gesprochen for x in reversed(self.gesagt) if x.gesprochen is not None), None)
-        if (a.prio < SOFORT and a.schluessel != "briefing" and not kern(a) and letzte is not None
+        if (a.prio < SOFORT and a.schluessel != "briefing" and not kern(a) and not abbrechen and letzte is not None
                 and zeit - letzte < self.abstand_s):
             # "wird gesagt, sobald wieder Platz ist und er dann noch gilt" (9.2): wer nur am Budget wartet, darf
             # abstand_s laenger warten - ob er noch stimmt, prueft weiter seine Pruefung (_stimmt)
@@ -246,7 +277,7 @@ class Sprechplan:
         w = self._widerruf
         # nur, wenn der neue Satz die neue Fassung des alten ist: dieselbe Art, oder beide eine Gefahr (Position) -
         # nicht "Ach nee: Vi hat kein Flash" nach einem abgebrochenen "nimm den Kampf an" (Stimmprobe 27.09.)
-        if w is not None and time.monotonic() - w[0] <= ACH_NEE and (
+        if w is not None and zeit - w[0] <= ACH_NEE and (
                 a.schluessel.split(":")[0] == w[2] or (a.thema == "gefahr" and w[1] == "gefahr")):
             # eigener Teil "Ach nee:" (vorgewaermt), dahinter der Satz wie sonst - sein Anfang liegt im Speicher.
             # Grossschreibung bleibt: meist beginnt der Satz mit einem Champion
@@ -265,7 +296,8 @@ class Sprechplan:
         if m := RUECKZUG.search(a.text):
             self._rueckzug_gehoert = zeit + m.start() / ZEICHEN_PRO_SEKUNDE
         self._reden.append((zeit, len(a.text) / ZEICHEN_PRO_SEKUNDE))
-        self.sprecher.sage(a.text, dringend=a.prio == SOFORT or abbrechen, melde=self._melder(a, time.monotonic()),
+        self.sprecher.sage(a.text, dringend=gefahr(a) and (a.prio == SOFORT or abbrechen),
+                           melde=self._melder(a, time.monotonic()),
                            noch_wahr=self._noch_wahr(a))
         self._laeuft = a
         self.gesagt.append(a)

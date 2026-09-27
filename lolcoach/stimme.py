@@ -32,6 +32,11 @@ ERSTER_TON_HOECHSTENS = 2.0  # Sekunden ohne Audio fuer den ersten Teil, dann sp
 PAUSE_HOECHSTENS = 15.0      # so lange darf die Stimme fuer eine Frage angehalten sein, dann geht sie von selbst weiter
 VERALTET = 5.0               # so lange darf eine Ansage in der Schlange der Stimme warten - danach ist sie ueberholt
 PRUEFEN_ALLE = 0.25          # Sekunden: so oft fragt die Stimme waehrend eines Satzes, ob er noch stimmt
+# Mitten im Satz nicht mehr fragen (Partie 144655: 11 von 18 Saetzen brachen ab, die Kern-Gefahr "Bleib an deinem
+# Top-Tier-1-Turm" nach 0,3 s, weil ihr Plan-Schritt im naechsten Takt erledigt war - Carlos: "Satzfetzen, du brichst
+# nach jedem Wort ab"). Ob ein Satz noch stimmt, zaehlt vor dem ersten Ton; danach bricht ihn nur eine Gefahr ab
+# (sprechplan.gefahr, `dringend`).
+MITTEN_PRUEFEN = False
 STUMM_HOECHSTENS = 60.0   # Sekunden: laenger haelt keiner die Sprechtaste - danach gilt sie als losgelassen
 
 
@@ -479,7 +484,8 @@ class Stimme:
             ganz = False
             try:
                 ton = (lambda m=melde: _still(m, "ton", time.monotonic())) if melde else None
-                ganz = motor.spreche(sprechbar(text), self._stopp, ton, gilt if noch_wahr is not None else None,
+                ganz = motor.spreche(sprechbar(text), self._stopp, ton,
+                                     gilt if noch_wahr is not None and MITTEN_PRUEFEN else None,
                                      **({"sofort": dringend} if isinstance(motor, _Neural) else {}))
             except Exception as e:
                 # Ein Audiofehler (Headset kurz weg, WASAPI verweigert) darf den Sprech-Thread nie beenden - sonst
@@ -490,6 +496,8 @@ class Stimme:
                 self._spricht = False
                 if melde:
                     art = "ende" if ganz else ("widerrufen" if widerrufen[0] else "abgebrochen")
+                    if ganz and noch_wahr is not None and not MITTEN_PRUEFEN and not gilt():
+                        art = "ende_widerrufen"      # ganz gesagt, stimmt aber nicht mehr: die Korrektur darf kommen
                     _still(melde, art, time.monotonic())
             if fertig is not None:
                 fertig.set()
@@ -613,3 +621,70 @@ class Stumm:
 
     def verstumme(self) -> None:
         pass
+
+
+def _gilt(noch_wahr) -> bool:
+    try:
+        return bool(noch_wahr())
+    except Exception:
+        return True
+
+
+class Nachgespielt(Stumm):
+    """Die Stimme fuer das Nachspielen: spricht in Spielzeit (Zeichen / Sekunde wie der Sprechplan) nach denselben
+    Regeln wie die echte - `noch_wahr` vor dem ersten Ton (mitten im Satz nur mit MITTEN_PRUEFEN), `dringend` bricht
+    den laufenden Satz ab. `abbrueche`: (Spielzeit, Satz, Grund) - was live mitten im Satz abbraeche. `takt(zeit)`
+    ruft das Nachspielen vor jedem Takt des Sprechplans."""
+
+    def __init__(self, zeichen_pro_s: float = 14.0):
+        self.zeit = 0.0
+        self.zeichen_pro_s = zeichen_pro_s
+        self._laeuft: dict | None = None
+        self._schlange: list = []
+        self.abbrueche: list[tuple[float, str, str]] = []
+
+    @property
+    def beschaeftigt(self) -> bool:
+        return self._laeuft is not None
+
+    def sage(self, text: str, dringend: bool = False, melde=None, noch_wahr=None) -> None:
+        eintrag = (text, melde, noch_wahr)
+        if dringend:
+            if self._laeuft is not None:
+                self._ende(False, f"verdraengt von: {text[:60]}")
+            self._schlange.insert(0, eintrag)
+        else:
+            self._schlange.append(eintrag)
+        self._weiter()
+
+    def takt(self, zeit: float) -> None:
+        self.zeit = zeit
+        la = self._laeuft
+        if la is not None:
+            if zeit >= la["ende"]:
+                self._ende(True)
+            elif MITTEN_PRUEFEN and la["noch_wahr"] is not None and not _gilt(la["noch_wahr"]):
+                self._ende(False, "widerrufen")
+        self._weiter()
+
+    def _weiter(self) -> None:
+        while self._laeuft is None and self._schlange:
+            text, melde, noch_wahr = self._schlange.pop(0)
+            if noch_wahr is not None and not _gilt(noch_wahr):
+                if melde:
+                    melde("verworfen", time.monotonic())
+                continue
+            if melde:
+                melde("ton", time.monotonic())
+            self._laeuft = {"text": text, "ende": self.zeit + len(sprechbar(text)) / self.zeichen_pro_s,
+                            "melde": melde, "noch_wahr": noch_wahr}
+
+    def _ende(self, ganz: bool, grund: str = "") -> None:
+        la, self._laeuft = self._laeuft, None
+        if not ganz:
+            self.abbrueche.append((self.zeit, la["text"], grund))
+        art = "ende" if ganz else ("widerrufen" if grund == "widerrufen" else "abgebrochen")
+        if ganz and la["noch_wahr"] is not None and not MITTEN_PRUEFEN and not _gilt(la["noch_wahr"]):
+            art = "ende_widerrufen"
+        if la["melde"]:
+            la["melde"](art, time.monotonic())

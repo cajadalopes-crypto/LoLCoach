@@ -67,16 +67,20 @@ class Lauf:
     sekunden_mit_daten: float = 0.0
     champions: set = field(default_factory=set)
     kern: object = None                                  # der Kern nach dem Lauf (Kategorien, Staerken)
+    abbrueche: list = field(default_factory=list)       # (Spielzeit, Satz, Grund): mitten im Satz abgebrochen
 
 
-def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, kern_stellung: str = "neu") -> Lauf:
+def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, kern_stellung: str = "neu",
+                 beim_takt=None) -> Lauf:
     """Die Aufnahme wie live, nur stumm. `halte_bei`: Spielzeiten, zu denen Partie und Bewertung festgehalten
     werden (der erste Takt ab dieser Zeit). `proben`: je Sekunde Gegner-Ankunft und Positionen (Gefahr-Eichung).
     `rueckruf(soll, p, b, lb, wand)`: an jeder Haltezeit, solange das Lagebild noch diesen Stand hat (Fragen).
-    `kern_stellung`: wie --kern (Schritt 3: neu = der Kern spricht in LANE, BASIS, TOT)."""
+    `kern_stellung`: wie --kern (Schritt 3: neu = der Kern spricht in LANE, BASIS, TOT).
+    `beim_takt(p, werk, kern, plan)`: nach jedem Takt des Sprechplans (werkzeuge/protokoll.py)."""
     lauf = Lauf(pfad)
     sicht = lage.sicht_fuer(pfad)
-    werk, plan = regeln.Regelwerk(), sprechplan.Sprechplan(stimme.Stumm())
+    sprecher = stimme.Nachgespielt(sprechplan.ZEICHEN_PRO_SEKUNDE)     # spricht in Spielzeit, wie live
+    werk, plan = regeln.Regelwerk(), sprechplan.Sprechplan(sprecher)
     kern = Kern(stellung=kern_stellung)    # wie live (__main__._verfolge) - ohne Protokolldatei
     werk.kern = plan.kern = kern
     kern.transport = plan
@@ -96,7 +100,10 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
         for a in neu:
             a._b = werk.b
         plan.neu(neu)
+        sprecher.takt(p.zeit)
         plan.takt(p.zeit)
+        if beim_takt is not None:
+            beim_takt(p, werk, kern, plan)
         lauf.champions |= {s.champion for s in p.spieler}
         b = werk.b
         if vorher is not None:
@@ -125,6 +132,7 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
             lauf.proben.append((p.zeit, b.pos, [(g.champion, g.ankunft, g.sichtbar, g.seit, g.pos, g.s.tot,
                                                  p_da.get(g.champion)) for g in b.gegner]))
     lauf.gesagt = plan.gesagt
+    lauf.abbrueche = sprecher.abbrueche
     return lauf
 
 

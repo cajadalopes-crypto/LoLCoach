@@ -44,8 +44,10 @@ def zustand_json(p: Partie, lagebild=None, ansagen=()) -> dict:
             eintrag["leben"] = lagebild.leben(s, p.zeit)
             eintrag["ult"] = lagebild.ult_bereit(s, p.zeit)
         timer = getattr(lagebild, "zauber", None)
+        # die Beschwoererzauber UND die Ult (Chat "gp no ult", globale Ults von der Minimap) - bis 27.09. zeigte der
+        # Kasten nur die Beschwoererzauber, eine bekannte Ult kam nie an
         eintrag["zauber_weg"] = [{"name": NAME_DE.get(z, z), "rest": round(r)}
-                                 for z in s.zauber if timer and (r := timer.fehlt(s, z, p.zeit))]
+                                 for z in (*s.zauber, "R") if timer and (r := timer.fehlt(s, z, p.zeit))]
         spieler.append(eintrag)
     objectives = []
     for schl in ("drache", "larven", "herold", "baron"):
