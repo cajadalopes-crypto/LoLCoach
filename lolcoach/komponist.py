@@ -842,6 +842,34 @@ def obj_dazu(b: Bewertung, nah: bool, tp_moeglich: bool, kl=None, laeuft: bool =
     return "Für dich zu weit - mach Druck auf deiner Seite."
 
 
+def afk_satz(sp, grund: str, p) -> str:
+    """Einer ist AFK (lage.afk): die Belege und was das fuer DICH heisst - aus Rollen und Namen der Partie."""
+    ich = p.ich
+    if sp.team == p.mein_team:
+        gegen = p.gegenueber(sp)
+        gj = p.jungler(gegenteam(p.mein_team))
+        if sp.rolle == "JUNGLE" or not sp.rolle:
+            folge = (f"Euer Jungle ist leer: {gj.champion} farmt beide Seiten und hat Zeit für dich - lass die Welle "
+                     f"zu deinem Turm kommen, ward den Fluss und trade nur, wenn du {gj.champion} gesehen hast."
+                     if gj is not None and ich.rolle != "JUNGLE" else
+                     "Ihr seid zu viert: spiel deine Lane sicher und kämpf nur mit Überzahl.")
+        elif gegen is not None:
+            folge = (f"{gegen.champion} hat die Lane frei und kann roamen - verschwindet {gegen.champion} von der Karte, "
+                     f"rechne mit ihm bei dir.")
+        else:
+            folge = "Ihr seid zu viert: spiel sicher und kämpf nur mit Überzahl."
+    else:
+        unser = p.gegenueber(sp)
+        if unser is not None and ich is not None and unser.name == ich.name:
+            folge = "Deine Lane ist frei: schieb die Wellen in seinen Turm, hol die Platten und hilf danach deinem Team."
+        elif sp.rolle == "JUNGLE":
+            folge = "Ihr Jungle ist leer, niemand gankt dich: spiel deine Lane nach vorn und nimm die Platten."
+        else:
+            folge = (f"Ihr seid fünf gegen vier: {unser.champion if unser else 'eure Seite'} hat die Lane frei, und "
+                     f"Kämpfe gehen an euch - sucht sie.")
+    return f"{sp.champion} ist AFK: {grund}. {folge}"
+
+
 def jungler6(b: Bewertung) -> str:
     """Der gegnerische Jungler hat Level 6 - was seine Ult fuer DICH heisst, gerechnet: allein, mit deinem
     Lane-Gegner zusammen, und wo er zuletzt war. Vorher fest: "Ganks werden gefaehrlicher - pushen nur mit Sicht"."""

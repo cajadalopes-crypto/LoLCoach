@@ -283,12 +283,39 @@ def _objective(w: list[str], roh: str, p: Partie, lagebild) -> str | None:
     return satz + weg
 
 
+AFK_WORTE = {"afk", "disconnected", "disconnect", "dc", "offline", "disconnectet", "abwesend"}
+
+
+def _afk(w: list[str], p: Partie, lagebild) -> str:
+    """"Ist Nasus AFK?" - gerechnet (lage.afk), nicht geschaetzt. Live 27.09.: Claude sagte "nein, er cleart im
+    Dschungel", waehrend Nasus ohne ein Item im Brunnen stand."""
+    from . import komponist, lage as lage_mod
+    ziel = _champion_im_text(w, p)
+    kandidaten = [ziel] if ziel is not None else [s for s in p.spieler if not p.ich or s.name != p.ich.name]
+    for s in kandidaten:
+        if grund := lage_mod.afk(s, p, lagebild):
+            return "Ja. " + komponist.afk_satz(s, grund, p)
+    if p.zeit < AFK_ERST_AB:
+        return "Sicher sagen kann ich das ab 1:30: bis dahin hat jeder gekauft - wer dann nichts hat, ist AFK."
+    if ziel is None:
+        return "Nein, AFK ist keiner: alle haben gekauft, und von deinem Team steht keiner still."
+    belege = [f"Stufe {ziel.level}", f"{ziel.cs} CS", f"{len(ziel.items)} Items"]
+    if lagebild is not None and getattr(lagebild, "aktiv", False) and (g := lagebild.gesehen(ziel)):
+        belege.append(f"zuletzt vor {int(max(0, p.zeit - g[0]))} s {minimap.ort(g[1], g[2], p.mein_team)}")
+    return f"Nein, {ziel.champion} spielt: {', '.join(belege)}."
+
+
+AFK_ERST_AB = 90.0
+
+
 def sofort(frage: str, p: Partie, lagebild=None) -> str | None:
     """Antwort aus dem Zustand, oder None, wenn das Claude beantworten soll."""
     w = _woerter(frage)
     if not w or not p.ich:
         return None
     menge = set(w)
+    if menge & AFK_WORTE:
+        return _afk(w, p, lagebild)
     # "Was soll ich jetzt machen?" - der Entscheider hat die Antwort schon gerechnet: sofort sagen statt 5 s
     # auf Claude zu warten (Carlos: "moeglichst Richtung Echtzeit, damit es wie ein Gespraech ist")
     if ("was" in menge and menge & {"mache", "machen", "tun", "jetzt", "soll", "plan"} and len(w) <= 7
@@ -413,12 +440,20 @@ def lage_text(p: Partie, lagebild=None) -> str:
         if ef := lagebild.eigene_faehigkeiten(p.zeit):
             zeilen.append("Meine Faehigkeiten jetzt (HUD): " + ", ".join(
                 f"{t} {'bereit' if b else 'nicht bereit'}" for t, b in ef.items()))
+    from . import lage as lage_mod
+    abwesend = {s.name: g for s in p.spieler if (g := lage_mod.afk(s, p, lagebild))}
+    for s in p.spieler:
+        if s.name in abwesend:   # ganz oben, damit es nicht in der Zeile untergeht (Live 27.09.: "Nasus cleart")
+            zeilen.append(f"AFK (berechnet, gilt): {s.champion} ({'dein Team' if s.team == p.mein_team else 'Gegner'})"
+                          f" - {abwesend[s.name]}. Seine Rolle in der Liste ist dann bedeutungslos.")
     for team, wer in ((p.mein_team, "Mein Team"), (gegenteam(p.mein_team), "Gegner")):
         zeilen.append(f"{wer}:")
         for s in p.team(team):
             fertig = [it[i]["name"] for i in s.items if i in it and it[i]["gold"]["total"] >= 900]
             teile = [f"- {s.champion} {ROLLE_DE.get(s.rolle, '?')} L{s.level} {s.kills}/{s.tode}/{s.assists} "
-                     f"CS {s.cs}, Items: {', '.join(fertig) or 'keine grossen'}"]
+                     f"CS {s.cs}, Items: {', '.join(fertig) or ('GAR KEINE' if not s.items else 'keine grossen')}"]
+            if s.name in abwesend:
+                teile.append("AFK")
             if s.tot:
                 teile.append(f"TOT noch {int(s.respawn)} s")
             elif lagebild is not None and hasattr(lagebild, "leben") and (lb := lagebild.leben(s, p.zeit)) is not None:

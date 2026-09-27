@@ -25,6 +25,38 @@ SICHTBAR_TOLERANZ = 1.6   # Sekunden: so alt darf eine Sichtung sein und gilt no
 
 
 VERLAUF = 15.0            # Sekunden Positionsverlauf je Spieler
+STILL_TOLERANZ = 0.02     # Minimap-Anteile (x + y): so weit wackelt ein stehendes Icon
+BRUNNEN_ZONE = 0.07       # ... um den Brunnenpunkt: wer hier bleibt, steht (das Icon springt am Kartenrand)
+AFK_AB = 90.0             # Spielzeit: bis dahin hat jeder gekauft und den Brunnen verlassen
+AFK_STILL_BASIS = 60.0    # Sekunden regungslos in der eigenen Basis (Mitspieler, Minimap)
+AFK_STILL_DRAUSSEN = 120.0   # ... anderswo (ein Support wartet auch mal lange im Busch)
+
+
+def afk(sp: Spieler, p: Partie, lagebild=None) -> str | None:
+    """Ist `sp` AFK? Die Belege in Worten, sonst None. Live 27.09., 1:48: "Ist mein Nasus AFK?" - der Nasus-Bot
+    stand seit Spielbeginn im Brunnen, Stufe 1, 0 CS; Claude las "Nasus Jungle" und sagte "er cleart im
+    Dschungel". Belege nur aus Zahlen:
+      - ein Mensch ohne ein einziges Item nach 1:30 (jeder kauft zu Beginn) - bei Bots nicht: der Fiddlesticks-
+        Bot derselben Partie hatte auch keins und lief normal,
+      - ein Mitspieler (auf der Minimap immer zu sehen) steht regungslos: 60 s in der Basis, 120 s anderswo."""
+    if p.zeit < AFK_AB or (p.ich is not None and sp.name == p.ich.name):
+        return None
+    gruende = []
+    if not sp.bot and not sp.items:
+        gruende.append(f"nach {int(p.zeit // 60)}:{int(p.zeit % 60):02d} kein einziges Item, nicht einmal Startitems")
+    still = (lagebild.still_seit(sp, p.zeit) if lagebild is not None and hasattr(lagebild, "still_seit")
+             and sp.team == p.mein_team and not sp.tot else None)
+    if still is not None:
+        g = lagebild.zuletzt.get((sp.name, sp.team))
+        wo = minimap.ort(g[1], g[2], p.mein_team) if g else ""
+        basis = g is not None and abs(g[1] - BRUNNEN[sp.team][0]) + abs(g[2] - BRUNNEN[sp.team][1]) <= 0.2
+        if still >= (AFK_STILL_BASIS if basis else AFK_STILL_DRAUSSEN) or (gruende and still >= 20):
+            gruende.append(f"steht seit {int(still)} s regungslos {wo}".rstrip())
+    if not gruende:
+        return None
+    if p.zeit >= 120 and sp.level <= 1 and sp.cs == 0:
+        gruende.append("Stufe 1, 0 CS")
+    return ", ".join(gruende)
 DECKUNG = 0.045           # Kartenanteil: so nah an der letzten Stelle liegt ein anderes Icon auf einem Verbuendeten
 BRUNNEN = {"ORDER": (0.035, 0.965), "CHAOS": (0.965, 0.035)}   # Minimap-Anteile, Wiedereinstieg
 
@@ -51,6 +83,7 @@ class Lagebild:
         self._tode: dict[str, float] = {}            # Spielername -> zuletzt tot (Spielzeit)
         self._recall: dict[str, float] = {}          # Gegner -> Spielzeit, zu der er nach 7 s Stillstand verschwand
         self.fernspruenge: list = []                 # gemeldete TP/globale Ults (zauber.Timer)
+        self._still: dict[str, tuple[float, float, float]] = {}   # Mitspieler -> (seit, x, y) ohne Bewegung (AFK)
 
     def eigene_zauber(self, p: Partie, jetzt: float) -> dict[str, float] | None:
         """Beschwoererzauber des Spielers -> Sekunden bis bereit (0 = bereit), aus dem HUD (frisch, < 3 s).
@@ -185,6 +218,32 @@ class Lagebild:
                     v.popleft()
         self._verbuendete_halten(zeit, sichtungen, p)
         self._recalls_merken(zeit, sichtungen, p)
+        self._stillstand_merken(p)
+
+    def _stillstand_merken(self, p: Partie) -> None:
+        """Seit wann steht jeder Mitspieler auf derselben Stelle (lebend, auf der Minimap immer zu sehen)?"""
+        if not p.mein_team:
+            return
+        for sp in p.team(p.mein_team):
+            g = self.zuletzt.get((sp.name, sp.team))
+            if sp.tot or g is None:
+                self._still.pop(sp.name, None)
+                continue
+            a = self._still.get(sp.name)
+            # im Brunnen liegt das Icon halb ueber dem Kartenrand und springt um ein paar Pixel (Nasus 27.09.:
+            # 0.040/0.956 -> 0.025/0.968 -> 0.018/0.988, ohne einen Schritt) - dort zaehlt nur "noch im Brunnen"
+            bx, by = BRUNNEN.get(sp.team, (9.0, 9.0))
+            beide_im_brunnen = a is not None and all(abs(x - bx) + abs(y - by) <= BRUNNEN_ZONE
+                                                     for x, y in ((g[1], g[2]), (a[1], a[2])))
+            if a is None or (abs(g[1] - a[1]) + abs(g[2] - a[2]) > STILL_TOLERANZ and not beide_im_brunnen):
+                self._still[sp.name] = g
+
+    def still_seit(self, sp: Spieler, jetzt: float) -> float | None:
+        """Sekunden, die ein Mitspieler schon regungslos steht (None: bewegt sich / unbekannt)."""
+        a, g = self._still.get(sp.name), self.zuletzt.get((sp.name, sp.team))
+        if a is None or g is None or jetzt - g[0] > 3.0:
+            return None
+        return g[0] - a[0]
 
     def _recalls_merken(self, zeit: float, sichtungen: list[minimap.Sichtung], p: Partie) -> None:
         """Ein Gegner stand 7 s still und ist jetzt weg: Recall (8 s kanalisieren), er steht im Brunnen. Streng

@@ -176,7 +176,7 @@ class Regelwerk:
                       self._level, self._items, self._gold, self._cs, self._tod,
                       self._jungler_gesehen, self._lane_fehlt, self._leben, self._zauber, self._anlauf,
                       self._ward, self._recall_fenster, self._tief_ohne_sicht, self._kontrollauge,
-                      self._objective_start, self._fenster, self._plan, self._wiedereinstieg):
+                      self._objective_start, self._fenster, self._plan, self._wiedereinstieg, self._afk):
             for a in regel(p, v) or ():
                 a.zeit = p.zeit
                 if a.pruefe is None:
@@ -390,6 +390,16 @@ class Regelwerk:
             if st and st.team != p.mein_team and st.lane == lane and st.stufe in ("aussen", "innen", "Inhib"):
                 gefallen += 1
         return gefallen < 3
+
+    def _afk(self, p: Partie, v: Partie):
+        """Einer ist AFK - einmal je Spieler sagen, mit Belegen und was es fuer dich heisst (Live 27.09.: Nasus
+        stand ohne ein Item im Brunnen, gesagt hat es niemand, und auf Nachfrage hiess es "er cleart")."""
+        from .lage import afk
+        for s in p.spieler:
+            if ("afk", s.name) in self._gemeldet or not (grund := afk(s, p, self.lage)):
+                continue
+            self._gemeldet.add(("afk", s.name))
+            yield Ansage(komponist.afk_satz(s, grund, p), WICHTIG, f"afk:{s.name}", gueltig=30.0, sperre=600.0)
 
     def _lebend(self, p: Partie) -> tuple[int, int]:
         """(lebende eigene, lebende Gegner). Leben der Mitspieler kennt die API nicht."""

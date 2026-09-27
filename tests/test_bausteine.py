@@ -984,6 +984,40 @@ def verzoegerung_bis_zum_ohr():
     assert eilig.ton is not None and 0.05 <= eilig.ton - 101.0 <= 0.5 and eilig.ganz is True, (eilig.ton, eilig.ganz)
 
 
+def afk_erkannt():
+    """Live 27.09., 1:48: "Ist mein Nasus AFK?" - "Nein, er cleart im Dschungel", waehrend der Nasus-Bot seit
+    Spielbeginn im Brunnen stand. Jetzt gerechnet: regungslos im Brunnen (das Icon springt dort am Kartenrand),
+    Menschen ohne ein Item nach 1:30; wer laeuft, ist nicht AFK. Sofort beantwortet und von selbst gesagt."""
+    from dataclasses import replace
+    from lolcoach import antworten, lage, regeln
+    p0 = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.zeit > 30)
+    steher, laeufer = [s for s in p0.team(p0.mein_team) if s.name != p0.ich.name][:2]
+    lb = lage.Lagebild()
+    bx, by = lage.BRUNNEN[p0.mein_team]
+    for i in range(0, 100):
+        p = replace(p0, zeit=20.0 + i)
+        wackeln = (0.005, -0.009, 0.012, 0.0)[i % 4]    # wie Nasus: 0.040/0.956 -> 0.025/0.968 -> 0.018/0.988
+        lb.neu(p.zeit, [minimap.Sichtung(steher.champion_id, p0.mein_team, bx + wackeln, by - wackeln, 1.0),
+                        minimap.Sichtung(laeufer.champion_id, p0.mein_team, 0.2 + i * 0.004, 0.8 - i * 0.004, 1.0)], p)
+    assert p.zeit >= lage.AFK_AB
+    grund = lage.afk(steher, p, lb)
+    assert grund and "regungslos in eurer Basis" in grund, grund
+    assert lage.afk(laeufer, p, lb) is None
+    antwort = antworten.sofort(f"Ist mein {steher.champion} AFK?", p, lb)
+    assert antwort.startswith(f"Ja. {steher.champion} ist AFK: steht seit"), antwort
+    assert antworten.sofort(f"Ist {laeufer.champion} afk?", p, lb).startswith(f"Nein, {laeufer.champion} spielt")
+    assert "AFK (berechnet, gilt)" in antworten.lage_text(p, lb)
+    # ein Mensch ohne ein einziges Item nach 1:30 - auch ohne Minimap; ein Bot ohne Items nicht (Fiddlesticks-Bot)
+    mensch = replace(laeufer, bot=False, items=())
+    assert "kein einziges Item" in lage.afk(mensch, p, None)
+    assert lage.afk(replace(laeufer, bot=True, items=()), p, None) is None
+    # von selbst: einmal je Spieler
+    rw = regeln.Regelwerk()
+    rw.lage = lb
+    gesagt = list(rw._afk(p, p)) + list(rw._afk(p, p))
+    assert len(gesagt) == 1 and gesagt[0].text.startswith(f"{steher.champion} ist AFK"), [a.text for a in gesagt]
+
+
 def antwort_ab_dem_ersten_teilsatz():
     """Carlos 27.09.: "antwortet extrem spaet". Die Antwort geht ab dem ersten Teilsatz an die Stimme, nicht erst
     am Satzende, und ein vorgehaltener Claude-Prozess wird benutzt statt neu gestartet (Start 0,6-0,9 s)."""
@@ -1077,7 +1111,7 @@ if __name__ == "__main__":
                  satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
                  konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler, eigene_position_aus_dem_kamerarahmen,
                  satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah, baron_aeltester_inhibitor,
-                 minimap_blind_wird_gesagt, kamera_gibt_nur_einmal_frei, antwort_ab_dem_ersten_teilsatz,
+                 minimap_blind_wird_gesagt, kamera_gibt_nur_einmal_frei, antwort_ab_dem_ersten_teilsatz, afk_erkannt,
                  sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")
