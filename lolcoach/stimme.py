@@ -213,10 +213,10 @@ class _Neural:
                 _still(lambda: self.strom(t, fest=True).ganz(8))
         threading.Thread(target=lauf, daemon=True).start()
 
-    def vorbereiten(self, text: str) -> None:
+    def vorbereiten(self, text: str, sofort: bool = False) -> None:
         """Der Sprechplan weiss, was als naechstes kommt: der Anfang wird schon synthetisiert."""
         for t in teilsaetze(text)[:self.VORAUS]:
-            self.strom(t)
+            self.strom(t, sofort=sofort)
 
     def _synthese(self, text: str):
         return self.strom(text).ganz()
@@ -520,7 +520,11 @@ class Stimme:
 
     def antworte_teil(self, text: str) -> None:
         """Ein Satz einer gestreamten Antwort: sofort vor alles andere - der unterbrochene Satz kommt erst
-        mit `antworte_ende` wieder (sonst stuende er zwischen zwei Saetzen der Antwort)."""
+        mit `antworte_ende` wieder (sonst stuende er zwischen zwei Saetzen der Antwort). Die Synthese beginnt
+        sofort - nicht erst, wenn der vorige Teil zu Ende gesprochen ist (sonst ~0,45 s Pause dazwischen)."""
+        m = getattr(self, "_motor", None)
+        if hasattr(m, "vorbereiten"):
+            _still(m.vorbereiten, sprechbar(text), True)
         self._vorrang.put((text, None, None, None))
         self._frei.set()
 

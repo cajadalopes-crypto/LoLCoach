@@ -110,36 +110,110 @@ def saetze(text: str) -> tuple[list[str], str]:
     return fertig, rest
 
 
-def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = "sonnet", timeout: float = 60,
-                aufwand: str | None = None, bilder: list[bytes] | None = None) -> str:
-    """Wie `frage`, aber gestreamt: jeder fertige Satz geht sofort an `bei_satz(satz)` - der Coach kann den
-    ersten Satz sprechen, waehrend der Rest noch entsteht (gemessen 26.09.: erster Satz nach 2,7-3,1 s,
-    ganze Antwort nach 5,1-5,2 s). Gibt die ganze Antwort zurueck."""
-    import threading
+_TEIL = __import__("re").compile(r"[,;]\s|\s[–-]\s")
+TEIL_AB_WOERTERN = 4
+
+
+def erster_teil(text: str) -> tuple[str | None, str]:
+    """Der erste Teilsatz, sobald er fertig ist: bis zum ersten Komma (oder Gedankenstrich) nach mindestens
+    `TEIL_AB_WOERTERN` Woertern - die Stimme kann ihn sprechen, waehrend der Satz noch entsteht (gemessen
+    27.09.: der erste ganze Satz kam 0,5-0,8 s nach dem ersten Text). "1,5" trennt nicht (kein Leerzeichen)."""
+    for m in _TEIL.finditer(text):
+        kopf = text[:m.start() + (1 if text[m.start()] in ",;" else 0)].strip()
+        if len(kopf.split()) >= TEIL_AB_WOERTERN:
+            return kopf, text[m.end():]
+    return None, text
+
+
+# Vorgestartete Claude-Prozesse: der Start kostet 0,6-0,9 s (gemessen 27.09.), bevor die Frage ueberhaupt
+# rausgeht. Ein Prozess mit --input-format stream-json wartet auf stdin - er wird beim Druck auf die Sprechtaste
+# (oder nach der letzten Antwort) gestartet und bekommt dann nur noch die Frage. Stirbt der Coach, schliesst sich
+# die Leitung, und der wartende Prozess beendet sich selbst (gemessen: 0,7 s).
+_VORRAT: dict[tuple, tuple[subprocess.Popen, float]] = {}
+_VORRAT_SCHLOSS = __import__("threading").Lock()
+VORRAT_HOECHSTENS = 15 * 60      # Sekunden: aelter wird er ersetzt, nicht benutzt
+
+
+def _strom_befehl(modell: str, system: str | None, aufwand: str | None) -> list[str]:
     befehl = [_programm(), "-p", "--model", modell, "--tools", "", "--no-session-persistence",
               "--strict-mcp-config", "--disable-slash-commands", "--output-format", "stream-json", "--verbose",
-              "--include-partial-messages"]
-    if bilder:
-        import base64
-        inhalt = [{"type": "image", "source": {"type": "base64", "media_type": "image/jpeg",
-                                                "data": base64.b64encode(b).decode()}} for b in bilder]
-        eingabe = json.dumps({"type": "user", "message": {"role": "user", "content": inhalt + [
-            {"type": "text", "text": prompt}]}}) + "\n"
-        befehl += ["--input-format", "stream-json"]
-    else:
-        eingabe = prompt
+              "--include-partial-messages", "--input-format", "stream-json"]
     if system:
         befehl += ["--system-prompt", system]
     if aufwand:
         befehl += ["--effort", aufwand]
-    lauf = subprocess.Popen(befehl, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    return befehl
+
+
+def _starte(befehl: list[str]) -> subprocess.Popen:
+    return subprocess.Popen(befehl, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             text=True, encoding="utf-8", cwd=tempfile.gettempdir())
+
+
+def vorhalten(modell: str = "sonnet", system: str | None = None, aufwand: str | None = None) -> None:
+    """Haelt einen wartenden Prozess fuer genau diese Einstellung bereit (nichts, wenn schon einer frisch wartet)."""
+    import time
+    schluessel = (modell, system, aufwand)
+    with _VORRAT_SCHLOSS:
+        alt = _VORRAT.get(schluessel)
+        if alt is not None and alt[0].poll() is None and time.monotonic() - alt[1] < VORRAT_HOECHSTENS:
+            return
+        try:
+            _VORRAT[schluessel] = (_starte(_strom_befehl(modell, system, aufwand)), time.monotonic())
+        except (LLMFehler, OSError):
+            _VORRAT.pop(schluessel, None)
+            return
+    if alt is not None:
+        _schliessen(alt[0])
+
+
+def _schliessen(lauf: subprocess.Popen) -> None:
+    try:
+        lauf.stdin.close()     # wartet er noch: beendet sich selbst
+    except OSError:
+        pass
+    try:
+        lauf.wait(timeout=0.01)
+    except subprocess.TimeoutExpired:
+        __import__("threading").Timer(3.0, lambda: lauf.poll() is None and lauf.kill()).start()
+
+
+def _aus_vorrat(schluessel: tuple) -> subprocess.Popen | None:
+    import time
+    with _VORRAT_SCHLOSS:
+        eintrag = _VORRAT.pop(schluessel, None)
+    if eintrag is None:
+        return None
+    lauf, seit = eintrag
+    if lauf.poll() is not None or time.monotonic() - seit >= VORRAT_HOECHSTENS:
+        _schliessen(lauf)
+        return None
+    return lauf
+
+
+def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = "sonnet", timeout: float = 60,
+                aufwand: str | None = None, bilder: list[bytes] | None = None, nachladen: bool = False) -> str:
+    """Wie `frage`, aber gestreamt: jeder fertige Satz geht sofort an `bei_satz(satz)` - der Coach kann den
+    ersten Satz sprechen, waehrend der Rest noch entsteht (gemessen 26.09.: erster Satz nach 2,7-3,1 s,
+    ganze Antwort nach 5,1-5,2 s). Der erste Teilsatz geht schon vor dem Satzende raus (`erster_teil`), und
+    ein vorgehaltener Prozess spart den Start (`vorhalten`). `nachladen`: danach gleich wieder einen
+    vorhalten. Gibt die ganze Antwort zurueck."""
+    import threading
+    schluessel = (modell, system, aufwand)
+    lauf = _aus_vorrat(schluessel) or _starte(_strom_befehl(modell, system, aufwand))
+    inhalt: list[dict] = []
+    if bilder:
+        import base64
+        inhalt = [{"type": "image", "source": {"type": "base64", "media_type": "image/jpeg",
+                                                "data": base64.b64encode(b).decode()}} for b in bilder]
+    eingabe = json.dumps({"type": "user", "message": {"role": "user", "content": inhalt + [
+        {"type": "text", "text": prompt}]}}) + "\n"
     uhr = threading.Timer(timeout, lauf.kill)
     uhr.start()
     try:
         lauf.stdin.write(eingabe)
         lauf.stdin.close()
-        puffer, ergebnis, fehler = "", None, None
+        puffer, ergebnis, gesendet = "", None, False
         for zeile in lauf.stdout:
             e = _json_oder_nichts(zeile)
             if not e:
@@ -149,13 +223,19 @@ def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = 
                 if ev.get("type") == "content_block_delta" and ev.get("delta", {}).get("type") == "text_delta":
                     puffer += ev["delta"]["text"]
                     fertige, puffer = saetze(puffer)
+                    if not gesendet and not fertige:
+                        teil, puffer = erster_teil(puffer)
+                        fertige = [teil] if teil else []
                     for satz in fertige:
+                        gesendet = True
                         bei_satz(satz)
             elif e.get("type") == "result":
                 ergebnis = e
         lauf.wait(timeout=5)
     finally:
         uhr.cancel()
+        if nachladen:
+            threading.Thread(target=vorhalten, args=schluessel, daemon=True).start()
     if ergebnis is None:
         raise LLMFehler(f"keine Antwort (Rueckgabe {lauf.returncode})")
     if ergebnis.get("is_error"):

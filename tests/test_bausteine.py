@@ -984,6 +984,54 @@ def verzoegerung_bis_zum_ohr():
     assert eilig.ton is not None and 0.05 <= eilig.ton - 101.0 <= 0.5 and eilig.ganz is True, (eilig.ton, eilig.ganz)
 
 
+def antwort_ab_dem_ersten_teilsatz():
+    """Carlos 27.09.: "antwortet extrem spaet". Die Antwort geht ab dem ersten Teilsatz an die Stimme, nicht erst
+    am Satzende, und ein vorgehaltener Claude-Prozess wird benutzt statt neu gestartet (Start 0,6-0,9 s)."""
+    import io
+    import json as js
+    from lolcoach import llm
+    assert llm.erster_teil("Ja, geh jetzt auf Poppy drauf, aber nur") == ("Ja, geh jetzt auf Poppy drauf,", "aber nur")
+    assert llm.erster_teil("Nein, zurück")[0] is None                 # zu kurz fuer einen eigenen Teil
+    assert llm.erster_teil("Du hast noch 1,5 Sekunden bis zum Flash")[0] is None   # Dezimalkomma
+    assert llm.erster_teil("Zieh dich jetzt zum Turm zurück – Vi")[0] == "Zieh dich jetzt zum Turm zurück"
+
+    class Lauf:   # tut so, als waere es `claude -p` mit stream-json
+        gestartet = 0
+
+        def __init__(self, *_a, **_k):
+            Lauf.gestartet += 1
+            self.stdin, self.returncode = io.StringIO(), 0
+            stuecke = ["Ja, geh jetzt auf Poppy", " drauf, aber nur Poppy.", " Deine Ult ist da."]
+            self.stdout = [js.dumps({"type": "stream_event", "event": {"type": "content_block_delta", "delta": {
+                "type": "text_delta", "text": s}}}) + "\n" for s in stuecke]
+            self.stdout.append(js.dumps({"type": "result", "result": "".join(stuecke)}) + "\n")
+
+        def poll(self):
+            return None
+
+        def wait(self, timeout=None):
+            return 0
+
+        def kill(self):
+            pass
+
+    alt = llm._starte, llm._programm
+    llm._starte, llm._programm = Lauf, (lambda: "claude")
+    try:
+        llm.vorhalten("sonnet", "S", "low")
+        assert Lauf.gestartet == 1
+        teile: list = []
+        antwort = llm.frage_strom("Frage", teile.append, system="S", modell="sonnet", aufwand="low")
+        assert Lauf.gestartet == 1, "vorgehaltener Prozess nicht benutzt"
+        assert teile == ["Ja, geh jetzt auf Poppy drauf,", "aber nur Poppy.", "Deine Ult ist da."], teile
+        assert antwort.startswith("Ja, geh")
+        llm.frage_strom("Frage", teile.append, system="S", modell="sonnet", aufwand="low")
+        assert Lauf.gestartet == 2    # kein Vorrat mehr: neu gestartet
+    finally:
+        llm._starte, llm._programm = alt
+        llm._VORRAT.clear()
+
+
 _FESTHALTEN: list = []   # Zeiger, die erst beim Beenden sterben duerfen (dann gibt comtypes nichts mehr frei)
 
 
@@ -1029,7 +1077,7 @@ if __name__ == "__main__":
                  satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
                  konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler, eigene_position_aus_dem_kamerarahmen,
                  satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah, baron_aeltester_inhibitor,
-                 minimap_blind_wird_gesagt, kamera_gibt_nur_einmal_frei,
+                 minimap_blind_wird_gesagt, kamera_gibt_nur_einmal_frei, antwort_ab_dem_ersten_teilsatz,
                  sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")

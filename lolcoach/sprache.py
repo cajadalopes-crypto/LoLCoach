@@ -58,7 +58,11 @@ class Erkenner:
         for name, geraet, typ in (("large-v3-turbo", "cuda", "float16"), ("small", "cpu", "int8")):
             try:
                 self.modell = WhisperModel(name, device=geraet, compute_type=typ, download_root=str(MODELLE))
-                self.modell.transcribe(np.zeros(RATE // 2, np.float32), language="de")  # aufwaermen
+                # aufwaermen wie eine echte Frage (3 s, mit Vorgabe): mit 0,5 s Stille dauerte die erste echte
+                # Frage der Partie noch 0,9 s statt 0,2 s (gemessen 27.09.)
+                rausch = (np.random.default_rng(0).standard_normal(RATE * 3) * 0.01).astype(np.float32)
+                list(self.modell.transcribe(rausch, language="de", beam_size=1, initial_prompt=VOKABULAR + ".",
+                                            vad_filter=False, condition_on_previous_text=False)[0])
                 self.beschreibung = f"{name} auf {geraet}"
                 break
             except Exception as e:
@@ -172,8 +176,17 @@ class Gespraech:
         self.erkenner = Erkenner()
         self.p = self.lagebild = self.gesagt = None
         self.notizen: pathlib.Path | None = None   # je Partie gesetzt (live)
-        self.ptt = PushToTalk(taste, self._frage, beim_druecken=sprecher.pausiere, bei_abbruch=sprecher.freigeben)
+        self.ptt = PushToTalk(taste, self._frage, beim_druecken=self._gedrueckt, bei_abbruch=sprecher.freigeben)
         self.ptt.start()
+
+    def _gedrueckt(self) -> None:
+        """Taste gedrueckt: der Coach verstummt, und ein Claude-Prozess startet schon, waehrend er noch spricht
+        (der Start kostet 0,6-0,9 s, die Frage dauert meist laenger - llm.vorhalten)."""
+        self.sprecher.pausiere()
+        if not getattr(self, "partie_vorbei", False):
+            from . import llm
+            threading.Thread(target=llm.vorhalten, args=(self.modell, self.antworten.SYSTEM, self.antworten.AUFWAND),
+                             daemon=True).start()
 
     def aktualisiere(self, p, lagebild=None, ansagen=None) -> None:
         self.p, self.lagebild, self.gesagt = p, lagebild, ansagen
@@ -230,6 +243,7 @@ class Gespraech:
             self._review_frage(audio)
             return
         p = self.p
+        start = time.monotonic()
         self._tastenlog(p, audio)
         if p is None or not p.ich:
             self.sprecher.antworte("Ich sehe noch keine Partie.")
@@ -238,6 +252,7 @@ class Gespraech:
             self.sprecher.freigeben()
             return  # nichts gesagt
         text = self.erkenner.text(audio, [s.champion for s in p.spieler])
+        erkannt = time.monotonic() - start
         woerter = text.lower().replace(",", " ").replace(".", " ").split()
         if not text or any(e in text.lower() for e in ERFUNDEN) or len(woerter) < 2:
             self.sprecher.freigeben()  # Rauschen, Raeuspern, "B."
@@ -269,6 +284,8 @@ class Gespraech:
                         return
                     if gesprochen and gesprochen[0] is None:
                         return
+                    if not gesprochen:
+                        self._zeiten(p, erkannt, time.monotonic() - start, "Claude", text)
                     gesprochen.append(satz)
                     if hasattr(self.sprecher, "antworte_teil"):
                         self.sprecher.antworte_teil(satz)
@@ -276,7 +293,7 @@ class Gespraech:
                 strom = hasattr(self.sprecher, "antworte_teil")
                 antwort = self.antworten.mit_claude(text, self.p, self.lagebild, self.modell, letzte,
                                                     getattr(self, "gehirn", None), [bild] if bild else None,
-                                                    bei_satz=satz_fertig if strom else None)
+                                                    bei_satz=satz_fertig if strom else None, vorhalten=True)
                 if strom and gesprochen and gesprochen[0] is not None:
                     self.sprecher.antworte_ende()
                     print(f"  Coach: {antwort}", flush=True)
@@ -301,10 +318,23 @@ class Gespraech:
                 if antwort.strip().rstrip(".").lower() == "notiert":
                     self._notiere(text, p)  # Claude hat es als Rueckmeldung erkannt
         print(f"  Coach: {antwort}", flush=True)
+        self._zeiten(p, erkannt, time.monotonic() - start, "ganz", text)
         self.sprecher.antworte(antwort)
         if self.gesagt is not None:
             from .regeln import WICHTIG, Ansage
             self.gesagt.append(Ansage(f"„{text}“ – {antwort}", WICHTIG, "antwort", zeit=p.zeit, gesprochen=p.zeit))
+
+    def _zeiten(self, p, erkannt: float, stimme: float, wie: str, text: str) -> None:
+        """Wie lange er warten musste - je Frage ins Tastenprotokoll: Spracherkennung, bis die ersten Worte an die
+        Stimme gingen (dazu ~0,45 s bis zum Ton). Carlos 27.09.: "antwortet extrem spaet"."""
+        if self.notizen is None or p is None:
+            return
+        try:
+            with open(self.notizen.with_name(self.notizen.name.replace("_notizen.md", "_sprechtaste.log")), "a",
+                      encoding="utf-8") as f:
+                f.write(f"    erkannt nach {erkannt:.2f} s, an die Stimme nach {stimme:.2f} s ({wie}): {text}\n")
+        except OSError:
+            pass
 
     def _notiere(self, text: str, p) -> None:
         ziel = self.notizen or MODELLE.parent.parent / "aufnahmen" / "notizen.md"

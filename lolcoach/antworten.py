@@ -491,6 +491,9 @@ SYSTEM = SYSTEM.replace("{BILD}", BILD_HINWEIS) + (
     "Todeszeit): stuetz die Antwort darauf und nenne die entscheidende Zahl, statt zu schaetzen.")
 
 
+AUFWAND = "low"   # gleich fuer Frage und vorgehaltenen Prozess (llm.vorhalten), sonst passt er nicht
+
+
 KAUF_WORTE = {"kaufen", "kauf", "item", "items", "build", "bauen", "baue", "shop", "laden", "gold"}
 
 
@@ -508,9 +511,10 @@ def laden_liste() -> str:
 
 
 def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", letzte=(), gehirn=None,
-               bilder: list[bytes] | None = None, bei_satz=None) -> str:
+               bilder: list[bytes] | None = None, bei_satz=None, vorhalten: bool = False) -> str:
     """`gehirn`: wenn da, bekommt Claude Spielakte + passende Lexikon-Abschnitte dazu.
-    `bilder`: der Spielbildschirm im Moment der Frage (JPEG)."""
+    `bilder`: der Spielbildschirm im Moment der Frage (JPEG). `vorhalten`: danach gleich den naechsten
+    Claude-Prozess vorstarten (live - die naechste Frage spart den Start)."""
     zusatz = ""
     if letzte:
         zusatz += "\n\nDeine letzten Ansagen: " + " | ".join(
@@ -526,7 +530,8 @@ def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", let
         if bei_satz is not None:   # Satz fuer Satz sprechen, sobald er fertig ist
             return absichern(llm.frage_strom(f"{inhalt}\n\nFrage des Spielers: {frage}",
                                              lambda s: bei_satz(absichern(s)[0]), system=SYSTEM, modell=modell,
-                                             timeout=40, aufwand="low", bilder=bilder).strip())[0]
+                                             timeout=40, aufwand=AUFWAND, bilder=bilder,
+                                             nachladen=vorhalten).strip())[0]
         return absichern(llm.frage(f"{inhalt}\n\nFrage des Spielers: {frage}",
                                    system=SYSTEM, modell=modell, timeout=40, aufwand="low", bilder=bilder).strip())[0]
     except llm.LLMFehler as e:
