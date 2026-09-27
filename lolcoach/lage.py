@@ -642,10 +642,11 @@ class Beobachter(threading.Thread):
                     if f and self.champions:
                         l, o, r, u = f
                         breite, hoehe = r - l, u - o
+                        k = minimap.faktor()     # Minimap-Groesse aus der game.cfg (nur gelesen, stat alle 2 s)
                         if verfolger is None or verfolger.champions != self.champions:
-                            verfolger = minimap.Verfolger(list(self.champions), hoehe=hoehe)
+                            verfolger = minimap.Verfolger(list(self.champions), hoehe=round(hoehe * k))
                         verfolger.eigenes_team = (getattr(self, "ich", None) or (None, None))[1]
-                        kl, ko, kr, ku = minimap.kartenrechteck(breite, hoehe)
+                        kl, ko, kr, ku = minimap.kartenrechteck(breite, hoehe, k)
                         karte = kamera.hole((l + kl, o + ko, l + kr, o + ku))
                         self._letzte_karte = karte          # fuer die Balkenspur: wer ist gerade im Bild?
                         ergebnis = verfolger.bild(karte, start) if karte is not None else None
@@ -707,11 +708,11 @@ class Beobachter(threading.Thread):
                                             self._schirm_schreiben(start, jpg.tobytes())
                             except Exception as e:
                                 self.fehler = f"Bildschirm: {type(e).__name__}: {e}"
-                            hx0, hy0, hx1, hy1 = hud.bereich(breite, hoehe)
+                            hx0, hy0, hx1, hy1 = hud.bereich(breite, hoehe, k)
                             leiste = kamera.hole((l + hx0, o + hy0, l + hx1, o + hy1))
                             if leiste is not None:
                                 with self._schloss:
-                                    self._ereignisse.append(("hud", start, hud.lies(leiste, hoehe)))
+                                    self._ereignisse.append(("hud", start, hud.lies(leiste, hoehe, k)))
                             if karte is not None and start - platten_bei >= 2.0:
                                 platten_bei = start
                                 stand = plattenleser.lies_karte(karte)
@@ -882,13 +883,13 @@ class Beobachter(threading.Thread):
 # --- Nachspielen: Sichtungen aus dem Bilderordner ----------------------------------
 
 def karte_aus_bild(pfad: Path, hoehe: int = minimap.REFERENZ_HOEHE) -> np.ndarray | None:
-    """Neue Aufnahmen speichern genau die Minimap; die ersten (26.09.2026,
-    12:00) die ganze Ecke - daraus wird die Minimap herausgeschnitten."""
+    """Neue Aufnahmen speichern genau die Minimap (quadratisch, je nach MinimapScale 570-780 px bei 4K); die
+    ersten (26.09.2026, 12:00) die ganze Ecke (907 px) - daraus wird die Minimap herausgeschnitten."""
     bild = cv2.imread(str(pfad))
     if bild is None:
         return None
     s = round(minimap.KARTE * hoehe)
-    if abs(bild.shape[0] - s) <= 2:
+    if bild.shape[0] == bild.shape[1] and s - 2 <= bild.shape[0] <= minimap.groesse(3.0) * s + 2:
         return bild
     ecke = bild.shape[0]
     x0 = ecke - round(minimap.RAND_RECHTS * hoehe) - s

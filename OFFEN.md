@@ -198,6 +198,12 @@ Notizen und Review durchsehen und nachschaerfen.
 
 ## Erledigt
 
+- Minimap-Groesse aus der game.cfg: Partie 27.09. 13:03 lief mit MinimapScale 2,91 statt 1,5 - der Coach
+  schnitt die alte 570er-Karte aus, sah in 1629 von 1717 Bildern niemanden und sagte deshalb staendig
+  "ich erkenne niemanden, rechne ohne Karte". Jetzt liest er MinimapScale (nur lesen, alle 2 s per stat),
+  Karte, Icons, Suchradien und Mitspieler-Leiste wachsen mit (Test minimap_groesse_aus_der_einstellung).
+  Andere Werte als 1,5 und 2,91 sind linear angenommen, nicht vermessen.
+
 - Review mit Bildschirm-Momenten: Spielbild alle 5 s + 12 s vor jedem Tod auf der Platte; Review
   bekommt die Bilder der wichtigsten Momente, das Gespraech das Bild zur gefragten Zeit, die
   Review-Seite zeigt es neben der Minimap; Aufraeumen der Minimap-Bilder lief seit Partie 4 nicht

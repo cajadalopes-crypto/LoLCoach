@@ -25,7 +25,7 @@ man mit ihm redet. Anforderungen: `ANFORDERUNGEN.md`. Bedienung fuer Carlos:
 | `zustand.py` | Rohdaten -> Spielzustand (reine Funktion eines Schnappschusses) |
 | `aufzeichnung.py` | jede Partie nach `aufnahmen/` (+ `_bilder/` mit Protokollen, `_ansagen.json`, `_notizen.md`, `_spielakte.md`) |
 | `bild.py`, `lage.py` | Spielfenster finden; Beobachter-Thread (dxcam, 60 Bilder/s): Minimap, HUD, Mitspieler-Leiste, Chat, Wellen, Platten, Spielbild; Lagebild (wer zuletzt wo, Timer, Leben, Wellen, Platten); Nachspielen aus Protokoll/Bildern |
-| `minimap.py` | Champions erkennen (Kreis-Icons von CommunityDragon) + Verfolger (Umkreis, Halbmasken, Verdeckung, 6 ms/Bild), Flash-Spruenge mit Bestaetigung, Orte in Worten |
+| `minimap.py` | Champions erkennen (Kreis-Icons von CommunityDragon) + Verfolger (Umkreis, Halbmasken, Verdeckung, 6 ms/Bild), Flash-Spruenge mit Bestaetigung, Orte in Worten; Minimap-Groesse aus der game.cfg (`faktor()`, MinimapScale, nur gelesen) |
 | `platten.py` | Platten-Ziffer in den Turm-Icons der Minimap (Vorlagen `wissen/platten_ziffern.png`) |
 | `hud.py` | Mitspieler-Leiste ueber der Minimap: Leben, Ult bereit; eigene Q W E R D F bereit (gelbe Tastenbuchstaben) |
 | `welle.py` | Vasallen-Punkte -> Wellenstand je Lane |

@@ -11,11 +11,18 @@ unteren Fensterrand, Portraet 48 px. Alles skaliert mit der Fensterhoehe.
 Gemessen: sichtbare Champions 0,93-0,98 Uebereinstimmung, unsichtbare
 unter 0,80.
 
+Die Minimap-Groesse ist verstellbar (Partie 27.09., 13:03: MinimapScale 2,91,
+der Coach schnitt weiter 570 px aus und erkannte in 1629 von 1717 Bildern
+niemanden). Deshalb liest `faktor()` die Einstellung aus der game.cfg (nur
+lesen) - Kante, Icons und Suchradien wachsen mit ihr, die Raender nicht.
+
 Kartenkoordinaten: (x, y) in 0..1, (0, 0) oben links. Blau (ORDER) hat
 seine Basis unten links, Rot oben rechts.
 """
 from __future__ import annotations
 
+import os
+import time
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -40,6 +47,60 @@ VERDECKT_MAX = 2.5      # Sekunden, die ein verdecktes Icon mit seiner Deckung m
 # (Ereignisprobe 27.09.: Verbuendete bei ihren Kills 2-3 s nicht gesehen, im Getuemmel unter den Gegnern)
 VERDECKT_MAX_EIGEN = 6.0
 
+# Minimap-Groesse aus den Einstellungen ([HUD] MinimapScale). Vermessen 27.09.2026 bei 4K per Bildvergleich
+# (scratch minimap_vermessen.py, 45 Bilder): 1,50 -> 570 px, 2,91 -> 764 px, Raender 27/29 px unveraendert,
+# Icons wachsen im selben Mass. Dazwischen linear angenommen - andere Werte sind nicht vermessen.
+SKALA_VERMESSEN = 1.5
+PX_JE_SKALA = (764 - 570) / (2.91 - 1.5)
+GAME_CFG = Path(os.environ.get("LOLCOACH_GAME_CFG", "C:/Riot Games/League of Legends/Config/game.cfg"))
+CFG_PRUEFEN_ALLE = 2.0     # Sekunden: so oft wird nachgesehen, ob die Datei neu geschrieben wurde (nur stat)
+
+
+def groesse(minimap_scale: float) -> float:
+    """Kante der Minimap relativ zur Vermessung (MinimapScale 1,5 = 1,0)."""
+    return (570 + (minimap_scale - SKALA_VERMESSEN) * PX_JE_SKALA) / 570
+
+
+def eingestellt(pfad: Path = GAME_CFG) -> float | None:
+    """MinimapScale aus der game.cfg - nur gelesen, nie geschrieben. None: Datei oder Eintrag fehlt."""
+    try:
+        text = pfad.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+    abschnitt = ""
+    for zeile in text.splitlines():
+        zeile = zeile.strip()
+        if zeile.startswith("["):
+            abschnitt = zeile
+        elif abschnitt == "[HUD]" and zeile.startswith("MinimapScale="):
+            try:
+                return float(zeile.split("=", 1)[1])
+            except ValueError:
+                return None
+    return None
+
+
+_cfg = {"bei": -1e9, "stempel": None, "faktor": 1.0}
+
+
+def faktor(pfad: Path = GAME_CFG) -> float:
+    """Aktueller Kantenfaktor. Die Datei wird hoechstens alle CFG_PRUEFEN_ALLE s angesehen und nur neu gelesen,
+    wenn sie sich geaendert hat - so gilt auch eine mitten in der Partie verstellte Minimap."""
+    jetzt = time.monotonic()
+    if jetzt - _cfg["bei"] < CFG_PRUEFEN_ALLE:
+        return _cfg["faktor"]
+    _cfg["bei"] = jetzt
+    try:
+        st = pfad.stat()
+        stempel = (str(pfad), st.st_mtime_ns, st.st_size)
+    except OSError:
+        stempel = None
+    if stempel != _cfg["stempel"]:
+        _cfg["stempel"] = stempel
+        skala = eingestellt(pfad) if stempel else None
+        _cfg["faktor"] = 1.0 if skala is None else groesse(skala)
+    return _cfg["faktor"]
+
 
 @dataclass(frozen=True)
 class Sichtung:
@@ -50,12 +111,18 @@ class Sichtung:
     guete: float
 
 
-def kartenrechteck(fenster_breite: int, fenster_hoehe: int) -> tuple[int, int, int, int]:
-    """(links, oben, rechts, unten) der Minimap im Fenster."""
+def kartenrechteck(fenster_breite: int, fenster_hoehe: int, k: float = 1.0) -> tuple[int, int, int, int]:
+    """(links, oben, rechts, unten) der Minimap im Fenster; `k` = `faktor()` (verstellte Minimap-Groesse)."""
     h = fenster_hoehe
     r, u = fenster_breite - round(RAND_RECHTS * h), fenster_hoehe - round(RAND_UNTEN * h)
-    s = round(KARTE * h)
+    s = round(KARTE * h * k)
     return r - s, u - s, r, u
+
+
+def massstab(seite: int) -> int:
+    """Die Fensterhoehe, zu der eine Minimap dieser Kante in der Vermessung gehoert: nach ihr richten sich
+    Icons und Suchradien - so passt alles zur Karte, egal ob Fenster oder Minimap-Groesse sie so gross machen."""
+    return round(seite / KARTE)
 
 
 def _champion_bild(champion_id: str) -> np.ndarray | None:
@@ -273,7 +340,7 @@ GROB_SCHWELLE = 0.45
 KANDIDATEN = 3
 
 
-def finde(karte: np.ndarray, champions: list[tuple[str, str]], hoehe: int = REFERENZ_HOEHE) -> list[Sichtung]:
+def finde(karte: np.ndarray, champions: list[tuple[str, str]], hoehe: int | None = None) -> list[Sichtung]:
     """`karte`: BGR-Ausschnitt der Minimap. `champions`: (champion_id, team) der Partie.
     Gibt je sichtbarem Champion eine Sichtung; doppelte Champions (Bot-Partien)
     werden ueber die Ringfarbe getrennt.
@@ -281,6 +348,7 @@ def finde(karte: np.ndarray, champions: list[tuple[str, str]], hoehe: int = REFE
     Zwei Stufen: grob (halbe Aufloesung, inneres Quadrat, ein paar Kandidaten),
     dann fein (maskiertes Portraet in voller Aufloesung, nur um die Kandidaten)."""
     seite = karte.shape[0]
+    hoehe = hoehe or massstab(seite)
     halb = cv2.resize(karte, (seite // 2, seite // 2), interpolation=cv2.INTER_AREA)
     anzahl: dict[str, int] = {}
     for cid, _ in champions:
@@ -350,8 +418,14 @@ class Verfolger:
 
     def __init__(self, champions: list[tuple[str, str]], hoehe: int = REFERENZ_HOEHE, vollsuche_alle: float = 0.5,
                  verloren_nach: float = 0.4):
-        self.champions, self.hoehe, self.vollsuche_alle = champions, hoehe, vollsuche_alle
+        self.champions, self.vollsuche_alle = champions, vollsuche_alle
         self.verloren_nach = verloren_nach  # Aufnahmen mit 1 Bild/s brauchen mehr als live mit 15
+        self._massstab(hoehe)
+
+    def _massstab(self, hoehe: int) -> None:
+        """Icons, Suchradius und Flash-Weite fuer eine Karte dieser Groesse. Aendert sie sich (Minimap verstellt),
+        gilt kein Pixel von vorher mehr: alle Positionen neu suchen, sonst saehe jede wie ein Flash-Sprung aus."""
+        self.hoehe = hoehe
         self.umkreis = round(30 * hoehe / REFERENZ_HOEHE)
         self.flash_px = FLASH_EINHEITEN / KARTE_EINHEITEN * round(KARTE * hoehe)
         self.pos: dict[tuple[str, int], tuple[float, int, int, str | None]] = {}  # -> (zeit, cx, cy, team)
@@ -438,6 +512,8 @@ class Verfolger:
             return None
         self._vorher = karte.copy()
         seite = karte.shape[0]
+        if abs(massstab(seite) - self.hoehe) > 2:
+            self._massstab(massstab(seite))
         gefunden: dict[tuple[str, int], tuple[float, int, int, str | None]] = {}
         # 1. Umkreissuche fuer alle frisch gesehenen
         doppelt = {c for c, _ in self.champions if sum(1 for d, _ in self.champions if d == c) > 1}

@@ -1298,6 +1298,40 @@ def kamera_gibt_nur_einmal_frei():
     assert n == 3, f"{3 - n} Freigabe(n) zu viel"
 
 
+def minimap_groesse_aus_der_einstellung():
+    """Partie 27.09., 13:03: MinimapScale 2,91 statt 1,5 - der Coach schnitt weiter die alte 570er-Karte aus und
+    erkannte in 1629 von 1717 Bildern niemanden ("Ich erkenne auf der Minimap gerade niemanden ..."). Jetzt liest
+    er die Groesse aus der game.cfg; Minimap, Icons und Mitspieler-Leiste wachsen mit. Bild: Ecke eines
+    1600x900-Spielbilds derselben Partie."""
+    import tempfile
+    cfg = Path(tempfile.mkdtemp()) / "game.cfg"
+    cfg.write_text("[General]\nMinimapScale=9\n[HUD]\nMinimapScaleSpectator=1.0000\nMinimapScale=2.9100\n",
+                   encoding="utf-8")
+    assert minimap.eingestellt(cfg) == 2.91 and minimap.eingestellt(cfg.with_name("fehlt.cfg")) is None
+    k = minimap.groesse(2.91)
+    assert minimap.groesse(1.5) == 1.0 and round(570 * k) == 764
+    assert minimap.kartenrechteck(3840, 2160, k) == (3049, 1367, 3813, 2131)    # Raender 27/29 bleiben
+    champions = [("Riven", "ORDER"), ("Pantheon", "ORDER"), ("Ryze", "ORDER"), ("Jinx", "ORDER"), ("Braum", "ORDER"),
+                 ("Ornn", "CHAOS"), ("Sejuani", "CHAOS"), ("Olaf", "CHAOS"), ("Gnar", "CHAOS"), ("Braum", "CHAOS")]
+    bild = cv2.imread(str(HIER / "minimap_gross.jpg"))
+    ox, oy = 1600 - bild.shape[1], 900 - bild.shape[0]
+
+    def karte(k_):
+        kl, ko, kr, ku = minimap.kartenrechteck(1600, 900, k_)
+        return bild[ko - oy:ku - oy, kl - ox:kr - ox]
+    assert len(minimap.finde(karte(1.0), champions)) <= 1          # so war es: fast blind
+    gefunden = [s.champion_id for s in minimap.finde(karte(k), champions)]
+    assert {"Riven", "Pantheon", "Jinx", "Olaf"} <= set(gefunden) and gefunden.count("Braum") == 2, gefunden
+    v = minimap.Verfolger(champions, hoehe=2160)                    # richtet sich nach der Karte, nicht dem Aufruf
+    sichtungen, _ = v.bild(karte(k), 1.0)
+    assert len(sichtungen) >= 6 and v.hoehe == minimap.massstab(318), (v.hoehe, sichtungen)
+    hx0, hy0, hx1, hy1 = hud.bereich(1600, 900, k)
+    m = hud.lies(bild[hy0 - oy:hy1 - oy, hx0 - ox:hx1 - ox], 900, k)
+    assert all(abs(a - b) <= 0.06 for a, b in zip([x.leben for x in m], [0.73, 0.95, 0.63, 0.34])), m
+    assert [x.ult_bereit for x in m] == [False, True, False, True], m
+    assert hud.bereich(3840, 2160, 1.0) == hud.bereich(3840, 2160)   # ohne Faktor wie vermessen
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
@@ -1310,6 +1344,6 @@ if __name__ == "__main__":
                  satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah, baron_aeltester_inhibitor,
                  minimap_blind_wird_gesagt, kamera_gibt_nur_einmal_frei, antwort_ab_dem_ersten_teilsatz, afk_erkannt,
                  von_deiner_position_aus, wachhund_meldet_datenluecke, modus_sperre_budget,
-                 sofort_back_und_objective):
+                 sofort_back_und_objective, minimap_groesse_aus_der_einstellung):
         test()
         print(f"{test.__name__} OK")

@@ -8,6 +8,9 @@ unten rechts): vier Kaesten ueber der Minimap. In Pixeln, gemessen vom
 Ausschnitt "unten rechts, 907 x 907" (= 0,42 x Hoehe): Lebensbalken x 342-451,
 naechster Kasten +145 px, Zeilen 226-241; Ult-Kreis ueber dem Portraet, Mitte
 x 397 (+145 je Kasten), y 114: gruen-tuerkis = bereit, Tortenstueck/schwarz = nicht bereit. Alles skaliert mit der Fensterhoehe.
+
+Die Leiste sitzt auf der Minimap und waechst mit ihr (MinimapScale, `minimap.faktor()` = k): gemessen 27.09. an
+MinimapScale 2,91 - alles um k vergroessert, festgehalten an der Minimap-Ecke unten rechts (ANKER).
 """
 from __future__ import annotations
 
@@ -21,6 +24,7 @@ ECKE = 907                  # Seitenlaenge des Bezugsausschnitts bei 2160
 BALKEN_X, BALKEN_BREITE, ABSTAND = 342, 110, 145
 BALKEN_Y = (228, 240)
 ULT = (397, 114, 13)        # Mitte x, Mitte y, Radius (innen, ohne Goldrand)
+ANKER = (ECKE - 27, ECKE - 29)   # Minimap-Ecke unten rechts im Bezugsausschnitt (minimap.RAND_RECHTS/RAND_UNTEN)
 
 
 @dataclass(frozen=True)
@@ -29,13 +33,20 @@ class Mitspieler:
     ult_bereit: bool | None  # None: nicht erkennbar
 
 
-def bereich(breite: int, hoehe: int) -> tuple[int, int, int, int]:
-    """(links, oben, rechts, unten) der Leiste im Spielfenster."""
+def _gewachsen(x: float, y: float, k: float) -> tuple[float, float]:
+    """Ein Punkt der Leiste (Bezugsausschnitt) bei einer um k vergroesserten Minimap."""
+    return ANKER[0] + k * (x - ANKER[0]), ANKER[1] + k * (y - ANKER[1])
+
+
+def bereich(breite: int, hoehe: int, k: float = 1.0) -> tuple[int, int, int, int]:
+    """(links, oben, rechts, unten) der Leiste im Spielfenster; `k` = `minimap.faktor()`."""
     s = hoehe / REF
-    x0 = breite - round(ECKE * s) + round((BALKEN_X - 20) * s)
-    y0 = hoehe - round(ECKE * s) + round((ULT[1] - ULT[2] - 10) * s)
-    x1 = breite - round(ECKE * s) + round((BALKEN_X + 3 * ABSTAND + BALKEN_BREITE + 10) * s)
-    y1 = hoehe - round(ECKE * s) + round((BALKEN_Y[1] + 4) * s)
+    lx, oy = _gewachsen(BALKEN_X - 20, ULT[1] - ULT[2] - 10, k)
+    rx, uy = _gewachsen(BALKEN_X + 3 * ABSTAND + BALKEN_BREITE + 10, BALKEN_Y[1] + 4, k)
+    x0 = breite - round(ECKE * s) + round(lx * s)
+    y0 = hoehe - round(ECKE * s) + round(oy * s)
+    x1 = breite - round(ECKE * s) + round(rx * s)
+    y1 = hoehe - round(ECKE * s) + round(uy * s)
     return x0, y0, x1, y1
 
 
@@ -63,9 +74,9 @@ def eigene(fenster: np.ndarray) -> dict[str, bool] | None:
     return aus
 
 
-def lies(leiste: np.ndarray, hoehe: int = REF) -> list[Mitspieler]:
-    """`leiste`: BGR-Ausschnitt genau `bereich(...)`. Gibt vier Mitspieler von links nach rechts."""
-    s = hoehe / REF
+def lies(leiste: np.ndarray, hoehe: int = REF, k: float = 1.0) -> list[Mitspieler]:
+    """`leiste`: BGR-Ausschnitt genau `bereich(...)` mit demselben `k`. Gibt vier Mitspieler von links nach rechts."""
+    s = hoehe / REF * k      # innerhalb der Leiste waechst jeder Abstand um k
     ox = BALKEN_X - 20
     oy = ULT[1] - ULT[2] - 10
     hsv = cv2.cvtColor(leiste, cv2.COLOR_BGR2HSV)
