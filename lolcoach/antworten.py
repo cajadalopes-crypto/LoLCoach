@@ -393,6 +393,18 @@ def lage_text(p: Partie, lagebild=None) -> str:
     zeilen = [f"Spielzeit {int(p.zeit // 60)}:{int(p.zeit % 60):02d}. Ich: {p.ich.champion} "
               f"({ROLLE_DE.get(p.ich.rolle, '?')}), {leben}Gold {int(p.gold or 0)}, Beschwoererzauber: {', '.join(zauber)}."
               + (" Bot-Partie (Gegner sind Bots)." if any(s.bot for s in p.gegner()) else "")]
+    # ALLE eigenen Items, auch Bauteile - live 235433, 4:17: "Aber ich habe doch schon Spitzhacke" (875 Gold, unter der
+    # 900er-Grenze der Uebersicht - Claude riet, sie zu kaufen); dazu der Kaufplan, den auch die Ansagen benutzen
+    meine = [it[i]["name"] for i in p.ich.items if i in it]
+    zeilen.append("Meine Items (alle, auch Bauteile): " + (", ".join(meine) or "keine"))
+    try:
+        from . import kaufplan
+        if (k := kaufplan.plan(p.ich.champion_id, p.ich.items, float(p.gold or 0))) is not None:
+            zeilen.append(f"Kaufplan des Coachs (Ziel {k.item}): " + (
+                "jetzt " + ", ".join(k.kaufen) if k.kaufen else
+                f"noch {k.naechstes[1]} Gold bis {k.naechstes[0]}" if k.naechstes else "nichts") + " - dem nicht widersprechen.")
+    except Exception:
+        pass
     # eigene Zauber und Faehigkeiten aus dem HUD - die Live-API kennt keine Abklingzeiten
     if lagebild is not None and hasattr(lagebild, "eigene_zauber"):
         if ez := lagebild.eigene_zauber(p, p.zeit):
