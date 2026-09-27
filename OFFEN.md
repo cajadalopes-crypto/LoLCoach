@@ -17,6 +17,31 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Schritt 5 umgesetzt (Buch 7 Kampf, Buch 6 Objectives, a2e418d)** - der Kern spricht in allen neun Modi. Zahlen und
+Abweichungen in `buecher/messungen.md` ("Schritt 5"), Protokolle neu in `buecher/protokolle/`. Naechster Schritt laut
+Pruefung b: Carlos prueft alle Protokolle; erst danach wieder live.
+
+Offen aus Schritt 5:
+- **Kampfmodell nicht geeicht** (Entscheidung 2): ANNEHMEN, REIN, DREHEN sind stumm (`[kampf].geeicht = false`),
+  bis `kampf_eichung.py` an echten Partien mit >= 30 entschiedenen Proben einen Brier-Wert besser als die Grundrate
+  zeigt. Heute 41 Proben, Brier 0,320 gegen 0,249; das Gold trennt sogar verkehrt (AUC 0,30), nur das Leben schwach
+  richtig (0,58) - Carlos baut das Modell danach gezielt um (Tabelle in messungen.md).
+- **Objective-Eichung:** 15 Versuche (< 30), Brier 0,276 gegen 0,160 - Startwerte. Die Toetungszeit-Messung erkennt
+  Vorbeilaufen als Beginn (3 s bis 123 s) - strengeren Beginn und mehr Partien.
+- **Welle 173159: 7 von 12** (Soll 8 von 10; 164326: 13 von 15). Ursachen je Zeitpunkt in messungen.md; nach
+  Entscheidung 3 nichts umgebaut, die strenge Prio-Regel aus Buch 6, Kapitel 6 bleibt.
+- Nicht umgesetzt aus Buch 6: Lane-Form von ABGEBEN_TAUSCHEN ("Gangplank ist zu den Larven: Platten jetzt"),
+  Herold-Ritt (Kapitel 7, `wert_ritt` mit Turm-Leben aus dem Wiki), Folgewert Larven 3:0, Bestaetigungen aus
+  Kapitel 9 ("Sauber: Drache ohne Kampf").
+- Die Kampf-Proben mit dem groessten Fehler liegen als Stubs in `tests/szenarien/offen/<stamm>_kampf.toml`
+  (Buch 7, 10) - Soll setzt Carlos.
+- **Ungefragte Ansagen <= 45 je 30 min nicht erreicht** (59-80). Die alten Regeln sind bis auf Rueckblick und AFK
+  still; es ist der Kern selbst, 40-50 % GEFAHR (Rueckzug "Raus zu deinem ...-Turm: X und Y kommen"). Naechster Hebel:
+  die Gefahr seltener und zusammengefasst.
+- **Fassungswechsel 2/1/3** (102112, 133930, 164326; Soll 0): "Back jetzt" -> "Jetzt back" mit neuem Gold nach
+  einem Rueckzug (seit der Rueckzug ohne Gefahr endet), Turm-Ziel wechselt ohne Ereignis in 12-14 s, KAUFEN mit
+  anderer Liste. Einzelstellen in messungen.md, Schritt 5.
+
 **Qualitaetsrunde 1 (Pruefung 27.09., A-F) umgesetzt** - Zahlen in `buecher/messungen.md`, Protokolle neu in
 `buecher/protokolle/`. Naechster Schritt laut Pruefung: Schritt 5 (OBJECTIVE, KAMPF), dann Schritt 6, dann die
 naechste Pruefung an allen Protokollen - erst danach wieder live.

@@ -1,0 +1,37 @@
+# Buch 7, Kapitel 10: die bis zu drei Proben dieser Partie mit dem groessten Fehler des Kampfmodells (sicher
+# gewonnen geglaubt und verloren, oder umgekehrt) - aus werkzeuge/kampf_eichung.py, 27.09.2026. Soll setzt Carlos
+# nach Durchsicht; dann nach tests/szenarien/ verschieben.
+
+aufnahme = "2026-09-27_164326"
+spielmodus = "CLASSIC"
+bots = false
+
+[[szenario]]
+id = "3314-kampfprobe"
+zeit = "33:14"
+quelle = "kampf_eichung: p_gewinn 0.86, Ausgang verloren (-370 Gold in 15 s)"
+lage = '''
+Riven 70 % Leben; wir Riven, Twisted Fate gegen Teemo; Level-Unterschied -0.5, Item-Gold-Unterschied +5100, Kopfzahl +1.'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "2117-kampfprobe"
+zeit = "21:17"
+quelle = "kampf_eichung: p_gewinn 0.75, Ausgang verloren (-255 Gold in 15 s)"
+lage = '''
+Riven 100 % Leben; wir Riven gegen Teemo; Level-Unterschied +2.0, Item-Gold-Unterschied +2150, Kopfzahl +0.'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "2735-kampfprobe"
+zeit = "27:35"
+quelle = "kampf_eichung: p_gewinn 0.75, Ausgang verloren (-255 Gold in 15 s)"
+lage = '''
+Riven 100 % Leben; wir Riven, Talon gegen Caitlyn; Level-Unterschied +3.5, Item-Gold-Unterschied +1950, Kopfzahl +1.'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''

@@ -530,6 +530,11 @@ class Kern:
             m = self.m
             if m is not None and m.bereich == "basis_eigen" and p.als() in WELLEN_ARTEN:
                 return False       # Pruefung E3: in der Basis kein Wellenbefehl
+            if self.modus.aktuell == "KAMPF":
+                return False       # Buch 7, 11.3: in KAMPF kein Plan-Satz von vorher (nur die Kampf-Rufe, <= 5 Woerter)
+            obj = p.handlung.daten.get("objective")
+            if obj and m is not None and m.obj_urteile and obj in m.obj_urteile and not m.obj_urteile[obj].zieht                     and p.art not in ("BESTREITEN", "ABGEBEN_TAUSCHEN"):
+                return False       # Buch 6, 14.4: zieht das Objective beim Sprechen nicht mehr, faellt der Satz weg
             return q is p and q.schritt == schritt
         return pruefe
 

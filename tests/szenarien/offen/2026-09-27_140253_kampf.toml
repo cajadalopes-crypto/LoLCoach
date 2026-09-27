@@ -1,0 +1,37 @@
+# Buch 7, Kapitel 10: die bis zu drei Proben dieser Partie mit dem groessten Fehler des Kampfmodells (sicher
+# gewonnen geglaubt und verloren, oder umgekehrt) - aus werkzeuge/kampf_eichung.py, 27.09.2026. Soll setzt Carlos
+# nach Durchsicht; dann nach tests/szenarien/ verschieben.
+
+aufnahme = "2026-09-27_140253"
+spielmodus = "SWIFTPLAY"
+bots = false
+
+[[szenario]]
+id = "928-kampfprobe"
+zeit = "9:28"
+quelle = "kampf_eichung: p_gewinn 0.67, Ausgang verloren (-255 Gold in 15 s)"
+lage = '''
+Riven 100 % Leben; wir Riven gegen Yasuo; Level-Unterschied +1.0, Item-Gold-Unterschied +750, Kopfzahl +0.'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "035-kampfprobe"
+zeit = "0:35"
+quelle = "kampf_eichung: p_gewinn 0.48, Ausgang gewonnen (+255 Gold in 15 s)"
+lage = '''
+Riven 100 % Leben; wir Riven gegen Yasuo; Level-Unterschied +0.0, Item-Gold-Unterschied +37, Kopfzahl +0.'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "309-kampfprobe"
+zeit = "3:09"
+quelle = "kampf_eichung: p_gewinn 0.48, Ausgang gewonnen (+365 Gold in 15 s)"
+lage = '''
+Riven 100 % Leben; wir Riven gegen Yasuo; Level-Unterschied -1.0, Item-Gold-Unterschied +487, Kopfzahl +0.'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''

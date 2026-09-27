@@ -1,0 +1,27 @@
+# Buch 7, Kapitel 10: die bis zu drei Proben dieser Partie mit dem groessten Fehler des Kampfmodells (sicher
+# gewonnen geglaubt und verloren, oder umgekehrt) - aus werkzeuge/kampf_eichung.py, 27.09.2026. Soll setzt Carlos
+# nach Durchsicht; dann nach tests/szenarien/ verschieben.
+
+aufnahme = "2026-09-27_144655"
+spielmodus = "CLASSIC"
+bots = false
+
+[[szenario]]
+id = "323-kampfprobe"
+zeit = "3:23"
+quelle = "kampf_eichung: p_gewinn 0.20, Ausgang gewonnen (+310 Gold in 15 s)"
+lage = '''
+Riven 66 % Leben; wir Riven gegen Gangplank; Level-Unterschied -1.0, Item-Gold-Unterschied -750, Kopfzahl +0.'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "904-kampfprobe"
+zeit = "9:04"
+quelle = "kampf_eichung: p_gewinn 0.17, Ausgang verloren (-255 Gold in 15 s)"
+lage = '''
+Riven 74 % Leben; wir Riven gegen Gangplank; Level-Unterschied +0.0, Item-Gold-Unterschied -1050, Kopfzahl +0.'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''

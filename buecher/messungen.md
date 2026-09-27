@@ -4,6 +4,426 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Schritt 5 – KAMPF und OBJECTIVE (Buch 7 und Buch 6) (27.09.2026)
+
+Grundlage: `buecher/07_kampf.md` und `buecher/06_objectives.md` (committet in 705a6a6), Buch 0 Kapitel 0, 5, 6.3, 7
+und 8, Buch 5 Kapitel 2, 5 und 8. Dazu Carlos' Entscheidungen 1–5 vom 27.09. (Chat). Offline gemessen, der Coach
+wurde nicht gestartet. Der Kern spricht jetzt in allen neun Modi (`KERN_MODI_5`).
+
+### Umgesetzt – Buch 7 (Kampf)
+
+- **Ein Kampfmodell:** `kern/kampf.py: p_gewinn` (Kraft je Seite aus Level, Item-Gold und Leben, Ult/Flash weg,
+  Mitspieler-Anteil, Turm).
+  - `gefahr.p_verliere` ist jetzt `1 − p_gewinn` mit den Mengen-Gewichten aus G2.
+  - `kampf_exponent` und `flucht_turm` fallen weg, `flucht_flash` sitzt jetzt auf p_tod.
+  - Veraltete Gegner (G7): Level und Item-Gold werden nachgeschätzt (`gegner_werte`).
+- **Modus KAMPF** (`modi/kampf.py`):
+  - Kampf-Episode nach Tabelle 5.1 mit REIN, RAUS, DREHEN und HALTEN.
+  - Höchstens 5 Wörter, höchstens 3 Rufe je Episode, ein Wechsel nur mit Kampf-Ereignis, keine alte Regel.
+  - Nach dem Kampf wird der Plan sofort neu geprüft.
+- **ANNEHMEN** vor dem Kampf (Kapitel 4). Solange das Urteil gilt, fällt ZURUECK wegen derselben Gegner weg.
+- **Entscheidungspunkte** (`Proben`, 3.3) und der **Todesrückblick** nach Tabelle 8. „Raus kam“ steht nur, wenn der
+  Rückzug wirklich gesprochen wurde; es zählt der letzte gesprochene Ruf vor dem Tod.
+- **Entscheidung 2 (Carlos):** Solange `[kampf].geeicht = false`, sind ANNEHMEN, REIN und DREHEN stumm.
+  - Sie werden berechnet und im Protokoll als „stumm: Modell nicht geeicht“ geführt (`Kern.stumm_modell`,
+    `_kern.jsonl` Feld `stumm`), aber nicht gesprochen und nicht als Kandidat genommen.
+  - Das ungeeichte Modell ändert also nichts an dem, was sonst gesagt wird. RAUS und der Rückblick sprechen.
+  - Folge: 144655 6:10 und 140253 9:49 kommt jetzt der Rückzug-Satz statt „Rein auf …“. Der Rückblick sagt dann
+    „Raus kam, du bist geblieben – … hat dich erreicht“ (Tabelle 8, Zeile 2).
+- `werkzeuge/kampf_eichung.py`, `kennzahlen.py` mit der Spalte „Kampf-Verstöße“.
+- `sperre._afk` ist in KAMPF stumm, wenn der Kern spricht.
+
+### Umgesetzt – Buch 6 (Objectives)
+
+- **Rechnung je Objective** (`kern/objective.py`): wer wann an der Grube ist, Tötungszeit mit Rache und Stufe, Kampf
+  und Steal, `p_erfolg`, `anteil`, Werte und Folgewerte.
+  - „Wirst du gebraucht?“ in der Lane-Phase (Kapitel 6, streng: Prio nur mit `GECRASHT_BEI_IHM` oder totem bzw.
+    abwesendem Lane-Gegner, und euer Jungler geht hin).
+  - `objective_zieht` wird einmal je Takt für alle Objectives gerechnet.
+- **`objective_zieht` an allen Stellen**, die ein Objective als Ziel oder Grund nennen:
+  - STAPELN, WELLE_HALTEN („nicht vor einem Objective“), VORBEREITEN_OBJECTIVE, OBJECTIVE_VORLAUF, der
+    Objective-Teil von `nie_back` (sperrt jetzt auch „Welle rein, dann back“);
+  - WOHIN aus Basis und Tod (`mindestens` fällt weg), `karte.objective_ruft`, WELLE_UND_RAUS;
+  - die Back-Sperre in GRUPPE und UNTERWEGS.
+  - Damit ist der Larven-Sog an allen Stellen zu (konstruierte Lage `k-kein-stapeln-ohne-jungler`, Szenarien 0647 und
+    1025).
+- **Handlungen** (`modi/objective.py`): VORBEREITEN_OBJECTIVE, NEHMEN (Alias ANLAUFEN), BESTREITEN (EV aus 4.4) und
+  ABGEBEN_TAUSCHEN (der Tausch zuerst: „Äußerer Top-Turm jetzt: sie sind zu fünft am Drachen.“).
+  - Das Urteil kommt einmal je Spawn. Ein zweites Mal nur, wenn es zwischen Nehmen und Abgeben kippt.
+  - VORBEREITEN → NEHMEN wird nicht angesagt.
+- **Modus OBJECTIVE neu** (5): in der Grube (≤ 30 s bis Spawn) oder mit Objective-Plan ≤ `objective_nah_s`. Er endet
+  5 s nach dem Plan. „Mitspieler an der Grube“ löst nicht mehr aus.
+  - Objective-Pläne gelten über UNTERWEGS, GRUPPE, SEITE und OBJECTIVE hinweg.
+- **Alte Regeln:** `_grosse_objectives`, `_vorwarnung`, `_zahlen`, `_objective_start`, `_ward` und der
+  Objective-Plan des Entscheiders sind in allen Modi stumm (Buch 0, Kapitel 14 nachgetragen).
+- **Reihenfolge im Umwandel-Fenster** (8): Baron und Ältester 2,5, Drache 1,5. Ein erreichbares Objective
+  verdrängt die niedriger eingereihten Türme.
+- **Baron-Auslöser** fürs Umwandeln (4.6): euer BaronKill ≤ 180 s her, ≥ 3 mit Buff am Leben.
+- **TP_SPIEL zu einem Objective** (4.7) nur, wenn dein TP das Urteil ändert. Flanke ohne Sicht gibt es nicht mehr
+  („TP …, dann rein“).
+- **Der Älteste** ist ein eigenes Objective (`aeltester`, n_min 3, Wert 3000). Swiftplay: nach zwei Elementardrachen
+  oder ab 15:00.
+- **Fakten** (Kapitel 12):
+  - Ältester **6:00** nach dem 4. Drachen. Quellen: Wiki „Dragon pit“, Abschnitt Spawn, und riftpatchnotes Patch
+    14.3: „First spawn timer is now properly 360 seconds“. Die 5:00 im Lexikon stammten aus 14.2.
+  - Rache 15 % je Drache, höchstens 60 %; Larven 30 g je Larve; Herold-Auge 20 s; Baron 6:00 / Buff 180 s.
+  - Eingetragen in `wissen/objektive.toml` und `saison2026.md`.
+- **Entscheidung 1 (Carlos), Nachtrag in Buch 6, 3.3:**
+  - „Ohne dich“ zählt nur, wer nachweislich hingeht (an der Grube oder in 10 s um ≥ 1000 genähert).
+  - Wer ≤ 1500 bei dir steht und nicht zu einem *anderen* Objective geht, kommt mit dir. Er zählt mit dir, nicht
+    ohne dich, und der Satz nennt ihn: „Drache mit Tryndamere: …“.
+- **Prüfschlüssel** `soll_ziel`, `max_woerter`, `alte_regeln_max` (Buch 0, 12.1 nachgetragen). `_kern.jsonl`
+  schreibt `p_erfolg`, `anteil`, `zieht` je Objective. `kennzahlen.py` hat die Spalte „Objective-Ansagen ohne Chance“.
+- `werkzeuge/objective_eichung.py` (Kapitel 10).
+
+### Eichung
+
+**Kampf (Buch 7, 3.3)** – 6 echte Partien (133930, 140253, 144655, 145702, 164326, 173159), 112 Proben, **41
+entschieden** (63 % offen):
+
+| Art | Proben | entschieden | Brier | Grundrate |
+|---|---|---|---|---|
+| 2 (Duell) | 69 | 22 | 0,332 | 0,248 |
+| 3–6 | 43 | 19 | 0,305 | 0,249 |
+| gesamt | 112 | 41 | **0,320** | 0,249 |
+
+- **Soll nicht erreicht** (Brier < 0,20 und besser als die Grundrate). Das Modell trennt gewonnene und verlorene
+  Kämpfe nicht: Das mittlere p liegt bei gewonnenen bei 0,56, bei verlorenen bei 0,62.
+- **Faktoren: alle Startwerte.**
+  - k: 3.3 Punkt 5 wörtlich hätte k = 1 gesetzt (Brier 0,274 statt 0,320). Das ist aber nur eine Abflachung Richtung
+    50 %: Kein Faktorsatz schlägt die Grundrate, und k = 1 kippte 0904, 0806 und 0701, die nach 11.4 grün bleiben
+    müssen. `kampf_eichung.py` lässt deshalb die Startwerte stehen, solange kein Faktorsatz die Grundrate schlägt.
+  - ult, turm und mitspieler: Gezählt werden nur Proben, in denen der Faktor wirkt – 21, 8 und 19, jeweils < 30.
+- Nach Entscheidung 2 bleiben ANNEHMEN, REIN und DREHEN stumm (`geeicht = false`).
+
+**Trennschärfe je Merkmal** (Entscheidung 2, damit das Modell danach gezielt verbessert werden kann; 41 entschiedene
+Proben: 22 gewonnen, 19 verloren). Gemessen am Entscheidungspunkt der Probe:
+- Level und Gold: Mittel eurer Beteiligten minus Mittel der nahen Gegner. Gegnerwerte mit `kampf.gegner_werte`,
+  also der Schätzung des Modells (G7).
+- Kopfzahl: `len(wir) − len(gegner)`. Turm: +1 euer, −1 ihrer, 0 keiner.
+- AUC: Wahrscheinlichkeit, dass eine zufällige gewonnene Probe den höheren Wert hat als eine zufällige verlorene.
+  Gleichstand zählt halb; 0,5 trennt nicht, unter 0,5 trennt verkehrt. Rauschen bei 22/19 Fällen etwa ±0,18 (95 %).
+
+| Merkmal | gewonnen (Mittel) | verloren (Mittel) | AUC | n |
+|---|---|---|---|---|
+| p (Modell) | 0,56 | 0,62 | 0,40 | 41 |
+| Leben | 0,95 | 0,87 | 0,58 | 41 |
+| Level-Unterschied | +0,90 | +1,28 | 0,43 | 41 |
+| Gold-Unterschied (Item-Gold) | +431 | +1438 | **0,30** | 41 |
+| Kopfzahl-Unterschied | +0,77 | +0,63 | 0,51 | 41 |
+| Turmnähe | 0,09 | 0,32 | 0,39 | 41 |
+
+- Nur das Leben zeigt in die richtige Richtung, und schwach (0,58, im Rauschen). Level und Kopfzahl trennen nicht.
+- Das Gold trennt verkehrt herum (0,30, knapp außerhalb des Rauschens): Verlorene Kämpfe begannen mit dem größeren
+  Goldvorsprung. Weil Level und Gold die Kraft im Modell tragen, liegt p selbst verkehrt (0,40).
+- Turmnähe: Von den 8 Proben an eurem Turm gingen 6 verloren. Ihr Turm kommt in den entschiedenen Proben nicht vor.
+- Nicht geprüfte Deutung: Mit Vorsprung werdet ihr mutiger, und der Ausgang (Kill-Gold in 15 s) misst dann eher das
+  Nachsetzen als die Stärke am Einstieg.
+- Daten: `kampf_eichung.py --json` (jetzt `{"proben", "trennschaerfe"}`). Die Proben tragen `level_diff`, `gold_diff`
+  und `kopf_diff`.
+- Die bis zu drei Proben je echter Partie mit dem größten Fehler liegen als Stubs in
+  `tests/szenarien/offen/<stamm>_kampf.toml` (Buch 7, 10). Das Soll setzt Carlos.
+
+**Objectives (Buch 6, Kapitel 10)** – dieselben 6 Partien:
+- **Urteil gegen Ausgang:** 15 Versuche, Brier 0,276, Grundrate 0,20 → 0,160. Soll nicht erreicht, zu wenige
+  Versuche (< 30), also **Startwerte**.
+- **Tötungszeiten:** keine Gruppe hat ≥ 3 Fälle, die Tabelle bleibt. Die Einzelwerte streuen stark, von 3 s bis
+  123 s: Der Beginn „≥ 1 von euch ≤ 700 an der Grube“ erkennt auch Vorbeilaufen. Die Messung braucht mehr Partien und
+  einen strengeren Beginn.
+
+### Wellen-Eichung (Entscheidung 2 der Prüfung b, Entscheidung 3 von heute)
+
+- Beschriftet von Hand aus den behaltenen Minimap-Bildern: je 480 px Gitter, alle Zeitpunkte der Lane-Phase, auf
+  denen du auf der Lane stehst. Eindeutig ist ein Punkt nur, wo die Vasallen nicht unter den Champion-Icons liegen.
+  Die erste Welle vor dem Treffen zählt nicht.
+- Ergebnis:
+  - **164326: 13 von 15 eindeutigen richtig (87 %) – erreicht.**
+  - **173159: 7 von 12 (58 %) – nicht erreicht.**
+- Die meisten eindeutigen Punkte sind „unsere Welle läuft zu ihm, keine roten zu sehen“. Kämpfe an der Welle verdecken
+  die Vasallen fast immer (164326: 22 von 37 unklar, 173159: 20 von 32).
+- Nach Entscheidung 3 wird nichts umgebaut, die strenge Prio-Regel aus Buch 6, Kapitel 6 bleibt.
+
+**Fehlerursachen je Zeitpunkt** (Entscheidung 3; wie bei 144655 unter F1)
+
+Nachgerechnet mit `wellen_eichung.durchrechnen` und dem WellenPuffer Bild für Bild: roh = `_roh`, Zustand = nach der
+Hysterese. Riven spielt CHAOS Top, s aus ihrer Sicht: ihr Turm 0,375, Knick 0,50, Crash-Zone 0,355–0,455.
+
+*173159* (7 von 12):
+
+- **7:33:** Kern GECRASHT_BEI_DIR, wahr ZU_DIR (0:1, Front 0,47, Trend +0,127).
+  - Ursache Icon-Deckung (`stand`): Riven steht bei 0,438 am Rand der Zone. Dadurch reicht die Zone bis 0,49, und
+    ein roter bei 0,47 genügt. `crash_dir_sofort` schaltet ohne Hysterese.
+  - Die übrigen roten liegen unter ihrem Icon und einem „?“-Ping.
+- **9:25:** Kern ZU_IHM, wahr GECRASHT_BEI_DIR (6:2, Front 0,37, Trend +0,059).
+  - Ursache `Wellenleser.punkte`: Fünf rote kleben vor dem Turm übereinander, gelesen werden 2. Die angeschnittenen
+    Stücke liegen unter 22·f, ohne weiße Linie, und fallen heraus. Im Median stehen damit 2 in der Zone, weniger als
+    `crash_mindestens` (3).
+  - Dann nimmt `_front` unsere frische Welle hinter dem Turm in dieselbe gemischte Gruppe: 6:2, die Zählregel sagt
+    ZU_IHM.
+- **11:07:** Kern ZU_IHM, wahr ZU_DIR (0:3, Front 0,50, naechste 0,05).
+  - Die Trendregel hält ZU_IHM bis 11:04 trotz 0:2. Die Front glitt ohne Sprung (keiner > `front_sprung` 0,12) von
+    unserer Welle (0,35 → 0,49) auf die roten (0,51–0,54), und die Regression trug unseren Vormarsch weiter
+    (+0,15). In `_roh` steht der Trend vor der Zählung.
+  - Ab 11:05 ist roh ZU_DIR, die Hysterese (3 s) schaltet erst 11:08.
+- **11:57:** Kern MITTE, wahr ZU_IHM (4:0, Front 0,45).
+  - Hysterese: roh ZU_IHM seit 11:55, umgeschaltet 11:58.
+  - Davor lagen 11:39–11:50 zwei Kartensymbole unbewegt am Knick: ein roter Totenkopf und ein blaues Zeichen. Sie
+    wurden als gemischte Front 1:1 (MITTE) gelesen, unsere Welle lief dahinter als `naechste`.
+  - Nach dem Frontsprung gab es keinen Trend, und der 6-s-Median stand noch auf 1:1.
+- **12:49:** Kern MITTE, wahr ZU_IHM (4:1, Front 0,37, Trend −0,135).
+  - Hysterese: roh ZU_IHM seit 12:47.
+  - Davor: Kampf am Knick. Unsere Vasallen dort sind halb verdeckt (unter 22·f) und fallen heraus. Die roten bilden
+    die Front gegen unsere frische Welle bei 0,09–0,22: 4:4, Front als Mitte zwischen beiden, also MITTE.
+
+*164326* (13 von 15):
+
+- **3:59:** Kern MITTE, wahr ZU_IHM (6:0, Front 0,55, naechste 0,46).
+  - Hysterese: roh ZU_IHM seit 3:58.
+  - Davor hielt ein stehender Kampf am Knick die Front 3:28–3:56 bei 0,55, Trend ≈ 0. Die roten lagen vermutlich
+    unter Teemos Icon.
+  - Unsere neue Welle lief mit einer Lücke > 0,06 dahinter und zählte nur als `naechste`. Ab 3:51 ist „ihre“ None
+    (Nebelregel, Front > `nebel_ab`).
+- **5:01:** Kern GECRASHT_BEI_DIR, wahr ZU_DIR (0:1, Front 0,48).
+  - Wie 7:33: Rivens Icon bei 0,44–0,45 zieht die Zone bis 0,50, ein roter am Knick genügt, sofort.
+
+*Muster:*
+- **Vier von sieben Fehlern sind Umschaltverzug** (11:07, 11:57, 12:49, 3:59): roh war 1–2 s vorher schon richtig,
+  die Hysterese (3 s) hielt den alten Zustand.
+  - Bei den MITTE-Fehlern hielt das 6-s-Fenster eine falsche, verdeckte oder stehende Front fest, während nur unsere
+    neue Welle lief.
+- **Verdeckung macht die Crash-Regel in beide Richtungen unscharf:**
+  - Das eigene Icon am Zonenrand macht aus einem roten einen Crash (7:33, 5:01).
+  - Übereinanderliegende Vasallen zählen nicht mit (9:25, 12:4x).
+  - Kartensymbole zählen als Vasallen (11:39–11:50).
+- **Der Trend überlebt den Wellenwechsel,** wenn die Front ohne Sprung von unserer auf ihre Welle gleitet (11:07).
+- Mögliche Ansatzpunkte, nach Entscheidung 3 **nicht umgesetzt**:
+  - Icon-Deckung nicht über den Knick hinaus.
+  - Trend neu beginnen, wenn die Farbe der Front wechselt.
+  - Kürzere Hysterese zwischen ZU_* und MITTE.
+  - Stücke an anderen Vasallen zählen, nicht nur an weißen Linien.
+
+### Abnahme Schritt 5
+
+| Abnahme | Soll | Ist |
+|---|---|---|
+| `tests/alle.py` | grün | **8 / 8** |
+| Szenarien (alle Dateien, `--kern neu`) | grün | **57 / 57** (2 übersprungen, brauchen Claude); konstruierte Lagen **40 / 40**; Modus-Sollwerte 102112 **16 / 16** |
+| Buch 7, 11.1: Szenarien aus Kapitel 10 | grün über den Kern | **grün**: 0915, 0622, 2501, 2613, 2631, 0338 (erweitert), 0843/1005 (erweitert) |
+| Buch 7, 11.2: `kampf_eichung.py` | gelaufen | **ja** – Brier und Faktoren oben, Soll nicht erreicht |
+| Buch 7, 11.3: Kampf-Verstöße in allen Protokollen | 0 | **0** in 102112, 133930, 140253, 144655, 164326, 173159 |
+| Buch 7, 11.4: 0517, 0850, 0904, 3535, konstruierte Lagen | grün | **grün**; Kehrtwenden **0** in allen sechs |
+| Buch 6, 14.1: Szenarien aus Kapitel 13 | grün über den Kern | **grün**: 2522, 2847, 3500, 3451, 3831, 1453, 2516, 3335, 2637, 0647 (beide), 0729, 0427, 1025 |
+| Buch 6, 14.2: `objective_eichung.py` | gelaufen | **ja** – Startwerte, zu wenige Versuche |
+| Buch 6, 14.3: alte Regel mit Objective-Satz in 102112, 133930, 140253, 144655 | 0 | **0** – in allen sieben Protokollen sprechen alte Regeln nur noch den Todesrückblick (14) und AFK (1) |
+| Buch 6, 14.4: Objective-Ansagen ohne Chance | 0 | **0** in allen sechs |
+| Fassungswechsel (Prüfung D) | 0 | **nicht erreicht**: 102112 2, 133930 1, 164326 3, sonst 0 (s. u.) |
+| Ungefragte Ansagen je 30 min (Prüfung b, Entscheidung 4) | ≤ 45 | **nicht erreicht**: 59–80 (s. u.) |
+
+**Kennzahlen** (Kern, `kennzahlen.py --nur-kern`):
+
+| Aufnahme | ungefragt (je 30 min) | Lane-Phase je 30 s | Kehrtwenden | Fassungswechsel | Kampf-Verstöße | ohne Chance | GEFAHR / PLAN / ERINNERUNG / BESTÄTIGUNG | stumme Kampf-Rufe |
+|---|---|---|---|---|---|---|---|---|
+| 102112 | 61 (60) | 0,79 | 0 | 2 | 0 | 0 | 16 / 42 / 1 / 1 | 37 |
+| 133930 | 58 (80) | 1,24 | 0 | 1 | 0 | 0 | 21 / 30 / 2 / 0 | 11 |
+| 140253 | 25 (70) | 1,18 | 0 | 0 | 0 | 0 | 13 / 9 / 0 / 1 | 7 |
+| 144655 | 19 (59) | 1,01 | 0 | 0 | 0 | 0 | 12 / 6 / 0 / 0 | 7 |
+| 164326 | 96 (67) | 1,00 | 0 | 3 | 0 | 0 | 40 / 50 / 2 / 2 | 23 |
+| 173159 | 94 (74) | 0,86 | 0 | 0 | 0 | 0 | 43 / 44 / 0 / 5 | 28 |
+
+145702 hat nur 0,5 Minuten mit Daten und zählt nicht.
+
+- **Ziel ≤ 45 je 30 min nicht erreicht.** Die alten Regeln sind jetzt bis auf Rückblick und AFK still. Was bleibt,
+  sagt der Kern selbst: 40–50 % davon sind GEFAHR, vor allem der Rückzug „Raus zu deinem …-Turm: X und Y kommen“.
+  Der nächste Hebel ist die Gefahr-Rechnung selbst: seltener anschlagen und zusammenfassen.
+- **Fassungswechsel:**
+  - Zweimal folgt auf „Back jetzt: …“ bzw. „Raus zu …“ innerhalb von 10–25 s „Jetzt back: …“ mit neuem Gold
+    (102112 33:20/33:44 und 37:03/37:13; 164326 10:21/10:36). Seit ein Rückzug-Plan ohne Gefahr endet (Abweichung
+    15), beginnt der Back danach als neuer Plan statt als Schritt des alten.
+  - Zweimal wechselt das Turm-Ziel ohne Ereignis in 12–14 s (133930 10:25/10:37, 164326 35:00/35:14).
+  - Einmal KAUFEN mit anderer Liste (164326 38:09/38:33).
+
+### Abweichungen vom Buch und Entscheidungen
+
+**Buch 7**
+1. **Turm im Kampfurteil:** Der Turm zählt auch, wenn du ≤ 5 s vom eigenen Turm entfernt bist oder dorthin gehst,
+   nicht nur ≤ 775 (3.1). Grund: der schützende Freeze (`k-freeze-schuetzend`) wurde sonst rot.
+2. **k bleibt 2** trotz 3.3 Punkt 5 (s. Eichung). Die Regel „erst ändern, wenn der Faktor in ≥ 30 entschiedenen
+   Proben wirkt“ gilt je Faktor.
+3. **Tote Gegner** zählen im Kampfurteil mit ihrem Gewicht aus `p_da_am` (Respawn + Weg). Vorher fehlten sie ganz:
+   102112 34:51 zählte am Inhibitor-Turm niemanden von denen, die 11–19 s später daneben aufstanden.
+4. **Rückblick:** „Raus kam“ nur nach einem gesprochenen Rückzug; es zählt der letzte gesprochene Ruf (140253 10:16).
+5. **ANNEHMEN hält,** solange sein Gegner in `annehmen_abstand` bleibt, auch wenn er nicht weiter näher kommt.
+   Das gilt auch für das stumme Urteil (102112 26:29).
+6. **Szenarien:**
+   - 2501: REIN ist erlaubt, der Kampf lief schon.
+   - 2613: zeit 26:28, erst dort ist Fiddlesticks ≤ 2500.
+   - 2847: REIN ist erlaubt (Kampf 28:43–28:48).
+   - 0622 und 1005: nach Entscheidung 2 Zeile 2 von Tabelle 8.
+   - Beim Nachspielen gilt in KAMPF als „Plan“ die Entscheidung der Tabelle 5.1.
+
+**Buch 6**
+7. **Wer zählt an der Grube** (3.1/3.3, vor Entscheidung 1):
+   - Mitspieler zählen nur, wenn sie hingehen, nicht jeder, der es in der Zeit könnte. Tote Mitspieler zählen nicht.
+   - Beleg: 102112 25:24 „Baron jetzt: ihr seid fünf“, zwei davon in der Basis. Buch 6, 8 sagt selbst: „Baron fällt
+     heraus, weil zwei eurer Leute in der Basis stehen“.
+   - Entscheidung 1 hat das präzisiert (Nachtrag 3.3).
+8. **Kampf an der Grube:**
+   - NEHMEN: Eure Leute zählen bis zum Ende der Tötungszeit, nicht nur `kampf_fenster_s`.
+   - BESTREITEN: Gekämpft wird bei deiner Ankunft (Weg + `kampf_fenster_s`), und nur, wenn mindestens einer von
+     ihnen an der Grube steht. Sonst war BESTREITEN der Dauerplan: 102112 24:36–38:36 kam „Baron bestreiten“ mit
+     EV ≈ 4000, ohne dass einer von ihnen am Baron war. Die EV aus 4.4 rechnet gegen „sie bekommen es sicher“.
+9. **VORBEREITEN:** Passt der Welle-Schritt nicht mehr ins Fenster, geht es ohne ihn. NEHMEN gilt auch von der Lane
+   aus. Sonst fiel die Lage zwischen beiden durch (`k-kein-back-kurz-vor-larven`).
+10. **TP ändert das Urteil (4.7):**
+    - Es gilt um ≥ 0,15 **oder** das Urteil kippt über 0,5.
+    - Mit k = 2 und `mitspieler_anteil` 0,8 hebt ein Spieler p bei 4 gegen 4 nur um 0,147. Das Buch-5-Beispiel
+      („TP macht es 5 gegen 4“) wäre sonst nie möglich.
+    - `m-tp-spiel` ist jetzt 4 gegen 4. Das alte 4 gegen 5 steht als `m-tp-kampf-bleibt-verloren` (dort
+      ABGEBEN_TAUSCHEN).
+11. **Turm-Prüfung der Karten-Rechnung:**
+    - Kommen zwei oder mehr Verteidiger wahrscheinlich (p_da ≥ 0,5), entscheidet `p_gewinn` am Turm mit dir und
+      deinen Mitspielern in 1500 (Buch 5). Die Schwelle ist `split_kraft_min` in p umgerechnet (0,59).
+    - Kommt nur einer, gilt Buch 5 wie bisher.
+    - Beleg: 102112 34:51 „Mid-Inhibitor-Turm“, während drei daneben respawnten; 25:25 „Top-Inhibitor-Turm: du
+      schlägst die drei“, 39 s über die Karte.
+12. **Tote in ihrer Basis:** Liegt ihr Brunnen ≤ 5000 vom Ziel, sind sie da, sobald Respawn und Weg ≤ T sind – ohne
+    Seiten-Faktor und Anlauf-Rampe.
+13. **Reihenfolge (8) wörtlich:** Ein erreichbares NEHMEN oder BESTREITEN streicht im Umwandel-Fenster die niedriger
+    eingereihten Türme. Die 200 GE je Rang reichten nicht.
+14. **Urteil hält (1.6), Entscheidung 4:**
+    - `zieht` kippt sofort mit einem Ereignis (Tod, Spawn, Sichtung eines Unbekannten, Struktur fällt).
+    - Ohne Ereignis kippt es erst, wenn der neue Wert 3 s besteht (`URTEIL_STABIL_S`).
+    - Streng gehalten blieb in 102112 nach dem Drachen 35:16 ein falsches „zieht nicht“ minutenlang stehen, weil ein
+      Drachen-Kill kein Ereignis der Liste ist.
+    - Ein gemerktes Ziel aus TOT oder BASIS fällt weg, wenn sein Objective nicht mehr zieht (3002).
+15. **Rückzug ohne Gefahr:** Ein Plan „nur bei Gefahr“ (ZURUECK) ist ohne Gefahr kein Kandidat mehr. Die G3-Lücke
+    (2 s) hält ihn noch kurz. Vorher blieb er Kandidat, solange er Plan war: 102112 24:58 bis 25:22, dann schlug er
+    mit seinem Back-Wert den freien Drachen.
+16. **Swiftplay in 140253:** 0729 (Larven) und 0427 (Drache) haben ihr Soll aus den Swiftplay-Fakten, nicht aus
+    Kapitel 6: Larven gibt es nicht, der erste Drache hat keinen Timer. Das Buch verlangte, das Soll *vor* der
+    Umsetzung festzulegen; es wurde erst danach angelegt.
+17. **Konstruierte Lagen:**
+    - Bekommen, was Buch 6 verlangt (Prio und Jungler): `k-stapeln-vor-larven`, `k-kein-freeze-vor-objective`,
+      `k-kein-back-kurz-vor-larven`.
+    - `m-welle-und-raus` bekommt euer Team unten.
+    - Neu sind `k-kein-stapeln-ohne-jungler` und `m-tp-kampf-bleibt-verloren`.
+18. **Modus-Sollwerte neu gerechnet** (13): 15:31 (+SEITE/UNTERWEGS), 25:22 (+SEITE), 29:14 (+UNTERWEGS).
+    `2522` bekommt SEITE, `1315` UNTERWEGS. Grund jeweils: kein Objective-Plan, nicht in der Grube.
+19. **0159:** `plan_p_tod_max` ist jetzt `wohin_p_tod_max` (0,3). Mit dem Kampfmodell sind es 0,22 statt < 0,2; der
+    Plan ist derselbe. Der Fehler E2 lag bei 0,64.
+20. **Prüfung vor dem Sprechen:**
+    - Ein Plan-Satz fällt weg, wenn beim Sprechen KAMPF gilt (Buch 7, 11.3). Ein Objective-Satz (außer BESTREITEN
+      und ABGEBEN_TAUSCHEN) fällt weg, wenn das Objective dann nicht mehr zieht (Buch 6, 14.4). Beleg: 133930 10:49
+      „Drache mit Fizz“ kam erst, als der Drache nicht mehr zog.
+    - Kennzahlen: Die Kampf-Verstöße zählen nach dem Modus im Takt des Sprechens, wie das Protokoll. Vorher zählten
+      sie alles zwischen den Episodengrenzen, auch 144655 6:10, gesprochen in LANE.
+    - Der Todesrückblick zählt nicht als alte Regel in KAMPF, er wird in TOT gesprochen.
+    - „ohne Chance“ zählt die Liste aus 14.4 – ohne BESTREITEN, das hatte ich zuerst dazugenommen.
+21. **Nicht umgesetzt:**
+    - Lane-Form von ABGEBEN_TAUSCHEN („Gangplank ist zu den Larven: Platten jetzt“).
+    - Herold-Ritt (Kapitel 7, `wert_ritt` mit Turm-Leben); heute grob zwei Platten × 0,8.
+    - Folgewert Larven 3:0.
+    - Bestätigungen aus Kapitel 9 („Sauber: Drache ohne Kampf“).
+    - Alle stehen in `OFFEN.md`.
+
+---
+
+## Qualitätsrunde 2 – Prüfung vom 27.09.2026 (b), Entscheidungen 1–3 und G1–G6 (27.09.2026)
+
+Auftrag: `buecher/protokolle/PRUEFUNG_2026-09-27b.md`. Umgesetzt in 39a858b (Bücher 6 und 7 vorher committet:
+705a6a6). Offline gemessen, der Coach wurde nicht gestartet.
+
+### Entscheidungen 1–3
+
+- **1. `0843`:** Die Daten haben recht. Das Szenario nennt jetzt Yasuo und darf „Brand“ nicht sagen.
+- **2. F1-Zusätze** (Pfadlinie, Icon-Deckung, `crash_dir_sofort`) bleiben an. Die Bestätigung an 164326 und 173159
+  steht unten unter „Schritt 5 → Wellen-Eichung“.
+- **3. F2 Flash, Weg 1:** `wissen/dashes.toml` (Stand Data Dragon 16.19.1, von Hand geprüft). 112 Champions mit eigenem
+  Dash, dazu die Blinks aus `blinks.toml`. Entfernt wurden Cho'Gath und Udyr, ergänzt Elise und Ryze.
+  - Minimap und Bildschirm werten für diese Champions keine Sprünge mehr als Flash (`zauber.dash_champions`).
+  - Test: Ein Brand-Sprung ergibt einen Timer, ein Vi-Sprung nicht.
+  - Weg 3 (Carlos pingt über die Anzeigetafel) lief schon. Weg 2 steht in `OFFEN.md`, nach Schritt 6.
+
+### G1–G6: zuerst rot, dann behoben
+
+Vor den Fixes: **16 von 28 geprüften rot** (die neuen G-Szenarien und die Spielmodus-Prüfung; Stand 705a6a6).
+Nach 39a858b: 42 von 43. Rot blieb `0904-drei-kommen`: Es war vorher nur durch die Doppelzählung der Gefahr grün und wurde
+mit dem Kampfmodell aus Schritt 5 wieder grün.
+
+- **G1 Schutzplan (144655, 140253):**
+  - Eine verlorene Lane ist jetzt **eine Episode**. Der lange Satz (≤ 18 Wörter) kommt einmal. Nach Tod oder Basis
+    kommt höchstens alle 180 s die kurze Fassung: „Weiter: am Turm farmen, kein Trade.“
+  - **Ursache des Item-Sprungs:** Das Bauteil war `kaufplan.kaufen[0]` (das teuerste, das du dir leisten kannst) oder
+    `naechstes` (das billigste, das du dir nicht leisten kannst). Welches, hing vom Gold im jeweiligen Takt ab. Jetzt
+    steht das Bauteil fest, bis es gekauft ist.
+  - Die Lane-Kraft wird ohne Leben gerechnet (`lane_kraft`), damit die Episode nicht mit dem Leben flackert.
+  - Übergeben heißt nicht gesprochen: Verfällt der Satz, wird er wieder angeboten.
+- **G2 WOHIN:**
+  - Die Gefahr wird über die **Mengen** der Ankommenden gerechnet statt doppelt gezählt (`_ueber_mengen`). Im eigenen
+    Brunnen gilt volles Leben.
+  - Unter `wohin_p_tod_max` (0,3) wird das Ziel genannt. Unter `wohin_direkt_max` (0,15) auch eilig, sonst „Zurück
+    nach X, bleib am Turm“.
+  - Rückfall: Team (≥ 2), sonst ein eigener Turm weiter hinten, sonst „Warte am inneren X-Turm auf dein Team“.
+  - Plausibilität (p_tod heute → nach dem Fix; in Klammern mit vollem Leben):
+
+    | Lage | vorher | nachher | Beiträge |
+    |---|---|---|---|
+    | 144655 5:07 | 0,65 | 0,42 (0,36) | Gangplank 0,42, Kha'Zix 0,37, Vex 0,05 |
+    | 140253 10:25 | 0,73 | 0,37 | Yasuo 0,33, Tahm Kench 0,28, Jinx 0,24, Heimerdinger 0,19 |
+    | 133930 12:30 | 0,79 | 0,37 | Gwen 0,42, Zoe 0,31, Xin Zhao 0,28, Zac 0,25 |
+    | 133930 15:16 | 0,67 | 0,33 | Zac 0,33, Zoe 0,33, Gwen 0,26 |
+
+  - Nebenbei behoben: Der Merker gab dasselbe Handlungsobjekt zurück, TOT schrieb jedes Mal „Noch N Sekunden:“ davor.
+    Jetzt legt er Kopien ab.
+- **G3 Plan hält (140253 3:49–4:27):**
+  - **Ursache:** Der Kandidat des Plans (WELLE_REIN_UND_BACK) fiel einen Takt heraus. STAPELN (242 GE schlechter)
+    wurde Pflicht-Plan, und `halten_s` (8 s) sperrte die Rückkehr. Der Test sah das nicht, weil STAPELN im
+    Wechsel-Takt tatsächlich der beste Kandidat war.
+  - Jetzt hält der Plan eine Lücke < `luecke_s` (2 s), wenn Modus und Gefahr gleich bleiben. Dabei gibt es keinen
+    Schritt-Satz. Nach einem erzwungenen Wechsel sperrt `halten_s` nicht. Eine Erinnerung kommt nur, wenn der
+    Kandidat des Plans in diesem Takt da ist.
+- **G4 „Gut raus“:**
+  - Beurteilt wird es 10 s nach dem Rückzug-Satz: das Leben fiel um weniger als 20 Punkte, du stehst am sicheren Ort,
+    und der Gegner wurde an der alten Stelle gesehen.
+  - Nie in KAMPF, geprüft beim Sprechen. „er“ und „sie“ richten sich nach der Zahl.
+- **G5 Rückblick:** Satz 2 richtet sich nach dem Leben beim Einstieg. Ab 0,6 (`RUECKBLICK_VOLL`) heißt er „hinter den
+  Turm oder zu deinem Team“, sonst „zurück“.
+- **G6 Swiftplay (133930, 140253):**
+  - Das Profil steht in `wissen/mechanik.toml [swiftplay]`. Quellen: Riot Support (28.01.2026), /dev (01.12.2025),
+    Wiki Swiftplay samt Patch-History V25.S1.3, V26.01, V26.02, V26.07 und Hotfix.
+  - Keine Larven, kein Herold. Der erste Drache hat keinen belegten Timer, Respawn 300 s, höchstens zwei
+    Elementardrachen. Der Älteste kommt ab 15:00, dann alle 6:00. Baron kommt um 12:00.
+  - Die Lane-Phase dauert bis 10:00, Wellen alle 25 s ab 11:35, Kanonen ab der dritten Welle.
+  - Szenario-Dateien tragen `spielmodus`. Stimmt er nicht mit der Aufnahme überein, ist die Datei rot. Das Protokoll
+    und die Wellen-Eichung nennen den Modus.
+  - Betroffene Szenarien:
+    - 140253: `0843` (Fenster 8:34–8:55), `1025` (Lage korrigiert: keine Larven), `0000`
+      (1400 Startgold).
+    - 133930 und 140253: `swiftplay-keine-classic-zeiten`, `swiftplay-keine-larven`.
+
+### Nebenbefund: Gegner-Items sind so veraltet wie ihre Level
+
+Item-Wechsel der Gegner in der API tauchen fast nur auf, während der Gegner sichtbar ist:
+
+| Aufnahme | Item-Wechsel (davon ungesehen) | Level-Wechsel (davon ungesehen) |
+|---|---|---|
+| 144655 | 18 (2) | 31 (3) |
+| 164326 | 63 (11) | 82 (5) |
+| 173159 | 70 (18) | 83 (15) |
+
+Die Schätzung aus Buch 7, 3.2 (G7: Level und Item-Gold lange ungesehener Gegner) gilt deshalb für beides
+(`kampf.gegner_werte`).
+
+### Abweichungen und Entscheidungen
+
+- `nie_back`: Ein Gegner, der vor ≤ 3 s zu sehen war (`NIE_BACK_EBEN_S`), zählt wie sichtbar. Beleg: 140253 8:04,
+  „Back jetzt“ mit Yasuo 935 entfernt, der im Takt davor zu sehen war.
+- `planwechsel_max` zählt Bestätigungen, Erinnerungen und Kampf-Rufe (REIN, RAUS, DREHEN) nicht als Plan.
+- `satz_mit` zählt die noch geltende Kern-Ansage von vor dem Fenster mit, wie `muss_nennen_eins`.
+- Die erste Swiftplay-Welle ist mit 0:30 angenommen, das ist nicht belegt.
+
+---
+
 ## Qualitätsrunde 1 – Prüfung vom 27.09.2026, A–F (27.09.2026)
 
 Auftrag: `buecher/protokolle/PRUEFUNG_2026-09-27.md`, A–F, noch nicht Schritt 5. Vorher committet: ef08644

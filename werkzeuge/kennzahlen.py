@@ -142,7 +142,7 @@ def lane_phase_takt(lauf: ns.Lauf) -> tuple[int, float]:
 
 
 KAMPF_RUFE = ("kern:REIN", "kern:RAUS", "kern:DREHEN", "kern:HALTEN", "kern:ZIEL")
-OBJ_ANSAGEN = ("VORBEREITEN_OBJECTIVE", "NEHMEN", "STAPELN", "WELLE_UND_RAUS", "ZUR_GRUPPE", "WOHIN", "BESTREITEN")
+OBJ_ANSAGEN = ("VORBEREITEN_OBJECTIVE", "NEHMEN", "STAPELN", "WELLE_UND_RAUS", "ZUR_GRUPPE", "WOHIN")   # Buch 6, 14.4
 
 
 def _takt_um(lauf: ns.Lauf, t: float):
@@ -161,9 +161,12 @@ def kampf_verstoesse(lauf: ns.Lauf) -> list[tuple[float, str]]:
             else:
                 episoden.append([x.zeit, x.zeit])
     for von, bis in episoden:
-        drin = [a for a in lauf.gesagt if von <= ns.gesprochen_um(a) <= bis + 0.5]
+        # im Kampf ist, was in einem KAMPF-Takt gesprochen wurde (wie im Protokoll) - nicht alles zwischen den
+        # Episodengrenzen: der Modus wechselt im selben Takt zwischen KAMPF und LANE (144655 6:10 war LANE)
+        drin = [a for a in lauf.gesagt if von <= ns.gesprochen_um(a) <= bis + 0.5
+                and (x := _takt_um(lauf, ns.gesprochen_um(a))) is not None and x.modus == "KAMPF"]
         for a in drin:
-            if getattr(a, "_regel", None):
+            if getattr(a, "_regel", None) and a._regel != "_tod":      # der Rueckblick gehoert zu TOT (Buch 7, 8)
                 aus.append((ns.gesprochen_um(a), f"alte Regel {a._regel}: {a.text[:50]}"))
             elif a.schluessel.startswith("kern:") and len(a.text.split()) > 5:
                 aus.append((ns.gesprochen_um(a), f"{len(a.text.split())} Woerter: {a.text[:50]}"))
