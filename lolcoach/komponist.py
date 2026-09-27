@@ -103,7 +103,8 @@ def anfaenge(p) -> list[str]:
             "Schieb die Welle in seinen Turm und nimm die Platte mit,", "Schieb die Welle nur bis zum Turm:",
             "Vom Turm erwischt:", "Geht zusammen rein,", "Geh sofort hin,", "Geh hin, wenn der Kampf dann noch läuft:",
             "Geh sofort zurück,", "Geh zurück,", "Schieb die Welle noch rein und geh dann back,", "Nur kurze Trades,",
-            "Kein All-in,"]
+            "Kein All-in,", "Schieb jetzt die Welle rein und geh back:", "Bau deine Welle langsam auf:",
+            "Lass deine Welle crashen und geh zum Team,"]
     aus += [f"{n} kommt in einer Minute." for n in ("Der Drache", "Der Herold", "Baron Nashor")]
     aus += ["Die Larven kommen in einer Minute.", "Drache in einer Minute."]
     aus += [f"Minute {m}:" for m in (5, 10, 15, 20)]

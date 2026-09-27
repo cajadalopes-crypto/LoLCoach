@@ -272,8 +272,9 @@ class Entscheider:
                 else:
                     tun = (f"Schieb die Seitenwelle bis {uhr(b.zeit + ob[1] - 45)} raus" + (", geh dazwischen back"
                                                                                            if reset else ""))
-                satz = (f"{OBJ_NOM[ob[0]][:1].upper() + OBJ_NOM[ob[0]][1:]} {kommt(ob[0])} in {sek(ob[1])}. {tun}, "
-                        f"und sei spätestens um {uhr(b.zeit + ob[1] - 30)} an der Grube." + (f" {prio}." if prio else ""))
+                # die Handlung zuerst (ihr Anfang ist vorgewaermt), dann der Grund mit der Zeit
+                satz = (f"{tun}: {OBJ_NOM[ob[0]]} {kommt(ob[0])} in {sek(ob[1])}, sei spätestens um "
+                        f"{uhr(b.zeit + ob[1] - 30)} an der Grube." + (f" {prio}." if prio else ""))
                 aus.append(Option("obj_plan", satz, 90, 2 + reset + bool(prio)))
 
         # 5a) Lokale Ueberzahl (Reasoning #19): du und Mitspieler bei dir gegen weniger sichtbare Gegner, und niemand
@@ -333,8 +334,8 @@ class Entscheider:
                 dazu = (f", und {', '.join(fehlen[:3])} {'ist' if len(fehlen) == 1 else 'sind'} beim Spawn noch tot"
                         if fehlen else "")
                 nom = OBJ_NOM[ob[0]][:1].upper() + OBJ_NOM[ob[0]][1:]
-                aus.append(Option("gruppe", f"{nom} {kommt(ob[0])} in {sek(ob[1])}{dazu}. Lass deine Welle crashen und "
-                                            f"geh zum Team{weg}.",
+                aus.append(Option("gruppe", f"Lass deine Welle crashen und geh zum Team{weg}: {nom} {kommt(ob[0])} "
+                                            f"in {sek(ob[1])}{dazu}.",
                                   100 + 20 * len(fehlen), 2 + bool(fehlen)))
             elif not gefahr and not (ob and ob[1] <= 75):
                 tp = b.zweiter is not None and b.zweiter[0] == "SummonerTeleport" and b.zweiter[1] <= 0
