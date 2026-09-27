@@ -33,7 +33,12 @@ ohne_claude = true
 mit_handlung = true
 warum = "WARUM kommt aus dem Plan des Kerns, Grund und Vergleich, und widerspricht ihm nicht (Buch 11, 5, Regel 3)."
 
+# Auftrag 004, Teil C: keine Floskel, die Antwort beantwortet die Frage
+darf_nicht_sagen = ["bis sich etwas öffnet", "Danach rechne ich neu", "ist gerade keine Option."]
+muss_nennen_eins = ["Raus", "raus"]
+
 # Wie 1:19: verweist auf ein "Raus", das es nach dem Fix nicht mehr gibt.
+
 [[szenario]]
 id = "0127-warum-raus-obwohl-ich-gewinne"
 zeit = "1:27"
@@ -45,6 +50,9 @@ absicht = "WARUM"
 ohne_claude = true
 mit_handlung = true
 warum = "Wiederholte Warum-Frage (8 s nach 1:19): andere Formulierung, mehr Grund (Regel 5), immer mit Handlung."
+# Auftrag 004, Teil C: keine Floskel, die Antwort beantwortet die Frage
+darf_nicht_sagen = ["bis sich etwas öffnet", "Danach rechne ich neu", "ist gerade keine Option."]
+muss_nennen_eins = ["Raus", "raus"]
 
 [[szenario]]
 id = "0225-rumble-kit"
@@ -104,6 +112,9 @@ ohne_claude = true
 mit_handlung = true
 muss_ziel = true
 warum = "Eine Korrektur überschreibt das Merkmal 30 s; die Antwort bestätigt sie und gibt den neuen Plan."
+# Auftrag 004, Teil C: keine Floskel, die Antwort beantwortet die Frage
+darf_nicht_sagen = ["bis sich etwas öffnet", "Danach rechne ich neu", "ist gerade keine Option."]
+muss_nennen_eins = ["Xin"]
 
 [[szenario]]
 id = "0415-warum-zurueck-bin-level-5"
@@ -260,7 +271,12 @@ mit_handlung = true
 muss_ziel = true
 warum = "Wendepunkt: der Plan ist erledigt, die Antwort gibt jetzt, Grund und danach (Buch 11, 5)."
 
+# Auftrag 004, Teil C: keine Floskel, die Antwort beantwortet die Frage
+darf_nicht_sagen = ["bis sich etwas öffnet", "Danach rechne ich neu", "ist gerade keine Option."]
+muss_nennen_eins = ["Turm", "Drache", "Drachen", "Team", "Inhibitor"]
+
 # Wiederholung von 9:44 nach 11 s (Regel 5).
+
 [[szenario]]
 id = "0955-tower-down-was-jetzt"
 zeit = "9:55"
@@ -273,6 +289,9 @@ ohne_claude = true
 mit_handlung = true
 muss_ziel = true
 warum = "Buch 11, 7: muss_ziel, Handlung vorhanden, keine Claude-Pflicht."
+# Auftrag 004, Teil C: keine Floskel, die Antwort beantwortet die Frage
+darf_nicht_sagen = ["bis sich etwas öffnet", "Danach rechne ich neu", "ist gerade keine Option."]
+muss_nennen_eins = ["Turm", "Drache", "Drachen", "Team", "Inhibitor"]
 
 [[szenario]]
 id = "1012-kein-platz-langschwert"
@@ -417,10 +436,13 @@ frage = "Warum bist du dir so sicher, dass der Drache bis dahin nicht schon tot 
 quelle = "Claude 3,3 s: 'Bin ich mir gar nicht sicher ... Geh erstmal zurueck Richtung Turm'"
 lage = "Riven auf dem Weg zum Drachen, der Drache lebt noch."
 kern_frage = true
-absicht = "WARUM"
+absicht = "GEWISSHEIT"
 ohne_claude = true
 mit_handlung = true
 warum = "Grund des Plans statt Achselzucken, und ohne Ereignis kein Richtungswechsel (Regel 3)."
+# Auftrag 004, Teil C: keine Floskel, die Antwort beantwortet die Frage
+darf_nicht_sagen = ["bis sich etwas öffnet", "Danach rechne ich neu", "ist gerade keine Option."]
+muss_nennen_eins = ["Sicher", "sicher"]
 
 [[szenario]]
 id = "1256-drache-oder-turm"
@@ -449,8 +471,13 @@ mit_handlung = true
 muss_ziel = true
 warum = "JETZT: Handlung, Ziel, Grund und danach (Buch 11, 5)."
 
+# Auftrag 004, Teil C: keine Floskel, die Antwort beantwortet die Frage
+darf_nicht_sagen = ["bis sich etwas öffnet", "Danach rechne ich neu", "ist gerade keine Option.", "Farm"]
+muss_nennen_eins = ["Drache", "Drachen"]
+
 # Rueckfrage zu 13:12 ("Welle rein" ohne Lane); "Leine" = Lane (Erkennung). Buch 11, 7 nennt keine Absicht;
 # JETZT, weil die Antwort ein Ziel braucht.
+
 [[szenario]]
 id = "1316-welche-welle-welche-lane"
 zeit = "13:16"
@@ -462,9 +489,10 @@ absicht = "JETZT"
 ohne_claude = true
 mit_handlung = true
 muss_ziel = true
-darf_nicht_sagen = ["Drache lebt."]
-muss_nennen_eins = ["Top", "Mid", "Bot", "oben", "unten"]
 warum = "Buch 11, 7: nennt eine Lane; 'Drache lebt.' beantwortet die Frage nicht."
+# Auftrag 004, Teil C: keine Floskel, die Antwort beantwortet die Frage
+darf_nicht_sagen = ["bis sich etwas öffnet", "Danach rechne ich neu", "ist gerade keine Option.", "Farm deine Top"]
+muss_nennen_eins = ["Drache", "Drachen", "Top", "Mid", "Bot"]
 
 [[szenario]]
 id = "1323-notiz-ignorierst-mich"
@@ -579,8 +607,10 @@ kern_frage = true
 absicht = "NOTIZ"
 ohne_claude = true
 mit_handlung = true
-muss_nennen_eins = ["Turm", "Welle"]
 warum = "Buch 11, 7: NOTIZ + WARUM, nennt einen Plan (Turm, Welle), nicht nur 'Notiert.'"
+# Auftrag 004, Teil C: keine Floskel, die Antwort beantwortet die Frage
+darf_nicht_sagen = ["bis sich etwas öffnet", "Danach rechne ich neu", "ist gerade keine Option."]
+muss_nennen_eins = ["Turm", "Inhibitor"]
 
 [[szenario]]
 id = "1640-was-nach-dem-tower"
@@ -594,6 +624,9 @@ ohne_claude = true
 mit_handlung = true
 muss_ziel = true
 warum = "DANACH kommt aus der Projektion (Buch 11, 3), mit Ziel und Grund, ohne Claude."
+# Auftrag 004, Teil C: keine Floskel, die Antwort beantwortet die Frage
+darf_nicht_sagen = ["bis sich etwas öffnet", "Danach rechne ich neu", "ist gerade keine Option."]
+muss_nennen_eins = ["Turm", "Inhibitor", "Drache", "Drachen", "Baron"]
 
 [[szenario]]
 id = "1708-notiz-schritte-frueher"

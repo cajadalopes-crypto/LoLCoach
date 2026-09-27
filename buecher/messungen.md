@@ -4,6 +4,165 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 004 – Überlegenheit, echte Antworten, Kampf-Eichung (28.09.2026)
+
+Grundlage: `buecher/auftraege/004_auftrag.md`. Offline gemessen, der Coach wurde nicht gestartet. Vorher = `2b455b3`
+(Stand nach Auftrag 003), mit denselben Messwerkzeugen (Wendepunkt-Verzug schon ab dem Ende des laufenden Satzes).
+
+### Zuerst rot
+
+Worktree auf `2b455b3`, neue Szenarien und Tests hineinkopiert:
+
+- `test_kern.keine_floskeln`: rot (`fragen.py`: „bis sich etwas öffnet“).
+- `213624_fragen`: 8 der 10 geänderten Fragen rot (1:19, 1:27, 4:04, 9:44, 9:55, 12:38, 16:31, 16:40). 13:13 und
+  13:18 waren schon grün (sie verbieten jetzt zusätzlich „Farm“).
+- `213624`: `0944-nach-turmfall-kein-farmen` rot, `1621-66-prozent-mit-team` rot („Raus zum Mid-Tier-1-Turm: Caitlyn und
+  Sona kommen.“).
+- `173159_pruefung_c`: `1533-nicht-klar-ueberlegen` ist ein Wächter und war schon grün (Begründung unten).
+
+### Teil A – Entscheidungen zu 003
+
+- **Kein ungefragtes „unsicher“:** Der Rückfall „X nur mit Kampf - unsicher“ am Wendepunkt ist weg. Bleibt nur FARMEN,
+  spricht es nur mit Vorschau (`fuehren.farmen_mit_vorschau`: „Farm Top, Herold in 31 Sekunden.“, 213624 14:29),
+  sonst still. Gefragt nennt der Coach die beste Kampf-Option weiter mit „unsicher“. Sie kommt jetzt aus den
+  ungefilterten Kandidaten (`kern.kandidaten_roh`), vorher fand er sie nie, weil die modellstummen dort schon fehlten.
+- **Kein Unterbrechen:** Ein Wendepunkt-Satz stellt sich im Sprechplan vor wartende PLAN-Sätze (Schlüssel
+  `thema == "wendepunkt"`), unterbricht aber nicht. Neu: Am offenen Wendepunkt schützen `halten_s` und `stabil_s`
+  keinen **stummen** Plan (`plan.PlanFuehrer.wendepunkt`). 213624 9:44: FARMEN hielt „Zu Pantheon und Malzahar auf die
+  Mid-Lane, mit dir drei gegen zwei“ 4 s zurück, jetzt kommt der Satz um 9:49 statt 9:53.
+- **Mehrere Türme in 10 s = ein Satz:** „Zwei Türme down“ / „Zwei eurer Türme weg“ (`_strukturen_zusammen`).
+- **Derselbe Plan am Wendepunkt:** Wurde dasselbe Ziel ≤ `ziel_wiederholen_s` vorher gesagt, bestätigt der Wendepunkt
+  nur („Turm ist down: weiter zum Drachen.“), statt Ziel und Grund zu wiederholen (102112 26:40).
+
+### Teil B – Überlegenheits-Regel (`kern/ueberlegen.py`, `[ueberlegen]`)
+
+- Umgesetzt wie im Auftrag. G = wer in `fenster_s` am Ort sein kann (`gefahr.p_da_am` ≥ 0,3; das Fenster ist die Dauer
+  der Handlung, höchstens 45 s). **Tote zählen mit**, wenn sie im Fenster am Ort aufstehen: Sonst war es am
+  Mid-Inhibitor-Turm 102112 34:49 „drei gegen eins“, obwohl Sett, Kai'Sa und Fiddlesticks 11–19 s später daneben
+  aufstanden. Das ist im ersten Gesamtlauf aufgefallen (Buch-6-Szenario `3451` rot) und ist behoben.
+- **Klar überlegen:** DRUECKEN, MIT_GRUPPE, NEHMEN, BESTREITEN, ANNEHMEN und REIN sprechen ohne Kampfmodell, der Grund
+  nennt die Überlegenheit („Drück den inneren Top-Turm: Level 11 gegen 7.“, „Drache bestreiten: Level 10 gegen 7, ihr
+  seid fünf gegen zwei.“). **Klar unterlegen:** Die Handlungen sind aus (`_schranke_takt`: „klar unterlegen, …“).
+  Dives bleiben unter Buch 7, Kapitel 6.
+- **Kein Flackern:** Ein Urteil „überlegen“ hält `halten_s = 5`, wenn es einen Takt lang unklar wird (102112 26:38:
+  Der Drache fiel zweimal heraus und wurde neu angesagt), aber nie gegen „unterlegen“. Ein „allein“-Satz bekommt kein
+  „ihr seid zwei“.
+- **Wächter 173159 15:33** (`1533-nicht-klar-ueberlegen`): Riven L12 mit 5650 Gold und 50 % Leben gegen Yasuo L10 mit
+  5600 Gold und 100 %.
+  - Zwei Level Vorsprung, aber nur 50 Gold statt 2000, und Leben unter 60 %: nicht klar überlegen.
+  - „Rein auf Yasuo!“ bleibt stumm, vorher wie nachher.
+  - Die Stelle ist ein Grenzfall aus einer echten Partie. Die Level allein würden einen Kampfruf nahelegen, die Regel
+    verlangt aber alles.
+- **Umgestellt:** Der Wächter `1621-66-prozent-bleibt` aus 003 verlangte bei 66 % „Raus: Caitlyn und Sona kommen“.
+  - Dort gilt jetzt die Überlegenheit: Level 13 gegen 8, ihr seid drei (Leben ≥ 60 %). Der Plan mit der Gruppe hält.
+  - Carlos um 16:31 zu genau diesem Ruf: „Warum sagst du, ich soll zurückgehen? Gar keinen Sinn.“
+  - Neu heißt der Wächter `1621-66-prozent-mit-team` (darf_nicht_sagen „Raus zum“).
+  - Die 70-%-Grenze aus 003 gilt weiter für dich allein. Rückfrage in `004_frage.md`.
+- **Wirkung auf die Zahl der Rufe:** In der Bot-Partie 213624 sprechen jetzt die Kampfrufe: GEFAHR 7 → 23, ungefragt
+  ohne INFO_FLASH/WENDEPUNKT 24 → 44 je 30 min (Soll ≤ 50). In den echten Partien bleiben sie fast überall stumm,
+  weil dort selten jemand drei Level vorn liegt.
+
+### Teil C – Antworten
+
+- **WARUM ohne Ziel** nennt den Grund der letzten gesprochenen Ansage. Jede Ansage merkt sich dafür 60 s lang Text,
+  Art, Ziel, Grund und Leben (`kern._ansage_log`).
+  - Mit „raus“ oder „zurück“ in der Frage kommt „Raus hatte einen Grund: 23 Prozent Leben, 1350 Gold für den
+    Brutalisierer.“ (213624 4:20).
+  - Sieht der Kern die Lage jetzt anders: „Das war zu vorsichtig: …“ (klar überlegen) bzw. „Jetzt ist die Lage
+    anders: …“.
+  - Wurde nichts gesagt: „Raus sage ich nicht: Rumble ist tot.“ (1:22).
+- **Korrekturen** (Buch 11, 5.6), `korrektur_gilt_s` lang in den Merkmalen (`Kern._korrekturen_anwenden`):
+  - „Der ist jetzt bei mir oben“: Der zuletzt genannte Gegner steht an deinem Ort, sichtbar, Abstand 0 → „Stimmt,
+    Xin Zhao ist bei dir: …“.
+  - „Ich bin beim Drachen“: Ort und Bereich = die Grube.
+  - „Alle sind tot“: ein Abgleich mit den Toten → „Nicht alle: Ziggs und Sona leben.“ (16:35), sonst „Stimmt, alle
+    tot.“
+- **Floskeln** sind aus allen Satzbausteinen entfernt (`test_kern.keine_floskeln` prüft `kern/`, `kern/modi/`,
+  `antworten.py`):
+  - „…, bis sich etwas öffnet“ → „Farm deine Top-Welle“ mit der nächsten Zeitleiste ≤ 90 s.
+  - „Danach rechne ich neu“ → nach einem Turm die nächste Struktur, sonst das nächste Objective, sonst die Welle.
+  - „X ist gerade keine Option“ → der Grund aus den Schranken des Takts (Leben, zu riskant, klar unterlegen) oder
+    „Kein Turm in Reichweite, den du jetzt nimmst“.
+- **GEWISSHEIT** (neue Absicht): „Sicher nicht: ob der Drache bis dahin fällt, sehe ich erst, wenn er fällt. Zum
+  Drachen: ihr seid drei.“ (12:41). Zu einem Gegner nennt die Antwort sichtbar / zuletzt gesehen vor N s.
+- **An der Grube mit Team:** kein „Farm“, sondern „Bleib mit deinem Team am Drachen: ihr seid drei, aber mit Kampf -
+  unsicher.“ (13:13, 13:18), oder mit Grund, dass es ohne dich läuft.
+- **Nachgezogen:** Ein Absturz im Fragenweg bei einer WARUM-Frage ohne Plan ist behoben (213624 12:14, `c.ev < h.ev`
+  mit `h = None`, im Protokoll-Lauf gefunden).
+
+### Teil D – Kampf-Eichung mit neuen Etiketten
+
+6 echte Partien (133930, 140253, 144655, 145702, 164326, 173159), 112 Proben, nur `bots = false`.
+`kampf_eichung.py --etikett gold|koepfe|ueberlebt`. Gold reproduziert Schritt 5 exakt (41 entschieden, Brier 0,320,
+AUC 0,30).
+
+| Etikett | entschieden (gew/verl) | offen | Brier | Grundrate | Art 2: Brier / Grund (n) | Art 3–6: Brier / Grund (n) |
+|---|---|---|---|---|---|---|
+| gold | 41 (22/19) | 71 | 0,320 | 0,249 | 0,332 / 0,248 (22) | 0,305 / 0,249 (19) |
+| koepfe | 36 (21/15) | 76 | 0,309 | 0,243 | 0,324 / 0,245 (21) | 0,288 / 0,240 (15) |
+| ueberlebt | 31 (26/5) | 81 | 0,251 | 0,135 | 0,340 / 0,000 (14) | 0,177 / 0,208 (17) |
+
+| AUC je Merkmal | gold | koepfe | ueberlebt |
+|---|---|---|---|
+| p | 0,40 | 0,41 | 0,45 |
+| leben | 0,58 | 0,61 | 0,68 |
+| level_diff | 0,43 | 0,43 | 0,41 |
+| gold_diff | **0,30** | **0,28** | **0,36** |
+| kopf_diff | 0,51 | 0,53 | 0,26 |
+| turm | 0,39 | 0,38 | 0,60 |
+
+- **Der Verdacht trägt nicht:** Gold trennt mit jedem Etikett verkehrt herum, auch mit `ueberlebt`, das kein Gold kennt.
+  Nur Paare aus derselben Partie: 0,29 / 0,30 / 0,32.
+- **Die Eichung besteht mit keinem Etikett.**
+  - Brier liegt überall über der Grundrate, auch mit dem besten Faktorsatz (k = 1).
+  - `ueberlebt` Art 3–6 erfüllt das Soll (0,177 < 0,20 und < 0,208), aber nur mit 17 < 30 Proben.
+- **Nebenbefund:** Zählt man nur die Tode der Beteiligten, sind 17 / 15 / 16 Proben entschieden. Auch so besteht nichts,
+  und die Umkehr bleibt.
+- **Nächster Verdacht, ungeprüft: die Spielzeit.** Sie korreliert mit gold_diff (r = 0,56), verlorene Proben liegen
+  später (AUC Zeit 0,45 / 0,41 / 0,27).
+- **Folge:** `[kampf].geeicht` bleibt `false`, die Faktoren bleiben. Die Kampfrufe sprechen nur über die
+  Überlegenheits-Regel.
+
+### Kennzahlen (vorher `2b455b3` → nachher)
+
+| Kennzahl | Soll | 213624 | 164326 | 173159 |
+|---|---|---|---|---|
+| Leerlauf ab 14:00 | ≤ 10 % | 48 → 43 % | 52 → 48 % | 48 → 49 % |
+| Wendepunkt-Verzug, Median ab Satzende | ≤ 3 s | 7,5 → 1,9 s | 4,3 → 2,5 s | 5,7 → 6,0 s |
+| Wendepunkte ohne Satz in 60 s | – | 1 → 5 | 6 → 7 | 3 → 3 |
+| Wendepunkt-Satz später als 3 s (Probe) | 0 | 18 → 15 | 29 → 29 | 25 → 26 |
+| … davon stummer Plan (FARMEN/HALTEN, Teil A 1) | – | 8 | 18 | 20 |
+| Floskeln | 0 | 9 → 0 | 0 → 0 | 0 → 0 |
+| Widersprüche | 0 | 1 → 3 | 0 → 1 | 0 → 0 |
+| Stichwort-Antworten | 0 | 3 → 1 | – | – |
+| ungefragt ohne INFO_FLASH/WENDEPUNKT je 30 min | ≤ 50 | 24 → 44 | 37 → 46 | 51 → 53 |
+
+- **Wendepunkte:** Der Median fällt in 213624 und 164326 unter 3 s.
+  - Die späten und fehlenden Sätze stehen meist hinter einem stummen Plan: Nach Teil A 1 schweigt FARMEN ohne Vorschau
+    (in 173159 20 von 26). Das ist gewollt, aber die Probe zählt es als rot.
+  - In 213624 sind so aus einem fehlenden Satz fünf geworden (23:57–24:18, drei Strukturen, Plan FARMEN).
+- **Widersprüche, neu:**
+  - 213624 9:46: Die Antwort „Farm deine Top-Welle. Oder auf den inneren Top-Turm …“ kam 3 s vor dem neuen Plan
+    „Zu Pantheon …“.
+  - 213624 13:18: Die Antwort „Bleib … am Drachen“, dann der Wendepunkt „Aus der Basis“. Die Korrektur „ich bin beim
+    Drachen“ ändert den Ort, aber nicht den Beobachter der Basis.
+  - 164326 35:00 → 35:15: Zwei überlegene Turmziele nacheinander (Mid-Inhibitor, dann innerer Bot-Turm).
+- **Rot bleibt:**
+  - Die Wendepunkt-Probe in allen drei Partien.
+  - `0944-erster-tower-was-jetzt`: Um 9:44, im Takt des Turmfalls, rechnet der Kern noch LANE und hat nur FARMEN. Die
+    Turm-Option kommt 2 s später (9:46). Ab dann nennt die Antwort sie.
+
+### Tests und Szenarien
+
+- `tests/alle.py`: 9 / 10. `test_bausteine.kamera_gibt_nur_einmal_frei` scheitert an der Umgebung: Der Bildschirm ist
+  jetzt 7680 × 2160, und dxcam gibt eine Fläche dieser Größe statt 200 × 100 zurück. Der Test scheitert genauso auf
+  `2b455b3`, `lage.py` ist unverändert. Die übrigen Bausteintests laufen einzeln grün.
+- Szenarien: **151 / 155** grün, 2 übersprungen (brauchen Claude). Rot: 3 × Wendepunkt-Probe, 0944. Konstruierte Lagen
+  **40 / 40**.
+- Fragen-Probe 213624: **50 / 51**.
+
+---
+
 ## Auftrag 003 / Schritt 6 – Buch 11 (Führen, Vorausschau, Antworten) und Fragen (27.09.2026)
 
 Grundlage: `buecher/11_fuehren.md`, umgesetzt nach Kapitel 10. Dazu kommen Teil A des Auftrags (Entscheidungen zu 002)

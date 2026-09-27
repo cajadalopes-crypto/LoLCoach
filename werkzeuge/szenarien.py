@@ -423,7 +423,8 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                             continue
                         if v is None or v > 3.0:
                             verstoesse.append(f"wendepunkt_ansage - {ns.uhr(t)} {art}: "
-                                              + ("kein Plan-Satz in 60 s" if v is None else f"Plan-Satz erst nach {v:.0f} s"))
+                                              + ("kein Plan-Satz in 60 s" if v is None
+                                                 else f"Plan-Satz erst {v:.0f} s nach dem Ende des laufenden Satzes"))
                 if "gesprochen_ohne" in sz:
                     geprueft += 1
                     from lolcoach.stimme import sprechbar

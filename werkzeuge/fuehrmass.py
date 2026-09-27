@@ -18,6 +18,8 @@ HANDLUNG = re.compile(
     r"warte|wart|lauf|schieb|push|split|tp|teleport|dreh|halte|halt|zurück|zurueck|zum|zur|zu deinem|zu den|"
     r"mit der gruppe|auf den|welle|platte|platten|dann|nicht)(?![a-zäöüß])", re.I)
 PLAN_KATEGORIEN = ("PLAN", "WENDEPUNKT", "VORSCHAU", "FENSTER", "ERINNERUNG", "GEFAHR")
+# Auftrag 004, Teil C 3: verbotene Floskeln (in Ansagen und Antworten)
+FLOSKELN = ("bis sich etwas öffnet", "danach rechne ich neu", "ist gerade keine option.")
 STILL = ("kern:INFO_FLASH", "kern:bestaetigung")
 LOG_DRUCK = re.compile(r"^(\d+):(\d\d) gedrueckt ([0-9.]+) s")
 LOG_TEXT = re.compile(r"erkannt nach ([0-9.]+) s, an die Stimme nach ([0-9.]+) s \(([^)]*)\): (.*)$")
@@ -79,6 +81,30 @@ def _plansaetze(lauf: ns.Lauf) -> list:
             or a.schluessel == "antwort"]
 
 
+def _satzende(lauf: ns.Lauf, t: float) -> float:
+    """Auftrag 004, Teil A 2: laeuft um `t` ein Satz, zaehlt der Verzug ab seinem Ende (gleiche Schaetzung wie die
+    nachgespielte Stimme: Zeichen / sprechplan.ZEICHEN_PRO_SEKUNDE)."""
+    from lolcoach import sprechplan, stimme
+    ende = t
+    for a in lauf.gesagt:
+        g = a.gesprochen
+        if g is None or g > t:
+            continue
+        e = g + len(stimme.sprechbar(a.text)) / sprechplan.ZEICHEN_PRO_SEKUNDE
+        if e > t:
+            ende = max(ende, e)
+    return ende
+
+
+def floskeln(lauf: ns.Lauf) -> list[tuple[float, str]]:
+    """Ansagen und Antworten mit einer verbotenen Floskel (Auftrag 004, Teil C 3)."""
+    aus = []
+    for a in lauf.gesagt:
+        if any(f in a.text.lower() for f in FLOSKELN):
+            aus.append((ns.gesprochen_um(a), a.text[:90]))
+    return aus
+
+
 def _takt(lauf: ns.Lauf, t: float):
     vor = [x for x in lauf.takte if x.zeit <= t]
     return vor[-1] if vor else None
@@ -105,6 +131,7 @@ def wendepunkt_verzug(lauf: ns.Lauf, ab: float = 0.0) -> list[tuple[float, str, 
         if x is not None and x.modus == "KAMPF":
             nach = [y for y in lauf.takte if y.zeit >= t and y.modus != "KAMPF"]
             start = nach[0].zeit if nach else t
+        start = _satzende(lauf, start)      # Auftrag 004: ab dem Ende des laufenden Satzes
         if art == "Basis verlassen":
             vorher = [a for a in saetze if t - 60.0 <= ns.gesprochen_um(a) <= t
                       and (_takt(lauf, ns.gesprochen_um(a)) or x).modus in ("BASIS", "TOT")]
@@ -196,7 +223,7 @@ def kennzahlen(lauf: ns.Lauf, stamm: str) -> dict:
     ohne, gesamt = leerlauf(lauf)
     verzug = wendepunkt_verzug(lauf)
     werte = [v for _, _, v, _ in verzug if v is not None]
-    return {"leerlauf": (ohne, gesamt), "verzug": verzug,
+    return {"leerlauf": (ohne, gesamt), "verzug": verzug, "floskeln": floskeln(lauf),
             "verzug_median": statistics.median(werte) if werte else None,
             "widersprueche": widersprueche(lauf), "stichwort": stichwort_antworten(lauf),
             "antwortzeit": antwortzeiten(lauf, stamm)}
@@ -214,6 +241,9 @@ def ausgeben(k: dict) -> None:
           f"- {len(verzug)} Wendepunkte, ohne Satz in 60 s: {len(fehlt)}")
     for t, art, v, vermerk in fehlt[:4]:
         print(f"      {ns.uhr(t)} {art}: kein Plan-Satz")
+    print(f"   Floskeln (Auftrag 004, Soll 0): {len(k.get('floskeln', []))}")
+    for t, s in k.get("floskeln", [])[:3]:
+        print(f"      {ns.uhr(t)} {s}")
     print(f"   Widersprueche (Soll 0): {len(k['widersprueche'])}")
     for t1, s1, t2, s2 in k["widersprueche"][:4]:
         print(f"      {ns.uhr(t1)} {s1} -> {ns.uhr(t2)} {s2}")

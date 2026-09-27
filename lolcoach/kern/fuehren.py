@@ -309,3 +309,30 @@ def ziel_label(h: Handlung | None) -> str:
                  "deinen ", "dein ", "die "):
         k = k.removeprefix(vorn)
     return k.removesuffix("-welle")
+
+
+def farmen_mit_vorschau(h: Handlung, zeitleiste: list, jetzt: float, danach_text: str | None, cfg: dict) -> str:
+    """Auftrag 004, Teil A 1: FARMEN wird nur mit Vorschau gesagt - "Farm Top, Drache in 70 Sekunden, dann zum
+    Drachen." Ohne ein Ereignis der Zeitleiste in <= vorschau_horizont_s: "" (still, wie vorher)."""
+    if h.ziel is None:
+        return ""
+    lane = next((w for w in ("Top", "Mid", "Bot") if w in h.ziel.name), None)
+    wo = lane or h.ziel.name
+    for e in zeitleiste or []:
+        n = e.in_s(jetzt)
+        if n > cfg["fuehren"]["vorschau_horizont_s"] or n < 5:
+            continue
+        if e.art == "objective":
+            was = f"{OBJ_WORT.get(e.schl, e.schl)} in {n} Sekunden"
+        elif e.art == "respawn":
+            was = f"{e.schl} lebt in {n} Sekunden wieder"
+        elif e.art == "kauf":
+            was = f"{e.schl} in {n} Sekunden kaufbar"
+        elif e.art == "tp":
+            was = f"dein TP in {n} Sekunden"
+        elif e.art in ("buff", "inhib"):
+            was = f"{e.text} in {n} Sekunden"
+        else:
+            continue
+        return f"Farm {wo}, {was}" + (f", dann {danach_text.split(':')[0]}" if danach_text else "") + "."
+    return ""

@@ -59,6 +59,7 @@ class PlanFuehrer:
         self.plan: Plan | None = None
         self._wechsel = -1e9
         self.gehalten: str | None = None   # welche Regel den besseren Kandidaten hielt
+        self.wendepunkt = False            # Auftrag 004: ein Wendepunkt ist offen (setzt der Kern je Takt)
         self._besser: tuple[str, float] | None = None
         self.top: list[Handlung] = []
         self._fehlt_seit: float | None = None   # G3: seit wann der Kandidat des Plans fehlt
@@ -141,7 +142,13 @@ class PlanFuehrer:
                     self._besser = (beste.art, zeit)
                 # halten_s schuetzt eine Wahl - nicht einen Plan, der nur kam, weil sein Vorgaenger fehlte (G3)
                 gehalten_s = 0.0 if self._erzwungen else self.c["halten_s"]
-                if zeit - self._besser[1] >= self.c["stabil_s"] and zeit - self._wechsel >= gehalten_s:
+                stabil_s = self.c["stabil_s"]
+                if self.wendepunkt and (p.handlung.stumm or p.handlung.daten.get("modell_stumm")):
+                    # Auftrag 004, Teil A 2: am offenen Wendepunkt schuetzt nichts einen stummen Plan - er wurde nie
+                    # angesagt (213624 9:44: FARMEN hielt ZUR_GRUPPE "drei gegen zwei" 4 s zurueck, der Wendepunkt-Satz
+                    # kam 8 s zu spaet)
+                    gehalten_s = stabil_s = 0.0
+                if zeit - self._besser[1] >= stabil_s and zeit - self._wechsel >= gehalten_s:
                     return self._neu(beste, zeit, "neu", p)
                 if zeit - self._wechsel < gehalten_s:
                     self.gehalten = (f"Hysterese: {beste.art} ist {diff:.0f} besser, der Plan ist erst "

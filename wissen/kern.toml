@@ -84,6 +84,18 @@ korrektur_gilt_s = 30
 ziel_wiederholen_s = 60         # Buch 11, 4 "Stille": gleiches Ziel in 60 s (Auftrag 003, Teil A 5)
 fenster_gilt_s = 5              # nicht im Buch: so lange nach einer neuen Information darf ein neuer Plan sie nennen
 
+[ueberlegen]
+stand = "Auftrag 004, Teil B (28.09.2026) - bis die Kampf-Eichung besteht"
+p_da_min = 0.3                  # G: wer in fenster_s mit dieser Wahrscheinlichkeit am Ort sein kann
+leben_min = 0.6
+level_allein = 3                # vor JEDEM in G so viele Level ...
+level_mit_gold = 2              # ... oder so viele Level UND ...
+gold = 2000                     # ... so viel Item-Gold
+koepfe_plus = 2                 # ... oder so viele Koepfe mehr
+halten_s = 5                    # ein Urteil "ueberlegen" haelt so lange, wenn es einen Takt lang unklar wird (kein Flackern,
+                                # 102112 26:38-26:41: der Drache fiel zweimal heraus und wurde neu angesagt); nie gegen
+                                # "unterlegen"
+
 [info_flash]
 stand = "Auftrag 002, S3 (27.09.2026)"
 abstand_s = 20                  # hoechstens eine Flash-Ansage je so viele Sekunden, mehrere in einem Satz

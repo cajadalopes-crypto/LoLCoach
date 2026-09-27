@@ -15,8 +15,14 @@
    --json schreibt {"proben": [...], "trennschaerfe": [...]}; --aus liest das und die alte Liste.
 8. --roh: Gegner mit den rohen API-Werten (Stand der letzten Sichtung) statt K.gegner_werte - im ganzen Nachspielen,
    also in p UND in level_diff/gold_diff. Ohne Schalter wie bisher.
+9. --etikett (Verdacht aus S6: mit Vorsprung sind eure Tode teuer und eure Kills billig, das Gold-Etikett haengt dann am
+   Vorsprung). Seite wie in 2: "eure" = Team des Opfers, alle Kills der Episode (15 s).
+   gold (Standard): wie 2. koepfe: eure Kills minus eure Tode, > 0 gewonnen, < 0 verloren, Gleichstand offen.
+   ueberlebt: du gestorben -> verloren; sonst mindestens ein Gegner tot -> gewonnen; sonst offen.
+   Die Proben tragen dafuer kills_wir, tode_wir, ich_tot (--aus braucht eine --json-Datei mit diesen Feldern).
 
     python werkzeuge/kampf_eichung.py 2026-09-27_133930 2026-09-27_140253 ... [--json <datei>] [--aus <datei>] [--roh]
+        [--etikett gold|koepfe|ueberlebt]
 """
 from __future__ import annotations
 
@@ -49,19 +55,49 @@ def proben_einer_partie(stamm: str) -> list[dict]:
     p = zustand.partie(letzte)
     mein = p.mein_team
     kills = [e for e in p.kills_von("ChampionKill") if e.opfer is not None]
+    ich = p.ich.name if p.ich else None
     aus = []
     for pr in lauf.kern.proben.liste:
         t0 = pr["zeit"]
         gold = 0.0
         tote = 0
+        k_wir = k_die = 0      # eure Kills / eure Tode (Seite wie beim Gold: Team des Opfers)
+        ich_tot = False
         for e in kills:
             if t0 <= e.zeit <= t0 + AUSGANG_S:
                 g = bewertung.kill_gold(e.opfer, p=p)
                 gold += g if e.opfer.team != mein else -g
                 tote += 1
+                if e.opfer.team != mein:
+                    k_wir += 1
+                else:
+                    k_die += 1
+                    ich_tot = ich_tot or e.opfer.name == ich
         ausgang = None if tote == 0 else (1 if gold > 0 else 0 if gold < 0 else None)
-        aus.append(dict(pr, stamm=stamm, ausgang=ausgang, gold=gold, p_da_vorher=None))
+        aus.append(dict(pr, stamm=stamm, ausgang=ausgang, gold=gold, p_da_vorher=None, kills_wir=k_wir,
+                        tode_wir=k_die, ich_tot=ich_tot))
     return aus
+
+
+ETIKETTEN = ("gold", "koepfe", "ueberlebt")
+
+
+def ausgang(pr: dict, etikett: str) -> int | None:
+    """Ausgang einer Probe nach Etikett (Punkt 9); 'gold' ist der gespeicherte Standard."""
+    if etikett == "gold":
+        return pr["ausgang"]
+    if "kills_wir" not in pr:
+        raise SystemExit(f"--etikett {etikett}: die Proben tragen keine Kill-Zaehlung (--aus mit alter Datei?)")
+    if etikett == "koepfe":
+        d = pr["kills_wir"] - pr["tode_wir"]
+        return 1 if d > 0 else 0 if d < 0 else None
+    return 0 if pr["ich_tot"] else 1 if pr["kills_wir"] > 0 else None
+
+
+def kt(pr: dict) -> str:
+    if "kills_wir" not in pr:
+        return ""
+    return f", {pr['kills_wir']}:{pr['tode_wir']}{', du tot' if pr['ich_tot'] else ''}"
 
 
 def p_neu(pr: dict, c: dict, k: float, ult: float, turm: float, anteil: float) -> float:
@@ -133,6 +169,8 @@ def main() -> None:
     ap.add_argument("--json")
     ap.add_argument("--aus", help="Proben aus einer frueheren --json-Datei statt Nachspielen")
     ap.add_argument("--roh", action="store_true", help="Gegner mit rohen API-Werten statt kampf.gegner_werte (G7)")
+    ap.add_argument("--etikett", choices=ETIKETTEN, default="gold", help="Ausgang: Kill-Gold (Standard), Koepfe, "
+                    "ueberlebt (Docstring Punkt 9)")
     a = ap.parse_args()
     if a.roh:
         from lolcoach.kern import kampf as K
@@ -148,7 +186,10 @@ def main() -> None:
     else:
         for stamm in a.aufnahmen:
             alle += proben_einer_partie(stamm)
-    entschieden = [pr for pr in alle if pr["ausgang"] is not None]
+    if a.etikett != "gold":
+        print(f"Etikett: {a.etikett}")
+        alle = [dict(pr, ausgang=ausgang(pr, a.etikett)) for pr in alle]
+    entschieden =[pr for pr in alle if pr["ausgang"] is not None]
     print(f"Proben {len(alle)}, entschieden {len(entschieden)}, offen {len(alle) - len(entschieden)} "
           f"({100 * (len(alle) - len(entschieden)) / max(1, len(alle)):.0f} %)")
     for ar in ("2", "3-6", ">=7"):
@@ -220,7 +261,7 @@ def main() -> None:
     print("Entschiedene Proben:")
     for pr in sorted(entschieden, key=lambda x: (x["stamm"], x["zeit"])):
         print(f"  {pr['stamm'][-6:]} {ns.uhr(pr['zeit'])} p {pr['p']:.2f} -> {'gewonnen' if pr['ausgang'] else 'verloren'}"
-              f" ({pr['gold']:+.0f} Gold) wir {pr['wir']} gegen {pr['gegner']}{' unter ihrem Turm' if pr['unter_turm'] else ''}")
+              f" ({pr['gold']:+.0f} Gold{kt(pr)}) wir {pr['wir']} gegen {pr['gegner']}{' unter ihrem Turm' if pr['unter_turm'] else ''}")
     if a.json:
         Path(a.json).write_text(json.dumps({"proben": alle, "trennschaerfe": ts},
                                            ensure_ascii=False, indent=1, default=str), encoding="utf-8")

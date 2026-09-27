@@ -109,12 +109,12 @@ text_max = { "Drachen" = 1 }
 warum = "Dasselbe Ziel in 60 s wird nicht in Kurzform wiederholt, auch nicht nach einem neuen Basis-Besuch (Buch 11, 4: Stille)."
 
 [[szenario]]
-id = "1621-66-prozent-bleibt"
+id = "1621-66-prozent-mit-team"
 fenster = ["16:18", "16:25"]
-quelle = "Auftrag 003, Teil A 1: zwei klar unterlegene Gegner sind keine Gefahr - aber nur ab 70 % Leben"
-lage = "Riven mit 66 % Leben, Caitlyn (32 %) und Sona kommen."
-muss_nennen_eins = ["Caitlyn"]
-warum = "66 % liegt unter 70 %: die Warnung bleibt richtig (Waechter fuer die Grenze)."
+quelle = "Auftrag 003, Teil A 1 (Waechter: 'Raus: Caitlyn und Sona kommen' bei 66 %) - umgestellt in Auftrag 004, Teil B; Carlos 16:31: 'Warum sagst du, ich soll zurueckgehen? Gar keinen Sinn.'"
+lage = "Riven L13 mit 66 % Leben und zwei Mitspielern am inneren Mid-Turm, Caitlyn (L8, 32 %) und Sona kommen."
+darf_nicht_sagen = ["Raus zum", "Caitlyn und Sona kommen"]
+warum = "Auftrag 004, Teil B: Level 13 gegen 8, ihr seid drei - robust klar ueberlegen (Leben >= 60 %), der Plan mit der Gruppe haelt. Die 70-%-Grenze aus 003 gilt fuer dich allein (zwei klar unterlegene), nicht mit Team. Rueckfrage in 004_frage.md."
 
 # --- Auftrag 003, Buch 11 ---
 
@@ -133,3 +133,13 @@ quelle = "Buch 11, 7: Wendepunkt-Probe"
 lage = "Ganze Partie."
 wendepunkt_ansage = true
 warum = "Auf jeden Turmfall, Objective-Kill und das Verlassen der Basis folgt in <= 3 s ein Plan-Satz."
+
+# --- Auftrag 004 ---
+
+[[szenario]]
+id = "0944-nach-turmfall-kein-farmen"
+fenster = ["9:44", "10:05"]
+quelle = "Auftrag 004, Teil B: nach dem Turmfall 'Farm deine Top-Welle, bis sich etwas oeffnet' - Riven 9/0 vorn"
+lage = "Carlos nimmt den aeusseren Top-Turm, der Drache lebt, sein Team ist unten."
+darf_nicht_sagen = ["bis sich etwas öffnet", "Turm ist down: Farm"]
+warum = "Nach einem Wendepunkt nennt der Satz ein Ziel ausser Farmen - der naechste Turm oder der Drache mit Team (Ueberlegenheits-Regel)."

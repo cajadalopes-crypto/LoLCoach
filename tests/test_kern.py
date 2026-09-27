@@ -193,6 +193,18 @@ def zwei_klar_unterlegene():
     assert k._klar_unterlegen(m(0.62), {"Sona"}, {}) is not None                 # einer: ab 60 % wie bisher
 
 
+def keine_floskeln():
+    """Auftrag 004, Teil C 3: keine Satzvorlage mit einer Floskel - "bis sich etwas oeffnet", "Danach rechne ich neu",
+    "... ist gerade keine Option." (ohne Grund)."""
+    from pathlib import Path
+    wurzel = Path(__file__).resolve().parent.parent / "lolcoach"
+    verboten = ("bis sich etwas öffnet", "danach rechne ich neu", "ist gerade keine option")
+    for datei in [*wurzel.glob("kern/*.py"), *wurzel.glob("kern/modi/*.py"), wurzel / "antworten.py"]:
+        text = datei.read_text(encoding="utf-8").lower()
+        for f in verboten:
+            assert f not in text, (datei.name, f)
+
+
 def zahlen_wie_spieler():
     """Auftrag 002, S1: was die Stimme bekommt - Gold als Zahlwort auf Hunderter, Kill-Bilanzen ohne Schraegstrich,
     Uhrzeiten mit der Null (Probe mit edge-tts und Whisper: werkzeuge/zahlenprobe.py)."""
@@ -210,6 +222,6 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
                  gold_reicht_fuer_das_genannte_item, info_flash_kurz_und_gebuendelt, zahlen_wie_spieler,
-                 zwei_klar_unterlegene):
+                 zwei_klar_unterlegene, keine_floskeln):
         test()
         print(f"{test.__name__} OK")

@@ -244,7 +244,8 @@ class Sprechplan:
                 return None
         # bei gleichem Vorrang geht eine Gefahr vor (Pruefpartie 2, 19:39: "Du hast 5900 Gold ... recall" verdraengte
         # "Du stehst tief, Varus und Rakan seit 32 s weg" - 16 s vor dem Tod)
-        a = max(kandidaten, key=lambda a: (a.prio, a.thema == "gefahr", a.zeit))
+        # Auftrag 004, Teil A 2: ein Wendepunkt stellt sich vor alle wartenden PLAN-Saetze (er unterbricht nicht)
+        a = max(kandidaten, key=lambda a: (a.prio, a.thema == "gefahr", a.thema == "wendepunkt", a.zeit))
         frei = self.frei_ab + (RUHE_VOR_HINWEIS if a.prio == HINWEIS else 0.0)
         # Live 26.09. 21:21: das Briefing (~50 s) hielt "Gragas hat Flash benutzt" 9 s und Vaynes Flash 16 s auf.
         # Laeuft etwas Unterbrechbares, darf eine wichtige Ansage es abbrechen.

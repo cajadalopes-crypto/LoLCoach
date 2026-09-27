@@ -17,6 +17,20 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 004 (Ueberlegenheit, echte Antworten, Kampf-Eichung) umgesetzt** - Zahlen in `buecher/messungen.md`
+("Auftrag 004"), Bericht in `buecher/auftraege/004_bericht.md`, Rueckfrage in `004_frage.md`.
+
+Offen aus Auftrag 004:
+- **Kampf-Eichung besteht mit keinem Etikett** (gold, koepfe, ueberlebt) - Gold trennt verkehrt herum. Naechster
+  Verdacht: Spielzeit (r = 0,56 mit gold_diff). Bis dahin sprechen Kampfrufe nur ueber die Ueberlegenheits-Regel.
+- **Wendepunkt-Probe rot:** die spaeten Saetze stehen meist hinter einem stummen FARMEN ohne Vorschau (Teil A 1) -
+  gewollt still, von der Probe als rot gezaehlt. Entweder die Probe nimmt sie aus, oder FARMEN bekommt am Wendepunkt
+  einen Satz - Entscheidung.
+- **Widersprueche:** 213624 13:18 (Korrektur "ich bin beim Drachen" gegen den Basis-Beobachter), 164326 35:00 (zwei
+  ueberlegene Turmziele in 15 s).
+- **Test `kamera_gibt_nur_einmal_frei`** scheitert am Bildschirm 7680 x 2160 (dxcam gibt die volle Flaeche zurueck) -
+  auch auf dem Stand vor 004; pruefen, ob der Coach dort je Takt den ganzen Bildschirm kopiert.
+
 **Auftrag 003 (Buch 11 Fuehren, Schritt 6 Fragen) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 003 /
 Schritt 6"), Bericht in `buecher/auftraege/003_bericht.md`. Carlos hat Stimme und Tempo gewaehlt: Killian, +25 %.
 

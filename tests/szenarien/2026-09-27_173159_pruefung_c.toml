@@ -170,3 +170,13 @@ quelle = "Buch 11, 7: Wendepunkt-Probe"
 lage = "Ganze Partie."
 wendepunkt_ansage = true
 warum = "Auf jeden Turmfall, Objective-Kill und das Verlassen der Basis folgt in <= 3 s ein Plan-Satz."
+
+# --- Auftrag 004, Teil B: Waechter aus einer echten Partie ---
+
+[[szenario]]
+id = "1533-nicht-klar-ueberlegen"
+fenster = ["15:31", "15:38"]
+quelle = "Auftrag 004, Teil B: Kampf gegen Yasuo, Riven L12 5650 Gold 50 % Leben, Yasuo L10 5600 Gold 100 %, Olaf 99 s ungesehen"
+lage = "Riven im Kampf mit Yasuo, zwei Level vorn, gleiches Item-Gold, halbes Leben."
+darf_nicht_sagen = ["Rein auf", "Rein, ", "Rein!"]
+warum = "Nicht klar ueberlegen (2 Level, aber nur 50 Gold und 50 % Leben): die Kampfrufe bleiben stumm, bis die Eichung besteht."

@@ -41,6 +41,9 @@ VOR_SCHRANKE = frozenset(("DRUECKEN", "MIT_GRUPPE", "NEHMEN", "BESTREITEN", "ZUR
                           "SEITENWELLE", "WELLE_KLAEREN", "VORBEREITEN_OBJECTIVE", "ANNEHMEN"))
 # R2: haengen am ungeeichten p_gewinn - berechnet, protokolliert, stumm (bis die Kampf-Eichung besteht)
 MODELL_STUMM = frozenset(("BESTREITEN", "TP_SPIEL"))
+# Auftrag 004, Teil B: diese sprechen bei robuster Ueberlegenheit auch ohne Kampfmodell - und sind bei klarer
+# Unterlegenheit aus (kern/ueberlegen.py)
+UEBERLEGEN_ARTEN = frozenset(("DRUECKEN", "MIT_GRUPPE", "NEHMEN", "BESTREITEN", "ANNEHMEN", "REIN"))
 BACK_RUF = re.compile(r"\bback\b", re.I)     # R4: ein Back-Ruf (Back jetzt, Jetzt back, ... dann back)
 VORWAERTS_RUF = frozenset(("DRUECKEN", "MIT_GRUPPE", "NEHMEN", "BESTREITEN", "ZUR_GRUPPE", "TP_SPIEL", "ANNEHMEN",
                            "VORBEREITEN_OBJECTIVE", "PLATTEN", "SEITENWELLE", "WELLE_KLAEREN", "REIN", "DREHEN",
@@ -229,6 +232,7 @@ class Kern:
                 if sep is not None:
                     sep["rueckkehr"] = True           # G1: danach darf die kurze Fassung kommen (auch einer ruhenden)
         self._ereignisse_merken(m, p)
+        self._korrekturen_anwenden(m)              # Auftrag 004, Teil C 2 (Buch 11, 5.6)
         self._fuehren_vorher(m, modus)             # Buch 11: Zeitleiste, Wendepunkte, neue Informationen
         self._schutz_episode(m)
         if m.b is not None and not m.tot:
@@ -255,6 +259,7 @@ class Kern:
             return []
         kand, self.gefahr = self._kandidaten(m, modus)
         self.kandidaten = kand
+        self.fuehrer.wendepunkt = self._wp is not None
         ev = self.fuehrer.takt(m, kand, self.gefahr)
         from . import fuehren
         self.danach = fuehren.danach(self, m)                     # Buch 11, 3
@@ -325,8 +330,10 @@ class Kern:
         ziel = plan.handlung.daten.get("ziel_pos") or (plan.handlung.ziel.pos if plan and plan.handlung.ziel else None) \
             if plan is not None else None
         wp, fe = self._beobachter.takt(m, modus, self._lagebild, self.cfg, ziel=ziel)
+        wp = self._strukturen_zusammen(wp, m)          # Auftrag 004, Teil A 2
         if wp is not None:
-            self._wp = {"zeit": m.zeit, "text": wp}
+            self._wp = {"zeit": m.zeit, "text": wp, "erst": (self._wp or {}).get("erst", m.zeit)
+                        if wp.startswith(("Zwei", "Drei", "Vier")) else m.zeit}
             self._ereignis_t = m.zeit                  # auch fuer Kehrtwenden ein neues Ereignis
             if modus != "KAMPF" and plan is not None and not (plan.art in SICHER and self.gefahr):
                 self.fuehrer.plan = None               # erledigt oder ungueltig: der naechste Plan kommt sofort
@@ -351,6 +358,26 @@ class Kern:
             basis = getattr(self, "_basis_satz", -1e9)
             return h.art == "HALTEN" or m.zeit - basis < n or (gleich and not self.danach_text)
         return False
+
+    def _strukturen_zusammen(self, wp: str | None, m: Merkmale) -> str | None:
+        """Auftrag 004, Teil A 2: fallen mehrere Tuerme in 10 s, wird daraus EIN Satz - noch nicht gesagt: "Zwei Tuerme
+        down: ..."; eben gesagt (<= 10 s): kein zweiter."""
+        if wp is None or not wp.endswith(("ist down", "ist weg")):
+            return wp
+        offen = self._wp
+        if offen is not None and offen["text"].endswith(("ist down", "ist weg", "down", "weg")) \
+                and m.zeit - offen.get("erst", offen["zeit"]) <= 10.0 and not offen["text"].startswith(("Aus", "Drache",
+                                                                                                         "Baron", "Herold",
+                                                                                                         "Larven")):
+            n = offen.get("n", 1) + 1
+            offen["n"] = n
+            zahl = {2: "Zwei", 3: "Drei", 4: "Vier"}.get(n, str(n))
+            wir = not wp.startswith("Euer")
+            return f"{zahl} Türme down" if wir else f"{zahl} eurer Türme weg"
+        if offen is None and m.zeit - self._wp_zuletzt <= 10.0 and (getattr(self, "_wp_text", "") or "").endswith(
+                ("ist down", "ist weg", "Türme down", "Türme weg")):
+            return None
+        return wp
 
     def _wendepunkt_offen(self, m: Merkmale) -> str | None:
         c = self.cfg["fuehren"]
@@ -462,7 +489,15 @@ class Kern:
             from .modi.kampf import annehmen as kampf_annehmen
             schon = self._stumm_annehmen[1] if m.zeit - self._stumm_annehmen[0] <= 10.0 else set()
             if (annehmen := kampf_annehmen(m, cfg, modus, plan=self.fuehrer.plan, schon=schon)) is not None:
+                from .ueberlegen import lage as ueberlegen_lage
+                u, grund = ueberlegen_lage(m, cfg, m.pos) if not cfg["kampf"].get("geeicht", False) else (None, "")
                 if cfg["kampf"].get("geeicht", False):
+                    kand.append(annehmen)
+                elif u == "ueberlegen":
+                    # Auftrag 004, Teil B: robust klar ueberlegen - der Kampf wird angesagt, mit diesem Grund
+                    annehmen.grund = grund
+                    annehmen.satz = f"Nimm den Kampf: {grund.split(', ')[0]}."
+                    annehmen.daten["ueberlegen"] = grund
                     kand.append(annehmen)
                 else:
                     # Entscheidung 2: berechnet und protokolliert, aber kein Kandidat - das ungeeichte Modell aendert
@@ -481,6 +516,7 @@ class Kern:
                and m.zeit - t <= self.cfg["fuehren"]["korrektur_gilt_s"]}
         if weg:
             kand = [h for h in kand if h.daten.get("objective") not in weg]
+        self.kandidaten_roh = list(kand)          # Auftrag 004, Teil C: auch was stumm bleibt, mit seinem Grund
         kand = self._schranken(m, kand, modus)
         bleiben = next((h for h in kand if h.art in ("FARMEN", "HALTEN") or h.daten.get("verloren")), None)
         for h in kand:
@@ -570,18 +606,11 @@ class Kern:
                 from .fuehren import stumm_satz
                 # Buch 11, 4: nach einem Wendepunkt auch "Farm die Top-Welle" - oder, ist der Plan nur Halten, das,
                 # was danach kommt; sonst schweigt er (kein "bleib, wo du bist")
-                text = stumm_satz(h) or (f"{self.danach_text[:1].upper()}{self.danach_text[1:]}."
-                                         if self.danach_text else "")
-                if not text and wp != "Aus der Basis":
-                    # nur Halten: die beste Option, die am ungeeichten Kampfmodell haengt, ehrlich als unsicher -
-                    # sonst still (kein "Warte, gerade ist nichts sicher": 164326, 23:41/24:08)
-                    from . import fuehren
-                    offen = next((x for x in sorted(self.kandidaten or [], key=lambda x: -x.ev)
-                                  if fuehren.stumm(x) and not x.stumm and x.ziel is not None
-                                  and x.art not in fuehren.NIE_DANACH), None)
-                    if offen is not None:
-                        k = fuehren.kurz(offen)
-                        text = f"{k[:1].upper()}{k[1:]} nur mit Kampf - unsicher."
+                # Auftrag 004, Teil A 1: bleibt nur FARMEN, dann nur mit Vorschau ("Farm Top, Drache in 70 Sekunden,
+                # dann zum Drachen."); nur Halten: das, was danach kommt; sonst still - nie ungefragt "unsicher"
+                from .fuehren import farmen_mit_vorschau
+                text = (farmen_mit_vorschau(h, self.zeitleiste, m.zeit, self.danach_text, self.cfg) if h.art == "FARMEN"
+                        else (f"{self.danach_text[:1].upper()}{self.danach_text[1:]}." if self.danach_text else ""))
             if h.art == "ANNEHMEN":
                 # Buch 7, 4: hoechstens einmal je Gegner und annehmen_wiederholen_s
                 g = h.daten.get("kampf_mit")
@@ -724,8 +753,14 @@ class Kern:
             danach_text = self.danach_text
             if danach_text and BACK_RUF.search(danach_text) and self._back_sperre(m, danach_text) is not None:
                 danach_text = None                    # Pruefung c, R4: auch "Danach back" zaehlt als Back-Ruf
-            text = f"{wp}. {zwei}" if zwei else fuehren.wendepunkt_satz(wp, text, danach_text,
-                                                                      cf["max_woerter_wendepunkt"])
+            vor = next((e for e in reversed(getattr(self, "_ansage_log", None) or [])
+                        if e["kategorie"] in ("PLAN", "WENDEPUNKT", "FENSTER")), None)
+            if not zwei and vor is not None and m.zeit - vor["zeit"] <= cf["ziel_wiederholen_s"] \
+                    and vor["art"] == h.art and vor.get("ziel") and vor["ziel"] == fuehren.ziel_label(h):
+                text = f"{wp}: weiter {fuehren.kurz(h)}."     # derselbe Plan, eben gesagt - nur bestaetigen
+            else:
+                text = f"{wp}. {zwei}" if zwei else fuehren.wendepunkt_satz(wp, text, danach_text,
+                                                                          cf["max_woerter_wendepunkt"])
             kategorie = "WENDEPUNKT"
         elif kategorie == "PLAN" and ev.art == "neu" and (fe := self._fenster_offen(m)) is not None \
                 and not any(w in text for w in fe.split()[:2]):      # nennt der Satz ihn schon, keine zweite Zahl
@@ -817,8 +852,41 @@ class Kern:
             return q is p and q.schritt == schritt
         return pruefe
 
+    def _korrekturen_anwenden(self, m: Merkmale) -> None:
+        """Buch 11, 5.6 (Auftrag 004, Teil C 2): Carlos' Aussagen ueberschreiben das Merkmal korrektur_gilt_s lang -
+        "der ist jetzt bei mir oben" setzt die Sichtung des Gegners auf deinen Ort, "ich bin beim Drachen" deinen Ort."""
+        k = getattr(self, "korrekturen", None)
+        if not k or m is None or m.b is None:
+            return
+        gilt = self.cfg["fuehren"]["korrektur_gilt_s"]
+        bei = k.get("bei_mir")
+        if bei is not None and m.zeit - bei[1] <= gilt and m.pos is not None:
+            g = next((x for x in m.b.gegner if x.champion == bei[0] and not x.s.tot), None)
+            if g is not None:
+                g.pos, g.sichtbar, g.seit, g.abstand, g.ankunft = m.pos, True, 0.0, 0.0, 0.0
+        ort = k.get("ort")
+        if ort is not None and m.zeit - ort[1] <= gilt:
+            from .merkmale import OBJ_GRUBE
+            o = next((x for x in m.objectives or [] if x.schl == ort[0]), None)
+            if o is not None:
+                m.pos = o.pos
+                m.bereich = f"grube:{OBJ_GRUBE.get(ort[0], ort[0])}"
+
     def _gesprochen(self, a, kategorie: str, m: Merkmale) -> None:
         a._kategorie = kategorie          # fuer Szenarien (kategorie_max) und Kennzahlen
+        # Auftrag 004, Teil C 1: jede Ansage merkt sich 60 s lang ihren Grund und ihre Lage - "warum?" meint sie
+        plan = self.fuehrer.plan
+        grund = (plan.handlung.grund if plan is not None and kategorie != "INFO_FLASH" and plan.handlung.grund
+                 else (a.text.split(": ", 1)[1].rstrip(".!") if ": " in a.text else ""))
+        log = getattr(self, "_ansage_log", None)
+        if log is None:
+            self._ansage_log = log = deque()
+        from . import fuehren as _f
+        log.append({"zeit": m.zeit, "text": a.text, "art": a.schluessel.split(":", 1)[-1], "kategorie": kategorie,
+                    "grund": grund, "leben": m.leben,
+                    "ziel": _f.ziel_label(plan.handlung) if plan is not None and kategorie != "INFO_FLASH" else None})
+        while log and log[0]["zeit"] < m.zeit - 60.0:
+            log.popleft()
         if kategorie in ("PLAN", "WENDEPUNKT", "FENSTER", "VORSCHAU", "ERINNERUNG") and self.fuehrer.plan is not None:
             from .fuehren import ziel_label
             a._ziel = ziel_label(self.fuehrer.plan.handlung)      # Buch 11, 7: Widersprueche
@@ -856,8 +924,10 @@ class Kern:
             return []
         art, satz, ziel = r
         if art in ("REIN", "DREHEN") and not self.cfg["kampf"].get("geeicht", False):
-            self._stumm(m, art, satz, "KAMPF")        # Entscheidung 2: Modell nicht geeicht
-            return []
+            from .ueberlegen import lage as ueberlegen_lage
+            if ueberlegen_lage(m, self.cfg, m.pos)[0] != "ueberlegen":
+                self._stumm(m, art, satz, "KAMPF")    # Entscheidung 2: Modell nicht geeicht (Auftrag 004: ausser klar
+                return []                             # ueberlegen)
         if art == "RAUS" and not self.cfg["kampf"].get("geeicht", False):
             from .modi.kampf import raus_beleg
             if not raus_beleg(m, self.cfg):
@@ -985,12 +1055,42 @@ class Kern:
                 if h.p_tod >= cs["vor_p_tod_max"]:
                     weg.append(f"{h.art}: p_tod {h.p_tod:.2f}")
                     continue
-            if not self.cfg["kampf"].get("geeicht", False) and (h.art in MODELL_STUMM or h.daten.get("modell_stumm")):
-                self._stumm(m, h.art, h.satz or h.kurz(), modus, schluessel=h.ziel.name if h.ziel else None)
-                continue
+            if h.art in UEBERLEGEN_ARTEN or h.art in MODELL_STUMM or h.daten.get("modell_stumm"):
+                u, grund = self._ueberlegen(m, h)
+                if u == "unterlegen" and h.art in UEBERLEGEN_ARTEN:
+                    weg.append(f"{h.art}: klar unterlegen, {grund}")      # Auftrag 004, Teil B: aus
+                    continue
+                if not self.cfg["kampf"].get("geeicht", False) and (h.art in MODELL_STUMM or h.daten.get("modell_stumm")):
+                    if u == "ueberlegen" and h.art in UEBERLEGEN_ARTEN:
+                        # Auftrag 004, Teil B: robust klar ueberlegen - spricht ohne Kampfmodell, mit diesem Grund
+                        from .ueberlegen import mit_grund
+                        mit_grund(h, grund)
+                        h.daten["modell_stumm"] = False
+                        h.daten["ueberlegen"] = grund
+                    else:
+                        self._stumm(m, h.art, h.satz or h.kurz(), modus, schluessel=h.ziel.name if h.ziel else None)
+                        continue
             aus.append(h)
         self._schranke_takt = weg or None
         return aus
+
+    def _ueberlegen(self, m: Merkmale, h) -> tuple[str | None, str]:
+        """Auftrag 004, Teil B: die Lage am Ziel der Handlung - G ist, wer kommt, bevor sie erledigt ist."""
+        from .ueberlegen import lage
+        ort = h.daten.get("ziel_pos") or (h.ziel.pos if h.ziel is not None else None) or m.pos
+        fenster = max(self.cfg["kampf"]["fenster_s"], min(h.dauer or 0.0, 45.0))
+        u, grund = lage(m, self.cfg, ort, fenster)
+        merk = getattr(self, "_ueberlegen_merk", None)
+        if merk is None:
+            self._ueberlegen_merk = merk = {}
+        schl = (h.art, h.ziel.name if h.ziel is not None else None)
+        if u == "ueberlegen":
+            merk[schl] = (m.zeit, grund)
+        elif u == "unterlegen":
+            merk.pop(schl, None)
+        elif schl in merk and m.zeit - merk[schl][0] <= self.cfg["ueberlegen"]["halten_s"]:
+            return "ueberlegen", merk[schl][1]        # kein Flackern: das Urteil haelt halten_s
+        return u, grund
 
     def _stumm(self, m: Merkmale, art: str, text: str, modus: str | None, schluessel: str | None = None) -> None:
         """Entscheidung 2: ein Kampf-Ruf des ungeeichten Modells - ins Protokoll, nicht in die Stimme. Derselbe Ruf
