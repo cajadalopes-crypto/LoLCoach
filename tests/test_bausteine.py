@@ -515,21 +515,79 @@ def stimme_haengt_nicht():
     try:
         st = stimme.Stimme(lautstaerke=0)
         st.pausiere()                          # Sprechtaste gedrueckt - und nur angetippt, keine Antwort
-        st.sage("Milio hat Flash benutzt")
+        st.taste_los()
+        meldungen = []
+        st.sage("Milio hat Flash benutzt", melde=lambda art, t: meldungen.append(art))
         time.sleep(0.2)
         assert not gesprochen, "waehrend der Frage still"
-        time.sleep(0.6)
-        assert gesprochen == ["Milio hat Flash benutzt"], gesprochen   # von selbst weiter
-        stimme.PAUSE_HOECHSTENS, stimme.VERALTET = 5.0, 0.2
-        meldungen = []
-        st.pausiere()
-        st.sage("alt", melde=lambda art, t: meldungen.append(art))
-        time.sleep(0.4)
-        st.freigeben()
-        time.sleep(0.3)
-        assert "alt" not in gesprochen and meldungen == ["verworfen"], (gesprochen, meldungen)
+        time.sleep(0.6)                        # keine Antwort gekommen: von selbst weiter ...
+        st.sage("Jetzt wieder")
+        time.sleep(0.2)
+        # ... aber was waehrend der Frage kam, wird nicht nachgeholt (steht im Dashboard)
+        assert gesprochen == ["Jetzt wieder"] and meldungen == ["verworfen"], (gesprochen, meldungen)
     finally:
         stimme._Sapi, stimme.PAUSE_HOECHSTENS, stimme.VERALTET = alt
+
+
+def sprechtaste_ist_stummtaste():
+    """Carlos 27.09.: "meine Push-to-Talk-Taste muss seine Mute-Taste sein ... wenn ich fertig bin mit reden, ist
+    das erste, was er machen muss, darauf zu antworten. Keine anderen Phrasen! Nach der Antwort kann er mit seinem
+    Gelaber weitermachen" - und "40-mal hintereinander geh rein". Taste gehalten: kein Ton. Danach: nur die
+    Antwort, auch zwischen ihren Teilen nichts; was der Plan waehrenddessen wollte, faellt weg. Ein abgebrochener
+    Satz kommt nicht wieder (vorher: bei jedem Druck abgebrochen, danach wiederholt - die Schleife)."""
+    import time
+    from lolcoach import stimme
+    begonnen, ganz = [], []
+
+    class Langsam:
+        def __init__(self, *a):
+            pass
+
+        def spreche(self, text, stopp, beim_ton=None, gilt=None):
+            begonnen.append(text)
+            ende = time.monotonic() + 0.3
+            while time.monotonic() < ende:
+                if stopp.is_set():
+                    return False
+                time.sleep(0.01)
+            ganz.append(text)
+            return True
+
+    alt = stimme._Sapi
+    stimme._Sapi = Langsam
+    try:
+        st = stimme.Stimme(lautstaerke=0)
+        st.sage("Geh rein, das ist ein Kill.")
+        time.sleep(0.1)
+        st.pausiere()                                   # Taste unten: der laufende Satz bricht ab
+        verworfen = []
+        st.sage("Sett hat Flash benutzt.", dringend=True, melde=lambda art, t: verworfen.append(art))
+        st.sage("Fiddlesticks ist oben.", melde=lambda art, t: verworfen.append(art))
+        time.sleep(0.4)
+        assert begonnen == ["Geh rein, das ist ein Kill."], f"sprach in die Frage hinein: {begonnen}"
+        st.taste_los()
+        st.antworte_teil("Ja, geh auf Sett,")
+        time.sleep(0.5)                                 # Claude denkt noch - trotzdem keine Ansage dazwischen
+        st.antworte_teil("er hat kein Flash.")
+        st.antworte_ende()
+        time.sleep(0.9)
+        assert begonnen[1:] == ["Ja, geh auf Sett,", "er hat kein Flash."], begonnen
+        assert verworfen == ["verworfen", "verworfen"], verworfen
+        st.sage("Danach wieder normal.")
+        time.sleep(0.5)
+        assert begonnen[-1] == "Danach wieder normal.", begonnen
+        begonnen.clear()
+        st.sage("Geh rein, das ist ein Kill.")
+        for _ in range(4):                              # er drueckt immer wieder
+            time.sleep(0.1)
+            st.pausiere()
+            time.sleep(0.05)
+            st.taste_los()
+            st.freigeben()
+        time.sleep(1.0)
+        assert begonnen == ["Geh rein, das ist ein Kill."], begonnen
+    finally:
+        stimme._Sapi = alt
 
 
 def satz_bricht_ab_wenn_er_nicht_mehr_stimmt():
@@ -1107,7 +1165,7 @@ if __name__ == "__main__":
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
                  aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121, combo_rechnung,
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr,
-                 faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht,
+                 faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht, sprechtaste_ist_stummtaste,
                  satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
                  konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler, eigene_position_aus_dem_kamerarahmen,
                  satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah, baron_aeltester_inhibitor,

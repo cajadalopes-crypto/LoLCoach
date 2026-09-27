@@ -101,12 +101,13 @@ class PushToTalk(threading.Thread):
     """Haelt die Taste -> nimmt auf; laesst los -> ruft `bei_frage(audio)` im eigenen Thread.
     `beim_druecken()` wird sofort beim Druecken gerufen (z. B. Coach verstummt)."""
 
-    def __init__(self, taste: str, bei_frage, beim_druecken=None, bei_abbruch=None):
+    def __init__(self, taste: str, bei_frage, beim_druecken=None, bei_abbruch=None, beim_loslassen=None):
         super().__init__(daemon=True)
         if taste.lower() not in TASTEN:
             raise ValueError(f"Unbekannte Taste '{taste}'. Moeglich: {', '.join(sorted(TASTEN))}")
         self.vk = TASTEN[taste.lower()]
         self.bei_frage, self.beim_druecken, self.bei_abbruch = bei_frage, beim_druecken, bei_abbruch
+        self.beim_loslassen = beim_loslassen   # die Taste ist die Stummtaste: los = der Coach darf wieder
         self.geraet, self.geraet_rate = _mikrofon()
         self._halt = threading.Event()
 
@@ -124,6 +125,8 @@ class PushToTalk(threading.Thread):
                                 callback=lambda d, *_: stuecke.append(d[:, 0].copy())):
                 while win32api.GetAsyncKeyState(self.vk) & 0x8000 and not self._halt.is_set():
                     time.sleep(0.02)
+            if self.beim_loslassen:
+                self.beim_loslassen()
             # Nur angetippt: keine Frage - aber der Coach wurde beim Druecken stumm geschaltet und muss wieder frei
             # sein. Live 26.09., 23:06: ein kurzes Antippen von Maus 5 hielt die Stimme minutenlang an, danach kamen
             # die alten Ansagen ("Milio hat Flash benutzt" 154 s spaet - Carlos: "sowas von in der Vergangenheit").
@@ -176,7 +179,8 @@ class Gespraech:
         self.erkenner = Erkenner()
         self.p = self.lagebild = self.gesagt = None
         self.notizen: pathlib.Path | None = None   # je Partie gesetzt (live)
-        self.ptt = PushToTalk(taste, self._frage, beim_druecken=self._gedrueckt, bei_abbruch=sprecher.freigeben)
+        self.ptt = PushToTalk(taste, self._frage, beim_druecken=self._gedrueckt, bei_abbruch=sprecher.freigeben,
+                              beim_loslassen=getattr(sprecher, "taste_los", None))
         self.ptt.start()
 
     def _gedrueckt(self) -> None:

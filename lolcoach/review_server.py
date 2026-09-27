@@ -208,7 +208,8 @@ class Sprachfragen:
         from . import sprache
         self.sprecher = sprecher
         self.erkenner = sprache.Erkenner()
-        self.ptt = sprache.PushToTalk(taste, self._frage, beim_druecken=sprecher.pausiere)
+        self.ptt = sprache.PushToTalk(taste, self._frage, beim_druecken=sprecher.pausiere,
+                                      beim_loslassen=getattr(sprecher, "taste_los", None))
         self.ptt.start()
 
     def _frage(self, audio) -> None:

@@ -32,7 +32,7 @@ ERSTER_TON_HOECHSTENS = 2.0  # Sekunden ohne Audio fuer den ersten Teil, dann sp
 PAUSE_HOECHSTENS = 15.0      # so lange darf die Stimme fuer eine Frage angehalten sein, dann geht sie von selbst weiter
 VERALTET = 5.0               # so lange darf eine Ansage in der Schlange der Stimme warten - danach ist sie ueberholt
 PRUEFEN_ALLE = 0.25          # Sekunden: so oft fragt die Stimme waehrend eines Satzes, ob er noch stimmt
-NOCH_AKTUELL = 25.0   # so alt darf ein unterbrochener Satz sein, um wiederholt zu werden
+STUMM_HOECHSTENS = 60.0   # Sekunden: laenger haelt keiner die Sprechtaste - danach gilt sie als losgelassen
 
 
 class _Sapi:
@@ -386,15 +386,23 @@ class Stimme:
         einer neuronalen Stimme (z. B. "de-DE-ConradNeural"), sonst die Windows-Stimme."""
         self.warten, self.lautstaerke, self.neural, self.tempo = warten, lautstaerke, neural, tempo
         self.protokoll: list[str] = []   # was angefangen wurde, in Reihenfolge
-        self._schlange: queue.Queue = queue.Queue()   # (text, fertig, melde, eingereiht)
-        self._vorrang: queue.Queue = queue.Queue()     # Antworten
+        self._schlange: queue.Queue = queue.Queue()   # (text, fertig, melde, eingereiht, noch_wahr) - der Plan
+        self._vorrang: queue.Queue = queue.Queue()     # (text, fertig, melde, noch_wahr) - dringend, vom Plan
+        self._antworten: queue.Queue = queue.Queue()   # Text - die Antwort auf seine Frage, vor allem anderen
+        # Die Sprechtaste gehoert der Frage (Carlos 27.09.: "sobald ich meine PTT-Taste druecke, muss er nur zuhoeren
+        # und darauf antworten - nach der Antwort kann er mit seinem Gelaber weitermachen"):
+        #   _stumm: Taste gehalten - kein Ton, nichts faengt an;
+        #   _frei geloescht: vom Druck bis die Antwort ganz gesprochen ist - nur Antwortsaetze, keine Ansage.
+        # Was der Plan in dieser Zeit sagen wollte (Flash, Gank ...), wird verworfen, nicht nachgeholt: es steht
+        # im Dashboard, und stimmt es danach noch, kommt es frisch aus dem Regelwerk.
         self._frei = threading.Event()
         self._frei.set()
+        self._stumm = threading.Event()
+        self._stumm_seit = 0.0
+        self._antwort_ende = False      # die Antwort ist komplett eingereiht (antworte / antworte_ende)
         self._stopp = threading.Event()
-        self._unterbrochen: tuple[str, float] | None = None
         self._spricht = False
         self._pausiert_seit = 0.0
-        self._gehalten = None      # aus der Schlange geholt, als die Stimme gerade angehalten wurde
         self._bereit = threading.Event()
         threading.Thread(target=self._lauf, args=(sprache,), daemon=True).start()
         self._bereit.wait(timeout=5)
@@ -408,33 +416,44 @@ class Stimme:
         self._motor = motor
         self._bereit.set()
         while True:
+            if self._stumm.is_set():
+                if time.monotonic() - self._stumm_seit <= STUMM_HOECHSTENS:
+                    time.sleep(0.02)
+                    continue
+                self._stumm.clear()   # Loslassen verpasst: nie fuer immer stumm
+            melde = noch_wahr = fertig = None
             try:
-                text, fertig, melde, noch_wahr = self._vorrang.get_nowait()
+                text = self._antworten.get_nowait()
                 dringend = True
             except queue.Empty:
                 if not self._frei.is_set():
-                    if time.monotonic() - self._pausiert_seit > PAUSE_HOECHSTENS:
-                        print("  (Stimme war zu lange angehalten - geht weiter)", flush=True)
-                        self._wieder_und_frei()
-                    time.sleep(0.03)
+                    # die Frage laeuft: warten, bis die Antwort (ganz) da ist - Ansagen verwerfen
+                    if self._antwort_ende or time.monotonic() - self._pausiert_seit > PAUSE_HOECHSTENS:
+                        if not self._antwort_ende:
+                            print("  (Stimme: keine Antwort gekommen - geht weiter)", flush=True)
+                        self._frei.set()
+                    self._verwerfen()
+                    time.sleep(0.02)
                     continue
-                if self._gehalten is not None:
-                    eintrag, self._gehalten = self._gehalten, None
-                else:
+                try:
+                    text, fertig, melde, noch_wahr = self._vorrang.get_nowait()
+                    dringend = True
+                except queue.Empty:
                     try:
-                        eintrag = self._schlange.get(timeout=0.05)
+                        text, fertig, melde, rein, noch_wahr = self._schlange.get(timeout=0.05)
                     except queue.Empty:
                         continue
-                if not self._frei.is_set():
-                    # waehrend des Wartens angehalten (Sprechtaste): der Leerlauf sitzt fast immer in get() -
-                    # ohne diese Pruefung sprach der naechste Satz in Carlos' Frage hinein
-                    self._gehalten = eintrag
-                    continue
-                text, fertig, melde, rein, noch_wahr = eintrag
-                dringend = False
-                if fertig is None and time.monotonic() - rein > VERALTET:
+                    dringend = False
+                    if fertig is None and time.monotonic() - rein > VERALTET:
+                        if melde:
+                            _still(melde, "verworfen", time.monotonic())
+                        continue
+                if not self._frei.is_set() or self._stumm.is_set():
+                    # genau jetzt gedrueckt: die Ansage gehoert nicht mehr in diese Zeit
                     if melde:
                         _still(melde, "verworfen", time.monotonic())
+                    if fertig is not None:
+                        fertig.set()
                     continue
             widerrufen = [False]
 
@@ -453,6 +472,8 @@ class Stimme:
                     fertig.set()
                 continue
             self._stopp.clear()
+            if self._stumm.is_set():    # genau jetzt gedrueckt: der Satz bricht vor dem ersten Ton ab
+                self._stopp.set()
             self.protokoll.append(text)
             self._spricht = True
             ganz = False
@@ -460,8 +481,6 @@ class Stimme:
                 ton = (lambda m=melde: _still(m, "ton", time.monotonic())) if melde else None
                 ganz = motor.spreche(sprechbar(text), self._stopp, ton, gilt if noch_wahr is not None else None,
                                      **({"sofort": dringend} if isinstance(motor, _Neural) else {}))
-                if not ganz and not widerrufen[0]:
-                    self._unterbrochen = (text, time.monotonic())
             except Exception as e:
                 # Ein Audiofehler (Headset kurz weg, WASAPI verweigert) darf den Sprech-Thread nie beenden - sonst
                 # ist der Coach fuer den Rest der Partie stumm. Beim naechsten Satz ueber MME.
@@ -475,21 +494,36 @@ class Stimme:
             if fertig is not None:
                 fertig.set()
 
+    def _verwerfen(self) -> None:
+        """Waehrend der Frage: was der Plan sagen wollte, faellt weg (gemeldet als 'verworfen')."""
+        for q in (self._vorrang, self._schlange):
+            while True:
+                try:
+                    e = q.get_nowait()
+                except queue.Empty:
+                    break
+                fertig, melde = e[1], e[2]
+                if melde:
+                    _still(melde, "verworfen", time.monotonic())
+                if fertig is not None:
+                    fertig.set()
+
     @property
     def beschaeftigt(self) -> bool:
         """Spricht gerade oder hat noch etwas in der Schlange - der Sprechplan gibt dann nichts Neues ab
         (gemessen 26.09.: Killian spricht 11-12 Zeichen/s, der Plan schaetzte 14 - Saetze stauten sich
-        in der Schlange und kamen veraltet an)."""
-        return (self._spricht or self._gehalten is not None or not self._schlange.empty()
-                or not self._vorrang.empty())
+        in der Schlange und kamen veraltet an). Waehrend einer Frage immer: dann soll er nichts abgeben."""
+        return (self._spricht or not self._frei.is_set() or not self._schlange.empty()
+                or not self._vorrang.empty() or not self._antworten.empty())
 
     def sage(self, text: str, dringend: bool = False, melde=None, noch_wahr=None) -> None:
-        """`noch_wahr()`: stimmt der Satz noch (vor und waehrend des Sprechens gefragt)? `dringend`: vor alle wartenden Saetze, der laufende wird abgebrochen (nicht wiederholt).
+        """`noch_wahr()`: stimmt der Satz noch (vor und waehrend des Sprechens gefragt)? `dringend`: vor alle
+        wartenden Saetze, der laufende wird abgebrochen - aber nie eine Frage oder ihre Antwort.
         `melde(art, monotonic)`: "ton" beim ersten Ton, dann "ende" oder "abgebrochen" - die echte Verzoegerung."""
         fertig = threading.Event() if self.warten else None
         if dringend:
             self._vorrang.put((text, fertig, melde, noch_wahr))
-            if self._frei.is_set():
+            if self._frei.is_set() and self._antworten.empty():
                 self._stopp.set()
         else:
             self._schlange.put((text, fertig, melde, time.monotonic(), noch_wahr))
@@ -509,36 +543,40 @@ class Stimme:
             _still(m.vorbereiten, sprechbar(text))
 
     def pausiere(self) -> None:
-        self._pausiert_seit = time.monotonic()
+        """Sprechtaste gedrueckt: sofort still; bis `taste_los` kein Ton, bis die Antwort fertig ist keine Ansage.
+        Der abgebrochene Satz kommt NICHT wieder (Live 27.09., 15:40: ein Satz, der bei jedem Druck erneut
+        abbrach und danach wiederholt wurde, ergab "geh rein, geh rein, geh rein ..." bis zum Ausschalten)."""
+        self._pausiert_seit = self._stumm_seit = time.monotonic()
+        self._antwort_ende = False
+        self._stumm.set()
         self._frei.clear()
-        self._unterbrochen = None
         self._stopp.set()
 
+    def taste_los(self) -> None:
+        """Sprechtaste losgelassen: jetzt darf die Antwort kommen - und nur sie."""
+        self._pausiert_seit = time.monotonic()
+        self._stumm.clear()
+
     def antworte(self, text: str) -> None:
-        self._vorrang.put((text, None, None, None))
-        self._wieder_und_frei()
+        """Die ganze Antwort auf einmal: zuerst sie, dann geht es normal weiter."""
+        self._antworten.put(text)
+        self._antwort_ende = True
 
     def antworte_teil(self, text: str) -> None:
-        """Ein Satz einer gestreamten Antwort: sofort vor alles andere - der unterbrochene Satz kommt erst
-        mit `antworte_ende` wieder (sonst stuende er zwischen zwei Saetzen der Antwort). Die Synthese beginnt
-        sofort - nicht erst, wenn der vorige Teil zu Ende gesprochen ist (sonst ~0,45 s Pause dazwischen)."""
+        """Ein Satz einer gestreamten Antwort. Die Synthese beginnt sofort - nicht erst, wenn der vorige Teil zu
+        Ende gesprochen ist (sonst ~0,45 s Pause dazwischen)."""
         m = getattr(self, "_motor", None)
         if hasattr(m, "vorbereiten"):
             _still(m.vorbereiten, sprechbar(text), True)
-        self._vorrang.put((text, None, None, None))
-        self._frei.set()
+        self._pausiert_seit = time.monotonic()   # die Antwort laeuft: nicht "keine Antwort gekommen"
+        self._antworten.put(text)
 
     def antworte_ende(self) -> None:
-        self._wieder_und_frei()
+        self._antwort_ende = True
 
     def freigeben(self) -> None:
-        self._wieder_und_frei()
-
-    def _wieder_und_frei(self) -> None:
-        u, self._unterbrochen = self._unterbrochen, None
-        if u and time.monotonic() - u[1] < NOCH_AKTUELL:
-            self._vorrang.put((u[0], None, None, None))
-        self._frei.set()
+        """Keine Antwort (nur angetippt, Rauschen): gleich normal weiter."""
+        self._antwort_ende = True
 
     # alter Name, wird noch von aussen benutzt
     def verstumme(self) -> None:
@@ -562,6 +600,9 @@ class Stumm:
         pass
 
     def pausiere(self) -> None:
+        pass
+
+    def taste_los(self) -> None:
         pass
 
     def antworte(self, text: str) -> None:

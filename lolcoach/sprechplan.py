@@ -95,6 +95,13 @@ class Sprechplan:
                 a.ton = round(a.gesprochen + (jetzt - ab), 2)
                 return
             a.ganz = art == "ende"
+            if art == "verworfen" and a.ton is None:
+                # nie erklungen (Frage an der Sprechtaste, veraltet): die Sperre faellt - stimmt es nach der
+                # Antwort noch, darf das Regelwerk es frisch sagen
+                self.zuletzt.pop(a.schluessel, None)
+                if a.thema:
+                    self.thema_zuletzt.pop(a.thema, None)
+                return
             if art == "widerrufen":
                 if RUECKZUG.search(a.text):
                     self._rueckzug_gehoert = -1e9
