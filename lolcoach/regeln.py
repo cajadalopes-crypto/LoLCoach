@@ -1277,8 +1277,11 @@ class Regelwerk:
                 gruende.append(f"{(t.item_gold - p.ich.item_gold) // 100 * 100} Gold an Items vorne")
             rat = ((self._fenster_art, p.zeit - self._fenster_gesagt)
                    if getattr(self, "_fenster_art", None) else None)
+            # ohne Befund: statt "Denk an seine Cooldowns" das Konter-Wissen genau zu ihm (Lexikon, einmal je Partie)
+            tipp = denker.tipp(t.champion_id, "trade", self._tipps_gesagt) if not gruende else ""
             text = (komponist.tod_solo(davor, t.champion, rat)
                     or (cfg["solo_nachteil"].format(champion=t.champion, grund=" und ".join(gruende)) if gruende
+                        else f"Solo gegen {t.champion} verloren, ihr wart gleichauf. Gegen {t.champion}: {tipp}" if tipp
                         else cfg["solo"].format(champion=t.champion)))
         else:
             return
