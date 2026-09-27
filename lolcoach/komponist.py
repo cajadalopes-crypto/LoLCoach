@@ -828,16 +828,17 @@ def jungler6(b: Bewertung) -> str:
     allein = voll.kraft_gegen([j], mit_verbuendeten=False)
     zusammen = voll.kraft_gegen([j, g], mit_verbuendeten=False) if g is not None and not g.s.tot else None
     wo = (f" - zuletzt {j.ort}, vor {sek(j.seit)}" if j.ort and j.seit is not None and j.seit >= 3
-          else f" - er ist {j.ort}" if j.ort else "")
+          else f" - {j.champion} ist {j.ort}" if j.ort else "")
     jetzt = (f" Gerade hast du aber nur {int(b.leben * 100)} Prozent Leben." if b.leben is not None and b.leben < 0.5
              else "")
     if zusammen is not None and zusammen >= STAERKER:
-        return (f"{satz}, aber auch mit {g.champion} zusammen schlägt er dich nicht: "
+        return (f"{satz}, aber auch mit {g.champion} zusammen schlagen die beiden dich nicht: "
                 f"{voll.ueberlegen_satz([j, g]).split(', ')[0]}.{jetzt}")
     if allein >= STAERKER:
         mit = f", mit {g.champion} zusammen schon" if zusammen is not None else ""
-        return f"{satz}. Allein schlägt er dich nicht{mit} - schieb nur, wenn du weißt, wo er ist{wo}.{jetzt}"
-    return f"{satz} - ab jetzt tötet dich sein Gank. Schieb nicht ohne Sicht{wo}."
+        return (f"{satz}. Allein schlägt {j.champion} dich nicht{mit} - schieb nur, wenn du weißt, wo {j.champion} "
+                f"ist{wo}.{jetzt}")
+    return f"{satz} - ab jetzt tötet dich ein Gank von {j.champion}. Schieb nicht ohne Sicht{wo}."
 
 
 def lane_recall(b: Bewertung, champion: str, platten: bool) -> str:
