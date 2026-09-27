@@ -95,7 +95,7 @@ class Option:
         return {"zurueck": "gefahr", "druck": "druck", "freeze": "gefahr", "gruppe": "objective",
                 "obj_plan": "objective", "seite": "seite", "seite_nicht": "seite", "gank": "druck",
                 "invade": "druck", "hilfe": "hilfe", "hilfe_fern": "seite", "reset": "gefahr",
-                "muster": "gefahr", "ueberzahl": "druck"}.get(
+                "muster": "gefahr", "ueberzahl": "druck", "wohin": "seite"}.get(
             self.name, "back" if self.name.startswith("back") else "")
 
 
@@ -210,14 +210,17 @@ class Entscheider:
                 aus.append(Option("druck", denker.fenster_satz(b, u), 60 + 20 * wert_kraefte, 3))
 
         # 4) Recall-Planung mit Reihenfolge: Welle -> back -> Objective
-        braucht_back = b.gold >= 1100 or (b.leben is not None and b.leben < 0.45)
+        braucht_back = (b.gold >= 1100 or (b.leben is not None and b.leben < 0.45)) and not b.in_basis
         if braucht_back and not gefahr:
             ob = b.objective
             kauf = b.kauf.satz() if b.kauf is not None and b.kauf.kaufen else ""
             # die Handlung zuerst, mit einem Anfang, der sich wiederholt (vorgewaermt: komponist.anfaenge)
             grund = (f"du hast {b.gold // 100 * 100} Gold" + (f", das {kauf}" if kauf else "") if b.gold >= 1100
                      else f"du hast nur {int(b.leben * 100)} Prozent Leben")
-            if schiebt_er and welle[2] is not None and welle[2] <= 0.45:
+            if not b.auf_lane:
+                # nicht auf deiner Lane: keine Welle, kein "seinen Turm" (Live 27.09., 29:46 im Fluss, 36:32 Mid)
+                aus.append(Option("back_plan", f"Geh jetzt back, {grund}.", 78 + b.gold / 50, 2))
+            elif schiebt_er and welle[2] is not None and welle[2] <= 0.45:
                 satz = (f"Farm erst seine Welle ab und geh dann back, {grund} - seine {welle[1]} Vasallen laufen auf "
                         f"deinen Turm, und der frisst sonst dein Gold.")
                 aus.append(Option("back_warten", satz, 70, 3))
@@ -269,9 +272,12 @@ class Entscheider:
                         tun = f"Crash die Kanonenwelle um {uhr(kanone)} und geh dann los"
                     else:
                         tun = "Bau deine Welle langsam auf"
-                else:
+                elif b.auf_lane:
                     tun = (f"Schieb die Seitenwelle bis {uhr(b.zeit + ob[1] - 45)} raus" + (", geh dazwischen back"
                                                                                            if reset else ""))
+                else:      # nicht auf deiner Lane: keine Seitenwelle (Nachlauf 164809, 18:49 auf Mid)
+                    tun = "Geh vorher back und dann Richtung Grube" if reset and not b.in_basis else \
+                        "Geh Richtung Grube"
                 # die Handlung zuerst (ihr Anfang ist vorgewaermt), dann der Grund mit der Zeit
                 satz = (f"{tun}: {OBJ_NOM[ob[0]]} {kommt(ob[0])} in {sek(ob[1])}, sei spätestens um "
                         f"{uhr(b.zeit + ob[1] - 30)} an der Grube." + (f" {prio}." if prio else ""))
@@ -325,8 +331,17 @@ class Entscheider:
                                         f"Prozent auf deiner Seite und seit {sek(j.seit or b.zeit)} nicht zu sehen.",
                               55, 3))
 
-        # 7) Nach der Lane-Phase: Gruppe vor dem Objective, sonst Seitenwelle - mit dem, der antworten kann
-        if not lane_phase and rolle in ("TOP", "MIDDLE", "BOTTOM"):
+        # 6b) Nicht auf deiner Lane (Basis, Mid, Jungle) nach der Lane-Phase: WOHIN von hier aus - das lohnendste
+        #     Ziel auf der Karte mit Laufzeit und Grund (Reasoning #50, Entscheidung; Live 27.09., 31:59: "ich steh
+        #     seit 10 Minuten in meiner Base, ich weiss nicht, was ich machen soll")
+        if not lane_phase and not b.auf_lane and not gefahr and (b.leben is None or b.leben >= 0.5):
+            if (z := komponist.bestes_ziel(b)) is not None:
+                aus.append(Option("wohin", komponist.ziel_satz(b, z), 85 + 25 * z.wert + (30 if b.in_basis else 0),
+                                  3))
+
+        # 7) Nach der Lane-Phase: Gruppe vor dem Objective, sonst Seitenwelle - mit dem, der antworten kann.
+        #    Seitenwelle nur, wenn du auf deiner Lane stehst - sonst gilt "wohin" (6b)
+        if not lane_phase and rolle in ("TOP", "MIDDLE", "BOTTOM") and (b.auf_lane or (ob and 5 <= ob[1] <= 60)):
             if ob and 5 <= ob[1] <= 60:
                 weg = f", das sind {sek(b.zum_objective)}" if b.zum_objective else ""
                 # wer beim Spawn noch tot ist, kann nicht streiten
@@ -468,6 +483,13 @@ class Entscheider:
             return None
         if b.zeit - self._gesagt.get(beste.name, -1e9) < GLEICH_SPERRE:
             return None
+        if beste.name == "wohin":
+            # dasselbe Ziel nicht alle 100 s ("Geh auf den Mid-Inhibitor-Turm" dreimal in 5 min, er stand dort)
+            kopf = beste.satz.split(",")[0]
+            alt = getattr(self, "_wohin_zuletzt", None)
+            if alt is not None and alt[0] == kopf and b.zeit - alt[1] < 180:
+                return None
+            self._wohin_zuletzt = (kopf, b.zeit)
         self._letzter = beste.name
         self._zuletzt = b.zeit
         self._gesagt[beste.name] = b.zeit

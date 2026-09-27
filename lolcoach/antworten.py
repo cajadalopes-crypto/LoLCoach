@@ -283,6 +283,11 @@ def _objective(w: list[str], roh: str, p: Partie, lagebild) -> str | None:
     return satz + weg
 
 
+def _schmuck(item_id: int, it: dict) -> bool:
+    """Schmuckstueck (Getarntes Auge, Linse, Fernsicht): eigener Platz, nicht verkaufbar."""
+    return "Trinket" in it.get(item_id, {}).get("tags", [])
+
+
 AFK_WORTE = {"afk", "disconnected", "disconnect", "dc", "offline", "disconnectet", "abwesend"}
 
 
@@ -422,8 +427,13 @@ def lage_text(p: Partie, lagebild=None) -> str:
               + (" Bot-Partie (Gegner sind Bots)." if any(s.bot for s in p.gegner()) else "")]
     # ALLE eigenen Items, auch Bauteile - live 235433, 4:17: "Aber ich habe doch schon Spitzhacke" (875 Gold, unter der
     # 900er-Grenze der Uebersicht - Claude riet, sie zu kaufen); dazu der Kaufplan, den auch die Ansagen benutzen
-    meine = [it[i]["name"] for i in p.ich.items if i in it]
-    zeilen.append("Meine Items (alle, auch Bauteile): " + (", ".join(meine) or "keine"))
+    meine = [it[i]["name"] for i in p.ich.items if i in it and not _schmuck(i, it)]
+    schmuck = [it[i]["name"] for i in p.ich.items if i in it and _schmuck(i, it)]
+    zeilen.append("Meine Items (alle, auch Bauteile): " + (", ".join(meine) or "keine")
+                  + f" - {len(meine)} von 6 Plaetzen belegt"
+                  # Live 27.09., 24:40: "Verkauf dein Getarntes Auge" - geht nicht, und es belegt keinen Platz
+                  + (f". Schmuckstueck: {schmuck[0]} (eigener Platz, NICHT verkaufbar, zaehlt nicht zu den 6)"
+                     if schmuck else "") + ".")
     try:
         from . import kaufplan
         if (k := kaufplan.plan(p.ich.champion_id, p.ich.items, float(p.gold or 0))) is not None:
@@ -481,7 +491,7 @@ def lage_text(p: Partie, lagebild=None) -> str:
                 # das Kampf-Urteil mit allen Faktoren - live 235433, 6:46: "Wie hast du mein Damage kalkuliert?" ->
                 # Claude: "grobe Schaetzung", obwohl der Coach es gerechnet hatte
                 from . import denker
-                if b.lane is not None and (u := denker.urteil(b)) is not None:
+                if b.lane is not None and b.lane_nah and (u := denker.urteil(b)) is not None:
                     zeilen.append(
                         f"KAMPF-URTEIL DES COACHS gegen {b.lane.champion}: {u.art} (Summe {u.wert:+.1f}); Faktoren: "
                         + "; ".join(f"{x.satz} ({x.wert:+.1f})" for x in sorted(u.faktoren, key=lambda x: -abs(x.wert)))
@@ -523,7 +533,15 @@ KAMERA_NACHFRAGE = ("Er hat die Kamera wie gebeten geschwenkt - das Bild zeigt e
 KAMERA_WARTEN = 4.0     # Sekunden zwischen "schwenk mal" und dem neuen Bild
 SYSTEM = SYSTEM.replace("{BILD}", BILD_HINWEIS) + (
     " Die BEWERTUNG in der Lage ist gerechnet (Ankunftszeiten, Fenster, Kraefte, Prio, Platten, Kauf, "
-    "Todeszeit): stuetz die Antwort darauf und nenne die entscheidende Zahl, statt zu schaetzen.")
+    "Todeszeit): stuetz die Antwort darauf und nenne die entscheidende Zahl, statt zu schaetzen."
+    # Live 27.09., Minute 25-38 (Basis/Mid): "was ist mit deinem Sett die ganze Zeit? Top, Top, Top" - Claude
+    # schickte ihn immer wieder auf Sett und die Top-Welle
+    " Entscheide von SEINER POSITION aus (Zeile DEINE POSITION): steht er nicht auf seiner Lane, sind sein "
+    "Lane-Gegner und seine Lane-Welle kein Thema, ausser sie sind bei ihm - dann nenne ein Ziel aus ZIELE VON "
+    "DEINER POSITION mit Lane, Turm und Sekunden. Sag nie 'die Welle', 'die Tuerme' oder 'seinen Turm', ohne "
+    "Lane und Turm zu nennen. Das Schmuckstueck (Getarntes Auge, Linse) ist nicht verkaufbar und belegt keinen "
+    "der sechs Plaetze. Enthaelt seine Aussage eine Frage - auch mit Fluechen -, beantworte sie konkret; "
+    "'Notiert' nur, wenn gar keine Frage darin steht.")
 
 
 AUFWAND = "low"   # gleich fuer Frage und vorgehaltenen Prozess (llm.vorhalten), sonst passt er nicht

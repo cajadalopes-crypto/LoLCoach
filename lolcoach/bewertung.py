@@ -196,6 +196,92 @@ def stehende_tuerme(p: Partie) -> dict[tuple[str, str, str], tuple[float, float]
     return {k: v for k, v in TUERME.items() if k not in weg}
 
 
+TURM_DE = {"aussen": "den äußeren {lane}-Turm", "innen": "den inneren {lane}-Turm", "Inhib": "den {lane}-Inhibitor-Turm"}
+INHIB_ZURUECK = 300.0      # Sekunden, bis ein Inhibitor wieder steht
+
+
+@dataclass
+class Ziel:
+    """Etwas auf der Karte, das DU jetzt tun kannst - von deiner Position aus gerechnet (Carlos 27.09., Minute
+    25-38: "Drueckt jetzt die Tuerme" ohne Turm, "schieb die Welle in seinen Turm" in der eigenen Basis)."""
+    art: str                     # "turm" (angreifen) / "verteidigen" (Supervasallen bei euch)
+    lane: str
+    name: str                    # "den äußeren Mid-Turm"
+    pos: tuple[float, float]
+    weg: float                   # deine Laufzeit (s)
+    frei: float | None           # Sekunden, bis der erste bekannte Verteidiger dort sein kann (None: keiner)
+    unbekannt: int               # lebende Gegner, deren Ort niemand kennt
+    mitspieler: int              # Mitspieler, die jetzt schon in der Naehe (4000) stehen
+    wert: float = 0.0
+
+    def satz_weg(self) -> str:
+        return f"{int(round(self.weg))} Sekunden von dir"
+
+
+def eigene_inhibs_weg(p: Partie) -> list[tuple[str, float]]:
+    """(Lane, seit Spielzeit) der eigenen Inhibitoren, die gerade fehlen - dort laufen Supervasallen."""
+    aus = []
+    for e in p.kills_von("InhibKilled"):
+        st = struktur(e.daten.get("InhibKilled", ""))
+        if st and st.team == p.mein_team and p.zeit - e.zeit < INHIB_ZURUECK:
+            aus.append((st.lane, e.zeit))
+    return aus
+
+
+def ziele(b: "Bewertung") -> list[Ziel]:
+    """Tuerme, die ihr jetzt angreifen koennt, und eure Lanes mit Supervasallen - jedes mit deiner Laufzeit, wann
+    der erste Verteidiger da sein kann (Tote: Respawn + Weg aus dem Brunnen) und wer von euch schon dort steht.
+    Sortiert nach Wert: Ertrag, geteilt durch deinen Weg, nur was vor dem Verteidiger machbar ist."""
+    p = b.partie
+    if p is None or b.pos is None or not p.mein_team:
+        return []
+    mein, feind = p.mein_team, gegenteam(p.mein_team)
+    tuerme = stehende_tuerme(p)
+    aus: list[Ziel] = []
+
+    def verteidiger(ziel: tuple[float, float], weg: float) -> tuple[float | None, int, list]:
+        """(fruehester bekannter Verteidiger in s, Zahl der Unbekannten, wer bis zu deiner Ankunft + 15 s dort
+        sein kann). Wer laenger als 15 s nicht gesehen wurde, zaehlt als unbekannt - nicht als "schon dort"."""
+        zeiten, unbekannt, rechtzeitig = [], 0, []
+        for g in b.gegner:
+            if g.s.tot:
+                t = g.s.respawn + abstand(BRUNNEN[feind], ziel) * 1.15 / 380.0
+            elif g.pos is None or g.seit is None or g.seit > 15:
+                unbekannt += 1
+                continue
+            else:
+                t = max(0.0, abstand(g.pos, ziel) * 1.15 / (g.tempo or 350.0) - g.seit)
+            zeiten.append(t)
+            if t <= weg + 15:
+                rechtzeitig.append(g)
+        return (min(zeiten) if zeiten else None), unbekannt, rechtzeitig
+
+    def freunde(ziel: tuple[float, float]) -> int:
+        return sum(1 for s, wo, *_ in b.mitspieler if wo is not None and abstand(wo, ziel) <= 4000)
+
+    for lane in ("Top", "Mid", "Bot"):
+        k = next(((feind, lane, st) for st in TIER if (feind, lane, st) in tuerme), None)
+        if k is None:
+            continue
+        pos = tuerme[k]
+        weg = abstand(b.pos, pos) * 1.15 / b.mein_tempo
+        frei, unbekannt, dort = verteidiger(pos, weg)
+        z = Ziel("turm", lane, TURM_DE[k[2]].format(lane=lane), pos, weg, frei, unbekannt, freunde(pos))
+        # wer rechtzeitig dort sein kann, zaehlt nur, wenn er staerker ist als du (plus Mitspieler dort)
+        haelt = not dort or b.kraft_gegen(dort, mit_verbuendeten=False) * (1 + 0.8 * z.mitspieler) >= 1.2
+        z.wert = (1.0 + 0.3 * TIER[k[2]] + 0.35 * z.mitspieler) - weg / 60.0 - 0.25 * unbekannt \
+            - (0.0 if haelt else 1.5)
+        aus.append(z)
+    for lane, seit in eigene_inhibs_weg(p):
+        pos = TUERME.get((mein, lane, "Inhib")) or BRUNNEN[mein]
+        weg = abstand(b.pos, pos) * 1.15 / b.mein_tempo
+        frei, unbekannt, _ = verteidiger(pos, weg)
+        z = Ziel("verteidigen", lane, f"die Supervasallen auf {lane}", pos, weg, frei, unbekannt, freunde(pos))
+        z.wert = 1.6 - weg / 60.0 - 0.5 * z.mitspieler     # stehen schon zwei von euch dort, braucht es dich weniger
+        aus.append(z)
+    return sorted(aus, key=lambda z: -z.wert)
+
+
 @dataclass
 class GegnerLage:
     s: Spieler
@@ -289,6 +375,23 @@ class Bewertung:
 
     def unbekannte(self) -> list[GegnerLage]:
         return [g for g in self.gegner if g.unbekannt]
+
+    @property
+    def in_basis(self) -> bool:
+        return "eurer Basis" in (self.ort or "")
+
+    @property
+    def auf_lane(self) -> bool:
+        """Du stehst auf DEINER Lane - nur dann gibt es "deine Welle" und "seinen Turm" (Live 27.09.: "schieb die
+        Welle in seinen Turm und geh back" in der eigenen Basis, Minute 25-38)."""
+        return self.tiefe is not None and not self.in_basis
+
+    @property
+    def lane_nah(self) -> bool:
+        """Dein Lane-Gegner ist bei dir (<= 3500) - nur dann ist er DAS Thema, nach der Lane-Phase erst recht
+        (Live 27.09., 26:01/32:19: "geh auf Sett drauf", Sett auf der anderen Kartenseite)."""
+        g = self.lane
+        return g is not None and not g.s.tot and g.abstand is not None and g.abstand <= 3500
 
     def kraefte(self) -> tuple[float, list[str]]:
         """Du gegen deinen Lane-Gegner: Zahl (> 0 = du bist staerker) und die Gruende in Worten.
@@ -442,15 +545,36 @@ class Bewertung:
             if g.leben is not None:
                 extra.append(f"Leben laut Bild {int(g.leben * 100)} %")
             z.append(f"- {g.champion} ({g.s.rolle or '?'}): {wo}{an}" + (f"; {', '.join(extra)}" if extra else ""))
+        # Wo DU stehst - der Anker fuer alles (Live 27.09., Minute 25-38: "Sett, Sett, Top, Top, schieb die Welle",
+        # waehrend er in der Basis oder auf Mid stand)
+        lane_bezug = self.auf_lane or self.lane_nah
+        z.append(f"DEINE POSITION: {self.ort or '?'} - " + (
+            "auf deiner Lane." if self.auf_lane else
+            "in eurer Basis, NICHT auf deiner Lane: deine Welle und dein Lane-Gegner sind kein Thema, ausser er "
+            "geht hin." if self.in_basis else
+            "NICHT auf deiner Lane: deine Welle und dein Lane-Gegner sind nur Thema, wenn er in der Naehe ist."))
         wert, gruende = self.kraefte()
-        if self.lane and not self.lane.s.tot:
+        if self.lane and not self.lane.s.tot and lane_bezug:
             urteil = "du staerker" if wert >= 1 else "er staerker" if wert <= -1 else "ausgeglichen"
             z.append(f"Kraefte gegen {self.lane.champion}: {urteil}" + (f" ({'; '.join(gruende)})" if gruende else "")
                      + " - sein Leben siehst du nur im Bild.")
-        if self.platten_gegner is not None or self.platten_eigen is not None:
+        elif self.lane and not self.lane.s.tot:
+            z.append(f"{self.lane.champion} (dein Lane-Gegner) ist NICHT bei dir"
+                     + (f" ({int(self.lane.abstand)} Einheiten weg)" if self.lane.abstand is not None else "")
+                     + " - kein Kampf-Thema, nicht 'geh auf ihn'.")
+        ziele_ = ziele(self)
+        if ziele_:
+            z.append("ZIELE VON DEINER POSITION (berechnet, bestes zuerst; 'frei' = bis der erste Verteidiger dort "
+                     "sein kann): " + "; ".join(
+                         f"{x.name} ({x.art}): {int(x.weg)} s von dir, frei "
+                         + (f"{int(x.frei)} s" if x.frei is not None else "?")
+                         + (f", {x.unbekannt} Gegner unbekannt" if x.unbekannt else "")
+                         + (f", {x.mitspieler} Mitspieler dort" if x.mitspieler else "")
+                         + (" - lohnt" if x.wert > 0.2 else " - lohnt nicht") for x in ziele_[:4]))
+        if lane_bezug and (self.platten_gegner is not None or self.platten_eigen is not None):
             z.append(f"Platten (Minimap): sein vorderster Turm deiner Lane {self.platten_gegner if self.platten_gegner is not None else '?'}"
                      f", deiner {self.platten_eigen if self.platten_eigen is not None else '?'}")
-        if self.welle:
+        if self.welle and lane_bezug:
             wir, die, front, schiebt = self.welle
             z.append(f"Deine Welle: {wir} eigene gegen {die}, Front {front if front is None else round(front, 2)}"
                      + (f", {schiebt} schiebt" if schiebt else ""))

@@ -123,6 +123,7 @@ class Regelwerk:
         self.rueckblick = Rueckblick()                 # die letzten 45 s - fuer die Todesanalyse
         self._in_grube: dict[tuple[str, str], float] = {}   # (Jungler, Objective) -> seit wann in der Grube
         self._am_pit: dict[str, float] = {}                 # Objective -> seit wann zwei Mitspieler dort stehen
+        self._teamrufe: dict[str, list[float]] = {}        # Objective -> Spielzeiten der "Nehmt jetzt"-Rufe
         self._obj_gesagt: dict[tuple[str, str], float] = {}  # (Objective, team/anlauf/gegner) -> zuletzt gesagt
         self._spikes: list[str] = []                   # eben fertig gewordene eigene Items (noch nicht gesagt)
         self._spike_bei = 0.0
@@ -479,6 +480,25 @@ class Regelwerk:
         alt = next((x for x in v.spieler if x.name == s.name and x.team == s.team), None)
         return s.tot and alt is not None and not alt.tot
 
+    TEAMRUF_HOECHSTENS = 2       # so oft "Nehmt jetzt X" in TEAMRUF_FENSTER, solange keiner von euch hingeht
+    TEAMRUF_FENSTER = 240.0
+
+    def _teamruf_frei(self, objective: str, p: Partie) -> bool:
+        """"Nehmt jetzt Baron" darf nicht zur Dauerschleife werden: Live 27.09. zehnmal von 25:22 bis 38:21, die
+        Bot-Mitspieler gingen nie hin. Nach zwei Rufen in vier Minuten nur noch, wenn einer von euch (du oder ein
+        Mitspieler) an der Grube steht - dann hilft der Ruf wirklich."""
+        rufe = [t for t in self._teamrufe.get(objective, []) if p.zeit - t <= self.TEAMRUF_FENSTER]
+        if len(rufe) >= self.TEAMRUF_HOECHSTENS:
+            b = self.b
+            grube = bewertung.einheiten(*bewertung.GRUBEN.get(objective, (0.5, 0.5)))
+            dort = b is not None and (
+                (b.pos is not None and bewertung.abstand(b.pos, grube) <= 3000)
+                or any(wo is not None and bewertung.abstand(wo, grube) <= 3000 for _, wo, *_ in b.mitspieler))
+            if not dort:
+                return False
+        self._teamrufe[objective] = rufe + [p.zeit]
+        return True
+
     def _gegner_tot(self, p: Partie, min_s: float) -> list[Spieler]:
         return [s for s in p.gegner() if s.tot and s.respawn >= min_s]
 
@@ -494,7 +514,8 @@ class Regelwerk:
                 text = (komponist.zahlen(self.b, namen, fenster, objs[0], wir, die) if self.b is not None
                         else z["vorteil_objective"].format(anzahl=len(tot), sekunden=fenster,
                                                            objective=_objective_name(objs[0], p)))
-                yield Ansage(text, SOFORT, f"jetzt:{objs[0]}", gueltig=6, sperre=45)   # 20 s: 14:58/15:19 zweimal
+                if self._teamruf_frei(objs[0], p):
+                    yield Ansage(text, SOFORT, f"jetzt:{objs[0]}", gueltig=6, sperre=45)   # 20 s: 14:58/15:19 zweimal
             elif wir > die:
                 text = (komponist.zahlen(self.b, namen, fenster, None, wir, die) if self.b is not None
                         else z["vorteil_turm"].format(anzahl=len(tot), sekunden=fenster))
@@ -516,7 +537,7 @@ class Regelwerk:
             return  # die Zahlen-Regel sagt es besser
         objs = [o for o in self._objectives(p, bis=j.respawn - 10) if self._objective_machbar(p, o, 0)]
         mit_b = self.b is not None and p.ich.rolle != "JUNGLE" and not self._ich_weg(p)
-        if objs and not self._ich_weg(p):
+        if objs and not self._ich_weg(p) and self._teamruf_frei(objs[0], p):
             nah = p.ich.rolle in self.m["seiten"][objs[0]]
             text = (komponist.jungler_tot(self.b, int(j.respawn), objs[0], nah, self._platten_moeglich(p)) if mit_b
                     else self.m["jungler_tot_objective"]["nah" if nah else "fern"].format(

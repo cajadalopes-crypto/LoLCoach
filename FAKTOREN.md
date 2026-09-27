@@ -95,7 +95,8 @@ Sicherheit), `komponist.py` (Saetze je Anlass), `regeln.py` (wann).
 | Matchup (kurz/mittel/lang), Zone | rechnet | `lane_kurve.toml`, Faktoren "matchup", "zone" |
 | Faehigkeiten-Interaktionen, Konter-Wissen je Champion | teilweise | Lexikon fuer Claude (Fragen, Briefing); live der passende Tipp aus "Gegen diesen Champion" (1459 Tipps, 173 Champions) je Lage einmal (`denker.tipp`), Konter-Kauf ohne eigene Items (`denker.item_tipp`); Faehigkeitsschaden als Untergrenze aus den Spieldaten (`faehigkeiten.py`, 173 Champions), Interaktionen (Schilde, Unverwundbarkeit) nicht gerechnet |
 | Team-Comp, Win Conditions | teilweise | Briefing (Claude); Carry je Team (`bewertung.carry`) |
-| Seiten-Lane / Split | rechnet | Entscheider "seite", "seite_nicht" |
+| Seiten-Lane / Split | rechnet (seit 27.09. nur, wenn du auf deiner Lane stehst) | Entscheider "seite", "seite_nicht"; bis 27.09. als "rechnet" gefuehrt, obwohl es nur die EIGENE Lane kannte - Partie 102112, Minute 25-38: "schieb die Welle in seinen Turm" in der eigenen Basis |
+| Entscheidung von deiner Position aus (Kap. 50, 10, 15, 34, 39) | teilweise, neu 27.09. | `bewertung.ziele`: je Lane der vorderste gegnerische Turm und eure Lanes mit Supervasallen, mit deinem Weg, wann der erste Verteidiger dort sein kann (Tote: Respawn + Weg), ob du (mit Mitspielern dort) staerker bist als wer rechtzeitig kommt; Entscheider "wohin", "Drueckt jetzt den aeusseren Mid-Turm" statt "die Tuerme". Fehlt: Wellen auf allen Lanes als Ziel, Vision, Gruppieren mit dem Team als eigene Option |
 
 ## 27-33 Tod, Risiko, Umkehrbarkeit, Reihenfolge, Vorhersage, Gegenantwort, Information
 
@@ -138,6 +139,7 @@ nach dem Play?") beantwortet das Kampf-Urteil (`denker.urteil` + `fenster_satz`)
 | Minimap: wer ist wer | Sichtprobe von Hand | 30 Icons, 0 Verwechslungen | - |
 | Minimap: Ringfarbe | eigenes Team blau / Gegner rot | 0,17-0,43 % falsch (Einzel-Champions) | `minimap_ringprobe.py` |
 | Minimap: eigenes Icon | Kamerarahmen | 99,3-99,7 % im Rahmen | `kamera_rahmen.py` |
+| Rat passt zu deiner Position (27.09.) | Bewertung des Takts: dein Ort, Lane, Abstand zum Ziel | alter Stand 33 unsinnige Ansagen in 4 Partien (102112: 12), neuer Stand 1 (102112: 0) - Welle ohne Lane, "die Tuerme" ohne Turm, Befehl auf einen weit entfernten Gegner, Team-Ruf in Dauerschleife | `werkzeuge/sinnpruefung.py` |
 | Flash (eigener) auf der Minimap | HUD | 2 von 7, 0 Fehlalarme (im Kampf liegt das Icon unter dem Gegner) | - |
 | Flash aus einem Icon-Knaeuel (Pruefstand) | bekannte Bahn | 0/1 - Bild fuer Bild: vor dem Flash sauber verfolgt (Guete 0,72), der Landepunkt liegt unter Brands Icon, 22 px daneben: ganz verdeckt, auf keinem Bild zu sehen. Physikalische Grenze, keine Logik; ein Rueckschluss aus dem Verschwinden waere von einem Dash nicht zu trennen (lieber stumm als falsch) | `flash_pruefstand.py` |
 | Jungler-Prognose | naechste Sichtung | 44/60 richtig, Brier 0,183 (Raten 0,250) | `jungler_prognose.py` |

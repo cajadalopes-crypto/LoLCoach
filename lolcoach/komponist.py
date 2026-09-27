@@ -400,13 +400,15 @@ def chance(b: Bewertung, platten: bool) -> str | None:
             fbox[0] = b.zeit
         return f"{g.champion} hat kein Flash - spiel aggressiv"
     if ob := _objective_erreichbar(b):
-        return (f"Schieb die Welle rein und geh dann {ZUM[ob[0]]}"
+        # "schieb die Welle" nur, wer auf seiner Lane steht (Live 27.09., 28:47 auf Mid: "Schieb die Welle rein")
+        return ((f"Schieb die Welle rein und geh dann {ZUM[ob[0]]}" if b.auf_lane else f"Geh {ZUM[ob[0]]}")
                 + (f", {'sie kommen' if ob[0] == 'larven' else 'er kommt'} in {sek(ob[1])}" if ob[1] > 0
                    else f", {'sie leben' if ob[0] == 'larven' else 'er lebt'}"))
     welle = b.welle
     schiebt_ihr = welle is not None and welle[0] >= welle[1] + 2
-    if b.gold >= RECALL_GOLD and (schiebt_ihr or not lebt) and not back_eben(b):
-        return f"Schieb die Welle in den Turm und geh back, du hast {b.gold // 100 * 100} Gold"
+    if b.gold >= RECALL_GOLD and (schiebt_ihr or not lebt) and not back_eben(b) and not b.in_basis:
+        return (f"Schieb die Welle in den Turm und geh back, du hast {b.gold // 100 * 100} Gold" if b.auf_lane
+                else f"Geh back, du hast {b.gold // 100 * 100} Gold")
     if b.gold >= RECALL_GOLD and back_eben(b):
         # "geh back" steht noch (er hat das Gold noch): nicht dagegen "hol dir die Platten" (Nachlauf 194524, 14:02)
         return None
@@ -756,9 +758,11 @@ def vorwarnung(b: Bewertung, schl: str, rolle: str, seele: bool, meine_seite: bo
         grund = f"du hast {b.gold // 100 * 100} Gold" if b.gold >= 1300 else f"du hast nur {int(b.leben * 100)} Prozent Leben"
         tun = f"Geh jetzt back, {grund}" + (", und dann hin." if hin else ", und mach danach Druck auf deiner Seite.")
     elif meine_seite or (zu_fuss is not None and zu_fuss <= 25):
-        tun = "Schieb deine Welle rein und geh dann hin" + (f", das sind {sek(zu_fuss)}." if zu_fuss else ".")
+        tun = ("Schieb deine Welle rein und geh dann hin" if b.auf_lane else "Geh hin") + (
+            f", das sind {sek(zu_fuss)}." if zu_fuss else ".")
     elif tp is not None:
-        tun = ("Schieb deine Welle rein und teleportier dich dann hin." if tp[1] <= 50
+        tun = (("Schieb deine Welle rein und teleportier dich dann hin." if b.auf_lane else "Teleportier dich hin.")
+               if tp[1] <= 50
                else f"Dein Teleport ist erst in {sek(tp[1])} bereit, das ist zu spät - mach lieber Druck auf der "
                     f"anderen Seite.")
     else:
@@ -783,15 +787,51 @@ def jungler_tot(b: Bewertung, sekunden: int, objective: str | None, nah: bool, p
     return f"Kein Gank möglich, {satz}." + (f" {tun}." if tun else " Spiel nach vorn.")
 
 
+def bestes_ziel(b: Bewertung, art: str | None = None):
+    """Das lohnendste Ziel auf der Karte von deiner Position aus (bewertung.ziele), nur was machbar ist."""
+    from .bewertung import ziele
+    return next((z for z in ziele(b) if z.wert > 0.2 and (art is None or z.art == art)), None)
+
+
+def ziel_satz(b: Bewertung, z) -> str:
+    """'Geh auf den äußeren Bot-Turm, 18 Sekunden von dir: Kai'Sa ist noch 40 Sekunden tot.' - Ziel, Weg, Grund."""
+    if z.art == "verteidigen":
+        return (f"Geh {z.lane} und räum die Supervasallen, bevor sie eure Türme fressen - {z.satz_weg()}"
+                + (f", {z.mitspieler} von euch sind schon dort." if z.mitspieler >= 2 else "."))
+    p = b.partie
+    lane_rolle = {"Top": ("TOP",), "Mid": ("MIDDLE",), "Bot": ("BOTTOM", "UTILITY")}[z.lane]
+    tote = [s for s in p.team(gegenteam(p.mein_team)) if s.rolle in lane_rolle and s.tot] if p else []
+    if tote:
+        grund = f"{_namen([s.champion for s in tote])} {'ist' if len(tote) == 1 else 'sind'} noch " \
+                f"{int(min(s.respawn for s in tote))} Sekunden tot"
+    elif z.frei is not None:
+        grund = f"frühestens in {int(z.frei)} Sekunden kann einer von ihnen dort sein"
+    else:
+        grund = "keiner von ihnen ist in der Nähe"
+    mit = f", {z.mitspieler} von euch stehen schon dort" if z.mitspieler >= 1 else ""
+    return f"Geh auf {z.name}, {z.satz_weg()}: {grund}{mit}."
+
+
 def zahlen(b: Bewertung, tote: list[str], sekunden: int, objective: str | None, wir: int, die: int) -> str:
-    """Zwei oder mehr Gegner tot: was jetzt - mit Namen, Zahl und ob DU es rechtzeitig schaffst."""
+    """Zwei oder mehr Gegner tot: was jetzt - mit Namen, Zahl und ob DU es rechtzeitig schaffst. Ohne Objective:
+    WELCHER Turm (Live 27.09.: "Drueckt jetzt die Tuerme" viermal - "welche Tuerme, du Bastard?")."""
     tot = f"{_namen(tote)} {'ist' if len(tote) == 1 else 'sind'} für {sekunden} Sekunden tot"
     if objective:
         if b.zum_objective is not None and b.zum_objective > sekunden:
-            return (f"Drück deine Lane, dein Team nimmt {OBJ_AKK[objective]}: {tot}, ihr seid {wir} gegen {die}, "
-                    f"und du schaffst es nicht rechtzeitig hin.")
+            satz = (f"Dein Team nimmt {OBJ_AKK[objective]}: {tot}, ihr seid {wir} gegen {die}, und du schaffst es "
+                    f"nicht rechtzeitig hin")
+            if b.auf_lane:
+                return f"Drück deine Lane, {satz[0].lower()}{satz[1:]}."
+            z = bestes_ziel(b)
+            return f"{satz}. {ziel_satz(b, z)}" if z is not None else f"{satz}."
         return f"Nehmt jetzt {OBJ_AKK[objective]}, ihr seid {wir} gegen {die}: {tot}."
-    return f"Drückt jetzt die Türme, ihr seid {wir} gegen {die}: {tot}."
+    z = bestes_ziel(b)
+    if z is not None and z.art == "turm":
+        return (f"Drückt jetzt {z.name}, ihr seid {wir} gegen {die}: {tot} - du bist "
+                f"{int(round(z.weg))} Sekunden entfernt.")
+    if z is not None:
+        return f"Ihr seid {wir} gegen {die}: {tot}. {ziel_satz(b, z)}"
+    return f"Ihr seid {wir} gegen {die}: {tot} - aber kein Turm ist von dir aus rechtzeitig zu erreichen."
 
 
 def zahlen_nachteil(b: Bewertung, tote: list[str], sekunden: int) -> str:
@@ -942,8 +982,12 @@ def inhib_satz(b: Bewertung, lane: str, eigen: bool, zurueck: float) -> str:
         return satz + (": halte die Welle vor deinem Turm und geh nicht tief." if lane == meine
                        else f", einer muss die {lane}-Welle klären, bevor sie eure Türme frisst.")
     satz = f"Sein {lane}-Inhibitor ist bis {wann} weg - eure Supervasallen drücken {lane}"
-    return satz + (": lass sie laufen und hol dir die Türme dahinter." if lane == meine
-                   else ", also spielt auf die andere Seite: Baron, Drache oder die Türme dort.")
+    if lane == meine and b.tiefe is not None:
+        return satz + ": lass sie laufen und hol dir die Türme dahinter."
+    z = bestes_ziel(b, "turm")
+    if z is not None and z.lane != lane:
+        return satz + f", also spielt auf die andere Seite. {ziel_satz(b, z)}"
+    return satz + "."
 
 
 def gegner_item(b: Bewertung, neu, alt, item_id: int) -> str:
@@ -1031,7 +1075,10 @@ def jungler_spaet(b: Bewertung, j: GegnerLage, seite: str) -> str:
         x = andere_g[0]
         return f"{satz}. Aber {x.champion} {_wann(x)} - {_wie_weit_vor(b)}."
     if ruhe and ruhe >= 20:
-        return f"{satz}. Drück deine Seitenwelle und geh auf den Turm, du hast mindestens {sek(ruhe)}."
+        if b.tiefe is not None:      # nur, wer auf seiner Lane steht, hat dort eine Welle (Live 27.09., 25:54: Basis)
+            return f"{satz}. Drück deine Seitenwelle und geh auf den Turm, du hast mindestens {sek(ruhe)}."
+        if (z := bestes_ziel(b)) is not None:
+            return f"{satz}. {ziel_satz(b, z)}"
     return satz + "."
 
 

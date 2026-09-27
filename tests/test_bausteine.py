@@ -718,7 +718,8 @@ def baron_aeltester_inhibitor():
     from lolcoach import komponist, regeln, wissen
     obj = wissen.objektive()
     assert obj["baron"]["buff"] == 180 and obj["aeltester"]["buff"] == 150 and obj["inhibitor"]["respawn"] == 300
-    b = N(ich=N(rolle="TOP", tot=False, respawn=0.0), mitspieler_nah=[], gold=500, kauf=None, partie=None)
+    b = N(ich=N(rolle="TOP", tot=False, respawn=0.0), mitspieler_nah=[], gold=500, kauf=None, partie=None,
+          tiefe=0.4)    # auf seiner Lane: "lass sie laufen" gilt nur dort
     assert komponist.inhib_satz(b, "Top", False, 1571.0) == \
         "Sein Top-Inhibitor ist bis 26 11 weg - eure Supervasallen drücken Top: lass sie laufen und hol dir die Türme dahinter."
     assert komponist.inhib_satz(b, "Bot", True, 1740.0).startswith("Dein Bot-Inhibitor ist bis 29 00 weg")
@@ -1042,6 +1043,35 @@ def verzoegerung_bis_zum_ohr():
     assert eilig.ton is not None and 0.05 <= eilig.ton - 101.0 <= 0.5 and eilig.ganz is True, (eilig.ton, eilig.ganz)
 
 
+def von_deiner_position_aus():
+    """Live 27.09., Minute 25-38 (Basis, Mid): "Schieb die Welle in seinen Turm und geh back" in der eigenen Basis,
+    "Drueckt jetzt die Tuerme" ohne Turm, "geh auf Sett", Sett auf der anderen Kartenseite, "Nehmt jetzt Baron"
+    zehnmal. Jetzt ist deine Position der Anker: nicht auf der Lane keine Welle, Tuerme mit Namen und Weg, der
+    Lane-Gegner nur, wenn er da ist, ein Team-Ruf hoechstens zweimal, solange keiner von euch hingeht."""
+    from dataclasses import replace
+    from lolcoach import bewertung, entscheider, komponist, regeln
+    p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER / "botspiel_riven_1.jsonl.gz")) if q.zeit > 1000)
+    basis = bewertung.Bewertung(zeit=p.zeit, ich=p.ich, leben=1.0, gold=2400, partie=p, pos=(900.0, 900.0),
+                                ort="in eurer Basis")
+    basis.welle = (7, 1, 0.8, "ihr")                    # die Top-Welle schiebt - aber er steht in der Basis
+    assert basis.in_basis and not basis.auf_lane and not basis.lane_nah
+    saetze = [o.satz for o in entscheider.Entscheider().optionen(basis, False)]
+    assert not any("Welle" in s or "seinen Turm" in s for s in saetze), saetze
+    assert not any(o.name.startswith("back") for o in entscheider.Entscheider().optionen(basis, False))
+    wohin = [s for s in saetze if s.startswith("Geh auf den ") or s.startswith("Geh ") and "Supervasallen" in s]
+    assert wohin and "Sekunden von dir" in wohin[0], saetze
+    zahl = komponist.zahlen(basis, ["Sett", "Galio"], 30, None, 5, 3)
+    assert zahl.startswith("Drückt jetzt den ") and "Sekunden entfernt" in zahl, zahl
+    assert "DEINE POSITION: in eurer Basis" in basis.text() and "Deine Welle:" not in basis.text()
+    # Team-Ruf: zweimal, dann nur noch, wenn einer von euch an der Grube steht
+    rw = regeln.Regelwerk()
+    rw.b = basis
+    rufe = [rw._teamruf_frei("baron", replace(p, zeit=p.zeit + i * 30)) for i in range(4)]
+    assert rufe == [True, True, False, False], rufe
+    rw.b.pos = bewertung.einheiten(*bewertung.GRUBEN["baron"])
+    assert rw._teamruf_frei("baron", replace(p, zeit=p.zeit + 150))
+
+
 def afk_erkannt():
     """Live 27.09., 1:48: "Ist mein Nasus AFK?" - "Nein, er cleart im Dschungel", waehrend der Nasus-Bot seit
     Spielbeginn im Brunnen stand. Jetzt gerechnet: regungslos im Brunnen (das Icon springt dort am Kartenrand),
@@ -1170,6 +1200,7 @@ if __name__ == "__main__":
                  konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler, eigene_position_aus_dem_kamerarahmen,
                  satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah, baron_aeltester_inhibitor,
                  minimap_blind_wird_gesagt, kamera_gibt_nur_einmal_frei, antwort_ab_dem_ersten_teilsatz, afk_erkannt,
+                 von_deiner_position_aus,
                  sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")
