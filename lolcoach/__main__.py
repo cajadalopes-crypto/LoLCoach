@@ -114,7 +114,12 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
             # laufend sichern: wird das Fenster geschlossen, bleibt, was der Coach gesagt hat (Partie 4/5)
             sicher("Ansagen", _ansagen_speichern, schreiber.pfad, plan)
         if takt:
-            time.sleep(takt)
+            # live weckt der Beobachter den Kern bei einem Sprung oder einem Gegner neben dir sofort (lage.Beobachter)
+            wecker = getattr(getattr(sicht, "b", None), "wecker", None)
+            if wecker is None:
+                time.sleep(takt)
+            elif wecker.wait(takt):
+                wecker.clear()
     return plan
 
 

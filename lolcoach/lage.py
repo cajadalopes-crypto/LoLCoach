@@ -486,6 +486,24 @@ class Beobachter(threading.Thread):
         self._ereignisse: list[tuple] = []
         self._schloss = threading.Lock()
         self._halt = threading.Event()
+        # weckt den Kern sofort (statt nach bis zu 0,25 s Takt): ein Sprung (Flash) oder ein Gegner, der neben dir
+        # neu auftaucht - die zwei Momente, in denen jede Zehntelsekunde zaehlt
+        self.wecker = threading.Event()
+        self._geweckt = 0.0
+
+    def _wecken(self, zeit: float, sichtungen: list, vorher: list, spruenge: list) -> None:
+        if zeit - self._geweckt < 0.1:
+            return
+        neu_nah = False
+        ich, zuletzt = getattr(self, "ich", None), getattr(self, "_ich_zuletzt", None)
+        if ich and zuletzt and zeit - zuletzt[0] < 2:
+            feinde = {c for c, t in self.champions if t != ich[1]}
+            vorher_ids = {s.champion_id for s in vorher}
+            neu_nah = any(s.champion_id in feinde and s.champion_id not in vorher_ids and s.guete > 0
+                          and abs(s.x - zuletzt[1]) + abs(s.y - zuletzt[2]) < 0.15 for s in sichtungen)
+        if spruenge or neu_nah:
+            self._geweckt = zeit
+            self.wecker.set()
 
     def run(self) -> None:
         import gzip
@@ -535,6 +553,7 @@ class Beobachter(threading.Thread):
                         if ergebnis is not None:
                             sichtungen, spruenge = ergebnis
                             sichtungen = self._ich_ergaenzen(karte, start, sichtungen)
+                            self._wecken(start, sichtungen, letzte_sichtungen, spruenge)
                             letzte_sichtungen = sichtungen
                             self.aktuell = (start, sichtungen)   # fuer das Dashboard (15/s statt 1/s)
                             with self._schloss:

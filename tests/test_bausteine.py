@@ -620,6 +620,32 @@ def stimme_spielt_ab_dem_ersten_stueck():
         edge_tts.Communicate = alt
 
 
+def wecker_bei_sprung_und_gegner_nah():
+    """Der Kern wartet sonst bis zu 0,25 s (Takt): ein Sprung oder ein Gegner, der neben dir neu auftaucht, weckt ihn
+    sofort - ein Verbuendeter oder ein weit entfernter Gegner nicht, und hoechstens alle 0,1 s."""
+    import threading
+    from types import SimpleNamespace
+    from lolcoach import lage, minimap
+    S = minimap.Sichtung
+
+    def neu():
+        return SimpleNamespace(champions=[("Riven", "ORDER"), ("Ekko", "ORDER"), ("Vi", "CHAOS")],
+                               ich=("Riven", "ORDER"), _ich_zuletzt=(10.0, 0.20, 0.20), wecker=threading.Event(),
+                               _geweckt=0.0)
+    w = lage.Beobachter._wecken
+    b = neu()
+    w(b, 10.5, [S("Vi", None, 0.25, 0.22, 0.95)], [], [])
+    assert b.wecker.is_set()                                     # Gegner neu neben dir
+    b = neu()
+    w(b, 10.5, [S("Ekko", None, 0.22, 0.21, 0.95), S("Vi", None, 0.80, 0.80, 0.95)], [], [])
+    assert not b.wecker.is_set()                                 # Verbuendeter nah, Gegner weit weg
+    w(b, 10.6, [], [], ["sprung"])
+    assert b.wecker.is_set()                                     # Flash-Sprung
+    b.wecker.clear()
+    w(b, 10.65, [], [], ["sprung"])
+    assert not b.wecker.is_set()                                 # hoechstens alle 0,1 s
+
+
 def satzanfaenge_vorgewaermt():
     """Die zu Spielbeginn vorgewaermten Anfaenge (komponist.anfaenge) muessen genau die sein, die stimme.teilsaetze
     von echten Saetzen abtrennt - sonst liegt nichts im Speicher. (27.09.: ein unbelegtes `j` liess die Liste
@@ -914,7 +940,7 @@ if __name__ == "__main__":
                  faehigkeiten_aus_spieldaten, icon_in_der_brunnen_ecke, stimme_haengt_nicht,
                  satz_bricht_ab_wenn_er_nicht_mehr_stimmt, kein_zweites_geh_zurueck, stimme_spielt_ab_dem_ersten_stueck,
                  konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler, eigene_position_aus_dem_kamerarahmen,
-                 satzanfaenge_vorgewaermt,
+                 satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah,
                  sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")
