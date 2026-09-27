@@ -1,0 +1,217 @@
+{
+ "aufnahme": "2026-09-27_144655",
+ "mein_team": "CHAOS",
+ "welle_py": "Icon+Ring ausgeblendet, relativ",
+ "punkte": [
+  {
+   "nr": 1,
+   "zeit": "0:58",
+   "kern": "ZU_IHM",
+   "unsere": 4,
+   "ihre": 0,
+   "front": 0.41,
+   "trend": 0.176,
+   "wahr": "ZU_IHM",
+   "notiz": "deine erste Welle an der Flussmitte, keine gegnerischen"
+  },
+  {
+   "nr": 2,
+   "zeit": "1:40",
+   "kern": "ZU_IHM",
+   "unsere": 3,
+   "ihre": 0,
+   "front": 0.11,
+   "trend": 0.262,
+   "wahr": "unklar",
+   "notiz": "Riven und Gangplank an der Ecke, Vasallen unter den Icons"
+  },
+  {
+   "nr": 3,
+   "zeit": "2:11",
+   "kern": "ZU_IHM",
+   "unsere": 3,
+   "ihre": 0,
+   "front": 0.14,
+   "trend": 0.193,
+   "wahr": "unklar",
+   "notiz": "Riven tot (1:57) - kein gueltiger Zeitpunkt"
+  },
+  {
+   "nr": 4,
+   "zeit": "2:32",
+   "kern": "ZU_IHM",
+   "unsere": 2,
+   "ihre": 1,
+   "front": 0.46,
+   "trend": 0.161,
+   "wahr": "unklar",
+   "notiz": "Riven und Gangplank an der Ecke, keine Vasallen sichtbar"
+  },
+  {
+   "nr": 5,
+   "zeit": "2:52",
+   "kern": "ZU_IHM",
+   "unsere": 5,
+   "ihre": 0,
+   "front": 0.37,
+   "trend": 0.083,
+   "wahr": "ZU_IHM",
+   "notiz": "deine Welle laeuft am eigenen Turm los, keine gegnerischen"
+  },
+  {
+   "nr": 6,
+   "zeit": "3:13",
+   "kern": "ZU_IHM",
+   "unsere": 5,
+   "ihre": 1,
+   "front": 0.31,
+   "trend": null,
+   "wahr": "GECRASHT_BEI_DIR",
+   "notiz": "2-3 gegnerische an deinem aeusseren Turm, deine naechste Welle laeuft erst am inneren los"
+  },
+  {
+   "nr": 7,
+   "zeit": "3:34",
+   "kern": "MITTE",
+   "unsere": 0,
+   "ihre": 1,
+   "front": 0.49,
+   "trend": null,
+   "wahr": "unklar",
+   "notiz": "Riven und Gangplank am Turm, keine Vasallen sichtbar"
+  },
+  {
+   "nr": 8,
+   "zeit": "3:55",
+   "kern": "ZU_IHM",
+   "unsere": 2,
+   "ihre": 0,
+   "front": 0.33,
+   "trend": 0.171,
+   "wahr": "unklar",
+   "notiz": "keine Vasallen sichtbar"
+  },
+  {
+   "nr": 9,
+   "zeit": "4:15",
+   "kern": "ZU_IHM",
+   "unsere": 4,
+   "ihre": 0,
+   "front": 0.2,
+   "trend": 0.214,
+   "wahr": "unklar",
+   "notiz": "Riven und Gangplank an der Ecke, eigene Welle laeuft los, gegnerische nicht sichtbar"
+  },
+  {
+   "nr": 10,
+   "zeit": "4:36",
+   "kern": "ZU_IHM",
+   "unsere": 1,
+   "ihre": 0,
+   "front": 0.05,
+   "trend": null,
+   "wahr": "unklar",
+   "notiz": "Riven und Gangplank, keine Vasallen sichtbar"
+  },
+  {
+   "nr": 11,
+   "zeit": "4:56",
+   "kern": "ZU_IHM",
+   "unsere": 2,
+   "ihre": 0,
+   "front": 0.39,
+   "trend": 0.172,
+   "wahr": "ZU_IHM",
+   "notiz": "eigene Vasallen laufen zur Ecke, Riven im Recall"
+  },
+  {
+   "nr": 12,
+   "zeit": "5:17",
+   "kern": "ZU_IHM",
+   "unsere": 4,
+   "ihre": 2,
+   "front": 0.33,
+   "trend": 0.067,
+   "wahr": "GECRASHT_BEI_DIR",
+   "notiz": "2-3 gegnerische an deinem aeusseren Turm, deine 6 zwischen aeusserem und innerem Turm"
+  },
+  {
+   "nr": 13,
+   "zeit": "5:38",
+   "kern": "ZU_IHM",
+   "unsere": 1,
+   "ihre": 1,
+   "front": 0.29,
+   "trend": null,
+   "wahr": "GECRASHT_BEI_DIR",
+   "notiz": "gegnerische an deinem aeusseren Turm, Riven farmt dort"
+  },
+  {
+   "nr": 14,
+   "zeit": "5:59",
+   "kern": "ZU_IHM",
+   "unsere": 1,
+   "ihre": 1,
+   "front": 0.44,
+   "trend": 0.086,
+   "wahr": "ZU_DIR",
+   "notiz": "Reihe gegnerischer Vasallen laeuft von der Ecke auf Riven und deinen Turm zu"
+  },
+  {
+   "nr": 15,
+   "zeit": "6:39",
+   "kern": "ZU_IHM",
+   "unsere": 1,
+   "ihre": 0,
+   "front": 0.11,
+   "trend": null,
+   "wahr": "unklar",
+   "notiz": "Riven tot (6:19) - kein gueltiger Zeitpunkt"
+  },
+  {
+   "nr": 16,
+   "zeit": "7:00",
+   "kern": "GECRASHT_BEI_DIR",
+   "unsere": 0,
+   "ihre": 2,
+   "front": 0.44,
+   "trend": 0.166,
+   "wahr": "ZU_DIR",
+   "notiz": "4 gegnerische gegen 1 eigenen, kurz vor deinem Turm"
+  },
+  {
+   "nr": 17,
+   "zeit": "8:06",
+   "kern": "ZU_IHM",
+   "unsere": 1,
+   "ihre": 2,
+   "front": 0.47,
+   "trend": null,
+   "wahr": "unklar",
+   "notiz": "Riven und Gangplank am Turm, keine Vasallen sichtbar"
+  },
+  {
+   "nr": 18,
+   "zeit": "8:27",
+   "kern": "ZU_IHM",
+   "unsere": 3,
+   "ihre": 0,
+   "front": 0.35,
+   "trend": 0.062,
+   "wahr": "ZU_IHM",
+   "notiz": "eigene Vasallen laufen am eigenen Turm los"
+  },
+  {
+   "nr": 19,
+   "zeit": "8:59",
+   "kern": "ZU_IHM",
+   "unsere": 4,
+   "ihre": 0,
+   "front": 0.45,
+   "trend": 0.195,
+   "wahr": "MITTE",
+   "notiz": "4 gegen 4-5 treffen sich bei Riven, zwischen Flussmitte und deinem Turm"
+  }
+ ],
+ "beschriftet": "27.09.2026 von Claude Code an den 764-px-Ausschnitten (Top-Lane, rote Seite, Partie 144655)"
+}

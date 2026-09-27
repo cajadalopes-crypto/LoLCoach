@@ -38,10 +38,11 @@ Offen aus Schritt 4:
 
 Offen aus Schritt 3:
 - **Wellen-Eichung (Buch 1, 1.4) nicht erreicht** (Nachtrag in messungen.md): Icon+Ring-Maske und behaltene
-  Ausschnitte sind erledigt; Zwischenstand an 133930: 5 von 9 (56 %), GECRASHT_BEI_IHM 0/2. **An der naechsten echten
-  Partie wiederholen:** `python werkzeuge/wellen_eichung.py <stamm>`, Tafel beschriften, `--auswerten`. Uebrige
-  Fehlerquellen: Hysterese des WellenPuffers haelt GECRASHT zu lange (Kern - Carlos' Entscheidung), Recall-/TP-
-  Leuchtring um das eigene Icon schluckt Vasallen, halb verdeckte Vasallen kippen die Zaehlung.
+  Ausschnitte sind erledigt; 133930: 5 von 9 (56 %), **144655: 4 von 10 (40 %)**. Hauptursache (144655): die
+  Zustandsregel zaehlt alle Vasallen der Lane - steht die gegnerische Welle an deinem Turm und laeuft deine naechste
+  dahinter los, wird GECRASHT_BEI_DIR zu ZU_IHM. **Carlos' Entscheidung:** nur die Vasallen um die Front zaehlen
+  (Umbau am Kern). Dazu: Hysterese haelt GECRASHT zu lange, Vasallen direkt am eigenen Icon fallen unter die
+  Ring-Maske, Recall-Leuchten, `wellen_eichung.py` waehlt auch Zeitpunkte, an denen du tot bist.
 - Generalprobe mit `--kern neu` (lief nicht, Carlos spielte).
 - Bestaetigung "Puenktlich zurueck" (Ankunft der Welle am Turm) und der zweite STAPELN-Ausloeser (Back/Roam im Plan).
 - Stub-Notizen aus der echten Partie 140253 (9:09-10:25) nach `tests/szenarien/offen/` (werkzeuge/

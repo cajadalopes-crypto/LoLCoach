@@ -138,6 +138,14 @@ Partien behalten, `1315` auch OBJECTIVE erlauben, Eichung (Buch 1, 1.4) an der n
   Riven im Recall – der Leuchtring schluckt die Vasallen daneben), ZU_IHM statt gehaltenem GECRASHT_BEI_IHM (6:28 –
   die Zustands-Hysterese im WellenPuffer hält den Crash zu lange), ZU_DIR (7:09 – die gegnerischen Vasallen halb unter
   Gwen, die Zählung kippt). Abnahme weiter **nicht erreicht**. Die Eichung an der **nächsten** echten Partie steht aus.
+- **Wiederholt an der nächsten echten Partie, 144655** (Riven Top gegen Gangplank, rote Seite, 797 Ausschnitte):
+  - 19 Zeitpunkte, davon 10 eindeutig, **4 richtig (40 %)**. GECRASHT_BEI_IHM kam nicht vor. Abnahme weiter **nicht erreicht**.
+  - Richtig waren wieder nur „deine Welle läuft los“ (ZU_IHM).
+  - Der Kern sagt in 17 von 19 Fällen ZU_IHM.
+  - **Die Hauptursache ist jetzt klar, und sie liegt im Kern, nicht im Bild.** Dreimal (3:13, 5:17, 5:38) stehen gegnerische Vasallen an deinem äußeren Turm, während deine nächste Welle zwischen innerem und äußerem Turm losläuft. Die Zustandsregel (`WellenPuffer._roh`, Buch 1 1.4) zählt alle Vasallen der Lane. GECRASHT_BEI_DIR verlangt `unsere ≤ 1`, und mit der nachlaufenden Welle (4–6) wird daraus `unsere − ihre ≥ 2` = ZU_IHM.
+  - Dazu zweimal gegnerische Vasallen direkt am Riven-Icon, die die Ring-Maske mit ausblendet (7:00, 8:59).
+  - Und zweimal wählte das Werkzeug einen Zeitpunkt, an dem Riven tot war (Auswahl prüft den Tod nicht).
+  - Vorschlag, **Carlos' Entscheidung** (Umbau am Kern): nur die Vasallen um die Front zählen, die nachlaufende Welle nicht. Beschriftung: `buecher/wellen_eichung/2026-09-27_144655.json`.
 - Nebenbei: `tests/test_kern.py` und `szenarien.py --konstruiert` prüfen nur Lagen in Modi, die der Kern schon führt;
   die neuen Lagen aus `mitte.toml` (Buch 5, Schritt 4) stehen als „übersprungen“ und werden mit Schritt 4 geprüft.
 
