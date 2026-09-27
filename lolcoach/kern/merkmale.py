@@ -94,6 +94,19 @@ class Merkmale:
     kauf: KaufInfo | None = None
     respawn: float = 0.0
     lane_im_brunnen: bool = False           # dein Lane-Gegner ist gebackt oder nach dem Tod im Brunnen
+    # Schritt 4 (Buch 5, Kapitel 1)
+    wellen: dict = field(default_factory=dict)          # Lane -> WellenStand, alle drei Lanes
+    lane_hier: str | None = None                         # die Lane, auf der du stehst (Top/Mid/Bot), sonst None
+    seitenwellen: dict = field(default_factory=dict)     # Lane -> WellenStand: laeuft auf euren Turm, keiner von euch dort
+    woanders: int = 0                                    # Gegner <= 10 s alt weit weg gesehen (> 6000) oder tot
+    unbekannt_anzahl: int = 0                            # lebende Gegner, deren Ort niemand kennt (> 45 s / nie)
+    antwort: object = None                               # wer dich auf dieser Seite stoppen kommt (kuerzeste Ankunft)
+    antwort_kraft: float | None = None                   # kraft_gegen([antwort]) - Split-Regel (Buch 5, 3.1)
+    teamkampf: object = None                             # Teamkampf | None
+    tp_gegner_top: float | None = None                   # s, bis der TP ihres Toplaners zurueck ist; 0 = bereit; None = ?
+    tote_gegner: list = field(default_factory=list)      # (Champion, Respawn in s)
+    tote_eigene: int = 0
+    umwandeln_lief: bool = False                         # Umwandel-Fenster im Takt davor offen (Buch 5, 8)
     fokus: str | None = None                 # Fokus des Tages (profil.fokus) - Kontroll-Auge zuerst
 
     def team_nah(self, ziel: tuple[float, float] | None, radius: float) -> int:
@@ -111,10 +124,17 @@ def _bereich(b, p, lb, meine_lane: str | None) -> str | None:
     g = lb.gesehen(p.ich) if lb is not None else None
     if g is None or b is None or b.pos is None:
         return None
+    return bereich_aus(g[1], g[2], p.mein_team, meine_lane)
+
+
+def bereich_aus(x: float, y: float, mein_team: str, meine_lane: str | None) -> str | None:
+    """Bereich-Code (Buch 0, 4.2) eines Punkts in Minimap-Anteilen - fuer dich und fuer den Ort eines Kampfs."""
+    pos = einheiten(x, y)
     for schl, (gx, gy) in (("drache", GRUBEN["drache"]), ("baron", GRUBEN["baron"])):
-        if abstand(b.pos, einheiten(gx, gy)) <= 1200:
+        if abstand(pos, einheiten(gx, gy)) <= 1200:
             return f"grube:{schl}"
-    ort = minimap.ort(g[1], g[2], p.mein_team)
+    g = (None, x, y)
+    ort = minimap.ort(g[1], g[2], mein_team)
     if "eurer Basis" in ort:
         return "basis_eigen"
     if "seiner Basis" in ort:
@@ -130,7 +150,7 @@ def _bereich(b, p, lb, meine_lane: str | None) -> str | None:
     if "Flussmitte" in ort:
         return "fluss_mitte"
     if "Jungle" in ort:
-        eigen = "eurem" in ort or ("blauen" in ort) == (p.mein_team == BLAU)
+        eigen = "eurem" in ort or ("blauen" in ort) == (mein_team == BLAU)
         return f"jungle_{'eigen' if eigen else 'fremd'}_{'oben' if 'oberen' in ort else 'unten'}"
     return {"oben": "lane:Top", "unten": "lane:Bot", "auf der Mid-Lane": "lane:Mid"}.get(ort)
 
@@ -290,13 +310,29 @@ def _recall_schwellen(champion_id: str):
     return (schwelle, int(nie.group(1)) if nie else None, int(leben.group(1)) / 100 if leben else None)
 
 
+@dataclass
+class Teamkampf:
+    """Buch 5, 1: >= 2 Mitspieler und >= 2 Gegner sichtbar nah beieinander, und Leben faellt (HUD-Leiste oder Tode)."""
+    ort: str | None               # Bereich-Code des Kampfs ("grube:drache", "lane:Mid", ...)
+    pos: tuple[float, float] | None
+    eigene: int                   # Mitspieler im Kampf (ohne dich)
+    gegner: int
+    seit: float                   # Sekunden, seit er laeuft
+    tote_eigene: int = 0          # seit Beginn gestorben
+    tote_gegner: int = 0
+    dein_weg: float | None = None  # deine Laufzeit dorthin
+
+
 class MerkmalBau:
     """Haelt den Verlauf der letzten 20 s und baut je Takt die Merkmale."""
 
     def __init__(self, cfg: dict):
         self.cfg = cfg
         self.verlauf: deque = deque()       # (Zeit, dein Leben, deine Position, {Gegner: sein Balken})
-        self.wellen = WellenPuffer(cfg)
+        self.wellen_je = {lane: WellenPuffer(cfg) for lane in ("Top", "Mid", "Bot")}
+        self._team_leben: deque = deque()   # (Zeit, {Mitspieler: Leben}) - Teamkampf erkennen
+        self._kampf: dict | None = None     # {"seit", "pos", "tote": (eigene, gegner) beim Beginn, "zuletzt"}
+        self._umwandeln = False             # Fenster offen (Buch 5, 8: der Ausloeser startet, das Fenster haelt)
         self.welle_vorher: WellenStand | None = None
         self._auf_lane: WellenStand | None = None
 
@@ -363,9 +399,12 @@ class MerkmalBau:
         m.b, m.p = b, p
         m.respawn = float(p.ich.respawn or 0.0) if p.ich.tot else 0.0
         mein = p.mein_team
-        if m.meine_lane and lb is not None and hasattr(lb, "welle"):
-            self.wellen.lesen(m.zeit, lb.welle(m.meine_lane, m.zeit), getattr(lb, "wellen_zeit", None), mein)
-            m.welle = self.wellen.stand(m.zeit, m.meine_lane, mein, b.pos, bewertung.stehende_tuerme(p))
+        if lb is not None and hasattr(lb, "welle"):
+            stehen = bewertung.stehende_tuerme(p)
+            for lane, puffer in self.wellen_je.items():      # alle drei Lanes (Buch 5, 1)
+                puffer.lesen(m.zeit, lb.welle(lane, m.zeit), getattr(lb, "wellen_zeit", None), mein)
+                m.wellen[lane] = puffer.stand(m.zeit, lane, mein, b.pos, stehen)
+            m.welle = m.wellen.get(m.meine_lane) if m.meine_lane else None
         # deine Welle beim Verlassen der Lane: fuer WOHIN und TP aus der Basis (Buch 3, 4.1)
         if m.bereich == "lane_eigen" and m.welle is not None and m.welle.zustand != "UNBEKANNT":
             self._auf_lane = m.welle
@@ -389,6 +428,63 @@ class MerkmalBau:
         g = b.lane
         m.lane_im_brunnen = bool(g is not None and not g.s.tot and not g.sichtbar and lb is not None
                                  and hasattr(lb, "brunnen_seit") and lb.brunnen_seit(g.s, m.zeit))
+        self._mitte(m, p, b, lb)
+
+    def _mitte(self, m: Merkmale, p, b, lb) -> None:
+        """Buch 5, Kapitel 1: die Karte nach der Lane-Phase - Seitenwellen, wo die Gegner sind, wer dich stoppen
+        kommt, Teamkampf, TP ihres Toplaners."""
+        c = self.cfg["mitte"]
+        m.lane_hier = lane_hier(m)
+        mitte_merkmale(m, c)
+        if g := b.lane:
+            hat_tp = "SummonerTeleport" in (g.s.zauber or ())
+            weg = lb.zauber.fehlt(g.s, "SummonerTeleport", m.zeit) if hat_tp and lb is not None and hasattr(
+                lb, "zauber") else None
+            m.tp_gegner_top = (weg if weg is not None else 0.0) if hat_tp else None
+        m.teamkampf = self._teamkampf(m, p, b, c)
+        from .modi.karte import umwandeln
+        m.umwandeln_lief = self._umwandeln
+        self._umwandeln = umwandeln(m, self.cfg) is not None
+
+    def _teamkampf(self, m: Merkmale, p, b, c) -> Teamkampf | None:
+        """>= 2 Mitspieler und >= 2 Gegner sichtbar in teamkampf_radius voneinander, und Leben faellt (ein
+        Mitspieler verliert in 3 s teamkampf_leben_faellt laut HUD-Leiste) oder jemand stirbt. Haelt
+        teamkampf_nachlauf_s nach dem letzten Merkmal."""
+        r = c["teamkampf_radius"]
+        leben = {s.name: le for s, wo, le, *_ in b.mitspieler if le is not None}
+        self._team_leben.append((m.zeit, leben))
+        while self._team_leben and self._team_leben[0][0] < m.zeit - 3.0:
+            self._team_leben.popleft()
+        alt = self._team_leben[0][1] if self._team_leben else {}
+        faellt = any(alt.get(n, le) - le >= c["teamkampf_leben_faellt"] for n, le in leben.items())
+        kills = [e for e in p.kills_von("ChampionKill")] if p is not None else []
+        frisch_tot = any(m.zeit - e.zeit <= 3.0 for e in kills)
+        freunde = [(s, wo) for s, wo, *_ in b.mitspieler if wo is not None]
+        feinde = [g for g in b.gegner if g.sichtbar and not g.s.tot and g.pos is not None]
+        bester = None
+        for _, wo in freunde:
+            f = [w2 for _, w2 in freunde if abstand(w2, wo) <= r]
+            e = [g for g in feinde if abstand(g.pos, wo) <= r]
+            if len(f) >= 2 and len(e) >= 2 and (bester is None or len(f) + len(e) > bester[0]):
+                mx = sum(x for x, _ in f + [g.pos for g in e]) / (len(f) + len(e))
+                my = sum(y for _, y in f + [g.pos for g in e]) / (len(f) + len(e))
+                bester = (len(f) + len(e), (mx, my), len(f), len(e))
+        k = self._kampf
+        if bester is not None and (faellt or frisch_tot or k is not None):
+            tote = (sum(1 for e in kills if e.opfer is not None and e.opfer.team == p.mein_team),
+                    sum(1 for e in kills if e.opfer is not None and e.opfer.team != p.mein_team))
+            if k is None or abstand(k["pos"], bester[1]) > 3000:
+                self._kampf = k = {"seit": m.zeit, "pos": bester[1], "tote": tote}
+            k.update(zuletzt=m.zeit, pos=bester[1], eigene=bester[2], gegner=bester[3], tote_jetzt=tote)
+        elif k is not None and m.zeit - k["zuletzt"] > c["teamkampf_nachlauf_s"]:
+            self._kampf = k = None
+        if k is None:
+            return None
+        from ..bewertung import BREITE, HOEHE
+        x, y = k["pos"][0] / BREITE, 1.0 - k["pos"][1] / HOEHE
+        return Teamkampf(bereich_aus(x, y, p.mein_team, m.meine_lane), k["pos"], k.get("eigene", 0),
+                         k.get("gegner", 0), m.zeit - k["seit"], k["tote_jetzt"][0] - k["tote"][0],
+                         k["tote_jetzt"][1] - k["tote"][1], m.weg(k["pos"]))
 
     def _bedrohung(self, p, b, lb, m: Merkmale) -> list:
         """Kapitel 5.1 VERTEIDIGEN: >= 2 Gegner sichtbar in 2500 um einen eigenen Turm/Nexus, oder die gegnerische
@@ -446,3 +542,47 @@ def kauf_info(b) -> KaufInfo | None:
         satz, lohnt = "", False
     return KaufInfo(list(k.kaufen), int(k.kosten), bool(lohnt), k.item in k.kaufen, satz,
                     getattr(k, "verkaufen", None))
+
+
+def lane_hier(m: Merkmale) -> str | None:
+    """Die Lane, auf der du stehst: deine (lane_eigen) oder eine andere (lane:X)."""
+    if m.bereich == "lane_eigen":
+        return m.meine_lane
+    if m.bereich and m.bereich.startswith("lane:"):
+        return m.bereich.split(":", 1)[1]
+    return None
+
+
+def mitte_merkmale(m: Merkmale, c: dict) -> None:
+    """Aus Bewertung und Wellen: Seitenwellen, woanders, unbekannt, Antwort, Tote (Buch 5, Kapitel 1). Auch fuer die
+    konstruierten Lagen (kern/testlage.py) - dort stehen Wellen, Gegner und Mitspieler schon in `m`."""
+    b = m.b
+    if b is None:
+        return
+    blau = m.p is None or m.p.mein_team == BLAU
+    freunde = [wo for _, wo, *_ in b.mitspieler if wo is not None]
+    m.seitenwellen = {}
+    for lane, w in m.wellen.items():
+        if w is None or w.zustand not in ("ZU_DIR", "GROSS_ZU_DIR", "GECRASHT_BEI_DIR"):
+            continue
+        if (w.ihre or 0) < c["seitenwelle_min"]:
+            continue
+        front = w.front if w.front is not None else w.turm_dein
+        punkt = bewertung.einheiten(*lane_punkt(lane, front if blau else 1.0 - front))
+        if any(abstand(wo, punkt) <= c["seitenwelle_mitspieler_abstand"] for wo in freunde):
+            continue
+        m.seitenwellen[lane] = w
+    lebend = [g for g in b.gegner if not g.s.tot]
+    m.tote_gegner = [(g.champion, float(g.s.respawn or 0.0)) for g in b.gegner if g.s.tot]
+    m.tote_eigene = len(b.tote_eigene)
+    m.woanders = len(m.tote_gegner) + sum(
+        1 for g in lebend if g.seit is not None and g.seit <= c["woanders_alt_s"] and g.abstand is not None
+        and g.abstand > c["woanders_abstand"])
+    m.unbekannt_anzahl = sum(1 for g in lebend if g.unbekannt)
+    bekannt = [g for g in lebend if g.ankunft is not None and not g.unbekannt]
+    if bekannt:
+        m.antwort = min(bekannt, key=lambda g: g.ankunft)
+    elif b.lane is not None and not b.lane.s.tot:
+        m.antwort = b.lane
+    if m.antwort is not None and m.antwort_kraft is None:
+        m.antwort_kraft = b.kraft_gegen([m.antwort])

@@ -6,7 +6,11 @@ sperrt es die alten Regeln (kern/sperre.py) und sammelt INFO-Zeilen fuers Dashbo
 Schritt 3: in LANE, BASIS und TOT entscheidet und spricht der Kern (`--kern neu`, Default): Kandidaten je Modus
 (kern/modi/), Wert und Gefahr (wert.py, gefahr.py), ein gehaltener Plan (plan.py), hoechstens eine Ansage je Takt
 mit eigenem Budget (sprechen.py), Bestaetigungen (Buch 3, 5). Die alten Regeln sind dort stumm. `schatten` rechnet
-mit und schreibt "wuerde sagen" ins Protokoll, `alt` nur den Modus. Je Takt `<stamm>_kern.jsonl` (live)."""
+mit und schreibt "wuerde sagen" ins Protokoll, `alt` nur den Modus. Je Takt `<stamm>_kern.jsonl` (live).
+
+Schritt 4 (Buch 5): dazu SEITE, GRUPPE, UNTERWEGS, VERTEIDIGEN - die Karten-Rechnung (modi/karte.py: Turm,
+Seitenwelle, Gruppe/TP, Welle rein und rotieren, Umwandeln bis zum Nexus), Schweigen, wenn du schon hinlaeufst,
+Erinnerung nach 20 s ohne Fortschritt, Bestaetigungen aus Kapitel 9."""
 from __future__ import annotations
 
 import json
@@ -20,7 +24,15 @@ from .handlung import SICHER, richtung
 from .merkmale import MerkmalBau, Merkmale
 from .modus import Modus, bereich_worte
 
-KERN_MODI = ("LANE", "BASIS", "TOT")
+# Buch 5, Kapitel 2: Plaene mit einem Ort auf der Karte - laeufst du schon dorthin, schweigt der Coach; stehst du
+# ohne_plan_s ausserhalb der Lane, ohne naeher zu kommen, erinnert er einmal (Kapitel 6)
+ZIEL_ARTEN = ("DRUECKEN", "MIT_GRUPPE", "SEITENWELLE", "ZUR_GRUPPE")
+
+KERN_MODI_3 = ("LANE", "BASIS", "TOT")
+KERN_MODI_4 = KERN_MODI_3 + ("SEITE", "GRUPPE", "UNTERWEGS", "VERTEIDIGEN")     # Schritt 4 (Buch 5)
+# Die Modi, in denen der Kern live spricht (seit Schritt 4). LOLCOACH_KERN_SCHRITT=3 oder Kern(modi=KERN_MODI_3) gibt
+# den Stand von Schritt 3 - fuer Gegenproben beim Nachspielen.
+KERN_MODI = KERN_MODI_4
 SPIELSTART_S = 60.0      # davor schweigt der Kern in der Basis (nicht im Buch, Schritt 3: messungen.md)
 STELLUNGEN = ("alt", "schatten", "neu")
 # Kehrtwende-Richtung einer Ansage des alten Systems (nur Text, Kapitel 9.4 Punkt 5)
@@ -45,11 +57,15 @@ def ansage_richtung(a) -> str | None:
 
 
 class Kern:
-    def __init__(self, ablage: Path | None = None, cfg: dict | None = None, stellung: str = "neu"):
+    def __init__(self, ablage: Path | None = None, cfg: dict | None = None, stellung: str = "neu",
+                 modi: tuple | None = None):
         from .plan import PlanFuehrer
         from .sprechen import Sprecher
         self.cfg = cfg or konfig()
         self.stellung = stellung if stellung in STELLUNGEN else "neu"
+        import os
+        self.modi = modi or {"3": KERN_MODI_3, "4": KERN_MODI_4}.get(os.environ.get("LOLCOACH_KERN_SCHRITT", ""),
+                                                                      KERN_MODI)
         self.bau = MerkmalBau(self.cfg)
         self.modus = Modus(self.cfg)
         self.m: Merkmale | None = None
@@ -79,6 +95,7 @@ class Kern:
         self._rueckzug: tuple[float, tuple, list] | None = None
         self._stapel_bestaetigt: str | None = None
         self._fokus_bestaetigt = False
+        self._mitte_wache: dict = {}        # Buch 5, 9: Art -> (zuletzt, ...) - Plaene, deren Ausgang bestaetigt wird
         self._basis = {"seit": None, "kauf": None, "n": 0, "zuletzt": None, "gold": None}
         self._angesagt: dict[tuple[str, str], float] = {}   # (Art, Ziel) -> zuletzt angesagt
         self._gefahr_gesagt: tuple[float, set] | None = None   # letzte GEFAHR: (Zeit, vor wem)
@@ -100,7 +117,7 @@ class Kern:
 
     def spricht_in(self, modus: str | None) -> bool:
         """Spricht der Kern in diesem Modus selbst (dann schweigen dort die alten Regeln)?"""
-        return self.stellung == "neu" and modus in KERN_MODI
+        return self.stellung == "neu" and modus in self.modi
 
     def info_dazu(self, zeit: float, text: str) -> None:
         self.info.append((zeit, text))
@@ -162,22 +179,20 @@ class Kern:
     def _kandidaten(self, m: Merkmale, modus: str | None) -> tuple[list, bool]:
         from . import wert
         from .modi import back_gruende, zurueck, zurueck_saetze
-        from .modi import basis, lane, tot
+        from .modi import basis, gruppe, lane, seite, tot, unterwegs, verteidigen
         from .plan import gefahr_schlaegt_an
         cfg = self.cfg
-        if m.b is None or modus not in KERN_MODI:
+        if m.b is None or modus not in self.modi:
             return [], False
-        if modus == "LANE":
-            kand = lane.kandidaten(m, cfg)
+        je_modus = {"LANE": lane, "BASIS": basis, "TOT": tot, "SEITE": seite, "GRUPPE": gruppe,
+                    "UNTERWEGS": unterwegs, "VERTEIDIGEN": verteidigen}
+        kand = je_modus[modus].kandidaten(m, cfg)
+        if modus not in ("BASIS", "TOT"):         # ZURUECK: in allen Modi ausser TOT und BASIS (Buch 0, 6.3)
             kand += zurueck(m, cfg, modus, back_gruende(m, cfg))
-        elif modus == "BASIS":
-            kand = basis.kandidaten(m, cfg)
-        else:
-            kand = tot.kandidaten(m, cfg)
         tk = wert.todeskosten(m, cfg)
         for h in kand:
             wert.bewerte(h, m, cfg, tk)
-        bleiben = next((h for h in kand if h.art == "FARMEN"), None)
+        bleiben = next((h for h in kand if h.art in ("FARMEN", "HALTEN")), None)
         for h in kand:
             if h.art == "ZURUECK":
                 zurueck_saetze(h, m, bleiben)
@@ -187,7 +202,7 @@ class Kern:
             if h.art not in beste or h.ev > beste[h.art].ev:
                 beste[h.art] = h
         kand = list(beste.values())
-        farmen = next((h for h in kand if h.art == "FARMEN"), None)
+        farmen = next((h for h in kand if h.art in ("FARMEN", "HALTEN")), None)    # "bleiben, wo du bist"
         gefahr = farmen is not None and gefahr_schlaegt_an(farmen, cfg["gefahr"])
         plan = self.fuehrer.plan
         als = plan.als() if plan is not None else None
@@ -214,6 +229,12 @@ class Kern:
             kategorie = "GEFAHR" if ev.art == "gefahr" and h.art in SICHER else "PLAN"
             text = h.satz or h.kurz()
         if not text:
+            return None
+        if ev.art == "neu" and self._laeuft_hin(h, m):
+            # Buch 5, 2: "Laeufst du schon dorthin, schweigt der Coach" - der Plan gilt als gesagt, damit die
+            # Erinnerung (Kapitel 6) greift, wenn du stehen bleibst
+            p.gesagt = m.zeit
+            p.start = {"sicher_weg": None, "pos": m.pos}
             return None
         if self._kehrtwende(h.art if ev.art != "schritt" else p.als(), m, gesagt):
             return None
@@ -246,6 +267,16 @@ class Kern:
                 self._rueckzug = (m.zeit, m.pos, [n for n, x in h.daten.get("wer", []) if x >= 0.05])
             self._gesprochen(a, kategorie, m)
         return a
+
+    def _laeuft_hin(self, h, m: Merkmale) -> bool:
+        """Du kommst dem Ort des Plans in den letzten 3 s deutlich naeher (>= 500 Einheiten). Nicht beim Umwandeln:
+        dort sagt der Satz das Fenster und ruft das Team (Kapitel 8)."""
+        if h.art not in ZIEL_ARTEN or h.daten.get("umwandeln") or h.ziel is None or h.ziel.pos is None \
+                or m.pos is None:
+            return False
+        from ..bewertung import abstand
+        v = [x for x in self.bau.verlauf if x[0] >= m.zeit - 3.0 and x[2] is not None]
+        return bool(v) and abstand(v[0][2], h.ziel.pos) - abstand(m.pos, h.ziel.pos) >= 500
 
     def _pruefung(self, p):
         """Die Ansage stimmt, solange der Kern-Plan derselbe ist (ersetzt _noch_wahr, Kapitel 9.6)."""
@@ -301,6 +332,14 @@ class Kern:
             from ..bewertung import abstand
             bewegt = len(v) >= 2 and m.pos is not None and abstand(v[0][2], m.pos) >= 200
             return m.bereich != "basis_eigen" and bewegt
+        if art in ZIEL_ARTEN and p.start is not None and p.start.get("pos") is not None and m.pos is not None:
+            # Kapitel 6: ausserhalb der Lane > ohne_plan_s, ohne dem Ziel naeher zu kommen
+            z = p.handlung.ziel
+            if z is None or z.pos is None or (m.bereich or "").startswith("lane") or p.gesagt is None \
+                    or m.zeit - p.gesagt < self.cfg["mitte"]["ohne_plan_s"]:
+                return False
+            from ..bewertung import abstand
+            return abstand(p.start["pos"], z.pos) - abstand(m.pos, z.pos) < 800 and abstand(m.pos, z.pos) > 1200
         if art == "ZURUECK" and p.start is not None and p.start.get("sicher_weg") is not None:
             # nur, wenn die Gefahr noch da ist und du nicht schon am sicheren Ort stehst (140253: "Denk dran: Bleib an
             # deinem Mid-Turm", waehrend Riven dort stand)
@@ -365,6 +404,7 @@ class Kern:
             elif w.zustand == "LEER":
                 self._leer_zuletzt = zeit
         plan = self.fuehrer.plan
+        self._mitte_merken(m)
         if plan is not None and plan.art == "UNTER_TURM_FARMEN":
             self._utf_zuletzt = zeit
         if m.b is not None and m.b.platten_gegner is not None:
@@ -430,6 +470,8 @@ class Kern:
             if o is not None and 15 <= o.spawn_in <= 30:
                 text = "Genau so - er muss jetzt wählen."
                 self._stapel_bestaetigt = o.schl
+        if text is None:
+            text = self._mitte_bestaetigung(m)
         if text is None and not self._fokus_bestaetigt and m.fokus and "kontroll" in m.fokus.lower() \
                 and m.b is not None and KONTROLLAUGE in m.b.ich.items:
             text, self._fokus_bestaetigt = "Kontroll-Auge gekauft - genau der Fokus.", True
@@ -441,6 +483,60 @@ class Kern:
             self.staerken.append((zeit, text))
             self._gesprochen(a, "BESTAETIGUNG", m)
         return a
+
+    def _mitte_merken(self, m: Merkmale) -> None:
+        """Buch 5, 9: solange einer dieser Plaene laeuft, merken, woran sein Ausgang zu erkennen ist."""
+        plan = self.fuehrer.plan
+        if plan is None or m.b is None or m.p is None:
+            return
+        h, w = plan.handlung, self._mitte_wache
+        if plan.art == "WELLE_UND_RAUS" and h.daten.get("spawn") is not None:
+            w["WELLE_UND_RAUS"] = (m.zeit, h.daten["spawn"], h.daten.get("ziel_pos"))
+        elif plan.art in ("DRUECKEN", "MIT_GRUPPE") and h.daten.get("umwandeln") and h.daten.get("turm"):
+            w["UMGEWANDELT"] = (m.zeit, h.daten["turm"], h.daten.get("nexus_weg", 0))
+        elif plan.art == "TP_SPIEL":
+            w["TP_SPIEL"] = (m.zeit, w.get("TP_SPIEL", (0, len(m.tote_gegner)))[1])
+        elif plan.art == "SEITENWELLE" and h.daten.get("lane"):
+            from ..bewertung import stehende_tuerme
+            lane = h.daten["lane"]
+            eigene = sum(1 for k in stehende_tuerme(m.p) if k[0] == m.p.mein_team and k[1] == lane)
+            w["SEITENWELLE"] = (m.zeit, lane, w.get("SEITENWELLE", (0, lane, eigene))[2])
+
+    def _mitte_bestaetigung(self, m: Merkmale) -> str | None:
+        """Buch 5, 9: pünktlich rotiert, umgewandelt, guter TP, Seitenwelle gerettet - je einmal, wenn es eintritt
+        (hoechstens 60 s nach dem Plan; tot: keine)."""
+        from ..bewertung import abstand, stehende_tuerme
+        w, zeit = self._mitte_wache, m.zeit
+        for k in [k for k, v in w.items() if zeit - v[0] > 60]:
+            del w[k]
+        if m.tot or m.p is None:
+            w.clear()
+            return None
+        if (v := w.get("WELLE_UND_RAUS")) is not None:
+            _, spawn, pos = v
+            if zeit > spawn:
+                del w["WELLE_UND_RAUS"]
+            elif pos is not None and m.pos is not None and abstand(m.pos, pos) <= 2000:
+                del w["WELLE_UND_RAUS"]
+                return "Genau so - Welle drin und pünktlich da."
+        from .modi.karte import steht
+        if (v := w.get("UMGEWANDELT")) is not None and not steht(m, tuple(v[1]), v[2]):
+            del w["UMGEWANDELT"]
+            return "Sauber umgewandelt."
+        if (v := w.get("TP_SPIEL")) is not None and m.tp_in is not None and m.tp_in > 0 \
+                and len(m.tote_gegner) > v[1]:
+            del w["TP_SPIEL"]
+            return "Guter TP."
+        if (v := w.get("SEITENWELLE")) is not None:
+            _, lane, eigene = v
+            wl = m.wellen.get(lane) if m.wellen else None
+            jetzt = sum(1 for k in stehende_tuerme(m.p) if k[0] == m.p.mein_team and k[1] == lane)
+            if jetzt < eigene:
+                del w["SEITENWELLE"]
+            elif m.lane_hier == lane and wl is not None and wl.zustand in ("LEER", "MITTE", "ZU_IHM", "GROSS_ZU_IHM"):
+                del w["SEITENWELLE"]
+                return "Welle gerettet - kein Turm verloren."
+        return None
 
     # --- Protokoll, Dashboard, Claude ----------------------------------------------------
 

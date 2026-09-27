@@ -26,6 +26,7 @@ class Modus:
         self.c = cfg["modus"]
         self.mindestens = cfg.get("objective_wert", {}).get("mindestens", {})
         self.aktuell: str | None = None
+        self._ort_zuletzt: float | None = None     # Spielzeit, zu der dein Ort zuletzt bekannt war
         self.seit: float = 0.0
         self.kandidat: str | None = None
         self.kandidat_seit: float = 0.0
@@ -75,10 +76,17 @@ class Modus:
         if not m.daten_frisch and not m.tot:
             return self.aktuell           # ohne frische Daten kein Wechsel (Kapitel 4.3)
         if m.bereich is None and not m.tot:
-            # Ort unbekannt (Minimap liest dich nicht): kein Modus statt geraten (4.3) - dann gilt keine Sperre,
+            # Ort kurz unbekannt (Icon unter einem anderen, Recall-Leuchten): der Modus bleibt wie ohne frische Daten
+            # (4.3) - sonst sprachen fuer Sekunden die alten Regeln ungesperrt (133930, 7:52-7:58: "Schieb die Welle
+            # in seinen Turm" mitten im Modus OBJECTIVE; Schritt 4, messungen.md)
+            if self._ort_zuletzt is not None and m.zeit - self._ort_zuletzt <= self.c["ort_halten_s"]:
+                return self.aktuell
+            # laenger unbekannt (Minimap liest dich nicht): kein Modus statt geraten - dann gilt keine Sperre,
             # die alten Regeln sprechen wie ohne Kern (Generalprobe 27.09.: sonst "UNTERWEGS" und die Lane stumm)
             self.aktuell, self.kandidat, self.grund = None, None, "Ort unbekannt"
             return None
+        if m.bereich is not None:
+            self._ort_zuletzt = m.zeit
         roh, grund = self._roh(m)
         if roh == "KAMPF":
             self._kampf_zuletzt = m.zeit

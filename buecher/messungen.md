@@ -4,6 +4,110 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Schritt 4 – SEITE, GRUPPE, UNTERWEGS, VERTEIDIGEN (27.09.2026)
+
+### Umgesetzt
+
+- `kern/modi/karte.py` – die Karten-Rechnung aus Buch 5, Kapitel 2:
+  `EV = gewinn · p_erfolg − weg · zeitwert − p_tod(weg + dauer) · Todeskosten + folgewert`.
+  - **Türme:** je Lane der vorderste stehende Turm. Verteidiger werden je Gegner gerechnet: Tote mit Respawn plus Weg aus dem Brunnen, Gesehene ≤ 15 s mit Weg ÷ Tempo, alle anderen gelten als unbekannt. Ein Turm ist Kandidat, wenn er vor dem **ersten** Verteidiger fällt oder du diesen schlägst. Für die Antwort zählt ihre gemessene Kraft.
+  - **Wert eines Turms:** Platten an jedem Turm, Turmgold, `turm_extra`. Kristalle (×1,3) werden nur dort gerechnet, wo man sie sieht: am äußeren Turm deiner Lane mit allen Platten.
+  - **Weitere Kandidaten:** Seitenwelle, Welle rein und rotieren (45–75 s, ohne TP), zur Gruppe bzw. TP-Spiel (Kapitel 5) und Umwandeln (Kapitel 8). Beim Umwandeln gilt die Reihenfolge aus Kapitel 8 bis zum Nexus: Inhibitor-Turm, Inhibitor, Nexus-Türme, Nexus.
+- **Modi:**
+  - `modi/seite.py`: Split-Regel 3.1. Nach einem gewonnenen Kampf gilt sie nicht.
+  - `modi/gruppe.py`: MIT_GRUPPE, Seitenwelle auf deiner Seite; Back nur, wenn kein Objective und kein Kampf ansteht.
+  - `modi/unterwegs.py`, `modi/verteidigen.py` (WELLE_KLAEREN, HALTEN_UNTER_TURM, TAUSCHEN).
+  - Nach einem gewonnenen Kampf gibt es in SEITE, GRUPPE und UNTERWEGS keinen Back, solange eine Struktur erreichbar ist.
+- **`kern/merkmale.py`:**
+  - Wellen aller drei Lanes, `lane_hier`, Seitenwellen, woanders/unbekannt.
+  - Die Antwort und ihre Kraft.
+  - Teamkampf: ≥ 2 gegen ≥ 2 in 1500, dazu fällt Leben oder jemand stirbt; hält 5 s.
+  - TP ihres Toplaners, Tote.
+  - Das Umwandel-Fenster über die Takte.
+- **Sprechen (Kapitel 2 und 6):**
+  - Läufst du schon zum Ziel (≥ 500 Einheiten näher in 3 s), schweigt der Coach, und der Plan gilt als gesagt. Ausnahme ist das Umwandeln: dort sagt der Satz das Fenster und „Ruf dein Team“.
+  - Einmal Erinnerung nach 20 s ohne Fortschritt außerhalb der Lane.
+- **Bestätigungen (Kapitel 9):** „Genau so - Welle drin und pünktlich da.“, „Sauber umgewandelt.“, „Guter TP.“, „Welle gerettet - kein Turm verloren.“.
+- **BASIS nach der Lane-Phase:** Das Ziel kommt aus der Karten-Rechnung, sonst aus der alten Bewertung. In den Kauf-Satz geht nur noch dessen Grund. Vorher stand dort 133930, 17:57: „… dann auf den Bot-Inhibitor-Turm: Geh auf den Bot-Inhibitor-Turm, …“.
+- **`kern/testlage.bauen_mitte`:** baut eine echte `Partie` aus den Lagen in `mitte.toml`.
+  - Wellen, Mitspieler, Gegner (gleicher Bereich wie du → im Abstand; fehlend → unbekannt), Türme und Teamkampf.
+  - Die Jungler-Seite wird wie `jungle.wahrscheinlich` gerechnet.
+- **`szenarien.py`:** Eine gesprochene Kern-Ansage, deren Plan im Fenster noch gilt, zählt für `muss_nennen_eins` (Kapitel 2: schweigt, solange du hinläufst).
+- **Live-Default:** `kern.KERN_MODI` = LANE, BASIS, TOT, SEITE, GRUPPE, UNTERWEGS, VERTEIDIGEN. Mit `LOLCOACH_KERN_SCHRITT=3` gibt es den Stand von Schritt 3 für Gegenproben.
+
+### Abnahme Schritt 4 (Buch 5, Kapitel 11)
+
+| Abnahme | Soll | Ist |
+|---|---|---|
+| `3632-ende-statt-back` über den Kern | grün | **grün**. 36:03 bzw. 36:13 „Mid-Inhibitor-Turm jetzt: 4 von ihnen sind noch 33 Sekunden tot. Ruf dein Team.“, der Plan hält bis 36:47. Gegenprobe mit dem Schritt-3-Kern: **rot** (36:32 „Geh jetzt back, du hast 4400 Gold …“). |
+| `3535-rueckzug-31s` über den Kern | grün | **grün**. 35:27 „Raus zu Brand, Corki und Tryndamere: Sett kommt.“ statt des Top-Turms in 31 s. |
+| `1315-crash-dann-back` | grün | **grün** |
+| Lagen in `mitte.toml` | alle grün | **13 / 13**, dazu `lane.toml` + `recall.toml` 25 / 25 (`test_kern` prüft jetzt alle 38) |
+| 9.4 Punkt 1–4 ohne Verstoß | alle Aufnahmen | **0** in 102112 und in allen neuen echten Partien (133930, 140253, 144655): Das ist die Abnahme aus Buch 0, Kapitel 13. In den Aufnahmen vom 26.09. bleiben 10 (120049 2, 125902 2, 155643 1, 194524 2, 212105 2, 230520 1). Es sind alles alte Regeln an Stellen, an denen die Minimap Riven länger als 10 s nicht fand (kein Modus = keine Sperre, s. u. Punkt 12). |
+| ungefragte Ansagen je 30 min ≤ 50 | ja | **nicht erreicht**: 102112 56 (Schritt 3: 57), 133930 88, 140253 61. Der Kern allein liegt darunter (102112 37, 133930 43). Der Rest ist das alte System im Modus OBJECTIVE (102112: 19 Ansagen, 133930: 26), der erst in Schritt 5 an den Kern geht. |
+| echte Partie mit Mid-Game (> 20 min) ausgewertet | ja | **ja**: 133930, s. u. |
+| `tests/alle.py` | grün | **grün** (neu: Viego-Übernahme, AFK-Gegner) |
+
+Szenarien 102112 mit Kern: **13 grün / 13 geprüft** (Schritt 3: 11 / 13).
+
+### Kennzahlen (Stand Schritt 4, Kern)
+
+| Aufnahme | ungefragt je 30 min | Lane-Phase je 30 s | Kehrtwenden | 9.4 1–4 | GEFAHR / PLAN / ERINNERUNG / BESTAETIGUNG | p_da-Brier schlimmster Fall → Kern |
+|---|---|---|---|---|---|---|
+| 2026-09-27_102112 | 56 | 0,79 | 0 | 0 | 8 / 29 / 1 / 2 | 0,317 → 0,059 |
+| **2026-09-27_133930 (echt, 21,8 min)** | 88 | 1,21 | 0 | 0 | 11 / 17 / 3 / 0 | 0,423 → 0,074 |
+| **2026-09-27_140253 (echt)** | 61 | 1,04 | 0 | 0 | 3 / 14 / 1 / 0 | 0,273 → 0,044 |
+| **2026-09-27_144655 (echt)** | 56 | 0,96 | 0 | 0 | 5 / 5 / 0 / 1 | 0,241 → 0,038 |
+
+Das neue Seiten-Modell der Gefahr (Punkt 6) verschlechtert die Eichung nicht: p_da schlägt den schlimmsten Fall in allen 26 Aufnahmen, 102112 und 140253 unverändert.
+
+**Echte Partie 133930** (Riven Top gegen Gwen, rote Seite, ab 14:00 hinten):
+- Von 14:00 bis 21:55 war der Modus zu gut drei Vierteln OBJECTIVE. Der Kern entscheidet nach Schritt 4 also im kleineren Teil des Mid-Games.
+- Wo er entscheidet, passt es. 20:11 „Raus zu deinem Mid-Tier-1-Turm: Tristana und Zoe kommen.“ (danach fiel Rivens Leben von 88 auf 33 %), 20:23 Back bei 33 %.
+- 21:46 in ihrer Basis mit vier toten Gegnern: „Nexus-Turm jetzt: 4 von ihnen sind noch 19 Sekunden tot.“, danach „Nexus jetzt …“. Vorher stand dort „Back jetzt“, weil der Kern hinter den Inhibitor-Türmen keine Ziele kannte.
+- In 102112 gilt dasselbe ab 38:17 („Nexus-Turm jetzt …“). Um 38:32 fällt er, und der Coach sagt „Sauber umgewandelt.“
+
+### Abweichungen vom Buch und Entscheidungen
+
+1. **Erster Verteidiger (Kapitel 2):** Geprüft wird nur der erste, der rechtzeitig kommt. Vorher wurden alle Rechtzeitigen gegen dich gerechnet (`m-split-drueck`).
+2. **Split-Regel 1:** Ruft ein Objective ohne TP und gibt es „Welle rein und raus“, fallen FARMEN, SEITENWELLE, DRUECKEN und PLATTEN weg. Vorher gewann FARMEN (`m-welle-und-raus`).
+3. **Zeitwert nur auf den Weg, p_tod über Weg + Dauer** (Formel in Kapitel 2). Vorher kostete auch die Zeit am Turm Zeitwert, und der innere Turm verlor gegen eine halbe Welle.
+4. **Platten an jedem Turm:** Patch 26.1, `saison2026.md`: auch innen und am Inhibitor. `turm_gewinn` hatte sie nur außen.
+5. **Kristalle** zählen nur, wo sie sichtbar sind (äußerer Turm deiner Lane, alle 5 Platten stehen). Sonst rechnet der Coach ohne.
+6. **Gefahr, Kartenseite nach der Lane-Phase (7.5):**
+   - Jeder gesehene Gegner zählt auf der Seite seiner letzten Sichtung, verblasst über 90 s wie der Jungler (`jungle.wahrscheinlich`). Vorher galt `roam_basis` für alle. 3535 war dadurch „keine Gefahr“: Kai'Sa vor 7 s unten, Sona und Sett unten, Riven allein im unteren Fluss.
+   - Der Lane-Gegner zählt mit 1 nur, wenn du auf deiner Lane stehst.
+7. **„Bleib an/bei …“ (ZURUECK am sicheren Ort):** Das Risiko gilt über das normale Fenster, ohne Rückzugsrabatt. Vorher schlug es mit p_tod ≈ 0 das Halten unter dem Turm (`m-verteidigen-halten`).
+8. **Umwandeln (Kapitel 8):**
+   - Die 15 s braucht nur der Auslöser. Danach hält das Fenster, „solange es reicht“, also solange ein Turm vor seinem ersten Verteidiger fällt. Vorher kippte der Plan um 36:32 (Sona noch 14 s tot) auf HALTEN.
+   - Es gilt auch in SEITE. Vorher 36:03 auf der Bot-Lane mit vier Toten: „Bot-Welle rein, dann back“.
+9. **Folgewert beim Umwandeln:** Fällt ein Turm im Fenster, zählt der nächste derselben Lane mit, wenn auch er vor seinem ersten Verteidiger fällt. Sonst schickte der Coach die Gruppe von Mid quer über die Karte zum inneren Bot-Turm, statt den äußeren Mid-Turm fünf Sekunden vor ihr zu nehmen (`m-gruppe-umwandeln`). „Mit der Gruppe“ gilt nur, wo Mitspieler am Ziel stehen.
+10. **Kapitel 8, Punkte 1–2 (nicht im Buch beziffert):**
+    - Positionen von Inhibitoren, Nexus-Türmen und Nexus stammen aus der Karte.
+    - Werte: Inhibitor = `objective_wert.inhibitor`, Nexus-Turm = `turm_extra` + ¼ Nexus, Nexus = `objective_wert.nexus`.
+    - Dauer wie `turm_dauer_s.nexus`. Nexus-Türme stehen nach 180 s wieder.
+    - Nur im Umwandel-Fenster.
+11. **Sprechen:** Die Regel „Läufst du schon dorthin, schweigt der Coach“ gilt nicht beim Umwandeln (der Satz trägt das Fenster). Erinnert wird nur außerhalb der Lane.
+12. **Modus bei kurz unbekanntem Ort (4.3):** Der Modus bleibt bis zu 10 s (`[modus] ort_halten_s`, nicht im Buch). Vorher sprachen dann die alten Regeln ungesperrt: 133930 um 7:52–7:58 „Schieb die Welle in seinen Turm“ mitten im Modus OBJECTIVE. Länger unbekannt bleibt es wie in Schritt 2: kein Modus, die alten Regeln sprechen.
+13. **Szenario-Prüfung:** Eine stehende Kern-Ansage zählt für `muss_nennen_eins`. `3632` verlangt „Mid“ oder „Inhibitor“ in 36:30–36:47. Der Kern sagt es um 36:13 und schweigt danach, weil Riven hinläuft (Kapitel 2). Das Szenario selbst ist unverändert. `darf_nicht_sagen` prüft weiter nur Gesprochenes im Fenster.
+14. **`testlage`-Annahmen:**
+    - Gegner im gleichen Bereich wie du stehen im angegebenen Abstand; fehlende sind unbekannt.
+    - Die Gegner eines Teamkampfs stehen sichtbar am Kampfort.
+    - Die Jungler-Seite kommt aus der Sichtung.
+    - `m.mitspieler` kommt aus den Mitspielern der Lage (fehlte: „mit der Gruppe“ zählte nie jemanden).
+15. **`kern.toml`-Schlüssel, die nicht im Buch stehen:**
+    - `[mitte]`: `woanders_abstand`, `woanders_alt_s`, `seitenwelle_mitspieler_abstand`, `teamkampf_nachlauf_s`, `teamkampf_leben_faellt`, `platten_annahme`, `kampf_wert_je_gegner`, `gruppe_turm_faktor`.
+    - `[modus]`: `ort_halten_s`.
+
+### Nebenbei behoben: Partie 144655 (Carlos, 14:46, Riven Top gegen Gangplank)
+
+- **„Partie vorbei“ um 9:24:** Der gegnerische Viego übernahm einen Toten. Die Live-API meldet ihn dann unter dessen Namen (Kha'Zix, Vex). Der Coach hielt jede Übernahme für eine neue Partie, schrieb ein Review und fing in 30 s viermal neu an. Jetzt gilt nur noch: andere Spieler oder die Spieluhr springt zurück (`aufzeichnung._spieler`). Das Practice Tool fällt weiter an der Uhr auf.
+- **„Kha'Zix ist AFK … spiel deine Lane nach vorn“ (1:30, Riven starb 1:57):** Die Live-API zeigt die Items der Gegner nicht, also ist „kein einziges Item“ bei Gegnern kein Beleg. Dieselbe falsche Meldung kam in 133930 für Zac. Ein Gegner gilt jetzt nur als AFK, wenn er ab 2:30 noch Stufe 1 ist. Die AFK-Sätze nennen die Welle mit Lane (9.4 Punkt 1, 102112 1:30).
+- **Hat mein halbfertiger Schritt 4 in seiner Partie mitgesprochen? Nein.** Sein Coach lud den Kern beim Partiestart um 14:46:55, mein erster Schritt-4-Patch kam um 14:49:12, und Python lädt Module nicht nach. Zur Zeit der „Wortfetzen“ (6:28–6:51 = 14:53:23–14:53:46) liefen bei mir keine Messungen.
+- Das Stottern der Stimme und die fehlenden Flash-Timer auf dem Dashboard sind **nicht** untersucht (OFFEN.md).
+
+---
+
 ## Nachtrag zu Schritt 3 – Wellen-Wahrnehmung (27.09.2026)
 
 Auftrag Carlos: kein Umbau am Kern; `welle.py` nur Icon und Ring ausblenden, Minimap-Ausschnitte der letzten drei

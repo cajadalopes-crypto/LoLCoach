@@ -1,0 +1,242 @@
+# Konstruierte Lagen zu Buch 5 (Mid-Game als Toplaner) - Modi SEITE, GRUPPE, UNTERWEGS, VERTEIDIGEN.
+# Grundformat wie lane.toml (Kopfkommentar dort). Zusaetzliche Felder:
+#   modus       = "SEITE" / "GRUPPE" / "UNTERWEGS" / "VERTEIDIGEN"
+#   ich.bereich = Bereich-Code (Buch 0, 4.2), z. B. "lane:Top", "lane:Mid", "fluss_unten", "basis_eigen"
+#   wellen      = { Top = { zustand, unsere, ihre }, Mid = {...}, Bot = {...} }   - alle drei Lanes (Buch 5, 1)
+#   mitspieler  = [ { champion, bereich, leben } ]
+#   gegner      = [ { champion, rolle, bereich, seit (0 = sichtbar; fehlt = unbekannt), abstand, tot_noch, tp_in } ]
+#   antwort_kraft = kraft_gegen gegen den Gegner, der dich auf dieser Seite wahrscheinlich stoppen kommt (Buch 5, 3.1)
+#   tuerme      = { ihre = ["Top:innen", ...], eure = [...] }  - STEHENDE Tuerme ("Lane:Stufe", Stufe aussen/innen/Inhib)
+#   inhibs_weg  = { eure = ["Mid"], ihre = [] }
+#   objectives  = [ { schl, spawn_in, weg, seite, lebt } ]
+#   teamkampf   = { ort, eigene, gegner, seit, tote_eigene, tote_gegner, dein_weg }   - erkannter Kampf (Buch 5, 1)
+#   Rollen: TOP, JUNGLE, MIDDLE, BOTTOM, UTILITY. Carlos ist Riven (TOP), blaue Seite.
+
+[[lage]]
+id = "m-split-drueck"
+buch = "5"
+modus = "SEITE"
+zeit = "22:00"
+ich = { level = 15, leben = 0.9, gold = 600, tp_in = 0, bereich = "lane:Top" }
+wellen = { Top = { zustand = "ZU_IHM", unsere = 7, ihre = 2 } }
+antwort_kraft = 1.5
+gegner = [
+  { champion = "Sett", rolle = "TOP", bereich = "lane:Mid", seit = 0, abstand = 7000 },
+  { champion = "Fiddlesticks", rolle = "JUNGLE", bereich = "fluss_unten", seit = 5, abstand = 11000 },
+  { champion = "Kai'Sa", rolle = "BOTTOM", bereich = "lane:Bot", seit = 3, abstand = 13000 },
+  { champion = "Sona", rolle = "UTILITY", bereich = "lane:Bot", seit = 3, abstand = 13000 },
+  { champion = "Galio", rolle = "MIDDLE" },
+]
+tuerme = { ihre = ["Top:innen", "Top:Inhib", "Mid:aussen", "Mid:innen", "Mid:Inhib", "Bot:aussen", "Bot:innen", "Bot:Inhib"] }
+objectives = [ { schl = "drache", spawn_in = 90, weg = 45, seite = "andere" } ]
+soll = ["DRUECKEN"]
+satz_enthaelt = ["inneren Top-Turm"]
+warum = "Du schlaegst Sett, drei sind unten gesehen, TP ist bereit fuer den Drachen: drueck den inneren Top-Turm."
+
+[[lage]]
+id = "m-split-zu-tief"
+buch = "5"
+modus = "SEITE"
+zeit = "22:00"
+ich = { level = 15, leben = 0.9, gold = 600, tp_in = 0, bereich = "lane:Top" }
+wellen = { Top = { zustand = "ZU_IHM", unsere = 7, ihre = 2 } }
+antwort_kraft = 1.5
+gegner = [
+  { champion = "Sett", rolle = "TOP", bereich = "lane:Mid", seit = 0, abstand = 7000 },
+  { champion = "Fiddlesticks", rolle = "JUNGLE" },
+  { champion = "Kai'Sa", rolle = "BOTTOM" },
+  { champion = "Sona", rolle = "UTILITY" },
+  { champion = "Galio", rolle = "MIDDLE" },
+]
+tuerme = { ihre = ["Top:innen", "Top:Inhib", "Mid:aussen", "Mid:innen", "Mid:Inhib", "Bot:aussen", "Bot:innen", "Bot:Inhib"] }
+objectives = [ { schl = "drache", spawn_in = 90, weg = 45, seite = "andere" } ]
+darf_nicht = ["DRUECKEN"]
+soll = ["SEITENWELLE", "FARMEN"]
+warum = "Vier von fuenf sind unbekannt: nicht hinter ihren Turm. Welle bis zur Lane-Mitte, dann halten (Tiefe-Regel 3.1)."
+
+[[lage]]
+id = "m-welle-und-raus"
+buch = "5"
+modus = "SEITE"
+zeit = "19:10"
+ich = { level = 13, leben = 0.85, gold = 700, tp_in = 120, bereich = "lane:Top" }
+wellen = { Top = { zustand = "ZU_IHM", unsere = 6, ihre = 2 } }
+antwort_kraft = 1.4
+gegner = [
+  { champion = "Sett", rolle = "TOP", bereich = "lane:Top", seit = 0, abstand = 2500 },
+  { champion = "Fiddlesticks", rolle = "JUNGLE", bereich = "fluss_unten", seit = 8 },
+]
+tuerme = { ihre = ["Top:aussen", "Top:innen", "Top:Inhib"] }
+objectives = [ { schl = "drache", spawn_in = 50, weg = 40, seite = "andere" } ]
+soll = ["WELLE_UND_RAUS"]
+satz_enthaelt = ["Drache"]
+warum = "Drache in 50 s, kein TP, 40 s Weg: jetzt die Welle rein und los - sonst kommst du zu spaet oder verlierst die Welle."
+
+[[lage]]
+id = "m-tp-bleiben"
+buch = "5"
+modus = "SEITE"
+zeit = "19:10"
+ich = { level = 13, leben = 0.85, gold = 700, tp_in = 0, bereich = "lane:Top" }
+wellen = { Top = { zustand = "ZU_IHM", unsere = 6, ihre = 2 } }
+antwort_kraft = 1.4
+gegner = [
+  { champion = "Sett", rolle = "TOP", bereich = "lane:Top", seit = 0, abstand = 2500 },
+  { champion = "Fiddlesticks", rolle = "JUNGLE", bereich = "fluss_unten", seit = 8 },
+]
+tuerme = { ihre = ["Top:aussen", "Top:innen", "Top:Inhib"] }
+objectives = [ { schl = "drache", spawn_in = 50, weg = 40, seite = "andere" } ]
+darf_nicht = ["WELLE_UND_RAUS", "ZUR_GRUPPE"]
+warum = "Mit TP bleibst du oben und machst Druck, bis der Kampf am Drachen anfaengt (Buch 5, 3.1 und 5)."
+
+[[lage]]
+id = "m-tp-spiel"
+buch = "5"
+modus = "SEITE"
+zeit = "24:00"
+ich = { level = 16, leben = 0.9, gold = 900, tp_in = 0, bereich = "lane:Top" }
+wellen = { Top = { zustand = "MITTE", unsere = 4, ihre = 4 } }
+mitspieler = [
+  { champion = "Brand", bereich = "grube:drache", leben = 0.8 },
+  { champion = "Corki", bereich = "grube:drache", leben = 0.9 },
+  { champion = "Tryndamere", bereich = "grube:drache", leben = 0.7 },
+  { champion = "Nasus", bereich = "grube:drache", leben = 0.9 },
+]
+teamkampf = { ort = "grube:drache", eigene = 4, gegner = 5, seit = 2, tote_eigene = 0, tote_gegner = 0, dein_weg = 45 }
+objectives = [ { schl = "drache", spawn_in = 0, lebt = true, weg = 45, seite = "andere" } ]
+soll = ["TP_SPIEL"]
+satz_enthaelt = ["TP"]
+warum = "Der Kampf am Drachen faengt gerade an, 4 gegen 5, zu Fuss 45 s: TP macht es 5 gegen 5."
+
+[[lage]]
+id = "m-kein-tp-kampf-verloren"
+buch = "5"
+modus = "SEITE"
+zeit = "24:06"
+ich = { level = 16, leben = 0.9, gold = 900, tp_in = 0, bereich = "lane:Top" }
+wellen = { Top = { zustand = "MITTE", unsere = 4, ihre = 4 } }
+teamkampf = { ort = "grube:drache", eigene = 2, gegner = 5, seit = 7, tote_eigene = 2, tote_gegner = 0, dein_weg = 45 }
+objectives = [ { schl = "drache", spawn_in = 0, lebt = true, weg = 45, seite = "andere" } ]
+darf_nicht = ["TP_SPIEL", "ZUR_GRUPPE"]
+warum = "Zwei von euch tot, keiner von ihnen: der Kampf ist verloren. TP hinein wirft nur einen dritten Tod dazu."
+
+[[lage]]
+id = "m-gruppe-seitenwelle"
+buch = "5"
+modus = "GRUPPE"
+zeit = "23:00"
+ich = { level = 15, leben = 1.0, gold = 500, bereich = "lane:Mid" }
+wellen = { Top = { zustand = "GROSS_ZU_DIR", unsere = 1, ihre = 9 }, Mid = { zustand = "MITTE", unsere = 4, ihre = 4 } }
+mitspieler = [
+  { champion = "Brand", bereich = "lane:Mid", leben = 1.0 },
+  { champion = "Corki", bereich = "lane:Mid", leben = 1.0 },
+  { champion = "Tryndamere", bereich = "lane:Mid", leben = 1.0 },
+]
+tuerme = { eure = ["Top:aussen", "Top:innen", "Top:Inhib", "Mid:innen", "Mid:Inhib"] }
+objectives = [ { schl = "drache", spawn_in = 120, weg = 25, seite = "andere" }, { schl = "baron", spawn_in = 150, weg = 20, seite = "meine" } ]
+soll = ["SEITENWELLE"]
+satz_enthaelt = ["Top-Welle"]
+warum = "Neun Vasallen laufen an euren aeusseren Top-Turm, die Gruppe steht ohne Ziel Mid: du holst deine Seite."
+
+[[lage]]
+id = "m-gruppe-umwandeln"
+buch = "5"
+modus = "GRUPPE"
+zeit = "28:00"
+ich = { level = 17, leben = 0.7, gold = 2000, bereich = "lane:Mid" }
+wellen = { Mid = { zustand = "ZU_IHM", unsere = 6, ihre = 1 } }
+mitspieler = [
+  { champion = "Brand", bereich = "lane:Mid", leben = 0.6 },
+  { champion = "Corki", bereich = "lane:Mid", leben = 0.8 },
+]
+gegner = [
+  { champion = "Galio", rolle = "MIDDLE", tot_noch = 25 },
+  { champion = "Sona", rolle = "UTILITY", tot_noch = 28 },
+  { champion = "Kai'Sa", rolle = "BOTTOM", tot_noch = 30 },
+  { champion = "Sett", rolle = "TOP", bereich = "lane:Top", seit = 4, abstand = 9000 },
+  { champion = "Fiddlesticks", rolle = "JUNGLE" },
+]
+tuerme = { ihre = ["Mid:aussen", "Mid:innen", "Mid:Inhib", "Top:innen", "Top:Inhib", "Bot:innen", "Bot:Inhib"] }
+soll = ["MIT_GRUPPE", "DRUECKEN"]
+darf_nicht = ["BACK_JETZT"]
+warum = "Drei von ihnen 25-30 s tot, ihr aeusserer Mid-Turm 6 s entfernt: erst umwandeln, das Gold wartet (Buch 5, 8)."
+
+[[lage]]
+id = "m-unterwegs-ziel"
+buch = "5"
+modus = "UNTERWEGS"
+zeit = "21:00"
+ich = { level = 14, leben = 1.0, gold = 400, bereich = "fluss_oben" }
+wellen = { Top = { zustand = "GROSS_ZU_DIR", unsere = 0, ihre = 8 } }
+tuerme = { eure = ["Top:aussen", "Top:innen", "Top:Inhib"] }
+objectives = [ { schl = "drache", spawn_in = 150, weg = 35, seite = "andere" } ]
+soll = ["SEITENWELLE"]
+satz_enthaelt = ["Top-Welle"]
+warum = "Nichts steht an, acht Vasallen laufen an deinen Turm und du bist am naechsten: hol sie."
+
+[[lage]]
+id = "m-verteidigen-klaeren"
+buch = "5"
+modus = "VERTEIDIGEN"
+zeit = "33:00"
+ich = { level = 18, leben = 0.9, gold = 800, bereich = "basis_eigen" }
+wellen = { Mid = { zustand = "GECRASHT_BEI_DIR", unsere = 0, ihre = 7 } }
+inhibs_weg = { eure = ["Mid"] }
+tuerme = { eure = ["Mid:Inhib", "Top:Inhib"] }
+gegner = [
+  { champion = "Sett", rolle = "TOP", bereich = "lane:Top", seit = 3, abstand = 9000 },
+  { champion = "Galio", rolle = "MIDDLE", bereich = "fluss_unten", seit = 6, abstand = 7000 },
+]
+soll = ["WELLE_KLAEREN"]
+satz_enthaelt = ["Mid"]
+warum = "Supervasallen am Mid-Inhibitor-Turm, keiner von ihnen dort, du 10 s weg: klaeren, sonst faellt der Turm."
+
+[[lage]]
+id = "m-verteidigen-halten"
+buch = "5"
+modus = "VERTEIDIGEN"
+zeit = "30:00"
+ich = { level = 17, leben = 0.8, gold = 700, bereich = "lane:Mid" }
+wellen = { Mid = { zustand = "GECRASHT_BEI_DIR", unsere = 1, ihre = 6 } }
+mitspieler = [ { champion = "Brand", bereich = "lane:Mid", leben = 0.7 }, { champion = "Corki", bereich = "lane:Mid", leben = 0.9 } ]
+gegner = [
+  { champion = "Sett", rolle = "TOP", bereich = "lane:Mid", seit = 0, abstand = 1400 },
+  { champion = "Galio", rolle = "MIDDLE", bereich = "lane:Mid", seit = 0, abstand = 1300 },
+  { champion = "Kai'Sa", rolle = "BOTTOM", bereich = "lane:Mid", seit = 0, abstand = 1600 },
+  { champion = "Sona", rolle = "UTILITY", bereich = "lane:Mid", seit = 0, abstand = 1500 },
+  { champion = "Fiddlesticks", rolle = "JUNGLE", bereich = "lane:Mid", seit = 0, abstand = 1700 },
+]
+tuerme = { eure = ["Mid:innen", "Mid:Inhib"] }
+soll = ["HALTEN_UNTER_TURM"]
+darf_nicht = ["MIT_GRUPPE", "REIN", "DRUECKEN"]
+warum = "Drei gegen fuenf am inneren Mid-Turm: hinter dem Turm bleiben, nur klaeren, was kommt."
+
+[[lage]]
+id = "m-horten-gruppe"
+buch = "5"
+modus = "GRUPPE"
+zeit = "26:30"
+ich = { level = 16, leben = 0.8, gold = 3000, bereich = "lane:Mid" }
+wellen = { Mid = { zustand = "GECRASHT_BEI_IHM", unsere = 3, ihre = 0 } }
+mitspieler = [ { champion = "Brand", bereich = "lane:Mid", leben = 0.8 }, { champion = "Corki", bereich = "lane:Mid", leben = 0.9 } ]
+objectives = [ { schl = "drache", spawn_in = 140, weg = 25, seite = "andere" } ]
+soll = ["BACK_JETZT"]
+warum = "3000 Gold im Beutel, nichts steht an, Mid-Welle drin: jetzt back (Buch 3, Hortregel)."
+
+[[lage]]
+id = "m-antwort-staerker"
+buch = "5"
+modus = "SEITE"
+zeit = "22:00"
+ich = { level = 14, leben = 0.9, gold = 600, tp_in = 0, bereich = "lane:Top" }
+wellen = { Top = { zustand = "ZU_IHM", unsere = 6, ihre = 2 } }
+antwort_kraft = 0.8
+gegner = [
+  { champion = "Sett", rolle = "TOP", bereich = "lane:Top", seit = 6, abstand = 4000 },
+  { champion = "Fiddlesticks", rolle = "JUNGLE", bereich = "fluss_unten", seit = 5 },
+  { champion = "Kai'Sa", rolle = "BOTTOM", bereich = "lane:Bot", seit = 3 },
+  { champion = "Sona", rolle = "UTILITY", bereich = "lane:Bot", seit = 3 },
+]
+tuerme = { ihre = ["Top:innen", "Top:Inhib"] }
+darf_nicht = ["DRUECKEN"]
+warum = "Sett schlaegt dich 1 gegen 1 und kommt gerade: nicht auf seinen Turm (Split-Regel 3.1, Punkt 2)."

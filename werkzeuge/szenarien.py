@@ -17,7 +17,8 @@ alle halten; sonst uebersprungen. Am Ende die Quote.
                                   [--kern alt|schatten|neu] [--konstruiert]
 
 --lage zeigt je Szenario die nachgespielte Lage neben der aus dem Szenario (Bestaetigung, Schritt 1).
---kern wie beim Coach (Default neu: der Kern spricht in LANE, BASIS, TOT).
+--kern wie beim Coach (Default neu: der Kern spricht in LANE, BASIS, TOT und seit Schritt 4 in SEITE, GRUPPE,
+UNTERWEGS, VERTEIDIGEN).
 --konstruiert prueft die konstruierten Lagen (tests/szenarien/konstruiert/, Buch 1 6.2) statt der Aufnahmen.
 """
 from __future__ import annotations
@@ -50,15 +51,31 @@ def fenster(sz: dict) -> tuple[float, float]:
     return t - 2, t + 15
 
 
-def text_pruefen(sz: dict, texte: list[tuple[float, str]], champions) -> list[str]:
-    """Die Textteile gegen gesprochene Saetze (oder eine Antwort). Rueckgabe: Verstoesse."""
+def stehende_ansage(lauf: ns.Lauf, von: float) -> tuple[float, str] | None:
+    """Die Kern-Ansage, die bei `von` noch gilt: vorher gesprochen (kern:<Art>), und der Plan hatte seitdem in jedem
+    Takt diese Art. Der Kern sagt sein Ziel einmal und schweigt, solange du dorthin laeufst (Buch 5, Kapitel 2) - fuer
+    muss_nennen_eins zaehlt sie wie gesagt (3632: "Mid-Inhibitor-Turm jetzt" um 36:13, der Plan haelt bis 36:47)."""
+    vorher = [a for a in lauf.gesagt if a.schluessel.startswith("kern:") and ns.gesprochen_um(a) < von]
+    if not vorher:
+        return None
+    a = vorher[-1]
+    t, art = ns.gesprochen_um(a), a.schluessel.split(":", 1)[1]
+    takte = [x for x in lauf.takte if t <= x.zeit <= von]
+    if not takte or any(x.plan != art for x in takte):
+        return None
+    return t, a.text
+
+
+def text_pruefen(sz: dict, texte: list[tuple[float, str]], champions, stehend: tuple | None = None) -> list[str]:
+    """Die Textteile gegen gesprochene Saetze (oder eine Antwort). Rueckgabe: Verstoesse. `stehend`: die noch
+    geltende Kern-Ansage von vor dem Fenster - zaehlt nur fuer muss_nennen_eins."""
     aus = []
     for verboten in sz.get("darf_nicht_sagen", []):
         for t, s in texte:
             if verboten.lower() in s.lower():
                 aus.append(f"darf_nicht_sagen '{verboten}' - {ns.uhr(t)} \"{s[:110]}\"")
                 break
-    if sz.get("muss_nennen_eins") and not any(w.lower() in s.lower() for _, s in texte
+    if sz.get("muss_nennen_eins") and not any(w.lower() in s.lower() for _, s in texte + ([stehend] if stehend else [])
                                                   for w in sz["muss_nennen_eins"]):
         aus.append(f"muss_nennen_eins {sz['muss_nennen_eins']} - nichts davon gesagt")
     if sz.get("muss_ziel") and not any(hat_ziel(s, champions) for _, s in texte):
@@ -191,7 +208,8 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                 teile = [k for k in ("darf_nicht_sagen", "muss_nennen_eins", "muss_ziel") if sz.get(k)]
                 if teile:
                     geprueft += 1
-                    verstoesse += text_pruefen(sz, texte, lauf.champions)
+                    stehend = stehende_ansage(lauf, von) if kern != "alt" else None
+                    verstoesse += text_pruefen(sz, texte, lauf.champions, stehend)
                 if "kehrtwenden_max" in sz:
                     geprueft += 1
                     kw = ns.kehrtwenden(lauf, von, bis)

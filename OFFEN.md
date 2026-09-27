@@ -17,12 +17,24 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
-**Buch 0, Schritt 3 umgesetzt** (`buecher/00_entscheidungskern.md`, Kapitel 13; Buch 1 Welle, Buch 3 Recall/Kauf):
-in LANE, BASIS und TOT entscheidet und spricht der Kern (`--kern neu` ist Default) - Plan statt Reflex, Gefahr als
-Wahrscheinlichkeit, Welle als Plan-Schritt, Kauf mit Namen und Ziel, Bestaetigungen. Zahlen und Abweichungen in
-`buecher/messungen.md`. Jetzt: Carlos spielt echte Partien mit Stimme (Coach neu starten) und haelt Momente per
-"Notiz ..." fest; danach Schritt 4 (SEITE, GRUPPE, UNTERWEGS, VERTEIDIGEN). Schritte 1 (fd59e03) und 2 (382ce9f)
-sind erledigt.
+**Buch 0, Schritt 4 umgesetzt** (Buch 5, Mid-Game Top): der Kern entscheidet und spricht jetzt auch in SEITE,
+GRUPPE, UNTERWEGS, VERTEIDIGEN - Karten-Rechnung (Turm, Seitenwelle, Gruppe/TP, Welle rein und rotieren), Umwandeln
+nach gewonnenem Kampf bis zum Nexus, Schweigen wenn du schon hinlaeufst, Bestaetigungen aus Kapitel 9. Zahlen und
+Abweichungen in `buecher/messungen.md`. Jetzt: Carlos spielt echte Partien (Coach neu starten) und haelt Momente
+nach 14:00 per "Notiz ..." fest (Buch 5, 11.3); danach Schritt 5 (OBJECTIVE, KAMPF). Schritte 1-3 sind erledigt.
+
+Offen aus Schritt 4:
+- **Ungefragte Ansagen <= 50 je 30 min nicht erreicht** (102112 56, 133930 88, 140253 61): der Kern allein liegt
+  darunter, der Rest ist das alte System im Modus OBJECTIVE (19 bzw. 26 Ansagen) - geht mit Schritt 5 an den Kern.
+- 9.4 Punkt 1 in den Aufnahmen vom 26.09. (10 Stellen): alte Regeln, wenn die Minimap Riven > 10 s nicht findet
+  (kein Modus = keine Sperre). "Schieb die Welle in seinen Turm" (`_lane_tot`, `_gold`, `jetzt:drache`) ohne Lane -
+  mit Schritt 8 weg oder vorher die Lane in den Satz.
+- Lane-Phase 133930: 1,21 Ansagen je 30 s (Abnahme Schritt 3: <= 1) - ansehen.
+- Aus Partie 144655 (Carlos 27.09., 14:46): **Stimme stottert / bricht nach jedem Wort ab** (6:28, 6:51, 10:11) und
+  **keine Flash-Timer auf dem Dashboard** (10:11) - beides nicht untersucht. (Viego-"Partie vorbei" und falsches
+  Gegner-AFK sind behoben, messungen.md.)
+- Alter Zielsatz "fruehestens in 0 Sekunden kann einer von ihnen dort sein" (komponist.ziel_satz, BASIS-Ziel ohne
+  Karten-Ziel) - bei 0 den Grund weglassen.
 
 Offen aus Schritt 3:
 - **Wellen-Eichung (Buch 1, 1.4) nicht erreicht** (Nachtrag in messungen.md): Icon+Ring-Maske und behaltene

@@ -36,9 +36,15 @@ def lane_von(m) -> str:
     return m.meine_lane or "Top"
 
 
-def objectives_meine_seite(m) -> list:
-    """Top: Larven, Herold, Baron; Bot: Drache; Mid: alle (Buch 1 3.3: "auf deiner Kartenseite")."""
-    lane = lane_von(m)
+def welle_name(m, lane: str) -> str:
+    """"deine Top-Welle" nur auf deiner eigenen Lane - auf einer anderen "die Bot-Welle" (Buch 5, 3.2)."""
+    return f"deine {lane}-Welle" if lane == lane_von(m) else f"die {lane}-Welle"
+
+
+def objectives_meine_seite(m, lane: str | None = None) -> list:
+    """Top: Larven, Herold, Baron; Bot: Drache; Mid: alle (Buch 1 3.3: "auf deiner Kartenseite"). `lane`: die Lane,
+    auf der du gerade stehst (Seitenlane nach der Lane-Phase), sonst deine."""
+    lane = lane or lane_von(m)
     if lane == "Top":
         return [o for o in m.objectives if o.schl in OBEN]
     if lane == "Bot":
@@ -183,8 +189,11 @@ def zurueck(m, cfg: dict, modus: str, gruende: list[BackGrund]) -> list[Handlung
         else:
             gew, schritte, dauer = 0.0, [f"zurück zu {ort}"], weg
             kosten = 0.5 * wert.wellenwert(m.zeit, cfg) if vorn and modus == "LANE" else 0.0
-        h = Handlung("ZURUECK", Ziel("ort", ort, None, weg), modus, dauer, gewinn=gew, kosten=kosten, gefahr_t=weg,
-                     schutz=cfg["gefahr"]["rueckzug_faktor"], schritte=schritte)
+        # stehst du schon dort ("Bleib an ..."), laeufst du nicht weg: das Risiko gilt ueber das normale Fenster
+        dort = weg <= 4.0
+        h = Handlung("ZURUECK", Ziel("ort", ort, None, weg), modus, dauer, gewinn=gew, kosten=kosten,
+                     gefahr_t=max(weg, cfg["gefahr"]["fenster_s"]) if dort else weg,
+                     schutz=1.0 if dort else cfg["gefahr"]["rueckzug_faktor"], schritte=schritte)
         h.daten.update(nur_bei_gefahr=True, ort=ort, gruende=[x.text for x in gruende] if mit_back else [])
         if mit_back:
             h.schritt_saetze[1] = "Jetzt back: " + back_grund_text(gruende, 1) + "."
@@ -243,9 +252,9 @@ def gegner_fenster(g, m) -> float | None:
     return g.ankunft
 
 
-def turm_ihr_name(m) -> str:
-    """'den äußeren Top-Turm' - sein vorderster stehender Turm deiner Lane."""
-    lane = lane_von(m)
+def turm_ihr_name(m, lane: str | None = None) -> str:
+    """'den äußeren Top-Turm' - sein vorderster stehender Turm dieser Lane (sonst deiner)."""
+    lane = lane or lane_von(m)
     p = m.p
     if p is not None and p.mein_team:
         from ...zustand import gegenteam

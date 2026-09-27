@@ -32,12 +32,33 @@ def p_seite(g, m, cfg: dict) -> float:
     fehlt (der Brunnen steckt schon in seiner Ankunft); Mid/Support ab 4:00 und alle nach der Lane-Phase: roam_basis."""
     rolle = g.s.rolle
     if ist_lane(g, m):
-        return 1.0
+        # in der Lane-Phase ist er auf deiner Lane, fehlt er, kommt er zu dir; danach nur, wenn du auf deiner Lane
+        # stehst - sonst wandert er wie alle (Schritt 4, messungen.md)
+        if m.lane_phase or m.bereich == "lane_eigen":
+            return 1.0
+        return _gesehene_seite(g, m, cfg)
     if rolle == "JUNGLE":
         return m.p_jungler if m.p_jungler is not None else 0.5
-    if rolle in ("MIDDLE", "UTILITY") and m.zeit >= 240:
+    if m.lane_phase:
+        return cfg["roam_basis"] if rolle in ("MIDDLE", "UTILITY") and m.zeit >= 240 else 0.0
+    return _gesehene_seite(g, m, cfg)
+
+
+def _gesehene_seite(g, m, cfg: dict) -> float:
+    """Nach der Lane-Phase wie beim Jungler (jungle.wahrscheinlich): die Seite seiner letzten Sichtung, verblasst ueber
+    90 s; nie gesehen oder ohne Ort roam_basis (Schritt 4, messungen.md - 102112, 35:35: Kai'Sa vor 7 s unten, Sona und
+    Sett unten, du allein im unteren Fluss; mit roam_basis fuer alle war das "keine Gefahr")."""
+    if g.pos is None or g.seit is None or g.seit > UNBEKANNT_AB:
         return cfg["roam_basis"]
-    return 0.0 if m.lane_phase else cfg["roam_basis"]
+    from ..bewertung import BREITE, HOEHE
+    from ..jungle import seite
+    from .merkmale import meine_seite
+    dort = seite(g.pos[0] / BREITE, 1.0 - g.pos[1] / HOEHE)
+    bleibt = max(0.35, 1.0 - g.seit / 90)
+    meine = meine_seite(m)
+    if meine is None:
+        return bleibt
+    return bleibt if dort == meine else 1.0 - bleibt
 
 
 def _weg_vom_brunnen(g, m) -> float:

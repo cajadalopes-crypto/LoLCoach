@@ -10,7 +10,7 @@ danach programmiert, und werden in dieser Reihenfolge gelesen und umgesetzt.
 | 3 | [Recall, Tempo, Kauf](03_recall_tempo_kauf.md) | fertig (27.09.2026), umgesetzt in Schritt 3 |
 | 2 | Lane: Trading und Top-Matchups | kommt in Schritt 3 |
 | 4 | Jungler-Wahrscheinlichkeit und Sicht | kommt in Schritt 3 |
-| 5 | Mid-Game als Toplaner | kommt vor Schritt 4 |
+| 5 | [Mid-Game als Toplaner](05_midgame_top.md) | fertig (27.09.2026), umgesetzt in Schritt 4 |
 | 6 | Objectives 2026 | kommt vor Schritt 5 |
 | 7 | Kampf und Teamfight | kommt vor Schritt 5 |
 | 8–10 | Riven, Camille, Graves | danach |

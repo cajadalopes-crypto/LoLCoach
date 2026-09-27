@@ -76,11 +76,16 @@ def wohin(m, cfg: dict, modus: str) -> Handlung:
         h = Handlung("WOHIN", Ziel("lane", lane), modus, 20.0, grund=grund, satz=f"Zurück nach {lane}: {grund}.")
         h.daten["kurz"] = lane
         return h
-    # nach der Lane-Phase: das beste Ziel von deiner Position (bis Buch 5 bewertung.ziele)
+    # nach der Lane-Phase: das beste Ziel der Karten-Rechnung (Buch 5, Kapitel 2) - ein Turm oder eine Seitenwelle
+    if (h := _karten_ziel(m, cfg, modus)) is not None:
+        return h
+    # sonst das Ziel der alten Bewertung; in den Kauf-Satz nur sein Grund (133930, 17:57: "Kauf ..., dann auf den
+    # Bot-Inhibitor-Turm: Geh auf den Bot-Inhibitor-Turm, ...")
     z = komponist.bestes_ziel(b) if b.partie is not None and b.pos is not None else None
     if z is not None:
         satz = komponist.ziel_satz(b, z)
-        h = Handlung("WOHIN", Ziel("turm", z.name, z.pos, z.weg), modus, z.weg, grund=satz, satz=satz)
+        grund = satz.removeprefix(f"Geh {z.lane} und ") if z.art == "verteidigen" else satz.split(": ", 1)[-1]
+        h = Handlung("WOHIN", Ziel("turm", z.name, z.pos, z.weg), modus, z.weg, grund=grund.rstrip("."), satz=satz)
         h.daten["kurz"] = f"auf {z.name}" if z.art == "turm" else f"nach {z.lane}"
         return h
     for o in sorted(m.objectives, key=lambda o: o.spawn_in):
@@ -94,6 +99,30 @@ def wohin(m, cfg: dict, modus: str) -> Handlung:
     grund = f"deine {lane}-Welle wartet"
     h = Handlung("WOHIN", Ziel("lane", lane), modus, 30.0, grund=grund, satz=f"Geh nach {lane}: {grund}.")
     h.daten["kurz"] = f"nach {lane}"
+    return h
+
+
+def _karten_ziel(m, cfg: dict, modus: str) -> Handlung | None:
+    """Buch 5, Kapitel 2 aus der Basis: der Turm (DRUECKEN, ohne Split-Regel - du bist nicht auf einer Seite) oder
+    die Seitenwelle mit dem hoechsten EV, wenn er positiv ist; sonst None (dann das alte Ziel)."""
+    from . import karte
+    ziele = karte.turm_handlungen(m, cfg, modus, "DRUECKEN", split=False)
+    for lane, w in (m.seitenwellen or {}).items():
+        if (h := karte.seitenwelle(m, cfg, modus, lane, w)) is not None:
+            ziele.append(h)
+    for h in ziele:
+        wert.bewerte(h, m, cfg)
+    beste = max(ziele, key=lambda h: h.ev, default=None)
+    if beste is None or beste.ev <= 0:
+        return None
+    if beste.art == "SEITENWELLE":
+        lane = beste.daten["lane"]
+        kurz, satz = f"zur {lane}-Welle", beste.satz
+    else:
+        kurz = f"auf {beste.ziel.name}"
+        satz = f"Geh {kurz}: {beste.grund}."
+    h = Handlung("WOHIN", beste.ziel, modus, beste.dauer, grund=beste.grund, satz=satz)
+    h.daten["kurz"] = kurz
     return h
 
 

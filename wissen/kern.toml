@@ -7,6 +7,7 @@ stand = "Buch 0, 27.09.2026 - Startwerte (Schaetzung), an Szenarien kalibrieren"
 [modus]
 stand = "Buch 0 Kapitel 7.7, Schritt 2"
 hysterese_s = 1.5
+ort_halten_s = 10               # nicht im Buch (Schritt 4, 4.3): so lange bleibt der Modus, wenn die Minimap dich verliert
 kampf_radius = 1000
 kampf_ende_s = 3.0
 lane_phase_bis_s = 840          # 14:00, wie makro.toml [sicht] lane_phase_bis und der Wellentakt-Wechsel in mechanik.toml
@@ -158,3 +159,35 @@ kauf_sprung = 250
 stand = "Buch 3, 27.09.2026"
 abstand_s = 180
 max_woerter = 8
+
+[mitte]
+stand = "Buch 5, 27.09.2026 - Startwerte (Schaetzung), an Szenarien kalibrieren"
+seitenwelle_min = 6
+seitenwelle_frei_s = 30
+seitenwelle_turmschutz = 150    # GE: verhinderter Platten-/Turmschaden
+turm_dauer_s = { aussen = 25, innen = 20, Inhib = 18, nexus = 15 }   # allein, grob; Buch 8-10 je Champion
+kristall_faktor = 1.3
+rotation_vorlauf_s = 60
+split_kraft_min = 1.2
+tiefe_unbekannt_max = 1
+tiefe_woanders_min = 3
+teamkampf_radius = 1500
+tp_kampf_rest_s = 6
+tp_zu_fuss_ab_s = 25
+umwandeln_ueberzahl = 2
+umwandeln_fenster_min_s = 15
+ohne_plan_s = 20
+# nicht im Buch, Schritt 4 (messungen.md): "woanders" heisst > 6000 von dir und <= 10 s alt (Buch 5, 1) ...
+woanders_abstand = 6000
+woanders_alt_s = 10
+# ... ein Seitenwellen-Turm ist "frei", wenn kein Mitspieler naeher als das an der Front steht (Buch 5, 1)
+seitenwelle_mitspieler_abstand = 3000
+# ... Teamkampf: gilt noch so lange nach dem letzten Kampfmerkmal; Leben faellt = ein Mitspieler verliert in 3 s so viel
+teamkampf_nachlauf_s = 5
+teamkampf_leben_faellt = 0.1
+# ... Platten, die an einem Turm nach der Lane-Phase noch angenommen werden, wenn die Minimap sie nicht liest
+platten_annahme = 2
+# ... Gruppe / Objective: so viel ist ein Teamkampf wert, den du mit entscheidest (je Gegner im Kampf)
+kampf_wert_je_gegner = 300
+# ... mit der Gruppe faellt ein Turm schneller (je Mitspieler dabei)
+gruppe_turm_faktor = 0.6

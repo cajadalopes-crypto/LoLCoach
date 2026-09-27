@@ -54,6 +54,10 @@ Seit Schritt 3 ist `neu` Default: in LANE, BASIS und TOT entscheidet und spricht
 `kern/modi/`, Wert und Gefahr in `wert.py`/`gefahr.py`, gehaltener Plan in `plan.py`, Budget in `sprechen.py`;
 Welle nach Buch 1, Recall/Kauf nach Buch 3), die alten Regeln schweigen dort; `schatten` = das Regelwerk spricht,
 der Kern schreibt "wuerde sagen"; `alt` = Stand Schritt 2. Schwellen und Startwerte: `wissen/kern.toml`.
+Seit Schritt 4 (Buch 5) auch in SEITE, GRUPPE, UNTERWEGS, VERTEIDIGEN (`kern.KERN_MODI`): die Karten-Rechnung in
+`kern/modi/karte.py` (Turm, Seitenwelle, Gruppe/TP, Welle rein und rotieren, Umwandeln bis zum Nexus). OBJECTIVE und
+KAMPF spricht bis Schritt 5 noch das alte System. `LOLCOACH_KERN_SCHRITT=3` gibt fuer Gegenproben den Stand von
+Schritt 3. Konstruierte Lagen: `tests/szenarien/konstruiert/*.toml` (`kern/testlage.py`, `tests/test_kern.py`).
 Minimap-Farben sind relativ (dein Team blau) - im Coach heisst `blau` Team ORDER; `welle.zustaende` und der
 Plattenleser drehen fuer die rote Seite um.
 
