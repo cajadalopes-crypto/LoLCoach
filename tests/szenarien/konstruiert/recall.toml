@@ -1,0 +1,170 @@
+# Konstruierte Lagen zu Buch 3 (Recall, Tempo, Kauf). Format: lane.toml (Kopfkommentar).
+# Zusaetzliche Felder:
+#   modus     = "BASIS" / "TOT" (fehlt = "LANE")
+#   respawn_in = s (nur TOT)
+#   inventar  = { kontrollauge = bool (false), frei = Plaetze (3) }
+#   vorher    = { welle = { zustand = ... } }  - Welle deiner Lane beim Recall (fuer WOHIN / TP)
+#   drache    = { spawn_in = s } - Drache (andere Kartenseite) fuer die TP-Regel
+
+[[lage]]
+id = "k-back-40-prozent"
+buch = "3"
+zeit = "5:45"
+ich = { level = 6, leben = 0.39, gold = 1537, flash_in = 30 }
+welle = { zustand = "ZU_IHM", unsere = 7, ihre = 0, front = 0.57, trend = 0.03 }
+kanone_in = 45
+lane_gegner = { level = 5, abstand = 2500 }
+jungler = { p_meine_seite = 0.7, seit = 8 }
+kauf = { lohnt = true }
+soll = ["BACK_JETZT", "WELLE_REIN_UND_BACK"]
+darf_nicht = ["TRADE", "ALL_IN"]
+warum = "40 %, kein Flash, Gold fuer ein Bauteil, der Jungler war eben oben (102112, 5:45)."
+
+[[lage]]
+id = "k-kein-back-unter-schwelle"
+buch = "3"
+zeit = "4:20"
+ich = { level = 4, leben = 0.85, gold = 600 }
+welle = { zustand = "MITTE", unsere = 4, ihre = 4, front = 0.5, trend = 0.0 }
+kanone_in = 40
+lane_gegner = { level = 4, abstand = 1200 }
+jungler = { p_meine_seite = 0.3, seit = 30 }
+kauf = { lohnt = false }
+darf_nicht = ["BACK_JETZT", "WELLE_REIN_UND_BACK"]
+warum = "600 Gold, fast volles Leben: kein Grund zurueck (Riven: nicht unter 800, ausser Leben < 30 %)."
+
+[[lage]]
+id = "k-back-leben-unter-30"
+buch = "3"
+zeit = "4:20"
+ich = { level = 4, leben = 0.25, gold = 500 }
+welle = { zustand = "LEER" }
+kanone_in = 40
+lane_gegner = { level = 4, abstand = 2600 }
+jungler = { p_meine_seite = 0.3, seit = 30 }
+kauf = { lohnt = false }
+soll = ["BACK_JETZT"]
+warum = "25 % Leben, beide Wellen weg: back ohne Verlust, auch mit wenig Gold."
+
+[[lage]]
+id = "k-horten"
+buch = "3"
+zeit = "12:30"
+ich = { level = 11, leben = 0.9, gold = 2600 }
+welle = { zustand = "GECRASHT_BEI_IHM", unsere = 4, ihre = 0, front = 0.66, trend = 0.0 }
+kanone_in = 30
+lane_gegner = { level = 10, abstand = 2000 }
+jungler = { p_meine_seite = 0.3, seit = 30 }
+kauf = { lohnt = true, kern_fertig = true }
+soll = ["BACK_JETZT"]
+warum = "2600 Gold im Beutel kaempfen nicht mit - Welle ist drin, jetzt ausgeben."
+
+[[lage]]
+id = "k-nicht-back-gegner-nah"
+buch = "3"
+zeit = "6:50"
+ich = { level = 6, leben = 0.35, gold = 1400 }
+welle = { zustand = "MITTE", unsere = 3, ihre = 3, front = 0.5 }
+kanone_in = 20
+lane_gegner = { level = 6, leben = 0.9, abstand = 900, kommt_naeher = true }
+jungler = { p_meine_seite = 0.3, seit = 30 }
+kauf = { lohnt = true }
+soll = ["ZURUECK"]
+darf_nicht = ["BACK_JETZT"]
+warum = "Sett 900 entfernt und kommt: im 8-s-Kanal erreicht er dich. Erst raus, dann back."
+
+[[lage]]
+id = "k-gegner-gebackt"
+buch = "3"
+zeit = "6:20"
+ich = { level = 6, leben = 0.7, gold = 900 }
+welle = { zustand = "ZU_IHM", unsere = 6, ihre = 2, front = 0.56, trend = 0.03 }
+kanone_in = 25
+lane_gegner = { level = 6, im_brunnen = true }
+jungler = { p_meine_seite = 0.2, seit = 25 }
+kauf = { lohnt = false }
+soll = ["WELLE_REIN_UND_BACK", "PLATTEN"]
+darf_nicht = ["FARMEN"]
+warum = "Sett ist gebackt: Welle in seinen Turm (er verliert Vasallen), Platte, dann selbst back - Tempo ohne Verlust."
+
+[[lage]]
+id = "k-back-vor-larven"
+buch = "3"
+zeit = "6:45"
+ich = { level = 7, leben = 0.6, gold = 1100 }
+welle = { zustand = "GECRASHT_BEI_IHM", unsere = 4, ihre = 0, front = 0.66 }
+kanone_in = 46
+lane_gegner = { level = 6, abstand = 2000 }
+jungler = { p_meine_seite = 0.3, seit = 30 }
+kauf = { lohnt = true }
+objective = { schl = "larven", spawn_in = 75, seite = "meine", weg = 20 }
+soll = ["BACK_JETZT"]
+warum = "Larven in 75 s, Welle drin, Gold da: jetzt back - voll und mit Item zurueck vor dem Spawn."
+
+[[lage]]
+id = "k-kein-back-kurz-vor-larven"
+buch = "3"
+zeit = "7:35"
+ich = { level = 7, leben = 0.9, gold = 1100 }
+welle = { zustand = "MITTE", unsere = 4, ihre = 4, front = 0.5 }
+kanone_in = 26
+lane_gegner = { level = 7, abstand = 1300 }
+jungler = { p_meine_seite = 0.5, seit = 20 }
+kauf = { lohnt = true }
+objective = { schl = "larven", spawn_in = 25, seite = "meine", weg = 15 }
+darf_nicht = ["BACK_JETZT"]
+soll = ["VORBEREITEN_OBJECTIVE", "STAPELN"]
+warum = "Larven in 25 s, du bist voll: bleiben und helfen, nicht jetzt back (Buch 3, 2.2)."
+
+[[lage]]
+id = "k-basis-kauf-und-ziel"
+buch = "3"
+modus = "BASIS"
+zeit = "6:00"
+ich = { level = 6, leben = 1.0, gold = 1600 }
+inventar = { kontrollauge = false, frei = 3 }
+vorher = { welle = { zustand = "GECRASHT_BEI_IHM" } }
+kanone_in = 30
+kauf = { lohnt = true }
+soll = ["KAUFEN"]
+satz_enthaelt = ["Kontroll-Auge"]
+warum = "In der Basis: Items mit Namen, Kontroll-Auge dazu (keins im Inventar, genug Rest), dann das Ziel."
+
+[[lage]]
+id = "k-tot-wiedereinstieg"
+buch = "3"
+modus = "TOT"
+respawn_in = 7
+zeit = "11:00"
+ich = { level = 10, leben = 0.0, gold = 1250 }
+inventar = { kontrollauge = true, frei = 2 }
+kanone_in = 15
+kauf = { lohnt = true }
+soll = ["KAUFEN"]
+warum = "8 s vor dem Respawn einmal: Kauf und wohin danach."
+
+[[lage]]
+id = "k-tp-zur-lane"
+buch = "3"
+modus = "BASIS"
+zeit = "7:10"
+ich = { level = 7, leben = 1.0, gold = 200, tp_in = 0 }
+vorher = { welle = { zustand = "GROSS_ZU_DIR", unsere = 1, ihre = 9, front = 0.40 } }
+kanone_in = 20
+drache = { spawn_in = 250 }
+kauf = { lohnt = false }
+soll = ["WOHIN_TP_LANE"]
+warum = "Neun Vasallen laufen in deinen Turm, TP ist bereit, der Drache erst in 4 Minuten: TP auf die Welle."
+
+[[lage]]
+id = "k-kein-tp-drache-bald"
+buch = "3"
+modus = "BASIS"
+zeit = "7:10"
+ich = { level = 7, leben = 1.0, gold = 200, tp_in = 0 }
+vorher = { welle = { zustand = "GROSS_ZU_DIR", unsere = 1, ihre = 9, front = 0.40 } }
+kanone_in = 20
+drache = { spawn_in = 60 }
+kauf = { lohnt = false }
+darf_nicht = ["WOHIN_TP_LANE"]
+warum = "Drache in 60 s: das TP wird fuer den Kampf gebraucht (Abklingzeit 300 s) - laufen."

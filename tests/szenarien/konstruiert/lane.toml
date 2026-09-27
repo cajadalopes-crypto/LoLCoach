@@ -1,0 +1,199 @@
+# Konstruierte Lagen zu Buch 1 (Welle) - Modus LANE, Top, Champion Riven.
+# Kein Nachspielen: kern/testlage.py baut aus den Feldern Merkmale (+ minimale Bewertung) und ruft
+# kern/modi/lane.py + wert.py + plan.py direkt (erster Takt, kein Vorplan).
+#
+# Felder (fehlt eins, gilt der Normalwert in Klammern):
+#   id, buch, zeit ("m:ss"), warum
+#   ich          = { champion ("Riven"), level, leben (0..1), gold, flash_in (s; 0 = bereit), tp_in (s; fehlt = kein TP) }
+#   welle        = { zustand, unsere, ihre, front, trend }  - zustand wird DIREKT gesetzt (Buch 1, 1.4);
+#                  die Rohwerte stehen nur zur Anschauung/fuer den Wert. front aus deiner Sicht (0 = deine Basis).
+#   kanone_in    = s, bis die naechste Kanone in der Lane ist (Wellen-Uhr)
+#   lane_gegner  = { champion ("Sett"), level, leben (fehlt = unbekannt), abstand, sichtbar (true), tot_noch (s),
+#                    im_brunnen (false), kommt_naeher (false), kraefte (dein kraefte()[0] gegen ihn; fehlt = 0) }
+#   jungler      = { champion ("Fiddlesticks"), p_meine_seite (0..1), seit (s), abstand (fehlt = unbekannt) }
+#   kauf         = { lohnt (bool), kern_fertig (bool) }  - statt kaufplan (der haengt am Lexikon-Build)
+#   objective    = { schl, spawn_in (s; 0 = lebt), seite ("meine"/"andere"), weg (s) }
+#   soll         = mindestens eine dieser Plan-Arten
+#   darf_nicht   = keine dieser Plan-Arten
+#   satz_enthaelt = (optional) jeder dieser Texte steht im gesprochenen Satz (Gross/klein egal)
+
+[[lage]]
+id = "k-crash-dann-back"
+buch = "1"
+zeit = "5:40"
+ich = { level = 6, leben = 0.6, gold = 1400 }
+welle = { zustand = "ZU_IHM", unsere = 6, ihre = 2, front = 0.55, trend = 0.03 }
+kanone_in = 40
+lane_gegner = { level = 5, leben = 0.7, abstand = 1200 }
+jungler = { p_meine_seite = 0.3, seit = 40 }
+kauf = { lohnt = true }
+soll = ["WELLE_REIN_UND_BACK"]
+darf_nicht = ["BACK_JETZT", "STAPELN", "ALL_IN"]
+warum = "Gold fuer ein Bauteil, deine Welle wandert zu ihm: erst crashen, dann back - sonst verlierst du sie."
+
+[[lage]]
+id = "k-kanone-mitnehmen"
+buch = "1"
+zeit = "5:40"
+ich = { level = 6, leben = 0.6, gold = 1400 }
+welle = { zustand = "ZU_IHM", unsere = 6, ihre = 2, front = 0.55, trend = 0.03 }
+kanone_in = 10
+lane_gegner = { level = 5, leben = 0.7, abstand = 1200 }
+jungler = { p_meine_seite = 0.2, seit = 20 }
+kauf = { lohnt = true }
+soll = ["WELLE_REIN_UND_BACK"]
+satz_enthaelt = ["Kanone"]
+warum = "Die Kanone kommt in 10 s und lebt am Turm lange - die noch mitnehmen, dann back."
+
+[[lage]]
+id = "k-back-bei-crash"
+buch = "1"
+zeit = "6:10"
+ich = { level = 6, leben = 0.7, gold = 1350 }
+welle = { zustand = "GECRASHT_BEI_IHM", unsere = 5, ihre = 0, front = 0.66, trend = 0.0 }
+kanone_in = 50
+lane_gegner = { level = 6, abstand = 1600 }
+jungler = { p_meine_seite = 0.3, seit = 30 }
+kauf = { lohnt = true }
+soll = ["BACK_JETZT"]
+darf_nicht = ["WELLE_REIN_UND_BACK", "STAPELN"]
+warum = "Die Welle ist schon drin - das beste Back-Fenster, sie kommt dir entgegen."
+
+[[lage]]
+id = "k-grosse-welle-kommt"
+buch = "1"
+zeit = "7:10"
+ich = { level = 7, leben = 0.7, gold = 1300 }
+welle = { zustand = "GROSS_ZU_DIR", unsere = 1, ihre = 8, front = 0.42, trend = -0.04 }
+kanone_in = 20
+lane_gegner = { level = 7, abstand = 2500 }
+jungler = { p_meine_seite = 0.1, seit = 15, abstand = 9000 }
+kauf = { lohnt = true }
+soll = ["UNTER_TURM_FARMEN"]
+darf_nicht = ["BACK_JETZT", "WELLE_REIN_UND_BACK"]
+warum = "Acht Vasallen laufen in deinen Turm: ein Back jetzt verschenkt sie. Erst unter dem Turm farmen, dann back."
+
+[[lage]]
+id = "k-leben-kritisch-trotz-welle"
+buch = "1"
+zeit = "7:10"
+ich = { level = 7, leben = 0.18, gold = 1300, flash_in = 90 }
+welle = { zustand = "GROSS_ZU_DIR", unsere = 1, ihre = 8, front = 0.42, trend = -0.04 }
+kanone_in = 20
+lane_gegner = { level = 7, leben = 0.8, abstand = 900, kommt_naeher = true }
+jungler = { p_meine_seite = 0.6, seit = 10 }
+soll = ["ZURUECK"]
+darf_nicht = ["UNTER_TURM_FARMEN", "BACK_JETZT"]
+warum = "18 % ohne Flash, Sett kommt: die Welle zaehlt nicht mehr. Erst raus (im Kanal erreicht er dich), dann back."
+
+[[lage]]
+id = "k-stapeln-vor-larven"
+buch = "1"
+zeit = "7:00"
+ich = { level = 7, leben = 0.8, gold = 600 }
+welle = { zustand = "MITTE", unsere = 4, ihre = 4, front = 0.5, trend = 0.0 }
+kanone_in = 31
+lane_gegner = { level = 7, abstand = 1300 }
+jungler = { p_meine_seite = 0.2, seit = 20 }
+kauf = { lohnt = false }
+objective = { schl = "larven", spawn_in = 60, seite = "meine", weg = 18 }
+soll = ["STAPELN"]
+satz_enthaelt = ["Kanone"]
+warum = "Larven in 60 s auf deiner Seite: bis zur Kanone stapeln, dann crashen - Sett muss waehlen, Welle oder Larven."
+
+[[lage]]
+id = "k-nicht-stapeln-jungler-oben"
+buch = "1"
+zeit = "7:00"
+ich = { level = 7, leben = 0.8, gold = 600 }
+welle = { zustand = "MITTE", unsere = 4, ihre = 4, front = 0.5, trend = 0.0 }
+kanone_in = 31
+lane_gegner = { level = 7, abstand = 1300 }
+jungler = { p_meine_seite = 0.7, seit = 15 }
+kauf = { lohnt = false }
+objective = { schl = "larven", spawn_in = 60, seite = "meine", weg = 18 }
+darf_nicht = ["STAPELN", "PLATTEN"]
+warum = "Wer stapelt, steht vorn - und der Jungler ist wahrscheinlich oben. Hier nicht nach vorn."
+
+[[lage]]
+id = "k-freeze-angreifend"
+buch = "1"
+zeit = "9:30"
+ich = { level = 9, leben = 0.9, gold = 500 }
+welle = { zustand = "GEHALTEN_BEI_DIR", unsere = 2, ihre = 5, front = 0.42, trend = 0.0 }
+kanone_in = 25
+lane_gegner = { level = 8, leben = 0.9, abstand = 1400, kraefte = 2.0 }
+jungler = { p_meine_seite = 0.2, seit = 30 }
+kauf = { lohnt = false }
+soll = ["WELLE_HALTEN"]
+satz_enthaelt = ["nach vorn"]
+warum = "Du bist staerker, die Welle steht vor deinem Turm: halten - Sett muss zum Farmen nach vorn zu dir."
+
+[[lage]]
+id = "k-freeze-schuetzend"
+buch = "1"
+zeit = "9:30"
+ich = { level = 8, leben = 0.7, gold = 500 }
+welle = { zustand = "ZU_DIR", unsere = 2, ihre = 5, front = 0.45, trend = -0.02 }
+kanone_in = 25
+lane_gegner = { level = 9, leben = 0.9, abstand = 1400, kraefte = -1.5 }
+jungler = { p_meine_seite = 0.6, seit = 20 }
+kauf = { lohnt = false }
+soll = ["WELLE_HALTEN"]
+satz_enthaelt = ["zu dir"]
+warum = "Schwaecher und der Jungler wahrscheinlich oben: die Welle zu dir kommen lassen, an deinem Turm farmen."
+
+[[lage]]
+id = "k-kein-freeze-vor-objective"
+buch = "1"
+zeit = "7:20"
+ich = { level = 8, leben = 0.9, gold = 500 }
+welle = { zustand = "GEHALTEN_BEI_DIR", unsere = 2, ihre = 5, front = 0.42, trend = 0.0 }
+kanone_in = 10
+lane_gegner = { level = 7, leben = 0.9, abstand = 1400, kraefte = 2.0 }
+jungler = { p_meine_seite = 0.2, seit = 30 }
+kauf = { lohnt = false }
+objective = { schl = "larven", spawn_in = 40, seite = "meine", weg = 20 }
+darf_nicht = ["WELLE_HALTEN"]
+warum = "Larven in 40 s auf deiner Seite: ein Freeze bindet dich an deinen Turm."
+
+[[lage]]
+id = "k-platten-gegner-tot"
+buch = "1"
+zeit = "8:40"
+ich = { level = 8, leben = 0.8, gold = 700 }
+welle = { zustand = "GECRASHT_BEI_IHM", unsere = 5, ihre = 0, front = 0.66, trend = 0.0 }
+kanone_in = 35
+lane_gegner = { level = 7, tot_noch = 22 }
+jungler = { p_meine_seite = 0.1, seit = 10, abstand = 11000 }
+kauf = { lohnt = false }
+soll = ["PLATTEN"]
+satz_enthaelt = ["Platte"]
+warum = "Sett noch 22 s tot, Jungler unten gesehen, fuenf Vasallen tanken den Turm: Platte."
+
+[[lage]]
+id = "k-keine-platten-jungler-oben"
+buch = "1"
+zeit = "8:40"
+ich = { level = 8, leben = 0.4, gold = 1100, flash_in = 60 }
+welle = { zustand = "GECRASHT_BEI_IHM", unsere = 5, ihre = 0, front = 0.66, trend = 0.0 }
+kanone_in = 35
+lane_gegner = { level = 7, tot_noch = 22 }
+jungler = { p_meine_seite = 0.85, seit = 5, abstand = 3000 }
+kauf = { lohnt = true }
+soll = ["BACK_JETZT", "ZURUECK"]
+darf_nicht = ["PLATTEN"]
+warum = "40 %, kein Flash, Jungler vor 5 s 3000 entfernt gesehen: die Platte ist den Tod nicht wert (wie 5:17 in 102112)."
+
+[[lage]]
+id = "k-welle-unbekannt"
+buch = "1"
+zeit = "6:30"
+ich = { level = 6, leben = 0.8, gold = 900 }
+welle = { zustand = "UNBEKANNT" }
+kanone_in = 30
+lane_gegner = { level = 6, abstand = 1500 }
+jungler = { p_meine_seite = 0.3, seit = 30 }
+kauf = { lohnt = false }
+darf_nicht = ["WELLE_REIN_UND_BACK", "STAPELN", "WELLE_HALTEN", "PLATTEN", "UNTER_TURM_FARMEN"]
+warum = "Ohne frische Welle kein Wellen-Rat (Buch 0, 4.3: nicht raten)."
