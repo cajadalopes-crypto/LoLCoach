@@ -139,6 +139,7 @@ nach dem Play?") beantwortet das Kampf-Urteil (`denker.urteil` + `fenster_satz`)
 | Minimap: Ringfarbe | eigenes Team blau / Gegner rot | 0,17-0,43 % falsch (Einzel-Champions) | `minimap_ringprobe.py` |
 | Minimap: eigenes Icon | Kamerarahmen | 99,3-99,7 % im Rahmen | `kamera_rahmen.py` |
 | Flash (eigener) auf der Minimap | HUD | 2 von 7, 0 Fehlalarme (im Kampf liegt das Icon unter dem Gegner) | - |
+| Flash aus einem Icon-Knaeuel (Pruefstand) | bekannte Bahn | 0/1 - Bild fuer Bild: vor dem Flash sauber verfolgt (Guete 0,72), der Landepunkt liegt unter Brands Icon, 22 px daneben: ganz verdeckt, auf keinem Bild zu sehen. Physikalische Grenze, keine Logik; ein Rueckschluss aus dem Verschwinden waere von einem Dash nicht zu trennen (lieber stumm als falsch) | `flash_pruefstand.py` |
 | Jungler-Prognose | naechste Sichtung | 44/60 richtig, Brier 0,183 (Raten 0,250) | `jungler_prognose.py` |
 | Gegner-Ankunft "fruehestens" | Strecken zwischen Sichtungen | vorher 19 % schneller als gerechnet -> jetzt 90 % gedeckt | `gegner_tempo.py` |
 | Kill-Gold | Goldsprung beim eigenen Kill | vorher Median -118 -> jetzt +2 (80 % in 65) | `kill_gold.py` |
