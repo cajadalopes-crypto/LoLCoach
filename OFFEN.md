@@ -17,9 +17,16 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Buch 0, Schritt 1** (`buecher/00_entscheidungskern.md`, Kapitel 13): Messen, nichts am Verhalten aendern -
+`werkzeuge/szenarien.py`, `kennzahlen.py`, `szenario_aus_notizen.py`, Grundlinie in `buecher/messungen.md`,
+Datenluecke 102112 geklaert + Wachhund. Danach: Carlos spielt 2-3 echte Partien (gern `--stumm`) und haelt
+Momente per "Notiz ..." fest; dann Schritt 2 (Modus, Sofortmassnahmen am alten System).
+
 Carlos' Ziel 26.09. (/goal): Challenger-Coach, individuelle Ansagen aus vielen Faktoren, keine
 Standardsaetze; Grundlage `Reasoning/LoL Reasoning.txt` (Entscheidungskette Zustand -> Welle ->
 Prio -> Tempo -> Information -> Gegner-Vorhersage -> Aktionen -> Gegenantwort -> Wert).
+**Die Entscheidungsseite dieses Ziels ist ersetzt durch Buch 0** (Kern: Modus, Handlung, Wert, Plan,
+Sprechen - Schritte 2-8). Die Wahrnehmungspunkte darunter bleiben offen.
 
 - Gegner-Leben vom Bildschirm: laeuft seit 3b71e7d (Balken per gelesenem Namen, in Kill-Rechnung und Fenster-
   Saetzen); nachgeprueft 27.09. gegen die Gegner-Tode (`werkzeuge/gegner_leben_probe.py`): kein falsch
@@ -83,6 +90,8 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
   LIVE PRUEFEN: klingt die
   Stimme auf beiden Ohren, ohne Knacken/Aussetzer, und nicht abgeschnitten am Satzende? Sonst `_Neural._wasapi = False`
   setzen (MME) und melden. Danach `python werkzeuge/verzoegerung_live.py`.
+  [Ab hier bis "klingen die Saetze jetzt knapper": ersetzt durch Buch 0, Kapitel 8-9 (Plan halten, Sprechen,
+  Budget) - nicht mehr live pruefen, sondern ueber Szenarien.]
   Satzlogik aus dem Nachlauf aller drei Partien (83e8923): kein zweites "geh zurueck" 12 s nach dem ersten (ausser
   Gefahr), eine Gefahr bricht die andere erst nach 4 s ab, stirbt ein genannter Gegner, faellt der Satz ("Ach nee"),
   "Geh jetzt zurueck, Ekko und Vex koennen da sein" bricht ab, wenn keiner mehr vor dir am Turm sein kann; ohne
@@ -116,7 +125,8 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
 - NEU 26.09. nachts: (1) jede Ansage protokolliert live ihren ersten Ton und ob sie abgebrochen wurde - nach der
   Partie `python werkzeuge/verzoegerung_live.py` (Warten im Plan vs. Stimme, je Vorrang; das Mass fuer "geisteskrank
   zu spaet"). (2) "Kann ich ihn killen?" / "Soll ich reingehen?" per Sprechtaste antwortet sofort aus dem
-  Kampf-Urteil statt ~3 s ueber Claude - pruefen, ob die Antwort passt. (3) Lebensbalken geeicht (78 px, blasses
+  Kampf-Urteil statt ~3 s ueber Claude - pruefen, ob die Antwort passt. [(2) ersetzt durch Buch 0, Kapitel 10:
+  SOLL_ICH beantwortet der Kern.] (3) Lebensbalken geeicht (78 px, blasses
   Ende). (4) Kampf-Urteile ueber 4 Partien: kill 24 -> 10 Kills, 0 Tode (Schadensrechnung hat Vorrang).
 
 - LIVE GEPRUEFT 26.09. 21:21 (Riven gegen Gragas, 11/1/2, Stand bis 0148c93): Denkkette spricht zusammenhaengend,
@@ -133,7 +143,8 @@ Aussprache ("Vi" war "sechs"), Ult-Fehllesung "Heimerd / r", kein Dive-Rat. Stan
   unverlangsamt. Nach der Partie: `balkenspur`/`schirm_sprung` im Protokoll gegen Carlos' Pings und die eigenen
   HUD-Flashes pruefen (Treffer, Fehlalarme); bei Fehlalarmen stummschalten.
 
-- NEU 26.09. abends: Denkkette und ganze Saetze (91968eb .. df9205e). Live pruefen: stimmen die
+- [Ersetzt durch Buch 0, Kapitel 6.2 (Kill-Beleg), 7 (Wert) und 12 (Szenarien statt Live-Pruefen).]
+  NEU 26.09. abends: Denkkette und ganze Saetze (91968eb .. df9205e). Live pruefen: stimmen die
   Kill-/Trade-Urteile (Level, Items, Leben, Flash, Jungler, Matchup, Zone)? Sind die Saetze zu lang
   waehrend eines Kampfs (bis ~25 s Sprechzeit; SOFORT unterbricht)? Kommt die Ansage jetzt ohne
   Verzoegerung? "Wai" statt "sechs"? Nach der Partie: `python werkzeuge/ansagen_pruefen.py`.

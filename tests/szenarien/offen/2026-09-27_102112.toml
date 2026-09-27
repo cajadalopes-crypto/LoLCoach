@@ -1,0 +1,202 @@
+# Stubs aus Carlos' Notizen (27.09.2026, werkzeuge/szenario_aus_notizen.py) - noch nicht beschriftet.
+# Beschriften (soll / darf_nicht / darf_nicht_sagen / warum), dann nach tests/szenarien/ verschieben.
+
+aufnahme = "2026-09-27_102112"
+bots = true
+
+[[szenario]]
+id = "2454-notiz"
+zeit = "24:54"
+quelle = "Notiz 24:54"
+notiz = '''
+Mein getarntes Auge kann ich nicht verkaufen, du nur. Ich dachte, du bist Challenger.'''
+gesagt = '''
+24:40 [antwort] „Ich habe aber keinen Platz in meinem Inventar.“ – Verkauf dein Getarntes Auge, dafür kaufst du die Spitzhacke Richtung Tanz des Todes. Die Ward-Trinket brauchst du gerade weniger als das Damage-Item für den Kampf am Drachen.
+24:54 [antwort] „Mein getarntes Auge kann ich nicht verkaufen, du nur. Ich dachte, du bist Challenger.“ – Notiert.
+25:01 [anlauf:Sona] Sona kommt auf dich zu, von unten. Nimm den Kampf an: Sona ist 5 Level und 3400 Gold unter dir.'''
+lage = '''
+Riven L16, 99 % Leben, 1116 Gold, in eurem unteren Jungle, Flash weg (noch 1 s)
+Welle 6:0, ihr schiebt
+Gegner: Sett vor 2 s oben (11497); Fiddlesticks vor 563 s in seiner Basis (2812); Galio vor 2 s oben (11720); Kai'Sa vor 539 s unten (7783); Sona sichtbar unten (2143)
+Mitspieler: Nasus in eurer Basis; Corki in eurem oberen Jungle; Tryndamere unten
+Objectives: drache in 12 s, 12 s von dir; baron lebt, 24 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "2620-notiz"
+zeit = "26:20"
+quelle = "Notiz 26:20"
+notiz = '''
+Sett ist auf der anderen Seite der Map, mein Freund, ich bin gerade in der Midlane an meiner Base. Sett ist auf der Toplane an seiner Base. Bist du dumm? Siehst du nicht die aktuelle Gegebenheiten?'''
+gesagt = '''
+26:01 [antwort] „Okay, Coach, was ist mein nächstes To-Do?“ – Geh sofort auf Sett drauf und suche den Kill, Fiddlesticks ist noch 18 Sekunden weg und du bist ihm klar überlegen. Danach die Welle mitnehmen und Richtung Drache Prio aufbauen, aber Drache selbst noch nicht erzwingen.
+26:13 [anlauf:FiddleSticks] Fiddlesticks kommt auf dich zu, von unten, in 9 Sekunden bei dir. Nimm den Kampf an: Fiddlesticks ist 5 Level und 6800 Gold unter dir.
+26:20 [antwort] „Sett ist auf der anderen Seite der Map, mein Freund, ich bin gerade in der Midlane an meiner Base. Sett ist auf der Toplane an seiner Base. Bist du dumm? Siehst du nicht die aktuelle Gegebenheiten?“ – Notiert.
+26:33 [jetzt:baron] Nehmt jetzt Baron Nashor, ihr seid 5 gegen 3: Sett und Fiddlesticks sind für 29 Sekunden tot.'''
+lage = '''
+Riven L17, 100 % Leben, 439 Gold, in eurem unteren Jungle
+Welle 8:1, ihr schiebt
+Gegner: Sett tot (noch 42 s); Fiddlesticks sichtbar unten (3352); Galio vor 55 s in seiner Basis (3652); Kai'Sa vor 72 s in seiner Basis (3964); Sona sichtbar unten (4749)
+Mitspieler: Nasus in eurer Basis; Brand oben; Corki oben; Tryndamere in eurem unteren Jungle
+Objectives: drache lebt, 8 s von dir; baron lebt, 20 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "2812-notiz"
+zeit = "28:12"
+quelle = "Notiz 28:12"
+notiz = '''
+Digga, was ist mit deinem Zett die ganze Zeit? Ich bin auf einer ganz anderen Lane wie Zett. Was kommst du die ganze Zeit mit dem Toplaner an? Guck dir doch mal bitte an, wo ich stehe und was ich machen soll an meiner Position. Nicht die ganze Zeit Zett, Zett, Zett, Top, Top, Top. Digga, ich hab auch andere Sachen. Du sollst jedes Mal individuell auf meine Situation antworten.'''
+gesagt = '''
+28:12 [antwort] „Digga, was ist mit deinem Zett die ganze Zeit? Ich bin auf einer ganz anderen Lane wie Zett. Was kommst du die ganze Zeit mit dem Toplaner an? Guck dir doch mal bitte an, wo ich stehe und was ich machen soll an meiner Position. Nicht die ganze Zeit Zett, Zett, Zett, Top, Top, Top. Digga, ich hab auch andere Sachen. Du sollst jedes Mal individuell auf meine Situation antworten.“ – Notiert.'''
+lage = '''
+Riven L18, 85 % Leben, 1668 Gold, auf der Mid-Lane
+Welle 6:0, ihr schiebt
+Gegner: Sett sichtbar oben (5496); Fiddlesticks vor 98 s in seiner Basis (8806); Galio vor 30 s auf der Mid-Lane (4514); Kai'Sa sichtbar unten (7488); Sona tot (noch 7 s)
+Mitspieler: Nasus in eurer Basis; Brand oben; Corki oben; Tryndamere unten
+Objectives: drache lebt, 14 s von dir; baron lebt, 14 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "3027-notiz"
+zeit = "30:27"
+quelle = "Notiz 30:27"
+notiz = '''
+Ich soll mit dem Gold den Rest meines Golds kaufen. Bist du eigentlich behindert?'''
+gesagt = '''
+30:15 [antwort] „Ja, was mache ich mit dem Gold? Du sagst, ich habe Gold liegen, danach zum Drachen. Was soll ich machen?“ – Kauf dir jetzt mit deinen 3031 Gold Seryldas Bitterkeit im Shop, das passt perfekt gegen Setts Rüstung und Beweglichkeit; danach pusht du die Welle rein und rotierst zum Drachen, der in 4:36 kommt.
+30:27 [antwort] „Ich soll mit dem Gold den Rest meines Golds kaufen. Bist du eigentlich behindert?“ – Notiert.
+30:40 [antwort] „Welche Welle, du Hurensohn, du musst mir doch die Lane sagen, du Bastard.“ – Deine Top-Lane, 12 gegen 0, steht schon fast am gegnerischen Turm, also schiebst du sie noch rein und gehst dann sofort back mit deinen 3000 Gold.'''
+lage = '''
+Riven L18, 99 % Leben, 3234 Gold, in eurer Basis
+Welle 14:2, ihr schiebt
+Gegner: Sett tot (noch 32 s); Fiddlesticks sichtbar in seinem oberen Jungle (14004); Galio sichtbar auf der Mid-Lane (8925); Kai'Sa vor 33 s oben (16215); Sona vor 8 s unten (14081)
+Mitspieler: Nasus in eurer Basis; Brand in eurer Basis; Corki auf der Mid-Lane; Tryndamere unten
+Objectives: drache in 265 s, 16 s von dir; baron lebt, 17 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "3111-notiz"
+zeit = "31:11"
+quelle = "Notiz 31:11"
+notiz = '''
+In welchem Turm, in welchem Welle, in welcher Leid, du Hurensohn?'''
+gesagt = '''
+30:56 [jungler_sicht] Fiddlesticks ist auf der Mid-Lane, in 29 Sekunden bei dir. Geh zurück zu deiner Basis - mit Kai'Sa zusammen ist Fiddlesticks zu stark.
+30:52 [antwort] „Meine Top Band ist bis deren Arschloch, bis deren Nexus Tower voll reingepusht, du Hurensohn. Digga, bist du Challenger oder bist du Iron?“ – Push jetzt die Wave in seinen Turm und geh dann back, wie geplant. Sett ist tot und Fiddlesticks weit weg, also nimmst du kostenlos die Platte mit und holst dir dein Gold ab.
+31:04 [antwort] „Du Hurensohn, ich bin in meiner eigenen Base. Was soll ich wo reinschieben, du Bastard?“ – Stimmt, du stehst grad in der Base, das war auf die Lane vor deinem Recall bezogen - kauf jetzt einfach fertig und geh zurück zur Toplane. Deine Welle steht kurz vor seinem Turm, die schiebst du dann rein und nimmst die Platte mit.
+31:13 [zahlen] Drückt jetzt die Türme, ihr seid 4 gegen 3: Fiddlesticks und Kai'Sa sind für 38 Sekunden tot.
+31:11 [antwort] „In welchem Turm, in welchem Welle, in welcher Leid, du Hurensohn?“ – Notiert.
+31:22 [antwort] „Welche Platte, von welcher Lane, von welchem Tower, du Hurensohn?“ – deiner 5.'''
+lage = '''
+Riven L18, 99 % Leben, 323 Gold, in eurer Basis
+Welle 9:0, ihr schiebt
+Gegner: Sett vor 7 s in seiner Basis (17352); Fiddlesticks tot (noch 41 s); Galio sichtbar oben (16688); Kai'Sa sichtbar unten (5496); Sona sichtbar in eurem unteren Jungle (10139)
+Mitspieler: Nasus in eurer Basis; Brand in der Flussmitte; Corki in eurem unteren Jungle
+Objectives: drache in 221 s, 16 s von dir; baron lebt, 17 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "3159-notiz"
+zeit = "31:59"
+quelle = "Notiz 31:59"
+notiz = '''
+Ich hab schon seit 10 Minuten, steh ich in meiner Base, ich weiß nicht, was ich machen soll, weil du keine richtigen Calls geben kannst, du Hurensohn.'''
+gesagt = '''
+31:49 [antwort] „Welche Welle, du Hurensohn? Push die Welle rein, du Hurensohn? Welche Welle, du Hurensohn? Welche Lane, du Bastard?“ – Deine Top-Welle, die 7 gegen 1, direkt in seinen Turm schieben, dann sofort zurück in die Basis - du hast 3000 Gold zum Ausgeben.
+31:59 [antwort] „Ich hab schon seit 10 Minuten, steh ich in meiner Base, ich weiß nicht, was ich machen soll, weil du keine richtigen Calls geben kannst, du Hurensohn.“ – Notiert.'''
+lage = '''
+Riven L18, 99 % Leben, 422 Gold, in eurer Basis
+Welle 3:2
+Gegner: Sett sichtbar oben (12471); Fiddlesticks vor 52 s in seiner Basis (9135); Galio sichtbar auf der Mid-Lane (9177); Kai'Sa tot (noch 2 s); Sona vor 48 s in eurem unteren Jungle (8275)
+Mitspieler: Nasus in eurer Basis; Brand im unteren Fluss; Corki unten; Tryndamere unten
+Objectives: drache in 173 s, 13 s von dir; baron lebt, 15 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "3535-notiz"
+zeit = "35:35"
+quelle = "Notiz 35:35"
+notiz = '''
+Das gegnerische Team war komplett tot und in ihrer eigenen Base mit den Superversalen beschäftigt. Jeder einzelne Überlebende. Ich habe mit dem Drachen schon angefangen, der war halbtot und du sagst mir, nein, geh weg vom Drachen. Digga, du bist so blöd. Warum bist du so extrem dumm? Du bist kein Challenger, Digga, du bist scheiße.'''
+gesagt = '''
+35:35 [antwort] „Das gegnerische Team war komplett tot und in ihrer eigenen Base mit den Superversalen beschäftigt. Jeder einzelne Überlebende. Ich habe mit dem Drachen schon angefangen, der war halbtot und du sagst mir, nein, geh weg vom Drachen. Digga, du bist so blöd. Warum bist du so extrem dumm? Du bist kein Challenger, Digga, du bist scheiße.“ – Notiert.'''
+lage = '''
+Riven L20, 63 % Leben, 3411 Gold, im unteren Fluss, Flash weg (noch 217 s)
+Welle 6:5
+Gegner: Sett vor 27 s unten (7623); Fiddlesticks vor 73 s in seiner Basis (4726); Galio tot (noch 8 s); Kai'Sa vor 7 s unten (6198); Sona vor 20 s unten (7078)
+Mitspieler: Nasus in eurer Basis; Brand in eurem unteren Jungle; Corki in eurem unteren Jungle; Tryndamere in eurem unteren Jungle
+Objectives: drache in 281 s, 4 s von dir; baron lebt, 28 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "3607-notiz"
+zeit = "36:07"
+quelle = "Notiz 36:07"
+notiz = '''
+Jäger, der Drache ist schon fünf Minuten tot und du laberst immer noch, dass ich irgendwas mit dem Drachen machen soll. Bist du behindert?'''
+gesagt = '''
+35:57 [jetzt:baron] Drück deine Lane, dein Team nimmt Baron Nashor: Sona und Kai'Sa sind für 49 Sekunden tot, ihr seid 5 gegen 3, und du schaffst es nicht rechtzeitig hin.
+36:01 [jungler_sicht] Fiddlesticks ist unten, direkt bei dir - nimm den Kampf an, Fiddlesticks ist 6 Level und 5600 Gold unter dir.
+36:07 [antwort] „Jäger, der Drache ist schon fünf Minuten tot und du laberst immer noch, dass ich irgendwas mit dem Drachen machen soll. Bist du behindert?“ – Notiert.'''
+lage = '''
+Riven L20, 99 % Leben, 4259 Gold, Ort ?, Flash weg (noch 185 s)
+Welle 7:6
+Gegner: Sett sichtbar in eurem oberen Jungle; Fiddlesticks tot (noch 45 s); Galio tot (noch 43 s); Kai'Sa tot (noch 41 s); Sona tot (noch 39 s)
+Objectives: drache in 249 s; baron lebt'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "3702-notiz"
+zeit = "37:02"
+quelle = "Notiz 37:02"
+notiz = '''
+Alter, was hast du mit deinem Fetisch mit oben? Checkst du nicht, dass das ein, du Hurensohn, man kann 10.000 Sachen machen als Toplaner, man kann auch roaming gehen, man kann die Map beeinflussen, was ist die ganze Zeit mit deinem oben, oben, oben, Toplane, Toplane, Toplane, du kleiner Bastard.'''
+gesagt = '''
+37:02 [antwort] „Alter, was hast du mit deinem Fetisch mit oben? Checkst du nicht, dass das ein, du Hurensohn, man kann 10.000 Sachen machen als Toplaner, man kann auch roaming gehen, man kann die Map beeinflussen, was ist die ganze Zeit mit deinem oben, oben, oben, Toplane, Toplane, Toplane, du kleiner Bastard.“ – Notiert.'''
+lage = '''
+Riven L20, 82 % Leben, 4847 Gold, in der Flussmitte, Flash weg (noch 130 s)
+Welle 3:5, er schiebt
+Gegner: Sett tot (noch 45 s); Fiddlesticks vor 59 s in seiner Basis (6490); Galio vor 63 s in seiner Basis (6650); Kai'Sa vor 81 s in seiner Basis (6579); Sona vor 64 s in seiner Basis (6800)
+Mitspieler: Nasus in eurer Basis; Brand im unteren Fluss; Corki in eurem unteren Jungle; Tryndamere im unteren Fluss
+Objectives: drache in 194 s, 12 s von dir; baron lebt, 12 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "3748-notiz"
+zeit = "37:48"
+quelle = "Notiz 37:48"
+notiz = '''
+Ey, das muss ich mal hier, das geht an Claude, das wirst du ja lesen, wenn du diesen Blog liest. Ich weiß nicht, was du gemacht hast, wie du den programmiert hast. Das ist das dümmste Stück Scheiße, was ich jemals gesprochen habe. Er ist so extrem blöd, man kann ihn für nichts benutzen, absolut für gar nichts. 0,000 Sinn macht dieser Bastard. ich hab dir doch 10, ich hab dir doch diese Reasoning Sachen gegeben, hast du die überhaupt verdrahtet? ist jetzt mal eine ernste Frage an dich hast du die überhaupt verdrahtet? er labert so einen dummen Scheiß, man kann sich das nicht ausdenken'''
+gesagt = '''
+37:33 [jetzt:baron] Drück deine Lane, dein Team nimmt Baron Nashor: Sett und Kai'Sa sind für 14 Sekunden tot, ihr seid 5 gegen 3, und du schaffst es nicht rechtzeitig hin.
+37:48 [antwort] „Ey, das muss ich mal hier, das geht an Claude, das wirst du ja lesen, wenn du diesen Blog liest. Ich weiß nicht, was du gemacht hast, wie du den programmiert hast. Das ist das dümmste Stück Scheiße, was ich jemals gesprochen habe. Er ist so extrem blöd, man kann ihn für nichts benutzen, absolut für gar nichts. 0,000 Sinn macht dieser Bastard. ich hab dir doch 10, ich hab dir doch diese Reasoning Sachen gegeben, hast du die überhaupt verdrahtet? ist jetzt mal eine ernste Frage an dich hast du die überhaupt verdrahtet? er labert so einen dummen Scheiß, man kann sich das nicht ausdenken“ – Notiert.
+37:54 [inhib:CHAOS:Bot] Sein Bot-Inhibitor ist bis 42 50 weg - eure Supervasallen drücken Bot, also spielt auf die andere Seite: Baron, Drache oder die Türme dort.
+37:59 [jetzt:baron] Nehmt jetzt Baron Nashor, ihr seid 5 gegen 3: Kai'Sa und Galio sind für 25 Sekunden tot.'''
+lage = '''
+Riven L20, 99 % Leben, 5038 Gold, in eurer Basis, Flash weg (noch 84 s)
+Welle 6:3, ihr schiebt
+Gegner: Sett vor 55 s in seiner Basis (10942); Fiddlesticks vor 27 s im unteren Fluss (10224); Galio vor 8 s auf der Mid-Lane (7702); Kai'Sa tot (noch 37 s); Sona sichtbar in seiner Basis (16695)
+Mitspieler: Nasus in eurer Basis; Brand in seiner Basis; Corki unten; Tryndamere in seiner Basis
+Objectives: drache in 148 s, 16 s von dir; baron lebt, 17 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''

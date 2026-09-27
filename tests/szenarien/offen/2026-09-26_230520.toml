@@ -1,0 +1,113 @@
+# Stubs aus Carlos' Notizen (27.09.2026, werkzeuge/szenario_aus_notizen.py) - noch nicht beschriftet.
+# Beschriften (soll / darf_nicht / darf_nicht_sagen / warum), dann nach tests/szenarien/ verschieben.
+
+aufnahme = "2026-09-26_230520"
+bots = true
+
+[[szenario]]
+id = "1223-notiz"
+zeit = "12:23"
+quelle = "Notiz 12:23"
+notiz = '''
+Ich Powerfarme lieber.'''
+gesagt = '''
+12:05 [plan:zurueck] Ekko und Vex können in 7 Sekunden da sein, und bis zu deinem Turm sind es 14 Sekunden. Geh jetzt zurück - ein Tod kostet dich 32 Sekunden.
+12:21 [antwort] „Da höre ich.“ – Push jetzt schnell die Welle rein und geh dann zurück zum Turm, kauf zuerst ein Kontroll-Auge, danach Caulfields Kriegshammer. Sion steht schon in der Flussmitte und Ekko kann jederzeit auftauchen, das Risiko lohnt sich nicht.
+12:23 [antwort] „Ich Powerfarme lieber.“ – Notiert.'''
+lage = '''
+Graves L10, 99 % Leben, 1115 Gold, im oberen Fluss
+Welle 8:4, ihr schiebt
+Gegner: Vex vor 6 s im unteren Fluss (4232); Smolder sichtbar unten (10224); Sion sichtbar in der Flussmitte (3417); Ekko vor 26 s im unteren Fluss (5686); Milio vor 52 s im unteren Fluss (9396)
+Mitspieler: Xayah unten; Swain in der Flussmitte; Urgot in eurer Basis; Udyr in eurem oberen Jungle
+Objectives: drache lebt, 23 s von dir; baron in 456 s, 3 s von dir; herold in 156 s, 3 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "1346-notiz"
+zeit = "13:46"
+quelle = "Notiz 13:46"
+notiz = '''
+Der Thomas Dau.'''
+gesagt = '''
+13:36 [zauber:Milio:SummonerFlash] Milio hat Flash benutzt, bis 18 35.
+13:38 [antwort] „Aber der Turm ist doch fast da und soll ich ihn nicht erstmal runterkriegen?“ – Nein, zieh dich jetzt zurück statt den Turm zu tanken, nur noch 2 Platten sind übrig und der Herold kommt in 81 Sekunden, du brauchst die Zeit zum Backen und Zurückkommen zur Grube.
+13:46 [antwort] „Der Thomas Dau.“ – Notiert.
+13:49 [antwort] „The Turm is done.“ – Sion steht bei 27% Leben direkt vor dir, also finish ihn jetzt mit deinem Kombo statt zurückzuziehen. Danach sofort backen und ein Kontroll-Auge kaufen, bevor der Herold in etwa einer Minute drankommt.
+14:01 [zahlen] Sion und Milio sind für 15 Sekunden tot, ihr seid 4 gegen 3: drückt jetzt die Türme, solange sie fehlen.'''
+lage = '''
+Graves L11, 59 % Leben, 2167 Gold, oben, auf deiner Lane
+Welle 14:0, ihr schiebt
+Gegner: Vex sichtbar in der Flussmitte (6517); Smolder vor 27 s im unteren Fluss (11364); Sion sichtbar oben (0); Ekko vor 27 s im unteren Fluss (11300); Milio sichtbar im unteren Fluss (12139)
+Mitspieler: Xayah unten; Swain in der Flussmitte; Urgot unten; Udyr in eurem oberen Jungle
+Objectives: drache in 258 s, 49 s von dir; baron in 373 s, 27 s von dir; herold in 73 s, 27 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "1522-notiz"
+zeit = "15:22"
+quelle = "Notiz 15:22"
+notiz = '''
+Du bist gerade sowas von...'''
+gesagt = '''
+15:26 [jungler_sicht] Ekko ist oben und kann in 3 Sekunden bei dir sein - nimm den Kampf an, Ekko ist 5 Level und 3900 Gold unter dir.
+15:22 [antwort] „Du bist gerade sowas von...“ – Notiert.
+15:24 [antwort] „Du bist klar.“ – Notiert.
+15:26 [antwort] „Du bist gerade sowas von in der Vergangenheit.“ – Notiert.
+15:33 [anlauf:Vex] Vex kommt aus seinem oberen Jungle auf dich zu und ist in 6 Sekunden da. Halte deine Stellung: Vex ist 4 Level und 3600 Gold unter dir.'''
+lage = '''
+Graves L12, 71 % Leben, 349 Gold, oben, Flash weg (noch 210 s), auf deiner Lane
+Welle 6:0, ihr schiebt
+Gegner: Vex sichtbar auf der Mid-Lane (4623); Smolder vor 18 s unten (11738); Sion vor 1 s in seinem unteren Jungle (5803); Ekko vor 6 s oben (1637); Milio sichtbar unten (11987)
+Mitspieler: Xayah in eurer Basis; Swain in eurer Basis; Urgot in seinem unteren Jungle; Udyr in seinem oberen Jungle
+Objectives: drache in 162 s, 27 s von dir; baron in 277 s, 16 s von dir; herold lebt, 16 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "1524-notiz"
+zeit = "15:24"
+quelle = "Notiz 15:24"
+notiz = '''
+Du bist klar.'''
+gesagt = '''
+15:26 [jungler_sicht] Ekko ist oben und kann in 3 Sekunden bei dir sein - nimm den Kampf an, Ekko ist 5 Level und 3900 Gold unter dir.
+15:22 [antwort] „Du bist gerade sowas von...“ – Notiert.
+15:24 [antwort] „Du bist klar.“ – Notiert.
+15:26 [antwort] „Du bist gerade sowas von in der Vergangenheit.“ – Notiert.
+15:33 [anlauf:Vex] Vex kommt aus seinem oberen Jungle auf dich zu und ist in 6 Sekunden da. Halte deine Stellung: Vex ist 4 Level und 3600 Gold unter dir.'''
+lage = '''
+Graves L12, 72 % Leben, 353 Gold, oben, Flash weg (noch 208 s), auf deiner Lane
+Welle 5:0, ihr schiebt
+Gegner: Vex sichtbar auf der Mid-Lane (4836); Smolder vor 20 s unten (11996); Sion sichtbar in seinem unteren Jungle (5124); Ekko vor 8 s oben (1305); Milio sichtbar unten (12125)
+Mitspieler: Xayah unten; Swain auf der Mid-Lane; Urgot in seinem unteren Jungle; Udyr in seinem oberen Jungle
+Objectives: drache in 160 s, 28 s von dir; baron in 275 s, 17 s von dir; herold lebt, 17 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "1526-notiz"
+zeit = "15:26"
+quelle = "Notiz 15:26"
+notiz = '''
+Du bist gerade sowas von in der Vergangenheit.'''
+gesagt = '''
+15:26 [jungler_sicht] Ekko ist oben und kann in 3 Sekunden bei dir sein - nimm den Kampf an, Ekko ist 5 Level und 3900 Gold unter dir.
+15:22 [antwort] „Du bist gerade sowas von...“ – Notiert.
+15:24 [antwort] „Du bist klar.“ – Notiert.
+15:26 [antwort] „Du bist gerade sowas von in der Vergangenheit.“ – Notiert.
+15:33 [anlauf:Vex] Vex kommt aus seinem oberen Jungle auf dich zu und ist in 6 Sekunden da. Halte deine Stellung: Vex ist 4 Level und 3600 Gold unter dir.'''
+lage = '''
+Graves L12, 72 % Leben, 356 Gold, oben, Flash weg (noch 206 s), auf deiner Lane
+Welle 5:0, ihr schiebt
+Gegner: Vex vor 1 s auf der Mid-Lane (4768); Smolder sichtbar unten (11962); Sion sichtbar in seinem unteren Jungle (5040); Ekko vor 10 s oben (1123); Milio sichtbar unten (12016)
+Mitspieler: Xayah unten; Swain auf der Mid-Lane; Urgot in seinem unteren Jungle; Udyr oben
+Objectives: drache in 158 s, 28 s von dir; baron in 273 s, 18 s von dir; herold lebt, 18 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''

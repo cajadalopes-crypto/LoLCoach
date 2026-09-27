@@ -19,7 +19,7 @@ import time
 from dataclasses import asdict
 
 from . import (ansicht, aufzeichnung, bericht, komponist, lage, liveapi, llm, profil, regeln, sprechplan, stimme,
-               zustand)
+               wachhund, zustand)
 
 
 def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, sicht=None,
@@ -198,6 +198,13 @@ def _live_quelle(basis: str, nach_spielende: float = 10.0, ohne_spielende: float
             time.sleep(1)
 
 
+def _gefuettert(quelle, hund):
+    """Jeder Schnappschuss fuettert den Wachhund (wachhund.py) - bleiben sie aus, merkt er es nach Wanduhr."""
+    for w, d in quelle:
+        hund.fuettern(w, float((d.get("gameData") or {}).get("gameTime") or 0.0))
+        yield w, d
+
+
 class _LiveSicht:
     """Verbindet den Beobachter-Thread mit dem Kern: gibt ihm die Champions
     der Partie und holt ab, was er inzwischen gesehen hat."""
@@ -313,6 +320,11 @@ def live(args) -> None:
                 except (OSError, ValueError):
                     _ANSAGEN_VORHER[fort] = []
                 print(f"Partie erkannt - dieselbe wie eben, Aufnahme wird fortgesetzt: {schreiber.pfad}")
+                try:   # der Coach war aus: eine Luecke in der Aufnahme (Buch 0, 4.3; Partie 102112, 15:55-24:24)
+                    wachhund.neustart_eintragen(fort, float((liveapi.alles(args.basis).get("gameData") or {})
+                                                            .get("gameTime") or 0.0), _spieldauer(fort))
+                except Exception:
+                    pass
             else:
                 print(f"Partie erkannt - Aufnahme: {schreiber.pfad}")
             for a in anzeigen:
@@ -327,15 +339,18 @@ def live(args) -> None:
                     a.beobachter_setzen(beobachter)
         sprecher.sage("Coach verbunden.")
         plan = None
+        hund = wachhund.Wachhund(sprecher, wachhund.luecken_datei(schreiber.pfad) if schreiber else None)
+        hund.start()
         try:
             # 4 Takte je Sekunde: Regeln + Bewertung kosten 0,4 ms (Camille-Partie gemessen) - mit 1 s Takt
             # kam "Vi kommt auf dich zu" bis zu einer Sekunde spaet (Carlos: "moeglichst Richtung Echtzeit")
-            plan = _verfolge(_live_quelle(args.basis), args.ich, takt=LIVE_TAKT, sprecher=sprecher,
+            plan = _verfolge(_gefuettert(_live_quelle(args.basis), hund), args.ich, takt=LIVE_TAKT, sprecher=sprecher,
                              schreiber=schreiber, sicht=_LiveSicht(beobachter) if beobachter else None,
                              anzeigen=anzeigen, gehirn=not args.ohne_gehirn, alle=20,
                              gehirn_ablage=schreiber.pfad.with_name(
                                  schreiber.pfad.name.removesuffix(".jsonl.gz") + "_spielakte.md") if schreiber else None)
         finally:
+            hund.halt()
             if beobachter:
                 beobachter.halt()
                 for a in anzeigen:
@@ -574,9 +589,15 @@ def main() -> None:
     lm = unter.add_parser("llm")
     lm.add_argument("frage")
     lm.add_argument("--modell", default="haiku")
+    for sub in (lv, ab):   # Entscheidungskern (buecher/00_entscheidungskern.md, Kapitel 3)
+        sub.add_argument("--kern", choices=("alt", "schatten", "neu"), default="alt",
+                         help="alt = Regelwerk spricht (Schritt 1-2); schatten ab Schritt 2, neu ab Schritt 3")
     args = ap.parse_args()
     if args.befehl is None:
         args = ap.parse_args(sys.argv[1:] + ["live"])  # ohne Befehl: live mit allen Voreinstellungen
+    if getattr(args, "kern", "alt") != "alt":
+        sys.exit(f"--kern {args.kern} gibt es erst ab Schritt 2 (schatten) bzw. 3 (neu) - "
+                 f"buecher/00_entscheidungskern.md. Jetzt: --kern alt.")
     {"live": live, "abspielen": abspielen, "bericht": bericht_befehl, "status": status,
      "llm": frage_llm, "frage": frage_an_aufnahme, "mikrotest": mikrotest, "review": review_befehl}[args.befehl](args)
 

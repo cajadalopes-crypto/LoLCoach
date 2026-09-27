@@ -31,7 +31,7 @@ bots = true
 id = "0517-platte-ohne-flash"
 zeit = "5:17"
 quelle = "Nachspielen 27.09.: Ansage 5:17 'nimm die Platte mit', Gank 5:37"
-lage = """Riven L6, 37 % Leben, Flash weg (noch ~48 s), 1258 Gold (Lane-Plan: erster Back ab 1337).
+lage = """Riven L6, 37 % Leben, Flash weg (noch ~59 s laut HUD; Schritt 1 nachgespielt, vorher ~48 s), 1258 Gold (Lane-Plan: erster Back ab 1337).
 Sett seit eben tot (noch 14 s). Welle 7:4 fuer dich, Front in der Mitte.
 Fiddlesticks vor 30 s im oberen Fluss gesehen, 5976 Einheiten entfernt. Galio vor 6 s in der Flussmitte.
 Kai'Sa und Sona unten sichtbar."""
@@ -73,9 +73,9 @@ kein 'zusammen schwaecher als du', solange zwei von ihnen in Reichweite sind."""
 id = "2522-kein-baron-drache-lebt"
 zeit = "25:22"
 quelle = "Nachspielen 27.09.: 'Nehmt jetzt Baron Nashor, ihr seid 5 gegen 2'"
-lage = """Riven L17, 74 % Leben, 1888 Gold, im eigenen unteren Jungle.
-Drache lebt (seit 15 s), 17 s von dir. Baron 23 s von dir.
-Kai'Sa, Sona und Galio seit eben tot (~29-35 s). Sett oben (11.400 entfernt), Fiddlesticks lange ungesehen.
+lage = """Riven L17, 74 % Leben, 1888 Gold, unten (Minimap-Ort "unten", am eigenen unteren Jungle).
+Drache lebt (seit 15 s), 17-18 s von dir. Baron 23-25 s von dir.
+Kai'Sa und Sona seit eben tot (~29-35 s), Galio stirbt genau in diesem Takt (bei dir). Sett oben (11.400 entfernt), Fiddlesticks lange ungesehen.
 Tryndamere bei dir im unteren Jungle, Corki oben, Nasus und Brand in der Basis."""
 modus = ["OBJECTIVE", "UNTERWEGS"]
 soll = ["ANLAUFEN", "NEHMEN"]
@@ -131,7 +131,7 @@ warum = """In der Basis gibt es genau zwei Fragen: was kaufst du (mit Namen) und
 id = "3100-basis-braucht-ziel"
 fenster = ["30:30", "32:00"]
 quelle = "Live 27.09., Carlos 31:59: 'Ich steh seit 10 Minuten in meiner Base, ich weiss nicht, was ich machen soll'"
-lage = """Riven L18 in eurer Basis, voll Leben, 310-420 Gold (hat eingekauft). Von ihren Tuermen stehen noch Bot aussen,
+lage = """Riven L18 in eurer Basis, voll Leben; um 30:30 noch 3240 Gold, kauft gegen 31:00 ein (danach 310-420 Gold). Von ihren Tuermen stehen noch Bot aussen,
 Bot innen, Bot-Inhibitor-Turm und Mid-Inhibitor-Turm."""
 modus = ["BASIS"]
 muss_ziel = true
@@ -150,7 +150,7 @@ Tot: Sett (noch 2 s), Kai'Sa (6 s), Fiddlesticks (10 s), Galio (44 s). Sona sich
 Weg aus ihrem Brunnen zur Drachengrube ~30 s."""
 modus = ["OBJECTIVE"]
 soll = ["NEHMEN"]
-muss_nennen_eins = ["Ja", "nimm", "Nimm", "mach"]
+muss_nennen_eins = ["Ja", "nimm", "Nimm", "mach", "nehmen"]   # "nehmen" ergaenzt in Schritt 1 (messungen.md)
 darf_nicht_sagen = ["Setts Turm", "lass den Drachen", "Top"]
 warum = """Der erste Gegner kann fruehestens in ~30 s an der Grube sein (Respawn + Weg), Sona allein ist keine Gefahr.
 Riven L20 toetet den Drachen deutlich schneller. Und er steht an der Drachengrube, nicht oben."""
@@ -176,7 +176,7 @@ quelle = "Nachspielen 27.09.: 'Geh jetzt back, du hast 4400 Gold'"
 lage = """Riven L20, 99 % Leben, 4461 Gold, auf der Mid-Lane an der Stelle ihres gefallenen aeusseren Mid-Turms.
 Tot: Fiddlesticks (20 s), Galio (19 s), Kai'Sa (17 s), Sona (14 s). Sett oben.
 Von ihren Tuermen steht nur noch der Mid-Inhibitor-Turm (+ Nexus-Tuerme), ~10 s von dir.
-Brand, Corki, Tryndamere im eigenen unteren Jungle."""
+Brand unten, Corki und Tryndamere im eigenen unteren Jungle."""
 modus = ["UNTERWEGS", "GRUPPE"]
 soll = ["DRUECKEN", "MIT_GRUPPE"]
 darf_nicht = ["BACK_JETZT"]

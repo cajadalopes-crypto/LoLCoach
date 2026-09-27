@@ -1043,6 +1043,44 @@ def verzoegerung_bis_zum_ohr():
     assert eilig.ton is not None and 0.05 <= eilig.ton - 101.0 <= 0.5 and eilig.ganz is True, (eilig.ton, eilig.ganz)
 
 
+def wachhund_meldet_datenluecke():
+    """Buch 0, Kapitel 4.3: kommen keine Schnappschuesse, laeuft der Takt nicht - der Coach schwieg (Partie 102112,
+    15:55-24:24). Der Wachhund nach Wanduhr sagt es einmal, meldet die Rueckkehr und traegt die Luecke ein; ist
+    das Spiel zu, ist Stille das Ende der Partie und keine Luecke."""
+    import json
+    import tempfile
+    import time
+    from lolcoach import wachhund
+
+    class Merker:
+        def __init__(self):
+            self.gesagt = []
+
+        def sage(self, text, dringend=False, melde=None, noch_wahr=None):
+            self.gesagt.append(text)
+    with tempfile.TemporaryDirectory() as d:
+        datei = Path(d) / "x_luecken.jsonl"
+        sp = Merker()
+        h = wachhund.Wachhund(sp, datei, grenze=0.2, spiel_da=lambda: True, takt=0.02)
+        h.start()
+        h.fuettern(time.time(), 955.0)
+        time.sleep(0.5)                         # keine Daten mehr
+        assert sp.gesagt == [wachhund.WEG], sp.gesagt
+        h.fuettern(time.time(), 1464.0)         # wieder da
+        time.sleep(0.1)
+        h.halt()
+        assert sp.gesagt == [wachhund.WEG, wachhund.WIEDER], sp.gesagt
+        zeilen = [json.loads(z) for z in datei.read_text(encoding="utf-8").splitlines()]
+        assert len(zeilen) == 1 and zeilen[0]["von_spielzeit"] == 955.0 and zeilen[0]["bis_spielzeit"] == 1464.0
+        sp2 = Merker()
+        h2 = wachhund.Wachhund(sp2, None, grenze=0.2, spiel_da=lambda: False, takt=0.02)
+        h2.start()
+        h2.fuettern(time.time(), 100.0)
+        time.sleep(0.4)
+        h2.halt()
+        assert sp2.gesagt == [], "Spiel zu: keine Luecke"
+
+
 def von_deiner_position_aus():
     """Live 27.09., Minute 25-38 (Basis, Mid): "Schieb die Welle in seinen Turm und geh back" in der eigenen Basis,
     "Drueckt jetzt die Tuerme" ohne Turm, "geh auf Sett", Sett auf der anderen Kartenseite, "Nehmt jetzt Baron"
@@ -1200,7 +1238,7 @@ if __name__ == "__main__":
                  konter_kauf_ohne_eigenes, stimme_ueberlebt_audiofehler, eigene_position_aus_dem_kamerarahmen,
                  satzanfaenge_vorgewaermt, wecker_bei_sprung_und_gegner_nah, baron_aeltester_inhibitor,
                  minimap_blind_wird_gesagt, kamera_gibt_nur_einmal_frei, antwort_ab_dem_ersten_teilsatz, afk_erkannt,
-                 von_deiner_position_aus,
+                 von_deiner_position_aus, wachhund_meldet_datenluecke,
                  sofort_back_und_objective):
         test()
         print(f"{test.__name__} OK")

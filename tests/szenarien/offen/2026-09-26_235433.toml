@@ -1,0 +1,47 @@
+# Stubs aus Carlos' Notizen (27.09.2026, werkzeuge/szenario_aus_notizen.py) - noch nicht beschriftet.
+# Beschriften (soll / darf_nicht / darf_nicht_sagen / warum), dann nach tests/szenarien/ verschieben.
+
+aufnahme = "2026-09-26_235433"
+bots = true
+
+[[szenario]]
+id = "1043-notiz"
+zeit = "10:43"
+quelle = "Notiz 10:43"
+notiz = '''
+Während du gesagt hast, dass ich zum Drachen gehen soll und ich 13 Sekunden brauche, ist der Drache schon lange fertig.'''
+gesagt = '''
+10:41 [jungler_sicht] Zaahen ist im oberen Fluss und kann in 17 Sekunden bei dir sein. Bleib an deiner Welle, du bist stärker - nur nicht zu tief.
+10:43 [antwort] „Während du gesagt hast, dass ich zum Drachen gehen soll und ich 13 Sekunden brauche, ist der Drache schon lange fertig.“ – Notiert.
+10:57 [antwort] „Bis mal wieder sehr langsam in der Zeit.“ – Notiert.'''
+lage = '''
+Riven L9, 94 % Leben, 321 Gold, oben, auf deiner Lane
+Welle 7:3, ihr schiebt
+Gegner: Seraphine nie gesehen; Zaahen sichtbar in der Flussmitte (6449); Twisted Fate vor 3 s unten (13417); Poppy sichtbar unten (13620); Tristana sichtbar in eurem unteren Jungle (12829)
+Mitspieler: Alistar unten; Ekko im unteren Fluss; Lucian in eurer Basis
+Objectives: drache in 286 s, 31 s von dir; baron in 556 s, 9 s von dir; herold in 256 s, 9 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''
+
+[[szenario]]
+id = "1057-notiz"
+zeit = "10:57"
+quelle = "Notiz 10:57"
+notiz = '''
+Bis mal wieder sehr langsam in der Zeit.'''
+gesagt = '''
+10:41 [jungler_sicht] Zaahen ist im oberen Fluss und kann in 17 Sekunden bei dir sein. Bleib an deiner Welle, du bist stärker - nur nicht zu tief.
+10:43 [antwort] „Während du gesagt hast, dass ich zum Drachen gehen soll und ich 13 Sekunden brauche, ist der Drache schon lange fertig.“ – Notiert.
+10:57 [antwort] „Bis mal wieder sehr langsam in der Zeit.“ – Notiert.
+11:03 [lane_tot] Poppy ist 15 Sekunden tot. Schieb die Welle in seinen Turm und nimm die Platte mit.
+11:10 [zauber:TwistedFate:SummonerFlash] Twisted Fate hat Flash benutzt, bis 16 09.'''
+lage = '''
+Riven L9, 81 % Leben, 391 Gold, oben, auf deiner Lane
+Welle 5:1, ihr schiebt
+Gegner: Seraphine nie gesehen; Zaahen sichtbar in der Flussmitte (7488); Twisted Fate vor 17 s unten (14333); Poppy sichtbar unten (14035); Tristana tot (noch 5 s)
+Mitspieler: Alistar unten; Ekko im unteren Fluss; Lucian in eurem unteren Jungle; Ziggs auf der Mid-Lane
+Objectives: drache in 272 s, 34 s von dir; baron in 542 s, 9 s von dir; herold in 242 s, 9 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''

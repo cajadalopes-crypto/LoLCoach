@@ -1,0 +1,25 @@
+# Stubs aus Carlos' Notizen (27.09.2026, werkzeuge/szenario_aus_notizen.py) - noch nicht beschriftet.
+# Beschriften (soll / darf_nicht / darf_nicht_sagen / warum), dann nach tests/szenarien/ verschieben.
+
+aufnahme = "2026-09-26_212105"
+bots = true
+
+[[szenario]]
+id = "0654-notiz"
+zeit = "6:54"
+quelle = "Notiz 6:54"
+notiz = '''
+Warum sagst du mir, dass ich die Welle in den Turm schieben soll, obwohl ich selber tot war oder ich war in der Midlane? Also, hä? Ich hab doch gesagt, dir muss doch klar sein, dass du von jedem Scheiß Bescheid wissen musst. Also, dass du alles mit additionieren musst. Also mehrere Faktoren.'''
+gesagt = '''
+6:37 [zauber:Tryndamere:SummonerFlash] Tryndamere hat Flash benutzt - das sehe ich auf der Minimap - bis 11 24 hat Tryndamere keins.
+6:54 [antwort] „Warum sagst du mir, dass ich die Welle in den Turm schieben soll, obwohl ich selber tot war oder ich war in der Midlane? Also, hä? Ich hab doch gesagt, dir muss doch klar sein, dass du von jedem Scheiß Bescheid wissen musst. Also, dass du alles mit additionieren musst. Also mehrere Faktoren.“ – Notiert.
+7:07 [antwort] „Nein, Gragas ist hier und ich bringe ihn gerade wieder auf.“ – Geh weiter drauf, du bringst ihn ja schon runter - er ist bei 38 Prozent, du bist zwei Level und 1700 Gold voraus, das gewinnst du klar.'''
+lage = '''
+Riven L7, 99 % Leben, 220 Gold, im oberen Fluss, Flash weg (noch 57 s), auf deiner Lane
+Welle 5:0, ihr schiebt
+Gegner: Gragas vor 5 s in seinem oberen Jungle (4821); Tryndamere sichtbar unten (13609); Vayne vor 5 s unten (14428); Sona sichtbar unten (14343); Lissandra sichtbar in eurem unteren Jungle (12349)
+Mitspieler: Janna in eurem unteren Jungle; Dr. Mundo in seinem unteren Jungle; Brand auf der Mid-Lane; Caitlyn in der Flussmitte
+Objectives: drache lebt, 38 s von dir; baron in 785 s, 11 s von dir; herold in 485 s, 11 s von dir; larven in 65 s, 11 s von dir'''
+# soll = []
+# darf_nicht_sagen = []
+# warum = ''''''

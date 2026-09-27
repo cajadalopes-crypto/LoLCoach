@@ -1,5 +1,8 @@
 """Ergibt die Ansage von Carlos' Position aus Sinn? - die Pruefung, die gefehlt hat.
 
+Aufgegangen in werkzeuge/kennzahlen.py (Buch 0, Kapitel 12.3: Verstoesse gegen 9.4 je Nummer); bleibt fuer den
+Vergleich mit frueheren Messungen, bis Schritt 8 aufraeumt.
+
 Live 27.09. (Partie 102112, Minute 25-38): "Geh sofort auf Sett drauf" mit Sett auf der anderen Kartenseite,
 "Schieb die Welle in seinen Turm und geh back" in der eigenen Basis, "Drueckt jetzt die Tuerme" ohne einen
 Turm, "Nehmt jetzt Baron" zehnmal, waehrend die Bot-Mitspieler nie hingingen. ansagen_pruefen.py fand nichts

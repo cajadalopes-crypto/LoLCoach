@@ -47,7 +47,25 @@ man mit ihm redet. Anforderungen: `ANFORDERUNGEN.md`. Bedienung fuer Carlos:
 | `llm.py` | Claude ueber die Claude-Code-Kommandozeile (Abo), schlank (eigener Systemprompt, stdin) |
 
 `python -m lolcoach` = live. Weitere Befehle: `abspielen`, `review`, `bericht`,
-`frage`, `mikrotest`, `status`, `llm` (siehe `--help`).
+`frage`, `mikrotest`, `status`, `llm` (siehe `--help`). `live` und `abspielen` nehmen
+`--kern alt|schatten|neu` (Entscheidungskern, Buch 0 Kapitel 3): bis Schritt 2 gibt es nur
+`alt` (das Regelwerk spricht), `schatten` kommt mit Schritt 2, `neu` mit Schritt 3.
+
+## Umbau nach den Buechern: `buecher/`
+
+`buecher/00_entscheidungskern.md` sagt, wie der Coach entscheidet (Modus, Handlung, Wert,
+Plan, Sprechen, Messen) und in welchen Schritten er umgebaut wird. Vor jeder Arbeit am
+Entscheiden: das Buch ganz lesen, genau einen Schritt umsetzen (Kapitel 0), messen, in
+`buecher/messungen.md` eintragen, committen, Carlos in drei, vier Saetzen sagen, was er
+testen soll. Widerspricht die Wirklichkeit dem Buch, gilt die Wirklichkeit - unter
+"Abweichungen vom Buch" eintragen, dann entscheiden.
+
+**Arbeitsweise seit Buch 0: Beschwerde -> Szenario -> Modellaenderung.** Eine Beschwerde von
+Carlos wird zuerst ein Szenario in `tests/szenarien/` (Lage aus der Aufnahme, Sollwert,
+Begruendung). Erst dann aendert sich das Modell - so, dass das Szenario gruen wird und kein
+anderes rot. Keine Einzelflicken mehr ("Live 27.09.: ..."-Sonderfaelle an einzelnen Regeln).
+Seine Notizen per Sprechtaste ("Notiz ...") werden mit `werkzeuge/szenario_aus_notizen.py`
+zu Stubs in `tests/szenarien/offen/` - der wichtigste Kanal, ueber den der Coach klueger wird.
 
 Spielzustand ist eine REINE Funktion eines Schnappschusses: die API liefert
 die Ereignisliste jedes Mal ganz. So laeuft jede Aufnahme Sekunde fuer Sekunde
@@ -56,6 +74,11 @@ durch denselben Code wie das Live-Spiel.
 ## Pruefen
 
 - `python tests/alle.py` - alle Tests (echte Partien als Testfaelle, ~10 s).
+- `python werkzeuge/szenarien.py` - war der Rat in dieser Lage richtig? Szenarien aus
+  `tests/szenarien/*.toml` gegen das nachgespielte System (`--mit-claude`: auch Fragen und
+  Review, `--lage`: nachgespielte Lage je Szenario). Buch 0, Kapitel 12.
+- `python werkzeuge/kennzahlen.py [aufnahme ...]` - Ansagen je 30 min, Kehrtwenden, Verstoesse
+  gegen Kapitel 9.4, Gefahr-Brier, Datenluecken, Szenario-Quote (ersetzt `sinnpruefung.py`).
 - `python werkzeuge/generalprobe.py --ab 13.9 --minuten 2.5` - der komplette
   Live-Weg ohne Spiel: nachgebauter Spielclient + Fenster mit aufgezeichneten
   Minimap-Bildern; der Coach laeuft als Prozess dagegen (`aufnahmen_probe/`).
