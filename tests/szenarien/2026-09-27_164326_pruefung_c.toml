@@ -111,3 +111,13 @@ quelle = "Pruefung c, R8: 'Gut raus - da war er.' nach einer Warnung vor mehrere
 lage = "Nach einem Rueckzug."
 darf_nicht_sagen = ["da war er"]
 warum = "Ohne Pronomen: 'Gut raus.'"
+
+# --- R10 ---
+
+[[szenario]]
+id = "1036-back-fassung-bleibt"
+fenster = ["10:15", "10:45"]
+quelle = "Pruefung c, R10: 10:21 'Back jetzt: 23 Prozent ...' -> 10:36 'Jetzt back: 26 Prozent ...'"
+lage = "Riven mit 23 % Leben auf der Lane, 850 Gold."
+darf_nicht_sagen = ["Jetzt back"]
+warum = "Die Erinnerung an einen Back-Plan hat die Fassung seines ersten Satzes; 'Jetzt back' ist der zweite Schritt eines Rueckzugs."

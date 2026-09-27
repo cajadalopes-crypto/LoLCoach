@@ -148,3 +148,13 @@ quelle = "Pruefung c, R9: 'allein hast du gegen sie keine Chance' - 13 s vorher 
 lage = "Riven stirbt 29:03 am Aeltesten."
 darf_nicht_sagen = ["keine Chance"]
 warum = "Kam in den 20 s vor dem Tod ein Vorwaerts-Ruf des Coaches, lehrt der Rueckblick nicht dagegen."
+
+# --- Ziel 2: ungefragte Ansagen <= 50 je 30 min ---
+
+[[szenario]]
+id = "3710-basis-einmal"
+fenster = ["36:45", "37:20"]
+quelle = "Pruefung c, Ziel 2: 36:50 'Dann Top-Welle.' -> 37:10 'Dann Top-Welle.' (Warteregel 20 s nach dem Eintritt)"
+lage = "Riven in der Basis."
+text_max = { "Dann Top-Welle" = 1 }
+warum = "Die Warteregel zaehlt ab dem letzten gesagten Ziel, nicht nur ab Kauf oder Eintritt."

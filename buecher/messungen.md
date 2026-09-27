@@ -4,6 +4,157 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Qualitätsrunde 3 – Prüfung vom 27.09.2026 (c), R1–R10 (27.09.2026)
+
+Auftrag 001 aus `buecher/auftraege/`. Grundlage: `buecher/protokolle/PRUEFUNG_2026-09-27c.md`, vorher committet in
+8f0b8c3 zusammen mit dem Postfach. Offline gemessen, der Coach wurde nicht gestartet.
+
+### Zuerst rot
+
+26 neue Szenarien in `tests/szenarien/2026-09-27_173159_pruefung_c.toml` (15) und `..._164326_pruefung_c.toml` (11).
+**Alle 26 waren mit dem Stand 842b502 rot.** Geprüft in einem eigenen Worktree auf dem Commit, damit nichts
+Halbfertiges mitlief.
+
+Neue Prüfschlüssel (Buch 0, 12.1 nachgetragen):
+- `je_10min_max = { "muster" = n }`: höchstens n Treffer in jedem 10-Minuten-Abschnitt (R4).
+- `kategorie_max = { "GEFAHR" = n }`: höchstens n Kern-Sätze einer Kategorie (R5). Dafür trägt jede Kern-Ansage ihre
+  Kategorie.
+
+### Umgesetzt
+
+- **R1 Vorwärts-Schranke** (`Kern._schranken`, `[schranken]` in kern.toml):
+  - Unter `vor_leben_min` (0,4) ist keine Vorwärts-Handlung Kandidat. Betroffen: DRUECKEN, MIT_GRUPPE, NEHMEN,
+    BESTREITEN, ZUR_GRUPPE, TP_SPIEL, PLATTEN, SEITENWELLE, WELLE_KLAEREN, VORBEREITEN_OBJECTIVE, ANNEHMEN.
+    Ausnahme: NEHMEN in der Grube, ohne Kampf, fällt in ≤ 5 s.
+  - Mit p_tod ≥ `vor_p_tod_max` (0,3) ist keine davon Kandidat.
+  - Fällt das Leben, bevor ein Satz dran ist, wird er verworfen (Prüfung vor dem Sprechen).
+  - `_kern.jsonl` hat das Feld `schranke`: was in diesem Takt gestrichen wurde.
+- **R2 Das ungeeichte Kampfmodell spricht nicht:**
+  - BESTREITEN und TP_SPIEL werden berechnet, protokolliert und bleiben stumm.
+  - ZUR_GRUPPE zu einem Kampf wird nur gesprochen mit ≥ 1 Kopf mehr nach deiner Ankunft und ≥ 60 % Leben, mit Ort und
+    Namen: „Zu Graves in den Mid-Fluss: mit dir drei gegen zwei.“
+  - DRUECKEN und MIT_GRUPPE werden nur gesprochen, wenn das Ziel vor dem ersten Verteidiger fällt. Sonst sind sie
+    stumm (`modell_stumm`).
+  - NEHMEN mit Kampf (P_kampf ≥ 0,1) ist stumm.
+  - „schlägst“ kommt in keinem Satzbaustein mehr vor. Das Protokoll führt die stummen Rufe mit.
+- **R3 Kaufplan** (`lolcoach/kaufplan.py`):
+  - Das nächste Item ist zuerst das, dessen Bauteile du schon hast. Wer Tiamat hat, baut Hydra.
+  - Sonst kommt der nächste Schritt aus Carlos' eigenem Build, `wissen/build_carlos.toml`. Er ist aus 11 Riven-Partien
+    abgeleitet (`werkzeuge/build_aus_aufnahmen.py`): Axiombogen → Eklipse oder Endloser Hunger → Hydra → Schutzengel →
+    Tanz des Todes → Gespaltener Himmel → Seryldas Bitterkeit. Das Lexikon ist nur noch der letzte Rückfall.
+  - Volles Inventar ohne passendes Bauteil: kein Kauf (164326 38:33 „Kauf Langschwert und Stiefel“ bei sechs Items).
+  - `kaufplan.kaufbar()` prüft jedes genannte Item: Platz frei oder eigene Bauteile verbraucht, nicht schon im
+    Inventar, baut ins Ziel ein. Nur ein Hydra-Item (Spielregel, `GRUPPEN`). Tests in `tests/test_kaufplan.py`.
+- **R4 Back-Rufe** (`Kern._back_sperre`):
+  - Kein Back-Ruf unter 10 % Leben oder in KAMPF, höchstens 3 je 10 Minuten.
+  - Nach einem Back-Ruf ohne Recall kommt ein neuer erst nach 90 s. Ausnahmen: Leben < 30 %, oder das Ziel-Item wird
+    komplett kaufbar.
+  - Das gilt auch für den „Jetzt back“-Schritt und die Erinnerung.
+  - Ein toter oder gebackter Lane-Gegner ist allein kein Back-Grund mehr.
+- **R5 Gefahr:**
+  - Kommt nur der Lane-Gegner, gibt es keine GEFAHR, solange dein Leben ≥ 60 % und `kraefte()` ≥ −0,5 ist. Mit einem
+    zweiten Gegner bleibt sie.
+  - Dieselbe Gegnermenge wird 45 s nicht erneut gewarnt, außer p_tod steigt um ≥ 0,15.
+  - Kein Gefahr-Satz, während du dem sicheren Ort in 2 s ≥ 300 Einheiten näher kommst.
+- **R6 WOHIN:**
+  - Nach der ersten Nennung je Partie kommt nur noch die Kurzform: „Dann Top-Welle.“, „Kauf X, dann Top-Welle.“
+  - Rückfall: Sind ≥ 2 Mitspieler zusammen, ist das Ziel dein Team. „Warte am Turm“ gilt nur, wenn es nicht so ist.
+    Ein Rückfall-Ziel mit p_tod ≥ 0,3 wird nicht gesagt; dann gibt es den Kauf-Satz ohne Ziel oder in TOT keinen Satz.
+  - „einer von ihnen ist“; „Top-Inhibitor-Turm“ statt „Inhibitor-Top-Turm“.
+  - Ein Objective ist nie WOHIN, wenn du zu spät kommst.
+- **R7 kleine Wellen:**
+  - SEITENWELLE und WELLE_KLAEREN erst ab 4 Vasallen, oder mit Supervasallen.
+  - **Ursache der „0 Vasallen“** (164326 33:02): Die Seitenwelle wurde aus dem geglätteten Zustand gewählt, ihre Zahl
+    war in diesem Takt 0. Die Schwelle nimmt sie jetzt heraus.
+- **R8:** „Gut raus.“ ohne Pronomen.
+- **R9 Rückblick:**
+  - Keine Pronomen für Champions, „ihren Jungler“ nur, wenn der Täter ihr Jungler ist.
+  - Kam in den 20 s vor dem Tod ein Vorwärts-Ruf des Coaches, beschreibt der Rückblick die Lage nüchtern: „Am Ältesten
+    kamen drei von ihnen zusammen.“ `_kern.jsonl` markiert den Ruf als `ruf_vor_tod`.
+- **Kennzahl „Schranken-Verstöße“** (`kennzahlen.py`, Soll 0): eine Vorwärts-Ansage mit Leben < 0,4 oder p_tod ≥ 0,3
+  im Takt des Sprechens, „schlägst“, oder ein Kauf-Satz mit einem Item, das nicht passt (`kaufplan.kaufbar`).
+
+### Abnahme
+
+| Ziel der Prüfung c | Soll | Ist |
+|---|---|---|
+| 1. Alle Szenarien grün, alte und neue | grün | **86 / 86** in 12 Dateien (2 übersprungen, brauchen Claude); konstruierte Lagen **40 / 40**; Modus-Sollwerte 102112 **16 / 16**; `tests/alle.py` **9 / 9** (neu: `test_kaufplan`) |
+| Neue Szenarien zuerst rot | rot mit dem alten Stand | **29 / 29**: 26 aus R1–R9 rot mit 842b502, 3 aus R10/Ziel 2 rot mit 8e91aab |
+| 2. Ungefragte Ansagen je 30 min in 164326 und 173159 | ≤ 50 | 164326 **46** (vorher 67), 173159 **52** (vorher 74) – **in 173159 nicht erreicht**, s. u. |
+| 3. Schranken-Verstöße in allen Protokollen | 0 | **0** in allen sechs |
+| 4. Neue Protokolle für alle sieben Partien | ja | **ja**, `buecher/protokolle/2026-09-27_*.md` |
+| Fassungswechsel (R10) | 0 | 102112 **2** (begründet, s. R10), sonst **0** |
+
+**Kennzahlen** (Kern, `kennzahlen.py --nur-kern`):
+
+| Aufnahme | ungefragt (je 30 min) | Lane-Phase je 30 s | Kehrtwenden | Fassungswechsel | Kampf-Verstöße | Schranken-Verstöße | ohne Chance | GEFAHR / PLAN / ERINNERUNG / BESTÄTIGUNG | stumm (davon Kampf-Rufe) |
+|---|---|---|---|---|---|---|---|---|---|
+| 102112 | 52 (51) | 0,72 | 0 | 2 | 0 | 0 | 0 | 15 / 35 / 0 / 1 | 68 (37) |
+| 133930 | 46 (63) | 1,19 | 0 | 0 | 0 | 0 | 0 | 19 / 20 / 1 / 1 | 26 (11) |
+| 140253 | 20 (56) | 0,95 | 0 | 0 | 0 | 0 | 0 | 10 / 8 / 0 / 0 | 7 (7) |
+| 144655 | 18 (56) | 0,96 | 0 | 0 | 0 | 0 | 0 | 11 / 4 / 1 / 0 | 7 (7) |
+| 164326 | 65 (46) | 0,82 | 0 | 0 | 0 | 0 | 0 | 32 / 27 / 2 / 4 | 62 (23) |
+| 173159 | 67 (52) | 0,68 | 0 | 0 | 0 | 0 | 0 | 34 / 26 / 1 / 4 | 59 (28) |
+
+145702 hat nur 0,5 Minuten mit Daten und zählt nicht.
+
+„Stumm“ ist alles, was berechnet und nicht gesagt wurde (R2), über alle sechs Partien:
+- REIN 83, ANNEHMEN 16, DREHEN 14,
+- DRUECKEN 61, MIT_GRUPPE 24, NEHMEN 21, BESTREITEN 7,
+- ABGEBEN_TAUSCHEN 2, TP_SPIEL 1.
+
+ABGEBEN_TAUSCHEN ist dabei, weil sein Tausch-Ziel ein Turm ist, der nur über den Kampf trägt (164326 23:12, 25:29).
+
+**Ziel 2 in 173159 (52 statt ≤ 50):**
+- R1–R9 nahmen 27 Sätze weg (94 → 67, je 30 min 74 → 52).
+- Was bleibt, ist zur Hälfte GEFAHR: 29 Rückzüge und 5 „Raus, zum Turm!“ in 38 Minuten, fast jeder vor einer anderen
+  Gegnermenge.
+- Versucht und zurückgenommen, s. Abweichung 5: eine Sperre für die zweite Warnung in 15 s.
+- Der nächste Hebel ist die Gefahr-Schwelle selbst. 13:00 „Raus …: Olaf kommt.“ kam bei p_tod 0,09. Das ist Eichung
+  (`gefahr_eichung`) und eine Entscheidung, keine Satzregel.
+
+### R10 – Fassungswechsel je Fall
+
+In Prüfung c waren es 2 / 1 / 3 (102112 / 133930 / 164326). Jetzt: **2 / 0 / 0**. Die zwei in 102112 sind neu und
+begründet.
+
+| Fall | Ursache | Stand |
+|---|---|---|
+| 102112 33:20/33:44 und 37:03/37:13: „Back jetzt“ bzw. „Raus zu …“, dann „Jetzt back“ mit neuem Gold | Der Back begann nach dem Rückzug als neuer Plan. | **Weg durch R4:** 90 s nach einem Back-Ruf ohne Recall kein neuer. |
+| 133930 10:25/10:37 und 164326 35:00/35:14: das Turm-Ziel wechselt ohne Ereignis | Beide Turm-Sätze trugen nur über „du schlägst X“. | **Weg durch R2.3:** Solche Ziele sind stumm. |
+| 164326 38:09/38:33: KAUFEN mit anderer Liste | Der Kaufplan nannte Bauteile bei vollem Inventar. | **Weg durch R3.** |
+| 164326 10:21/10:36: „Back jetzt: 23 Prozent …“, dann „Jetzt back: 26 Prozent …“ | Ein BACK_JETZT-Plan hält auch die Rückzug-Episode am Leben. Seine Erinnerung nahm deshalb die Fassung des Rückzug-Schritts. | **Behoben:** Die Erinnerung an einen Back-Plan behält „Back jetzt“ (`1036-back-fassung-bleibt`, rot mit 8e91aab). Dass sie kommt, ist richtig: Leben < 30 %, die Ausnahme von R4. |
+| **neu** 102112 37:35 „Dann Baron.“ → 38:01 „Dann Deinem Team.“ → 38:15 „Dann Top-Welle.“ | Vor jedem Satz fielen Kills. 37:33 Kai'Sa: das Team geht zum Baron. 37:59 Galio: kein Baron mehr, zurück zum Team (p_tod 0,20). 38:01–38:03 Sett und Fiddlesticks: die Top-Welle (p_tod 0). | **Der zweite Satz war jeweils richtig** (9.4 Punkt 5: Kill ist ein neues Ereignis). Die Kennzahl erkennt als Ereignis nur einen neuen Namen im Satz. Die Kurzform nennt keine Namen mehr, deshalb zählt sie beide. **Behoben** ist der Grammatikfehler: jetzt „Dann zu deinem Team.“ (`3801-kurzform-zu-deinem-team`, rot mit 8e91aab). |
+
+### Abweichungen und Entscheidungen
+
+1. **Konstruierte Lagen nach R2 und R4:**
+   - `m-split-drueck`: Der Turm trägt nur über „du schlägst Sett“, jetzt `darf_nicht DRUECKEN`.
+   - `m-tp-spiel`: TP_SPIEL ist stumm, jetzt `darf_nicht`.
+   - `k-gegner-gebackt`: Nach R4.4 ist ein gebackter Gegner ohne Gold oder Leben kein Back-Grund, jetzt
+     FARMEN/PLATTEN statt WELLE_REIN_UND_BACK.
+2. **1516 (133930) und 1025 (140253):** `muss_ziel` entfällt. R6.2: Ist auch der Rückfall ≥ 0,3, wird kein Ziel
+   gesagt. Vorher kam „Warte am inneren …-Turm auf dein Team“.
+3. **3451 (102112):** NEHMEN Drache wird berechnet, ist aber nach R2.4 stumm (Galio sichtbar, P_kampf ≥ 0,1).
+   `soll`/`soll_ziel` zählen jetzt auch den stummen Ruf.
+4. **Rückblick bei „Ruf vor Tod“:** Der Ort kommt aus dem Plan zum Zeitpunkt des Todes, sonst „Dort“. Satz 2 ist
+   „Schau es dir im Review an.“
+5. **Nachwarnungs-Sperre gemessen und zurückgenommen:**
+   - Regel: In den 15 s nach einer Warnung kommt eine zweite nur, wenn p_tod um ≥ 0,15 steigt, auch mit neuem Namen.
+     Anlass waren 13:00/13:12, 14:59/15:03 und 22:07/22:13 in 173159.
+   - Ergebnis: 69 statt 68 ungefragte. Die gestrichenen Warnungen kamen 15–20 s später mit einem Namen mehr zurück.
+   - 22:13 fehlte vor dem Tod („Cho'Gath … kommen“), und der Rückblick wurde schlechter: „Gank von Olaf …“ statt
+     „Raus kam, du bist geblieben“.
+   - Die drei Szenarien dazu sind wieder entfernt.
+6. **Warteregel in der Basis:** Sie zählt jetzt auch ab dem letzten gesagten Ziel, nicht nur ab Kauf oder Eintritt.
+   Vorher kam 173159 36:50 und 37:10 zweimal „Dann Top-Welle.“ (`3710-basis-einmal`).
+7. **Fassungswechsel-Kennzahl und Kills:** Die Kennzahl erkennt ein neues Ereignis nur an einem neuen Namen im
+   zweiten Satz. Seit R6 nennt die Kurzform keine Namen mehr. Die zwei Fälle in 102112 folgen je auf Kills (s. R10).
+   Offen zur Entscheidung: Soll die Kennzahl Kills, Objectives und Lebensverlust als Ereignis zählen, wie die
+   Kehrtwenden (`neues_ereignis`)?
+
+---
+
 ## Schritt 5 – KAMPF und OBJECTIVE (Buch 7 und Buch 6) (27.09.2026)
 
 Grundlage: `buecher/07_kampf.md` und `buecher/06_objectives.md` (committet in 705a6a6), Buch 0 Kapitel 0, 5, 6.3, 7

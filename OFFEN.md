@@ -17,6 +17,17 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Qualitaetsrunde 3 (Pruefung 27.09. c, R1-R10, Auftrag 001) umgesetzt** - Zahlen in `buecher/messungen.md`
+("Qualitaetsrunde 3"), Protokolle neu in `buecher/protokolle/`, Bericht in `buecher/auftraege/001_bericht.md`.
+Schranken-Verstoesse 0 in allen sechs Partien, 86 / 86 Szenarien gruen.
+
+Offen aus der Qualitaetsrunde 3:
+- **Ungefragte Ansagen in 173159: 52 je 30 min** (Ziel <= 50; 164326: 46). Der Rest ist zur Haelfte GEFAHR, fast
+  jede vor einer anderen Gegnermenge. Eine Sperre fuer die zweite Warnung in 15 s wurde gemessen und zurueckgenommen
+  (69 statt 68, die Warnung vor dem Tod 22:13 fehlte). Naechster Hebel: die Gefahr-Schwelle (Eichung) - Entscheidung.
+- **Fassungswechsel-Kennzahl** zaehlt in 102112 zwei begruendete Wechsel (je nach Kills). Entscheidung: Soll sie
+  Kills, Objectives und Lebensverlust als Ereignis zaehlen wie die Kehrtwenden?
+
 **Schritt 5 umgesetzt (Buch 7 Kampf, Buch 6 Objectives, a2e418d)** - der Kern spricht in allen neun Modi. Zahlen und
 Abweichungen in `buecher/messungen.md` ("Schritt 5"), Protokolle neu in `buecher/protokolle/`. Naechster Schritt laut
 Pruefung b: Carlos prueft alle Protokolle; erst danach wieder live.
@@ -35,10 +46,10 @@ Offen aus Schritt 5:
   Kapitel 9 ("Sauber: Drache ohne Kampf").
 - Die Kampf-Proben mit dem groessten Fehler liegen als Stubs in `tests/szenarien/offen/<stamm>_kampf.toml`
   (Buch 7, 10) - Soll setzt Carlos.
-- **Ungefragte Ansagen <= 45 je 30 min nicht erreicht** (59-80). Die alten Regeln sind bis auf Rueckblick und AFK
+- (Stand Qualitaetsrunde 3: 46-63, s. oben) **Ungefragte Ansagen <= 45 je 30 min nicht erreicht** (59-80). Die alten Regeln sind bis auf Rueckblick und AFK
   still; es ist der Kern selbst, 40-50 % GEFAHR (Rueckzug "Raus zu deinem ...-Turm: X und Y kommen"). Naechster Hebel:
   die Gefahr seltener und zusammengefasst.
-- **Fassungswechsel 2/1/3** (102112, 133930, 164326; Soll 0): "Back jetzt" -> "Jetzt back" mit neuem Gold nach
+- (Qualitaetsrunde 3, R10: jetzt 2/0/0, die zwei begruendet - s. oben) **Fassungswechsel 2/1/3** (102112, 133930, 164326; Soll 0): "Back jetzt" -> "Jetzt back" mit neuem Gold nach
   einem Rueckzug (seit der Rueckzug ohne Gefahr endet), Turm-Ziel wechselt ohne Ereignis in 12-14 s, KAUFEN mit
   anderer Liste. Einzelstellen in messungen.md, Schritt 5.
 

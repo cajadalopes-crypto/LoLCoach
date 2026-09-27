@@ -524,6 +524,8 @@ class Kern:
             if BACK_RUF.search(text):
                 self._back_gesagt(m)
             self._wohin_merken(h)
+            if h.art == "WOHIN" and modus == "BASIS":
+                self._basis["zuletzt"] = zeit      # Ziel 2 (173159 36:50/37:10): die Warteregel wartet ab hier
             if nach_dem_sprechen is not None:
                 if h.daten.get("verloren"):
                     nach_dem_sprechen(ansage)
@@ -677,8 +679,10 @@ class Kern:
         z = self._wohin_ziel(h)
         if z is None or z not in self._wohin_genannt:
             return text
-        kurz = re.sub(r"^(zur|zum|zu den|zu) ", "", z)
-        kurz = kurz[0].upper() + kurz[1:] if h.art != "KAUFEN" else kurz
+        kurz = re.sub(r"^(zur|zum|zu den) ", "", z)
+        # R10 (102112 38:01 "Dann Deinem Team."): "zu deinem Team", "auf ..." bleiben, wie sie sind
+        if h.art != "KAUFEN" and not re.match(r"^(zu|auf|in|an) ", kurz):
+            kurz = kurz[0].upper() + kurz[1:]
         if h.art == "KAUFEN" and ", dann " in text:
             return text.rsplit(", dann ", 1)[0] + f", dann {kurz}."     # das letzte ", dann" ist der Weiterweg
         if h.art in ("WOHIN", "WOHIN_TP_LANE"):
@@ -825,7 +829,9 @@ class Kern:
             if ep["back"] or p.als() != "BACK_JETZT":
                 return None
             gruende = h.daten.get("gruende") or ([h.grund] if h.grund else [])
-            text = "Jetzt back" + (f": {gruende[0]}." if gruende else ".")
+            # R10 (164326 10:21 "Back jetzt: ..." -> 10:36 "Jetzt back: ..."): war der Back selbst der Plan, bleibt
+            # seine Fassung; "Jetzt back" ist der zweite Schritt eines Rueckzugs
+            text = ("Back jetzt" if p.art == "BACK_JETZT" else "Jetzt back") + (f": {gruende[0]}." if gruende else ".")
         elif p.als() == "ZURUECK" and h.daten.get("ort"):     # erinnert wird nur, wer noch nicht dort ist
             text = f"Denk dran: raus zu {h.daten['ort']}: {h.grund}."
         elif h.daten.get("verloren"):

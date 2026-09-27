@@ -45,3 +45,13 @@ darf_nicht = ["PLATTEN"]
 darf_nicht_sagen = ["Platte"]
 warum = """Nach einer GEFAHR-Ansage 20 s keine vorwaerts gerichtete Handlung, ausser die Gefahr ist sichtbar vorbei (der
 Gegner tot oder gesehen > 3000 entfernt)."""
+
+# --- Qualitaetsrunde 3 (PRUEFUNG_2026-09-27c.md), R10: verbliebene Fassungswechsel ---
+
+[[szenario]]
+id = "3801-kurzform-zu-deinem-team"
+fenster = ["37:30", "38:20"]
+quelle = "Pruefung c, R10: 38:01 'Dann Deinem Team.' - die Kurzform schnitt das 'zu' ab"
+lage = "Riven in der Basis, das Team kaempft am Baron."
+darf_nicht_sagen = ["Dann deinem Team", "dann deinem Team"]
+warum = "Die Kurzform behaelt 'zu deinem Team'; nur 'zur/zum/zu den' fallen vor einem Ortsnamen weg."
