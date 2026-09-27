@@ -726,6 +726,9 @@ def aufbruch(b: Bewertung, jungle, gekauft: list[str]) -> str:
     else:
         vorn = g is not None and b.kraft_gegen([g], mit_verbuendeten=False) >= 1.3
         if w := ward_plan(b, jungle, vorn, kontroll_kommt="Nimm noch ein Kontroll-Auge mit." in saetze):
+            # nicht ueber ~15 s am Stueck (Regressionspruefung 27.09.: 327 Zeichen): dann ohne die Jungler-Prognose
+            if len(" ".join(saetze)) + len(w) > 200 and ":" in w:
+                w = w.split(":")[0]
             saetze.append(f"Auf dem Weg setzt du {w}.")
     if len(saetze) < 2 and not gekauft:
         return ""
