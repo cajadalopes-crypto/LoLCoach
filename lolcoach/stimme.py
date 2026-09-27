@@ -72,8 +72,10 @@ class _Strom:
     ganze Teilsatz 0,1-0,3 s spaeter; bisher klang er erst, wenn er ganz da war. Kommt nach ZWEITE_ANFRAGE_NACH
     kein Audio, laeuft eine zweite Anfrage mit; die zuerst tonende gilt."""
 
-    def __init__(self, text: str, stimme: str, tempo: str, faktor: float):
+    def __init__(self, text: str, stimme: str, tempo: str, faktor: float, sofort: bool = False):
+        """`sofort`: beide Anfragen gleich (Gefahr, nicht vorgewaermt) - die schnellere gilt."""
         self.text, self.stimme, self.tempo, self.faktor = text, stimme, tempo, faktor
+        self.zweite_nach = 0.0 if sofort else ZWEITE_ANFRAGE_NACH
         self.stuecke: list = []          # float32-Arrays, in Reihenfolge
         self.rate = 24000
         self.fertig = False
@@ -136,7 +138,7 @@ class _Strom:
         laeufe = {1: asyncio.create_task(anfrage(1))}
         laeufe[1].add_done_callback(ruhig)
         warte = asyncio.create_task(erstes.wait())
-        await asyncio.wait({laeufe[1], warte}, timeout=ZWEITE_ANFRAGE_NACH, return_when=asyncio.FIRST_COMPLETED)
+        await asyncio.wait({laeufe[1], warte}, timeout=self.zweite_nach, return_when=asyncio.FIRST_COMPLETED)
         warte.cancel()
         if gewinner[0] is None:
             laeufe[2] = asyncio.create_task(anfrage(2))
@@ -188,7 +190,7 @@ class _Neural:
         self._fest: set[str] = set()
         self._schloss = threading.Lock()
 
-    def strom(self, text: str, fest: bool = False) -> _Strom:
+    def strom(self, text: str, fest: bool = False, sofort: bool = False) -> _Strom:
         """Die Synthese von `text`: laufend, fertig (Zwischenspeicher) oder neu gestartet. `fest`: vorgewaermt,
         wird nie verdraengt."""
         with self._schloss:
@@ -196,7 +198,7 @@ class _Neural:
                 self._fest.add(text)
             s = self._stroeme.get(text)
             if s is None or (s.fertig and not s.stuecke):
-                s = _Strom(text, self.stimme, self.tempo, self.lautstaerke / 100.0)
+                s = _Strom(text, self.stimme, self.tempo, self.lautstaerke / 100.0, sofort)
                 self._stroeme[text] = s
                 if len(self._stroeme) > 150 + len(self._fest):
                     for k in [k for k, v in self._stroeme.items() if v.fertig and k not in self._fest][:75]:
@@ -239,8 +241,9 @@ class _Neural:
                 print(f"  (Stimme: WASAPI geht nicht - {type(e).__name__}: {e}; nehme MME)", flush=True)
         return sd.OutputStream(samplerate=rate, channels=1, dtype="float32")
 
-    def spreche(self, text: str, stopp: threading.Event, beim_ton=None, gilt=None) -> bool:
+    def spreche(self, text: str, stopp: threading.Event, beim_ton=None, gilt=None, sofort: bool = False) -> bool:
         """`gilt()`: stimmt der Satz noch? Alle PRUEFEN_ALLE Sekunden gefragt - wenn nicht, bricht er ab.
+        `sofort`: dringend (Gefahr, Antwort) - der erste Teil, wenn nicht im Speicher, mit zwei Anfragen zugleich.
         `beim_ton`: wird beim ersten Ton gerufen (Messung)."""
         import numpy as np
         teile = teilsaetze(text)
@@ -248,7 +251,7 @@ class _Neural:
 
         def los(i: int) -> _Strom:
             if stroeme[i] is None:
-                stroeme[i] = self.strom(teile[i])
+                stroeme[i] = self.strom(teile[i], sofort=sofort and i == 0)
             return stroeme[i]
 
         for i in range(min(len(teile), self.VORAUS + 1)):
@@ -407,6 +410,7 @@ class Stimme:
         while True:
             try:
                 text, fertig, melde, noch_wahr = self._vorrang.get_nowait()
+                dringend = True
             except queue.Empty:
                 if not self._frei.is_set():
                     if time.monotonic() - self._pausiert_seit > PAUSE_HOECHSTENS:
@@ -427,6 +431,7 @@ class Stimme:
                     self._gehalten = eintrag
                     continue
                 text, fertig, melde, rein, noch_wahr = eintrag
+                dringend = False
                 if fertig is None and time.monotonic() - rein > VERALTET:
                     if melde:
                         _still(melde, "verworfen", time.monotonic())
@@ -453,7 +458,8 @@ class Stimme:
             ganz = False
             try:
                 ton = (lambda m=melde: _still(m, "ton", time.monotonic())) if melde else None
-                ganz = motor.spreche(sprechbar(text), self._stopp, ton, gilt if noch_wahr is not None else None)
+                ganz = motor.spreche(sprechbar(text), self._stopp, ton, gilt if noch_wahr is not None else None,
+                                     **({"sofort": dringend} if isinstance(motor, _Neural) else {}))
                 if not ganz and not widerrufen[0]:
                     self._unterbrochen = (text, time.monotonic())
             except Exception as e:
