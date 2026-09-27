@@ -443,6 +443,16 @@ def lage_text(p: Partie, lagebild=None) -> str:
             from . import bewertung
             if b := bewertung.bewerte(p, lagebild):
                 zeilen.append(b.text())
+                # das Kampf-Urteil mit allen Faktoren - live 235433, 6:46: "Wie hast du mein Damage kalkuliert?" ->
+                # Claude: "grobe Schaetzung", obwohl der Coach es gerechnet hatte
+                from . import denker
+                if b.lane is not None and (u := denker.urteil(b)) is not None:
+                    zeilen.append(
+                        f"KAMPF-URTEIL DES COACHS gegen {b.lane.champion}: {u.art} (Summe {u.wert:+.1f}); Faktoren: "
+                        + "; ".join(f"{x.satz} ({x.wert:+.1f})" for x in sorted(u.faktoren, key=lambda x: -abs(x.wert)))
+                        + ". So rechnet der Combo: Faehigkeitsschaden aus den Spieldaten (CommunityDragon) mit den "
+                          "Raengen nach Level und Skill-Reihenfolge, deiner AD/AP, seiner Ruestung/Magieresistenz, "
+                          "je Faehigkeit ein Auto-Angriff, Zuenden wenn bereit - eine Untergrenze.")
             if (jt := getattr(lagebild, "jungle", None)) and (jtext := jt.text(p.zeit, p.ich.rolle)):
                 zeilen.append(jtext)
             if (e := getattr(lagebild, "entscheider", None)) is not None and e.aktuell is not None:
