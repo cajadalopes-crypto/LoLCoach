@@ -27,6 +27,11 @@ def main():
     assert champions.steckbrief("GibtEsNicht") == "" and champions.ult_cooldown("GibtEsNicht") == []
     assert champions.zauber_cooldown("SummonerFlash") == 300
     assert champions.zauber_cooldown("GibtEsNicht") == 0
+    # ALLE Champions durch die Kampfrechnung - als Gegner und als eigener Champion (werkzeuge/alle_champions.py)
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "werkzeuge"))
+    import alle_champions
+    befund = alle_champions.pruefen()
+    assert not befund, befund
     print("Champions OK")
 
 
