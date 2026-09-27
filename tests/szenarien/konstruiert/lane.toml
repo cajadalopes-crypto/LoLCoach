@@ -93,13 +93,31 @@ zeit = "7:00"
 ich = { level = 7, leben = 0.8, gold = 600 }
 welle = { zustand = "MITTE", unsere = 4, ihre = 4, front = 0.5, trend = 0.0 }
 kanone_in = 31
-lane_gegner = { level = 7, abstand = 1300 }
+lane_gegner = { level = 7, im_brunnen = true }
 jungler = { p_meine_seite = 0.2, seit = 20 }
+jungler_wir = { abstand = 2500 }
 kauf = { lohnt = false }
 objective = { schl = "larven", spawn_in = 60, seite = "meine", weg = 18 }
 soll = ["STAPELN"]
 satz_enthaelt = ["Kanone"]
-warum = "Larven in 60 s auf deiner Seite: bis zur Kanone stapeln, dann crashen - Sett muss waehlen, Welle oder Larven."
+warum = """Larven in 60 s auf deiner Seite, Sett ist gebackt (Prio) und dein Jungler geht hin: bis zur Kanone
+stapeln, dann crashen. Buch 6 (Kapitel 6): ohne Prio und ohne euren Jungler zieht das Objective nicht - dafuer
+k-kein-stapeln-ohne-jungler."""
+
+[[lage]]
+id = "k-kein-stapeln-ohne-jungler"
+buch = "6"
+zeit = "7:00"
+ich = { level = 7, leben = 0.8, gold = 600 }
+welle = { zustand = "MITTE", unsere = 4, ihre = 4, front = 0.5, trend = 0.0 }
+kanone_in = 31
+lane_gegner = { level = 7, abstand = 1300 }
+jungler = { p_meine_seite = 0.2, seit = 20 }
+kauf = { lohnt = false }
+objective = { schl = "larven", spawn_in = 60, seite = "meine", weg = 18 }
+darf_nicht = ["STAPELN", "VORBEREITEN_OBJECTIVE"]
+warum = """Der Larven-Sog (Buch 6, Kapitel 0): Larven in 60 s, aber keine Prio und kein Jungler, der hingeht - das
+Objective zieht dich nicht; du spielst deine Lane, als gaebe es keins."""
 
 [[lage]]
 id = "k-nicht-stapeln-jungler-oben"
@@ -150,12 +168,14 @@ zeit = "7:20"
 ich = { level = 8, leben = 0.9, gold = 500 }
 welle = { zustand = "GEHALTEN_BEI_DIR", unsere = 2, ihre = 5, front = 0.42, trend = 0.0 }
 kanone_in = 10
-lane_gegner = { level = 7, leben = 0.9, abstand = 1400, kraefte = 2.0 }
+lane_gegner = { level = 7, tot_noch = 25, kraefte = 2.0 }
 jungler = { p_meine_seite = 0.2, seit = 30 }
+jungler_wir = { abstand = 2500 }
 kauf = { lohnt = false }
 objective = { schl = "larven", spawn_in = 40, seite = "meine", weg = 20 }
 darf_nicht = ["WELLE_HALTEN"]
-warum = "Larven in 40 s auf deiner Seite: ein Freeze bindet dich an deinen Turm."
+warum = """Larven in 40 s auf deiner Seite, Sett tot, dein Jungler geht hin: ein Freeze bindet dich an deinen Turm.
+(Buch 6: nur ein Objective, das dich zieht, verbietet den Freeze - daher Prio und Jungler in der Lage.)"""
 
 [[lage]]
 id = "k-platten-gegner-tot"

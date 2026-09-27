@@ -17,7 +17,8 @@ from .. import wert
 from ..handlung import Handlung, Ziel
 from . import OBJ_NAME, liste, puenktlich, uhr, welle_name
 
-ZUM = {"drache": "zum Drachen", "baron": "zum Baron", "herold": "zum Herold", "larven": "zu den Larven"}
+ZUM = {"drache": "zum Drachen", "baron": "zum Baron", "herold": "zum Herold", "larven": "zu den Larven",
+       "aeltester": "zum Ältesten"}
 GRUBE_WORT = {"grube:drache": "zum Drachen", "grube:baron": "zum Baron"}
 
 
@@ -163,11 +164,37 @@ def rechtzeitig(z: TurmZiel, bis: float) -> list:
     return [g for g, t in z.ankunft if t <= bis]
 
 
-def schlaegt(m, gegen: list, c: dict) -> bool:
-    """Du (mit Mitspielern in 1500) schlaegst die, die rechtzeitig kommen (kraft_gegen >= split_kraft_min). Ist es
-    genau die Antwort der Seite, zaehlt ihre gemessene Kraft (Buch 5, 3.1)."""
+def ernste(m, gegen: list, ort, bis: float) -> list:
+    """Die, die wahrscheinlich wirklich kommen: sichtbar dort oder p_da >= 0,5 bis `bis` an `ort` (Schritt 5)."""
+    from .. import gefahr, konfig
+    return [g for g in gegen if gefahr.p_da_am(g, bis, m, konfig()["gefahr"], ort) >= 0.5]
+
+
+def schlaegt(m, gegen: list, c: dict, ort=None, bis: float | None = None) -> bool:
+    """Du (mit Mitspielern) schlaegst die, die rechtzeitig kommen. Ist es genau die Antwort der Seite, zaehlt ihre
+    gemessene Kraft (Buch 5, 3.1). Mit `ort` (seit Schritt 5): kommen ZWEI oder mehr wahrscheinlich (sichtbar dort
+    oder p_da >= 0,5 bis `bis`), entscheidet kampf.p_gewinn dort mit dem Turm - EIN Kampfmodell (Buch 7, 1.4), alle,
+    die bis zum Ende dort sein koennen (Buch 6, 1.2) - statt kraft_gegen gegen den ersten (102112 34:51: "Geh auf den
+    Mid-Inhibitor-Turm", waehrend Sett, Kai'Sa und Fiddlesticks dort respawnten). Kommt nur einer, gilt Buch 5 wie
+    bisher. Die Schwelle bleibt split_kraft_min, als Kraftverhaeltnis in p umgerechnet (1,2 -> 0,59)."""
     if not gegen:
         return True
+    if ort is not None and len(gegen) >= 2:
+        from .. import kampf, konfig
+        cfg = konfig()
+        T = bis if bis is not None else cfg["kampf"]["fenster_s"]
+        ernst = ernste(m, gegen, ort, T)
+        if len(ernst) >= 2:
+            k = cfg["kampf"]["k"]
+            p_min = c["split_kraft_min"] ** k / (1.0 + c["split_kraft_min"] ** k)
+            # gewichtet wie ueberall (sichtbar dort 1, sonst p_da); auf eurer Seite "du, mit Mitspielern in 1500" wie in
+            # Buch 5 - nicht jeder, der in weg + dauer irgendwo hinkaeme (102112 25:25: "Top-Inhibitor-Turm jetzt: du
+            # schlaegst die drei", 39 s ueber die Karte, gezaehlt mit dem ganzen Team)
+            nah = {s.name for s in (getattr(m.b, "mitspieler_nah", None) or [])}
+            p, _ = kampf.p_gewinn(m, ort, T, cfg=cfg, mitspieler_nur=nah)
+            return p >= p_min
+        gegen = ernst[:1] or gegen[:1]
+    gegen = gegen[:1] if ort is not None else gegen
     if len(gegen) == 1 and m.antwort is not None and gegen[0].s.name == m.antwort.s.name and m.antwort_kraft is not None:
         return m.antwort_kraft >= c["split_kraft_min"]
     return m.b.kraft_gegen(gegen) >= c["split_kraft_min"]
@@ -188,7 +215,10 @@ def dahinter(z: TurmZiel, m, cfg: dict, mit: int, ab: float) -> float:
     z2 = TurmZiel(z.team, z.lane, stufe, pos, TURM_DE[stufe].format(lane=z.lane),
                   abstand(z.pos, pos) * WEGFAKTOR / m.mein_tempo, ank, unb)
     fertig = ab + z2.weg + turm_dauer(z2, cfg["mitte"], mit)
-    return turm_gewinn(z2, m, cfg) if schlaegt(m, rechtzeitig(z2, fertig)[:1], cfg["mitte"]) else 0.0
+    return turm_gewinn(z2, m, cfg) if schlaegt(m, rechtzeitig(z2, fertig), cfg["mitte"], z2.pos, fertig) else 0.0
+
+
+ZAHL_WORT = {3: "drei", 4: "vier", 5: "fünf"}
 
 
 def fenster_grund(z: TurmZiel, m, bis: float, kommen: list) -> str:
@@ -205,7 +235,9 @@ def fenster_grund(z: TurmZiel, m, bis: float, kommen: list) -> str:
     elif not kommen and erste is not None and erste >= bis:
         teile.append(f"frühestens in {int(erste)} Sekunden kann einer von ihnen dort sein")
     if kommen:
-        namen = liste([g.champion for g in kommen])
+        # hoechstens zwei Namen, ab drei wird gezaehlt (Buch 6, 9)
+        namen = (liste([g.champion for g in kommen]) if len(kommen) <= 2
+                 else f"die {ZAHL_WORT.get(len(kommen), len(kommen))}, die rechtzeitig kommen")
         teile.append(f"{namen} schlägst du" if teile else f"du schlägst {namen}")
     if teile:
         return ", ".join(teile)
@@ -220,6 +252,8 @@ def umwandeln(m, cfg: dict) -> float | None:
     ob ein Turm noch vor seinem ersten Verteidiger faellt, rechnet turm_handlungen (36:32: Sona noch 14 s tot, du
     10 s vor dem Mid-Inhibitor-Turm). Rueckgabe: der kuerzeste Respawn (das Fenster), sonst None."""
     c = cfg["mitte"]
+    if (baron := baron_fenster(m, cfg)) is not None:
+        return baron
     if not m.tote_gegner or m.leben is None or m.leben < 0.3:
         return None
     if len(m.tote_gegner) - m.tote_eigene < c["umwandeln_ueberzahl"]:
@@ -228,10 +262,39 @@ def umwandeln(m, cfg: dict) -> float | None:
     return kuerzest if kuerzest >= c["umwandeln_fenster_min_s"] or (m.umwandeln_lief and kuerzest > 0) else None
 
 
+def baron_fenster(m, cfg: dict) -> float | None:
+    """Buch 6, 4.6: eigener Ausloeser fuers Umwandeln - euer BaronKill <= baron_fenster_s her und >= 3 von euch mit dem
+    Buff leben (seit dem Kill nicht gestorben). Rueckgabe: der Rest des Buffs, sonst None."""
+    p = m.p
+    if p is None or m.tot or m.leben is None or m.leben < 0.3:
+        return None
+    c = cfg["objective"]
+    barone = [e for e in p.kills_von("BaronKill") if e.team == p.mein_team]
+    if not barone or m.zeit - barone[-1].zeit > c["baron_fenster_s"]:
+        return None
+    t0 = barone[-1].zeit
+    gestorben = {e.opfer.name for e in p.kills_von("ChampionKill")
+                 if e.opfer is not None and e.opfer.team == p.mein_team and e.zeit >= t0}
+    mit_buff = sum(1 for s in p.team(p.mein_team) if not s.tot and s.name not in gestorben)
+    if mit_buff < c["baron_umwandeln_mindestens"]:
+        return None
+    return c["baron_fenster_s"] - (m.zeit - t0)
+
+
 def umwandeln_zuerst(m, cfg: dict, aus: list[Handlung]) -> list[Handlung]:
-    """Kapitel 8: ist das Fenster nach einem Kampf offen und eine Struktur erreichbar, gibt es jetzt keinen Back."""
+    """Kapitel 8: ist das Fenster nach einem Kampf offen und eine Struktur erreichbar, gibt es jetzt keinen Back.
+    Buch 6, 8: Objectives haben einen Platz in der Reihenfolge (Baron/Aeltester 2,5, Drache 1,5) - ein erreichbares
+    Objective verdraengt die Tuerme dahinter. Die 200 GE je Rang in turm_handlungen reichten dafuer nicht (102112 25:22:
+    der aeussere Mid-Turm, 1048, gegen den freien Drachen, 221 - Buch 6 sagt dort NEHMEN)."""
     if umwandeln(m, cfg) is None:
         return aus
+    from .objective import ORDNUNG as OBJ_ORDNUNG
+    obj = [OBJ_ORDNUNG[h.daten["objective"]] for h in aus
+           if h.art in ("NEHMEN", "BESTREITEN") and h.daten.get("objective") in OBJ_ORDNUNG]
+    if obj:
+        rang = max(obj)
+        aus = [h for h in aus if not (h.daten.get("umwandeln") and h.daten.get("turm")
+                                      and ORDNUNG.get(h.daten["turm"][2], 0) < rang)]
     if any(h.daten.get("umwandeln") for h in aus):
         return [h for h in aus if h.art not in ("BACK_JETZT", "WELLE_REIN_UND_BACK")]
     return aus
@@ -251,9 +314,10 @@ def turm_handlungen(m, cfg: dict, modus: str, art: str, split: bool) -> list[Han
         if art == "MIT_GRUPPE" and mit == 0:
             continue              # "mit der Gruppe" nur, wo die Gruppe ist - allein ist es DRUECKEN (UNTERWEGS)
         dauer = turm_dauer(z, c, mit)
-        # "nur, wenn der erste Verteidiger spaeter kommt als weg + dauer, oder du ihn schlaegst" (Kapitel 2)
-        kommen = rechtzeitig(z, z.weg + dauer)[:1]
-        if not schlaegt(m, kommen, c):
+        # "nur, wenn der erste Verteidiger spaeter kommt als weg + dauer, oder du ihn schlaegst" (Kapitel 2) - seit
+        # Schritt 5 alle, die bis weg + dauer kommen (Buch 6, 1.2), im Kampfmodell mit dem Turm (Buch 7, 1.4)
+        kommen = rechtzeitig(z, z.weg + dauer)
+        if not schlaegt(m, kommen, c, z.pos, z.weg + dauer):
             continue
         if split:
             if z.lane != m.lane_hier:
@@ -272,7 +336,7 @@ def turm_handlungen(m, cfg: dict, modus: str, art: str, split: bool) -> list[Han
         if fenster_um is not None:
             folge = 200.0 * ORDNUNG[z.stufe]        # die Reihenfolge aus Kapitel 8: das erste erreichbare gewinnt
             folge += dahinter(z, m, cfg, mit, z.weg + dauer)
-        grund = fenster_grund(z, m, z.weg + dauer, kommen)
+        grund = fenster_grund(z, m, z.weg + dauer, ernste(m, kommen, z.pos, z.weg + dauer) or kommen[:1])
         name = z.name[4:] if z.name.startswith("den ") else z.name       # "inneren Top-Turm"
         if fenster_um is not None and z.stufe == "Inhib":
             satz = f"{z.lane}-Inhibitor-Turm jetzt: {grund}."
@@ -343,13 +407,22 @@ def zur_gruppe(m, cfg: dict, modus: str) -> list[Handlung]:
         tp = m.tp_in == 0
         laeuft_noch = k.seit <= 3.0
         aendert = k.eigene + 1 >= k.gegner
+        if aendert and k.ort in ("grube:drache", "grube:baron"):
+            # Buch 6, 4.7: an einem Objective muss dein TP das Urteil aendern
+            from .. import kampf
+            mit, _ = kampf.p_gewinn(m, k.pos, cfg["objective"]["kampf_fenster_s"], cfg=cfg)
+            ohne, _ = kampf.p_gewinn(m, k.pos, cfg["objective"]["kampf_fenster_s"], cfg=cfg, ohne_mich=True)
+            # "muss dein TP das Urteil aendern": um >= tp_unterschied_min - oder es kippt (ohne dich verloren, mit dir
+            # gewonnen). Mit k = 2 und mitspieler_anteil 0,8 hebt ein Spieler p_gewinn bei 4 gegen 4 nur um 0,147 - die
+            # Schwelle allein liesse das Beispiel aus Buch 5 ("TP macht es 5 gegen 4") nie zu (Abweichung, messungen.md)
+            aendert = mit - ohne >= cfg["objective"]["tp_unterschied_min"] or ohne < 0.5 <= mit
         if tp and (k.dein_weg or 0) > c["tp_zu_fuss_ab_s"] and laeuft_noch and aendert:
             gegen_tp = ""
             if m.tp_gegner_top is not None and m.tp_gegner_top > 0 and m.b.lane is not None:
                 gegen_tp = f", {m.b.lane.champion} hat kein TP"
             h = Handlung("TP_SPIEL", Ziel("ort", ort, k.pos, 4.0), modus, 8.0, gewinn=wert_ * 1.2,
                          kosten=0.5 * wert.wellenwert(m.zeit, cfg), gefahr_t=4.0, grund=zahlen,
-                         satz=f"TP {ort}, hinter sie: {zahlen}{gegen_tp}.")
+                         satz=f"TP {ort}, dann rein: {zahlen}{gegen_tp}.")
             h.daten["ziel_pos"] = k.pos
             aus.append(h)
     return aus
@@ -363,9 +436,10 @@ def welle_und_raus(m, cfg: dict, modus: str, lane: str, w) -> Handlung | None:
         return None
     frueher = 15.0 if (m.tp_gegner_top == 0 and m.tp_in != 0) else 0.0
     from . import objectives_meine_seite
+    from .. import objective as obj
     meine = {o.schl for o in objectives_meine_seite(m, lane)}
     for o in sorted(m.objectives, key=lambda o: o.spawn_in):
-        if o.schl in meine or o.lebt or not (45 <= o.spawn_in <= 75 + frueher):
+        if o.schl in meine or o.lebt or not (45 <= o.spawn_in <= 75 + frueher) or not obj.zieht(m, o, cfg):
             continue
         weg = o.weg if o.weg is not None else 40.0
         ww = wert.wellenwert(m.zeit, cfg)
@@ -388,9 +462,11 @@ def objective_ruft(m, cfg: dict, lane: str | None) -> bool:
     c = cfg["mitte"]
     if m.tp_in == 0:
         return False
+    from .. import objective as obj
     vorlauf = c["rotation_vorlauf_s"] + (15.0 if m.tp_gegner_top == 0 else 0.0)
-    return any(not o.lebt and o.spawn_in <= vorlauf for o in m.objectives) or any(
-        o.lebt and o.team_nah >= 2 for o in m.objectives)
+    # Buch 6, 4.1: ruft nur, was dich zieht
+    return any(obj.zieht(m, o, cfg) and ((not o.lebt and o.spawn_in <= vorlauf) or (o.lebt and o.team_nah >= 2))
+               for o in m.objectives)
 
 
 def halten(modus: str) -> Handlung:

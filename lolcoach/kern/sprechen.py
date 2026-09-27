@@ -23,7 +23,7 @@ FREI = ("GEFAHR", "TECHNIK")        # zaehlen nicht zum Budget
 
 def zaehlt(a: Ansage) -> bool:
     """Zaehlt eine gesprochene Ansage zum Budget (9.2)? Nicht: GEFAHR (Thema gefahr / SOFORT), Briefing, TECHNIK."""
-    return not (a.prio >= SOFORT or a.thema == "gefahr" or a.schluessel in ("briefing", "kern:technik"))
+    return not (a.prio >= SOFORT or a.thema == "gefahr" or a.schluessel in ("briefing", "kern:technik", "tod"))
 
 
 class Sprecher:

@@ -128,6 +128,17 @@ class Partie:
                 return t
         return None
 
+    def unten_aeltester(self) -> bool:
+        """Buch 6, 3.1: das Objective der unteren Grube ist der Aelteste - nach der Seele (Classic: 4 Drachen eines
+        Teams; Swiftplay: nach drache_max Elementardrachen oder ab aeltester_ab)."""
+        if self.modus == "SWIFTPLAY":
+            sw = wissen.lade("mechanik")["swiftplay"]
+            kills = self.kills_von("DragonKill")
+            elementar = [k for k in kills if k.daten.get("DragonType") != "Elder"]
+            return (len(elementar) >= sw["drache_max"] or self.zeit >= sw["aeltester_ab"]
+                    or any(k.daten.get("DragonType") == "Elder" for k in kills))
+        return self.seele() is not None
+
     def naechster_spawn(self, schluessel: str) -> float | None:
         """Spielzeit des naechsten Spawns; None = kommt nicht (mehr).
 

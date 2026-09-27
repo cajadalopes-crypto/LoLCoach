@@ -202,6 +202,7 @@ class Regelwerk:
                     continue
                 if weg == "stumm":
                     continue
+                a._regel = regel.__name__        # alte Regel (Buch 6, 13: alte_regeln_max; Buch 7, 11: Kampf-Verstoesse)
                 a.zeit = p.zeit
                 if a.pruefe is None:
                     try:
@@ -544,11 +545,11 @@ class Regelwerk:
             weg = bewertung.abstand(b.pos, grube) * bewertung.WEGFAKTOR / b.mein_tempo
             frei, _, _ = bewertung.verteidiger_ab(b, grube, weg)
             frei = frei if frei is not None else 1e9
-            if weg + cfg["dauer_s"].get(o, 20) > frei:
+            if weg + cfg.get("dauer_s", {}).get(o, 20) > frei:
                 continue
             n = 1 + sum(1 for _, wo, *_ in b.mitspieler
                         if wo is not None and bewertung.abstand(wo, grube) * bewertung.WEGFAKTOR / 380.0 <= frei)
-            if n < cfg["mindestens"].get(o, 2):
+            if n < cfg.get("mindestens", {}).get(o, 2):
                 continue
             wert = cfg.get(o, 0)
             if beste is None or (wert, -weg) > (beste[2], -beste[1]):
@@ -1408,6 +1409,10 @@ class Regelwerk:
         text = komponist.todesrueckblick(davor, namen, j.champion if j and p.ich.rolle != "JUNGLE" else None, turm,
                                          zehn.leben if zehn is not None else None) \
             or (cfg["turm"] if turm else cfg["solo"].format(champion=namen[0]))
+        # Buch 7, 8 (Schritt 5): erkennt der Kern aus der Probe am letzten Entscheidungspunkt eine der Lagen, gilt sein Satz
+        if self.kern is not None:
+            text = self.kern.rueckblick_text(p.zeit, kill.taeter.champion if kill.taeter is not None else None, namen,
+                                             turm, zehn.leben if zehn is not None else None, text)
         # Lange genug tot: der Stratege sagt statt des Standardsatzes den eigentlichen Grund
         # (todesanalyse.py) - Zeit dafuer ist die Todeszeit selbst.
         cfg_a = self.m["todesanalyse"]

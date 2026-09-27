@@ -55,6 +55,32 @@ class Takt:
     plan: str | None = None                 # Plan-Art des Kerns (Schritt 3; im Folgeschritt die Art, der er entspricht)
     gefahr: bool = False                    # schlaegt das Gefahr-Modell an (7.5)?
     plan_ptod: float | None = None          # p_tod des Kern-Plans in diesem Takt (Qualitaetsrunde 1, plan_p_tod_max)
+    plan_ziel: str = ""                     # Ziel des Plans + Objective (Buch 6, 13: soll_ziel)
+    plan_obj: str | None = None             # daten["objective"] des Plans (Buch 6, 14: Kennzahl "ohne Chance")
+    obj_zieht: dict = field(default_factory=dict)   # Objective -> objective_zieht in diesem Takt
+    stumm: str | None = None                # Entscheidung 2: stummer Kampf-Ruf dieses Takts ("REIN: Rein auf Sona!")
+
+
+def plan_art(kern, modus) -> str | None:
+    """Die Plan-Art des Takts; in KAMPF die Entscheidung der Tabelle 5.1 (Buch 7, 5 - kein PlanFuehrer dort)."""
+    if modus == "KAMPF" and getattr(kern, "_kampf", None) is not None and kern._kampf.tabelle:
+        return kern._kampf.tabelle
+    return kern.fuehrer.plan.als() if kern.fuehrer.plan is not None else None
+
+
+def plan_ziel(plan) -> str:
+    """Buch 6, 13 (soll_ziel): Ziel-Name des Plans und sein Objective ("Drache", "Nexus-Turm", ...)."""
+    if plan is None:
+        return ""
+    from lolcoach.kern.modi import OBJ_NAME
+    h = plan.handlung
+    teile = [h.ziel.name if h.ziel is not None else ""]
+    weiter = h.daten.get("wohin")                  # KAUFEN: der Weiterweg ("dann Mid")
+    if weiter is not None and getattr(weiter, "ziel", None) is not None:
+        teile.append(weiter.ziel.name)
+    if h.daten.get("objective"):
+        teile.append(OBJ_NAME.get(h.daten["objective"], h.daten["objective"]))
+    return " | ".join(t for t in teile if t)
 
 
 @dataclass
@@ -123,9 +149,13 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
                                sum(len(p.kills_von(e)) for e in OBJ_EVENTS),
                                frozenset(g.champion for g in b.gegner if g.sichtbar and g.abstand is not None
                                          and g.abstand <= NEU_SICHTBAR_RADIUS) if b else frozenset(),
-                               werk.modus, kern.fuehrer.plan.als() if kern.fuehrer.plan is not None else None,
+                               werk.modus, plan_art(kern, werk.modus),
                                kern.gefahr,
-                               kern.fuehrer.plan.handlung.p_tod if kern.fuehrer.plan is not None else None))
+                               kern.fuehrer.plan.handlung.p_tod if kern.fuehrer.plan is not None else None,
+                               plan_ziel(kern.fuehrer.plan),
+                               kern.fuehrer.plan.handlung.daten.get("objective") if kern.fuehrer.plan else None,
+                               {s: u.zieht for s, u in (kern.m.obj_urteile or {}).items()} if kern.m else {},
+                               getattr(kern, "_stumm_takt", None)))
         while offen and p.zeit >= offen[0]:
             soll = offen.pop(0)
             lauf.halte[soll] = (p, b, lage_kurz(p, b, lb))

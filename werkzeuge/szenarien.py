@@ -7,13 +7,17 @@ Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes
                             seit der Qualitaetsrunde 1: ziele_max, satz_mit (+ satz_mit_anzahl), fassung_einmal,
                             woerter_max (+ woerter_schluessel), gold_reicht; seit der Qualitaetsrunde 2:
                             text_max = { "muster|muster" = n } (hoechstens n Saetze mit einem der Muster),
-                            planwechsel_max (Wechsel der Plan-Art zwischen gesprochenen Kern-Saetzen)
+                            planwechsel_max (Wechsel der Plan-Art zwischen gesprochenen Kern-Saetzen); seit Schritt 5
+                            (Buch 6, 13): max_woerter (kein gesprochener Satz im Fenster laenger), alte_regeln_max
+                            (so viele gesprochene Saetze alter Regeln im Fenster hoechstens)
   Datei:                    spielmodus = "CLASSIC" | "SWIFTPLAY" (Vorgabe CLASSIC) - muss zum gameMode der Aufnahme
                             passen, sonst rot (Qualitaetsrunde 2, G6: 133930 und 140253 sind Swiftplay)
   Kern (Modus, Plan-Art):   modus und [[modus_soll]] ab Schritt 2 (irgendein Takt in zeit +-2 s hat einen der
                             erlaubten Modi); soll (irgendein Takt in zeit +-2 s hat eine der Plan-Arten) und
                             darf_nicht (kein Takt im Fenster) ab Schritt 3; plan_p_tod_max (ein Takt in zeit +-2 s
-                            mit einer soll-Art hat p_tod darunter)
+                            mit einer soll-Art hat p_tod darunter); soll_ziel (Buch 6, 13: ein Takt in zeit +-2 s bzw.
+                            im Fenster hat einen Plan, dessen Ziel oder Objective diesen Text enthaelt). ANLAUFEN gilt
+                            als NEHMEN (Buch 6, 4.3: eine Handlung mit zwei Schritten)
   frage:                    wie per Sprechtaste, geprueft wird die Antwort - braucht Claude, nur mit --mit-claude
   typ = "review":           gegen das gespeicherte Review der Partie - nur mit --mit-claude
 
@@ -113,8 +117,10 @@ def gold_verstoesse(a) -> list[str]:
     return aus
 
 
-def neue_pruefungen(sz: dict, ansagen: list) -> list[str]:
-    """Die Pruefschluessel der Qualitaetsrunde 1 (Buch 0, 12.1) auf die gesprochenen Ansagen im Fenster."""
+def neue_pruefungen(sz: dict, ansagen: list, stehend: tuple | None = None) -> list[str]:
+    """Die Pruefschluessel der Qualitaetsrunde 1 (Buch 0, 12.1) auf die gesprochenen Ansagen im Fenster. `stehend`: die
+    Kern-Ansage von vor dem Fenster, deren Plan im Fenster noch gilt - zaehlt fuer satz_mit wie gesagt (wie bei
+    muss_nennen_eins; Qualitaetsrunde 2: 144655 6:42 der Schutzplan, 0701 prueft ab 6:45)."""
     aus = []
     texte = [a.text for a in ansagen]
     if "ziele_max" in sz:
@@ -122,7 +128,8 @@ def neue_pruefungen(sz: dict, ansagen: list) -> list[str]:
         if len(genannt) > sz["ziele_max"]:
             aus.append(f"ziele_max {sz['ziele_max']} - {len(genannt)}: {sorted(genannt)}")
     if "satz_mit" in sz:
-        treffer = [t for t in texte if all(any(w.lower() in t.lower() for w in gruppe) for gruppe in sz["satz_mit"])]
+        treffer = [t for t in texte + ([stehend[1]] if stehend and stehend[1] not in texte else [])
+                   if all(any(w.lower() in t.lower() for w in gruppe) for gruppe in sz["satz_mit"])]
         soll = sz.get("satz_mit_anzahl")
         if (soll is None and not treffer) or (soll is not None and len(treffer) != soll):
             aus.append(f"satz_mit {sz['satz_mit']} - {len(treffer)} Saetze (soll {soll or '>= 1'})")
@@ -134,6 +141,17 @@ def neue_pruefungen(sz: dict, ansagen: list) -> list[str]:
                 aus.append(f"fassung_einmal - '{f}' zweimal: \"{gesehen[f][:50]}\" / \"{t[:50]}\"")
                 break
             gesehen[f] = t
+    if "max_woerter" in sz:
+        for a in ansagen:
+            n = len(a.text.split())
+            if n > sz["max_woerter"]:
+                aus.append(f"max_woerter {sz['max_woerter']} - {n} Woerter: \"{a.text[:80]}\"")
+                break
+    if "alte_regeln_max" in sz:
+        alt = [a for a in ansagen if getattr(a, "_regel", None)]
+        if len(alt) > sz["alte_regeln_max"]:
+            aus.append(f"alte_regeln_max {sz['alte_regeln_max']} - {len(alt)}: "
+                       + " / ".join(f"{a._regel} \"{a.text[:40]}\"" for a in alt[:3]))
     if "woerter_max" in sz:
         for a in ansagen:
             if sz.get("woerter_schluessel") and not a.schluessel.startswith(sz["woerter_schluessel"]):
@@ -158,7 +176,8 @@ def neue_pruefungen(sz: dict, ansagen: list) -> list[str]:
     return aus
 
 
-NICHT_PLAN = ("kern:bestaetigung", "kern:erinnerung")
+NICHT_PLAN = ("kern:bestaetigung", "kern:erinnerung",
+              "kern:REIN", "kern:RAUS", "kern:DREHEN")    # Kampf-Rufe (Buch 7, 5) sind keine Plaene
 
 
 def stehende_ansage(lauf: ns.Lauf, von: float) -> tuple[float, str] | None:
@@ -340,9 +359,9 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                         verstoesse.append(f"ansagen_max {sz['ansagen_max']} - {len(texte)}: "
                                           + " / ".join(f"{ns.uhr(t)} {s[:40]}" for t, s in texte))
                 if any(k in sz for k in ("ziele_max", "satz_mit", "fassung_einmal", "woerter_max", "gold_reicht",
-                                         "text_max", "planwechsel_max")):
+                                         "text_max", "planwechsel_max", "max_woerter", "alte_regeln_max")):
                     geprueft += 1
-                    verstoesse += neue_pruefungen(sz, ansagen)
+                    verstoesse += neue_pruefungen(sz, ansagen, stehende_ansage(lauf, von) if kern != "alt" else None)
         if "modus" in sz and "zeit" in sz and nur != "alt":
             geprueft += 1
             modi = modi_um(lauf, ns.sekunden(sz["zeit"]))
@@ -356,11 +375,20 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
             if not any(p for p in plaene_um(lauf, von, bis)):
                 kern_modi = sorted({str(x.modus) for x in lauf.takte if von <= x.zeit <= bis})
                 uebersprungen.append(f"Kern-Plan (der Kern entscheidet in {'/'.join(kern_modi)} noch nicht)")
+        if nur != "alt" and kern != "alt" and "soll_ziel" in sz and ("zeit" in sz or "fenster" in sz):
+            geprueft += 1
+            von, bis = (ns.sekunden(sz["zeit"]) - 2, ns.sekunden(sz["zeit"]) + 2) if "zeit" in sz else fenster(sz)
+            ziele_ = {x.plan_ziel for x in lauf.takte if von <= x.zeit <= bis and x.plan_ziel}
+            if not any(sz["soll_ziel"].lower() in z.lower() for z in ziele_):
+                verstoesse.append(f"soll_ziel '{sz['soll_ziel']}' - Plan-Ziele: {sorted(ziele_) or 'keins'}")
         if nur != "alt" and kern != "alt" and "soll" in sz and "zeit" in sz and kern_modi is None:
             geprueft += 1
             t = ns.sekunden(sz["zeit"])
             plaene = plaene_um(lauf, t - 2, t + 2)
-            if not set(plaene) & set(sz["soll"]):
+            soll_arten = set(sz["soll"]) | ({"NEHMEN"} if "ANLAUFEN" in sz["soll"] else set())
+            # Entscheidung 2 (27.09.): ein berechneter, aber stummer Kampf-Ruf (ANNEHMEN, REIN, DREHEN) zaehlt fuer soll
+            plaene += [x.stumm.split(":", 1)[0] for x in lauf.takte if t - 2 <= x.zeit <= t + 2 and x.stumm]
+            if not set(plaene) & soll_arten:
                 verstoesse.append(f"soll {sz['soll']} - Kern-Plan: {plaene or 'keiner'}")
             elif "plan_p_tod_max" in sz:
                 pt = [x.plan_ptod for x in lauf.takte if t - 2 <= x.zeit <= t + 2 and x.plan in sz["soll"]

@@ -13,7 +13,8 @@ from . import (OBJ_NAME, abwesenheit, back_gewinn, back_grund_text, back_gruende
                lane_von, liste, nie_back, objective_wert, objectives_meine_seite, puenktlich, turm_ihr_name, uhr,
                welle_name)
 
-ZUM = {"drache": "zum Drachen", "baron": "zum Baron", "herold": "zum Herold", "larven": "zu den Larven"}
+ZUM = {"drache": "zum Drachen", "baron": "zum Baron", "herold": "zum Herold", "larven": "zu den Larven",
+       "aeltester": "zum Ältesten"}
 
 
 def crash_dauer(m, cfg: dict, lane: str | None = None) -> float:
@@ -38,10 +39,11 @@ SCHUTZ_KURZ = "Weiter: am Turm farmen, kein Trade."     # G1: nach Tod oder Basi
 
 
 def kandidaten(m, cfg: dict, lane: str | None = None, modus: str = "LANE", arten=None,
-               schutz=None) -> list[Handlung]:
+               schutz=None, plan=None) -> list[Handlung]:
     """`lane`/`modus`: auch fuer eine Seitenlane nach der Lane-Phase (Buch 5, 3.2) - dann ist `m.welle` die Welle
-    DIESER Lane (der Aufrufer reicht eine Sicht mit ihr), und `arten` begrenzt auf das, was dort gilt."""
-    aus = _kandidaten(m, cfg, lane or lane_von(m), modus, schutz)
+    DIESER Lane (der Aufrufer reicht eine Sicht mit ihr), und `arten` begrenzt auf das, was dort gilt. `plan`: der
+    laufende Plan (VORBEREITEN_OBJECTIVE haelt ueber sein Entstehungsfenster hinaus, Buch 6, 4.2)."""
+    aus = _kandidaten(m, cfg, lane or lane_von(m), modus, schutz, plan)
     return aus if arten is None else [h for h in aus if h.art in arten]
 
 
@@ -86,7 +88,7 @@ def _lane_wieder_offen(m, plan) -> str | None:
     return None
 
 
-def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None) -> list[Handlung]:
+def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None, plan=None) -> list[Handlung]:
     b = m.b
     if m.bereich == "basis_eigen":
         return []          # der Modus hinkt 1,5 s: in der Basis kein Wellenbefehl (Pruefung E3, 102112 5:54)
@@ -102,7 +104,9 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None) -> list[Handlu
     back_g = back_gewinn(m, cfg, gruende) if gruende else 0.0
     grund_text = back_grund_text(gruende)
     kanal, einkauf = cr["kanal_s"], cr["einkauf_s"]
-    obj_bald = [o for o in objectives_meine_seite(m, lane) if not o.lebt and o.spawn_in <= 60]
+    # Buch 6, 4.1: nur ein Objective, das dich zieht, zaehlt hier - sonst gilt es, als gaebe es keins (Larven-Sog)
+    from .. import objective as obj
+    obj_bald = [o for o in objectives_meine_seite(m, lane) if not o.lebt and o.spawn_in <= 60 and obj.zieht(m, o, cfg)]
 
     # BACK_JETZT: gecrasht / leer; ohne Welle nur bei Leben; sonst nur, wenn die Gefahr anschlaegt (Buch 3, 2 / 2.1)
     if gruende and nie is None:
@@ -117,8 +121,9 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None) -> list[Handlu
 
     # WELLE_REIN_UND_BACK (Buch 1, 3.2): erst crashen, sonst verlierst du die Welle
     kritisch = b.leben is not None and b.leben < cr["leben_kritisch"]      # dann zaehlt die Welle nicht mehr
+    from . import nie_back_objective
     if gruende and not kritisch and z in ("ZU_IHM", "GROSS_ZU_IHM", "MITTE") and w.unsere is not None \
-            and w.unsere >= (w.ihre or 0):
+            and w.unsere >= (w.ihre or 0) and nie_back_objective(m, cfg) is None:
         crash = crash_dauer(m, cfg, lane)
         if crash <= cw["crash_max_s"]:
             vw = wert.vasall_wert(m.zeit, cfg)
@@ -213,7 +218,7 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None) -> list[Handlu
     p_j30 = gefahr.p_da(j, 30.0, m, cg) if j is not None else 0.0
     if z in ("MITTE", "ZU_IHM", "LEER") and p_j30 < cw["stapeln_gefahr_max"] and not verloren:
         for o in objectives_meine_seite(m, lane):
-            if o.lebt or not (45 <= o.spawn_in <= 100):
+            if o.lebt or not (45 <= o.spawn_in <= 100) or not obj.zieht(m, o, cfg):
                 continue
             t_k = _kanone_vor(m, m.zeit + o.spawn_in)
             if t_k is None:
@@ -229,19 +234,19 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None) -> list[Handlu
             aus.append(h)
             break
 
-    # VORBEREITEN_OBJECTIVE (Buch 0, 6.3): Objective auf deiner Seite in <= 60 s - Welle, dann Grube
-    for o in obj_bald:
-        weg = o.weg if o.weg is not None else 20.0
-        dauer = max(5.0, o.spawn_in - weg)
-        h = Handlung("VORBEREITEN_OBJECTIVE", Ziel("objective", OBJ_NAME[o.schl], o.pos, weg), modus, dauer,
-                     gewinn=fr * dauer + cr["vorlauf_bonus"] * objective_wert(o, cfg), gefahr_t=min(dauer, 30.0),
-                     grund=f"Spawn um {uhr(m.zeit + o.spawn_in)}",
-                     satz=f"{lane}-Welle rein, dann {ZUM[o.schl]}: Spawn um {uhr(m.zeit + o.spawn_in)}, "
-                          f"{puenktlich(o.spawn_in - weg)}.",
-                     schritte=["Welle rein", ZUM[o.schl]])
-        h.daten["objective"] = o.schl
-        aus.append(h)
-        break
+    # VORBEREITEN_OBJECTIVE (Buch 6, 4.2): dieselbe Handlung wie in den anderen Modi - nur, wenn das Objective dich
+    # zieht; abfahrt_s rechnet die Zeit bis zum Crash deiner Welle mit
+    from .objective import nehmen, vorbereiten
+    welle_s = crash_dauer(m, cfg, lane) if w is not None and z in ("ZU_IHM", "GROSS_ZU_IHM", "MITTE") else 0.0
+    for o in objectives_meine_seite(m, lane):
+        if (h := vorbereiten(m, cfg, modus, o, lane=lane, welle_s=welle_s, plan=plan)) is not None:
+            aus.append(h)
+            break
+        # ist es Zeit zu gehen, gilt NEHMEN auch von der Lane aus (4.3 nennt keinen Modus; VORBEREITEN geht nach dem
+        # Spawn ohnehin in NEHMEN ueber)
+        if modus == "LANE" and (h := nehmen(m, cfg, modus, o)) is not None:
+            aus.append(h)
+            break
 
     # UNTER_TURM_FARMEN (Buch 1, 3.5): seine grosse Welle kommt zu dir - ein Back jetzt verschenkt sie
     if gruende and z in ("GECRASHT_BEI_DIR", "GROSS_ZU_DIR") and b.zum_turm is not None and b.zum_turm <= 20:

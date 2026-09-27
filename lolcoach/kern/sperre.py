@@ -19,10 +19,13 @@ def ausser(*modi: str) -> frozenset:
 LANE_SEITE = frozenset(("LANE", "SEITE"))
 
 # Regel -> Modi, in denen sie spricht (Kapitel 14, Spalte "Sperre")
+# Buch 6, 5 (aendert Kapitel 14, ab Schritt 5): _grosse_objectives, _vorwarnung, _zahlen, _objective_start und _ward
+# sind in ALLEN Modi stumm - sonst sagen sie in SEITE, GRUPPE oder UNTERWEGS weiter "Nehmt Baron ..."; der Kern
+# spricht das Objective (kern/objective.py). Dasselbe gilt fuer den Objective-Plan des Entscheiders (PLAN obj_plan).
 SPERRE = {
-    "_grosse_objectives": ausser("TOT", "KAMPF"),
-    "_vorwarnung": frozenset(("LANE", "SEITE", "GRUPPE", "UNTERWEGS", "BASIS")),
-    "_zahlen": ausser("TOT", "KAMPF"),           # "nur wenn du rechtzeitig am genannten Ziel bist": komponist.zahlen
+    "_grosse_objectives": frozenset(),
+    "_vorwarnung": frozenset(),
+    "_zahlen": frozenset(),
     "_jungler_tot": LANE_SEITE,
     "_lane_tot": frozenset(("LANE",)),
     "_level": frozenset(("LANE",)),
@@ -35,11 +38,11 @@ SPERRE = {
     "_leben": frozenset(("LANE", "SEITE", "UNTERWEGS")),
     "_zauber": LANE_SEITE,                       # nur Lane-Gegner/Jungler (unten)
     "_anlauf": frozenset(("LANE", "SEITE", "UNTERWEGS", "GRUPPE", "OBJECTIVE")),
-    "_ward": frozenset(("LANE", "UNTERWEGS", "OBJECTIVE")),
+    "_ward": frozenset(),                        # Buch 6, 5: bis Buch 4 kein Ward-Satz
     "_recall_fenster": LANE_SEITE,
     "_tief_ohne_sicht": LANE_SEITE,
     "_kontrollauge": frozenset(("BASIS", "TOT")),
-    "_objective_start": frozenset(("OBJECTIVE", "UNTERWEGS", "GRUPPE")),
+    "_objective_start": frozenset(),
     "_fenster": LANE_SEITE,                      # Lane-Gegner <= 3500: die Regel verlangt schon <= 1800
     "_wiedereinstieg": frozenset(("TOT",)),
     "_afk": ALLE,
@@ -51,7 +54,7 @@ PLAN = {
     "freeze": LANE_SEITE, "back_warten": LANE_SEITE, "back_kanone": LANE_SEITE, "back_knapp": LANE_SEITE,
     "seite": LANE_SEITE, "seite_nicht": LANE_SEITE, "reset": LANE_SEITE, "hilfe_fern": LANE_SEITE,
     "back_plan": frozenset(("LANE", "SEITE", "UNTERWEGS", "GRUPPE")),          # wie _gold: nie in der Basis
-    "obj_plan": frozenset(("LANE", "SEITE", "GRUPPE", "UNTERWEGS", "BASIS")),  # wie _vorwarnung
+    "obj_plan": frozenset(),                     # wie _vorwarnung (Buch 6, 5)
     "gruppe": frozenset(("SEITE", "UNTERWEGS", "GRUPPE")),
     "wohin": ausser("LANE", "TOT", "KAMPF"),
     "zurueck": ausser("TOT", "BASIS"),           # ZURUECK: alle Modi ausser TOT und BASIS (Kapitel 6.3)
@@ -83,7 +86,7 @@ def entscheide(regel: str, a, modus: str | None, b, kern_spricht: bool = False) 
             respawn = b.ich.respawn if b is not None and b.ich is not None else 0.0
             return "sprechen" if modus == "TOT" and respawn >= TODESRUECKBLICK_AB else "stumm"
         if regel == "_afk":
-            return "sprechen"
+            return "stumm" if modus == "KAMPF" else "sprechen"      # Buch 7, 5.4: in KAMPF spricht nichts anderes
         return "stumm"
     s = a.schluessel
     if regel == "_plan":

@@ -1,0 +1,32 @@
+# Szenarien aus Buch 7 (Kampf), Kapitel 10 - Partie 144655 (Carlos live, Riven Top gegen Gangplank). Jede Lage beim
+# Anlegen nachgespielt (27.09.2026). 0338-keine-info-im-kampf (erweitert) steht in 2026-09-27_144655_pruefung.toml.
+
+aufnahme = "2026-09-27_144655"
+spielmodus = "CLASSIC"
+bots = false
+
+[[szenario]]
+id = "0915-raus-kurz"
+zeit = "9:15"
+fenster = ["9:13", "9:20"]
+quelle = "Buch 7, 0.1: ein Rueckzug-Satz mit 25 Woertern mitten im Kampf an der Grube"
+lage = """Nachgespielt: Riven L8, 19 % Leben, im oberen Fluss an der Grube. Gangplank (565) und Kha'Zix (0) sichtbar
+bei dir, Vex in ihrem oberen Jungle. Modus KAMPF seit 9:11; 'Raus, zum Turm!' um 9:08 und 9:12."""
+modus = ["KAMPF"]
+soll = ["RAUS", "HALTEN"]
+max_woerter = 5
+alte_regeln_max = 0
+darf_nicht_sagen = ["das sind", "Sekunden"]
+warum = """Im Kampf hoechstens fuenf Woerter, nur wenn es den Ausgang aendert (Buch 7, 1.2). Keine alte Regel."""
+
+[[szenario]]
+id = "0622-tod-gegen-gangplank"
+fenster = ["6:22", "6:40"]
+quelle = "Buch 7, 8: Todesrueckblick nach einem Kampf"
+lage = """Nachgespielt: 6:10 "Raus zu deinem Top-Tier-1-Turm: Gangplank und Kha'Zix kommen." - Riven bleibt und stirbt
+gegen Gangplank. (Vor Entscheidung 2 kam statt des Rueckzugs 6:12 "Rein auf Gangplank!" - dann war es ein Duell.)"""
+satz_mit = [["Raus kam", "Duell gegen", "Prozent gegen", "aus dem Nebel", "unter seinem Turm"], ["Gangplank"]]
+max_woerter = 25
+darf_nicht_sagen = ["mindestens", "Schaden", "Kopfgeld", "Zahlen"]
+warum = """Satz 1 nach Tabelle 8 - hier Zeile 2: 'Raus kam, du bist geblieben - Gangplank hat dich erreicht.' Keine
+Schadenszahlen, kein Kopfgeld."""

@@ -102,16 +102,45 @@ def p_kampf(g, m, cfg: dict, kampf_mit: str | None = None) -> float:
     return cfg["kampf_ohne_anlauf"]
 
 
-def p_verliere(gruppe: list, m, cfg: dict, am_turm: bool = False) -> float:
-    """1 / (1 + kraft_gegen(S)^k), gemindert durch Flash (bereit) und deinen Turm (<= 5 s oder `am_turm`)."""
+def p_verliere(gruppe: list, m, cfg: dict, am_turm: bool = False, T: float | None = None) -> float:
+    """Buch 7, 3.1: 1 - kampf.p_gewinn an deinem Ort, bedingt darauf, dass genau diese Menge kommt (Gewicht 1 - ihr
+    p_da steckt schon in p_tod). Dein Turm steckt im Kampfurteil (turm_faktor), `am_turm` bleibt nur fuer die Aufrufer;
+    Flash wirkt auf p_tod (flucht_flash)."""
+    from .kampf import p_gewinn
     b = m.b
-    r = b.kraft_gegen(gruppe)
-    p = 1.0 / (1.0 + r ** cfg["kampf_exponent"]) if r < 99 else 0.0
-    if b.flash == 0:
-        p *= cfg["flucht_flash"]
-    if am_turm or (b.zum_turm is not None and b.zum_turm <= 5.0):
-        p *= cfg["flucht_turm"]
-    return p
+    # an deinem Turm oder <= 5 s davon: der Kampf findet unter ihm statt (vorher flucht_turm auf p - jetzt einmal in K)
+    turm = 1 if am_turm or (b is not None and b.zum_turm is not None and b.zum_turm <= 5.0) else None
+    p, _ = p_gewinn(m, b.pos if b is not None else None, T if T is not None else cfg["fenster_s"],
+                    gewichte={g.s.name: 1.0 for g in gruppe}, turm=turm)
+    return 1.0 - p
+
+
+BASIS_RADIUS = 5000.0   # bis zu den Inhibitor-Tuermen (3900-4500 vom Brunnen): dort steht, wer respawnt
+
+
+def p_da_am(g, T: float, m, cfg: dict, ort) -> float:
+    """Buch 6, 3.1: p_da mit der Ankunft an `ort` statt bei dir (dieselbe Formel wie 7.5). ort None = bei dir.
+    Ein Toter, dessen Brunnen <= BASIS_RADIUS von `ort` liegt, ist da, sobald Respawn + Weg <= T - ohne p_seite und
+    ohne Anlauf-Rampe: er steht dort auf (102112 34:51: am Mid-Inhibitor-Turm zaehlten Sett, Kai'Sa und Fiddlesticks, die
+    11-19 s spaeter daneben aufstanden, mit 0,09-0,15)."""
+    b = m.b
+    if ort is None or b is None or (b.pos is not None and abstand(b.pos, ort) < 1.0):
+        return p_da(g, T, m, cfg)
+    if g.s.tot:
+        brunnen = BRUNNEN.get(g.s.team, ort)
+        rest = g.s.respawn + abstand(brunnen, ort) * 1.15 / (g.tempo or 350.0)
+        if abstand(brunnen, ort) <= BASIS_RADIUS:
+            return 1.0 if rest <= T else 0.0      # Respawn und der kurze Weg sind bekannt - keine Anlauf-Rampe
+        return p_seite(g, m, cfg) * rampe(T - rest, cfg) if rest <= T else 0.0
+    if g.pos is None or g.seit is None:
+        return p_seite(g, m, cfg) * cfg["unbekannt_faktor"]
+    d = abstand(g.pos, ort)
+    t_min = max(0.0, d * 1.15 / (g.tempo or 350.0) - (0.0 if g.sichtbar else g.seit))
+    if g.sichtbar:
+        return 1.0 if t_min <= T and d <= NAH else rampe(T - t_min, cfg)
+    if g.seit > UNBEKANNT_AB:
+        return p_seite(g, m, cfg) * cfg["unbekannt_faktor"]
+    return p_seite(g, m, cfg) * rampe(T - t_min, cfg)
 
 
 def p_tod(T: float, m, cfg: dict, am_turm: bool = False, kampf_mit: str | None = None) -> tuple[float, list]:
@@ -135,16 +164,19 @@ def p_tod(T: float, m, cfg: dict, am_turm: bool = False, kampf_mit: str | None =
             continue
         q.append((g, x))
         # sein Anteil (fuer "wer kommt", 7.5): p_da * p_kampf * p_verliere({g} u sichtbare Nahe)
-        a = x * p_verliere([g] + [n for n in nahe if n is not g], m, cfg, am_turm)
+        a = x * p_verliere([g] + [n for n in nahe if n is not g], m, cfg, am_turm, T)
         if a > 0:
             wer.append((g.champion, a))
-    return _ueber_mengen(q, nahe, m, cfg, am_turm), sorted(wer, key=lambda w: -w[1])
+    p = _ueber_mengen(q, nahe, m, cfg, am_turm, T)
+    # Flash bereit: du kommst oefter weg (Buch 7, 3.1: bleibt als Faktor auf p_tod)
+    flucht = cfg["flucht_flash"] if b.flash == 0 else 1.0
+    return p * flucht, sorted(((n, a * flucht) for n, a in wer), key=lambda w: -w[1])
 
 
 MENGEN_MAX = 6          # so viele moegliche Ankommende werden einzeln gerechnet (2^6 = 64 Mengen), der Rest faellt weg
 
 
-def _ueber_mengen(q: list, nahe: list, m, cfg: dict, am_turm: bool) -> float:
+def _ueber_mengen(q: list, nahe: list, m, cfg: dict, am_turm: bool, T: float | None = None) -> float:
     """P(du verlierst) = Summe ueber die Mengen S der Ankommenden: P(S) * p_verliere(S u sichtbare Nahe)."""
     from itertools import combinations
     q = sorted(q, key=lambda gx: -gx[1])[:MENGEN_MAX]
@@ -159,7 +191,7 @@ def _ueber_mengen(q: list, nahe: list, m, cfg: dict, am_turm: bool) -> float:
                 continue
             gruppe = [q[i][0] for i in S]
             gruppe += [g for g in nahe if all(g is not x for x in gruppe)]
-            p += ps * p_verliere(gruppe, m, cfg, am_turm)
+            p += ps * p_verliere(gruppe, m, cfg, am_turm, T)
     return min(1.0, p)
 
 

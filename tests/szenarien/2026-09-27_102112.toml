@@ -78,7 +78,7 @@ lage = """Riven L17, 74 % Leben, 1888 Gold, unten (Minimap-Ort "unten", am eigen
 Drache lebt (seit 15 s), 17-18 s von dir. Baron 23-25 s von dir.
 Kai'Sa und Sona seit eben tot (~29-35 s), Galio stirbt genau in diesem Takt (bei dir). Sett oben (11.400 entfernt), Fiddlesticks lange ungesehen.
 Tryndamere bei dir im unteren Jungle, Corki oben, Nasus und Brand in der Basis."""
-modus = ["OBJECTIVE", "UNTERWEGS"]
+modus = ["OBJECTIVE", "UNTERWEGS", "SEITE"]   # SEITE seit Schritt 5 (Bot-Lane, neue Eintrittsregel)
 soll = ["ANLAUFEN", "NEHMEN"]
 darf_nicht_sagen = ["Baron"]
 warum = """Drei Gegner tot, der Drache lebt 17 Sekunden von dir, Tryndamere steht daneben: das ist ein freier Drache.
@@ -108,7 +108,7 @@ quelle = "Live 27.09.: 'Nehmt jetzt Baron Nashor, niemand kann kontern ... du bi
 lage = """Riven L18, 82 % Leben, 2755 Gold, auf der Mid-Lane vor ihrem inneren Mid-Turm (7 s zum Mid-Inhibitor-Turm).
 Fiddlesticks tot (noch 42 s). Drache lebt, 14 s. Baron 13 s.
 Sett in seiner Basis, Galio in eurem unteren Jungle, Kai'Sa unten. Tryndamere in eurer Basis, Corki oben."""
-soll = ["DRUECKEN", "ANLAUFEN", "NEHMEN"]
+soll = ["DRUECKEN", "ANLAUFEN", "NEHMEN", "REIN"]   # REIN seit Schritt 5: 28:43-28:48 Kampf mit Fiddlesticks (Buch 7)
 darf_nicht_sagen = ["Baron"]
 warum = """Baron allein oder zu zweit mit Galio und Kai'Sa lebend ist kein Take. Die '15 Sekunden' waren die Laufzeit
 zum Drachen, nicht zu Baron (derselbe Code-Fehler wie 25:22)."""
@@ -217,17 +217,27 @@ modus = ["BASIS", "VERTEIDIGEN"]     # eigener Mid-Inhibitor fehlt seit 33:18
 zeiten = ["14:53"]
 modus = ["SEITE", "OBJECTIVE"]       # Lane-Phase endet 14:00
 
+# Schritt 5 (Buch 6, 5 und 13): neu gerechnet mit der neuen Eintrittsregel - OBJECTIVE nur in der Grube oder mit
+# einem Objective-Plan; "ein Mitspieler an der Grube" loest nicht mehr aus (messungen.md, Schritt 5)
 [[modus_soll]]
 zeiten = ["15:31"]
-modus = ["OBJECTIVE", "KAMPF"]
+modus = ["OBJECTIVE", "KAMPF", "SEITE", "UNTERWEGS"]   # Schritt 5: kein Objective-Plan, nicht in der Grube
 
 [[modus_soll]]
-zeiten = ["24:40", "25:22"]
+zeiten = ["24:40"]
 modus = ["OBJECTIVE", "UNTERWEGS"]
 
 [[modus_soll]]
-zeiten = ["29:14", "35:00"]
-modus = ["OBJECTIVE"]                # 35:00: OBJECTIVE hat Vorrang vor VERTEIDIGEN
+zeiten = ["25:22"]
+modus = ["OBJECTIVE", "UNTERWEGS", "SEITE"]   # Schritt 5: Riven steht auf der Bot-Lane, kein Objective-Plan
+
+[[modus_soll]]
+zeiten = ["29:14"]
+modus = ["OBJECTIVE", "UNTERWEGS"]   # Schritt 5: in ihrem unteren Jungle, Plan Nexus-Turm - kein Objective-Plan
+
+[[modus_soll]]
+zeiten = ["35:00"]
+modus = ["OBJECTIVE"]                # 35:00: in der Drachengrube (OBJECTIVE hat Vorrang vor VERTEIDIGEN)
 
 [[modus_soll]]
 zeiten = ["36:32"]

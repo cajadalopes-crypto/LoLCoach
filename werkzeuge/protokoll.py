@@ -78,7 +78,21 @@ def protokoll(stamm: str, kern: str = "neu") -> Path:
         "keinen Plan.",
         "",
     ]
-    for a in lauf.gesagt:
+    eintraege = [(lagen.get(id(a), {}).get("zeit", a.gesprochen or a.zeit), a) for a in lauf.gesagt]
+    # Entscheidung 2 (27.09.): Kampf-Rufe des ungeeichten Modells - berechnet, nicht gesprochen
+    eintraege += [(s["zeit"], s) for s in (lauf.kern.stumm_modell if lauf.kern is not None else [])]
+    eintraege.sort(key=lambda x: x[0] if x[0] is not None else 0.0)
+    stumm_n = sum(1 for _, a in eintraege if isinstance(a, dict))
+    if stumm_n:
+        zeilen.insert(-1, f"Stumm (Modell nicht geeicht, Entscheidung 2): {stumm_n} Kampf-Rufe (ANNEHMEN, REIN, DREHEN) "
+                          f"berechnet, nicht gesprochen - unten mit „stumm“ markiert.")
+        zeilen.insert(-1, "")
+    for t_, a in eintraege:
+        if isinstance(a, dict):
+            zeilen.append(f"### {ns.uhr(a['zeit'])} · {a.get('modus') or '–'} · stumm: Modell nicht geeicht")
+            zeilen.append(f"- **Stumm** (`kern:{a['art']}`): „{a['text']}“")
+            zeilen.append("")
+            continue
         la = lagen.get(id(a), {})
         t = la.get("zeit", a.gesprochen or a.zeit)
         leben = f"{la['leben']} %" if la.get("leben") is not None else "Leben ?"

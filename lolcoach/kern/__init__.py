@@ -41,7 +41,8 @@ KERN_MODI_3 = ("LANE", "BASIS", "TOT")
 KERN_MODI_4 = KERN_MODI_3 + ("SEITE", "GRUPPE", "UNTERWEGS", "VERTEIDIGEN")     # Schritt 4 (Buch 5)
 # Die Modi, in denen der Kern live spricht (seit Schritt 4). LOLCOACH_KERN_SCHRITT=3 oder Kern(modi=KERN_MODI_3) gibt
 # den Stand von Schritt 3 - fuer Gegenproben beim Nachspielen.
-KERN_MODI = KERN_MODI_4
+KERN_MODI_5 = KERN_MODI_4 + ("KAMPF", "OBJECTIVE")     # Schritt 5 (Buch 7 und Buch 6): der Kern spricht ueberall
+KERN_MODI = KERN_MODI_5
 SPIELSTART_S = 60.0      # davor schweigt der Kern in der Basis (nicht im Buch, Schritt 3: messungen.md)
 STELLUNGEN = ("alt", "schatten", "neu")
 # Kehrtwende-Richtung einer Ansage des alten Systems (nur Text, Kapitel 9.4 Punkt 5)
@@ -73,8 +74,8 @@ class Kern:
         self.cfg = cfg or konfig()
         self.stellung = stellung if stellung in STELLUNGEN else "neu"
         import os
-        self.modi = modi or {"3": KERN_MODI_3, "4": KERN_MODI_4}.get(os.environ.get("LOLCOACH_KERN_SCHRITT", ""),
-                                                                      KERN_MODI)
+        self.modi = modi or {"3": KERN_MODI_3, "4": KERN_MODI_4, "5": KERN_MODI_5}.get(
+            os.environ.get("LOLCOACH_KERN_SCHRITT", ""), KERN_MODI)
         self.bau = MerkmalBau(self.cfg)
         self.modus = Modus(self.cfg)
         self.m: Merkmale | None = None
@@ -94,6 +95,16 @@ class Kern:
         self._ereignis_t = -1e9
         self._kills = self._objs = None
         self._leben_bei_ansage: float | None = None
+        # Buch 7: Entscheidungspunkte (3.3), die laufende Kampf-Episode (5), ANNEHMEN je Gegner (4)
+        from .modi.kampf import Proben
+        self.proben = Proben()
+        self._kampf = None
+        self._annehmen_gesagt: dict[str, float] = {}
+        # Entscheidung 2 (Carlos, 27.09.): Kampf-Rufe des ungeeichten Modells - berechnet, nicht gesprochen
+        self.stumm_modell: list[dict] = []     # {"zeit", "art", "text", "modus"}
+        self._stumm_takt: str | None = None
+        self._stumm_annehmen: tuple[float, set] = (-1e9, set())   # das stumme Urteil haelt wie ein Plan (Buch 7, 4)
+        self._obj_gesagt: dict[tuple, str] = {}   # Buch 6, 9: (Objective, Spawn) -> Art des gesagten Urteils
         self._modus_vorher: str | None = None
         self._draussen: tuple[float, tuple] | None = None
         self._crash_zuletzt = self._leer_zuletzt = -1e9
@@ -146,6 +157,7 @@ class Kern:
         m = self.m
         ansagen = []
         self._letzte = None
+        self._stumm_takt = None
         if m is not None and self.stellung in ("schatten", "neu"):
             try:
                 ansagen = self.schritt(m, self.modus.aktuell, p)
@@ -172,6 +184,15 @@ class Kern:
                     sep["rueckkehr"] = True           # G1: danach darf die kurze Fassung kommen (auch einer ruhenden)
         self._ereignisse_merken(m, p)
         self._schutz_episode(m)
+        if m.b is not None and not m.tot:
+            self.proben.takt(m, self.cfg)
+        if modus == "KAMPF" and "KAMPF" in self.modi:
+            self._modus_vorher = modus
+            return self._kampf_schritt(m)
+        if self._kampf is not None:
+            # nach dem Kampf wird der Plan sofort neu geprueft (Buch 7, 7)
+            self._kampf = None
+            self.fuehrer.plan = None
         if m.bereich == "basis_eigen":
             self._im_brunnen = m.zeit
         self._bestaetigung_merken(m, modus)
@@ -186,6 +207,11 @@ class Kern:
         kand, self.gefahr = self._kandidaten(m, modus)
         self.kandidaten = kand
         ev = self.fuehrer.takt(m, kand, self.gefahr)
+        # Buch 6, 5: der Modus kennt den Plan des vorigen Takts (OBJECTIVE bleibt, solange er ein Objective-Plan ist)
+        from .modi.objective import OBJ_ARTEN
+        pl = self.fuehrer.plan
+        self.modus.objective_plan_merken(
+            pl.handlung.daten.get("objective") if pl is not None and pl.art in OBJ_ARTEN else None, m.zeit)
         if self._schutz_wieder:
             self._schutz_wieder = False
             if ev is None and self.fuehrer.plan is not None and self.fuehrer.plan.handlung.daten.get("verloren"):
@@ -223,24 +249,50 @@ class Kern:
         from . import wert
         from .modi import back_gruende, zurueck, zurueck_saetze
         from .modi import basis, gruppe, lane, seite, tot, unterwegs, verteidigen
+        from .modi import objective as obj_modus
         from .plan import gefahr_schlaegt_an
         cfg = self.cfg
         if m.b is None or modus not in self.modi:
             return [], False
         je_modus = {"LANE": lane, "BASIS": basis, "TOT": tot, "SEITE": seite, "GRUPPE": gruppe,
                     "UNTERWEGS": unterwegs, "VERTEIDIGEN": verteidigen}
+        plan_jetzt = self.fuehrer.plan
         if modus in ("BASIS", "TOT"):
             # ein Ziel je Tod/Basis-Aufenthalt (C4): was 8 s vor dem Respawn gesagt wurde, gilt in der Basis weiter
             kand = je_modus[modus].kandidaten(m, cfg, merker=self._wohin, lage=self._lage(m))
         elif modus == "LANE":
-            kand = lane.kandidaten(m, cfg, schutz=self._schutz or False)
+            kand = lane.kandidaten(m, cfg, schutz=self._schutz or False, plan=plan_jetzt)
+        elif modus == "OBJECTIVE":
+            kand = obj_modus.kandidaten(m, cfg, plan=plan_jetzt)       # Buch 6, 5
         else:
             kand = je_modus[modus].kandidaten(m, cfg)
+            if modus in obj_modus.OBJ_MODI:
+                # Buch 6, 5: Objective-Plaene gelten in UNTERWEGS, GRUPPE, SEITE und OBJECTIVE - dieselben Handlungen
+                tuerme = [h for h in kand if h.art in ("DRUECKEN", "MIT_GRUPPE")]
+                kand += obj_modus.handlungen(m, cfg, modus, plan=plan_jetzt, tuerme=tuerme)
+                kand = [h for h in kand if not h.daten.get("ersetzt")]
+                from .modi import karte
+                kand = karte.umwandeln_zuerst(m, cfg, kand)      # Buch 6, 8: Objectives in der Reihenfolge
+        annehmen = None
         if modus not in ("BASIS", "TOT"):         # ZURUECK: in allen Modi ausser TOT und BASIS (Buch 0, 6.3)
             kand += zurueck(m, cfg, modus, back_gruende(m, cfg))
+            # Buch 7, 4: kommt einer auf dich zu - nimmst du den Kampf? Dann kein ZURUECK wegen dieser Gegner
+            from .modi.kampf import annehmen as kampf_annehmen
+            schon = self._stumm_annehmen[1] if m.zeit - self._stumm_annehmen[0] <= 10.0 else set()
+            if (annehmen := kampf_annehmen(m, cfg, modus, plan=self.fuehrer.plan, schon=schon)) is not None:
+                if cfg["kampf"].get("geeicht", False):
+                    kand.append(annehmen)
+                else:
+                    # Entscheidung 2: berechnet und protokolliert, aber kein Kandidat - das ungeeichte Modell aendert
+                    # nichts an dem, was sonst gesagt wird (auch kein ZURUECK faellt seinetwegen weg)
+                    self._stumm(m, "ANNEHMEN", annehmen.satz, modus)
+                    self._stumm_annehmen = (m.zeit, set(annehmen.daten.get("gruppe", [])))
+                    annehmen = None
         tk = wert.todeskosten(m, cfg)
         for h in kand:
             wert.bewerte(h, m, cfg, tk)
+        # Buch 6, 4.3: eine Objective-Handlung nur mit EV > 0 (nicht bloss besser als HALTEN)
+        kand = [h for h in kand if h.daten.get("ev_min") is None or h.ev > h.daten["ev_min"]]
         bleiben = next((h for h in kand if h.art in ("FARMEN", "HALTEN") or h.daten.get("verloren")), None)
         for h in kand:
             if h.art == "ZURUECK":
@@ -251,9 +303,13 @@ class Kern:
             if h.art not in beste or h.ev > beste[h.art].ev:
                 beste[h.art] = h
         kand = list(beste.values())
+        if annehmen is not None:
+            gruppe = set(annehmen.daten.get("gruppe", []))
+            kand = [h for h in kand if not (h.art == "ZURUECK" and {n for n, x in h.daten.get("wer", []) if x >= 0.05}
+                                            <= gruppe)]
         # "bleiben, wo du bist" - bei verlorener Lane ist das der schuetzende Freeze (Pruefung A)
         farmen = next((h for h in kand if h.art in ("FARMEN", "HALTEN") or h.daten.get("verloren")), None)
-        gefahr = farmen is not None and gefahr_schlaegt_an(farmen, cfg["gefahr"])
+        gefahr = farmen is not None and gefahr_schlaegt_an(farmen, cfg["gefahr"]) and annehmen is None
         self.gate_grund = None
         if gefahr:
             from .modi import am_sicheren_ort
@@ -272,8 +328,10 @@ class Kern:
             andere = {n for n, x in farmen.daten.get("wer", []) if x >= 0.05} - {farmen.daten.get("lane_gegner")}
             if andere:
                 kand = [h for h in kand if h is not farmen]
-        # Pruefung E4: nach einer GEFAHR-Ansage 20 s nichts nach vorn, ausser die Gefahr ist sichtbar vorbei
-        if self._gefahr_gesagt is not None and m.zeit - self._gefahr_gesagt[0] < NACH_GEFAHR_S and m.b is not None:
+        # Pruefung E4: nach einer GEFAHR-Ansage 20 s nichts nach vorn, ausser die Gefahr ist sichtbar vorbei (nicht in
+        # KAMPF - dort entscheidet Tabelle 5.1, Buch 7 5.4)
+        if self._gefahr_gesagt is not None and m.zeit - self._gefahr_gesagt[0] < NACH_GEFAHR_S and m.b is not None \
+                and annehmen is None:
             von = self._gefahr_gesagt[1]
             vorbei = all(g.s.tot or (g.sichtbar and g.abstand is not None and g.abstand > 3000)
                          for g in m.b.gegner if g.champion in von) if von else False
@@ -283,9 +341,14 @@ class Kern:
         als = plan.als() if plan is not None else None
         if gefahr:
             # Gefahr schlaegt Timing (Buch 3, 2.1): nur sichere Handlungen - und der schuetzende Freeze (Buch 1, 3.7)
-            kand = [h for h in kand if h.art in SICHER or h.daten.get("schutz") or h.art == als]
+            kand = [h for h in kand if h.art in SICHER or h.daten.get("schutz") or h.art == als
+                    or h.art == "ANNEHMEN"]
         else:
-            kand = [h for h in kand if not h.daten.get("nur_bei_gefahr") or h.art == als]
+            # ein Plan "nur bei Gefahr" (ZURUECK, Back im Kampf) ist ohne Gefahr kein Kandidat mehr - die Luecke, die
+            # jeder Plan ueberbrueckt (luecke_s, G3), haelt ihn noch kurz; danach gilt wieder der normale Plan ("Gefahr
+            # schlaegt Timing", Buch 3, 2.1; 102112 25:22: der Rueckzug von 24:58 hielt vorher 24 s nach dem gewonnenen
+            # Kampf, weil er als Plan Kandidat blieb, und schlug mit seinem Back-Wert den freien Drachen)
+            kand = [h for h in kand if not h.daten.get("nur_bei_gefahr")]
         kand = [h for h in kand if not (h.daten.get("klein") and h.p_tod >= cfg["gefahr"]["p_min"])]
         return kand, gefahr
 
@@ -301,8 +364,14 @@ class Kern:
         else:
             if h.stumm:
                 return None
-            kategorie = "GEFAHR" if ev.art == "gefahr" and h.art in SICHER else "PLAN"
+            kategorie = "GEFAHR" if (ev.art == "gefahr" and h.art in SICHER) or h.art == "ANNEHMEN" else "PLAN"
             text = h.satz or h.kurz()
+            if h.art == "ANNEHMEN":
+                # Buch 7, 4: hoechstens einmal je Gegner und annehmen_wiederholen_s
+                g = h.daten.get("kampf_mit")
+                if m.zeit - self._annehmen_gesagt.get(g, -1e9) < self.cfg["kampf"]["annehmen_wiederholen_s"]:
+                    p.gesagt = m.zeit
+                    return None
         if not text:
             return None
         # Pruefung A / Buch 0 7.5: stehst du schon am sicheren Ort, wird der Rueckzug nicht gesagt - der Plan haelt
@@ -388,6 +457,16 @@ class Kern:
             if alt is not None and m.zeit - alt[0] < self.cfg["sprechen"]["gefahr_wiederholen_s"] and von <= alt[1]:
                 p.gesagt = alt[0]
                 return None
+        # Buch 6, 9: das Urteil zu einem Objective hoechstens einmal je Spawn - ein zweites Mal nur, wenn es kippt
+        # (NEHMEN/BESTREITEN <-> ABGEBEN_TAUSCHEN); VORBEREITEN -> NEHMEN wird nicht angesagt (4.2)
+        from .modi.objective import URTEIL_ARTEN
+        okey = None
+        if h.art in URTEIL_ARTEN and ev.art != "schritt" and h.daten.get("objective"):
+            okey = (h.daten["objective"], h.daten.get("spawn"))
+            alt = self._obj_gesagt.get(okey)
+            if alt is not None and (alt == "ABGEBEN_TAUSCHEN") == (h.art == "ABGEBEN_TAUSCHEN"):
+                p.gesagt = m.zeit
+                return None
         if modus == "BASIS" and self._praefix is not None and m.zeit - self._praefix[0] <= 15:
             text = f"{self._praefix[1]} {text}"
             self._praefix = None
@@ -395,6 +474,8 @@ class Kern:
             # was ein gesprochener Plan hinterlaesst - sofort oder beim Nachholen (Budget, 9.2)
             p.gesagt = zeit
             self._angesagt[schl] = zeit
+            if okey is not None:
+                self._obj_gesagt[okey] = h.art
             if nach_dem_sprechen is not None:
                 if h.daten.get("verloren"):
                     nach_dem_sprechen(ansage)
@@ -407,6 +488,12 @@ class Kern:
             a._wahl = {"zeit": m.zeit, "plan": p.art, "ev": h.ev, "p_tod": h.p_tod, "gehalten": self.fuehrer.gehalten,
                        "top": [(x.art, x.ev, x.p_tod) for x in self.fuehrer.top], "gate": self.gate_grund}
             merken(a)
+            if h.art == "ANNEHMEN":
+                self._annehmen_gesagt[h.daten.get("kampf_mit")] = m.zeit
+            if p.art in ("ZURUECK", "BACK_JETZT"):
+                self.proben.ansage(m.zeit, "raus")
+            elif p.art == "ANNEHMEN":
+                self.proben.ansage(m.zeit, "rein")
             if kategorie == "GEFAHR":
                 self._gefahr_gesagt = (m.zeit, set(h.daten.get("gefahr_von", [])))
             p.start = {"sicher_weg": m.b.sicherer_ort()[1] if m.b is not None else None, "pos": m.pos}
@@ -465,6 +552,65 @@ class Kern:
                 continue
             return ra != r and self._ereignis_t < a.gesprochen
         return False
+
+    def _kampf_schritt(self, m: Merkmale) -> list:
+        """Buch 7, 5: in KAMPF die Tabelle 5.1 - REIN, RAUS, DREHEN, HALTEN; eigene Episode, kein PlanFuehrer."""
+        from .modi.kampf import Kampf
+        if m.b is None:
+            return []
+        if self._kampf is None:
+            self._kampf = Kampf(m.zeit, m)
+        r = self._kampf.takt(m, self.cfg)
+        if r is None:
+            return []
+        art, satz, ziel = r
+        if art in ("REIN", "DREHEN") and not self.cfg["kampf"].get("geeicht", False):
+            self._stumm(m, art, satz, "KAMPF")        # Entscheidung 2: Modell nicht geeicht
+            return []
+        a = self.sprecher.ansage("GEFAHR", art, satz, m.zeit, None, [])
+        if a is None:
+            return []
+        a.gueltig = 1.0                   # was nach 1 s nicht gesprochen ist, faellt weg (5.4)
+        self._kampf.gesagt(m, art, ziel)
+        self.proben.ansage(m.zeit, "raus" if art == "RAUS" else "rein")
+        self._gesprochen(a, "GEFAHR", m)
+        return [a]
+
+    def _stumm(self, m: Merkmale, art: str, text: str, modus: str | None) -> None:
+        """Entscheidung 2: ein Kampf-Ruf des ungeeichten Modells - ins Protokoll, nicht in die Stimme. Derselbe Ruf
+        (Art und Text) steht hoechstens alle annehmen_wiederholen_s einmal darin."""
+        alt = next((x for x in reversed(self.stumm_modell) if x["art"] == art and x["text"] == text), None)
+        if alt is not None and m.zeit - alt["zeit"] < self.cfg["kampf"]["annehmen_wiederholen_s"]:
+            self._stumm_takt = self._stumm_takt or f"{art}: {text}"
+            return
+        self.stumm_modell.append({"zeit": m.zeit, "art": art, "text": text, "modus": modus})
+        self._stumm_takt = f"{art}: {text}"
+
+    def rueckblick_text(self, zeit: float, taeter: str | None, beteiligt: list[str], turm: bool,
+                        leben: float | None, sonst: str) -> str:
+        """Buch 7, 8: der Todesrueckblick aus der Probe am letzten Entscheidungspunkt; erkennt sie keine Lage, gilt
+        `sonst` (die Fassung der Qualitaetsrunde, komponist.todesrueckblick)."""
+        from .modi.kampf import rueckblick
+        if self.stellung != "neu" or "KAMPF" not in self.modi:
+            return sonst
+        probe = self.proben.letzte(zeit)
+        if probe is not None:
+            # was zuletzt GESPROCHEN wurde, zaehlt - uebergeben ist nicht gesagt, und nach "Raus" kann "Dreh um" und
+            # "Rein!" gekommen sein (140253 10:16: "Raus kam, du bist geblieben", zuletzt gesprochen war "Rein!")
+            gesagt = self.transport.gesagt if self.transport is not None else []
+            richtung = None
+            for a in gesagt:
+                if a.gesprochen is None or not (probe["zeit"] <= a.gesprochen <= zeit):
+                    continue
+                if a.schluessel in ("kern:ZURUECK", "kern:RAUS", "kern:BACK_JETZT"):
+                    richtung = "raus"
+                elif a.schluessel in ("kern:REIN", "kern:ANNEHMEN", "kern:DREHEN"):
+                    richtung = "rein"
+            probe = dict(probe, ansage=richtung)
+        text = rueckblick(probe, taeter, beteiligt, turm, leben)
+        if text is None or len(text.split()) > self.cfg["kampf"]["max_woerter_rueckblick"]:
+            return sonst
+        return text
 
     def _schutz_episode(self, m: Merkmale) -> None:
         """G1: die Episode der verlorenen Lane. Sie beginnt, wenn die Lane verloren ist (modi.lane_verloren), und endet,
@@ -783,6 +929,14 @@ class Kern:
                          top=[(h.art, round(h.ev)) for h in self.fuehrer.top],
                          gehalten=self.fuehrer.gehalten, gate=self.gate_grund,
                          welle=m.welle.zustand if m.welle is not None else None)
+            # Buch 6, 14: p_erfolg, anteil und objective_zieht je Objective - fuer die Kennzahl "ohne Chance"
+            if m.obj_urteile:
+                zeile["objectives"] = {s: [round(u.p_erfolg, 3), round(u.anteil, 3), u.zieht, u.grund]
+                                       for s, u in m.obj_urteile.items()}
+            if plan is not None and plan.handlung.daten.get("objective"):
+                zeile["plan_objective"] = plan.handlung.daten["objective"]
+            if self._stumm_takt:
+                zeile["stumm"] = f"Modell nicht geeicht - {self._stumm_takt}"
             if self._letzte is not None:
                 zeile["wuerde_sagen" if self.stellung == "schatten" else "sagt"] = list(self._letzte)
         try:

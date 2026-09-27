@@ -23,7 +23,9 @@ def kandidaten(m, cfg: dict) -> list[Handlung]:
             aus.append(h)
     aus += karte.zur_gruppe(m, cfg, "GRUPPE")
     # Back (Buch 3) - in der Gruppe nur, wenn nichts ansteht; die Welle der Lane, auf der du stehst
-    bald = m.teamkampf is not None or any(o.lebt or o.spawn_in <= 60 for o in m.objectives)
+    from .. import objective as obj
+    # Buch 6, 4.1: nur ein Objective, das dich zieht, haelt dich vom Back ab
+    bald = m.teamkampf is not None or any((o.lebt or o.spawn_in <= 60) and obj.zieht(m, o, cfg) for o in m.objectives)
     if not bald and m.lane_hier:
         w = m.wellen.get(m.lane_hier)
         aus += lane_modus.kandidaten(replace(m, welle=w), cfg, lane=m.lane_hier, modus="GRUPPE",

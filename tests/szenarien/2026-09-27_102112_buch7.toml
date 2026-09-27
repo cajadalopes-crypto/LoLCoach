@@ -1,0 +1,43 @@
+# Szenarien aus Buch 7 (Kampf), Kapitel 10 - Partie 102112 (Bot-Partie). Sie pruefen nur die Verdrahtung (Form, Laenge,
+# Art); geeicht wird an einer Bot-Partie nichts. Jede Lage beim Anlegen nachgespielt (27.09.2026).
+# Entscheidung 2 (27.09.): ANNEHMEN/REIN/DREHEN sind stumm, bis das Kampfmodell geeicht ist - soll zaehlt den stummen Ruf.
+
+aufnahme = "2026-09-27_102112"
+spielmodus = "CLASSIC"
+bots = true
+
+[[szenario]]
+id = "2501-sona-allein"
+zeit = "25:01"
+fenster = ["24:58", "25:10"]
+quelle = "Buch 7, 0.2: 'Sona kommt auf dich zu, von unten. Nimm den Kampf an: Sona ist 5 Level und 3400 Gold unter dir.'"
+lage = """Nachgespielt: Riven L16, 99 %, unten. Kai'Sa sichtbar 162 entfernt, Sona 787 - der Kampf laeuft schon (KAMPF ab
+25:02). Tryndamere unten, Corki im oberen Jungle."""
+soll = ["ANNEHMEN", "REIN"]
+max_woerter = 8
+darf_nicht_sagen = ["3400 Gold", "Level"]
+warum = """Vor dem Kampf EIN Satz, im Kampf fuenf Woerter. Die Lage weicht ab: Kai'Sa steht schon bei Riven, der Kampf
+beginnt 25:02 - daher auch REIN (messungen.md, Schritt 5). Seit Entscheidung 2 (Carlos, 27.09.) sind ANNEHMEN und REIN
+stumm, solange das Kampfmodell nicht geeicht ist: soll prueft den berechneten Ruf, muss_nennen_eins ["Sona"] entfaellt."""
+
+[[szenario]]
+id = "2613-fiddlesticks-allein"
+zeit = "26:28"
+fenster = ["26:10", "26:30"]
+quelle = "Buch 7, 10: Fiddlesticks allein - frueher mit '6800 Gold'"
+lage = """Nachgespielt: Riven L17, 99 %, auf der Mid-Lane. Fiddlesticks sichtbar unten, um 26:13 noch 3748 entfernt
+(> annehmen_abstand 2500), um 26:28 in Reichweite. Sett oben, Galio und Kai'Sa in ihrer Basis."""
+soll = ["ANNEHMEN", "REIN"]
+max_woerter = 8
+darf_nicht_sagen = ["6800 Gold"]
+warum = """Kommt einer allein auf dich zu und du gewinnst: ein Satz, nimm den Kampf. Die Lage weicht ab: um 26:13 ist
+Fiddlesticks noch 3748 entfernt - ANNEHMEN entsteht erst in 2500 (26:28); zeit daher 26:28 (messungen.md, Schritt 5)."""
+
+[[szenario]]
+id = "2631-zu-zweit-rein"
+zeit = "26:31"
+quelle = "Buch 7, 10"
+lage = """Nachgespielt: Riven L17, 100 %, unten; Fiddlesticks sichtbar 338 entfernt, Sett tot (31 s)."""
+soll = ["ANNEHMEN", "REIN"]
+max_woerter = 8
+warum = "Das Urteil haelt, solange sein Gegner da ist (Buch 7, 4 / Buch 6, 1.6)."

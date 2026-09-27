@@ -151,6 +151,18 @@ EV       = gewinn − p_tod(du, T = weg + dauer, ort = Grube) · todeskosten −
 - 140253 10:25 („zu den Larven“ mit p_tod 0,97) fällt so, weil `p_tod(du, …, ort = Grube)` den Weg aus dem Brunnen
   rechnet und `anteil` klein ist. Das ist die Abnahme dafür.
 
+**Nachtrag 27.09.2026 (Carlos, nach Schritt 5, Szenario 2522): Wer zählt „ohne dich“, wer „mit dir“?**
+
+- Ein Mitspieler zählt für `p_erfolg_ohne` nur, wenn er **nachweislich zum Objective geht**: Er steht ≤ `grube_radius`
+  an der Grube, oder er hat sich ihr in 10 s um ≥ 1000 genähert (derselbe Test wie „euer Jungler geht hin“ in
+  Kapitel 6).
+- Mitspieler ≤ 1500 **bei dir**, die nicht hingehen, gelten als „kommt mit, wenn du gehst“. Sie zählen in `p_erfolg`
+  (mit dir) und im Kampf an der Grube, aber nicht in `p_erfolg_ohne`.
+- Wer weder hingeht noch bei dir steht, zählt in keiner der beiden Rechnungen.
+- Der Satz nennt, wer mitkommt: „Drache mit Tryndamere: keiner von ihnen kommt rechtzeitig.“
+- Kapitel 6 (Lane-Phase, „wirst du gebraucht?“) bleibt unverändert streng.
+- Umgesetzt in `kern/objective.py` (`geht_hin`, `mitkommende`, `wir_an`).
+
 ### 3.4 Werte (GE für euer Team, Startwerte)
 
 - `wert_uns(Drache)`: `drache`. Ist `drache_nr` für euch 3 (Seelenpunkt), gilt `drache_seelenpunkt`, bei 4

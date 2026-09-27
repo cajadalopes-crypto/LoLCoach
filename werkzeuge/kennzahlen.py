@@ -19,6 +19,10 @@
   - p_da-Brier (Kern, 7.5) gegen den schlimmsten Fall (p = 1, wenn frueheste Ankunft <= 10 s), auf denselben
     Proben. Wahrheit: der Gegner war in den naechsten 10 s sichtbar in 1500 um dich (wer ungesehen kam, zaehlt
     nicht - Grenze der Messung)
+  - Kampf-Verstoesse (Buch 7, 11.3; Soll 0): in KAMPF eine alte Regel, ein Kern-Satz mit mehr als 5 Woertern,
+    mehr als 3 Ansagen je Episode, ein Wechsel des Kampf-Rufs ohne Kampf-Ereignis (Kill/Tod oder neuer Gegner in 1500)
+  - Objective-Ansagen ohne Chance (Buch 6, 14.4; Soll 0): eine Ansage von VORBEREITEN_OBJECTIVE, NEHMEN, STAPELN,
+    WELLE_UND_RAUS, ZUR_GRUPPE oder WOHIN mit Objective, waehrend objective_zieht dafuer falsch war
   - Datenluecken > 5 s (Wanduhr)
   - Szenario-Quote (tests/szenarien/<stamm>.toml, ohne Claude)
 
@@ -137,6 +141,66 @@ def lane_phase_takt(lauf: ns.Lauf) -> tuple[int, float]:
     return n, sek
 
 
+KAMPF_RUFE = ("kern:REIN", "kern:RAUS", "kern:DREHEN", "kern:HALTEN", "kern:ZIEL")
+OBJ_ANSAGEN = ("VORBEREITEN_OBJECTIVE", "NEHMEN", "STAPELN", "WELLE_UND_RAUS", "ZUR_GRUPPE", "WOHIN", "BESTREITEN")
+
+
+def _takt_um(lauf: ns.Lauf, t: float):
+    vorher = [x for x in lauf.takte if x.zeit <= t]
+    return vorher[-1] if vorher else None
+
+
+def kampf_verstoesse(lauf: ns.Lauf) -> list[tuple[float, str]]:
+    """Buch 7, 11.3: was in KAMPF nicht sein darf - (Spielzeit, Grund)."""
+    aus = []
+    episoden = []            # [(von, bis)]
+    for x in lauf.takte:
+        if x.modus == "KAMPF":
+            if episoden and x.zeit - episoden[-1][1] <= 1.5:
+                episoden[-1][1] = x.zeit
+            else:
+                episoden.append([x.zeit, x.zeit])
+    for von, bis in episoden:
+        drin = [a for a in lauf.gesagt if von <= ns.gesprochen_um(a) <= bis + 0.5]
+        for a in drin:
+            if getattr(a, "_regel", None):
+                aus.append((ns.gesprochen_um(a), f"alte Regel {a._regel}: {a.text[:50]}"))
+            elif a.schluessel.startswith("kern:") and len(a.text.split()) > 5:
+                aus.append((ns.gesprochen_um(a), f"{len(a.text.split())} Woerter: {a.text[:50]}"))
+        kern = [a for a in drin if a.schluessel.startswith("kern:")]
+        if len(kern) > 3:
+            aus.append((von, f"{len(kern)} Ansagen in einer Episode"))
+        rufe = [a for a in kern if a.schluessel.startswith(KAMPF_RUFE)]
+        for a1, a2 in zip(rufe, rufe[1:]):
+            if a1.schluessel == a2.schluessel:
+                continue
+            t1, t2 = ns.gesprochen_um(a1), ns.gesprochen_um(a2)
+            x1, x2 = _takt_um(lauf, t1), _takt_um(lauf, t2)
+            if x1 is None or x2 is None:
+                continue
+            if x2.kills == x1.kills and not (x2.nah_sichtbar - x1.nah_sichtbar):
+                aus.append((t2, f"Wechsel ohne Ereignis: {a1.text} -> {a2.text}"))
+    return aus
+
+
+def objective_ohne_chance(lauf: ns.Lauf) -> list[tuple[float, str]]:
+    """Buch 6, 14.4: Objective-Ansagen, waehrend objective_zieht falsch war."""
+    aus = []
+    for a in lauf.gesagt:
+        if not a.schluessel.startswith("kern:"):
+            continue
+        art = a.schluessel.split(":", 1)[1]
+        if art not in OBJ_ANSAGEN:
+            continue
+        t = ns.gesprochen_um(a)
+        x = _takt_um(lauf, t)
+        if x is None or not x.plan_obj or x.plan_obj not in x.obj_zieht:
+            continue
+        if not x.obj_zieht[x.plan_obj]:
+            aus.append((t, a.text))
+    return aus
+
+
 def kennzahlen(pfad: Path, kern: str = "neu") -> dict:
     lauf = ns.durchspielen(pfad, proben=True, kern_stellung=kern)
     minuten = lauf.sekunden_mit_daten / 60
@@ -165,7 +229,8 @@ def kennzahlen(pfad: Path, kern: str = "neu") -> dict:
             "kehrtwenden": kw, "fassungswechsel": fassungswechsel(lauf), "verstoesse": v, "brier": brier, "proben": n, "grundrate": grund,
             "luecken": lauf.luecken, "quote": quote, "brier_kern": brier_kern, "lane_phase": (lp_n, lp_sek),
             "kategorien": dict(lauf.kern.sprecher.kategorien) if lauf.kern is not None else {},
-            "staerken": list(lauf.kern.staerken) if lauf.kern is not None else [], "kern": kern}
+            "staerken": list(lauf.kern.staerken) if lauf.kern is not None else [], "kern": kern,
+            "kampf": kampf_verstoesse(lauf), "ohne_chance": objective_ohne_chance(lauf)}
 
 
 def ausgeben(k: dict) -> None:
@@ -191,6 +256,12 @@ def ausgeben(k: dict) -> None:
         print("   Kern: GEFAHR / PLAN / ERINNERUNG / BESTAETIGUNG = "
               + " / ".join(str(kat.get(x, 0)) for x in ("GEFAHR", "PLAN", "ERINNERUNG", "BESTAETIGUNG"))
               + (f"; Staerken: " + "; ".join(f"{ns.uhr(t)} {s}" for t, s in k["staerken"]) if k["staerken"] else ""))
+    print(f"   Kampf-Verstoesse (Buch 7, Soll 0): {len(k['kampf'])}")
+    for t, s in k["kampf"][:5]:
+        print(f"      {ns.uhr(t)} {s}")
+    print(f"   Objective-Ansagen ohne Chance (Buch 6, Soll 0): {len(k['ohne_chance'])}")
+    for t, s in k["ohne_chance"][:5]:
+        print(f"      {ns.uhr(t)} {s[:90]}")
     print(f"   p_da-Brier: schlimmster Fall {k['brier']:.3f} ({k['proben']} Proben, Grundrate {k['grundrate']:.3f})"
           + (f"   | Kern p_da {k['brier_kern']:.3f}" if not math.isnan(k["brier_kern"]) else ""))
     print("   Datenluecken > 5 s: " + (", ".join(f"{ns.uhr(a)}-{ns.uhr(b)} ({int(w)} s Wanduhr)"

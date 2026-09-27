@@ -16,7 +16,8 @@ from .. import bewertung, minimap
 from ..bewertung import BRUNNEN, GRUBEN, TUERME, WEGFAKTOR, abstand, einheiten
 from ..zustand import BLAU, ROT, gegenteam
 
-OBJ_GRUBE = {"drache": "drache", "baron": "baron", "herold": "baron", "larven": "baron"}   # Grube je Objective
+OBJ_GRUBE = {"drache": "drache", "baron": "baron", "herold": "baron", "larven": "baron",
+             "aeltester": "drache"}   # Grube je Objective (Buch 6, 3.1: der Aelteste in der unteren)
 LANE_DER_ROLLE = bewertung.LANE_DER_ROLLE
 NEXUS = {BLAU: (1700.0, 1700.0), ROT: (13100.0, 13100.0)}   # grob; Bedrohung wird mit 2500 Radius geprueft
 VERLAUF_S = 20.0
@@ -110,6 +111,13 @@ class Merkmale:
     tote_eigene: int = 0
     umwandeln_lief: bool = False                         # Umwandel-Fenster im Takt davor offen (Buch 5, 8)
     fokus: str | None = None                 # Fokus des Tages (profil.fokus) - Kontroll-Auge zuerst
+    ult_mitspieler: dict = field(default_factory=dict)   # Buch 7, 3.2: Name -> Ult bereit (HUD-Leiste), fehlt = ?
+    # Buch 6, Kapitel 6: um wie viel sich euer Jungler der Grube in den letzten 10 s genaehert hat (schl -> Einheiten)
+    jungler_wir_naeher: dict = field(default_factory=dict)
+    # dasselbe fuer alle Mitspieler: schl -> {Name: Annaeherung in 10 s} ("geht hin", kern.objective.wir_an)
+    mitspieler_naeher: dict = field(default_factory=dict)
+    obj_urteile: dict | None = None          # Buch 6, 3: kern.objective.urteile - einmal je Takt gerechnet
+    obj_gedaechtnis: dict | None = None      # Buch 6, 1.6: schl -> (Ereignis-Stand, zieht) - ueber die Takte (MerkmalBau)
 
     def team_nah(self, ziel: tuple[float, float] | None, radius: float) -> int:
         if ziel is None:
@@ -411,6 +419,9 @@ class MerkmalBau:
         self._umwandeln = False             # Fenster offen (Buch 5, 8: der Ausloeser startet, das Fenster haelt)
         self.welle_vorher: WellenStand | None = None
         self._auf_lane: WellenStand | None = None
+        self._jungler_wir: deque = deque()  # (Zeit, Ort eures Junglers) - Buch 6, Kapitel 6
+        self._mitspieler_orte: deque = deque()   # (Zeit, {Name: Ort}) - "geht hin" fuer alle (Buch 6)
+        self._obj_gedaechtnis: dict = {}         # Buch 6, 1.6: das Urteil haelt, bis ein Ereignis es kippt
 
     def neu(self, p, b, lb) -> Merkmale | None:
         c = self.cfg["modus"]
@@ -457,6 +468,8 @@ class MerkmalBau:
             if t is None or t - zeit > 300:
                 continue
             obj = bewertung.einheiten(*GRUBEN[OBJ_GRUBE[schl]])
+            if schl == "drache" and getattr(p, "unten_aeltester", None) is not None and p.unten_aeltester():
+                schl = "aeltester"            # Buch 6, 3.1: nach der Seele heisst es so (eigener Wert, n_min 3)
             weg = m.weg(obj)
             fenster, unbekannt, _ = bewertung.verteidiger_ab(b, obj, weg or 0.0)
             erreicht = sum(1 for _, wo in mitspieler if wo is not None
@@ -464,6 +477,9 @@ class MerkmalBau:
             m.objectives.append(ObjectiveLage(schl, t <= zeit, max(0.0, t - zeit), obj, weg,
                                               m.team_nah(obj, c["grube_radius"]), erreicht, fenster, unbekannt))
         m.bedrohung = self._bedrohung(p, b, lb, m)
+        if lb is not None and getattr(lb, "mitspieler", None):
+            m.ult_mitspieler = {name: v[2] for name, v in lb.mitspieler.items()
+                                if zeit - v[0] <= 3.0 and v[2] is not None}
         frisch_bis = c["minimap_frisch_s"]
         m.daten_frisch = lb is not None and getattr(lb, "letztes_bild", None) is not None \
             and zeit - lb.letztes_bild <= frisch_bis
@@ -504,7 +520,33 @@ class MerkmalBau:
         g = b.lane
         m.lane_im_brunnen = bool(g is not None and not g.s.tot and not g.sichtbar and lb is not None
                                  and hasattr(lb, "brunnen_seit") and lb.brunnen_seit(g.s, m.zeit))
+        self._jungler_anlauf(m, p, b)
+        m.obj_gedaechtnis = self._obj_gedaechtnis
         self._mitte(m, p, b, lb)
+
+    def _jungler_anlauf(self, m: Merkmale, p, b) -> None:
+        """Buch 6, 6: "hat sich ihr in 10 s um >= 1000 genaehert" - je Objective der Abstand eures Junglers vor 10 s
+        minus jetzt."""
+        orte = {s.name: w for s, w, *_ in b.mitspieler if w is not None and not s.tot}
+        self._mitspieler_orte.append((m.zeit, orte))
+        while len(self._mitspieler_orte) > 1 and self._mitspieler_orte[1][0] <= m.zeit - 10.0:
+            self._mitspieler_orte.popleft()
+        t_alt, alt_orte = self._mitspieler_orte[0]
+        if m.zeit - t_alt >= 8.0:
+            m.mitspieler_naeher = {o.schl: {n: abstand(alt_orte[n], o.pos) - abstand(w, o.pos)
+                                            for n, w in orte.items() if n in alt_orte} for o in m.objectives}
+        j = next((s for s in p.team(p.mein_team) if s.rolle == "JUNGLE" and s is not p.ich), None)
+        wo = next((w for s, w, *_ in b.mitspieler if j is not None and s.name == j.name), None)
+        if j is None or j.tot or wo is None:
+            self._jungler_wir.clear()
+            return
+        self._jungler_wir.append((m.zeit, wo))
+        while len(self._jungler_wir) > 1 and self._jungler_wir[1][0] <= m.zeit - 10.0:
+            self._jungler_wir.popleft()
+        t0, alt = self._jungler_wir[0]
+        if m.zeit - t0 < 8.0:
+            return
+        m.jungler_wir_naeher = {o.schl: abstand(alt, o.pos) - abstand(wo, o.pos) for o in m.objectives}
 
     def _mitte(self, m: Merkmale, p, b, lb) -> None:
         """Buch 5, Kapitel 1: die Karte nach der Lane-Phase - Seitenwellen, wo die Gegner sind, wer dich stoppen

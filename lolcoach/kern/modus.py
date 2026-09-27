@@ -24,7 +24,11 @@ def bereich_worte(bereich: str | None) -> str:
 class Modus:
     def __init__(self, cfg: dict):
         self.c = cfg["modus"]
-        self.mindestens = cfg.get("objective_wert", {}).get("mindestens", {})
+        self.co = cfg.get("objective", {})
+        # Buch 6, 5: der Plan des vorigen Takts - (Objective-Schluessel, Spielzeit), solange er ein Objective-Plan ist;
+        # der Kern setzt ihn je Takt (objective_plan_merken)
+        self.obj_plan: tuple[str, float] | None = None
+        self._obj_plan_weg: float | None = None     # seit wann kein Objective-Plan mehr
         self.aktuell: str | None = None
         self._ort_zuletzt: float | None = None     # Spielzeit, zu der dein Ort zuletzt bekannt war
         self.seit: float = 0.0
@@ -42,20 +46,20 @@ class Modus:
             return "KAMPF", "Gegner in Reichweite, Leben faellt"
         eigene_lane = m.lane_phase and m.bereich == "lane_eigen"
         if not eigene_lane:     # auf der eigenen Lane in der Lane-Phase bleibt es LANE (VORBEREITEN_OBJECTIVE)
+            # Buch 6, 5 (aendert Buch 0, 5.1): (1) du stehst in der Grube, und es lebt oder spawnt in <= grube_modus_s;
+            # (2) dein Plan ist ein Objective-Plan und du bist <= objective_nah_s von der Grube. "Ein Mitspieler an der
+            # Grube" loest nicht mehr aus (38:31: OBJECTIVE in ihrer Basis), [objective_wert].mindestens faellt weg.
+            grube_s = self.co.get("grube_modus_s", 30)
             for o in m.objectives:
-                if not (o.lebt or o.spawn_in <= c["objective_vorlauf_s"]):
-                    continue
-                # "du stehst an der Grube": in der Grube - oder <= objective_nah_s entfernt UND genug von euch
-                # koennen dort sein, dass sich die Kernfrage (nehmen, bestreiten, abgeben, tauschen?) ueberhaupt
-                # stellt (Schritt 2, messungen.md: sonst war mit einem lebenden Baron ab Minute 20 von der Mid-Lane
-                # aus alles OBJECTIVE). Nicht aus der Basis heraus (der Heimweg-Schub macht die Laufzeit klein).
-                in_grube = m.bereich == f"grube:{OBJ_GRUBE[o.schl]}"
-                nah = (o.weg is not None and o.weg <= c["objective_nah_s"] and m.bereich != "basis_eigen"
-                       and 1 + o.team_erreicht >= self.mindestens.get(o.schl, 2))
-                if in_grube or nah or o.team_nah >= 1:
-                    return "OBJECTIVE", f"{o.schl} {'lebt' if o.lebt else f'in {int(o.spawn_in)} s'}, " + (
-                        "du stehst in der Grube" if in_grube else f"du {int(o.weg)} s entfernt, "
-                        f"{o.team_erreicht} von euch koennen mit" if nah else f"{o.team_nah} von euch an der Grube")
+                if m.bereich == f"grube:{OBJ_GRUBE[o.schl]}" and (o.lebt or o.spawn_in <= grube_s):
+                    return "OBJECTIVE", (f"{o.schl} {'lebt' if o.lebt else f'in {int(o.spawn_in)} s'}, "
+                                         "du stehst in der Grube")
+            if self.obj_plan is not None and m.bereich != "basis_eigen":
+                o = next((x for x in m.objectives if x.schl == self.obj_plan[0]), None)
+                if o is not None and o.weg is not None:
+                    grenze = c["objective_nah_s"] + (10.0 if self.aktuell == "OBJECTIVE" else 0.0)
+                    if o.weg <= grenze:
+                        return "OBJECTIVE", f"Plan {o.schl}, du {int(o.weg)} s entfernt"
         for name, _, weg in m.bedrohung:
             if weg is not None and weg <= c["verteidigen_weg_s"]:
                 return "VERTEIDIGEN", f"Bedrohung an {name}, {int(weg)} s von dir"
@@ -104,6 +108,18 @@ class Modus:
         if m.zeit - self.kandidat_seit >= self.c["hysterese_s"]:
             return self._setze(roh, m.zeit, grund)
         return self.aktuell
+
+    def objective_plan_merken(self, schl: str | None, zeit: float) -> None:
+        """Buch 6, 5: OBJECTIVE endet erst, wenn der Plan >= objective_verlassen_s kein Objective-Plan mehr ist."""
+        if schl is not None:
+            self.obj_plan, self._obj_plan_weg = (schl, zeit), None
+            return
+        if self.obj_plan is None:
+            return
+        if self._obj_plan_weg is None:
+            self._obj_plan_weg = zeit
+        if zeit - self._obj_plan_weg >= self.co.get("objective_verlassen_s", 5):
+            self.obj_plan, self._obj_plan_weg = None, None
 
     def _setze(self, modus: str, zeit: float, grund: str) -> str:
         if modus != self.aktuell:

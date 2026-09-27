@@ -56,12 +56,10 @@ unbekannt_faktor = 0.35
 roam_basis = 0.3
 schwelle_ge = 120
 p_min = 0.15
-kampf_exponent = 2.0            # p_verliere = 1 / (1 + kraft_gegen ** k)
 # Qualitaetsrunde 2, G2: ein WOHIN-Ziel mit p_tod bei Ankunft darueber wird nicht gesagt; "lauf direkt" nur darunter
 wohin_p_tod_max = 0.3
 wohin_direkt_max = 0.15
 flucht_flash = 0.6
-flucht_turm = 0.5
 ueberzahl_sicher = 2.5          # kraft_gegen-Verhaeltnis
 kill_ueberlegen = 3.0           # kraefte()[0], Skala Level/600 Gold
 kill_leben_frisch_s = 1.0       # "sein Leben ist frisch gelesen" (6.2)
@@ -87,22 +85,56 @@ stand = "Buch 0 Kapitel 7.7, Schritt 3"
 kauf_faktor = 0.25
 heil_faktor = 1.0               # GE je fehlendem Lebenspunkt beim Back (grob)
 
-[objective_wert]                # fuer dein Team; Startwerte, Buch 6 eicht sie
-stand = "Buch 0 Kapitel 7.7 - vorgezogen fuer die Objective-Auswahl in Schritt 2"
+[objective_wert]
+stand = "Buch 6, 27.09.2026 - Startwerte (Schaetzung)"
 drache = 600
+drache_seelenpunkt = 900
 drache_seele = 1500
-larven = 500
-herold = 700
-baron = 2500
 aeltester = 3000
+larven = 500
+larven_seite = 200                 # nur als folgewert, Buch 6 Kapitel 3.4
+herold = 400                       # geaendert (vorher 700): der Ritt zaehlt jetzt als folgewert, Kapitel 7
+baron = 2500
 inhibitor = 1000
 turm_extra = 250
 nexus = 10000
-# nicht im Buch, Schritt 2: so viele von euch muessen rechtzeitig an der Grube sein (Buch 6 eicht)
-mindestens = { drache = 2, larven = 2, herold = 2, baron = 3 }
-# nicht im Buch, Schritt 2 (vorgezogen aus Schritt 5): geschaetzte Toetungszeit mit genug Leuten (Buch 6 eicht) -
-# erreichbar ist ein Objective nur, wenn dein Weg + diese Dauer vor den ersten Gegner an der Grube passt
-dauer_s = { drache = 15, larven = 15, herold = 20, baron = 35 }
+# mindestens und dauer_s aus Schritt 2 fallen weg (Buch 6, Kapitel 5): es gilt objective_zieht
+
+[objective]
+stand = "Buch 6, 27.09.2026 - Startwerte (Schaetzung), an Aufnahmen kalibrieren (Kapitel 10)"
+# objective_vorlauf_s: aus [modus] (60 s), nicht doppelt fuehren
+ankunft_vorlauf_s = { larven = 10, herold = 10, drache = 15, gross = 30 }   # gross: drache_nr >= 3, Aeltester, Baron
+grube_modus_s = 30
+objective_verlassen_s = 5
+puffer_s = 3
+steal_mit_smite = 0.15
+steal_ohne_smite = 0.5
+vorbereiten_p_min = 0.5
+nehmen_p_min = 0.65
+abbruch_p = 0.4
+leben_min = 0.6
+bestreiten_kampf_ab = 0.5
+bestreiten_p_min = 0.55
+bestreiten_p_min_gross = 0.45
+kampf_fenster_s = 15
+tp_unterschied_min = 0.15
+stufe_faktor = 0.8
+stufe_ref = { bis_14 = 7, bis_25 = 12, danach = 16 }
+rache_je_drache = 0.15
+rache_max = 0.6
+baron_fenster_s = 180
+baron_umwandeln_mindestens = 3
+herold_folge_anteil = 0.8
+eichung_nah = 700
+verhindern = true                  # wert_ihnen zaehlt in BESTREITEN
+
+[objective.dauer]                  # Toetungszeit [s]; Liste ab n_min, der letzte Wert gilt fuer groessere n; fehlende Spalte = kein Kandidat
+n_min = { drache = 1, larven = 1, herold = 1, baron = 3, aeltester = 3 }
+drache = { bis_14 = [45, 25, 18], bis_25 = [28, 16, 11], danach = [16, 10, 7] }
+larven = { bis_14 = [40, 25, 18], bis_25 = [30, 18, 13] }
+herold = { bis_25 = [45, 28, 20] }
+baron = { bis_25 = [50, 38, 30], danach = [32, 24, 18] }
+aeltester = { danach = [28, 20, 15] }
 
 [welle]
 stand = "Buch 1, 27.09.2026 - Startwerte (Schaetzung), an Szenarien und Handbeschriftung kalibrieren"
@@ -207,3 +239,52 @@ platten_annahme = 2
 kampf_wert_je_gegner = 300
 # ... mit der Gruppe faellt ein Turm schneller (je Mitspieler dabei)
 gruppe_turm_faktor = 0.6
+
+[kampf]
+stand = "Buch 7, 27.09.2026 - Startwerte (Schaetzung), an Aufnahmen kalibrieren (Kapitel 3.3)"
+# Carlos, 27.09.2026 (Entscheidung 2): solange false, sind ANNEHMEN, REIN und DREHEN stumm - berechnet und im Protokoll
+# als "stumm: Modell nicht geeicht" gefuehrt. true erst, wenn kampf_eichung an echten Partien (bots = false) mit >= 30
+# entschiedenen Proben einen Brier-Wert besser als die Grundrate zeigt. RAUS und der Rueckblick sprechen immer.
+geeicht = false
+fenster_s = 6
+kampf_radius = 1000
+k = 2.0                          # ersetzt gefahr.kampf_exponent; Eichung 27.09.: Startwert bleibt (messungen.md, Schritt 5)
+mitspieler_anteil = 0.8
+ult_faktor_weg = 0.8             # beide Seiten; bereit oder unbekannt = 1
+flash_faktor_weg = 0.95
+faehigkeiten_faktor_weg = 0.75   # nur du; welche Faehigkeiten: [kampf.champion].kern
+turm_faktor = 1.5
+# turm_radius = bewertung.TURM_REICHWEITE (775), kein eigener Wert
+eichung_min = 30
+unsichtbar_s = 60
+level_abschlag = 1
+item_anteil = 0.8
+annehmen_abstand = 2500
+annehmen_p_min = 0.7
+annehmen_leben_min = 0.5
+annehmen_wiederholen_s = 60
+jungler_sicher_s = 20
+jungler_p_max = 0.2
+rein_p_min = 0.65
+raus_p_max = 0.35
+drehen_abstand = 1000
+drehen_gegner_leben = 0.4
+drehen_eigen_leben = 0.35
+drehen_p_min = 0.65
+drehen_frei = 1500
+toetbar_leben = 0.3
+toetbar_leben_tank = 0.2
+hinter_front = 300
+dive_leben_min = 0.6
+dive_allein_p_min = 0.8
+dive_team_p_min = 0.75
+kampf_abstand_s = 4
+max_je_episode = 3
+max_woerter_kampf = 5
+max_woerter_annehmen = 8
+max_woerter_rueckblick = 25
+ereignis_leben_faellt = 0.15
+
+[kampf.champion]                 # Startwerte; Buecher 8-10 ersetzen sie je Champion
+Riven = { reichweite_rein = 650, flash_zusatz = 400, kern = ["E", "W"], flucht = { E = 250, Q = 260 } }
+standard = { reichweite_rein = 550, flash_zusatz = 400, kern = [], flucht = {} }

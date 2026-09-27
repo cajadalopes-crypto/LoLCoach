@@ -12,7 +12,8 @@ from ..handlung import Handlung, Ziel
 from ..merkmale import recall_schwellen
 
 OBEN = ("larven", "herold", "baron")
-OBJ_NAME = {"drache": "Drache", "baron": "Baron", "herold": "Herold", "larven": "Larven"}
+OBJ_NAME = {"drache": "Drache", "baron": "Baron", "herold": "Herold", "larven": "Larven", "aeltester": "Ältester"}
+UNTEN = ("drache", "aeltester")
 KONTROLLAUGE = 2055
 
 
@@ -61,7 +62,7 @@ def objectives_meine_seite(m, lane: str | None = None) -> list:
     if lane == "Top":
         return [o for o in m.objectives if o.schl in OBEN]
     if lane == "Bot":
-        return [o for o in m.objectives if o.schl == "drache"]
+        return [o for o in m.objectives if o.schl in UNTEN]
     return list(m.objectives)
 
 
@@ -112,8 +113,10 @@ def back_gruende(m, cfg: dict) -> list[BackGrund]:
     if leben is not None and leben < c["leben_back"]:
         aus.append(BackGrund("LEBEN", 0.0, f"{int(round(leben * 100))} Prozent Leben"))
     zurueck = zurueck_dauer(m, cfg)
+    from .. import objective as obj
     for o in objectives_meine_seite(m):
-        if not o.lebt and 60 <= o.spawn_in <= 100 and zurueck <= o.spawn_in:
+        # Buch 6, 4.1: nur ein Objective, das dich zieht, ist ein Back-Grund
+        if not o.lebt and 60 <= o.spawn_in <= 100 and zurueck <= o.spawn_in and obj.zieht(m, o, cfg):
             aus.append(BackGrund("OBJECTIVE_VORLAUF", c["vorlauf_bonus"] * objective_wert(o, cfg),
                                  f"{OBJ_NAME[o.schl]} um {uhr(m.zeit + o.spawn_in)}"))
     # dein Gegner ist gebackt oder tot und deine Welle ist drin - oder laesst sich jetzt crashen (Buch 3, 4.3: "Sett ist
@@ -168,17 +171,29 @@ def nie_back(m, cfg: dict) -> str | None:
     if m.im_kampf:
         return "Kampf"
     for g in b.gegner:
-        if g.sichtbar and not g.s.tot and g.abstand is not None and g.abstand <= c["nie_back_gegner_abstand"] \
-                and (g.kommt_naeher or (g.ankunft is not None and g.ankunft <= c["kanal_s"])):
+        # eben noch gesehen zaehlt wie sichtbar (140253 8:04: Yasuo 935 entfernt, im Takt davor zu sehen - "Back jetzt",
+        # dann kamen Brand und Yasuo; Pruefung D2)
+        eben = g.sichtbar or (g.seit is not None and g.seit <= NIE_BACK_EBEN_S)
+        if eben and not g.s.tot and g.abstand is not None and g.abstand <= c["nie_back_gegner_abstand"] \
+                and (g.kommt_naeher or not g.sichtbar or (g.ankunft is not None and g.ankunft <= c["kanal_s"])):
             return f"{g.champion} erreicht dich im Kanal"
+    return nie_back_objective(m, cfg)
+
+
+def nie_back_objective(m, cfg: dict) -> str | None:
+    """Der Objective-Teil von nie_back: du bist voll, und ein Objective, das dich zieht (Buch 6, 4.1), spawnt auf deiner
+    Seite in < 40 s. Er gilt auch fuer WELLE_REIN_UND_BACK - der Back laege mitten im Objective."""
+    b, c = m.b, cfg["recall"]
     if b.leben is not None and b.leben >= c["voll_ab"]:
+        from .. import objective as obj
         for o in objectives_meine_seite(m):
-            if not o.lebt and o.spawn_in < 40:
+            if not o.lebt and o.spawn_in < 40 and obj.zieht(m, o, cfg):
                 return f"{OBJ_NAME[o.schl]} in {int(o.spawn_in)} Sekunden"
     return None
 
 
 SICHER_DORT_S = 4.0     # so nah am sicheren Ort stehst du schon dort
+NIE_BACK_EBEN_S = 3.0   # so lange nach der letzten Sichtung zaehlt ein naher Gegner fuer nie_back wie sichtbar
 
 
 def am_sicheren_ort(m) -> bool:

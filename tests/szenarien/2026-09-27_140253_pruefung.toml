@@ -23,6 +23,7 @@ quelle = "Pruefung E1: 'Solo gegen Yasuo verloren. 18 Sekunden davor hiess es: g
 lage = "Riven stirbt 8:34 mit einem Drittel Leben an ihrem Turm gegen Yasuo (allein, ohne Assist)."
 darf_nicht_sagen = ["hieß es", "mindestens", "Kopfgeld", "Brand"]
 muss_nennen_eins = ["Yasuo"]
+satz_mit = [["Raus kam"], ["Yasuo"]]    # Buch 7, 10: Satz 1 nach Tabelle 8 - "Raus, zum Turm!" kam 8:32, Riven blieb
 woerter_max = 25
 woerter_schluessel = "tod"
 warum = """Zwei Saetze, hoechstens 25 Woerter: was entschied (aus der Lage), was naechstes Mal (als Handlung). Keine
@@ -32,10 +33,12 @@ Schadenszahlen, kein Kopfgeld, kein Vorwurf."""
 
 [[szenario]]
 id = "1005-tod-ohne-kopfgeld"
-fenster = ["10:05", "10:15"]
+fenster = ["10:05", "10:20"]
 quelle = "Pruefung E1: '... mindestens 690 Schaden und auf dir liegen 0 Gold Kopfgeld - ein Tod kostet mehr, als der Kill bringt'"
-lage = "Riven stirbt 10:05 gegen Yasuo."
+lage = """Riven stirbt 10:05 gegen Yasuo. Seit Entscheidung 2 (Kampf-Rufe stumm) kommt vorher 9:49 "Raus zu deinem
+Mid-Tier-1-Turm: Brand und Yasuo kommen." - Riven bleibt. Fenster seit Schritt 5 bis 10:20."""
 darf_nicht_sagen = ["hieß es", "mindestens", "Kopfgeld"]
+satz_mit = [["Raus kam", "Duell gegen", "Prozent gegen", "aus dem Nebel", "unter seinem Turm"]]   # Buch 7, 10: Tabelle 8
 woerter_max = 25
 woerter_schluessel = "tod"
 warum = "Wie 0843: Lehre statt Zahlen."

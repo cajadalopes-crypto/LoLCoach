@@ -63,14 +63,23 @@ Q: Patch 26.1, Wiki Turret.
 
 ## Objectives 2026
 
-Q: Patch 26.1, Wiki Dragon, objektive.toml (Timer am 26.09.2026 geprueft).
-- Drache 5:00, Respawn 5:00. Leben 3625 + 375 Wachstum. Kill-Gold 75 (vorher 25). Rache-Buff
-  (Dragon Vengeance) 15/30/45 % Schadensreduktion (vorher 7/14/21 %). Elemental Rift nach dem 2. Drachen.
-- Aeltester 5:00 nach Seele, dann 6:00. 850 g (vorher 1350), 3250 XP global.
-- Leerenlarven 8:00, einmal 3 Stueck, bis 14:45. 90 g nur an den Killer (vorher 210), Ruestung/MR
-  jetzt vorhanden, 50 % weniger Schaden an Nicht-Champions.
-- Herold 15:00 bis 19:45. 100 g an den Killer. Auge 6 s Cooldown, Ramme 3000 Schaden.
-- Baron 20:00. 850 g (vorher 1525), 3250 XP. Faehigkeiten skalieren mit 100 % Gesamt-AD.
+Q: Patch 26.1, Wiki Dragon, objektive.toml (Timer am 26.09.2026 geprueft); korrigiert am 27.09.2026 nach
+Buch 6, Kapitel 12 (Wiki Dragon Slayer, Baron Nashor, Rift Herald, Voidgrub, Elder Dragon, Dragon pit;
+riftpatchnotes Dragons).
+- Drache 5:00, Respawn 5:00. Leben 3625 + 375 Wachstum. Kill-Gold 75 (vorher 25). Elemental Rift nach dem
+  2. Drachen.
+- Rache der Drachen (Wiki Dragon Slayer, Stand 26.1): ein Drache nimmt je Drachen, den das ANGREIFENDE Team schon
+  hat, 15 % weniger Schaden, hoechstens 60 % (vorher 7/14/21 %).
+- Aeltester **6:00** nach dem 4. Drachen eines Teams, dann alle 6:00 (Wiki Dragon pit, Abschnitt Spawn; Patch 14.3:
+  "First spawn timer is now properly 360 seconds instead of 300 seconds" - die 5:00 hier vorher stammten aus 14.2).
+  850 g (vorher 1350), 3250 XP global. Aspekt des Drachen 150 s (Wiki Elder Dragon).
+- Leerenlarven 8:00, einmal 3 Stueck, verschwinden 14:45 (im Kampf 14:55). 30 g je Larve an den Killer (90 g fuer
+  alle drei; vorher 210), "Hunger der Leere" erst mit dem 3. Stapel. Ruestung/MR jetzt vorhanden, 50 % weniger
+  Schaden an Nicht-Champions (Wiki Voidgrub).
+- Herold 15:00 bis 19:45 (im Kampf 19:55). 100 g an den Killer. Das Auge liegt 20 s am Grubeneingang; Auge 6 s
+  Cooldown, Ramme 3000 Echtschaden an einem Turm, der Ritt verbraucht dessen Kristall (Wiki Rift Herald, Turret).
+- Baron 20:00, Wiederkehr 6:00, Buff 180 s. 850 g (vorher 1525), 3250 XP. Faehigkeiten skalieren mit 100 %
+  Gesamt-AD (Wiki Baron Nashor).
 
 ## Gold und Kopfgeld
 

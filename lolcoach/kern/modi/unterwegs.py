@@ -17,7 +17,9 @@ def kandidaten(m, cfg: dict) -> list[Handlung]:
         if (h := karte.seitenwelle(m, cfg, "UNTERWEGS", lane, w)) is not None:
             aus.append(h)
     aus += karte.zur_gruppe(m, cfg, "UNTERWEGS")
-    bald = m.teamkampf is not None or any(o.lebt or o.spawn_in <= 60 for o in m.objectives)
+    from .. import objective as obj
+    # Buch 6, 4.1: nur ein Objective, das dich zieht, haelt dich vom Back ab
+    bald = m.teamkampf is not None or any((o.lebt or o.spawn_in <= 60) and obj.zieht(m, o, cfg) for o in m.objectives)
     if not bald:
         if m.lane_hier:
             w = m.wellen.get(m.lane_hier)

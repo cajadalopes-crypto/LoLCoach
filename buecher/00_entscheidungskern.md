@@ -304,7 +304,7 @@ Das hätte die 8,5 Minuten Stille in 102112 hörbar gemacht, und das Review wüs
 |---|---|---|
 | `TOT` | du bist tot | Was ging schief (einmal)? Was kaufst du, wohin nach dem Respawn? |
 | `KAMPF` | `im_kampf` | Rein, halten oder raus – und wer ist das Ziel? |
-| `OBJECTIVE` | ein Objective lebt oder spawnt in ≤ `objective_vorlauf_s`, **und** eins davon gilt: du stehst an der Grube (≤ `objective_nah_s`) **und nicht** auf deiner eigenen Lane in der Lane-Phase; der Plan zielt darauf; ≥ 1 Mitspieler ist an der Grube. Auf der eigenen Lane in der Lane-Phase bleibt es `LANE` mit der Handlung `VORBEREITEN_OBJECTIVE`. | Nehmen, bestreiten, abgeben oder tauschen? |
+| `OBJECTIVE` | **Seit Schritt 5 (Buch 6, 5):** du stehst in der Grube und das Objective lebt oder spawnt in ≤ `grube_modus_s` (30 s), **oder** dein Plan des vorigen Takts ist `VORBEREITEN_OBJECTIVE`, `NEHMEN` oder `BESTREITEN` und du bist ≤ `objective_nah_s` von der Grube; endet erst, wenn der Plan ≥ `objective_verlassen_s` kein Objective-Plan mehr ist oder dein Weg > `objective_nah_s` + 10 s. „≥ 1 Mitspieler an der Grube“ löst nicht mehr aus. Auf der eigenen Lane in der Lane-Phase bleibt es `LANE` mit der Handlung `VORBEREITEN_OBJECTIVE`. | Nehmen, bestreiten, abgeben oder tauschen? |
 | `VERTEIDIGEN` | eine **tatsächliche** Bedrohung an einer eigenen Struktur, **und** du bist ≤ 15 s davon entfernt. Bedrohung heißt: ≥ 2 Gegner sichtbar in 2500 um den eigenen Turm/Nexus, **oder** die gegnerische Welle steht an eurem Inhibitor-Turm/Nexus einer Lane ohne Inhibitor (`welle.py`) und kein Mitspieler ist dort. Ein fehlender Inhibitor allein reicht nicht. | Welle klären, Turm halten oder woanders tauschen? |
 | `BASIS` | `bereich == basis_eigen`, lebend | Was kaufst du, und wohin gehst du? |
 | `LANE` | `lane_phase` **und** `bereich == lane_eigen` | Was machst du mit Welle, Gegner und Gold in den nächsten 30 s – und wer kann dich bestrafen? |
@@ -996,6 +996,15 @@ warum = "…"                           # die Begründung, Challenger-Sicht
 | `fassung_einmal` | `true`: keine Fassung (Text vor dem ersten Doppelpunkt) kommt im Fenster zweimal |
 | `woerter_max` | kein Satz im Fenster hat mehr Wörter; mit `woerter_schluessel` nur Ansagen dieses Schlüssels (z. B. `tod`) |
 | `gold_reicht` | `true`: „N Gold für X“ – X kostet abzüglich deiner Bauteile höchstens N (`szenarien.gold_verstoesse`) |
+| `text_max = { "muster\|muster" = n }` | Qualitätsrunde 2: höchstens n Sätze im Fenster passen auf eines der Muster (Regex, ohne Groß/klein) |
+| `planwechsel_max` | Qualitätsrunde 2: so viele Wechsel der Plan-Art zwischen gesprochenen Kern-Sätzen höchstens (Bestätigung, Erinnerung und Kampf-Rufe zählen nicht) |
+| `spielmodus` (Datei) | Qualitätsrunde 2: `"CLASSIC"` oder `"SWIFTPLAY"`; passt er nicht zum gameMode der Aufnahme, ist die Datei rot |
+| `soll_ziel` | Buch 6, 13: in zeit ±2 s (oder im Fenster) hat ein Kern-Plan ein Ziel oder Objective, das diesen Text enthält |
+| `max_woerter` | Buch 6, 13: kein gesprochener Satz im Fenster ist länger (ohne Schlüssel-Filter, anders als `woerter_max`) |
+| `alte_regeln_max` | Buch 6, 13: so viele gesprochene Sätze alter Regeln (Regelwerk, nicht Kern) im Fenster höchstens |
+
+`soll = ["ANLAUFEN", …]` gilt seit Schritt 5 auch mit dem Plan `NEHMEN` (Buch 6, 4.3: eine Handlung mit zwei
+Schritten).
 
 **Läufer `werkzeuge/szenarien.py`:**
 
@@ -1198,6 +1207,10 @@ jetzt mit `fenster_gegner` und Objective-Dauer.
 
 „Sperre“ gilt ab Schritt 2 (die Regel spricht nur in diesen Modi). „Ersetzt“ gibt den Schritt an, ab dem der
 Kern sie übernimmt.
+
+**Seit Schritt 5 (Buch 6, 5):** `_grosse_objectives`, `_vorwarnung`, `_zahlen`, `_objective_start` und `_ward` sind in
+**allen** Modi stumm (und der Objective-Plan des Entscheiders, `obj_plan`); der Kern spricht jetzt in allen neun Modi.
+Die Spalte „Sperre“ unten gilt für diese fünf nicht mehr.
 
 | Regel (`Regelwerk._…`) | Sperre: spricht nur in | Ersetzt durch | Schritt |
 |---|---|---|---|

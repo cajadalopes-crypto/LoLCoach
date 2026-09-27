@@ -40,9 +40,11 @@ zeit = "6:47"
 quelle = "Pruefung B: STAPELN (EV -315, p_tod 0,41) gewaehlt, FARMEN (EV -1) dahinter"
 lage = """Nachgespielt 27.09.: STAPELN um 6:42 gewaehlt (EV +174), danach schwankt es mit Kha'Zix' Sichtbarkeit
 zwischen -494 und +16; die Hysterese haelt es bis 6:50, gesprochen wurde es 6:47. Kha'Zix 6 s ungesehen, 13 s weg."""
-soll = ["FARMEN", "WELLE_HALTEN"]
-darf_nicht = ["STAPELN"]
-warum = """Buch 1, 3.3: kein STAPELN, wenn p_da(Jungler, 30 s) >= 0,4. Kha'Zix war 13 s entfernt."""
+soll = ["FARMEN", "WELLE_HALTEN", "ZURUECK", "BACK_JETZT"]
+darf_nicht = ["STAPELN", "VORBEREITEN_OBJECTIVE"]
+darf_nicht_sagen = ["Larven"]
+warum = """Buch 1, 3.3: kein STAPELN, wenn p_da(Jungler, 30 s) >= 0,4. Kha'Zix war 13 s entfernt. Erweitert (Buch 6, 13):
+aus einer verlorenen Lane zieht kein Objective - kein VORBEREITEN_OBJECTIVE, kein Wort von den Larven."""
 
 [[szenario]]
 id = "0449-rueckzug-ein-satz"
@@ -59,9 +61,10 @@ zeit = "1:59"
 quelle = "Pruefung E2: 'Noch 8 Sekunden: zurueck nach Top' mit p_tod 0,64"
 lage = "Riven tot seit 1:57 (Gangplank), Wiedereinstieg 2:11 im Brunnen."
 soll = ["WOHIN"]
-plan_p_tod_max = 0.2
+plan_p_tod_max = 0.3
 warum = """WOHIN wird auf dem Weg aus dem Brunnen zur Wiederbelebungszeit gerechnet, nicht am Todesort. Der Weg zum
-eigenen Turm ist nicht gefaehrlich."""
+eigenen Turm ist nicht gefaehrlich. Grenze seit Schritt 5 = wohin_p_tod_max (0,3): mit dem Kampfmodell aus Buch 7 sind
+es 0,22 statt vorher < 0,2 (Fehler E2 war 0,64); der Plan ist derselbe (messungen.md, Schritt 5)."""
 
 [[szenario]]
 id = "0338-keine-info-im-kampf"
@@ -70,7 +73,9 @@ fenster = ["3:36", "3:50"]
 quelle = "Pruefung E7: 'Mel ist AFK ...' im Modus KAMPF"
 lage = "Riven 59 % im Kampf auf ihrer Lane."
 darf_nicht_sagen = ["AFK"]
-warum = "In KAMPF spricht nur GEFAHR (Buch 0, 9.1). Die AFK-Info kommt nach dem Kampf, wenn sie dann noch gilt."
+alte_regeln_max = 0
+warum = """In KAMPF spricht nur GEFAHR (Buch 0, 9.1). Die AFK-Info kommt nach dem Kampf, wenn sie dann noch gilt. Erweitert
+(Buch 7, 10): in KAMPF keine alte Regel."""
 
 # --- Qualitaetsrunde 2 (buecher/protokolle/PRUEFUNG_2026-09-27b.md), angelegt vor den Fixes: rot mit 705a6a6 ---
 

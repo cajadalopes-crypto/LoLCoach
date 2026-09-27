@@ -5,9 +5,11 @@
 #     (esports.gg "Atakhan, Feats of Strength removed")
 #   - Herold 15:00, verschwindet 19:45 (wiki.leagueoflegends.com/Rift_Herald)
 #   - Larven 8:00, einmal drei Stueck, verschwinden 14:45 (Suche, mehrere Quellen)
-#   - Drache 5:00/5:00, Aeltester 5:00 nach dem 4. Drachen, dann 6:00
-#     (wiki.leagueoflegends.com/Dragon)
-# Inhibitor 5:00: Wiki Inhibitor, geprueft 26.09.2026. Ungeprueft: Baron-Respawn 6:00 (seit Jahren so).
+#   - Drache 5:00/5:00, Aeltester 6:00 nach dem 4. Drachen, dann 6:00 (am 27.09.2026 nachgeschlagen: Wiki
+#     "Dragon pit", Abschnitt Spawn: "Once a team has killed their fourth drake, the camp will now instead spawn
+#     the Elder Dragon with a 6 minute respawn timer"; riftpatchnotes Patch 14.3: "First spawn timer is now
+#     properly 360 seconds instead of 300 seconds" - die 300 s aus 14.2 waren ein Fehler; 26.1 aendert nichts)
+# Inhibitor 5:00: Wiki Inhibitor, geprueft 26.09.2026. Baron-Respawn 6:00: Wiki Baron Nashor (Buch 6, 27.09.2026).
 # EventNamen gegen eine echte Partie geprueft (Aufnahme 26.09.2026), ausser BaronKill.
 stand = "Patch 26.x, nachgeschlagen 26.09.2026"
 
@@ -26,9 +28,9 @@ respawn = 300
 [aeltester]
 # erscheint statt des Drachen, sobald ein Team die Seele hat (4 Drachen)
 name = "Aeltester Drache"
-erster = 300                 # nach dem 4. Drachen
+erster = 360                 # nach dem 4. Drachen (27.09.2026: Wiki Dragon pit + Patch 14.3, s. oben)
 respawn = 360
-buff = 150                   # Aspekt des Drachen, Sekunden (Wiki Elder Dragon; ungeprueft 26.x)
+buff = 150                   # Aspekt des Drachen, Sekunden (Wiki Elder Dragon, 27.09.2026)
 
 [larven]
 name = "Leerenlarven"
@@ -48,7 +50,7 @@ name = "Baron"
 event = "BaronKill"
 erster = 1200
 respawn = 360
-buff = 180                   # Hand des Barons, Sekunden (Wiki Baron Nashor; seit Jahren so, ungeprueft 26.x)
+buff = 180                   # Hand des Barons, Sekunden (Wiki Baron Nashor, Buch 6 Kapitel 2, 27.09.2026)
 
 [inhibitor]
 name = "Inhibitor"

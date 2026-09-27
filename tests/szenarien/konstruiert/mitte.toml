@@ -62,6 +62,11 @@ zeit = "19:10"
 ich = { level = 13, leben = 0.85, gold = 700, tp_in = 120, bereich = "lane:Top" }
 wellen = { Top = { zustand = "ZU_IHM", unsere = 6, ihre = 2 } }
 antwort_kraft = 1.4
+mitspieler = [
+  { champion = "Diana", bereich = "fluss_unten", leben = 1.0 },
+  { champion = "Corki", bereich = "fluss_unten", leben = 1.0 },
+  { champion = "Jinx", bereich = "fluss_unten", leben = 1.0 },
+]
 gegner = [
   { champion = "Sett", rolle = "TOP", bereich = "lane:Top", seit = 0, abstand = 2500 },
   { champion = "Fiddlesticks", rolle = "JUNGLE", bereich = "fluss_unten", seit = 8 },
@@ -70,7 +75,8 @@ tuerme = { ihre = ["Top:aussen", "Top:innen", "Top:Inhib"] }
 objectives = [ { schl = "drache", spawn_in = 50, weg = 40, seite = "andere" } ]
 soll = ["WELLE_UND_RAUS"]
 satz_enthaelt = ["Drache"]
-warum = "Drache in 50 s, kein TP, 40 s Weg: jetzt die Welle rein und los - sonst kommst du zu spaet oder verlierst die Welle."
+warum = """Drache in 50 s, kein TP, 40 s Weg, drei von euch schon unten: jetzt die Welle rein und los - sonst kommst du
+zu spaet oder verlierst die Welle. (Buch 6: ohne euer Team dort zieht der Drache nicht - die Lage nennt es jetzt.)"""
 
 [[lage]]
 id = "m-tp-bleiben"
@@ -102,11 +108,32 @@ mitspieler = [
   { champion = "Tryndamere", bereich = "grube:drache", leben = 0.7 },
   { champion = "Nasus", bereich = "grube:drache", leben = 0.9 },
 ]
-teamkampf = { ort = "grube:drache", eigene = 4, gegner = 5, seit = 2, tote_eigene = 0, tote_gegner = 0, dein_weg = 45 }
+teamkampf = { ort = "grube:drache", eigene = 4, gegner = 4, seit = 2, tote_eigene = 0, tote_gegner = 0, dein_weg = 45 }
 objectives = [ { schl = "drache", spawn_in = 0, lebt = true, weg = 45, seite = "andere" } ]
 soll = ["TP_SPIEL"]
 satz_enthaelt = ["TP"]
-warum = "Der Kampf am Drachen faengt gerade an, 4 gegen 5, zu Fuss 45 s: TP macht es 5 gegen 5."
+warum = """Der Kampf am Drachen faengt gerade an, 4 gegen 4, zu Fuss 45 s: TP macht es 5 gegen 4 und aendert das
+Urteil (Buch 6, 4.7: p_gewinn mit dir - ohne dich >= 0,15). Vorher 4 gegen 5: dort aendert dein TP das Urteil nur um
+0,14 (0,29 -> 0,43), der Kampf bleibt verloren - dafuer m-tp-kampf-bleibt-verloren."""
+
+[[lage]]
+id = "m-tp-kampf-bleibt-verloren"
+buch = "6"
+modus = "SEITE"
+zeit = "24:00"
+ich = { level = 16, leben = 0.9, gold = 900, tp_in = 0, bereich = "lane:Top" }
+wellen = { Top = { zustand = "MITTE", unsere = 4, ihre = 4 } }
+mitspieler = [
+  { champion = "Brand", bereich = "grube:drache", leben = 0.8 },
+  { champion = "Corki", bereich = "grube:drache", leben = 0.9 },
+  { champion = "Tryndamere", bereich = "grube:drache", leben = 0.7 },
+  { champion = "Nasus", bereich = "grube:drache", leben = 0.9 },
+]
+teamkampf = { ort = "grube:drache", eigene = 4, gegner = 5, seit = 2, tote_eigene = 0, tote_gegner = 0, dein_weg = 45 }
+objectives = [ { schl = "drache", spawn_in = 0, lebt = true, weg = 45, seite = "andere" } ]
+darf_nicht = ["TP_SPIEL"]
+warum = """4 gegen 5 am Drachen: dein TP hebt p_gewinn nur von 0,29 auf 0,43 - kein TP (Buch 6, 4.7). Sie sind zu
+fuenft am Drachen: der Tausch ist ein Turm oben (ABGEBEN_TAUSCHEN, 4.5)."""
 
 [[lage]]
 id = "m-kein-tp-kampf-verloren"

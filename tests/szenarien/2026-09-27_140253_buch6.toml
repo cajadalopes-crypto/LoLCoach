@@ -1,0 +1,40 @@
+# Szenarien aus Buch 6 (Objectives), Kapitel 13 - Partie 140253 (Carlos live, Riven Mid gegen Yasuo, SWIFTPLAY).
+# Jede Lage beim Anlegen nachgespielt (27.09.2026). Die Partie ist Swiftplay (Qualitaetsrunde 2, G6): keine Larven,
+# kein Herold, der erste Drache ohne belegten Timer - das Buch kannte das beim Schreiben nicht (messungen.md, Schritt 5).
+# 1025-wohin-nicht-in-den-tod steht in 2026-09-27_140253_pruefung.toml (darf "Larven" nicht sagen).
+
+aufnahme = "2026-09-27_140253"
+spielmodus = "SWIFTPLAY"
+bots = false
+
+[[szenario]]
+id = "0647-mid-larven-zu-frueh"
+zeit = "6:47"
+fenster = ["6:45", "7:10"]
+quelle = "Buch 6, 0.1: '... dann zu den Larven: Spawn 8 00, du bist 7 01 dort.' - eine Minute zu frueh, Mid-Welle verloren"
+lage = """Nachgespielt: Riven L9, 78 %, 1758 Gold, in eurer Basis. Mid-Welle 2:3. Diana in eurem unteren Jungle.
+Swiftplay: Larven gibt es nicht."""
+soll = ["KAUFEN"]
+soll_ziel = "Mid"
+darf_nicht_sagen = ["Larven"]
+warum = """Kaufen, dann zurueck zur Mid-Welle. Kein Objective zieht dich - in Swiftplay gibt es die Larven gar nicht."""
+
+[[szenario]]
+id = "0729-larven-nur-mit-jungler"
+zeit = "7:29"
+quelle = "Buch 6, 13: 'Beim Nachspielen pruefen, ob Diana nach Kapitel 6 hingeht'"
+lage = """Nachgespielt: Riven L10, 70 %, in der Flussmitte an ihrer Lane; Yasuo sichtbar 484 entfernt. Diana in eurem
+oberen Jungle (um 6:47 noch im unteren). Swiftplay: Larven gibt es nicht."""
+darf_nicht = ["VORBEREITEN_OBJECTIVE"]
+warum = """Soll aus der Lage, nicht aus dem Code (erst nach der Umsetzung angelegt - messungen.md, Schritt 5): kein VORBEREITEN_OBJECTIVE. Ob Diana nach Kapitel 6
+"hingeht", entscheidet hier nichts - in Swiftplay spawnen keine Larven (mechanik.toml [swiftplay] gibt_es_nicht)."""
+
+[[szenario]]
+id = "0427-drache-nur-mit-team"
+zeit = "4:27"
+quelle = "Buch 6, 13: 'wie 0729, mit Kapitel 6 fuer den Drachen (Jungler geht hin, Prio Mid, Leben >= 60 %)'"
+lage = """Nachgespielt: Riven L7, 58 % Leben, auf der Mid-Lane, Yasuo 871 entfernt, Welle 0:0. Diana in eurem unteren
+Jungle. Swiftplay: der erste Drache hat keinen belegten Timer - der Coach kennt kein Drachen-Objective."""
+darf_nicht = ["VORBEREITEN_OBJECTIVE"]
+warum = """Soll aus der Lage, nicht aus dem Code (erst nach der Umsetzung angelegt - messungen.md, Schritt 5): kein VORBEREITEN_OBJECTIVE. Selbst mit einem
+Drachen-Timer fiele es heraus: 58 % Leben (< leben_min 0,6) und keine Prio (Welle 0:0, Yasuo lebt und steht da)."""

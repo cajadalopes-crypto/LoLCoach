@@ -105,7 +105,11 @@ class PlanFuehrer:
             if self._fehlt_seit is None:
                 self._fehlt_seit = zeit
             # nur im selben Modus - ein Plan von der Lane gilt in der Basis nicht weiter (Back -> Kauf)
-            if zeit - self._fehlt_seit < self.c.get("luecke_s", 2.0) and not gefahr                     and p.handlung.modus == beste.modus:
+            # Buch 6, 5: Objective-Plaene gelten ueber UNTERWEGS, GRUPPE, SEITE und OBJECTIVE hinweg
+            from .modi.objective import OBJ_ARTEN, OBJ_MODI
+            gleich = p.handlung.modus == beste.modus or (p.art in OBJ_ARTEN and beste.modus in OBJ_MODI
+                                                          and p.handlung.modus in OBJ_MODI | {"LANE"})
+            if zeit - self._fehlt_seit < self.c.get("luecke_s", 2.0) and not gefahr and gleich:
                 self.gehalten = f"{p.als()} fehlt seit {zeit - self._fehlt_seit:.1f} s - der Plan haelt"
                 # auch kein Schritt-Satz: fehlt der Kandidat des Schritts, ist er gerade nicht erlaubt (140253 8:06: der
                 # Back-Schritt des Rueckzugs, waehrend Brand und Yasuo kamen - nie_back, Pruefung D2)
@@ -126,6 +130,9 @@ class PlanFuehrer:
             return schritt
         # 4. besser? (Hysterese in GE, stabil, halten) - welche Regel gegen den EV gewinnt, steht in `gehalten`
         # (Pruefung B: _kern.jsonl und protokoll.py zeigen es)
+        if beste.art == "ANNEHMEN" and p.als() != "ANNEHMEN" and beste.ev > p.handlung.ev:
+            # Buch 7, 4: die Umkehrung derselben Frage wie ZURUECK - sofort, ohne halten_s
+            return self._neu(beste, zeit, "gefahr", p)
         if beste.art != p.als():
             diff = beste.ev - p.handlung.ev
             schwelle = max(self.c["hysterese_ge"], self.c["hysterese_anteil"] * abs(p.handlung.ev))

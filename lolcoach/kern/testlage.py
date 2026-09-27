@@ -18,7 +18,7 @@ from .merkmale import KaufInfo, Merkmale, ObjectiveLage, WellenStand, lane_punkt
 
 ORDNER = Path(__file__).resolve().parent.parent.parent / "tests" / "szenarien" / "konstruiert"
 TEMPO = 345.0
-GRUBE = {"drache": "drache", "baron": "baron", "herold": "baron", "larven": "baron"}
+GRUBE = {"drache": "drache", "baron": "baron", "herold": "baron", "larven": "baron", "aeltester": "drache"}
 
 
 def sekunden(text: str) -> float:
@@ -160,6 +160,16 @@ def bauen(e: dict) -> tuple[Merkmale, str]:
             weg = abstand(m.pos, grube) * bewertung.WEGFAKTOR / TEMPO
         spawn = float(o.get("spawn_in", 0))
         m.objectives.append(ObjectiveLage(name, spawn <= 0, max(0.0, spawn), grube, weg, 0, 0, None, 0))
+    if (jw := e.get("jungler_wir")) is not None:
+        # Buch 6, Kapitel 6: euer Jungler, `abstand` Einheiten vor der Grube des (ersten) Objectives - dafuer braucht
+        # die Lage eine Partie (sonst gibt es kein "euer Team")
+        from ..zustand import Partie
+        j = _spieler("Freund-Jungle", jw.get("champion", "Diana"), "ORDER", "JUNGLE", int(jw.get("level", ich.level)))
+        ziel = m.objectives[0].pos if m.objectives else pos
+        wo = (ziel[0] - float(jw.get("abstand", 2000)), ziel[1])
+        b.mitspieler.append((j, wo, 1.0, ""))
+        m.mitspieler = [(j, wo)]
+        m.p = Partie(zeit, "CLASSIC", [ich, j, *(g.s for g in b.gegner)], ich, float(b.gold), [], False)
     m.daten_frisch = True
     return m, modus
 

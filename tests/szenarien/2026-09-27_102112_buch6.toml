@@ -1,0 +1,73 @@
+# Szenarien aus Buch 6 (Objectives), Kapitel 13 - Partie 102112 (Bot-Partie, Riven Top gegen Sett). Jede Lage beim
+# Anlegen nachgespielt (27.09.2026); Abweichungen vom Buch stehen in buecher/messungen.md, Schritt 5.
+# 2522-kein-baron-drache-lebt, 2847-baron-statt-drache und 3500-drache-solo stehen in 2026-09-27_102112.toml.
+
+aufnahme = "2026-09-27_102112"
+spielmodus = "CLASSIC"
+bots = true
+
+[[szenario]]
+id = "3451-drache-an-der-grube"
+zeit = "34:51"
+fenster = ["34:48", "35:05"]
+quelle = "Buch 6, 0.5: an der Drachengrube, der Drache lebt, drei tot: 'Geh auf den Mid-Inhibitor-Turm, 19 Sekunden ...'"
+lage = """Nachgespielt: Riven L20, 72 %, in der Drachengrube, Drache spawnt in 1 s. Sett (11 s), Fiddlesticks (19 s),
+Kai'Sa (14 s) tot, Galio sichtbar unten, Sona zuletzt in ihrer Basis. Corki und Tryndamere unten (18 s), Nasus und
+Brand in der Basis."""
+modus = ["OBJECTIVE"]
+soll = ["NEHMEN"]
+soll_ziel = "Drache"
+darf_nicht_sagen = ["Mid-Inhibitor"]
+warum = """Du stehst in der Grube, der Drache ist frei. Der Mid-Inhibitor-Turm liegt an ihrem Brunnen, wo gerade drei
+respawnen - er ist kein Ziel (Buch 6, 1.2: es zaehlt, wer bis zum Ende dort sein kann, auf beiden Seiten)."""
+
+[[szenario]]
+id = "3831-nexus-nicht-inhib"
+zeit = "38:31"
+fenster = ["38:31", "38:50"]
+quelle = "Buch 6, 0.5: in ihrer Basis, alle fuenf tot, der Nexus-Turm faellt - 'Drueckt jetzt den Mid-Inhibitor-Turm'"
+lage = """Nachgespielt: Riven L20, 94 %, in ihrer Basis. Sett, Fiddlesticks, Galio, Sona tot (21-40 s), Kai'Sa zuletzt
+in ihrer Basis. Brand und Corki in eurem oberen Jungle."""
+modus = ["GRUPPE", "SEITE", "UNTERWEGS"]
+soll = ["DRUECKEN"]
+soll_ziel = "Nexus"
+darf_nicht_sagen = ["Mid-Inhibitor"]
+warum = """Der Modus ist nicht OBJECTIVE, nur weil ein Mitspieler an einer Grube steht (der Ausloeser faellt weg). Das
+Ziel ist der Nexus-Turm vor dir, nicht ein Inhibitor-Turm auf der anderen Seite."""
+
+[[szenario]]
+id = "1453-herold-ein-satz"
+zeit = "14:53"
+fenster = ["14:50", "15:10"]
+quelle = "Buch 6, 0.6: 'Nimm keinen Kampf an, ihr seid nur zu dritt: ... Gib den Herold lieber ab. Geh zurueck ...'"
+lage = """Nachgespielt: Riven L13, 26 % Leben, auf ihrer Lane, Herold in 6 s. Sett tot (13 s). Riven geht back."""
+ansagen_max = 1
+max_woerter = 18
+darf_nicht = ["NEHMEN", "BESTREITEN", "ANLAUFEN"]
+darf_nicht_sagen = ["Nimm keinen Kampf"]
+warum = """Ein Satz je Entscheidung. Mit 26 % Leben ist der Herold kein Thema - der Back ist der Plan."""
+
+[[szenario]]
+id = "2516-keine-zahl-ohne-rat"
+fenster = ["25:11", "25:21"]
+quelle = "Buch 6, 0.3: 'Ihr seid 4 gegen 3 ... aber kein Turm ist von dir aus rechtzeitig zu erreichen.'"
+lage = "Nachgespielt: Riven L16, 62 %, unten; Sona tot, Galio und Kai'Sa bei dir."
+darf_nicht_sagen = ["kein Turm ist"]
+warum = "Keine Information ohne Handlung. Gibt es keine Handlung, schweigt der Coach (Buch 6, 9)."
+
+[[szenario]]
+id = "3335-keine-zahl-ohne-rat"
+fenster = ["33:30", "33:40"]
+quelle = "Buch 6, 0.3: wie 25:16"
+lage = "Nachgespielt: Riven L20, 94 %, in der Flussmitte; Sett, Galio, Kai'Sa tot."
+darf_nicht_sagen = ["kein Turm ist"]
+warum = "Wie 2516."
+
+[[szenario]]
+id = "2637-grund-nicht-dagegen"
+fenster = ["26:30", "26:45"]
+quelle = "Buch 6, 0.4: 'Geh auf den Top-Inhibitor-Turm, 39 Sekunden von dir: Sett ist noch 29 Sekunden tot.'"
+lage = "Nachgespielt: Riven L17, 100 %, unten; Sett (25 s) und Fiddlesticks (37 s) tot, Drache lebt 17 s von dir."
+darf_nicht_sagen = ["39 Sekunden von dir"]
+warum = """Ein Grund, der gegen das Ziel spricht (29 s Fenster, 39 s Weg), heisst: das Ziel ist falsch gewaehlt, nicht
+nur der Satz (Buch 6, 9)."""

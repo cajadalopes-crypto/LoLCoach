@@ -60,10 +60,10 @@ def platte_gold(zeit: float) -> float:
     return max(float(g["platte_min"]), g["platte"] - g["platte_abzug_pro_min"] * (zeit - g["platte_abzug_ab"]) / 60)
 
 
-def todeskosten(m, cfg: dict) -> float:
+def todeskosten(m, cfg: dict, ohne: str | None = None) -> float:
     """Kapitel 7.3: Kill-Gold fuer den Gegner (Basis + Kopfgeld) + Todeszeit x Zeitwert + eigene Wellen, die
     waehrenddessen in deinen Turm laufen + das naechste Objective x objective_risiko (lebt oder spawnt waehrend du
-    tot bist)."""
+    tot bist). `ohne`: fuer eine Handlung AN diesem Objective zaehlt sein Anteil nicht (Buch 6, 3.3 - sonst doppelt)."""
     b = m.b
     if b is None:
         return 0.0
@@ -79,6 +79,8 @@ def todeskosten(m, cfg: dict) -> float:
     obj = 0.0
     werte = cfg["objective_wert"]
     for o in m.objectives:
+        if o.schl == ohne:
+            continue
         if o.lebt or o.spawn_in <= tz + 30:
             obj = max(obj, werte.get(o.schl, 0) * cfg["gefahr"]["objective_risiko"])
     return kg + tz * zw + wellen + obj
@@ -99,9 +101,16 @@ def bewerte(h: Handlung, m, cfg: dict, tk: float | None = None) -> Handlung:
         # erst raus, dann back (Buch 3, 2.2): der Kanal am sicheren Ort ist auch nicht umsonst - dort mit deinem Turm
         p2, _ = gefahr.p_tod(kanal, m, c, am_turm=True)
         h.p_tod = 1.0 - (1.0 - h.p_tod) * (1.0 - p2)
-    h.verlust = todeskosten(m, cfg) if tk is None else tk
+    if (an := h.daten.get("an_objective")) is not None:
+        h.verlust = todeskosten(m, cfg, ohne=an)
+    else:
+        h.verlust = todeskosten(m, cfg) if tk is None else tk
     pe = h.p_erfolg if h.p_erfolg is not None else 1.0 - h.p_tod
     h.ev = pe * h.gewinn - h.p_tod * h.verlust - h.dauer * zeitwert(m.zeit, cfg) - h.kosten + h.folgewert
+    if (eb := h.daten.get("ev_bestreiten")) is not None:
+        # Buch 6, 4.4: gegen "abgeben" - p_gewinn x (wert_uns + wert_ihnen) - (1 - p_gewinn) x todeskosten_team - Weg
+        pg, werte, tk_team = eb
+        h.ev = pg * werte - (1.0 - pg) * tk_team - h.dauer * zeitwert(m.zeit, cfg) + h.folgewert
     h.daten["wer"] = wer[:3]
     h.fragen = fragen(h, m, wer)
     return h

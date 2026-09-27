@@ -14,7 +14,8 @@ from .. import wert
 from ..handlung import Handlung, Ziel
 from . import KONTROLLAUGE, OBJ_NAME, _akk, lane_von, liste, objectives_meine_seite, puenktlich, uhr
 
-ZUM = {"drache": "zum Drachen", "baron": "zum Baron", "herold": "zum Herold", "larven": "zu den Larven"}
+ZUM = {"drache": "zum Drachen", "baron": "zum Baron", "herold": "zum Herold", "larven": "zu den Larven",
+       "aeltester": "zum Ältesten"}
 DRUECKT = ("ZU_DIR", "GROSS_ZU_DIR", "GECRASHT_BEI_DIR")
 
 
@@ -34,7 +35,7 @@ def _tp_verlust(m, cfg: dict) -> tuple[float, str]:
     if w.zustand in DRUECKT:
         ihre = w.ihre if w.ihre is not None else 6
         return ww * ihre / 6.0 + (cfg["welle"]["gross_zuschlag"] if ihre > 6 else 0.0), \
-            f"{ihre} Vasallen laufen auf deinen Turm"
+            vasallen_satz(ihre)
     if w.zustand == "GECRASHT_BEI_IHM":
         return 0.5 * ww, ""
     return 0.0, ""
@@ -93,17 +94,22 @@ def _lane_option(m, cfg: dict, modus: str, lane: str, druck: str = "") -> Handlu
     return _mit_gefahr(h, m, ziel, weg, am_turm=True)
 
 
+def vasallen_satz(n: int) -> str:
+    """"ein Vasall laeuft" / "9 Vasallen laufen" (140253 6:47: "1 Vasallen laufen auf deinen Turm")."""
+    return "ein Vasall läuft auf deinen Turm" if n == 1 else f"{n} Vasallen laufen auf deinen Turm"
+
+
 def _objective_option(m, cfg: dict, modus: str, o) -> Handlung | None:
-    """Ein Objective als Ziel - lebt es, nur wenn ihr es nehmen koennt: genug von euch rechtzeitig dort
-    ([objective_wert] mindestens, Pruefung C2: "Baron lebt" ist kein Grund)."""
+    """Ein Objective als Ziel - nur, wenn es dich zieht (Buch 6, 4.1: objective_zieht statt [objective_wert]
+    mindestens, das wegfaellt; Pruefung C2: "Baron lebt" ist kein Grund)."""
+    from .. import objective as obj
     weg = _brunnen_weg(m, o.pos) if m.tot or o.weg is None else o.weg
     ankunft = (m.respawn if m.tot else 0.0) + weg
-    wir = 1 + (o.team_erreicht or 0)
-    noetig = cfg["objective_wert"].get("mindestens", {}).get(o.schl, 2)
+    u = obj.urteil_von(m, o, cfg)
+    if not u.zieht:
+        return None
     if o.lebt:
-        if wir < noetig:
-            return None
-        grund = "ihr seid dort " + {2: "zu zweit", 3: "zu dritt", 4: "zu viert"}.get(wir, "zu fünft")
+        grund = obj.grund(m, o, u, "NEHMEN")
     else:
         if o.spawn_in > 100 or ankunft > o.spawn_in + 10:
             return None
@@ -111,6 +117,7 @@ def _objective_option(m, cfg: dict, modus: str, o) -> Handlung | None:
     h = Handlung("WOHIN", Ziel("objective", OBJ_NAME[o.schl], o.pos, weg), modus, weg, grund=grund,
                  satz=f"{ZUM[o.schl][0].upper()}{ZUM[o.schl][1:]}: {grund}.")
     h.daten["kurz"] = ZUM[o.schl]
+    h.daten["objective"] = o.schl
     return _mit_gefahr(h, m, o.pos, weg)
 
 
@@ -183,7 +190,7 @@ def _seitenwelle_option(m, cfg: dict, modus: str, lane: str) -> Handlung:
     ziel = _lane_turm(m, lane)
     weg = _brunnen_weg(m, ziel)
     w = (m.wellen or {}).get(lane)
-    grund = (f"{w.ihre} Vasallen laufen auf deinen Turm" if w is not None and w.zustand in DRUECKT and w.ihre
+    grund = (vasallen_satz(w.ihre) if w is not None and w.zustand in DRUECKT and w.ihre
              else "dort nimmt sie sonst niemand")
     h = Handlung("WOHIN", Ziel("lane", f"die {lane}-Welle", ziel, weg), modus, weg, grund=grund,
                  satz=f"Geh zur {lane}-Welle: {grund}.")
@@ -246,6 +253,13 @@ def wohin(m, cfg: dict, modus: str, merker: dict | None = None, lage=None) -> Ha
         return f"{h.satz} {h.grund}".lower()
     if merker is not None:
         schl = merker.get("ziel_schl")
+        alt_obj = getattr(merker.get("wahl"), "daten", {}).get("objective") if merker.get("wahl") is not None else None
+        if alt_obj is not None:
+            # Buch 6, 4.1: ein Objective, das dich nicht mehr zieht, gilt, als gaebe es keins - auch als gemerktes Ziel
+            from .. import objective as obj
+            o = next((x for x in m.objectives if x.schl == alt_obj), None)
+            if o is None or not obj.zieht(m, o, cfg):
+                schl = None
         if schl is not None and merker.get("lage") == lage:
             alt = merker.get("wahl")
             gleich = [h for h in optionen if (h.art, h.ziel.name if h.ziel else "") == schl]
