@@ -76,15 +76,20 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
             minimap_gesund(p)
 
     minimap_stumm = [False]
+    minimap_ab = [None]
 
     def minimap_gesund(p):
         """Live: Verbuendete sind auf der Minimap immer zu sehen. Sieht der Coach 30 s lang niemanden aus deinem Team,
         obwohl du lebst, liest er die Minimap nicht (Minimap-Groesse in den Einstellungen, verdeckt, Fenster) - dann
-        rechnet alles ohne Karte und faellt auf feste Saetze zurueck. Das sagt er einmal, statt still weiterzumachen."""
+        rechnet alles ohne Karte und faellt auf feste Saetze zurueck. Das sagt er einmal, statt still weiterzumachen.
+        Die 30 s zaehlen fruehestens ab seinem Start: vorher warnte er bei jedem Start mitten in der Partie sofort
+        (noch kein Bild = "niemand gesehen") und sagte eine Sekunde spaeter "Die Minimap ist wieder da"."""
         if p.zeit < 90 or not p.ich or p.ich.tot:
             return
+        if minimap_ab[0] is None:
+            minimap_ab[0] = p.zeit
         zuletzt = max((g[0] for s in p.team(p.mein_team) if (g := lagebild.gesehen(s))), default=None)
-        blind = zuletzt is None or p.zeit - zuletzt > 30
+        blind = p.zeit - max(zuletzt if zuletzt is not None else -1e9, minimap_ab[0]) > 30
         if blind and not minimap_stumm[0]:
             minimap_stumm[0] = True
             print("!! Minimap: seit 30 s niemand aus deinem Team erkannt - Minimap-Groesse/Fenster pruefen", flush=True)
