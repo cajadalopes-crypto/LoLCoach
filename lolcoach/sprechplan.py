@@ -193,7 +193,9 @@ class Sprechplan:
         w = self._widerruf
         if w is not None and time.monotonic() - w[0] <= ACH_NEE and (
                 (a.thema and a.thema == w[1]) or a.schluessel.split(":")[0] == w[2]):
-            a.text = "Ach nee - " + a.text      # Grossschreibung bleibt: meist beginnt der Satz mit einem Champion
+            # eigener Teil "Ach nee:" (vorgewaermt), dahinter der Satz wie sonst - sein Anfang liegt im Speicher.
+            # Grossschreibung bleibt: meist beginnt der Satz mit einem Champion
+            a.text = "Ach nee: " + a.text
             self._widerruf = None
         a.gesprochen = zeit
         self.zuletzt[a.schluessel] = zeit

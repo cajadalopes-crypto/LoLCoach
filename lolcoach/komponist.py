@@ -92,7 +92,8 @@ def anfaenge(p) -> list[str]:
         return []
     feind = gegenteam(p.mein_team)
     j = p.jungler(feind)
-    aus = ["Geh rein,", "das ist ein Kill:", "Noch nicht rein,", "Trade hart,", "Du stehst tief,", "Recall-Fenster:",
+    aus = ["Ach nee:", "Geh rein,", "das ist ein Kill:", "Noch nicht rein,", "Trade hart,", "Du stehst tief,",
+           "Recall-Fenster:",
            "Nimm keinen Kampf an,", "Drückt jetzt die Türme,", "Kein Gank möglich,"]
     aus += [f"Nehmt jetzt {a}," for a in OBJ_AKK.values()] + [f"Ping {a} für dein Team," for a in OBJ_AKK.values()]
     aus += ["Schieb die Welle in seinen Turm und geh dann back,", "Schieb die nächste Welle in den Turm und geh dann back,",

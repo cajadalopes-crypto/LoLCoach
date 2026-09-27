@@ -572,7 +572,9 @@ def satz_bricht_ab_wenn_er_nicht_mehr_stimmt():
                             sperre=30, thema="gefahr")
         plan.neu([neu])                          # die Sperre (30 s) ist mit dem Widerruf gefallen
         plan.takt(101.0)
-        assert neu.text == "Ach nee - Ekko ist gerade beim Drachen.", neu.text
+        assert neu.text == "Ach nee: Ekko ist gerade beim Drachen.", neu.text
+        assert stimme.teilsaetze("Ach nee: Ekko ist oben, in 9 Sekunden bei dir.") == \
+            ["Ach nee:", "Ekko ist oben,", "in 9 Sekunden bei dir."]
         # stimmt schon vor dem ersten Ton nicht mehr: kommt gar nicht
         weg = regeln.Ansage("Du hast 1300 Gold, geh back.", regeln.WICHTIG, "gold", zeit=102.0, pruefe=lambda: False)
         plan.neu([weg])

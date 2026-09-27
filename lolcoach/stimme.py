@@ -330,10 +330,12 @@ def teilsaetze(text: str) -> list[str]:
     Gemessen 27.09.: neuer Text braucht beim Dienst ~0,45 s bis zum ersten Audio, egal wie lang; ein Viertel der
     Satzanfaenge einer Partie war am Komma schon einmal gesagt worden (heute ohne Teilung: ein Zehntel)."""
     teile = [t.strip() for t in re.split(r"(?<=[.!?:])\s+", text) if t.strip()]
+    # der erste richtige Satz - nach einem kurzen Vorsatz wie "Ach nee:" der zweite
+    i = 1 if len(teile) > 1 and len(teile[0]) <= 12 else 0
     if teile:
-        k = teile[0].find(", ")
-        if k >= 8 and len(teile[0]) - k > 6:      # auch "Heimerdinger hat Flash benutzt," / "bis 6 45."
-            teile[0:1] = [teile[0][:k + 1], teile[0][k + 2:]]
+        k = teile[i].find(", ")
+        if k >= 8 and len(teile[i]) - k > 6:      # auch "Heimerdinger hat Flash benutzt," / "bis 6 45."
+            teile[i:i + 1] = [teile[i][:k + 1], teile[i][k + 2:]]
     return teile or [text]
 
 
