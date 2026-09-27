@@ -656,11 +656,25 @@ def tief(b: Bewertung, namen: str, sind: str, sekunden: int, sie: str, fehlende:
     return satz + ziel + (f" - {gruende[0]}." if gruende else ".")
 
 
-def vorwarnung(b: Bewertung, schl: str, rolle: str, seele: bool, meine_seite: bool, tp_moeglich: bool) -> str:
+def vorwarnung(b: Bewertung, schl: str, rolle: str, seele: bool, meine_seite: bool, tp_moeglich: bool,
+               weg: str | None = None) -> str:
     """Objective in einer Minute - und was DU in dieser Minute machst: Weg dorthin, Teleport (HUD),
     Welle, Leben, Gold. `meine_seite`: das Objective liegt auf der Kartenseite deiner Rolle.
     `tp_moeglich`: Teleport genommen oder aus der Top-Quest (die HUD-Abklingzeit, wenn bekannt, zaehlt)."""
     satz = _gross(f"{OBJ_NOM[schl]} {kommt(schl)} in einer Minute") + (" - und er entscheidet die Seele" if seele else "")
+    # tot oder im Brunnen: vorher nur "Drache in einer Minute." (Nachlauf 194524, 12:14) - jetzt, was DU tust
+    if weg == "tot":
+        r = b.ich.respawn or 0.0
+        if r >= 55:
+            return f"{satz}, und du bist noch {sek(r)} tot - dein Team entscheidet ihn ohne dich."
+        return f"{satz}, du bist in {sek(r)} wieder da - " + (
+            "geh dann direkt hin." if meine_seite else "geh dann direkt in deine Lane und mach dort Druck.")
+    if weg == "basis":
+        zu_fuss = b.zum_objective
+        if meine_seite or (zu_fuss is not None and zu_fuss <= 55):
+            return f"{satz}: vom Brunnen bist du " + (f"in {sek(zu_fuss)} " if zu_fuss else "rechtzeitig ") + \
+                "dort - kauf und geh direkt hin."
+        return f"{satz}, für dich zu weit - kauf und geh zurück in deine Lane."
     if rolle == "JUNGLE":
         seite = "Bot" if schl == "drache" else "Top"
         prio = _prio_satz(b, ("Mid", seite))

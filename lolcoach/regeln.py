@@ -411,11 +411,12 @@ class Regelwerk:
             abschnitt = self.m["vorwarnung"][schl]
             if schl == "drache" and any(len(p.drachen(t)) == 3 for t in ("ORDER", "CHAOS")) and not p.seele():
                 abschnitt = self.m["vorwarnung"]["drache_seele"]
-            if (text := self._satz(abschnitt, p)) and self.b is not None and not self._ich_weg(p):
+            if (text := self._satz(abschnitt, p)) and self.b is not None:
                 tp = "SummonerTeleport" in p.ich.zauber or (
                     p.ich.rolle == "TOP" and p.zeit >= self.m["rollenquest"]["top_teleport_spaetestens"])
+                weg = "tot" if p.ich.tot else "basis" if self._ich_in_basis(p) else None
                 text = komponist.vorwarnung(self.b, schl, p.ich.rolle, abschnitt is self.m["vorwarnung"].get("drache_seele"),
-                                            p.ich.rolle in self.m["seiten"][schl], tp)
+                                            p.ich.rolle in self.m["seiten"][schl], tp, weg)
             if text:
                 # gerechnet, nicht von Claude umformuliert: die Umformulierung kam live 5-21 s zu spaet (26.09.)
                 # "in einer Minute" stimmt nur kurz: 14 s spaeter war es falsch (Nachlauf 21:21, 7:14)
