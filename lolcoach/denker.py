@@ -527,10 +527,11 @@ def turm_satz(b: Bewertung) -> str:
     if naechst is None or naechst[0] > TURM_REICHWEITE + 400:
         return ""
     stufe = naechst[1][2]
-    schuss = rechnung.turm_schaden(stufe, b.zeit)
-    n = rechnung.turm_schuesse(b.leben_abs, stufe, b.zeit)
+    r = rechnung.ruestung(b.partie)
+    schuss = rechnung.turm_schaden(stufe, b.zeit, r)
+    n = rechnung.turm_schuesse(b.leben_abs, stufe, b.zeit, r)
     schuesse = "keinen Schuss" if n == 0 else ("einen Schuss" if n == 1 else f"{n} Schüsse")
-    return f"Sein Turm trifft mit etwa {int(schuss) // 10 * 10}, du hältst {schuesse} aus."
+    return f"Sein Turm trifft dich mit etwa {int(schuss) // 10 * 10}, du hältst {schuesse} aus."
 
 
 # --- danach: Gold, Kauf, Weg -------------------------------------------------------------------------

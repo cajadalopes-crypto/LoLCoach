@@ -169,11 +169,12 @@ def tod_turm(b: Bewertung | None) -> str:
     if naechst is None or naechst[0] > TURM_REICHWEITE + 600:
         return ""
     stufe = naechst[1][2]
-    schuss = rechnung.turm_schaden(stufe, b.zeit)
-    n = rechnung.turm_schuesse(b.leben_abs, stufe, b.zeit)
+    r = rechnung.ruestung(b.partie)
+    schuss = rechnung.turm_schaden(stufe, b.zeit, r)
+    n = rechnung.turm_schuesse(b.leben_abs, stufe, b.zeit, r)
     t = wissen.lade("mechanik")["tuerme"]
     drei = sum(schuss * (1 + min(t["aufwaermen_max"], t["aufwaermen_je_schuss"] * i)) for i in range(3))
-    satz = (f"Vom Turm erwischt: du hattest noch {b.leben_abs // 10 * 10} Leben, sein Turm trifft mit etwa "
+    satz = (f"Vom Turm erwischt: du hattest noch {b.leben_abs // 10 * 10} Leben, sein Turm trifft dich mit etwa "
             f"{int(schuss) // 10 * 10}" + ((" - das war nur ein Schuss" if n <= 1 else f" - das waren nur {n} Schüsse")
                                            if n <= 3 else ""))
     if b.welle is not None and b.welle[0] == 0:
@@ -243,7 +244,7 @@ def tod_solo(b: Bewertung | None, champion: str, rat: tuple[str, float] | None =
     if rat is not None and 3 <= rat[1] <= 20 and rat[0] in RAT_WORTE:
         teile.append(f"{sek(rat[1])} davor hieß es: {RAT_WORTE[rat[0]]}")
     if b.unter_gegnerturm:
-        teile.append("du standst unter seinem Turm" + (f", der mit etwa {int(schuss)} trifft"
+        teile.append("du standst unter seinem Turm" + (f", der dich mit etwa {int(schuss)} trifft"
                                                        if (schuss := _turm_schuss(b)) else ""))
     if gegen:
         teile.append("dagegen sprach: " + _namen([x.satz for x in gegen]))
@@ -255,7 +256,7 @@ def tod_solo(b: Bewertung | None, champion: str, rat: tuple[str, float] | None =
 def _turm_schuss(b: Bewertung) -> float | None:
     from . import rechnung
     try:
-        return rechnung.turm_schaden("aussen", b.zeit) // 10 * 10
+        return rechnung.turm_schaden("aussen", b.zeit, rechnung.ruestung(b.partie)) // 10 * 10
     except Exception:
         return None
 

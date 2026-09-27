@@ -304,7 +304,7 @@ def denkkette():
     assert denker.urteil(b).art == "turm", denker.urteil(b).art
     b.leben_abs = 1200      # Turm in Zahlen (Wiki Turret): 5:30 aussen 248 pro Schuss, aufwaermend -> 3 Schuesse
     satz = denker.fenster_satz(b, denker.urteil(b))
-    assert "Noch nicht rein" in satz and "Sein Turm trifft mit etwa 240, du hältst 3 Schüsse aus." in satz, satz
+    assert "Noch nicht rein" in satz and "Sein Turm trifft dich mit etwa 180, du hältst 3 Schüsse aus." in satz, satz
     # Zuenden allein toetet: sein Leben (Balken x Max-Leben) unter 90 % des Zuendschadens (Level 6: 175)
     from lolcoach import rechnung
     assert rechnung.zuenden_schaden(6) == 175 and rechnung.zuenden_schaden(18) == 475

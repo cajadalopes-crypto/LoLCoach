@@ -38,19 +38,38 @@ def zuenden_schaden(level: int) -> float:
     return z["schaden_basis"] + z["pro_level_frueh"] * (min(level, 5) - 1) + z["pro_level_spaet"] * max(0, level - 5)
 
 
-def turm_schaden(stufe: str, zeit: float) -> float:
-    """Schaden des ersten Turmschusses an Champions (Wiki Turret): stufe 'aussen', 'innen', 'Inhib'."""
+# Gemessen 27.09. (werkzeuge/turm_schaden.py): die sauberen ersten Treffer auf Riven (191, 213, 203, 202 - kein
+# Gegner nah, Turm kalt) lagen innerhalb 5 % bei Wiki-Wert x 1,15 nach Ruestung; ohne Ruestung war jeder Schuss
+# 30-75 % zu hoch gerechnet ("du haeltst 2 Schuesse aus", wo es 3 waren).
+TURM_KORREKTUR = 1.15
+
+
+def turm_schaden(stufe: str, zeit: float, ruestung: float | None = None) -> float:
+    """Schaden des ersten Turmschusses an Champions (Wiki Turret): stufe 'aussen', 'innen', 'Inhib'. Mit `ruestung`
+    (eigene, aus der API): der Treffer, der bei dir ankommt."""
     t = wissen.lade("mechanik")["tuerme"]
     s = t.get({"aussen": "schaden_aussen", "innen": "schaden_innen", "Inhib": "schaden_inhib"}.get(stufe, "schaden_aussen"))
     minute = zeit / 60
-    return min(s["max"], s["start"] + s["pro_min"] * max(0.0, minute - s["ab_min"]))
+    roh = min(s["max"], s["start"] + s["pro_min"] * max(0.0, minute - s["ab_min"]))
+    if ruestung is None:
+        return roh
+    return roh * TURM_KORREKTUR * 100 / (100 + max(0.0, ruestung))
 
 
-def turm_schuesse(leben: float, stufe: str, zeit: float) -> int:
+def ruestung(p) -> float | None:
+    """Die eigene Ruestung aus der Live-API (activePlayer.championStats.armor), sonst None."""
+    try:
+        r = p.werte.get("armor") if p is not None else None
+        return float(r) if r is not None else None
+    except (TypeError, ValueError):
+        return None
+
+
+def turm_schuesse(leben: float, stufe: str, zeit: float, ruestung: float | None = None) -> int:
     """Wie viele Turmschuesse haelt man mit `leben` aus? Jeder Schuss auf denselben Champion waermt um +50 %
     auf, hoechstens +150 % (Wiki Turret). Ohne Ruestung gerechnet - eher einer zu wenig als einer zu viel."""
     t = wissen.lade("mechanik")["tuerme"]
-    erst, n, summe = turm_schaden(stufe, zeit), 0, 0.0
+    erst, n, summe = turm_schaden(stufe, zeit, ruestung), 0, 0.0
     while True:
         summe += erst * (1 + min(t["aufwaermen_max"], t["aufwaermen_je_schuss"] * n))
         if summe >= leben:
