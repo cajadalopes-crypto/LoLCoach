@@ -637,8 +637,12 @@ def zauber_neu(b: Bewertung, g: GegnerLage, zauber: str, dauer: float, quelle: s
     return satz + "."
 
 
-def kein_flash_nah(b: Bewertung, g: GegnerLage, rest: float) -> str:
+def kein_flash_nah(b: Bewertung, g: GegnerLage, rest: float, kampf_eben: bool = False) -> str:
+    """`kampf_eben`: "nimm den Kampf an" gegen ihn wurde eben gesagt - dann nur das Neue (Nachlauf 194524, 10:50:
+    derselbe Rat mit demselben Grund zweimal in 8 s)."""
     satz = f"{g.champion} hat kein Flash, noch {sek(rest)}"
+    if kampf_eben:
+        return f"{satz} - entkommen kann {g.champion} dir nicht."
     if andere := gefahr(b, ausser=g):   # zuerst: wer sonst dazukommen kann (Camille-Partie 15:37/15:39)
         return satz + f". Aber {andere[0].champion} {_wann(andere[0])} - lauf nicht rein."
     if b.lane and g.s.name == b.lane.s.name:

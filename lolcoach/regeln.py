@@ -187,6 +187,8 @@ class Regelwerk:
                     self._back_box[0] = p.zeit
                 if RUECKZUG.search(a.text):
                     self._rueckzug_zuletzt = p.zeit
+                if re.search(r"nimm den Kampf an", a.text, re.I):
+                    self._kampf_zuletzt = (a.text, p.zeit)
         return ansagen
 
     # --- Hilfen ---------------------------------------------------------------
@@ -835,7 +837,9 @@ class Regelwerk:
                                                         and s.name == self.b.lane.s.name):
                     # der Lane-Gegner ohne Flash steckt im Kampf-Urteil (_fenster) - dort mit allen Faktoren
                     gl = self._gl(s)
-                    text = (komponist.kein_flash_nah(self.b, gl, rest) if gl
+                    kz = getattr(self, "_kampf_zuletzt", None)
+                    eben = kz is not None and p.zeit - kz[1] < 20 and s.champion in kz[0]
+                    text = (komponist.kein_flash_nah(self.b, gl, rest, eben) if gl
                             else cfg["kampf"].format(champion=s.champion, dauer=_minuten(rest)))
                     yield Ansage(text, WICHTIG, f"ohneflash:{s.name}", gueltig=4, sperre=cfg["kampf_erneut"],
                                  thema="druck")
