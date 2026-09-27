@@ -62,8 +62,10 @@ def kette():
         if 300 <= p.zeit and not eingespielt:
             eingespielt = True
             antwort_vorher = antworten.sofort("Hat Shen Flash?", p, lb)
-            # Chat-Ping und ein Flash-Sprung von Vi (die Rakan-Zeile ohne Zauber zaehlt nicht)
+            # Chat-Ping, ein Sprung von Brand (kein eigener Dash: Flash) und einer von Vi (Q-Dash: kein Timer,
+            # Qualitaetsrunde 2 Weg 1); die Rakan-Zeile ohne Zauber zaehlt nicht
             vi = p.jungler("CHAOS")
+            brand = next(s for s in p.gegner() if s.champion_id == "Brand")
             stempel = f"{int(p.zeit // 60):02d}:{int(p.zeit % 60):02d}"
             neu = lb.ereignisse(lambda wb: p.zeit - (w - wb), [
                 ("chat", w, f"{stempel} Schizoid Nevir (Riven): Shen Blitz"),
@@ -71,8 +73,10 @@ def kette():
                 ("chat", w, f"{stempel} Diana (Diana): Rakan komm"),
                 ("chat", w, "01:10 Schizoid Nevir (Riven): Rakan hat Blitz benutzt"),   # alt, neu eingeblendet
                 ("sprung", minimap.Sprung(vi.champion_id, None, w, 0.027, 0.6, 0.4)),
+                ("sprung", minimap.Sprung(brand.champion_id, None, w, 0.027, 0.5, 0.5)),
             ], p)
-            assert len(neu) == 2, neu
+            assert sorted(t.champion for t in neu) == ["Brand", "Shen"], neu
+            assert lb.zauber.fehlt(vi, "SummonerFlash", p.zeit) is None
             antwort_nachher = antworten.sofort("Hat Shen Flash?", p, lb)
         plan.neu(werk.pruefe(p, lb))
         plan.takt(p.zeit)
@@ -80,7 +84,7 @@ def kette():
             break
     texte = [(round(a.gesprochen), a.text) for a in plan.gesagt]
     assert any(300 <= t <= 315 and "Shen hat Flash benutzt" in x for t, x in texte), texte
-    assert any(300 <= t <= 330 and "Vi hat Flash benutzt" in x for t, x in texte), texte
+    assert not any("Vi hat Flash benutzt" in x for t, x in texte), texte
     assert "vermutlich bereit" in antwort_vorher, antwort_vorher
     assert "Flash ist noch" in antwort_nachher and "Minuten" in antwort_nachher, antwort_nachher
     print("Kette OK:", antwort_nachher)

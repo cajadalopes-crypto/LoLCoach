@@ -3,6 +3,7 @@
 # Rot mit dem Stand vor dem Fix: das Protokoll vom 27.09. 17:47 (werkzeuge/protokoll.py) zeigt beide Saetze.
 
 aufnahme = "2026-09-27_133930"
+spielmodus = "SWIFTPLAY"                 # gameData.gameMode - Qualitaetsrunde 2, G6: Swiftplay hat eigene Zeiten
 bots = false
 
 [[szenario]]
@@ -14,3 +15,57 @@ satz_mit = [["Kriegshammer"]]
 satz_mit_anzahl = 1
 warum = """Derselbe Plan (kaufen, dann Top-Welle) wird je Aufenthalt einmal gesagt. Nach einem Teilkauf ist die Liste
 kuerzer, der Plan derselbe (Pruefung D1/D4, C4)."""
+
+# --- Qualitaetsrunde 2 (buecher/protokolle/PRUEFUNG_2026-09-27b.md), angelegt vor den Fixes: rot mit 705a6a6 ---
+
+[[szenario]]
+id = "0701-keine-bestaetigung-im-kampf"
+fenster = ["6:55", "7:10"]
+quelle = "Pruefung G4: 7:01 'Gut raus - da war er.' im Modus KAMPF"
+lage = "Riven kaempft auf ihrer Lane."
+darf_nicht_sagen = ["Gut raus"]
+warum = "In KAMPF gibt es nie eine Bestaetigung."
+
+[[szenario]]
+id = "1230-wohin-sicher"
+fenster = ["12:20", "12:50"]
+quelle = "Pruefung G2: 12:30 'Noch 8 Sekunden: geh zur Top-Welle: dort nimmt sie sonst niemand.' mit p_tod 0,79"
+lage = "Riven tot, die Gegner stehen oben."
+darf_nicht_sagen = ["nimmt sie sonst niemand", "Lauf direkt"]
+muss_ziel = true
+warum = "Ein WOHIN-Ziel mit p_tod bei Ankunft >= 0,3 wird nicht gesagt; es gilt ein sichereres."
+
+[[szenario]]
+id = "1457-rueckblick-passt"
+fenster = ["14:55", "15:05"]
+quelle = "Pruefung G5: 14:57 'Du bist mit vollem Leben an deinem Turm geblieben, ... Bei zwei Gegnern: back, bevor sie in Reichweite sind.'"
+lage = "Riven stirbt mit vollem Leben beim Einstieg an ihrem Turm gegen Tristana und Zoe."
+darf_nicht_sagen = ["back"]
+warum = "Satz 2 richtet sich nach dem Leben beim Einstieg: ab 60 % hinter den Turm oder zum Team, darunter back."
+
+[[szenario]]
+id = "1516-wohin-sicher"
+fenster = ["15:05", "15:35"]
+quelle = "Pruefung G2: 15:16 'Noch 8 Sekunden: geh zur Top-Welle: dort nimmt sie sonst niemand.' mit p_tod 0,67"
+lage = "Riven tot, die Gegner stehen oben."
+darf_nicht_sagen = ["nimmt sie sonst niemand", "Lauf direkt"]
+muss_ziel = true
+warum = "wie 1230"
+
+[[szenario]]
+id = "swiftplay-keine-classic-zeiten"
+fenster = [["0:00", "11:00"]]
+quelle = "Pruefung G6: 133930 ist Swiftplay"
+lage = "Swiftplay: keine Larven, kein Herold, Baron 12:00, Elder 15:00; erster Drache nicht belegt."
+darf_nicht_sagen = ["Larven", "Herold", "Atakhan", "um 5 00", "um 8 00", "um 20 00", "Drache in"]
+# der erste Drache (Classic 5:00) ist fuer Swiftplay nicht belegt; der Respawn nach einem Kill (300 s) ist es - "Spawn um
+# 10 47" nach dem Drachen 5:47 ist richtig
+warum = "wie in 140253"
+
+[[szenario]]
+id = "swiftplay-keine-larven"
+fenster = ["0:00", "22:00"]
+quelle = "Pruefung G6"
+lage = "Swiftplay"
+darf_nicht_sagen = ["Larven", "Herold", "Atakhan"]
+warum = "Gibt es in Swiftplay nicht."

@@ -114,7 +114,7 @@ class Lagebild:
         """Spruenge und Chatzeilen des Beobachters -> Zauber-Timer. Gibt die neuen Timer zurueck."""
         from . import zauber
         neu = []
-        blinks = zauber.blink_champions()
+        blinks = zauber.dash_champions()      # Dash, Sprung, Blink, Teleport (Qualitaetsrunde 2, Weg 1)
         for e in liste:
             if e[0] == "sprung":
                 s = e[1]
@@ -152,12 +152,11 @@ class Lagebild:
                                       if (g := self.gesehen(s)) is not None)
                         if abst and abst[0][0] <= 0.08 and (len(abst) == 1 or abst[1][0] - abst[0][0] >= 0.05):
                             sp = abst[0][2]
-                from .champions import hat_blink_oder_dash
                 # nur ohne eigenen Dash: Live 21:21, 9:18 sprangen Gragas und Tryndamere zugleich - ein Engage mit
                 # beiden E, kein Flash. Bei Dash-Champions bleibt es beim Protokoll (zum Nachpruefen).
                 if sp is not None and (sp_von is None or sp_nach is None or sp_von.name == sp_nach.name) \
                         and "SummonerFlash" in sp.zauber and sp.champion_id not in blinks and not sp.tot \
-                        and not hat_blink_oder_dash(sp.champion_id):
+                        and sp.champion_id not in blinks:
                     if t := self.zauber.benutzt(sp, "SummonerFlash", zeit_von_wand(e[1]), "Bildschirm"):
                         neu.append(t)
             elif e[0] == "balken":

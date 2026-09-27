@@ -1,0 +1,25 @@
+# Champions mit eigenem Dash, Sprung, Blink oder Teleport (Qualitaetsrunde 2, Entscheidung 3, Weg 1): ein Sprung
+# auf der Minimap zaehlt bei ihnen NICHT als Flash - lieber weniger Timer als falsche. Gemessen 27.09.2026
+# (werkzeuge/flash_messung.py): von 7 gegnerischen Minimap-Spruengen in drei Partien waren 6 Champions mit Dash, ihre
+# Flash-Timer unbestaetigt; nur Gangplank (kein Dash) war ein echter Flash (Chat-Ping 2:05).
+#
+# Entstehung: champions.hat_blink_oder_dash (liest die deutschen Faehigkeitstexte aus Data Dragon) ueber alle
+# Champions, dann von Hand gegen die Kits geprueft:
+#   raus: Chogath (Ruptur/Fressen - kein eigener Sprung), Udyr (E ist Tempo, kein Sprung)
+#   dazu: Elise (Spinnen-E Abseilen - landet auf dem Ziel), Ryze (R Riss-Teleport)
+#   dazu: alle aus blinks.toml
+# Locke, Yunara, Zaahen kamen nach meinem Wissensstand - bei ihnen gilt der Text aus Data Dragon, ungeprueft.
+stand = "Data Dragon 16.19.1, von Hand geprueft 27.09.2026"
+ids = [
+       "Aatrox", "Ahri", "Akali", "Akshan", "Alistar", "Ambessa", "Amumu", "AurelionSol", "Aurora", "Azir", "Bard",
+       "Belveth", "Braum", "Briar", "Caitlyn", "Camille", "Corki", "Darius", "Diana", "Ekko", "Elise", "Evelynn",
+       "Ezreal", "Fiddlesticks", "Fiora", "Fizz", "Galio", "Gnar", "Gragas", "Graves", "Gwen", "Hecarim", "Hwei",
+       "Illaoi", "Irelia", "Ivern", "JarvanIV", "Jax", "Jayce", "KSante", "Kaisa", "Kalista", "Kassadin", "Katarina",
+       "Kayn", "Khazix", "Kindred", "Kled", "Leblanc", "LeeSin", "Leona", "Lissandra", "Locke", "Lucian", "Malphite",
+       "Maokai", "MasterYi", "MonkeyKing", "Naafiri", "Nautilus", "Nidalee", "Nilah", "Nocturne", "Ornn", "Pantheon",
+       "Poppy", "Pyke", "Qiyana", "Quinn", "Rakan", "Rammus", "RekSai", "Rell", "Renekton", "Rengar", "Riven",
+       "Ryze", "Samira", "Sejuani", "Sett", "Shaco", "Shen", "Shyvana", "Sion", "Skarner", "Smolder", "Sylas",
+       "TahmKench", "Taliyah", "Talon", "Thresh", "Tristana", "Tryndamere", "TwistedFate", "Urgot", "Vayne", "Vex",
+       "Vi", "Viego", "Volibear", "Warwick", "XinZhao", "Yasuo", "Yone", "Yunara", "Yuumi", "Zaahen", "Zac", "Zed",
+       "Zeri", "Ziggs", "Zoe",
+]

@@ -67,7 +67,8 @@ def protokoll(stamm: str, kern: str = "neu") -> Path:
         f"# Protokoll {stamm}",
         "",
         f"{info.get('champion', '?')} gegen {info.get('gegner', '?')} ({'blau' if info.get('team') == 'ORDER' else 'rot'}), "
-        f"{minuten:.1f} min mit Daten · nachgespielt mit `--kern {kern}` (werkzeuge/protokoll.py)",
+        f"**Spielmodus {lauf.spielmodus or '?'}** · {minuten:.1f} min mit Daten · nachgespielt mit `--kern {kern}` "
+        f"(werkzeuge/protokoll.py)",
         "",
         f"**{n} ungefragte Ansagen** ({n / minuten * 30 if minuten else 0:.0f} je 30 min), davon {vom_kern} vom Kern, "
         f"{n - vom_kern} von alten Regeln · mitten im Satz abgebrochen: {len(lauf.abbrueche)}",

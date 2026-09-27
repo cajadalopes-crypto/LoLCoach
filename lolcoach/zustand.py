@@ -132,7 +132,11 @@ class Partie:
         """Spielzeit des naechsten Spawns; None = kommt nicht (mehr).
 
         Liegt der Wert in der Vergangenheit, lebt das Objective gerade.
+        In Swiftplay (G6, Qualitaetsrunde 2) gelten die Werte aus mechanik.toml [swiftplay]; was dort nicht belegt ist,
+        hat keinen Timer (der erste Elementardrache), was es nicht gibt, kommt nie (Larven, Herold).
         """
+        if self.modus == "SWIFTPLAY":
+            return self._naechster_spawn_swiftplay(schluessel)
         obj = wissen.objektive()
         if schluessel == "drache":
             kills = self.kills_von("DragonKill")
@@ -150,6 +154,30 @@ class Partie:
             return kills[-1].zeit + eintrag["respawn"] if "respawn" in eintrag else None
         if "weg" in eintrag and self.zeit >= eintrag["weg"]:
             return None
+        return eintrag.get("erster")
+
+    def _naechster_spawn_swiftplay(self, schluessel: str) -> float | None:
+        sw = wissen.lade("mechanik")["swiftplay"]
+        obj = wissen.objektive()
+        if schluessel in sw["gibt_es_nicht"]:
+            return None
+        if schluessel == "drache":
+            kills = self.kills_von("DragonKill")
+            alt = [k for k in kills if k.daten.get("DragonType") == "Elder"]
+            if alt:
+                return alt[-1].zeit + sw["aeltester_respawn"]
+            elementar = [k for k in kills if k.daten.get("DragonType") != "Elder"]
+            if len(elementar) >= sw["drache_max"] or self.zeit >= sw["aeltester_ab"]:
+                return float(sw["aeltester_ab"])
+            if elementar:
+                return min(elementar[-1].zeit + sw["drache_respawn"], float(sw["aeltester_ab"]))
+            return None                       # der erste Drache: nicht belegt
+        eintrag = obj.get(schluessel, {})
+        kills = self.kills_von(eintrag.get("event", ""))
+        if schluessel == "baron":
+            return kills[-1].zeit + eintrag.get("respawn", 360) if kills else float(sw["baron_erster"])
+        if len(kills) >= eintrag.get("anzahl", 1):
+            return kills[-1].zeit + eintrag["respawn"] if "respawn" in eintrag else None
         return eintrag.get("erster")
 
 

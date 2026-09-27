@@ -61,11 +61,15 @@ class PlanFuehrer:
         self.gehalten: str | None = None   # welche Regel den besseren Kandidaten hielt
         self._besser: tuple[str, float] | None = None
         self.top: list[Handlung] = []
+        self._fehlt_seit: float | None = None   # G3: seit wann der Kandidat des Plans fehlt
+        self._erzwungen = False                  # G3: der Plan kam, weil sein Vorgaenger fehlte - nicht, weil er besser war
 
-    def _neu(self, h: Handlung, zeit: float, art: str, vorher: Plan | None) -> Ereignis:
+    def _neu(self, h: Handlung, zeit: float, art: str, vorher: Plan | None, erzwungen: bool = False) -> Ereignis:
         self.plan = Plan(h, zeit, schritt_seit=zeit)
         self._wechsel = zeit
         self._besser = None
+        self._fehlt_seit = None
+        self._erzwungen = erzwungen
         return Ereignis(art, self.plan, vorher.art if vorher is not None else None)
 
     def takt(self, m, kandidaten: list[Handlung], gefahr: bool) -> Ereignis | None:
@@ -93,8 +97,21 @@ class PlanFuehrer:
         # 1. ungueltig?
         frisch = je_art.get(p.als())
         grund = next((g for f in p.handlung.abbruch if (g := f(m, p))), None)
-        if frisch is None or grund:
+        if grund:
             return self._neu(beste, zeit, "gefahr" if gefahr and beste.art in SICHER else "neu", p)
+        if frisch is None:
+            # G3 (Qualitaetsrunde 2): fehlt sein Kandidat nur einen Takt, haelt der Plan (wie 4.3 fuer den Ort) - 140253
+            # 3:56: WELLE_REIN_UND_BACK fiel einen Takt heraus, STAPELN (242 GE schlechter) wurde Plan und hielt 8 s
+            if self._fehlt_seit is None:
+                self._fehlt_seit = zeit
+            # nur im selben Modus - ein Plan von der Lane gilt in der Basis nicht weiter (Back -> Kauf)
+            if zeit - self._fehlt_seit < self.c.get("luecke_s", 2.0) and not gefahr                     and p.handlung.modus == beste.modus:
+                self.gehalten = f"{p.als()} fehlt seit {zeit - self._fehlt_seit:.1f} s - der Plan haelt"
+                # auch kein Schritt-Satz: fehlt der Kandidat des Schritts, ist er gerade nicht erlaubt (140253 8:06: der
+                # Back-Schritt des Rueckzugs, waehrend Brand und Yasuo kamen - nie_back, Pruefung D2)
+                return None
+            return self._neu(beste, zeit, "gefahr" if gefahr and beste.art in SICHER else "neu", p, erzwungen=True)
+        self._fehlt_seit = None
         self._uebernehmen(p, frisch)
         # 2. Gefahr: der Plan selbst ist zu gefaehrlich, und eine sicherere Handlung ist mehr wert - sicher ist, was
         # das Gate nicht ausloest, nicht nur ZURUECK/BACK (Pruefung B, 144655 6:44: STAPELN p_tod 0,51 hielt gegen
@@ -115,9 +132,11 @@ class PlanFuehrer:
             if diff >= schwelle:
                 if self._besser is None or self._besser[0] != beste.art:
                     self._besser = (beste.art, zeit)
-                if zeit - self._besser[1] >= self.c["stabil_s"] and zeit - self._wechsel >= self.c["halten_s"]:
+                # halten_s schuetzt eine Wahl - nicht einen Plan, der nur kam, weil sein Vorgaenger fehlte (G3)
+                gehalten_s = 0.0 if self._erzwungen else self.c["halten_s"]
+                if zeit - self._besser[1] >= self.c["stabil_s"] and zeit - self._wechsel >= gehalten_s:
                     return self._neu(beste, zeit, "neu", p)
-                if zeit - self._wechsel < self.c["halten_s"]:
+                if zeit - self._wechsel < gehalten_s:
                     self.gehalten = (f"Hysterese: {beste.art} ist {diff:.0f} besser, der Plan ist erst "
                                      f"{zeit - self._wechsel:.0f} s alt (halten {self.c['halten_s']:.0f} s)")
                 else:

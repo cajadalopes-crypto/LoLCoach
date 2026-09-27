@@ -111,3 +111,27 @@ Q: Patch 26.1.
 - 26.15: "League Classic" ist ein eigener Modus - aendert Ranked-Kluft nicht. Q: Patch 26.15.
 - 26.19 (22.09.2026): nur Quest-TP-Cooldowns, World Atlas/Compass, Champion-Balance; Riven unveraendert.
   Q: Patch 26.19.
+
+## Swiftplay (gameMode SWIFTPLAY)
+
+Stand: nachgeschlagen 27.09.2026. Q: Riot Support "Swiftplay Game Mode" (zuletzt aktualisiert 28.01.2026);
+leagueoflegends.com /dev "A Swifter Swiftplay" (01.12.2025); wiki.leagueoflegends.com Swiftplay und
+Swiftplay/Patch_history (V25.S1.3, V26.01, V26.02, V26.07 samt Hotfix 02.04.2026). Werte stehen in
+`wissen/mechanik.toml [swiftplay]`; der Coach laedt sie nach `gameData.gameMode`.
+
+- Start: Level 3 und 1400 Gold. Q: Riot, /dev, Wiki V26.01.
+- Wellen: ab 11:35 alle 25 s statt 30 (Riot: "nach 12 Minuten haeufiger"). Nach der dritten Welle hat jede Welle
+  eine Kanone (V26.07 kurz abgeschafft, per Hotfix 02.04. zurueck). Vasallen werden alle 60 s staerker statt alle 90.
+  Q: Wiki, Riot. Nicht eigens belegt: die erste Welle 0:30 und der 30-s-Takt davor (die Quellen nennen nur die
+  Abweichungen - der Coach nimmt sie wie in Classic an).
+- Platten fallen um 10:00 statt 14:00; ab 25:00 "Sudden Death": Strukturen ausser dem Nexus verlieren Leben.
+  Q: Wiki, Riot.
+- Objectives: hoechstens zwei Elementardrachen, die Seele nach zwei. Drachen-Respawn 300 s (V25.S1.3). Der Aelteste
+  kommt um 15:00, danach alle 6 Minuten. Baron um 12:00. **Keine** Leerenlarven, kein Herold, kein Atakhan.
+  Q: Riot, /dev, Wiki V26.01 und Hotfix V26.07.
+- **Nicht belegt: wann der erste Elementardrache kommt.** Bis zum ersten Drachen-Kill sagt der Coach in Swiftplay
+  keine Drachenzeit.
+- Todeszeiten: 12/12/14/16/.../40 s fuer Level 3-18. Q: Wiki V26.01.
+- Mehr XP aus allen Quellen, etwas Gold fuer Vasallen, die nahe bei dir sterben (30 % des Kopfgelds). Q: Riot, Wiki -
+  genaue XP-Zahlen nicht belegt.
+- Aufgeben ab 12:00 (70 %), ab 25:00 (50 %). Q: Riot, V26.02.

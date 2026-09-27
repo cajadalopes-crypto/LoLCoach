@@ -60,6 +60,34 @@ def neuer_plan_ist_der_beste():
             assert gefahr or f.gehalten is not None, (i, f.plan.art)
 
 
+def plan_haelt_bei_kurzer_luecke():
+    """G3 (Qualitaetsrunde 2, 140253 3:56-4:05): faellt der Kandidat des Plans einen Takt heraus, bleibt der Plan; fehlt
+    er laenger (luecke_s), kommt der beste andere - und kehrt der bessere zurueck, sperrt halten_s das nicht."""
+    from types import SimpleNamespace
+    from lolcoach.kern.handlung import Handlung
+    from lolcoach.kern.plan import PlanFuehrer
+    f = PlanFuehrer(konfig())
+
+    def h(art, ev):
+        x = Handlung(art, None, "LANE", 10.0)
+        x.ev, x.p_tod, x.verlust = ev, 0.1, 1500.0
+        return x
+
+    def takt(t, *kand):
+        return f.takt(SimpleNamespace(zeit=t, pos=None, b=None), list(kand), False)
+    takt(100.0, h("WELLE_REIN_UND_BACK", 440), h("STAPELN", 200))
+    assert f.plan.art == "WELLE_REIN_UND_BACK"
+    takt(100.5, h("STAPELN", 200))                                   # ein Takt ohne ihn: der Plan haelt
+    assert f.plan.art == "WELLE_REIN_UND_BACK", f.plan.art
+    takt(101.0, h("WELLE_REIN_UND_BACK", 440), h("STAPELN", 200))
+    takt(101.5, h("STAPELN", 200))
+    takt(104.0, h("STAPELN", 200))                                   # laenger weg: STAPELN
+    assert f.plan.art == "STAPELN", f.plan.art
+    takt(104.5, h("WELLE_REIN_UND_BACK", 440), h("STAPELN", 200))    # zurueck, 240 besser
+    takt(106.6, h("WELLE_REIN_UND_BACK", 440), h("STAPELN", 200))    # nach stabil_s, lange vor halten_s
+    assert f.plan.art == "WELLE_REIN_UND_BACK", (f.plan.art, f.gehalten)
+
+
 def fenster_gruende_sprechen_dafuer():
     """Pruefung C3: der Grund fuer ein Turm-Ziel spricht FUER die Handlung - jedes genannte Fenster (noch T Sekunden
     tot, fruehestens in T Sekunden) ist >= Weg + Dauer (`bis`). Vorher: "fruehestens in 0 Sekunden", "noch 3 Sekunden
@@ -114,7 +142,7 @@ def gold_reicht_fuer_das_genannte_item():
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    for test in (konstruierte_lagen, neuer_plan_ist_der_beste, fenster_gruende_sprechen_dafuer,
+    for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
                  gold_reicht_fuer_das_genannte_item):
         test()
         print(f"{test.__name__} OK")

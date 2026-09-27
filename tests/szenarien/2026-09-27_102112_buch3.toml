@@ -2,6 +2,7 @@
 # Eigene Datei, damit die Hauptdatei dieser Partie unangetastet bleibt; der Laeufer liest alle *.toml.
 
 aufnahme = "2026-09-27_102112"
+spielmodus = "CLASSIC"
 bots = true
 [[szenario]]
 id = "0545-back-bei-40-prozent"

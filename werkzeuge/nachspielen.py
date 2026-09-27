@@ -69,6 +69,7 @@ class Lauf:
     champions: set = field(default_factory=set)
     kern: object = None                                  # der Kern nach dem Lauf (Kategorien, Staerken)
     abbrueche: list = field(default_factory=list)       # (Spielzeit, Satz, Grund): mitten im Satz abgebrochen
+    spielmodus: str | None = None                        # gameMode der Aufnahme: CLASSIC, SWIFTPLAY (G6)
 
 
 def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, kern_stellung: str = "neu",
@@ -106,6 +107,8 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
         if beim_takt is not None:
             beim_takt(p, werk, kern, plan)
         lauf.champions |= {s.champion for s in p.spieler}
+        if lauf.spielmodus is None and p.modus not in (None, "", "?"):
+            lauf.spielmodus = p.modus
         b = werk.b
         if vorher is not None:
             dw = w - vorher[0]

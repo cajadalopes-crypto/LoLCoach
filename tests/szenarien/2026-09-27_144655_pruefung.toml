@@ -3,6 +3,7 @@
 # Angelegt vor den Fixes der Qualitaetsrunde 1 - rot mit dem Stand von ef08644 (ausser 0900, s. dort).
 
 aufnahme = "2026-09-27_144655"
+spielmodus = "CLASSIC"
 bots = false
 
 [[szenario]]
@@ -70,3 +71,33 @@ quelle = "Pruefung E7: 'Mel ist AFK ...' im Modus KAMPF"
 lage = "Riven 59 % im Kampf auf ihrer Lane."
 darf_nicht_sagen = ["AFK"]
 warum = "In KAMPF spricht nur GEFAHR (Buch 0, 9.1). Die AFK-Info kommt nach dem Kampf, wenn sie dann noch gilt."
+
+# --- Qualitaetsrunde 2 (buecher/protokolle/PRUEFUNG_2026-09-27b.md), angelegt vor den Fixes: rot mit 705a6a6 ---
+
+[[szenario]]
+id = "0137-schutzplan-sparsam"
+fenster = ["1:30", "9:10"]
+quelle = "Pruefung G1: der Schutzplan achtmal in neun Minuten (1:37, 2:14, 3:34, 5:39, 6:10, 7:10, 8:15, 9:03), je 22 Woerter, das Item springt"
+lage = "Riven verliert die Top-Lane gegen Gangplank, stirbt zweimal und geht back."
+text_max = { "ist vorn|am Turm farmen" = 3 }
+woerter_max = 18
+woerter_schluessel = "kern:WELLE_HALTEN"
+warum = """Die lange Fassung (<= 18 Woerter) einmal je Lane-Verlust, nach Tod oder Basis die kurze (<= 8 Woerter), hoechstens
+alle 180 s. Das Item steht fest, bis es gekauft ist."""
+
+[[szenario]]
+id = "0439-kein-gut-raus"
+fenster = ["4:30", "4:50"]
+quelle = "Pruefung G4: 4:39 'Gut raus - da war er.', 13 s spaeter stand Riven auf 19 %"
+lage = "Riven zieht sich vor Gangplank und Kha'Zix zurueck und verliert dabei die Haelfte ihres Lebens."
+darf_nicht_sagen = ["Gut raus"]
+warum = "'Gut raus' nur, wenn das Leben in den 10 s nach dem Rueckzug-Satz um < 20 Punkte fiel und der sichere Ort erreicht ist."
+
+[[szenario]]
+id = "0506-wohin-sicher"
+fenster = ["5:00", "5:25"]
+quelle = "Pruefung G2: 5:06 'Lauf direkt nach Top, sonst verpasst du die Welle.' mit p_tod 0,67"
+lage = "Riven kauft im Brunnen, Gangplank und Kha'Zix sind oben."
+darf_nicht_sagen = ["nimmt sie sonst niemand", "Lauf direkt"]
+muss_ziel = true
+warum = "Ein WOHIN-Ziel mit p_tod bei Ankunft >= 0,3 wird nicht gesagt; es gilt ein sichereres (Gruppe, eigener Turm)."

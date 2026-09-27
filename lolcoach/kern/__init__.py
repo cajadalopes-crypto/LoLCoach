@@ -31,6 +31,8 @@ ZIEL_ARTEN = ("DRUECKEN", "MIT_GRUPPE", "SEITENWELLE", "ZUR_GRUPPE")
 VORWAERTS = frozenset(("TRADE", "ALL_IN", "PLATTEN", "DRUECKEN", "MIT_GRUPPE", "STAPELN", "WELLE_REIN_UND_BACK",
                        "VORBEREITEN_OBJECTIVE"))
 NACH_GEFAHR_S = 20.0
+GUT_RAUS_S = 10.0          # G4: so lange nach dem Rueckzug-Satz wird "Gut raus" beurteilt ...
+GUT_RAUS_VERLUST = 0.20    # ... und dein Leben darf darin nicht um so viel fallen
 WELLEN_ARTEN = frozenset(("FARMEN", "WELLE_REIN_UND_BACK", "STAPELN", "WELLE_HALTEN", "PLATTEN", "UNTER_TURM_FARMEN",
                           "VORBEREITEN_OBJECTIVE"))
 RUECKZUG_EPISODE_S = 15.0   # Pruefung D: so lange nach dem letzten ZURUECK-Plan gilt es als derselbe Rueckzug
@@ -108,6 +110,11 @@ class Kern:
         self._gefahr_gesagt: tuple[float, set] | None = None   # letzte GEFAHR: (Zeit, vor wem)
         self._rueckzug_ep: dict | None = None   # Pruefung D: ein Rueckzug, ein Satz (+ einmal bei neuem Gegner)
         self._wohin: dict = {}                  # Pruefung C4: das Ziel eines Tod/Basis-Aufenthalts
+        # G1 (Qualitaetsrunde 2): eine verlorene Lane ist eine Episode - {"t", "teil", "lang", "kurz", "rueckkehr"}
+        self._schutz: dict | None = None
+        self._schutz_ende: dict | None = None
+        self._im_brunnen = -1e9                 # zuletzt in der eigenen Basis (Minimap)
+        self._schutz_wieder = False             # G1: der Schutzplan verfiel ungesprochen - noch einmal anbieten
         self.gate_grund: str | None = None      # Pruefung A: warum das Gefahr-Gate nicht anschlug
         self._datei = None
         if ablage is not None:
@@ -160,7 +167,13 @@ class Kern:
             # Flackern, nicht ueber einen Tod hinweg (Qualitaetsrunde 1, 144655 6:11/6:42: der Plan fuer die verlorene
             # Lane kam nach dem Respawn nicht mehr)
             self._angesagt.clear()
+            for sep in (self._schutz, self._schutz_ende):
+                if sep is not None:
+                    sep["rueckkehr"] = True           # G1: danach darf die kurze Fassung kommen (auch einer ruhenden)
         self._ereignisse_merken(m, p)
+        self._schutz_episode(m)
+        if m.bereich == "basis_eigen":
+            self._im_brunnen = m.zeit
         self._bestaetigung_merken(m, modus)
         if not m.daten_frisch and modus != "TOT":
             self._modus_vorher = modus
@@ -173,6 +186,11 @@ class Kern:
         kand, self.gefahr = self._kandidaten(m, modus)
         self.kandidaten = kand
         ev = self.fuehrer.takt(m, kand, self.gefahr)
+        if self._schutz_wieder:
+            self._schutz_wieder = False
+            if ev is None and self.fuehrer.plan is not None and self.fuehrer.plan.handlung.daten.get("verloren"):
+                from .plan import Ereignis
+                ev = Ereignis("neu", self.fuehrer.plan)
         aus = []
         # Spielbeginn: alle stehen im Brunnen, das Briefing redet - nichts, was er nicht selbst weiss
         start = modus == "BASIS" and m.zeit < SPIELSTART_S
@@ -214,6 +232,8 @@ class Kern:
         if modus in ("BASIS", "TOT"):
             # ein Ziel je Tod/Basis-Aufenthalt (C4): was 8 s vor dem Respawn gesagt wurde, gilt in der Basis weiter
             kand = je_modus[modus].kandidaten(m, cfg, merker=self._wohin, lage=self._lage(m))
+        elif modus == "LANE":
+            kand = lane.kandidaten(m, cfg, schutz=self._schutz or False)
         else:
             kand = je_modus[modus].kandidaten(m, cfg)
         if modus not in ("BASIS", "TOT"):         # ZURUECK: in allen Modi ausser TOT und BASIS (Buch 0, 6.3)
@@ -318,6 +338,28 @@ class Kern:
             elif ev.art != "schritt":
                 nach_dem_sprechen = lambda: setattr(self, "_rueckzug_ep", {      # noqa: E731
                     "t": m.zeit, "zuletzt": m.zeit, "wer": set(von), "wechsel": False, "back": False})
+        # G1 (Qualitaetsrunde 2): der Schutzplan einmal lang je Lane-Verlust; nach Tod oder Basis kurz, hoechstens alle
+        # schutz_erinnern_s; sonst gilt er still (144655: vorher achtmal in neun Minuten, je 22 Woerter)
+        if h.daten.get("verloren") and ev.art != "schritt" and self._schutz is not None:
+            sep = self._schutz
+            vorher = {k: sep[k] for k in ("lang", "kurz", "rueckkehr")}
+            if not sep["lang"]:
+                nach_dem_sprechen = lambda a=None: sep.update(lang=True, kurz=m.zeit, rueckkehr=False,  # noqa: E731
+                                                              offen=(a, vorher))
+            elif sep["rueckkehr"] and (sep["kurz"] is None
+                                       or m.zeit - sep["kurz"] >= self.cfg["sprechen"]["schutz_erinnern_s"]):
+                text = h.daten.get("kurz_satz") or text
+                nach_dem_sprechen = lambda a=None: sep.update(kurz=m.zeit, rueckkehr=False,  # noqa: E731
+                                                              offen=(a, vorher))
+            else:
+                p.gesagt = m.zeit
+                sep["rueckkehr"] = False       # die Rueckkehr ist verbraucht, auch wenn der Plan still gilt
+                return None
+        # ein Back oder Rueckzug gleich nach dem Brunnen ist ein Flackern der Minimap beim Ankommen (144655 5:04: "Back
+        # jetzt: 22 Prozent", eine Sekunde nachdem Riven im Brunnen stand - er verdraengte das Ziel fuer danach, G2)
+        if p.art in ("BACK_JETZT", "ZURUECK") and ev.art != "schritt" and m.zeit - self._im_brunnen <= 3.0:
+            p.gesagt = m.zeit
+            return None
         if ev.art == "neu" and self._laeuft_hin(h, m):
             # Buch 5, 2: "Laeufst du schon dorthin, schweigt der Coach" - der Plan gilt als gesagt, damit die
             # Erinnerung (Kapitel 6) greift, wenn du stehen bleibst
@@ -349,20 +391,28 @@ class Kern:
         if modus == "BASIS" and self._praefix is not None and m.zeit - self._praefix[0] <= 15:
             text = f"{self._praefix[1]} {text}"
             self._praefix = None
-        a = self.sprecher.ansage(kategorie, p.art, text, m.zeit, self._pruefung(p), gesagt)
+        def merken(ansage=None, zeit=m.zeit):
+            # was ein gesprochener Plan hinterlaesst - sofort oder beim Nachholen (Budget, 9.2)
+            p.gesagt = zeit
+            self._angesagt[schl] = zeit
+            if nach_dem_sprechen is not None:
+                if h.daten.get("verloren"):
+                    nach_dem_sprechen(ansage)
+                else:
+                    nach_dem_sprechen()
+        a = self.sprecher.ansage(kategorie, p.art, text, m.zeit, self._pruefung(p), gesagt,
+                                 danach=merken if kategorie == "PLAN" else None)
         if a is not None:
             # die Lage der Entscheidung, fuer protokoll.py (gesprochen wird vielleicht spaeter - Pruefung B)
             a._wahl = {"zeit": m.zeit, "plan": p.art, "ev": h.ev, "p_tod": h.p_tod, "gehalten": self.fuehrer.gehalten,
                        "top": [(x.art, x.ev, x.p_tod) for x in self.fuehrer.top], "gate": self.gate_grund}
-            p.gesagt = m.zeit
-            self._angesagt[schl] = m.zeit
-            if nach_dem_sprechen is not None:
-                nach_dem_sprechen()
+            merken(a)
             if kategorie == "GEFAHR":
                 self._gefahr_gesagt = (m.zeit, set(h.daten.get("gefahr_von", [])))
             p.start = {"sicher_weg": m.b.sicherer_ort()[1] if m.b is not None else None, "pos": m.pos}
             if h.art == "ZURUECK":
-                self._rueckzug = (m.zeit, m.pos, [n for n, x in h.daten.get("wer", []) if x >= 0.05])
+                self._rueckzug = (m.zeit, m.pos, [n for n, x in h.daten.get("wer", []) if x >= 0.05],
+                                  m.b.leben if m.b is not None else None, set())
             self._gesprochen(a, kategorie, m)
         return a
 
@@ -416,6 +466,44 @@ class Kern:
             return ra != r and self._ereignis_t < a.gesprochen
         return False
 
+    def _schutz_episode(self, m: Merkmale) -> None:
+        """G1: die Episode der verlorenen Lane. Sie beginnt, wenn die Lane verloren ist (modi.lane_verloren), und endet,
+        wenn die Kraft wieder >= 0 ist oder ihr Bauteil gekauft wurde. Das Bauteil ist das naechste aus dem Kaufplan
+        zu Beginn - vorher fragte lane._bauteil je Takt mit dem Gold dieses Takts, das Item sprang (Caulfields ->
+        Axiombogen -> Brutalisierer). Beginnt sie gegen denselben Gegner neu, ehe ihr Bauteil gekauft ist, setzt sie die
+        alte fort (Bauteil, lange Fassung gesagt, Uhr der kurzen): die Kraft pendelt mit jedem Levelaufstieg zwischen
+        -1 und 0 (144655: sechs Neubeginne in acht Minuten)."""
+        from .modi import lane_kraft, lane_verloren
+        from .modi.lane import _bauteil, bauteil_gekauft
+        b = m.b
+        if b is None or b.lane is None or b.ich is None:
+            return
+        kraft = lane_kraft(b)
+        verloren, tode = lane_verloren(m)
+        sep = self._schutz
+        # uebergeben ist nicht gesprochen: verfiel der Satz ungesprochen (Sprechplan, Sperren), gilt er als nicht gesagt
+        # (144655 6:45: die lange Fassung zum Brutalisierer wurde uebergeben und nie gesprochen)
+        off = sep.get("offen") if sep is not None else None
+        if off is not None and off[0] is not None:
+            if off[0].gesprochen is not None:
+                sep["offen"] = None
+            elif m.zeit - off[0].zeit > off[0].gueltig + 2.0:
+                sep.update(off[1])
+                sep["offen"] = None
+                self._schutz_wieder = True     # der Plan haelt still - also von hier aus noch einmal anbieten
+                for k in [k for k in self._angesagt if k[0] == "WELLE_HALTEN"]:
+                    del self._angesagt[k]
+        if sep is not None and (kraft >= 0.0 or bauteil_gekauft(m, sep["teil"]) or b.lane.champion != sep["gegner"]):
+            self._schutz_ende = dict(sep)
+            self._schutz = sep = None
+        if sep is None and verloren:
+            alt = self._schutz_ende
+            if alt is not None and alt["gegner"] == b.lane.champion and not bauteil_gekauft(m, alt["teil"]):
+                self._schutz = dict(alt, rueckkehr=alt["rueckkehr"])        # dieselbe Episode, weiter
+            else:
+                self._schutz = {"t": m.zeit, "teil": _bauteil(m), "lang": False, "kurz": None, "rueckkehr": False,
+                                "gegner": b.lane.champion}
+
     def _rueckzug_aktiv(self, m: Merkmale) -> dict | None:
         ep = self._rueckzug_ep
         return ep if ep is not None and m.zeit - ep["zuletzt"] <= RUECKZUG_EPISODE_S else None
@@ -423,6 +511,10 @@ class Kern:
     def _erinnerung(self, ev, m: Merkmale, gesagt: list):
         p = ev.plan
         h = p.handlung
+        # nur an einen Plan, den es in diesem Takt gibt: haelt er ueber eine Luecke (G3), ist sein Schritt gerade nicht
+        # erlaubt (140253 8:16: "Jetzt back", waehrend Yasuo dich im Kanal erreichte - nie_back, Pruefung D2)
+        if not any(x.art == p.als() for x in (self.kandidaten or [])):
+            return None
         ep = self._rueckzug_aktiv(m)
         im_rueckzug = ep is not None and p.als() in ("ZURUECK", "BACK_JETZT")
         if im_rueckzug:
@@ -433,6 +525,8 @@ class Kern:
             text = "Jetzt back" + (f": {gruende[0]}." if gruende else ".")
         elif p.als() == "ZURUECK" and h.daten.get("ort"):     # erinnert wird nur, wer noch nicht dort ist
             text = f"Denk dran: raus zu {h.daten['ort']}: {h.grund}."
+        elif h.daten.get("verloren"):
+            return None      # G1: der Schutzplan erinnert sich selbst (kurze Fassung nach Tod oder Basis)
         else:
             text = f"Denk dran: {h.satz}" if h.satz else None
         if not text:
@@ -579,13 +673,23 @@ class Kern:
             return None
         text = None
         if self._rueckzug is not None:
-            t0, pos, wer = self._rueckzug
-            if zeit - t0 > 10 or m.tot:
+            # G4 (Qualitaetsrunde 2): "Gut raus" erst 10 s nach dem Rueckzug-Satz - wenn dein Leben darin um < 20 Punkte
+            # fiel, du am sicheren Ort bist und dort, wo du warst, einer von ihnen auftauchte. Vorher kam es nach
+            # wenigen Sekunden (144655 4:39 - 13 s spaeter 19 %), auch im Kampf (133930 7:01), und immer als "er"
+            # (140253 6:11: es kamen drei).
+            from .modi import am_sicheren_ort
+            t0, pos, wer, leben0, da = self._rueckzug
+            if pos is not None and m.b is not None:
+                da |= {g.champion for g in m.b.gegner if g.champion in wer and g.sichtbar and g.pos is not None
+                       and abstand(g.pos, pos) <= 1500}
+            tief = leben0 is not None and m.b is not None and m.b.leben is not None \
+                and leben0 - m.b.leben >= GUT_RAUS_VERLUST
+            if m.tot or tief or modus == "KAMPF" or zeit - t0 > GUT_RAUS_S + 5:
                 self._rueckzug = None
-            elif pos is not None and m.pos is not None and m.b is not None and abstand(pos, m.pos) >= 600:
-                if any(g.champion in wer and g.sichtbar and g.pos is not None and abstand(g.pos, pos) <= 1500
-                       for g in m.b.gegner):
-                    text, self._rueckzug = "Gut raus - da war er.", None
+            elif zeit - t0 >= GUT_RAUS_S and da and m.pos is not None and am_sicheren_ort(m) \
+                    and abstand(pos, m.pos) >= 600:
+                text = "Gut raus - da war er." if len(da) == 1 else "Gut raus - da waren sie."
+                self._rueckzug = None
         plan = self.fuehrer.plan
         if text is None and plan is not None and plan.art == "STAPELN" and m.welle is not None \
                 and m.welle.zustand == "GECRASHT_BEI_IHM" and self._stapel_bestaetigt != plan.handlung.daten.get(
@@ -601,7 +705,9 @@ class Kern:
             text, self._fokus_bestaetigt = "Kontroll-Auge gekauft - genau der Fokus.", True
         if text is None:
             return None
-        a = self.sprecher.ansage("BESTAETIGUNG", "bestaetigung", text, zeit, None, gesagt)
+        # G4: nie in KAMPF - auch nicht, wenn der Satz erst spaeter drankommt (133930 7:01)
+        a = self.sprecher.ansage("BESTAETIGUNG", "bestaetigung", text, zeit,
+                                 lambda: self.modus.aktuell != "KAMPF", gesagt)
         if a is not None:
             self.sprecher.bestaetigt_zuletzt = zeit
             self.staerken.append((zeit, text))

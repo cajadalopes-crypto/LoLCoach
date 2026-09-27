@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from functools import lru_cache
 
 # Grund-Cooldowns (Sekunden). Werden, wenn vorhanden, aus Data Dragon ueberschrieben.
 GRUND = {"SummonerFlash": 300, "SummonerTeleport": 360, "SummonerDot": 180, "SummonerHeal": 240,
@@ -89,6 +90,15 @@ def cooldown(schluessel: str, spieler=None, zeit: float | None = None) -> float:
 def blink_champions() -> set[str]:
     from . import wissen
     return set(wissen.lade("blinks").get("ids", []))
+
+
+@lru_cache(maxsize=1)
+def dash_champions() -> frozenset[str]:
+    """Wer einen eigenen Dash, Sprung, Blink oder Teleport hat (wissen/dashes.toml, von Hand geprueft, dazu
+    blinks.toml). Ein Sprung auf Minimap oder Bildschirm zaehlt bei ihnen nicht als Flash - lieber weniger Timer als
+    falsche (Qualitaetsrunde 2, Entscheidung 3 Weg 1: 6 von 7 gemessenen Spruengen waren Dash-Champions)."""
+    from . import wissen
+    return frozenset(wissen.lade("dashes").get("ids", [])) | frozenset(blink_champions())
 
 
 @dataclass

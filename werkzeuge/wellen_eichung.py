@@ -145,6 +145,14 @@ def durchrechnen(pfad: Path) -> tuple[list[dict], str]:
     return aus, mein
 
 
+def spielmodus(pfad: Path) -> str:
+    """gameData.gameMode der Aufnahme - die Eichung weist die Modi getrennt aus (Qualitaetsrunde 2, G6)."""
+    for _, d in aufzeichnung.lies_mit_zeit(pfad):
+        if (m := zustand.partie(d).modus) not in (None, "", "?"):
+            return m
+    return "?"
+
+
 def tafel(pfad: Path, anzahl: int, ziel: str | None, mit: tuple = ()) -> Path:
     stamm = pfad.name.removesuffix(".jsonl.gz")
     zeilen, mein = durchrechnen(pfad)
@@ -182,7 +190,7 @@ def tafel(pfad: Path, anzahl: int, ziel: str | None, mit: tuple = ()) -> Path:
     alt = json.loads(datei.read_text(encoding="utf-8")) if datei.exists() else {}
     wahr = {e["zeit"]: e.get("wahr") for e in alt.get("punkte", [])}
     notiz = {e["zeit"]: e.get("notiz") for e in alt.get("punkte", [])}
-    datei.write_text(json.dumps({"aufnahme": stamm, "mein_team": mein,
+    datei.write_text(json.dumps({"aufnahme": stamm, "mein_team": mein, "spielmodus": spielmodus(pfad),
                                  "welle_py": "Icon+Ring ausgeblendet, relativ, Front statt Summe (F1)",
                                  "punkte": [{"nr": n, "zeit": _uhr(z["zeit"]), "kern": z["kern"],
                                              "unsere": z["unsere"], "ihre": z["ihre"], "front": z["front"],
@@ -202,7 +210,7 @@ def auswerten(pfad: Path) -> None:
     d = json.loads((ABLAGE / f"{stamm}.json").read_text(encoding="utf-8"))
     klar = [e for e in d["punkte"] if e.get("wahr") and e["wahr"] != "unklar"]
     treffer = sum(e["kern"] == e["wahr"] for e in klar)
-    print(f"{stamm}: {len(klar)} von {len(d['punkte'])} eindeutig beschriftet, {treffer} richtig"
+    print(f"{stamm} [{d.get('spielmodus', '?')}]: {len(klar)} von {len(d['punkte'])} eindeutig beschriftet, {treffer} richtig"
           + (f" ({100 * treffer / len(klar):.0f} %; Abnahme >= 80 %)" if klar else ""))
     gib = [e for e in klar if e["wahr"] == "GECRASHT_BEI_IHM" or e["kern"] == "GECRASHT_BEI_IHM"]
     if gib:

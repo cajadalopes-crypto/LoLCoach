@@ -190,9 +190,27 @@ def am_sicheren_ort(m) -> bool:
     return weg is not None and weg <= SICHER_DORT_S
 
 
+def lane_kraft(b) -> float:
+    """Wer die Lane haelt, ohne das Leben dieses Moments: Level, Items (je 600 Gold ~ ein Level), Stufe 6 - die Teile
+    von Bewertung.kraefte, die eine Minute halten. Qualitaetsrunde 2, G1: mit Leben und Ult sprang die Kraft beim
+    Respawn von -4 auf +1,9, und der Plan fuer die verlorene Lane begann alle paar Sekunden neu (144655)."""
+    g = b.lane if b is not None else None
+    if g is None:
+        return 0.0
+    wert = float(-g.level_vorsprung)
+    gd = -g.gold_vorsprung
+    if abs(gd) >= 400:
+        wert += gd / 600
+    if b.ich.level >= 6 > g.s.level:
+        wert += 1.5
+    elif g.s.level >= 6 > b.ich.level:
+        wert -= 1.5
+    return wert
+
+
 def lane_verloren(m) -> tuple[bool, int]:
-    """Pruefung A: die Lane ist gegen dich - Kraft <= -1 gegen den Lane-Gegner oder zwei Tode gegen ihn.
-    Rueckgabe: (verloren, Tode gegen ihn)."""
+    """Pruefung A: die Lane ist gegen dich - Kraft <= -1 gegen den Lane-Gegner oder zwei Tode gegen ihn. Kraft ohne
+    das Leben dieses Moments (lane_kraft, Qualitaetsrunde 2). Rueckgabe: (verloren, Tode gegen ihn)."""
     b = m.b
     g = b.lane if b is not None else None
     if g is None or m.p is None or m.p.ich is None:
@@ -200,7 +218,7 @@ def lane_verloren(m) -> tuple[bool, int]:
     ich = m.p.ich.name
     tode = sum(1 for e in m.p.kills_von("ChampionKill")
                if e.opfer is not None and e.opfer.name == ich and e.taeter is not None and e.taeter.name == g.s.name)
-    return b.kraefte()[0] <= -1.0 or tode >= 2, tode
+    return lane_kraft(b) <= -1.0 or tode >= 2, tode
 
 
 def wer_kommt(h: Handlung, schwelle: float = 0.05) -> list[str]:

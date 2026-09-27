@@ -3,6 +3,7 @@
 # Angelegt vor den Fixes der Qualitaetsrunde 1 - rot mit dem Stand von ef08644.
 
 aufnahme = "2026-09-27_102112"
+spielmodus = "CLASSIC"
 bots = true
 
 [[szenario]]

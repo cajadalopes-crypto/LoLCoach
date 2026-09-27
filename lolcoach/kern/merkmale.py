@@ -208,6 +208,14 @@ def _icon_s(lane: str) -> float:
     return ICON_RADIUS * RING_BIS / sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(p, p[1:]))
 
 
+def lane_phase_bis(c: dict, p) -> float:
+    """Ende der Lane-Phase: 14:00 (kern.toml [modus]), in Swiftplay 10:00 - dort fallen die Platten frueher (G6)."""
+    if p is not None and getattr(p, "modus", None) == "SWIFTPLAY":
+        from .. import wissen
+        return float(wissen.lade("mechanik")["swiftplay"]["lane_phase_bis_s"])
+    return float(c["lane_phase_bis_s"])
+
+
 class WellenPuffer:
     """Buch 1, 1.2/1.4: die Lesungen deiner Lane der letzten 20 s -> geglaettete Welle und ihr Zustand (Hysterese
     3 s, GECRASHT_BEI_IHM sofort - er ist ein Plan-Schritt)."""
@@ -408,7 +416,7 @@ class MerkmalBau:
         c = self.cfg["modus"]
         zeit = p.zeit
         if b is None:
-            return Merkmale(zeit, bool(p.ich and p.ich.tot), None, None, None, zeit < c["lane_phase_bis_s"],
+            return Merkmale(zeit, bool(p.ich and p.ich.tot), None, None, None, zeit < lane_phase_bis(c, p),
                             None, None, False, daten_frisch=False)
         meine_lane = LANE_DER_ROLLE.get(p.ich.rolle)
         leben = b.leben
@@ -433,7 +441,7 @@ class MerkmalBau:
                     if alt is not None and g.leben is not None and alt - g.leben >= c["kampf_balken_faellt"]:
                         kampf = True
         # Lane-Phase: vor 14:00 und beide Aussentuerme deiner Lane stehen
-        lane_phase = zeit < c["lane_phase_bis_s"]
+        lane_phase = zeit < lane_phase_bis(c, p)
         if lane_phase and meine_lane:
             stehen = bewertung.stehende_tuerme(p)
             lane_phase = all((t, meine_lane, "aussen") in stehen for t in (BLAU, ROT))
@@ -481,7 +489,7 @@ class MerkmalBau:
         m.welle_vorher = self.welle_vorher
         try:
             from ..entscheider import naechste_kanone
-            k = naechste_kanone(m.zeit, p.ich.rolle)
+            k = naechste_kanone(m.zeit, p.ich.rolle, p.modus)
             m.kanone_in = None if k is None else max(0.0, k - m.zeit)
         except Exception:
             m.kanone_in = None

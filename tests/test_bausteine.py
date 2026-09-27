@@ -65,6 +65,15 @@ def wellen_front():
     assert st.zustand != "GECRASHT_BEI_DIR", st
 
 
+def rueckblick_passt_zum_leben():
+    """G5 (Qualitaetsrunde 2, 133930 14:57): mit vollem Leben beim Einstieg ist "back" die falsche Lehre."""
+    from lolcoach import komponist
+    voll = komponist.todesrueckblick(None, ["Tristana", "Zoe"], None, False, 0.9)
+    wenig = komponist.todesrueckblick(None, ["Tristana", "Zoe"], None, False, 0.3)
+    assert "hinter den Turm oder zu deinem Team" in voll and "back" not in voll.lower(), voll
+    assert "back" in wenig.lower(), wenig
+
+
 def mitspieler_leiste():
     """Echtes Bild (Partie 2, 26.09.2026): Lee Sin 93 %, Diana 95 % mit Ult bereit, Varus 32 %, Alistar 75 %."""
     bild = cv2.imread(str(HIER / "hud_ecke.jpg"))
@@ -1132,6 +1141,9 @@ def modus_sperre_budget():
     f = regeln.Ansage("Sett hat Flash benutzt", regeln.WICHTIG, "zauber:Sett:SummonerFlash")
     assert sperre.entscheide("_zauber", f, "LANE", b) == "sprechen"
     assert sperre.entscheide("_zauber", f, "UNTERWEGS", b) == "info"
+    # Qualitaetsrunde 2, Entscheidung 3 Weg 3: spricht der Kern, sagt der Coach zu einem Flash nichts - der Timer (aus dem
+    # Ping in der Anzeigetafel) steht nur auf dem Dashboard, auch der des Lane-Gegners
+    assert all(sperre.entscheide("_zauber", f, m, b, kern_spricht=True) == "info" for m in ("LANE", "SEITE", "BASIS"))
     g = regeln.Ansage("Galio hat Flash benutzt", regeln.WICHTIG, "zauber:Galio:SummonerFlash")
     assert sperre.entscheide("_zauber", g, "LANE", b) == "info"      # nicht Lane-Gegner, nicht Jungler
     assert sperre.entscheide("_cs", regeln.Ansage("Minute 10", regeln.HINWEIS, "cs10"), "LANE", b) == "info"
@@ -1515,7 +1527,7 @@ def zauber_timer_auf_dem_dashboard():
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    for test in (item_namen, wellen, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
+    for test in (item_namen, wellen, rueckblick_passt_zum_leben, mitspieler_leiste, teleport_timer, kuerzen_und_orte, profil_ueber_partien,
                  zauber_im_briefing, recalls_im_verlauf, sprechbar, matchup_zeilen, chat_zeitstempel, akte_teile, chat_pings, eigene_tasten,
                  aufnahme_fortsetzen, bildschirm_momente, bewertung_und_plan, denkkette, flash_auf_dem_bildschirm, brunnen_nach_recall_und_tod, live_partie_2121, combo_rechnung,
                  platten_lesen, teleport_von_der_minimap, lebensbalken_lesen, verzoegerung_bis_zum_ohr,

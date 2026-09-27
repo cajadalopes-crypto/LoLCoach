@@ -216,3 +216,24 @@ kontrollward_max = 1                # gelegt; Q: Wiki
 oracle_dauer = 8                    # Q: Wiki Oracle_Lens (26.1)
 oracle_aufladung = [160, 100]       # Q: Wiki Oracle_Lens
 farsight_sicht = 500                # Q: Wiki Ward
+
+[swiftplay]
+# Qualitaetsrunde 2, G6: gameData.gameMode == "SWIFTPLAY" (133930, 140253). Nachgeschlagen 27.09.2026:
+#   Riot Support "Swiftplay Game Mode" (Stand 28.01.2026), /dev "A Swifter Swiftplay" (01.12.2025),
+#   wiki.leagueoflegends.com/Swiftplay und Swiftplay/Patch_history (V25.S1.3, V26.01, V26.02, V26.07 samt Hotfix 02.04.).
+# Was dort nicht steht, gilt als NICHT belegt - der Coach sagt dazu keine Zeit (G6.3).
+stand = "Swiftplay 2026, nachgeschlagen 27.09.2026 (Riot Support 28.01.2026, Wiki Patch_history bis V26.07)"
+start_level = 3                  # Q: Riot Support, /dev, Wiki V26.01
+start_gold = 1400                # Q: dito
+lane_phase_bis_s = 600           # Platten fallen 10:00 statt 14:00 (Q: Wiki Swiftplay)
+wellen_25s_ab = 695              # ab 11:35 alle 25 s statt 30 (Q: Wiki Swiftplay; Riot: "after 12 minutes")
+kanone_ab_welle = 3              # nach der dritten Welle jede mit Kanone (Q: Riot Support, /dev, Hotfix V26.07)
+# erste Welle 0:30 und 30 s Takt davor: nicht eigens belegt - Riot und Wiki nennen fuer Swiftplay nur die Abweichungen
+drache_max = 2                   # hoechstens zwei Elementardrachen, Seele nach zwei (Q: Riot, /dev, V26.01)
+drache_respawn = 300             # Q: Wiki V25.S1.3 ("increased to 300 seconds from 270")
+aeltester_ab = 900               # 15:00, danach alle 6 Minuten (Q: /dev, Riot Support)
+aeltester_respawn = 360
+baron_erster = 720               # 12:00 (Q: Riot, /dev, Wiki V26.01)
+gibt_es_nicht = ["larven", "herold"]   # Voidgrubs, Herold und Atakhan: nicht in Swiftplay (Q: Riot, /dev, Hotfix V26.07)
+# NICHT belegt: der erste Elementardrache (5:00 in Classic) - kein Timer bis zum ersten Drachen-Kill
+todeszeit = [12, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]   # Level 3-18 (Q: Wiki V26.01)

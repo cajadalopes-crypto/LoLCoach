@@ -37,11 +37,20 @@ WECHSEL_NACH = 12.0     # so lange bleibt ein gesagter Plan, solange er noch gil
 LAUF_ZUR_LANE = {"TOP": 27.0, "MIDDLE": 20.0, "BOTTOM": 27.0, "UTILITY": 27.0}   # Spawn -> Lane-Mitte [Schaetzung]
 
 
-def wellen_spawns(bis: float) -> list[tuple[float, bool]]:
+def wellen_spawns(bis: float, modus: str = "CLASSIC") -> list[tuple[float, bool]]:
     """(Spawnzeit, Kanone?) aller Wellen bis `bis` - Saison 2026 (saison2026.md): 0:30 erste Welle,
     bis 14:00 alle 30 s mit Kanone jede 3. (erste = Welle 3 um 1:30), bis 25:00 alle 25 s mit
-    Kanone jede 2., bis 30:00 jede Welle mit Kanone, danach alle 20 s."""
+    Kanone jede 2., bis 30:00 jede Welle mit Kanone, danach alle 20 s. Swiftplay (G6, mechanik.toml [swiftplay]):
+    ab 11:35 alle 25 s, ab der dritten Welle jede mit Kanone."""
     aus, t, k = [], 30.0, 1
+    if modus == "SWIFTPLAY":
+        from . import wissen
+        sw = wissen.lade("mechanik")["swiftplay"]
+        while t <= bis:
+            aus.append((t, k >= sw["kanone_ab_welle"]))
+            t += 25.0 if t >= sw["wellen_25s_ab"] else 30.0
+            k += 1
+        return aus
     while t <= bis:
         if t < 840:
             kanone = k % 3 == 0
@@ -58,10 +67,10 @@ def wellen_spawns(bis: float) -> list[tuple[float, bool]]:
     return aus
 
 
-def naechste_kanone(zeit: float, rolle: str) -> float | None:
+def naechste_kanone(zeit: float, rolle: str, modus: str = "CLASSIC") -> float | None:
     """Spielzeit, zu der die naechste Kanonenwelle in deiner Lane ankommt."""
     lauf = LAUF_ZUR_LANE.get(rolle, 27.0)
-    for t, kanone in wellen_spawns(zeit + 120):
+    for t, kanone in wellen_spawns(zeit + 120, modus):
         if kanone and t + lauf > zeit + 3:
             return t + lauf
     return None

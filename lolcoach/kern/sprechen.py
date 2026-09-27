@@ -30,7 +30,7 @@ class Sprecher:
     def __init__(self, cfg: dict):
         self.c = cfg["sprechen"]
         self.bc = cfg["bestaetigung"]
-        self.wartet: tuple[str, str, str, object] | None = None   # (Kategorie, Art, Text, Pruefung) - Budget voll
+        self.wartet: tuple | None = None   # (Kategorie, Art, Text, Pruefung, danach) - Budget voll
         self.bestaetigt_zuletzt = -1e9
         self.kategorien: dict[str, int] = {"GEFAHR": 0, "PLAN": 0, "ERINNERUNG": 0, "BESTAETIGUNG": 0}
 
@@ -42,11 +42,14 @@ class Sprecher:
         return sum(1 for a in zaehlend[-self.c["max_je_minute"] - 1:] if zeit - a.gesprochen < 60.0) \
             < self.c["max_je_minute"]
 
-    def ansage(self, kategorie: str, art: str, text: str, zeit: float, pruefe, gesagt: list) -> Ansage | None:
-        """Eine Ansage, wenn Budget und Kategorie es erlauben; ein PLAN bei vollem Budget wartet (9.2)."""
+    def ansage(self, kategorie: str, art: str, text: str, zeit: float, pruefe, gesagt: list,
+               danach=None) -> Ansage | None:
+        """Eine Ansage, wenn Budget und Kategorie es erlauben; ein PLAN bei vollem Budget wartet (9.2). `danach`: was
+        der Kern sich merkt, wenn der Satz WIRKLICH kommt - ruft er selbst bei sofortiger Ansage, hier beim
+        Nachholen (Qualitaetsrunde 2, G1: der Schutzplan kam nachgeholt achtmal, weil sein Merker nie gesetzt wurde)."""
         if kategorie not in FREI and not self.platz(zeit, gesagt):
             if kategorie == "PLAN":
-                self.wartet = (kategorie, art, text, pruefe)
+                self.wartet = (kategorie, art, text, pruefe, danach)
             return None
         if kategorie == "PLAN":
             self.wartet = None
@@ -56,14 +59,17 @@ class Sprecher:
         """Der wartende PLAN, sobald wieder Platz ist - und nur, wenn er noch gilt."""
         if self.wartet is None:
             return None
-        kategorie, art, text, pruefe = self.wartet
+        kategorie, art, text, pruefe, danach = self.wartet
         if pruefe is not None and not pruefe():
             self.wartet = None
             return None
         if not self.platz(zeit, gesagt):
             return None
         self.wartet = None
-        return self._bauen(kategorie, art, text, zeit, pruefe)
+        a = self._bauen(kategorie, art, text, zeit, pruefe)
+        if danach is not None:
+            danach(a)
+        return a
 
     def _bauen(self, kategorie: str, art: str, text: str, zeit: float, pruefe) -> Ansage:
         if kategorie in self.kategorien:

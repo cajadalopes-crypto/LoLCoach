@@ -79,7 +79,8 @@ def _lane_option(m, cfg: dict, modus: str, lane: str, druck: str = "") -> Handlu
     else:
         lauf = LAUF_ZUR_LANE.get(b.ich.rolle, 27.0)
         start = m.zeit + (m.respawn if m.tot else 0.0)
-        ankunft = min((t + lauf for t, _ in wellen_spawns(m.zeit + 120) if t + lauf > start + weg - 5), default=None)
+        ankunft = min((t + lauf for t, _ in wellen_spawns(m.zeit + 120, m.p.modus if m.p is not None else "CLASSIC")
+                       if t + lauf > start + weg - 5), default=None)
         puffer = ankunft - (start + weg) if ankunft is not None else None
         if puffer is None:
             grund, satz = "deine Welle wartet", f"Zurück nach {lane}: deine Welle wartet."
@@ -190,29 +191,144 @@ def _seitenwelle_option(m, cfg: dict, modus: str, lane: str) -> Handlung:
     return _mit_gefahr(h, m, ziel, weg, am_turm=True)
 
 
+EILIG = ("lauf direkt", "sonst verpasst", "sonst kommst du zu spät")
+ZAHL = {1: "einer", 2: "zwei", 3: "drei", 4: "vier", 5: "alle fünf"}
+
+
+def _seite(pos) -> str:
+    """oben / unten / in der Mitte - die Kartenhaelfte einer Position (Spiel-Einheiten, blaue Basis unten links)."""
+    d = pos[1] - pos[0]
+    return "oben" if d > 2000 else "unten" if d < -2000 else "in der Mitte"
+
+
+def _zuletzt(m, name: str | None) -> str:
+    """ "Kha'Zix war zuletzt oben" - der Gegner, der am meisten zur Gefahr beitraegt."""
+    g = next((g for g in m.b.gegner if g.champion == name), None) if name else None
+    if g is None or g.pos is None:
+        return f"{name} ist nicht zu sehen" if name else "sie sind nicht zu sehen"
+    return f"{name} war zuletzt {_seite(g.pos)}"
+
+
+def _turm_option(m, modus: str, lane: str, stufe: str, satz: str, grund: str, kurz: str) -> Handlung | None:
+    from ... import bewertung
+    if m.p is None:
+        return None
+    k = (m.p.mein_team, lane, stufe)
+    if k not in bewertung.stehende_tuerme(m.p):
+        return None
+    ziel = bewertung.TUERME[k]
+    weg = _brunnen_weg(m, ziel)
+    h = Handlung("WOHIN", Ziel("turm", f"{kurz}", ziel, weg), modus, weg, grund=grund, satz=satz)
+    h.daten["kurz"] = kurz
+    return _mit_gefahr(h, m, ziel, weg, am_turm=True)
+
+
 def wohin(m, cfg: dict, modus: str, merker: dict | None = None, lage=None) -> Handlung:
     """WOHIN / WOHIN_TP_LANE mit `daten['kurz']` (fuer den Kauf-Satz: "Top", "zu den Larven") und `grund`.
-    E2: das erste Ziel, das nicht in den Tod fuehrt (Gefahr am Ziel zur Ankunft, tot aus dem Brunnen). C4: `merker`
-    haelt ein Ziel je Basis-Aufenthalt, solange `lage` (Tote, Strukturen, lebende Objectives) gleich bleibt."""
+    E2/G2: das erste Ziel mit p_tod bei Ankunft < wohin_p_tod_max (tot aus dem Brunnen, aus der Basis mit vollem
+    Leben); eilig ("lauf direkt", "sonst verpasst du") nur unter wohin_direkt_max, sonst "bleib am Turm". Ist keins
+    darunter: dein Team (>= 2), dann ein eigener Turm derselben Lane weiter hinten, sonst "Warte am Turm auf dein
+    Team" auf der Seite mit den wenigsten Gegnern (Qualitaetsrunde 2: 144655 5:06, 140253 10:25, 133930 12:30 und 15:16
+    schickten mit p_tod 0,67-0,79 zur Welle). C4: `merker` haelt ein Ziel je Basis-Aufenthalt, solange `lage` (Tote,
+    Strukturen, lebende Objectives) gleich bleibt."""
     from .. import gefahr
     optionen = _optionen(m, cfg, modus)
     c = cfg["gefahr"]
+    grenze, direkt = c["wohin_p_tod_max"], c["wohin_direkt_max"]
 
     def p_am(h):
         am = h.daten.get("gefahr_am")
-        return gefahr.p_tod_am(m, am[0], am[1], c, am_turm=bool(am[2]))[0] if am and am[0] is not None else 0.0
-    risiko = [(p_am(h), h) for h in optionen]
-    sicher = [h for p, h in risiko if p < c["p_min"]]
-    wahl = sicher[0] if sicher else min(risiko, key=lambda x: x[0])[1]
+        if not am or am[0] is None:
+            return 0.0, []
+        return gefahr.p_tod_am(m, am[0], am[1], c, am_turm=bool(am[2]))
+
+    def text(h):
+        return f"{h.satz} {h.grund}".lower()
     if merker is not None:
         schl = merker.get("ziel_schl")
         if schl is not None and merker.get("lage") == lage:
+            alt = merker.get("wahl")
             gleich = [h for h in optionen if (h.art, h.ziel.name if h.ziel else "") == schl]
-            if gleich:
+            if gleich and gleich[0].satz == getattr(alt, "satz", None):
                 return gleich[0]
+            if alt is not None:
+                # dasselbe Ziel wie vorhin (C4) - als frische Kopie mit der Ankunft von jetzt (das Original wird von TOT
+                # veraendert: "Noch 8 Sekunden: ..." kam sonst je Takt einmal mehr davor)
+                from copy import copy
+                neu = copy(alt)
+                neu.daten = dict(alt.daten)
+                am = neu.daten.get("gefahr_am")
+                if am is not None and neu.ziel is not None and neu.ziel.weg is not None:
+                    neu.daten["gefahr_am"] = (am[0], (m.respawn if m.tot else 0.0) + neu.ziel.weg, am[2])
+                return neu
+    wahl = None
+    erstes = None
+    for h in optionen:
+        p, wer = p_am(h)
+        erstes = erstes or (h, wer)
+        if p >= grenze:
+            continue
+        if p >= direkt and any(w in text(h) for w in EILIG):
+            if h.daten.get("kurz") in ("Top", "Mid", "Bot"):
+                lane = h.daten["kurz"]
+                zuletzt = _zuletzt(m, wer[0][0] if wer else None)
+                h.satz, h.grund = f"Zurück nach {lane}, bleib am Turm: {zuletzt}.", f"bleib am Turm, {zuletzt}"
+            else:
+                continue             # ein eiliges Objective, das nicht sicher ist: das naechste Ziel
+        wahl = h
+        break
+    if wahl is None:
+        wahl = _sicherer(m, cfg, modus, erstes, p_am, grenze)
+    if merker is not None:
         merker["ziel_schl"] = (wahl.art, wahl.ziel.name if wahl.ziel else "")
         merker["lage"] = lage
+        from copy import copy
+        merker["wahl"] = copy(wahl)          # unveraendert ablegen - TOT schreibt "Noch 8 Sekunden: " in das Rueckgabeobjekt
+        merker["wahl"].daten = dict(wahl.daten)
     return wahl
+
+
+def _sicherer(m, cfg: dict, modus: str, erstes, p_am, grenze: float) -> Handlung:
+    """G2: kein Ziel unter der Grenze - dein Team (>= 2), dann dein Turm auf der Seite des Ziels weiter hinten (mit
+    Schutz-Zusatz), sonst am inneren Turm der Seite mit den wenigsten Gegnern auf dein Team warten."""
+    gruppe = _team(m, modus)
+    if gruppe is not None and len(gruppe[0]) >= 2 and p_am(gruppe[1])[0] < grenze:
+        return gruppe[1]
+    h0, wer = erstes if erstes is not None else (None, [])
+    zuletzt = _zuletzt(m, wer[0][0] if wer else None)
+    kurz = h0.daten.get("kurz") if h0 is not None else None
+    lane = kurz if kurz in ("Top", "Mid", "Bot") else lane_von(m)
+    ziel0 = h0.ziel.pos if h0 is not None and h0.ziel is not None else None
+    for stufe, turm, kurz in (("aussen", "äußeren Turm", f"zum äußeren {lane}-Turm"),
+                              ("innen", "inneren Turm", f"zum inneren {lane}-Turm"),
+                              ("Inhib", "Inhibitor-Turm", f"zum {lane}-Inhibitor-Turm")):
+        h = _turm_option(m, modus, lane, stufe, f"Zurück nach {lane}, bleib am {turm}: {zuletzt}.",
+                         f"bleib am Turm, {zuletzt}", kurz)
+        if h is None or (ziel0 is not None and h.ziel.pos == ziel0):
+            continue
+        if p_am(h)[0] < grenze:
+            return h
+    # die Seite mit den wenigsten Gegnern (zuletzt gesehen), dort der innere Turm
+    je = {"Top": 0, "Mid": 0, "Bot": 0}
+    wo = {"oben": "Top", "in der Mitte": "Mid", "unten": "Bot"}
+    for g in m.b.gegner:
+        if not g.s.tot and g.pos is not None:
+            je[wo[_seite(g.pos)]] += 1
+    seite = min(("Top", "Mid", "Bot"), key=lambda l: (je[l], l != lane_von(m)))
+    meiste = max(je, key=je.get)
+    n = je[meiste]
+    wort = {"Top": "oben", "Mid": "in der Mitte", "Bot": "unten"}[meiste]
+    grund = f"{ZAHL.get(n, str(n))} von ihnen sind {wort}" if n else "keiner von ihnen ist zu sehen"
+    for stufe in ("innen", "Inhib", "aussen"):
+        name = {"innen": "inneren ", "Inhib": "Inhibitor-", "aussen": "äußeren "}[stufe]
+        h = _turm_option(m, modus, seite, stufe, f"Warte am {name}{seite}-Turm auf dein Team: {grund}.",
+                         f"warte dort auf dein Team, {grund}", f"zum {name}{seite}-Turm")
+        if h is not None:
+            return h
+    h = Handlung("WOHIN", Ziel("basis", "Basis"), modus, 5.0, grund=f"warte auf dein Team, {grund}",
+                 satz=f"Warte in der Basis auf dein Team: {grund}.")
+    h.daten["kurz"] = "in der Basis"
+    return h
 
 
 def _karten_ziele(m, cfg: dict, modus: str) -> list[Handlung]:

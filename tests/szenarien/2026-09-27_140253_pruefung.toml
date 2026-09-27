@@ -3,6 +3,7 @@
 # Angelegt vor den Fixes der Qualitaetsrunde 1 - rot mit dem Stand von ef08644.
 
 aufnahme = "2026-09-27_140253"
+spielmodus = "SWIFTPLAY"                 # gameData.gameMode - Qualitaetsrunde 2, G6: Swiftplay hat eigene Zeiten
 bots = false
 
 [[szenario]]
@@ -17,19 +18,17 @@ warum = """'Jetzt back' ist verboten, solange ein sichtbarer Gegner dich waehren
 
 [[szenario]]
 id = "0843-todesrueckblick"
-fenster = ["8:43", "8:55"]
+fenster = ["8:34", "8:55"]
 quelle = "Pruefung E1: 'Solo gegen Yasuo verloren. 18 Sekunden davor hiess es: geh zurueck. Dagegen sprach: ... mindestens 520 Schaden ...'"
-lage = "Riven stirbt 8:43 mit einem Drittel Leben an ihrem Turm gegen Brand und Yasuo."
-darf_nicht_sagen = ["hieß es", "mindestens", "Kopfgeld"]
-muss_nennen_eins = ["Brand", "zwei"]
+lage = "Riven stirbt 8:34 mit einem Drittel Leben an ihrem Turm gegen Yasuo (allein, ohne Assist)."
+darf_nicht_sagen = ["hieß es", "mindestens", "Kopfgeld", "Brand"]
+muss_nennen_eins = ["Yasuo"]
 woerter_max = 25
 woerter_schluessel = "tod"
 warum = """Zwei Saetze, hoechstens 25 Woerter: was entschied (aus der Lage), was naechstes Mal (als Handlung). Keine
 Schadenszahlen, kein Kopfgeld, kein Vorwurf."""
-# ROT MIT GRUND (Qualitaetsrunde 1): die Daten widersprechen muss_nennen_eins. Der Tod war 8:34 (EventTime 514,1):
-# ChampionKill FeedingMonkey (Yasuo) -> Nevir, Assisters []. Brand war nicht beteiligt und laut Minimap ~4000
-# Einheiten weg, nicht zu sehen. Der Rueckblick nennt deshalb nur Yasuo (zwei Saetze, <= 25 Woerter, ohne Zahlen
-# - der Rest des Szenarios ist gruen). Ob Brand trotzdem genannt werden soll, entscheidet Carlos.
+# Qualitaetsrunde 2, Entscheidung 1: die Daten haben recht (ChampionKill 514,1 FeedingMonkey -> Nevir, Assisters []).
+# Vorher verlangte das Szenario "Brand" oder "zwei".
 
 [[szenario]]
 id = "1005-tod-ohne-kopfgeld"
@@ -45,10 +44,11 @@ warum = "Wie 0843: Lehre statt Zahlen."
 id = "1025-wohin-nicht-in-den-tod"
 zeit = "10:25"
 quelle = "Pruefung E2: 'Noch 8 Sekunden: zu den Larven: Larven leben' mit p_tod 0,97"
-lage = "Riven tot, Wiedereinstieg im Brunnen; an den Larven stehen die Gegner."
-darf_nicht_sagen = ["Larven"]
+lage = "Riven tot, Wiedereinstieg im Brunnen; die Gegner stehen oben. (Swiftplay - Larven gibt es dort nicht, G6.)"
+darf_nicht_sagen = ["Larven", "nimmt sie sonst niemand", "Lauf direkt"]
 muss_ziel = true
-warum = "WOHIN wird gegen die Gefahr auf dem Weg aus dem Brunnen gerechnet. Die Larven waren der Tod."
+warum = """WOHIN wird gegen die Gefahr auf dem Weg aus dem Brunnen gerechnet. Die Larven waren der Tod - und gibt es in
+Swiftplay gar nicht. Qualitaetsrunde 2, G2: auch die Mid-Welle (p_tod 0,73) nicht, sondern ein sicheres Ziel."""
 
 [[szenario]]
 id = "0349-bauteil-nennen"
@@ -62,6 +62,44 @@ warum = "Der Satz nennt, was mit diesem Gold JETZT gekauft wird (Bauteil aus dem
 id = "0000-nichts-vor-spielbeginn"
 fenster = ["0:00", "0:25"]
 quelle = "Pruefung E6: 0:00 alte Regel gold 'Schieb die naechste Welle in den Turm und geh dann back, du hast 1400 Gold'"
-lage = "Spielbeginn im Brunnen, kein Modus."
+lage = "Spielbeginn im Brunnen, kein Modus. (Die 1400 Gold sind das Swiftplay-Startgold, G6 - in Classic 500.)"
 ansagen_max = 0
 warum = "Ohne Modus spricht keine alte Regel ausser TECHNIK und dem Briefing (das Briefing kommt beim Nachspielen nicht)."
+
+# --- Qualitaetsrunde 2 (buecher/protokolle/PRUEFUNG_2026-09-27b.md), angelegt vor den Fixes: rot mit 705a6a6 ---
+
+[[szenario]]
+id = "0238-schutzplan-sparsam"
+fenster = ["2:30", "4:00"]
+quelle = "Pruefung G1: derselbe Schutzplan mehrmals"
+lage = "Riven liegt gegen Yasuo hinten."
+text_max = { "ist vorn" = 1 }
+warum = "Die lange Fassung einmal je Lane-Verlust."
+
+[[szenario]]
+id = "0349-ein-plan"
+fenster = ["3:45", "4:35"]
+quelle = "Pruefung G3: 3:49 WELLE_REIN_UND_BACK (EV +339), 4:01 STAPELN (EV +171, daneben WELLE_REIN_UND_BACK +275), 4:27 VORBEREITEN_OBJECTIVE"
+lage = "Riven hat 1072 Gold und 83 % Leben, die Mid-Welle laeuft zu Yasuo."
+planwechsel_max = 1
+darf_nicht_sagen = ["Stapel"]
+warum = "Hoechstens ein Planwechsel ohne Ereignis; STAPELN war um 4:01 klar schlechter als die Alternative (Pruefung B)."
+
+[[szenario]]
+id = "0401-kein-stapeln"
+fenster = ["4:00", "4:03"]
+quelle = "Pruefung G3: um 4:01 kein STAPELN"
+lage = "wie 0349"
+darf_nicht = ["STAPELN"]
+warum = "WELLE_REIN_UND_BACK (+275) schlaegt STAPELN (+171) um mehr als die Hysterese."
+
+[[szenario]]
+id = "swiftplay-keine-classic-zeiten"
+fenster = ["0:00", "10:40"]
+quelle = "Pruefung G6: 140253 ist Swiftplay - der Coach sagte Drache um 5 00 und Larven aus saison2026.md (Classic)"
+lage = "Swiftplay: Start mit Level 3 und 1400 Gold, keine Larven, kein Herold, Baron 12:00, Elder 15:00."
+darf_nicht_sagen = ["Larven", "Herold", "Atakhan", "um 5 00", "um 8 00", "um 20 00", "Drache in"]
+# der erste Drache (Classic 5:00) ist fuer Swiftplay nicht belegt; der Respawn nach einem Kill (300 s) ist es - "Spawn um
+# 10 47" nach dem Drachen 5:47 ist richtig
+warum = """Swiftplay hat keine Larven und keinen Herold; wann der erste Drache kommt, ist fuer Swiftplay nicht belegt - dann
+sagt der Coach keine Spawn-Zeit."""

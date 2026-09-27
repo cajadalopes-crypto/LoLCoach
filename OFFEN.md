@@ -22,13 +22,12 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 naechste Pruefung an allen Protokollen - erst danach wieder live.
 
 Offen aus der Qualitaetsrunde 1:
-- **Szenario 0843 rot mit Grund:** Tod 8:34 war Yasuo allein (Assisters []), Brand nicht beteiligt - Carlos
-  entscheidet, ob Brand trotzdem genannt werden soll (sonst `muss_nennen_eins` anpassen).
 - **F1 an 133930 nicht belegbar:** die Minimap-Bilder wurden 17:26 aufgeraeumt; mit den Live-Punkten 4 von 7.
   Braucht eine neue echte Partie mit Bildern (Ordner mit Datei `BEHALTEN` schuetzen). 144655: 9 von 11.
-- **F2 Flash nicht erreicht** (3 von 7 Spruengen, Riven selbst: 0 von 10 Flashs auf der Minimap sichtbar -
-  im Kampf liegen die Icons uebereinander). Sicher ist nur der Chat-Ping (3 von 3). **Carlos' Entscheidung:**
-  Minimap-Spruenge von Dash-Champions verwerfen / Flash-Effekt im Spielbild erkennen / selbst pingen.
+- **F2 Flash, entschieden (Pruefung 27.09.b):** Weg 1 (keine Timer aus Spruengen von Dash-Champions,
+  `wissen/dashes.toml`) und Weg 3 (Carlos pingt in der Anzeigetafel, der Coach schweigt, das Dashboard zeigt den
+  Timer) sind umgesetzt. **Weg 2 nach Schritt 6:** den Flash-Effekt im Spielbild erkennen (gelber Blitz an Absprung
+  und Landung) - unterscheidet Flash von Dash.
 - Nach dem Ende der laufenden Partie (Start 17:31) raeumt Carlos' Coach 140253 auf (alter Code ohne BEHALTEN) -
   Bilder liegen gesichert im Scratchpad der Sitzung; zuruecklegen, falls weg. Den Coach vor dem naechsten Test
   neu starten (er lief seit 16:43 mit altem Code).

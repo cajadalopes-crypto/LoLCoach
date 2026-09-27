@@ -30,6 +30,7 @@ minimap_frisch_s = 5.0
 [sprechen]
 stand = "Buch 0 Kapitel 7.7, Schritt 2/3"
 abstand_s = 12
+schutz_erinnern_s = 180         # G1 (Qualitaetsrunde 2): die kurze Fassung des Schutzplans hoechstens so oft
 max_je_minute = 3               # Kapitel 9.2 (ab Schritt 3 prueft der Kern es selbst)
 ziel_je_30min = 45
 max_woerter = 18
@@ -56,6 +57,9 @@ roam_basis = 0.3
 schwelle_ge = 120
 p_min = 0.15
 kampf_exponent = 2.0            # p_verliere = 1 / (1 + kraft_gegen ** k)
+# Qualitaetsrunde 2, G2: ein WOHIN-Ziel mit p_tod bei Ankunft darueber wird nicht gesagt; "lauf direkt" nur darunter
+wohin_p_tod_max = 0.3
+wohin_direkt_max = 0.15
 flucht_flash = 0.6
 flucht_turm = 0.5
 ueberzahl_sicher = 2.5          # kraft_gegen-Verhaeltnis
@@ -75,6 +79,8 @@ hysterese_anteil = 0.3
 stabil_s = 2.0
 halten_s = 8.0
 erinnern_nach_s = 15
+# nicht im Buch (Qualitaetsrunde 2, G3): so lange haelt ein Plan, dessen Kandidat fehlt (ein Takt Flackern)
+luecke_s = 2.0
 
 [kauf]
 stand = "Buch 0 Kapitel 7.7, Schritt 3"

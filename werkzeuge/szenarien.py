@@ -5,7 +5,11 @@ Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes
   altes System (nur Text):  darf_nicht_sagen, muss_nennen_eins, muss_ziel, kehrtwenden_max, ansagen_max
                             im Fenster ([zeit-2, zeit+15] oder `fenster`, auch mehrere: [[von, bis], ...]);
                             seit der Qualitaetsrunde 1: ziele_max, satz_mit (+ satz_mit_anzahl), fassung_einmal,
-                            woerter_max (+ woerter_schluessel), gold_reicht
+                            woerter_max (+ woerter_schluessel), gold_reicht; seit der Qualitaetsrunde 2:
+                            text_max = { "muster|muster" = n } (hoechstens n Saetze mit einem der Muster),
+                            planwechsel_max (Wechsel der Plan-Art zwischen gesprochenen Kern-Saetzen)
+  Datei:                    spielmodus = "CLASSIC" | "SWIFTPLAY" (Vorgabe CLASSIC) - muss zum gameMode der Aufnahme
+                            passen, sonst rot (Qualitaetsrunde 2, G6: 133930 und 140253 sind Swiftplay)
   Kern (Modus, Plan-Art):   modus und [[modus_soll]] ab Schritt 2 (irgendein Takt in zeit +-2 s hat einen der
                             erlaubten Modi); soll (irgendein Takt in zeit +-2 s hat eine der Plan-Arten) und
                             darf_nicht (kein Takt im Fenster) ab Schritt 3; plan_p_tod_max (ein Takt in zeit +-2 s
@@ -140,7 +144,21 @@ def neue_pruefungen(sz: dict, ansagen: list) -> list[str]:
     if sz.get("gold_reicht"):
         for a in ansagen:
             aus += gold_verstoesse(a)
+    for muster, n in (sz.get("text_max") or {}).items():
+        treffer = [t for t in texte if re.search(muster, t, re.I)]
+        if len(treffer) > n:
+            aus.append(f"text_max '{muster}' {n} - {len(treffer)}: " + " / ".join(t[:45] for t in treffer))
+    if "planwechsel_max" in sz:
+        arten = [a.schluessel.split(":", 1)[1] for a in ansagen
+                 if a.schluessel.startswith("kern:") and a.schluessel not in NICHT_PLAN]
+        wechsel = [(x, y) for x, y in zip(arten, arten[1:]) if x != y]
+        if len(wechsel) > sz["planwechsel_max"]:
+            aus.append(f"planwechsel_max {sz['planwechsel_max']} - {len(wechsel)}: " + " -> ".join(
+                [arten[0]] + [y for _, y in wechsel]))
     return aus
+
+
+NICHT_PLAN = ("kern:bestaetigung", "kern:erinnerung")
 
 
 def stehende_ansage(lauf: ns.Lauf, von: float) -> tuple[float, str] | None:
@@ -273,8 +291,15 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
 
     if lauf is None:
         lauf = ns.durchspielen(ns.pfad_zu(stamm), halte_bei=halte, rueckruf=bei_halt, kern_stellung=kern)
-    print(f"== {stamm}{' (Bot-Partie)' if cfg.get('bots') else ''}: {len(lauf.gesagt)} Ansagen nachgespielt")
+    soll_modus = cfg.get("spielmodus", "CLASSIC")
+    print(f"== {stamm}{' (Bot-Partie)' if cfg.get('bots') else ''} [{lauf.spielmodus}]: {len(lauf.gesagt)} Ansagen "
+          f"nachgespielt")
     ergebnis = {"gruen": 0, "rot": 0, "uebersprungen": 0, "rot_ids": [], "gruen_ids": [], "modus": None}
+    if lauf.spielmodus and soll_modus != lauf.spielmodus:
+        # G6: eine Zahl aus CLASSIC gilt in SWIFTPLAY nicht (Startgold, Level, Objectives) - die Datei muss es sagen
+        print(f"  ROT   spielmodus\n          Datei sagt {soll_modus}, die Aufnahme ist {lauf.spielmodus}")
+        ergebnis["rot"] += 1
+        ergebnis["rot_ids"].append("spielmodus")
     for sz in szen:
         verstoesse, geprueft, uebersprungen = [], 0, []
         if sz.get("typ") == "review":
@@ -314,7 +339,8 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                     if len(texte) > sz["ansagen_max"]:
                         verstoesse.append(f"ansagen_max {sz['ansagen_max']} - {len(texte)}: "
                                           + " / ".join(f"{ns.uhr(t)} {s[:40]}" for t, s in texte))
-                if any(k in sz for k in ("ziele_max", "satz_mit", "fassung_einmal", "woerter_max", "gold_reicht")):
+                if any(k in sz for k in ("ziele_max", "satz_mit", "fassung_einmal", "woerter_max", "gold_reicht",
+                                         "text_max", "planwechsel_max")):
                     geprueft += 1
                     verstoesse += neue_pruefungen(sz, ansagen)
         if "modus" in sz and "zeit" in sz and nur != "alt":

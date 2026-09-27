@@ -28,15 +28,20 @@ def _kanone_vor(m, spawn_zeit: float) -> float | None:
     """Buch 1, 3.3: die Kanone, die 15-30 s vor dem Objective in der Lane ist (sonst die letzte davor)."""
     from ...entscheider import LAUF_ZUR_LANE, wellen_spawns
     lauf = LAUF_ZUR_LANE.get(m.b.ich.rolle, 27.0)
-    kanonen = [t + lauf for t, k in wellen_spawns(spawn_zeit) if k and m.zeit < t + lauf < spawn_zeit]
+    kanonen = [t + lauf for t, k in wellen_spawns(spawn_zeit, m.p.modus if m.p is not None else "CLASSIC")
+               if k and m.zeit < t + lauf < spawn_zeit]
     passend = [t for t in kanonen if 15 <= spawn_zeit - t <= 30]
     return (passend or kanonen or [None])[-1]
 
 
-def kandidaten(m, cfg: dict, lane: str | None = None, modus: str = "LANE", arten=None) -> list[Handlung]:
+SCHUTZ_KURZ = "Weiter: am Turm farmen, kein Trade."     # G1: nach Tod oder Basis (<= 8 Woerter)
+
+
+def kandidaten(m, cfg: dict, lane: str | None = None, modus: str = "LANE", arten=None,
+               schutz=None) -> list[Handlung]:
     """`lane`/`modus`: auch fuer eine Seitenlane nach der Lane-Phase (Buch 5, 3.2) - dann ist `m.welle` die Welle
     DIESER Lane (der Aufrufer reicht eine Sicht mit ihr), und `arten` begrenzt auf das, was dort gilt."""
-    aus = _kandidaten(m, cfg, lane or lane_von(m), modus)
+    aus = _kandidaten(m, cfg, lane or lane_von(m), modus, schutz)
     return aus if arten is None else [h for h in aus if h.art in arten]
 
 
@@ -56,12 +61,21 @@ def _bauteil(m) -> str | None:
     return k.naechstes[0] if k.naechstes else k.item
 
 
+def bauteil_gekauft(m, teil: str | None) -> bool:
+    """Liegt `teil` (Name) im Inventar?"""
+    if not teil or m.b is None or m.b.ich is None:
+        return False
+    from ... import ddragon
+    return teil in {ddragon.items().get(i, {}).get("name") for i in m.b.ich.items}
+
+
 def _lane_wieder_offen(m, plan) -> str | None:
     """Der Plan fuer die verlorene Lane gilt, bis die Kraft wieder >= 0 ist oder das Bauteil gekauft ist."""
     b = m.b
     if b is None or b.lane is None:
         return "kein Lane-Gegner"
-    if b.kraefte()[0] >= 0.0:
+    from . import lane_kraft
+    if lane_kraft(b) >= 0.0:
         return "Kraft ausgeglichen"
     teil = plan.handlung.daten.get("bauteil")
     if teil:
@@ -72,7 +86,7 @@ def _lane_wieder_offen(m, plan) -> str | None:
     return None
 
 
-def _kandidaten(m, cfg: dict, lane: str, modus: str) -> list[Handlung]:
+def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None) -> list[Handlung]:
     b = m.b
     if m.bereich == "basis_eigen":
         return []          # der Modus hinkt 1,5 s: in der Basis kein Wellenbefehl (Pruefung E3, 102112 5:54)
@@ -174,17 +188,23 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str) -> list[Handlung]:
     # Pruefung A (Qualitaetsrunde 1): die Lane ist verloren (Kraft <= -1 oder zwei Tode gegen ihn) - dann ist der
     # schuetzende Freeze der Plan (Buch 1, 3.4), einmal gesagt, mit Grund und Bauteil. Er ersetzt FARMEN; Trade,
     # All-in und Stapeln (ein langsamer Push) gibt es bis dahin nicht.
+    # G1 (Qualitaetsrunde 2): der Kern fuehrt den Lane-Verlust als Episode (`schutz`: ihr Bauteil steht fest, bis es
+    # gekauft ist); False = keine Episode. Ohne Angabe (Tests, konstruierte Lagen) wie vorher aus der Lage.
     verloren, tode = lane_verloren(m) if modus == "LANE" else (False, 0)
+    if schutz is not None:
+        verloren = verloren and bool(schutz)
     if b.leben is not None and b.leben < cr["leben_kritisch"]:
         verloren = False        # dann ist nur noch back die Frage (Buch 3, 2) - der Plan fuer die Lane kommt danach
     if verloren and g is not None and not g.s.tot:
-        teil = _bauteil(m)
+        teil = schutz["teil"] if schutz else _bauteil(m)
         grund = f"{g.champion} ist vorn"
-        satz = (f"{g.champion} ist vorn: lass die {lane}-Welle zu deinem Turm kommen und farm dort, "
+        # <= 18 Woerter (G1); die kurze Fassung nach Tod oder Basis steht in daten["kurz_satz"]
+        satz = (f"{g.champion} ist vorn: Welle zu deinem Turm ziehen, dort farmen, "
                 + (f"kein Trade bis {_dat(teil)}." if teil else "kein Trade."))
         h = Handlung("WELLE_HALTEN", Ziel("lane", welle), modus, 10.0, gewinn=fr * 10.0 + 0.5 * ww, gefahr_t=10.0,
                      grund=grund, satz=satz)
-        h.daten.update(am_turm=True, schutz=True, verloren=True, lane_gegner=g.champion, bauteil=teil, tode=tode)
+        h.daten.update(am_turm=True, schutz=True, verloren=True, lane_gegner=g.champion, bauteil=teil, tode=tode,
+                       kurz_satz=SCHUTZ_KURZ)
         h.abbruch.append(_lane_wieder_offen)
         aus = [x for x in aus if x.art not in ("FARMEN", "WELLE_HALTEN")] + [h]
 

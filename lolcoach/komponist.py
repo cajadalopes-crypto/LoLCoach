@@ -156,6 +156,7 @@ def todespreis(b: Bewertung, mit_objective: bool = True) -> str:
 
 
 TOD_WOERTER = 25     # Pruefung E1: zwei Saetze, hoechstens so viele Woerter zusammen
+RUECKBLICK_VOLL = 0.6   # G5: ab so viel Leben beim Einstieg ist "back" nicht die Lehre
 
 
 def _leben_wort(leben: float | None) -> str:
@@ -189,7 +190,8 @@ def todesrueckblick(b, beteiligt: list[str], jungler: str | None, turm: bool, le
     Yasuo toetet dich schon mit einem Combo, mindestens 520 Schaden ..." (140253, 8:43, 28 Woerter).
     `beteiligt`: wer dich getoetet hat oder sichtbar dabei war (Brand hatte 8:43 keine Beteiligung, stand aber da)."""
     # dein Leben ~10 s davor (`leben`) - in der letzten Sekunde ist es immer niedrig, das ist die Folge, nicht der Grund
-    leben = _leben_wort(leben if leben is not None else (b.leben if b is not None else None))
+    leben_wert = leben if leben is not None else (b.leben if b is not None else None)
+    leben = _leben_wort(leben_wert)
     wo = _wo(b)
     if turm:
         welle = b is not None and b.welle is not None and b.welle[0] == 0
@@ -205,7 +207,11 @@ def todesrueckblick(b, beteiligt: list[str], jungler: str | None, turm: bool, le
         wer = _namen(beteiligt[:2]) if len(beteiligt) == 2 else f"{len(beteiligt)} von ihnen"
         s1 = (f"Du bist {leben} {wo} geblieben, {wer} zusammen töten dich dort." if leben and wo
               else f"{wer} kamen zusammen, allein hast du gegen sie keine Chance.")
-        s2 = "Bei zwei Gegnern: back, bevor sie in Reichweite sind." if len(beteiligt) == 2 else \
+        # G5 (Qualitaetsrunde 2): mit vollem Leben ist Back die falsche Lehre (133930, 14:57) - ab 60 % beim Einstieg
+        # hinter den Turm oder zum Team, darunter back
+        voll = leben_wert is not None and leben_wert >= RUECKBLICK_VOLL
+        s2 = ("Bei zwei Gegnern: hinter den Turm oder zu deinem Team, bevor sie in Reichweite sind." if voll
+              else "Bei zwei Gegnern: back, bevor sie in Reichweite sind.") if len(beteiligt) == 2 else \
             "Gegen mehrere nur mit deinem Team kämpfen."
     elif beteiligt:
         x = beteiligt[0]

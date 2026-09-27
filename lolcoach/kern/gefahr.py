@@ -119,23 +119,48 @@ def p_tod(T: float, m, cfg: dict, am_turm: bool = False, kampf_mit: str | None =
     b = m.b
     if b is None:
         return 0.0, []
-    da = {g.s.name: p_da(g, T, m, cfg) for g in b.gegner}
-    # "Wer dich wirklich toetet, ist die Menge der Ankommenden" (7.5): gerechnet wird gegen alle, die sichtbar in 1500
-    # stehen oder im Fenster wahrscheinlich (p_da >= 0,5) da sind - nicht jeder Ankommende fuer sich (102112, 9:04:
-    # Sett, Galio und Fiddlesticks laufen zusammen auf Riven zu; einzeln gerechnet war jeder "schwaecher")
-    nahe = [g for g in b.gegner if not g.s.tot and ((g.sichtbar and g.abstand is not None and g.abstand <= NAH)
-                                                    or da[g.s.name] >= 0.5)]
-    rest, wer = 1.0, []
+    # "Wer dich wirklich toetet, ist die Menge der Ankommenden" (7.5). Qualitaetsrunde 2, G2: gerechnet wird ueber die
+    # Mengen - jede Teilmenge der moeglichen Ankommenden mit ihrer Wahrscheinlichkeit (unabhaengig), gekaempft gegen
+    # sie und die sichtbar Nahen. Vorher kaempfte JEDER gegen alle wahrscheinlich Ankommenden, und jeder zaehlte dann
+    # noch einmal fuer sich: vier Ungesehene "kamen" doppelt (133930 12:30: 0,79 statt 0,37). Sichtbar Anlaufende
+    # (102112, 9:04: Sett, Galio, Fiddlesticks) haben p_da ~ 1 - ihre Menge zaehlt dann voll.
+    nahe = [g for g in b.gegner if not g.s.tot and g.sichtbar and g.abstand is not None and g.abstand <= NAH]
+    q, wer = [], []
     for g in b.gegner:
-        pd = da[g.s.name]
+        pd = p_da(g, T, m, cfg)
         if pd <= 0.0:
             continue
-        gruppe = [g] + [x for x in nahe if x is not g]
-        x = pd * p_kampf(g, m, cfg, kampf_mit) * p_verliere(gruppe, m, cfg, am_turm)
-        if x > 0:
-            rest *= 1.0 - x
-            wer.append((g.champion, x))
-    return 1.0 - rest, sorted(wer, key=lambda w: -w[1])
+        x = pd * p_kampf(g, m, cfg, kampf_mit)
+        if x <= 0.0:
+            continue
+        q.append((g, x))
+        # sein Anteil (fuer "wer kommt", 7.5): p_da * p_kampf * p_verliere({g} u sichtbare Nahe)
+        a = x * p_verliere([g] + [n for n in nahe if n is not g], m, cfg, am_turm)
+        if a > 0:
+            wer.append((g.champion, a))
+    return _ueber_mengen(q, nahe, m, cfg, am_turm), sorted(wer, key=lambda w: -w[1])
+
+
+MENGEN_MAX = 6          # so viele moegliche Ankommende werden einzeln gerechnet (2^6 = 64 Mengen), der Rest faellt weg
+
+
+def _ueber_mengen(q: list, nahe: list, m, cfg: dict, am_turm: bool) -> float:
+    """P(du verlierst) = Summe ueber die Mengen S der Ankommenden: P(S) * p_verliere(S u sichtbare Nahe)."""
+    from itertools import combinations
+    q = sorted(q, key=lambda gx: -gx[1])[:MENGEN_MAX]
+    n = len(q)
+    p = 0.0
+    for r in range(1, n + 1):
+        for S in combinations(range(n), r):
+            ps = 1.0
+            for i in range(n):
+                ps *= q[i][1] if i in S else 1.0 - q[i][1]
+            if ps < 1e-4:
+                continue
+            gruppe = [q[i][0] for i in S]
+            gruppe += [g for g in nahe if all(g is not x for x in gruppe)]
+            p += ps * p_verliere(gruppe, m, cfg, am_turm)
+    return min(1.0, p)
 
 
 def p_tod_am(m, ziel: tuple[float, float] | None, ankunft_s: float, cfg: dict,
@@ -157,7 +182,8 @@ def p_tod_am(m, ziel: tuple[float, float] | None, ankunft_s: float, cfg: dict,
         d = abstand(g.pos, ziel)
         return replace(g, sichtbar=False, abstand=d, kommt_naeher=False,
                        ankunft=max(0.0, d * 1.15 / (g.tempo or 350.0) - g.seit))
-    leben = 1.0 if m.tot or b.leben is None else b.leben
+    # aus dem Brunnen kommst du voll (G2: 144655 5:06 rechnete mit 0,43-0,68 Leben, waehrend Riven im Brunnen heilte)
+    leben = 1.0 if m.tot or b.leben is None or m.bereich == "basis_eigen" else b.leben
     b2 = replace(b, gegner=[weiter(g) for g in b.gegner], pos=ziel, leben=leben, zum_turm=0.0 if am_turm else None)
     m2 = replace(m, pos=ziel, b=b2, leben=leben, bereich=None)
     return p_tod(ankunft_s + cfg["fenster_s"], m2, cfg, am_turm=am_turm)

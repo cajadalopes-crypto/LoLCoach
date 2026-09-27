@@ -29,7 +29,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import numpy as np  # noqa: E402
 
 from lolcoach import aufzeichnung, lage, minimap, zauber, zustand  # noqa: E402
-from lolcoach.champions import hat_blink_oder_dash  # noqa: E402
 
 E = minimap.KARTE_EINHEITEN
 VON, BIS, LUECKE = 300.0, 450.0, 0.25          # F2.1
@@ -72,7 +71,7 @@ def messen(pfad: Path) -> dict:
     letzte = schnapp[-1][1]
     ich, mein = letzte.ich, letzte.mein_team
     spieler = {s.champion_id: s for s in letzte.spieler}
-    blinks = zauber.blink_champions()
+    blinks = zauber.dash_champions()
 
     # --- A. Spruenge aus den Sichtungen -------------------------------------------------------------------------
     verlauf: dict[str, list] = {}
@@ -116,13 +115,13 @@ def messen(pfad: Path) -> dict:
             elif "SummonerFlash" not in s_jetzt.zauber:
                 grund = "hat kein Flash"
             elif cid in blinks:
-                grund = "Blink-Champion (ausgenommen)"
+                grund = "Dash-Champion (ausgenommen)"
             elif s_jetzt.tot:
                 grund = "tot"
             else:
                 grund = "erkannt"
             spruenge.append({"w": w1, "zeit": uhr(w1), "cid": cid, "team": None if sp is None else sp.team,
-                             "weite": round(weite), "grund": grund, "dash": hat_blink_oder_dash(cid),
+                             "weite": round(weite), "grund": grund, "dash": cid in blinks,
                              "live": any(c == cid and abs(w - w1) <= 0.6 for w, c in live)})
     spruenge.sort(key=lambda s: s["w"])
 
