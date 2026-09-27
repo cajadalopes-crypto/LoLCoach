@@ -180,3 +180,21 @@ quelle = "Auftrag 004, Teil B: Kampf gegen Yasuo, Riven L12 5650 Gold 50 % Leben
 lage = "Riven im Kampf mit Yasuo, zwei Level vorn, gleiches Item-Gold, halbes Leben."
 darf_nicht_sagen = ["Rein auf", "Rein, ", "Rein!"]
 warum = "Nicht klar ueberlegen (2 Level, aber nur 50 Gold und 50 % Leben): die Kampfrufe bleiben stumm, bis die Eichung besteht."
+
+# --- Auftrag 005, Runde 1 (Kritiker) ---
+
+[[szenario]]
+id = "2852-ungesehene-zaehlen"
+fenster = ["28:48", "28:57"]
+quelle = "Auftrag 005, Kritiker R1 (gefaehrlich): 'Nimm den Kampf: Level 17 gegen 14.' - drei kamen zusammen, Tod 29:03"
+lage = "Riven 98 %, zwei Mitspieler nah, Kai'Sa sichtbar; Cho'Gath und Olaf seit 90 s ungesehen, der Aelteste wird bestritten."
+darf_nicht_sagen = ["Nimm den Kampf", "Rein auf"]
+warum = "Robust ueberlegen heisst auch gegen die, die da sein koennen (p_da >= 0,1): Cho'Gath und Olaf konnten am Aeltesten stehen."
+
+[[szenario]]
+id = "3513-respawn-nicht-nebel"
+fenster = ["35:08", "35:30"]
+quelle = "Kritiker R1: 'Kai'Sa kam aus dem Nebel, niemand hatte Kai'Sa gesehen.' - sie stand 35:06 in ihrer Basis wieder auf"
+lage = "Riven stirbt in ihrer Basis, Kai'Sa ist 7 s vorher dort wiederbelebt."
+darf_nicht_sagen = ["kam aus dem Nebel"]
+warum = "Der Rueckblick sagt nichts gegen das, was der Coach wusste: ein Respawn ist kein Nebel."

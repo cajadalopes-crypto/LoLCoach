@@ -131,3 +131,29 @@ quelle = "Buch 11, 7: Wendepunkt-Probe"
 lage = "Ganze Partie."
 wendepunkt_ansage = true
 warum = "Auf jeden Turmfall, Objective-Kill und das Verlassen der Basis folgt in <= 3 s ein Plan-Satz."
+
+# --- Auftrag 005, Runde 1 (Kritiker) ---
+
+[[szenario]]
+id = "2858-rein-mit-ungesehenen"
+fenster = ["28:55", "29:02"]
+quelle = "Kritiker R1 (gefaehrlich): 'Rein auf Lux!' 4 s nach 'Raus: Caitlyn, Lux und Naafiri kommen'"
+lage = "Riven im unteren Jungle, drei Gegner kommen, zwei davon ungesehen."
+darf_nicht_sagen = ["Rein auf"]
+warum = "Gegen drei, von denen zwei ungesehen sind, ist nichts robust ueberlegen."
+
+[[szenario]]
+id = "0019-kaufbar-unmoeglich"
+fenster = ["0:15", "0:25"]
+quelle = "Kritiker R1 (Zahl falsch): 'Farm Top, Caulfields Kriegshammer in 41 Sekunden kaufbar.' bei 0 Gold"
+lage = "Spielbeginn, das Startgold ist ausgegeben."
+darf_nicht_sagen = ["Sekunden kaufbar"]
+warum = "Das Startgold ist kein Einkommen: 1100 Gold in 41 s gibt es nicht."
+
+[[szenario]]
+id = "2217-euer-turm-kein-grund"
+fenster = ["22:14", "22:22"]
+quelle = "Kritiker R1 (Grund passt nicht): 'Euer Turm ist weg: Verkauf Dorans Klinge, dann kauf ...'"
+lage = "Ein eigener Turm faellt woanders, Riven ist in der Basis."
+darf_nicht_sagen = ["Euer Turm ist weg:"]
+warum = "Ein Verlust auf der anderen Seite ist Nachricht, kein Grund: ein eigener Satz, mit Lane."

@@ -233,6 +233,13 @@ class Kern:
                     sep["rueckkehr"] = True           # G1: danach darf die kurze Fassung kommen (auch einer ruhenden)
         self._ereignisse_merken(m, p)
         self._korrekturen_anwenden(m)              # Auftrag 004, Teil C 2 (Buch 11, 5.6)
+        if m.b is not None:                        # Auftrag 005: wer wann zuletzt tot war (Rueckblick "wiederbelebt")
+            zt = getattr(self, "_zuletzt_tot", None)
+            if zt is None:
+                self._zuletzt_tot = zt = {}
+            for g in m.b.gegner:
+                if g.s.tot:
+                    zt[g.champion] = m.zeit
         self._fuehren_vorher(m, modus)             # Buch 11: Zeitleiste, Wendepunkte, neue Informationen
         self._schutz_episode(m)
         if m.b is not None and not m.tot:
@@ -316,9 +323,11 @@ class Kern:
         v.append((m.zeit, float(m.b.gold)))
         while v and v[0][0] < m.zeit - 60.0:
             v.popleft()
-        if len(v) < 2 or v[-1][0] - v[0][0] < 10.0:
+        if len(v) < 2 or v[-1][0] - v[0][0] < 10.0 or m.zeit < 90.0:
             return None
-        zuwachs = sum(max(0.0, b - a) for (_, a), (_, b) in zip(v, list(v)[1:]))
+        # Auftrag 005 (Kritiker R1: "Caulfields in 41 Sekunden kaufbar" bei 0 Gold, "Eklipse in 63 Sekunden" nach zwei
+        # Kills): ein Sprung ueber 100 Gold je Takt ist Startgold, Kopfgeld oder eine Platte - er zaehlt gar nicht
+        zuwachs = sum(d for (_, a), (_, b) in zip(v, list(v)[1:]) if 0.0 < (d := b - a) <= 100.0)
         return zuwachs / (v[-1][0] - v[0][0])
 
     def _fuehren_vorher(self, m: Merkmale, modus: str | None) -> None:
@@ -757,7 +766,7 @@ class Kern:
                         if e["kategorie"] in ("PLAN", "WENDEPUNKT", "FENSTER")), None)
             if not zwei and vor is not None and m.zeit - vor["zeit"] <= cf["ziel_wiederholen_s"] \
                     and vor["art"] == h.art and vor.get("ziel") and vor["ziel"] == fuehren.ziel_label(h):
-                text = f"{wp}: weiter {fuehren.kurz(h)}."     # derselbe Plan, eben gesagt - nur bestaetigen
+                text = fuehren.verbinden(wp, f"weiter {fuehren.kurz(h)}")   # derselbe Plan, eben gesagt
             else:
                 text = f"{wp}. {zwei}" if zwei else fuehren.wendepunkt_satz(wp, text, danach_text,
                                                                           cf["max_woerter_wendepunkt"])
@@ -1144,7 +1153,14 @@ class Kern:
                     richtung = "rein"
             probe = dict(probe, ansage=richtung)
         j = self.m.b.jungler if self.m is not None and self.m.b is not None else None
-        text = rueckblick(probe, taeter, beteiligt, turm, leben, jungler=j.champion if j is not None else None)
+        gewarnt = frozenset(g.champion for g in (self.m.b.gegner if self.m is not None and self.m.b is not None else [])
+                            for e in (getattr(self, "_ansage_log", None) or []) if zeit - e["zeit"] <= 60.0
+                            and g.champion in e["text"])
+        wiederbelebt = frozenset(n for n, t in getattr(self, "_zuletzt_tot", {}).items() if 0 <= zeit - t <= 20.0
+                                 and self.m is not None and self.m.b is not None
+                                 and any(g.champion == n and not g.s.tot for g in self.m.b.gegner))
+        text = rueckblick(probe, taeter, beteiligt, turm, leben, jungler=j.champion if j is not None else None,
+                          gewarnt=gewarnt, wiederbelebt=wiederbelebt)
         if text is None or len(text.split()) > self.cfg["kampf"]["max_woerter_rueckblick"]:
             return sonst
         return text

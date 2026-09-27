@@ -704,3 +704,55 @@ ohne_claude = true
 mit_handlung = true
 muss_nennen_eins = ["Notiert"]
 warum = "Notiz mit Frage: 'Notiert.' und die Antwort; fehlender Flash beim Gegner ist eine Chance, kein Grund gegen den Kampf (Buch 11, 6)."
+
+# --- Auftrag 005, Runde 1 (Kritiker) ---
+
+[[szenario]]
+id = "2000-notiz-kein-nein"
+zeit = "20:00"
+frage = "Du sagst doch gar nicht mehr die Flash-Timer an oder die Position. Also noch Position machst du, glaube ich, manchmal, aber du sagst nicht, wenn jemand geflasht hat. Das ist sehr schlecht, erst recht, wenn halt das mit zu Late-Game kommt und jeder halt so ein bisschen roamed. Dann kann ich als Riven einfach so ein bisschen besser entscheiden, ob wen ich draufflaschen kann und das ist sehr wichtig. Bitte notieren."
+quelle = "Kritiker R1 (unverstaendlich): 'Notiert. Nein. Mid-Welle rein, dann back ...'"
+lage = "Notiz ueber fehlende Flash-Ansagen."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+darf_nicht_sagen = ["Nein."]
+muss_nennen_eins = ["Notiert"]
+warum = "'Dann kann ich als Riven ... entscheiden' ist keine Frage: kein 'Nein.'."
+
+[[szenario]]
+id = "2103-notiz-kein-nein"
+zeit = "21:03"
+frage = "Also wie gesagt, das muss ganz, ganz klar angesprochen werden. Du bist überhaupt nicht am Helfen. Du sagst nicht, was die nächsten Schritte sind. Du bist einfach die ganze Zeit still und sagst nicht, yo, mach das, mach jenes und dann hab ein Auge darauf. Wenn das und das passiert, machst du das und so. Also so, dass man so weiß, wo man die nächsten Moves hinmacht, damit man sich effizient bewegen kann und intelligent. Das machst du einfach alles nicht. Du bist einfach ruhig und guckst dir das einfach ganz entspannt an. kann ich ja genauso gut meine Perle als meinen Coach einstellen, dann ist das ja der gleiche Scheiß."
+quelle = "Kritiker R1 (unverstaendlich): 'Notiert. Nein. Kanone kommt ...'"
+lage = "Beschwerde ueber fehlende naechste Schritte."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+darf_nicht_sagen = ["Nein."]
+muss_nennen_eins = ["Notiert"]
+warum = "'kann ich ja genauso gut ...' ist keine Frage: kein 'Nein.'."
+
+[[szenario]]
+id = "1054-drache-nicht-geraten"
+zeit = "10:54"
+frage = "Warum soll ich nicht meinem Drake helfen?"
+quelle = "Kritiker R1 (Widerspruch): '... Drache lohnt gerade nicht: zu weit oder zu wenige von euch dort.' - 6 s spaeter 'Drache bestreiten, fuenf gegen zwei'"
+lage = "Riven in der Basis, der Drache lebt."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+darf_nicht_sagen = ["zu weit oder zu wenige"]
+warum = "Kein geratener Grund: was der Kern weiss (Weg zur Grube, wer von euch dort ist)."
+
+[[szenario]]
+id = "1138-drache-nicht-geraten"
+zeit = "11:38"
+frage = "Warum sollte ich jetzt zur Top-Rain gehen und warum sollte ich meinem Team nicht beim Drachen helfen?"
+quelle = "Kritiker R1 (Widerspruch): 'Drache lohnt gerade nicht: zu weit oder zu wenige von euch' - 11:00 hiess es 'fuenf gegen zwei'"
+lage = "Riven auf dem Weg nach Top, der Drache lebt."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+darf_nicht_sagen = ["zu weit oder zu wenige"]
+warum = "Kein geratener Grund: was der Kern weiss."

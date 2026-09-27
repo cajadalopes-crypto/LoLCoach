@@ -242,3 +242,13 @@ modus = ["OBJECTIVE"]                # 35:00: in der Drachengrube (OBJECTIVE hat
 [[modus_soll]]
 zeiten = ["36:32"]
 modus = ["GRUPPE", "UNTERWEGS"]
+
+# --- Auftrag 005, Runde 1 (Kritiker) ---
+
+[[szenario]]
+id = "2751-back-danach-back"
+fenster = ["27:48", "27:56"]
+quelle = "Kritiker R1 (unverstaendlich): 'Turm ist down: Back. Danach back.'"
+lage = "Turmfall, der Plan ist Back."
+darf_nicht_sagen = ["Danach back"]
+warum = "Danach nennt, was NACH dem Plan kommt - nie denselben Schritt noch einmal."

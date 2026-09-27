@@ -86,7 +86,8 @@ fenster_gilt_s = 5              # nicht im Buch: so lange nach einer neuen Infor
 
 [ueberlegen]
 stand = "Auftrag 004, Teil B (28.09.2026) - bis die Kampf-Eichung besteht"
-p_da_min = 0.3                  # G: wer in fenster_s mit dieser Wahrscheinlichkeit am Ort sein kann
+p_da_min = 0.1                  # G: wer in fenster_s mit dieser Wahrscheinlichkeit am Ort sein kann (Auftrag 005:
+                                # 0,3 liess 90 s Ungesehene weg - 173159 28:52 "Nimm den Kampf", drei kamen, Tod)
 leben_min = 0.6
 level_allein = 3                # vor JEDEM in G so viele Level ...
 level_mit_gold = 2              # ... oder so viele Level UND ...

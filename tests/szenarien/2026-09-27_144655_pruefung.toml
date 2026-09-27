@@ -108,3 +108,13 @@ lage = "Riven kauft im Brunnen, Gangplank und Kha'Zix sind oben."
 darf_nicht_sagen = ["nimmt sie sonst niemand", "Lauf direkt"]
 muss_ziel = true
 warum = "Ein WOHIN-Ziel mit p_tod bei Ankunft >= 0,3 wird nicht gesagt; es gilt ein sichereres (Gruppe, eigener Turm)."
+
+# --- Auftrag 005, Runde 1 (Kritiker) ---
+
+[[szenario]]
+id = "0923-gewarnt-nicht-nebel"
+fenster = ["9:18", "9:40"]
+quelle = "Kritiker R1 (Widerspruch): 'Kha'Zix kam aus dem Nebel, niemand hatte Kha'Zix gesehen.' - 8:33 hiess es 'Kha'Zix kommen'"
+lage = "Riven stirbt mit 18 % im eigenen Jungle an Kha'Zix."
+darf_nicht_sagen = ["kam aus dem Nebel"]
+warum = "Wer eben angesagt war, kam nicht ungesehen."

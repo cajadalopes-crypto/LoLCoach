@@ -171,6 +171,10 @@ def _mit_vorschau(kern, s: str) -> str:
     return s
 
 
+OBJ_KOPF = {"Drache": "Zum Drachen", "Baron": "Zum Baron", "Herold": "Zum Herold", "Larven": "Zu den Larven",
+            "Ältester": "Zum Ältesten"}
+
+
 def satz(h: Handlung | None) -> str:
     """Handlung + Ziel + Grund als ein Satz."""
     if h is None:
@@ -179,6 +183,10 @@ def satz(h: Handlung | None) -> str:
         return fuehren.stumm_satz(h)
     s = (h.satz or "").strip()
     if s:
+        # Auftrag 005: als Antwort mit Richtung - "Zum Drachen mit Malzahar: ..." statt "Drache mit Malzahar: ..."
+        kopf = re.match(r"^(Drache|Baron|Herold|Larven|Ältester) (mit|jetzt|allein)\b", s)
+        if kopf:
+            s = OBJ_KOPF[kopf.group(1)] + s[len(kopf.group(1)):]
         return s if s.endswith((".", "!", "?")) else s + "."
     k = fuehren.kurz(h)
     return f"{k[:1].upper()}{k[1:]}: {h.grund}." if h.grund else f"{k[:1].upper()}{k[1:]}."
@@ -208,6 +216,11 @@ def _passt(h: Handlung, option: str, m) -> bool:
 def _fuer_option(kern, option: str) -> Handlung | None:
     """Die beste Handlung zu einer genannten Option - auch eine, die ungefragt stumm bleibt (ungeeichtes Modell):
     gefragt nennt der Coach sie, mit "unsicher" (Buch 11, 1.8)."""
+    # Auftrag 005 (213624 12:56 "Keins von beiden ... Jetzt: Drache mit Malzahar"): der gehaltene Plan zaehlt zuerst -
+    # er steht nicht in jedem Takt unter den Kandidaten (Objective-Plaene gelten ueber die Modi hinweg)
+    p = kern.fuehrer.plan
+    if p is not None and not p.handlung.stumm and _passt(p.handlung, option, kern.m):
+        return p.handlung
     alle = sorted(getattr(kern, "kandidaten_roh", None) or kern.kandidaten or [], key=lambda h: -h.ev)
     return next((h for h in alle if _passt(h, option, kern.m) and not h.stumm), None)
 
@@ -232,7 +245,14 @@ def _warum_nicht(kern, option: str) -> str:
         if o is not None and not o.lebt and o.spawn_in > 0:
             return f"{wort} spawnt erst in {int(o.spawn_in)} Sekunden"
         if o is not None and o.lebt:
-            return f"{wort} lohnt gerade nicht: zu weit oder zu wenige von euch dort"
+            # Auftrag 005 (213624 10:54, 11:38): kein geratener Grund - was der Kern weiss: Weg und wer von euch dort ist
+            weg = m.weg(o.pos) if o.pos is not None else None
+            n = m.team_nah(o.pos, 2500) if o.pos is not None else 0
+            wer = {0: "keiner von euch", 1: "einer von euch"}.get(n, f"{n} von euch")
+            if m.bereich == "basis_eigen":
+                return f"{wort}: du bist in der Basis, dort ist {wer}"
+            return f"{wort}: du brauchst {int(weg)} Sekunden hin, dort ist {wer}" if weg is not None \
+                else f"{wort}: dort ist {wer}"
     if option == "kampf":
         return "Den Kampf rechnet der Coach noch nicht sicher"
     # Auftrag 004, Teil C 3: nie ohne Grund - aus den Schranken dieses Takts, sonst aus dem, was fehlt
@@ -405,7 +425,7 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
         o = min((x for x in opts if x != "kampf"), key=VORRANG.index, default=None)
         c = _fuer_option(kern, o) if o else None
         if c is None:
-            return f"Nein. {_jetzt_satz(kern, h)}" + (f" {_warum_nicht(kern, o)}." if o else ""), h
+            return (f"Nein. {_jetzt_satz(kern, h)} {_warum_nicht(kern, o)}." if o else _jetzt_satz(kern, h)), h
         if h is None:
             return f"Ja, geht: {_mit_vorbehalt(c)}", c
         if c is h or fuehren.kurz(c) == fuehren.kurz(h):
@@ -465,8 +485,12 @@ def _innere_frage(frage: str) -> str | None:
         if NOTIER.search(t.lower()):
             continue
         a = absicht(t)
+        # Auftrag 005 (213624 20:00, 21:03: "Dann kann ich als Riven ... entscheiden" -> "Nein."): nur echte Fragen -
+        # mit Fragezeichen oder mit dem Fragewort vorn
+        vorn = re.match(r"^(warum|wieso|weshalb|soll|sollte|kann|darf|was|wo|wohin|welche|wann|wie)\b", t.lower()) \
+            or re.search(r"\b(soll|sollte) ich\b", t.lower())     # "Dann soll ich doch erst recht kaempfen" (23:45)
         if a in ("JETZT", "DANACH", "WARUM", "ENTWEDER", "SOLL_ICH", "LAGE", "TIMER", "WO", "KAUF") \
-                and (t.endswith("?") or a in ("WARUM", "SOLL_ICH", "JETZT")):
+                and (t.endswith("?") or (vorn and a in ("WARUM", "SOLL_ICH", "JETZT"))):
             return t
     return None
 

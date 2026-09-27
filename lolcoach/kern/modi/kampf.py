@@ -360,7 +360,8 @@ def _namen(n: list[str]) -> str:
 
 
 def rueckblick(probe: dict | None, taeter: str | None, beteiligt: list[str], turm: bool, leben: float | None,
-               jungler: str | None = None) -> str | None:
+               jungler: str | None = None, gewarnt: frozenset = frozenset(),
+               wiederbelebt: frozenset = frozenset()) -> str | None:
     """Buch 7, 8: zwei Saetze aus der Probe am letzten Entscheidungspunkt - was entschied, was naechstes Mal. None: die
     Probe erkennt keine der Lagen, dann gilt der Rueckblick der Qualitaetsrunde (komponist.todesrueckblick)."""
     if probe is None:
@@ -369,7 +370,11 @@ def rueckblick(probe: dict | None, taeter: str | None, beteiligt: list[str], tur
     if turm or (probe["unter_turm"] and len(wer) <= 1):
         return ("Allein unter seinem Turm – der Turm hat entschieden. Tauch nur, wenn er fast tot ist und du mehr als "
                 "die Hälfte Leben hast.")
-    if taeter and probe["p_da_vorher"].get(taeter, 1.0) < 0.3 and taeter not in probe["gegner"]:
+    if taeter and taeter in wiederbelebt:
+        # Auftrag 005 (173159 35:13): kein Nebel - er stand eben neben dir wieder auf
+        return f"{taeter} ist gerade neben dir wiederbelebt. Tief bei ihnen zählt jeder Respawn-Timer."
+    if taeter and probe["p_da_vorher"].get(taeter, 1.0) < 0.3 and taeter not in probe["gegner"] \
+            and taeter not in gewarnt:        # Auftrag 005 (144655 9:23): wer angesagt war, kam nicht ungesehen
         # Pruefung c, R9: keine Pronomen; "Jungler" nur, wenn der Taeter ihr Jungler ist (173159 35:24: Kai'Sa, ADC)
         sicht = "ihren Jungler" if jungler is not None and taeter == jungler else taeter
         return f"{taeter} kam aus dem Nebel, niemand hatte {taeter} gesehen. Ohne Sicht auf {sicht} nicht so tief stehen."

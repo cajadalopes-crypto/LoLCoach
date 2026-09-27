@@ -151,7 +151,13 @@ class Beobachter:
             if neu_s:
                 _, art, team, _name = sorted(neu_s)[-1]
                 ding = "Inhibitor" if art == "InhibKilled" else "Turm"
-                wp = f"{ding} ist down" if team == p.mein_team else f"Euer {ding} ist weg"
+                if team == p.mein_team:
+                    wp = f"{ding} ist down"
+                else:
+                    # Auftrag 005: mit Lane - "Euer Turm ist weg" allein klang nach Grund fuer alles Folgende
+                    from ..zustand import struktur
+                    st = struktur(_name)
+                    wp = f"Euer {st.lane}-{ding} ist weg" if st is not None and st.lane != "?" else f"Euer {ding} ist weg"
             elif neu_o:
                 _, art, team, typ = sorted(neu_o)[-1]
                 name = {"DragonKill": "Ältester" if typ == "Elder" else "Drache", "BaronKill": "Baron",
@@ -224,16 +230,32 @@ def _koerper(satz: str) -> str:
     return s.replace(": ", ", ", 1)
 
 
+def nachricht(was: str) -> bool:
+    """Auftrag 005: ein Wendepunkt der anderen Seite (euer Turm weg, Drache weg) ist eine Nachricht, kein Grund - der
+    Plan danach steht als eigener Satz (Kritiker R1: "Euer Turm ist weg: Drueck den inneren Top-Turm" las sich wie
+    'weil')."""
+    return was.startswith(("Euer ", "Zwei eurer", "Drei eurer", "Vier eurer")) or was.endswith(" weg")
+
+
+def verbinden(was: str, koerper: str) -> str:
+    """"<Anlass>: <Plan>." - oder, bei einer Nachricht, "<Nachricht>. <Plan>."."""
+    koerper = koerper.strip().rstrip(".")
+    if nachricht(was):
+        return f"{was}. {koerper[:1].upper()}{koerper[1:]}."
+    return f"{was}: {koerper}."
+
+
 def wendepunkt_satz(was: str, satz: str, danach_text: str | None, woerter: int) -> str:
     """Kapitel 4: "<Was passiert ist>: <Handlung> <Ziel>, <Grund>. Danach <danach>." - hoechstens `woerter`: zuerst
     faellt der Grund von danach, dann danach, dann der Grund der Handlung."""
     from .modi import kuerze
     koerper = _koerper(satz)
     kandidaten = []
-    if danach_text:
-        kandidaten.append(f"{was}: {koerper}. Danach {danach_text}.")
-        kandidaten.append(f"{was}: {koerper}. Danach {danach_text.split(':')[0]}.")
-    kandidaten.append(f"{was}: {koerper}.")
+    if danach_text and danach_text.split(":")[0].strip().lower().rstrip(".") != koerper.split(",")[0].strip().lower():
+        # Auftrag 005: nie "Back. Danach back." - danach ist, was NACH dem Plan kommt
+        kandidaten.append(f"{verbinden(was, koerper)} Danach {danach_text}.")
+        kandidaten.append(f"{verbinden(was, koerper)} Danach {danach_text.split(':')[0]}.")
+    kandidaten.append(verbinden(was, koerper))
     for k in kandidaten:
         if len(k.split()) <= woerter:
             return k

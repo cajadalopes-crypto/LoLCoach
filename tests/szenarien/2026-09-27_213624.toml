@@ -143,3 +143,13 @@ quelle = "Auftrag 004, Teil B: nach dem Turmfall 'Farm deine Top-Welle, bis sich
 lage = "Carlos nimmt den aeusseren Top-Turm, der Drache lebt, sein Team ist unten."
 darf_nicht_sagen = ["bis sich etwas öffnet", "Turm ist down: Farm"]
 warum = "Nach einem Wendepunkt nennt der Satz ein Ziel ausser Farmen - der naechste Turm oder der Drache mit Team (Ueberlegenheits-Regel)."
+
+# --- Auftrag 005, Runde 1 (Kritiker) ---
+
+[[szenario]]
+id = "1429-euer-turm-kein-grund"
+fenster = ["14:27", "14:35"]
+quelle = "Kritiker R1 (Grund passt nicht): 'Euer Turm ist weg: Drueck den inneren Top-Turm, Level 11 gegen 8.'"
+lage = "Ein eigener Turm faellt auf der anderen Seite, Riven drueckt Top."
+darf_nicht_sagen = ["Euer Turm ist weg:"]
+warum = "Nachricht und Plan getrennt, mit Lane - der Verlust ist nicht der Grund fuers Druecken."
