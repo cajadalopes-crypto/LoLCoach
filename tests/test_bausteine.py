@@ -150,6 +150,10 @@ def aufnahme_fortsetzen():
         assert aufzeichnung.fortsetzbar(schnappschuesse[30], ordner) == s.pfad
         andere = dict(schnappschuesse[30], allPlayers=schnappschuesse[30]["allPlayers"][:-1])
         assert aufzeichnung.fortsetzbar(andere, ordner) is None            # andere Spieler: neue Partie
+        # Viego uebernimmt einen Champion: die API meldet dessen Namen - dieselbe Partie (144655, 9:24)
+        spieler = [dict(x) for x in schnappschuesse[30]["allPlayers"]]
+        spieler[-1]["championName"] = "Viego" if spieler[-1].get("championName") != "Viego" else "Vex"
+        assert aufzeichnung.fortsetzbar(dict(schnappschuesse[30], allPlayers=spieler), ordner) == s.pfad
         weiter = aufzeichnung.Schreiber(ordner, fortsetzen=s.pfad)
         for d in schnappschuesse[30:]:
             weiter.schreibe(d)
@@ -1208,6 +1212,12 @@ def afk_erkannt():
     mensch = replace(laeufer, bot=False, items=())
     assert "kein einziges Item" in lage.afk(mensch, p, None)
     assert lage.afk(replace(laeufer, bot=True, items=()), p, None) is None
+    # Gegner: die API zeigt ihre Items nicht - "ohne Item" ist kein Beleg (133930 Zac, 144655 Kha'Zix, beide
+    # gankten); ein Gegner gilt erst als AFK, wenn er ab 2:30 noch Stufe 1 ist
+    feind = replace(p.gegner()[0], bot=False, items=(), level=3)
+    assert lage.afk(feind, p, None) is None
+    assert lage.afk(replace(feind, level=1), p, None) is None                        # 1:59: noch zu frueh
+    assert "noch Stufe 1" in lage.afk(replace(feind, level=1), replace(p, zeit=160.0), None)
     # von selbst: einmal je Spieler
     rw = regeln.Regelwerk()
     rw.lage = lb

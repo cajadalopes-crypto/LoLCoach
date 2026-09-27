@@ -62,13 +62,17 @@ def gz_saeubern(pfad: Path) -> bool:
 
 
 def _spieler(daten: dict) -> list:
-    return sorted((s.get("riotId") or s.get("summonerName") or "", s.get("championName") or "")
+    """Wer spielt, auf welcher Seite - OHNE Champion: Viego meldet in der Live-API den Champion, den er gerade
+    uebernommen hat (Partie 144655, 9:24: aus "Viego" wurde Kha'Zix, dann Vex - der Coach hielt jede Uebernahme fuer
+    eine neue Partie, sagte "Partie vorbei", schrieb ein Review und fing viermal neu an). Ein neues Practice Tool
+    faellt an der Spieluhr auf (sie laeuft von vorn)."""
+    return sorted((s.get("riotId") or s.get("summonerName") or "", s.get("team") or "")
                   for s in daten.get("allPlayers") or [])
 
 
 def fortsetzbar(daten: dict, ordner: Path = ORDNER, hoechstens: float = 900) -> Path | None:
     """Die juengste Aufnahme, wenn `daten` (jetzt laufende Partie) DIESELBE Partie ist - Coach neu gestartet
-    oder Reconnect: dieselben Spieler und Champions, die Spielzeit laeuft weiter, kein Spielende, zuletzt
+    oder Reconnect: dieselben Spieler auf denselben Seiten, die Spielzeit laeuft weiter, kein Spielende, zuletzt
     vor hoechstens `hoechstens` Sekunden geschrieben. Sonst None (neue Partie, neue Aufnahme).
     (26.09.: ein Neustart teilte Partie 7 in zwei Aufnahmen - zwei Reviews, zwei "Partien" im Fortschritt.)"""
     kandidaten = sorted(Path(ordner).glob("*.jsonl.gz"), reverse=True)

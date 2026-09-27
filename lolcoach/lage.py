@@ -28,6 +28,7 @@ VERLAUF = 15.0            # Sekunden Positionsverlauf je Spieler
 STILL_TOLERANZ = 0.02     # Minimap-Anteile (x + y): so weit wackelt ein stehendes Icon
 BRUNNEN_ZONE = 0.07       # ... um den Brunnenpunkt: wer hier bleibt, steht (das Icon springt am Kartenrand)
 AFK_AB = 90.0             # Spielzeit: bis dahin hat jeder gekauft und den Brunnen verlassen
+AFK_GEGNER_AB = 150.0     # Gegner: Items zeigt die API nicht - ab 2:30 hat jeder, der spielt, Stufe 2
 AFK_STILL_BASIS = 60.0    # Sekunden regungslos in der eigenen Basis (Mitspieler, Minimap)
 AFK_STILL_DRAUSSEN = 120.0   # ... anderswo (ein Support wartet auch mal lange im Busch)
 
@@ -36,14 +37,19 @@ def afk(sp: Spieler, p: Partie, lagebild=None) -> str | None:
     """Ist `sp` AFK? Die Belege in Worten, sonst None. Live 27.09., 1:48: "Ist mein Nasus AFK?" - der Nasus-Bot
     stand seit Spielbeginn im Brunnen, Stufe 1, 0 CS; Claude las "Nasus Jungle" und sagte "er cleart im
     Dschungel". Belege nur aus Zahlen:
-      - ein Mensch ohne ein einziges Item nach 1:30 (jeder kauft zu Beginn) - bei Bots nicht: der Fiddlesticks-
-        Bot derselben Partie hatte auch keins und lief normal,
+      - ein Mitspieler (Mensch) ohne ein einziges Item nach 1:30 (jeder kauft zu Beginn) - bei Bots nicht: der
+        Fiddlesticks-Bot derselben Partie hatte auch keins und lief normal. Bei Gegnern nie: die Live-API zeigt ihre
+        Items nicht (133930 Zac, 144655 Kha'Zix: "kein einziges Item", beide gankten; 144655, 1:30: "spiel deine Lane
+        nach vorn", 1:57 tot) - ein Gegner gilt nur als AFK, wenn er ab 2:30 noch Stufe 1 ist,
       - ein Mitspieler (auf der Minimap immer zu sehen) steht regungslos: 60 s in der Basis, 120 s anderswo."""
     if p.zeit < AFK_AB or (p.ich is not None and sp.name == p.ich.name):
         return None
     gruende = []
-    if not sp.bot and not sp.items:
+    eigen = sp.team == p.mein_team
+    if eigen and not sp.bot and not sp.items:
         gruende.append(f"nach {int(p.zeit // 60)}:{int(p.zeit % 60):02d} kein einziges Item, nicht einmal Startitems")
+    if not eigen and not sp.bot and p.zeit >= AFK_GEGNER_AB and sp.level <= 1:
+        gruende.append(f"nach {int(p.zeit // 60)}:{int(p.zeit % 60):02d} noch Stufe 1")
     still = (lagebild.still_seit(sp, p.zeit) if lagebild is not None and hasattr(lagebild, "still_seit")
              and sp.team == p.mein_team and not sp.tot else None)
     if still is not None:
@@ -54,7 +60,7 @@ def afk(sp: Spieler, p: Partie, lagebild=None) -> str | None:
             gruende.append(f"steht seit {int(still)} s regungslos {wo}".rstrip())
     if not gruende:
         return None
-    if p.zeit >= 120 and sp.level <= 1 and sp.cs == 0:
+    if eigen and p.zeit >= 120 and sp.level <= 1 and sp.cs == 0:
         gruende.append("Stufe 1, 0 CS")
     return ", ".join(gruende)
 DECKUNG = 0.045           # Kartenanteil: so nah an der letzten Stelle liegt ein anderes Icon auf einem Verbuendeten

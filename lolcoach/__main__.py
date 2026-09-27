@@ -118,7 +118,7 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
 
     def schritt_coach(p):
         ansagen = werk.pruefe(p, lagebild)
-        ansagen += kern_.takt(p, lagebild)          # Schritt 3: in LANE, BASIS, TOT spricht der Kern
+        ansagen += kern_.takt(p, lagebild)          # der Kern spricht in seinen Modi (kern.KERN_MODI)
         ansagen += technik
         technik.clear()
         tot = bool(p.ich and p.ich.tot)
@@ -211,7 +211,8 @@ def _live_quelle(basis: str, nach_spielende: float = 10.0, ohne_spielende: float
             vorbei = any(e.get("EventName") == "GameEnd" for e in (daten.get("events") or {}).get("Events", []))
             # Eine andere Partie ist keine Fortsetzung: Live 26.09., 23:05-23:06 (Practice Tool neu gestartet) lief
             # die API nur kurz nicht - der Coach behielt Briefing, Rolle ("du bist Jungler", Smite aus der ersten
-            # Partie) und Aufnahme der alten. Andere Spieler/Champions oder eine zurueckgesprungene Spieluhr = Ende.
+            # Partie) und Aufnahme der alten. Andere Spieler oder eine zurueckgesprungene Spieluhr = Ende - ein anderer
+            # Champion nicht: Viego heisst in der API wie der, den er uebernommen hat (aufzeichnung._spieler).
             jetzt_spieler = aufzeichnung._spieler(daten)
             jetzt_uhr = float((daten.get("gameData") or {}).get("gameTime") or 0.0)
             if jetzt_spieler:

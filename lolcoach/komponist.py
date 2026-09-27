@@ -903,11 +903,14 @@ def obj_dazu(b: Bewertung, nah: bool, tp_moeglich: bool, kl=None, laeuft: bool =
 def afk_satz(sp, grund: str, p) -> str:
     """Einer ist AFK (lage.afk): die Belege und was das fuer DICH heisst - aus Rollen und Namen der Partie."""
     ich = p.ich
+    # 9.4 Punkt 1: die Welle mit Namen (102112, 1:30: "lass die Welle zu deinem Turm kommen" - welche?)
+    lane = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}.get(ich.rolle if ich else "")
+    welle = f"deine {lane}-Welle" if lane else "deine Welle"
     if sp.team == p.mein_team:
         gegen = p.gegenueber(sp)
         gj = p.jungler(gegenteam(p.mein_team))
         if sp.rolle == "JUNGLE" or not sp.rolle:
-            folge = (f"Euer Jungle ist leer: {gj.champion} farmt beide Seiten und hat Zeit für dich - lass die Welle "
+            folge = (f"Euer Jungle ist leer: {gj.champion} farmt beide Seiten und hat Zeit für dich - lass {welle} "
                      f"zu deinem Turm kommen, ward den Fluss und trade nur, wenn du {gj.champion} gesehen hast."
                      if gj is not None and ich.rolle != "JUNGLE" else
                      "Ihr seid zu viert: spiel deine Lane sicher und kämpf nur mit Überzahl.")
@@ -919,7 +922,7 @@ def afk_satz(sp, grund: str, p) -> str:
     else:
         unser = p.gegenueber(sp)
         if unser is not None and ich is not None and unser.name == ich.name:
-            folge = "Deine Lane ist frei: schieb die Wellen in seinen Turm, hol die Platten und hilf danach deinem Team."
+            folge = f"Deine Lane ist frei: schieb {welle} in seinen Turm, hol die Platten und hilf danach deinem Team."
         elif sp.rolle == "JUNGLE":
             folge = "Ihr Jungle ist leer, niemand gankt dich: spiel deine Lane nach vorn und nimm die Platten."
         else:
