@@ -1,0 +1,673 @@
+# Fragen-Probe (Buch 11, Kapitel 7): jede gedrueckte Frage aus 213624 ist ein Szenario, `frage` = erkannter Text.
+# Bot-Partie, Riven Top gegen Rumble. Geprueft werden Absicht, Weg (ohne Claude) und Form der Antwort, nicht,
+# ob der Rat gegen Bots der beste war. Gegner: Rumble, Xin Zhao, Ziggs, Caitlyn, Sona.
+# `quelle` = was Carlos damals bekam (Weg, Zeit bis zur Stimme, Anfang der Antwort).
+# 17:35 (0,9 s gedrueckt, nichts erkannt) ist kein Szenario: es gibt keinen Text.
+
+aufnahme = "2026-09-27_213624"
+spielmodus = "CLASSIC"
+bots = true
+
+# "Wind Condition" = Win Condition (Erkennung).
+[[szenario]]
+id = "0044-win-condition"
+zeit = "0:44"
+frage = "Kannst du mir sagen, was die Wind Condition von meinem Team ist und die des Gegners?"
+quelle = "Claude 2,1 s: 'Euer Plan ist, mit Riven, Pantheon und Xin früh Vorteile zu snowballen ...' (Xin ist Gegner)"
+lage = "Lane-Phase, Level 1."
+kern_frage = true
+absicht = "OFFEN"
+warum = "Eine Abwägung über beide Teams ist keine Plan-Frage; sie geht mit kern.kontext() an Claude (Buch 11, 6)."
+
+# Nach dem Fix (0111-raus-ohne-beleg) sagt der Kern hier kein "Raus" mehr; die Frage verweist dann auf eine
+# Ansage, die es nicht gibt. Geprueft wird nur die Form: Weg und Handlung.
+[[szenario]]
+id = "0119-warum-raus-zum-turm"
+zeit = "1:19"
+frage = "Warum soll ich raus zum Turm? What the fuck?"
+quelle = "Claude 1,8 s: 'Nein, geh jetzt rein auf Rumble, nicht zum Turm' - gegen die Kern-Ansage 'Raus, zum Turm!'"
+lage = "Level 1 bis 2, Riven gewinnt den Kampf gegen Rumble."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+mit_handlung = true
+warum = "WARUM kommt aus dem Plan des Kerns, Grund und Vergleich, und widerspricht ihm nicht (Buch 11, 5, Regel 3)."
+
+# Wie 1:19: verweist auf ein "Raus", das es nach dem Fix nicht mehr gibt.
+[[szenario]]
+id = "0127-warum-raus-obwohl-ich-gewinne"
+zeit = "1:27"
+frage = "Warum hast du gerade gesagt, raus zum Turm, obwohl ich ihn ganz klar besiege?"
+quelle = "Claude 1,8 s: 'Rumble war da schon tot, es ging um Xin Zhao ... push die Welle weiter'"
+lage = "Rumble ist gerade gestorben, Xin Zhao unsichtbar."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+mit_handlung = true
+warum = "Wiederholte Warum-Frage (8 s nach 1:19): andere Formulierung, mehr Grund (Regel 5), immer mit Handlung."
+
+[[szenario]]
+id = "0225-rumble-kit"
+zeit = "2:25"
+frage = "Kannst du mir sagen, was das Kit von Rumble macht?"
+quelle = "Claude 1,5 s: 'Rumble hat Flammenwerfer als Q im Kegel vor sich ...'"
+lage = "Lane-Phase."
+kern_frage = true
+absicht = "OFFEN"
+warum = "Erklärung einer Champion-Fähigkeit: Buch 11, 5 nennt 'was macht Rumbles Kit?' ausdrücklich als OFFEN."
+
+[[szenario]]
+id = "0257-ueberhitzen-buff"
+zeit = "2:57"
+frage = "Also gibt ihnen das Überhitzen gar keine Damage-Buffs oder so, weil der leuchtet halt immer so rot."
+quelle = "Claude 1,4 s: 'Nein, Überhitzen gibt Rumble keinen Buff ... dein Fenster für den All-in'"
+lage = "Rumble ist tot, Riven auf der Top-Lane."
+kern_frage = true
+absicht = "OFFEN"
+warum = "Anschlussfrage zur Erklärung von 2:25: OFFEN, Claude."
+
+# Bruchstueck: "gesin saub" ist vermutlich "Xin Zhao" (so hat es der alte Sofort-Weg aufgeloest). WO.
+[[szenario]]
+id = "0328-wo-ist-gesin-bruchstueck"
+zeit = "3:28"
+frage = "Wo ist gesin saub, woher?"
+quelle = "ganz 0,2 s: 'Xin Zhao war vor 71 Sekunden auf der Mid-Lane ... Wahrscheinlich unten, 65 Prozent.'"
+lage = "Xin Zhao seit 71 s unsichtbar, zuletzt Mid."
+kern_frage = true
+absicht = "WO"
+ohne_claude = true
+muss_nennen_eins = ["Xin"]
+warum = "WO bleibt wie bisher (Buch 11, 5); die alte Antwort fand den Namen trotz Erkennungsfehler, das darf nicht verloren gehen."
+
+# "Wieso" zu einer Wo-Schaetzung, nicht zum Plan: Erklaerung, also OFFEN.
+[[szenario]]
+id = "0340-wieso-wahrscheinlich-unten"
+zeit = "3:40"
+frage = "Wieso ist er wahrscheinlich unten? Wie kommst du auf die Idee?"
+quelle = "Claude 1,5 s: 'Er wurde zuletzt vor 83 Sekunden auf der Mid-Lane gesehen ...'"
+lage = "Xin Zhao unsichtbar; die Antwort von 3:28 sagte 'wahrscheinlich unten'."
+kern_frage = true
+absicht = "OFFEN"
+warum = "Carlos will die Schätzung erklärt haben, nicht den Plan begründet; das macht Claude mit kern.kontext()."
+
+# Aussage, keine Frage: Korrektur (Buch 11, 5, Regel 6; Buch 0, 10.4). "Der" ist Xin Zhao aus 3:28/3:40.
+# Die Liste hat keine eigene Absicht dafuer; erwartet wird der neue Plan, also JETZT.
+[[szenario]]
+id = "0404-xin-ist-bei-mir-oben"
+zeit = "4:04"
+frage = "Der ist jetzt bei mir oben."
+quelle = "Claude 1,3 s: 'Zieh dich sofort Richtung deinen Turm zurück ... Xin Zhao ist direkt bei dir'"
+lage = "Xin Zhao gankt die Top-Lane; Riven tötet ihn kurz darauf (4:41)."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+mit_handlung = true
+muss_ziel = true
+warum = "Eine Korrektur überschreibt das Merkmal 30 s; die Antwort bestätigt sie und gibt den neuen Plan."
+
+[[szenario]]
+id = "0415-warum-zurueck-bin-level-5"
+zeit = "4:15"
+frage = "Aber guck mal, er ist Level 4, ich bin Level 5, ich besiege ihn noch easy. Warum sagst du, dass ich zurückgehen soll? Das ist falsch."
+quelle = "Claude 1,6 s: 'Nicht gegen Rumble, sondern wegen Xin Zhao ... stirbst du gegen den Gank'"
+lage = "Xin Zhao oben, Riven Level 5 gegen Rumble Level 4; Riven tötet Xin kurz darauf."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+mit_handlung = true
+warum = "Grund des Plans plus Vergleich mit der genannten Handlung (kämpfen), mit einer Handlung darin."
+
+[[szenario]]
+id = "0441-notiz-xin-weggebummst"
+zeit = "4:41"
+frage = "Ja, Xin Zhao habe ich sowas von easy weggebummst. Ich habe sogar in der Zeit geschafft, hier irgendeine Ansage zu machen. Also das kannst du immer noch sehr, sehr schwer einschätzen. Außerdem war Rumble tot und er war noch nicht mal auf der Lane, weil er noch zurücklaufen muss. Lange."
+quelle = "ganz 2,1 s: 'Notiert.'"
+lage = "Riven hat Xin Zhao getötet, Rumble ist tot."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Notiert"]
+warum = "Beschwerde ohne Frage: 'Notiert.' und die Notiz (Buch 11, 5)."
+
+# Drei Soll-ich-Fragen und eine Plan-Frage in einem Druck; erwartet SOLL_ICH fuer die erste ("meinem Team helfen").
+[[szenario]]
+id = "0458-soll-ich-team-helfen"
+zeit = "4:58"
+frage = "Soll ich meinem Team irgendwann helfen? Soll ich die Lane verlassen? Soll ich die ganze Zeit durchpushen bis zum Ende des Spiels? Wie sollte mein Spiel aussehen?"
+quelle = "Claude 2,7 s: 'Bleib jetzt oben, push deine Top-Welle rein und hol dir Caulfields Kriegshammer ...'"
+lage = "Rumble im Fluss, Drache offen, Riven weit vorn."
+kern_frage = true
+absicht = "SOLL_ICH"
+ohne_claude = true
+mit_handlung = true
+warum = "'Soll ich meinem Team helfen?' ist das Beispiel aus Buch 11, 5: gegen den Plan gerechnet, 'Ja, …' oder 'Nein, weil …'."
+
+# Frage an das Werkzeug (englische Aussprache), nicht zum Spiel: darauf hat der Kern keine Antwort, die Notiz
+# genuegt. Deshalb ohne mit_handlung.
+[[szenario]]
+id = "0559-notiz-englische-aussprache"
+zeit = "5:59"
+frage = "Sag mal, können wir das so einstellen, dass du die englischen Wörter auch wirklich auf Englisch aussprichst? Das kann man sich ja nicht anhören, wie du die Charakternamen oder Itemnamen oder halt generell diese League of Legends bezogene Namen aussprichst. Kann man das irgendwie machen, dass du das dauerhaft immer auch auf Englisch aussprichst? Oder geht das nicht, weil du eine deutsche Sprachausgabe bist?"
+quelle = "ganz 3,0 s: 'Notiert. Konzentrier dich lieber auf Rumble ...'"
+lage = "Lane-Phase, Rumble kommt aus dem oberen Fluss."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Notiert"]
+warum = "Wunsch an den Coach: 'Notiert.' und die Notiz (Buch 11, 5)."
+
+[[szenario]]
+id = "0627-wie-macht-sich-mein-team"
+zeit = "6:27"
+frage = "Wie macht sich mein Team? Muss ich mir Sorgen machen über irgendeine Lane?"
+quelle = "Claude 2,1 s: 'Dein Team steht gut, alle Lanes sind kill-los bis auf dich mit 6/0 oben ...'"
+lage = "Riven sechs null auf der Top-Lane, sonst wenig passiert."
+kern_frage = true
+absicht = "LAGE"
+ohne_claude = true
+darf_nicht_sagen = ["6/0"]
+warum = "Buch 11, 5 nennt genau diese Frage als LAGE: Kills, Türme, Drachen, Gold, dann Gefahr oder Chance; Bilanz nie mit Schrägstrich."
+
+[[szenario]]
+id = "0700-notiz-schraegstrich"
+zeit = "7:00"
+frage = "Übrigens, dieses Schrägstrich ist auch falsch. Man würde dann einfach sagen 6-0. Also wenn du, ne, 6-0 würde niemand in League of Legends sagen, sondern einfach nur 6-0 oder ihr steht 7-3, also dass wir 7 Kills haben und Gegner 3. Also dieses Schrägstrich ist Quatsch."
+quelle = "ganz 2,5 s: 'Notiert.'"
+lage = "Lane-Phase."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Notiert"]
+warum = "Beschwerde ohne Frage: 'Notiert.' und die Notiz (Buch 11, 5)."
+
+# Nachfrage ohne Inhalt: keine Absicht aus Buch 11, 5 passt, also OFFEN.
+[[szenario]]
+id = "0741-bist-du-noch-da"
+zeit = "7:41"
+frage = "Bist du noch da?"
+quelle = "Claude 2,9 s: 'Ja, bin da. Zieh unter dem Turm Langschwert für Eklipse ...'"
+lage = "Riven auf der Top-Lane, der Coach war still."
+kern_frage = true
+absicht = "OFFEN"
+warum = "Was keiner Absicht zugeordnet ist, geht an Claude (Buch 11, 5)."
+
+# Warum zu einem Kauf statt zu einem Ziel: erwartet WARUM nach dem Muster "warum soll ich ...".
+[[szenario]]
+id = "0755-warum-eclipse"
+zeit = "7:55"
+frage = "Warum sollte ich mir Eclipse speziell kaufen?"
+quelle = "Claude 1,3 s: 'Eklipse gibt dir Schild und Burst ... Kauf jetzt aber erstmal Langschwert'"
+lage = "Riven weit vorn, der Kaufplan zielt auf Eklipse."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+mit_handlung = true
+warum = "Grund plus eine Handlung, etwa den nächsten Kauf; ein Stichwort reicht nicht."
+
+# "Flaechen" = Flashes (Erkennung). Erwartet TIMER; faengt der Kern das Wort nicht, ist das ein Befund der Probe.
+[[szenario]]
+id = "0849-flaechen-ueberblick"
+zeit = "8:49"
+frage = "Wie sieht es mit den Flächen aus? Hast du da einen Überblick?"
+quelle = "Claude 3,7 s: 'Kauf jetzt Caulfields Kriegshammer und bleib oben ...' - kein Wort zu Flash"
+lage = "Rumble ohne Flash seit etwa 8:40, Sona seit etwa 4:54."
+kern_frage = true
+absicht = "TIMER"
+ohne_claude = true
+darf_nicht_sagen = ["keine Daten"]
+muss_nennen_eins = ["Rumble", "Sona"]
+warum = "TIMER nennt jeden Gegner mit bekanntem Stand (Buch 11, 7); Rumbles Flash war gerade weg."
+
+[[szenario]]
+id = "0913-flashes-bei-den-gegnern"
+zeit = "9:13"
+frage = "Wie sieht es mit den Flashes aus bei den Gegnern? Du hast bis jetzt noch gar nichts diesbezüglich gesagt."
+quelle = "Claude 2,2 s: 'Rumble hat keinen Flash mehr, noch 267 Sekunden ... Sona hat ihren Flash auch weg'"
+lage = "Rumble ohne Flash seit etwa 8:40, Sona seit etwa 4:54."
+kern_frage = true
+absicht = "TIMER"
+ohne_claude = true
+darf_nicht_sagen = ["keine Daten"]
+muss_nennen_eins = ["Rumble", "Sona"]
+warum = "Die Flash-Tabelle beantwortet das ohne Claude; beide bekannten Stände gehören hinein."
+
+# Anschlussfrage an 9:13: gemeint sind die Flashes der uebrigen Gegner. Aus dem Satz allein ist das nicht zu
+# erkennen; erwartet TIMER, weil die Frage davor TIMER war.
+[[szenario]]
+id = "0925-und-die-anderen-lanes"
+zeit = "9:25"
+frage = "Und die anderen Gegner von den anderen Lanes?"
+quelle = "Claude 1,7 s: 'Push jetzt deine Lane und nimm die Leerenlarve, Ziggs ist tot ...' - Orte statt Flashes"
+lage = "Ziggs tot, Xin Zhao unsichtbar."
+kern_frage = true
+absicht = "TIMER"
+ohne_claude = true
+darf_nicht_sagen = ["keine Daten"]
+muss_nennen_eins = ["Xin", "Ziggs", "Caitlyn"]
+warum = "Er fragt nach den übrigen Gegnern; die Antwort nennt ihren Stand oder sagt ehrlich, dass keiner bekannt ist."
+
+# "ist da" = "ist down" (Erkennung); zugleich Korrektur (Regel 6).
+[[szenario]]
+id = "0944-erster-tower-was-jetzt"
+zeit = "9:44"
+frage = "Okay, der erste Tower ist da und was mache ich jetzt?"
+quelle = "Claude 3,2 s: 'Kauf jetzt das Langschwert und schieb deine Welle unter den äußeren Top-Turm weiter ...'"
+lage = "Carlos meldet den ersten Turm als gefallen."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+mit_handlung = true
+muss_ziel = true
+warum = "Wendepunkt: der Plan ist erledigt, die Antwort gibt jetzt, Grund und danach (Buch 11, 5)."
+
+# Wiederholung von 9:44 nach 11 s (Regel 5).
+[[szenario]]
+id = "0955-tower-down-was-jetzt"
+zeit = "9:55"
+frage = "Okay, der erste Tower ist down, was jetzt?"
+quelle = "Claude 1,3 s: 'Kauf jetzt die Spitzhacke und geh Richtung Mid-Turm ...'; Beispiel Buch 11, 7"
+lage = "Erster Turm gefallen."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+mit_handlung = true
+muss_ziel = true
+warum = "Buch 11, 7: muss_ziel, Handlung vorhanden, keine Claude-Pflicht."
+
+[[szenario]]
+id = "1012-kein-platz-langschwert"
+zeit = "10:12"
+frage = "Okay, du sagst es an Langschwert kaufen, ich habe aber keinen Platz mehr im Inventar."
+quelle = "Claude 2,4 s: 'Verkauf zuerst deine Dorans Klinge, dann hast du Platz für die Spitzhacke'"
+lage = "Riven in der Basis, Inventar voll."
+kern_frage = true
+absicht = "KAUF"
+ohne_claude = true
+mit_handlung = true
+muss_nennen_eins = ["verkauf"]
+warum = "Buch 11, 5: bei vollem Inventar 'Kein Platz: verkauf Dorans Klinge, dann Spitzhacke.' - sofort, ohne Claude."
+
+# Wiederholung von 10:12 (Regel 5). Die alte Antwort stimmte, kam aber erst nach 3 s ueber Claude.
+[[szenario]]
+id = "1017-kein-platz-im-inventar"
+zeit = "10:17"
+frage = "Ich habe keinen Platz im Inventar."
+quelle = "Claude 3,0 s: 'Verkauf deine Dorans Klinge, dann kauf die Spitzhacke ...'"
+lage = "Riven in der Basis, Inventar voll."
+kern_frage = true
+absicht = "KAUF"
+ohne_claude = true
+mit_handlung = true
+muss_nennen_eins = ["verkauf"]
+warum = "Buch 11, 5 nennt 'kein Platz im Inventar' als KAUF: verkaufen, dann kaufen."
+
+# Zweite Wiederholung von 10:12 (Regel 5).
+[[szenario]]
+id = "1024-kein-platz-noch-einmal"
+zeit = "10:24"
+frage = "Ich habe keinen Platz im Inventar."
+quelle = "Claude 2,1 s: 'Verkauf die Dorans Klinge, dann passt die Spitzhacke rein.'"
+lage = "Riven in der Basis, Inventar voll."
+kern_frage = true
+absicht = "KAUF"
+ohne_claude = true
+mit_handlung = true
+muss_nennen_eins = ["verkauf"]
+warum = "Buch 11, 5 nennt 'kein Platz im Inventar' als KAUF: verkaufen, dann kaufen."
+
+[[szenario]]
+id = "1036-habe-ich-und-was-jetzt"
+zeit = "10:36"
+frage = "Okay, habe ich und was jetzt?"
+quelle = "Claude 4,1 s: 'Kauf die Spitzhacke und geh zurück nach Top ...'"
+lage = "Riven in der Basis nach dem Kauf."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+mit_handlung = true
+muss_ziel = true
+warum = "Nach dem Kauf ist der Plan erledigt: jetzt ein Ziel, kein Leerlauf (Buch 11, 0)."
+
+[[szenario]]
+id = "1052-warum-nicht-drache-helfen"
+zeit = "10:52"
+frage = "Warum soll ich nicht meinem Drake helfen?"
+quelle = "Claude 1,5 s: 'Kauf erst deine Spitzhacke, dann sofort Richtung Drache' - 16 s nach 'zurück nach Top'"
+lage = "Riven in der Basis, das Team am Drachen."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+mit_handlung = true
+muss_nennen_eins = ["Drache"]
+warum = "WARUM vergleicht den Plan mit der genannten Handlung (Buch 11, 5: 'warum nicht Drache?'), also fällt das Wort Drache."
+
+# Beschwerde ueber die Aussprache (Auftrag 002, S1), ohne Frage; steht nicht in den Notizen.
+[[szenario]]
+id = "1112-dreitausend"
+zeit = "11:12"
+frage = "Du sagst 3-0-0-0, das heißt aber 3.000."
+quelle = "Claude 1,4 s: 'Genau, das war dein Vorsprung von 3100 Gold ... geh jetzt ruhig auf ihn drauf'"
+lage = "Riven weit vorn im Gold."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Notiert"]
+warum = "Beschwerde ohne Frage: 'Notiert.' und die Notiz (Buch 11, 5)."
+
+# "Top-Rain" = Top-Lane (Erkennung).
+[[szenario]]
+id = "1135-warum-top-und-nicht-drache"
+zeit = "11:35"
+frage = "Warum sollte ich jetzt zur Top-Rain gehen und warum sollte ich meinem Team nicht beim Drachen helfen?"
+quelle = "Claude 2,3 s: 'Push jetzt deine Welle und geh auf den inneren Top-Turm ... Zum Drachen bist du 35 Sekunden entfernt'"
+lage = "Rumble tot, innerer Top-Turm frei, das Team am Drachen."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+mit_handlung = true
+muss_nennen_eins = ["Drache"]
+warum = "Das Beispiel aus Buch 11, 5: 'Top bringt mehr: der Drache ist 35 Sekunden weg, dein Team schafft ihn allein.'"
+
+[[szenario]]
+id = "1149-notiz-zehnmal-gefragt"
+zeit = "11:49"
+frage = "Du, ich habe dir jetzt, glaube ich, zehnmal dieselbe Frage gestellt, du antwortest einfach nicht. Notiert das mal bitte, dass das irgendwie nervt."
+quelle = "ganz 2,7 s: 'Notiert.'"
+lage = "Das Team am Drachen, Riven oben."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Notiert"]
+warum = "Beschwerde ohne Frage: 'Notiert.' und die Notiz (Buch 11, 5)."
+
+[[szenario]]
+id = "1205-warum-top-statt-drache"
+zeit = "12:05"
+frage = "Gerade als ich in der Base war, habe ich dich gefragt, was soll ich als nächstes tun? Und du meintest, geh nach oben zur Toplane. Warum hast du das gesagt? Warum hast du nicht gesagt, dass ich zum Drachen gehen soll?"
+quelle = "Claude 2,2 s: 'Damals stand Rumble frisch vor dir am Turm oben ...' - eine von drei Richtungen bis 12:38"
+lage = "Riven war in der Basis, der Drache näher als die Top-Lane."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+mit_handlung = true
+muss_nennen_eins = ["Drache"]
+warum = "Warum-Frage mit genannter Alternative: der Vergleich nennt den Drachen, und die Antwort bleibt beim Plan (Regel 3)."
+
+# Aussage, keine Frage: Korrektur (Regel 6). Buch 11, 5 gibt die Soll-Antwort vor: "Stimmt, dann Drache:
+# Eklipse kaufen und hin, dein Team ist dort." Keine eigene Absicht in der Liste; JETZT, weil ein Plan kommt.
+[[szenario]]
+id = "1223-drache-war-kuerzer"
+zeit = "12:23"
+frage = "Ich war in der Base. Der Drache war kürzer zu mir als die Toplane."
+quelle = "Claude 1,8 s: 'Kauf jetzt trotzdem dein Eklipse, dann geh zum Drachen statt Top ...'"
+lage = "Riven in der Basis, der Drache näher als die Top-Lane."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+mit_handlung = true
+muss_ziel = true
+muss_nennen_eins = ["Drache"]
+warum = "Die Korrektur überschreibt das Merkmal 30 s; die Antwort bestätigt sie und gibt den neuen Plan (Buch 11, 5, Regel 6)."
+
+# Zweifel am Plan "Drache" aus 12:23. Die alte Antwort wechselte ohne Ereignis zum Turm (Buch 11, 0).
+[[szenario]]
+id = "1238-warum-so-sicher-drache"
+zeit = "12:38"
+frage = "Warum bist du dir so sicher, dass der Drache bis dahin nicht schon tot ist?"
+quelle = "Claude 3,3 s: 'Bin ich mir gar nicht sicher ... Geh erstmal zurueck Richtung Turm'"
+lage = "Riven auf dem Weg zum Drachen, der Drache lebt noch."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+mit_handlung = true
+warum = "Grund des Plans statt Achselzucken, und ohne Ereignis kein Richtungswechsel (Regel 3)."
+
+[[szenario]]
+id = "1256-drache-oder-turm"
+zeit = "12:56"
+frage = "Ihr zum Drachen oder zum Turm? Du widersprichst dich die ganze Zeit."
+quelle = "ganz 0,3 s: 'Drache lebt.'; Beispiel Buch 11, 7 ('Zum Drachen oder zum Turm?')"
+lage = "Riven zwischen Drache und Turm; die Antworten davor zeigten in verschiedene Richtungen."
+kern_frage = true
+absicht = "ENTWEDER"
+ohne_claude = true
+mit_handlung = true
+darf_nicht_sagen = ["Drache lebt."]
+muss_nennen_eins = ["Drache", "Turm"]
+warum = "Buch 11, 7: nennt eins von beiden mit Grund; 'Drache lebt.' ist ein Stichwort und verboten."
+
+[[szenario]]
+id = "1312-was-mache-ich-jetzt"
+zeit = "13:12"
+frage = "Was mache ich jetzt?"
+quelle = "ganz 0,2 s: 'Schieb jetzt die Welle rein und geh back: der Herold kommt in 1 Minute 45 ...'"
+lage = "Riven beim Drachen."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+mit_handlung = true
+muss_ziel = true
+warum = "JETZT: Handlung, Ziel, Grund und danach (Buch 11, 5)."
+
+# Rueckfrage zu 13:12 ("Welle rein" ohne Lane); "Leine" = Lane (Erkennung). Buch 11, 7 nennt keine Absicht;
+# JETZT, weil die Antwort ein Ziel braucht.
+[[szenario]]
+id = "1316-welche-welle-welche-lane"
+zeit = "13:16"
+frage = "Welche Welle, auf welcher Leine ich bin beim Drachen?"
+quelle = "ganz 0,3 s: 'Drache lebt.'; Beispiel Buch 11, 7 ('Welche Welle, auf welcher Lane?')"
+lage = "Riven am Drachen; 13:12 hatte 'Welle rein' ohne Lane gesagt."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+mit_handlung = true
+muss_ziel = true
+darf_nicht_sagen = ["Drache lebt."]
+muss_nennen_eins = ["Top", "Mid", "Bot", "oben", "unten"]
+warum = "Buch 11, 7: nennt eine Lane; 'Drache lebt.' beantwortet die Frage nicht."
+
+[[szenario]]
+id = "1323-notiz-ignorierst-mich"
+zeit = "13:23"
+frage = "Du ignorierst mich schon wieder die ganze Zeit. Notier das bitte alles, was du wieder für Scheiße baust."
+quelle = "ganz 2,1 s: 'Notiert.'"
+lage = "Riven am Drachen."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Notiert"]
+warum = "Beschwerde ohne Frage: 'Notiert.' und die Notiz (Buch 11, 5)."
+
+[[szenario]]
+id = "1336-drache-tot-wohin"
+zeit = "13:36"
+frage = "Okay, Drache ist tot, wo gehe ich jetzt hin?"
+quelle = "ganz 0,2 s: 'Drache in 4 Minuten 57.'; Beispiel Buch 11, 7"
+lage = "Der Drache ist gerade gefallen; Carlos meldet es selbst."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+mit_handlung = true
+muss_ziel = true
+darf_nicht_sagen = ["Drache in"]
+warum = "Buch 11, 7: JETZT mit Korrektur, muss_ziel; ein Timer auf eine Wohin-Frage ist verboten (Regel 2)."
+
+# Wiederholung von 13:36 nach 12 s (Regel 5).
+[[szenario]]
+id = "1348-was-jetzt-leerlauf"
+zeit = "13:48"
+frage = "Okay, was mache ich jetzt, Coach? Du sagst nie, was ich als nächstes machen soll. Ich habe immer einen Leerlauf."
+quelle = "Claude 1,4 s: 'Back jetzt und hol dir Caulfields Kriegshammer, danach sofort Richtung Top ...'"
+lage = "Drache gefallen, Rumble tot."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+mit_handlung = true
+muss_ziel = true
+warum = "Nach dem Drachen ist der Plan erledigt; die Antwort braucht ein Ziel und ein Danach, nicht Leerlauf (Buch 11, 0)."
+
+[[szenario]]
+id = "1420-notiz-teleport-quest"
+zeit = "14:20"
+frage = "Du bedenkst übrigens nie und planst auch nie meinen Teleport ein, den ich durch meine Toplane-Quest bekomme, by the way. Das muss auch mal notiert werden. Also, dass du Quests mal vernünftig einkalkulierst."
+quelle = "ganz 2,0 s: 'Notiert.'"
+lage = "Riven hat durch die Top-Quest Teleport."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Notiert"]
+warum = "Notiz ohne Frage: 'Notiert.' und die Notiz (Buch 11, 5)."
+
+[[szenario]]
+id = "1437-okay-was-jetzt"
+zeit = "14:37"
+frage = "Okay, was mache ich jetzt?"
+quelle = "ganz 0,2 s: 'Lass deine Welle crashen und geh zum Team, das sind 9 Sekunden: Der Herold kommt in 23 Sekunden.'"
+lage = "Herold in 23 s, das Team in der Nähe."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+mit_handlung = true
+muss_ziel = true
+warum = "JETZT: Handlung, Ziel, Grund und danach, ohne Claude (Buch 11, 5)."
+
+# "der Mann" ist ein Erkennungsrest.
+[[szenario]]
+id = "1446-wo-ist-xin"
+zeit = "14:46"
+frage = "Wo ist der Mann, Xin?"
+quelle = "ganz 0,3 s: 'Xin Zhao ist in der Flussmitte, gerade zu sehen. Frühestens in 14 Sekunden bei dir.'"
+lage = "Xin Zhao im Fluss sichtbar."
+kern_frage = true
+absicht = "WO"
+ohne_claude = true
+muss_nennen_eins = ["Xin"]
+warum = "WO wie bisher (Buch 11, 5): der Name und wo er ist."
+
+# Aussage ohne Frage; steht in den Notizen, also NOTIZ.
+[[szenario]]
+id = "1525-notiz-ziggs-getowerdived"
+zeit = "15:25"
+frage = "Ich habe Ziggs getowerdived und das ist easy."
+quelle = "ganz 1,9 s: 'Notiert.'"
+lage = "Riven hat Ziggs unter dessen Turm getötet."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Notiert"]
+warum = "Aussage, die Carlos festhalten will: 'Notiert.' (Buch 11, 5)."
+
+[[szenario]]
+id = "1602-notiz-zu-lang-zu-langsam"
+zeit = "16:02"
+frage = "Ich habe das Gefühl, du redest viel zu lange und dazu auch noch viel zu langsam. Bitte notieren, dass das alles mal viel schneller vonstatten gehen soll, weil so bist du immer zu spät."
+quelle = "ganz 2,6 s: 'Notiert.'"
+lage = "Mid-Game, Riven weit vorn."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Notiert"]
+warum = "Beschwerde ohne Frage: 'Notiert.' und die Notiz (Buch 11, 5)."
+
+[[szenario]]
+id = "1631-alle-tot-warum-zurueck"
+zeit = "16:31"
+frage = "Alle sind tot. Warum sagst du, ich soll zurückgehen? Gar keinen Sinn. Notieren."
+quelle = "Claude 2,1 s: 'Push jetzt den inneren Mid-Turm ... der Plan war veraltet.'; Beispiel Buch 11, 7"
+lage = "Drei Gegner tot; die Ansage davor sagte 'zurück'."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+mit_handlung = true
+muss_nennen_eins = ["Turm", "Welle"]
+warum = "Buch 11, 7: NOTIZ + WARUM, nennt einen Plan (Turm, Welle), nicht nur 'Notiert.'"
+
+[[szenario]]
+id = "1640-was-nach-dem-tower"
+zeit = "16:40"
+frage = "Was mache ich, nachdem er tot ist, der Tower?"
+quelle = "Claude 1,4 s: 'Kauf danach Gefräßige Hydra und geht mit Pantheon Richtung Herold ...'"
+lage = "Riven am inneren Mid-Turm, der gleich fällt."
+kern_frage = true
+absicht = "DANACH"
+ohne_claude = true
+mit_handlung = true
+muss_ziel = true
+warum = "DANACH kommt aus der Projektion (Buch 11, 3), mit Ziel und Grund, ohne Claude."
+
+[[szenario]]
+id = "1708-notiz-schritte-frueher"
+zeit = "17:08"
+frage = "Notier mal bitte, dass du die nächsten Schritte schon ein bisschen früher kommunizieren musst, weil so ist das absolut Arsch. Wenn du irgendwie, weil man hat ständig irgendwie einen Leerlauf, man wartet auf Anweisungen, aber die kommen einfach nicht auch und ich muss dir immer aus der Nase ziehen. Das ist Quatsch. Du musst in der Lage sein, ein, zwei oder zwei, drei Minuten in die Zukunft zu gucken und mir dann dementsprechend Tipps zu geben."
+quelle = "ganz 2,0 s: 'Notiert.'"
+lage = "Mid-Game, Riven weit vorn."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Notiert"]
+warum = "Notiz ohne Frage: 'Notiert.' und die Notiz (Buch 11, 5)."
+
+[[szenario]]
+id = "1941-notiz-flash-timer"
+zeit = "19:41"
+frage = "Du sagst doch gar nicht mehr die Flash-Timer an oder die Position. Also noch Position machst du, glaube ich, manchmal, aber du sagst nicht, wenn jemand geflasht hat. Das ist sehr schlecht, erst recht, wenn halt das mit zu Late-Game kommt und jeder halt so ein bisschen roamed. Dann kann ich als Riven einfach so ein bisschen besser entscheiden, ob wen ich draufflaschen kann und das ist sehr wichtig. Bitte notieren."
+quelle = "ganz 2,1 s: 'Notiert.'"
+lage = "Late-Game, die Gegner roamen."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Notiert"]
+warum = "Notiz ohne Frage: 'Notiert.' und die Notiz (Buch 11, 5)."
+
+[[szenario]]
+id = "2032-notiz-naechste-schritte"
+zeit = "20:32"
+frage = "Also wie gesagt, das muss ganz, ganz klar angesprochen werden. Du bist überhaupt nicht am Helfen. Du sagst nicht, was die nächsten Schritte sind. Du bist einfach die ganze Zeit still und sagst nicht, yo, mach das, mach jenes und dann hab ein Auge darauf. Wenn das und das passiert, machst du das und so. Also so, dass man so weiß, wo man die nächsten Moves hinmacht, damit man sich effizient bewegen kann und intelligent. Das machst du einfach alles nicht. Du bist einfach ruhig und guckst dir das einfach ganz entspannt an. kann ich ja genauso gut meine Perle als meinen Coach einstellen, dann ist das ja der gleiche Scheiß."
+quelle = "ganz 2,8 s: 'Notiert.'"
+lage = "Late-Game."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Notiert"]
+warum = "Beschwerde ohne Frage: 'Notiert.' und die Notiz (Buch 11, 5)."
+
+[[szenario]]
+id = "2315-flashes"
+zeit = "23:15"
+frage = "Wie sieht's mit den Flashes aus?"
+quelle = "Claude 2,1 s: 'Dein eigener Flash ist noch etwa 35 Sekunden weg ...' - eigener statt gegnerischer; Beispiel Buch 11, 7"
+lage = "Late-Game."
+kern_frage = true
+absicht = "TIMER"
+ohne_claude = true
+darf_nicht_sagen = ["keine Daten"]
+muss_nennen_eins = ["Rumble", "Xin", "Ziggs", "Caitlyn", "Sona"]
+warum = "Buch 11, 7: TIMER nennt jeden Gegner mit bekanntem Stand."
+
+# Wiederholung von 23:15 nach 7 s (Regel 5). Dieselbe Zeit prueft schon 2322-flashes-frage in
+# 2026-09-27_213624.toml, dort mit dem Wortlaut von 23:15.
+[[szenario]]
+id = "2322-gegnerische-flashes"
+zeit = "23:22"
+frage = "Ich rede von den gegnerischen Flashes, Junge."
+quelle = "Claude 1,2 s: 'Dazu hab ich keine Daten in der Lage, sorry.'"
+lage = "Late-Game."
+kern_frage = true
+absicht = "TIMER"
+ohne_claude = true
+darf_nicht_sagen = ["keine Daten"]
+muss_nennen_eins = ["Rumble", "Xin", "Ziggs", "Caitlyn", "Sona"]
+warum = "Die Flash-Tabelle hat Daten; 'keine Daten' war falsch, ein Gegnername gehört hinein."
+
+[[szenario]]
+id = "2345-ohne-flash-erst-recht-kaempfen"
+zeit = "23:45"
+frage = "Du sagst, der Gegner hat nicht Flash bereit und deswegen soll ich nicht kämpfen. Das ist doch extrem gut, wenn die kein Flash haben. Dann soll ich doch erst recht kämpfen, wenn sie das anbietet oder nicht. Notieren die Scheiße. Du laberst so einen Scheiß."
+quelle = "Claude 1,4 s: 'Das mit Flash hab ich gar nicht gesagt ... lass die Welle crashen und geh zum Drachen'"
+lage = "Late-Game, bei den Gegnern ist kaum ein Flash bereit."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+mit_handlung = true
+muss_nennen_eins = ["Notiert"]
+warum = "Notiz mit Frage: 'Notiert.' und die Antwort; fehlender Flash beim Gegner ist eine Chance, kein Grund gegen den Kampf (Buch 11, 6)."

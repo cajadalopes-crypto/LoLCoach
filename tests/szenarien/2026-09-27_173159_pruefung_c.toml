@@ -156,5 +156,17 @@ id = "3710-basis-einmal"
 fenster = ["36:45", "37:20"]
 quelle = "Pruefung c, Ziel 2: 36:50 'Dann Top-Welle.' -> 37:10 'Dann Top-Welle.' (Warteregel 20 s nach dem Eintritt)"
 lage = "Riven in der Basis."
-text_max = { "Dann Top-Welle" = 1 }
+# Auftrag 003: nur die Kurzform am Satzanfang - ein Wendepunkt-Satz ("Euer Turm ist weg: Dann Top-Welle.") meldet
+# ein neues Ereignis und bestaetigt den Plan (Buch 11, 4)
+text_max = { "^Dann Top-Welle" = 1 }
 warum = "Die Warteregel zaehlt ab dem letzten gesagten Ziel, nicht nur ab Kauf oder Eintritt."
+
+# --- Auftrag 003, Buch 11, 7: Wendepunkt-Probe ---
+
+[[szenario]]
+id = "wendepunkt-ansage"
+fenster = ["0:00", "40:00"]
+quelle = "Buch 11, 7: Wendepunkt-Probe"
+lage = "Ganze Partie."
+wendepunkt_ansage = true
+warum = "Auf jeden Turmfall, Objective-Kill und das Verlassen der Basis folgt in <= 3 s ein Plan-Satz."

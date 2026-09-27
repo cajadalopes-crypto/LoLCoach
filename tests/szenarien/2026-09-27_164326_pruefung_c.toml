@@ -121,3 +121,13 @@ quelle = "Pruefung c, R10: 10:21 'Back jetzt: 23 Prozent ...' -> 10:36 'Jetzt ba
 lage = "Riven mit 23 % Leben auf der Lane, 850 Gold."
 darf_nicht_sagen = ["Jetzt back"]
 warum = "Die Erinnerung an einen Back-Plan hat die Fassung seines ersten Satzes; 'Jetzt back' ist der zweite Schritt eines Rueckzugs."
+
+# --- Auftrag 003, Buch 11, 7: Wendepunkt-Probe ---
+
+[[szenario]]
+id = "wendepunkt-ansage"
+fenster = ["0:00", "45:00"]
+quelle = "Buch 11, 7: Wendepunkt-Probe"
+lage = "Ganze Partie."
+wendepunkt_ansage = true
+warum = "Auf jeden Turmfall, Objective-Kill und das Verlassen der Basis folgt in <= 3 s ein Plan-Satz."

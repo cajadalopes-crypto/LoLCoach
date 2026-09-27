@@ -272,7 +272,13 @@ class Gespraech:
             self._notiere(text, p)
             antwort = "Notiert."
         else:
-            antwort = self.antworten.sofort(text, p, self.lagebild)
+            # Schritt 6 (Buch 11, 5): zuerst der Kern - dieselbe Wahrheit wie die Ansagen, ohne Claude
+            r = self.antworten.frage_kern(text, p, self.lagebild) if hasattr(self.antworten, "frage_kern") else None
+            antwort = (r or {}).get("text")
+            if r and r.get("absicht") == "NOTIZ":
+                self._notiere(text, p)
+            if antwort is None:
+                antwort = self.antworten.sofort(text, p, self.lagebild)
             if antwort is None:
                 letzte = [a for a in (self.gesagt or []) if a.schluessel != "antwort"][-3:]
                 b = getattr(self, "beobachter", None)

@@ -31,7 +31,11 @@
 
 Geht in sinnpruefung.py auf (deren Pruefungen stecken in 1-4 und 7).
 
-    python werkzeuge/kennzahlen.py [aufnahme ...] [--nur-kern]     (ohne Angabe: die 5 juengsten)
+  - Auftrag 003 (Buch 11, 7): ungefragte Ansagen ohne INFO_FLASH und WENDEPUNKT (Ziel <= 50 je 30 min), Leerlauf,
+    Wendepunkt-Verzug, Widersprueche, Stichwort-Antworten, Antwortzeit (werkzeuge/fuehrmass.py); mit --fragen werden
+    die Fragen aus <stamm>_sprechtaste.log zur Zeit eingespielt
+
+    python werkzeuge/kennzahlen.py [aufnahme ...] [--nur-kern] [--fragen]     (ohne Angabe: die 5 juengsten)
 
 Altes System = --kern alt (Regelwerk mit der Modus-Sperre aus Schritt 2), Kern = --kern neu (Schritt 3).
 """
@@ -114,14 +118,23 @@ def fassungswechsel(lauf: ns.Lauf, fenster: float = 30.0) -> list[tuple[float, s
     kern = [a for a in lauf.gesagt if a.schluessel.startswith("kern:")]
     aus = []
     schritt_frei = True
+
+    def ohne_anlass(a) -> str:
+        # Auftrag 003: der Anlass eines WENDEPUNKT- oder FENSTER-Satzes ("Turm ist down: ...") ist das Ereignis, nicht
+        # die Fassung - verglichen wird der Plan dahinter
+        if getattr(a, "_kategorie", "") in ("WENDEPUNKT", "FENSTER") and ": " in a.text:
+            return a.text.split(": ", 1)[1]
+        return a.text
     for a1, a2 in zip(kern, kern[1:]):
         f1, f2 = FAMILIE.get(a1.schluessel, a1.schluessel), FAMILIE.get(a2.schluessel, a2.schluessel)
         t1, t2 = ns.gesprochen_um(a1), ns.gesprochen_um(a2)
         if f1 != f2 or t2 - t1 > fenster:
             schritt_frei = True
             continue
-        if fassung(a1.text) == fassung(a2.text):
+        if fassung(ohne_anlass(a1)) == fassung(ohne_anlass(a2)):
             continue
+        if getattr(a2, "_kategorie", "") == "WENDEPUNKT":
+            continue          # Buch 11, 4: ein Wendepunkt ist ein neues Ereignis (Struktur, Objective, Kill, Basis)
         if schritt_frei and a1.schluessel == "kern:ZURUECK" and a2.schluessel == "kern:BACK_JETZT":
             # der Back-Schritt des Rueckzugs, einmal (Pruefung D2 erlaubt ihn, wenn dich im Kanal keiner erreicht)
             schritt_frei = False
@@ -246,10 +259,13 @@ def objective_ohne_chance(lauf: ns.Lauf) -> list[tuple[float, str]]:
     return aus
 
 
-def kennzahlen(pfad: Path, kern: str = "neu") -> dict:
-    lauf = ns.durchspielen(pfad, proben=True, kern_stellung=kern)
+def kennzahlen(pfad: Path, kern: str = "neu", fragen: bool = False) -> dict:
+    import fuehrmass
+    stamm = pfad.name.removesuffix(".jsonl.gz")
+    liste = [(f["zeit"], f["text"], i) for i, f in enumerate(fuehrmass.fragen_aus_log(stamm))] if fragen else None
+    lauf = ns.durchspielen(pfad, proben=True, kern_stellung=kern, fragen=liste)
     minuten = lauf.sekunden_mit_daten / 60
-    gesagt = lauf.gesagt
+    gesagt = [a for a in lauf.gesagt if a.schluessel != "antwort"]      # Antworten sind nicht ungefragt
     v = {k: [] for k in (1, 2, 3, 4, 7)}
     for a in gesagt:
         for nr in verstoesse(a, getattr(a, "_b", None)):
@@ -276,13 +292,20 @@ def kennzahlen(pfad: Path, kern: str = "neu") -> dict:
             "kategorien": dict(lauf.kern.sprecher.kategorien) if lauf.kern is not None else {},
             "staerken": list(lauf.kern.staerken) if lauf.kern is not None else [], "kern": kern,
             "kampf": kampf_verstoesse(lauf), "ohne_chance": objective_ohne_chance(lauf),
-            "schranken": schranken_verstoesse(lauf)}
+            "schranken": schranken_verstoesse(lauf),
+            # Auftrag 003, Teil A 4 / Buch 11, 4: INFO_FLASH und WENDEPUNKT zaehlen nicht zum Ziel <= 50 je 30 min
+            "ohne_flash_wp": sum(1 for a in gesagt if getattr(a, "_kategorie", None) not in ("INFO_FLASH", "WENDEPUNKT")
+                                 and a.schluessel != "kern:INFO_FLASH"),
+            "fuehren": fuehrmass.kennzahlen(lauf, stamm)}
 
 
 def ausgeben(k: dict) -> None:
     print(f"== {k['stamm']} (--kern {k['kern']}): {k['minuten']:.1f} Minuten mit Daten")
     print(f"   ungefragte Ansagen: {k['ansagen']} ({k['je30']:.0f} je 30 min; Ziel <= 45) - davon "
           f"Ankunft '... bei dir' {k['ankunft']}, Flash {k['flash']}")
+    ow = k["ohne_flash_wp"]
+    print(f"   ohne INFO_FLASH und WENDEPUNKT (Auftrag 003, Ziel <= 50): {ow} "
+          f"({ow / k['minuten'] * 30 if k['minuten'] else math.nan:.0f} je 30 min)")
     n, sek = k["lane_phase"]
     print(f"   Lane-Phase: {n} Ansagen in {sek / 60:.1f} min = {n / (sek / 30) if sek else math.nan:.2f} je 30 s "
           f"(Abnahme Schritt 3: <= 1)")
@@ -299,8 +322,9 @@ def ausgeben(k: dict) -> None:
             print(f"      {nr} {ns.uhr(ns.gesprochen_um(a))} {a.text[:110]}")
     kat = k["kategorien"]
     if kat and k["kern"] == "neu":
-        print("   Kern: GEFAHR / PLAN / ERINNERUNG / BESTAETIGUNG / INFO_FLASH = "
-              + " / ".join(str(kat.get(x, 0)) for x in ("GEFAHR", "PLAN", "ERINNERUNG", "BESTAETIGUNG", "INFO_FLASH"))
+        print("   Kern: GEFAHR / PLAN / ERINNERUNG / BESTAETIGUNG / INFO_FLASH / WENDEPUNKT / VORSCHAU = "
+              + " / ".join(str(kat.get(x, 0)) for x in ("GEFAHR", "PLAN", "ERINNERUNG", "BESTAETIGUNG", "INFO_FLASH",
+                                                         "WENDEPUNKT", "VORSCHAU"))
               + (f"; Staerken: " + "; ".join(f"{ns.uhr(t)} {s}" for t, s in k["staerken"]) if k["staerken"] else ""))
     print(f"   Kampf-Verstoesse (Buch 7, Soll 0): {len(k['kampf'])}")
     for t, s in k["kampf"][:5]:
@@ -315,6 +339,8 @@ def ausgeben(k: dict) -> None:
           + (f"   | Kern p_da {k['brier_kern']:.3f}" if not math.isnan(k["brier_kern"]) else ""))
     print("   Datenluecken > 5 s: " + (", ".join(f"{ns.uhr(a)}-{ns.uhr(b)} ({int(w)} s Wanduhr)"
                                           for a, b, w in k["luecken"]) or "keine"))
+    import fuehrmass
+    fuehrmass.ausgeben(k["fuehren"])
     print("   Szenario-Quote: " + (f"{k['quote'][0]} gruen / {k['quote'][1]} geprueft" if k["quote"]
                                      else "keine Szenarien"))
 
@@ -326,7 +352,7 @@ def main() -> None:
     pfade = [ns.pfad_zu(x) for x in args] or sorted(ns.AUFNAHMEN.glob("*.jsonl.gz"))[-5:]
     for p in pfade:
         for kern in (("neu",) if nur_kern else ("alt", "neu")):
-            ausgeben(kennzahlen(p, kern))
+            ausgeben(kennzahlen(p, kern, fragen="--fragen" in sys.argv))
 
 
 if __name__ == "__main__":

@@ -34,6 +34,21 @@ ZAUBER_DE = {"SummonerFlash": "Flash", "SummonerTeleport": "Teleport", "Summoner
              "SummonerSmite": "Zerschmettern", "SummonerHaste": "Geist", "SummonerBoost": "Reinigen"}
 
 
+def frage_kern(frage: str, p: Partie, lagebild=None) -> dict | None:
+    """Schritt 6 (Buch 0, 10; Buch 11, 5): die Frage zuerst an den Kern - Antwort aus demselben Plan wie die Ansagen,
+    ohne Claude. {"text": None, "absicht": "OFFEN", ...} heisst: Claude mit `kern.kontext()` (die alte Sofort-Antwort
+    bleibt davor nur als Rueckfall). None: kein Kern (alt, ohne Minimap)."""
+    kern = getattr(lagebild, "kern", None)
+    if kern is None or getattr(kern, "m", None) is None:
+        return None
+    from .kern import fragen
+    try:
+        return fragen.beantworte(kern, frage, p, lagebild)
+    except Exception as e:           # eine Frage darf die Partie nie mitreissen
+        print(f"  Fragenweg des Kerns fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
+        return None
+
+
 def flash_stand(p: Partie, lagebild) -> list[tuple[str, str, float | None]]:
     """Auftrag 002, S3.2: der Flash-Stand JEDES Gegners - (Champion, "weg" | "da" | "unbekannt" | "ohne", Rest in s).
     "da": benutzt gesehen und wieder zurueck; "unbekannt": nie ein Verbrauch gesehen; "ohne": spielt kein Flash.
@@ -597,7 +612,11 @@ SYSTEM = SYSTEM.replace("{BILD}", BILD_HINWEIS) + (
     " Ein Gegner OHNE Flash ist ein Grund FUER einen Angriff auf ihn, nie dagegen. Fragt er nach den Flashes, "
     "nenne jeden Gegner aus FLASH-STAND mit bekanntem Stand und sag ehrlich, von wem nichts bekannt ist."
     " Kill-Bilanzen ohne Schraegstrich, so wie Spieler sie sagen: 'du stehst sechs null', 'ihr fuehrt sieben zu "
-    "drei'. Gold gerundet: 'dreitausend Gold'.")
+    "drei'. Gold gerundet: 'dreitausend Gold'."
+    # Buch 11, 6 (Auftrag 003)
+    " Der PLAN im Kontext ist entschieden. Erklaere ihn. Widersprich nur mit einem Grund aus dem Kontext und nenne dann "
+    "beides. Fehlender Flash oder fehlende Ult beim Gegner ist eine Chance, nie ein Grund gegen den Kampf. Hoechstens "
+    "zwei Saetze, der erste ist die Handlung.")
 
 
 AUFWAND = "low"   # gleich fuer Frage und vorgehaltenen Prozess (llm.vorhalten), sonst passt er nicht
@@ -647,7 +666,10 @@ def mit_claude(frage: str, p: Partie, lagebild=None, modell: str = "sonnet", let
         zusatz += (f"\n\nItems im Laden (Patch {ddragon.version()}, Name Preis - nur diese Namen verwenden; "
                    f"reicht sein Gold nicht fuer das Item, nenn das passende Bauteil, das er JETZT kaufen kann, "
                    f"und was spaeter dazukommt):\n{laden_liste()}")
-    lage = lage_text(p, lagebild) + zusatz
+    # Buch 0, 10.2 / Buch 11, 6: mit Kern bekommt Claude den Plan (kern.kontext), nicht mehr die Rohlage
+    kern_ = getattr(lagebild, "kern", None)
+    kontext = kern_.kontext() if kern_ is not None and getattr(kern_, "m", None) is not None else None
+    lage = (kontext if kontext else lage_text(p, lagebild)) + zusatz
     inhalt = gehirn.kontext(frage, p, lage) if gehirn else f"Lage:\n{lage}"
     # der Modus als erste Zeile jeder Frage (Buch 0, 5.2 / Schritt 2): "MODUS: BASIS - du stehst in eurer Basis"
     if (kern := getattr(lagebild, "kern", None)) is not None and (kopf := kern.kopfzeile()):

@@ -171,6 +171,28 @@ def info_flash_kurz_und_gebuendelt():
     assert k._flash_info(m(150), "LANE", []) is None                        # nichts Neues
 
 
+def zwei_klar_unterlegene():
+    """Auftrag 003, Teil A 1: auch zwei Gegner sind keine Gefahr, wenn dein Leben >= 70 % ist, du vor JEDEM >= 2 Level
+    und >= 1500 Item-Gold liegst und kein dritter Gegner mit p_da >= 0,2 kommt."""
+    from types import SimpleNamespace as NS
+    from lolcoach.kern import Kern
+    k = Kern(stellung="neu")
+
+    def gegner(name, level, gold):
+        return NS(champion=name, s=NS(level=level, item_gold=gold, name=name), seit=0.0)
+
+    def m(leben):
+        return NS(leben=leben, zeit=900.0, p=NS(ich=NS(level=13, item_gold=7000), team=lambda t: [], mein_team="ORDER"),
+                  b=NS(gegner=[gegner("Caitlyn", 8, 3850), gegner("Sona", 6, 3500), gegner("Xin Zhao", 12, 5200)]))
+
+    zwei = {"Caitlyn", "Sona"}
+    assert k._klar_unterlegen(m(0.75), zwei, {"Xin Zhao": 0.1}) is not None
+    assert k._klar_unterlegen(m(0.66), zwei, {"Xin Zhao": 0.1}) is None          # unter 70 %
+    assert k._klar_unterlegen(m(0.75), zwei, {"Xin Zhao": 0.25}) is None         # ein dritter kommt
+    assert k._klar_unterlegen(m(0.75), {"Caitlyn", "Xin Zhao"}, {}) is None      # Xin nur 1 Level hinter dir
+    assert k._klar_unterlegen(m(0.62), {"Sona"}, {}) is not None                 # einer: ab 60 % wie bisher
+
+
 def zahlen_wie_spieler():
     """Auftrag 002, S1: was die Stimme bekommt - Gold als Zahlwort auf Hunderter, Kill-Bilanzen ohne Schraegstrich,
     Uhrzeiten mit der Null (Probe mit edge-tts und Whisper: werkzeuge/zahlenprobe.py)."""
@@ -187,6 +209,7 @@ def zahlen_wie_spieler():
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
-                 gold_reicht_fuer_das_genannte_item, info_flash_kurz_und_gebuendelt, zahlen_wie_spieler):
+                 gold_reicht_fuer_das_genannte_item, info_flash_kurz_und_gebuendelt, zahlen_wie_spieler,
+                 zwei_klar_unterlegene):
         test()
         print(f"{test.__name__} OK")

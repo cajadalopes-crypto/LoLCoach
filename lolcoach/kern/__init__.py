@@ -60,6 +60,11 @@ VOR_TEXT = re.compile(r"Geh rein|nimm den Kampf an|Halte deine Stellung|Bleib an
 
 
 @lru_cache(maxsize=1)
+def _zeitleiste_stand(eintraege: list, jetzt: float) -> list[dict]:
+    from .zeitleiste import fuer_stand
+    return fuer_stand(eintraege, jetzt)
+
+
 def konfig() -> dict:
     """wissen/kern.toml (einmal je Prozess gelesen)."""
     return wissen.lade("kern")
@@ -135,6 +140,18 @@ class Kern:
         self._basis = {"seit": None, "kauf": None, "n": 0, "zuletzt": None, "gold": None}
         # Auftrag 002, S3: INFO_FLASH - offene und gemeldete Flash-Timer der Gegner ((Name, Zeit) -> Timer)
         self._lagebild = None
+        self._ziel_zeit: dict = {}               # Auftrag 003, Teil A 5: Ziel (kurz) -> wann zuletzt gesagt
+        # Buch 11 (Auftrag 003): Zeitleiste, danach, Wendepunkte, neue Informationen, Vorschau
+        from .fuehren import Beobachter
+        self.zeitleiste: list = []
+        self.danach = None
+        self.danach_text: str | None = None
+        self._beobachter = Beobachter()
+        self._wp: dict | None = None              # offener Wendepunkt {"zeit", "text"}
+        self._wp_zuletzt = -1e9
+        self._fe: dict | None = None              # neue Information (FENSTER) {"zeit", "text"}
+        self._vorschau_zuletzt = -1e9
+        self._gold_verlauf: deque = deque()        # (Zeit, Gold) - dein Einkommen fuer den Back-Bedarf
         self._flash_offen: dict = {}
         self._flash_gemeldet: set = set()
         self._flash_zuletzt = -1e9
@@ -212,6 +229,7 @@ class Kern:
                 if sep is not None:
                     sep["rueckkehr"] = True           # G1: danach darf die kurze Fassung kommen (auch einer ruhenden)
         self._ereignisse_merken(m, p)
+        self._fuehren_vorher(m, modus)             # Buch 11: Zeitleiste, Wendepunkte, neue Informationen
         self._schutz_episode(m)
         if m.b is not None and not m.tot:
             self.proben.takt(m, self.cfg)
@@ -238,6 +256,9 @@ class Kern:
         kand, self.gefahr = self._kandidaten(m, modus)
         self.kandidaten = kand
         ev = self.fuehrer.takt(m, kand, self.gefahr)
+        from . import fuehren
+        self.danach = fuehren.danach(self, m)                     # Buch 11, 3
+        self.danach_text = fuehren.text_danach(self.danach)
         # Buch 6, 5: der Modus kennt den Plan des vorigen Takts (OBJECTIVE bleibt, solange er ein Objective-Plan ist)
         from .modi.objective import OBJ_ARTEN
         pl = self.fuehrer.plan
@@ -274,8 +295,104 @@ class Kern:
         if not aus:
             if (a := self._flash_info(m, modus, gesagt)) is not None:
                 aus.append(a)
+        if not aus:
+            if (a := self._vorschau(m, modus, gesagt)) is not None:
+                aus.append(a)
         self._modus_vorher = modus
         return aus
+
+    # --- Buch 11: Fuehren ------------------------------------------------------------------------------------------
+
+    def _einkommen(self, m: Merkmale) -> float | None:
+        """Dein Gold je Sekunde ueber die letzten 60 s (nur Zuwachs - ein Kauf ist kein Einkommen)."""
+        if m.b is None or m.b.gold is None:
+            return None
+        v = self._gold_verlauf
+        v.append((m.zeit, float(m.b.gold)))
+        while v and v[0][0] < m.zeit - 60.0:
+            v.popleft()
+        if len(v) < 2 or v[-1][0] - v[0][0] < 10.0:
+            return None
+        zuwachs = sum(max(0.0, b - a) for (_, a), (_, b) in zip(v, list(v)[1:]))
+        return zuwachs / (v[-1][0] - v[0][0])
+
+    def _fuehren_vorher(self, m: Merkmale, modus: str | None) -> None:
+        """Buch 11, 2 und 4: die Zeitleiste dieses Takts; ein Wendepunkt macht den Plan ungueltig (der naechste kommt
+        sofort), eine neue Information (FENSTER) darf den naechsten Plan-Satz einleiten."""
+        from . import zeitleiste
+        self.zeitleiste = zeitleiste.bauen(m, self.cfg, self._lagebild, self._einkommen(m))
+        plan = self.fuehrer.plan
+        ziel = plan.handlung.daten.get("ziel_pos") or (plan.handlung.ziel.pos if plan and plan.handlung.ziel else None) \
+            if plan is not None else None
+        wp, fe = self._beobachter.takt(m, modus, self._lagebild, self.cfg, ziel=ziel)
+        if wp is not None:
+            self._wp = {"zeit": m.zeit, "text": wp}
+            self._ereignis_t = m.zeit                  # auch fuer Kehrtwenden ein neues Ereignis
+            if modus != "KAMPF" and plan is not None and not (plan.art in SICHER and self.gefahr):
+                self.fuehrer.plan = None               # erledigt oder ungueltig: der naechste Plan kommt sofort
+        if fe is not None:
+            self._fe = {"zeit": m.zeit, "text": fe}
+        if modus == "KAMPF" and self._wp is not None:
+            self._wp["zeit"] = m.zeit                  # der Wendepunkt wartet auf das Ende des Kampfs
+
+    def _wp_leer(self, wp: str, h, m: Merkmale) -> bool:
+        """Ein Wendepunkt-Satz, der nichts Neues sagt, entfaellt (Buch 11, 4 "Stille"): derselbe Anlass wie der zuletzt
+        gesagte in ziel_wiederholen_s (die drei Larven in 35 s), oder beim Verlassen der Basis dasselbe Ziel, das in der
+        Basis eben gesagt wurde, und kein danach."""
+        from .fuehren import ziel_label
+        n = self.cfg["fuehren"]["ziel_wiederholen_s"]
+        letztes = getattr(self, "_letztes_ziel", None)
+        gleich = letztes is not None and m.zeit - letztes[0] < n and letztes[1] == ziel_label(h)
+        if getattr(self, "_wp_text", None) == wp and m.zeit - self._wp_zuletzt < n and gleich:
+            return True
+        if wp == "Aus der Basis":
+            # das Ziel fuer draussen stand eben im Basis-Satz - draussen gilt es; ein anderes Ziel waere ein Widerspruch
+            # ohne Ereignis (173159 14:40 "Geh zur Top-Welle" -> 14:47 "Aus der Basis: Farm die Bot-Welle")
+            basis = getattr(self, "_basis_satz", -1e9)
+            return h.art == "HALTEN" or m.zeit - basis < n or (gleich and not self.danach_text)
+        return False
+
+    def _wendepunkt_offen(self, m: Merkmale) -> str | None:
+        c = self.cfg["fuehren"]
+        if self._wp is None or m.zeit - self._wp["zeit"] > c["wendepunkt_gilt_s"]:
+            self._wp = None
+            return None
+        if m.zeit - self._wp_zuletzt < c["wendepunkt_abstand_s"]:
+            return None
+        return self._wp["text"]
+
+    def _fenster_offen(self, m: Merkmale) -> str | None:
+        if self._fe is None or m.zeit - self._fe["zeit"] > self.cfg["fuehren"]["fenster_gilt_s"]:
+            self._fe = None
+            return None
+        return self._fe["text"]
+
+    def _vorschau(self, m: Merkmale, modus: str | None, gesagt: list):
+        """Buch 11, 4: ab vorschau_ab_s, vorschau_ruhe_s ohne Ansage, ein Ereignis der Zeitleiste in
+        vorschau_horizont_s, das deinen Plan aendert - hoechstens einer je vorschau_abstand_s, mit Budget."""
+        from . import fuehren
+        c = self.cfg["fuehren"]
+        p = self.fuehrer.plan
+        if p is None or m.zeit < c["vorschau_ab_s"] or modus in ("KAMPF", "TOT", None) or self.gefahr \
+                or m.zeit - self._vorschau_zuletzt < c["vorschau_abstand_s"]:
+            return None
+        letzte = max((a.gesprochen for a in gesagt if a.gesprochen is not None
+                      and (a.schluessel.startswith("kern:") or a.schluessel == "antwort")), default=-1e9)
+        if m.zeit - letzte < c["vorschau_ruhe_s"]:
+            return None
+        text = fuehren.vorschau_satz(self, m, self.zeitleiste, self.danach)
+        if not text or len(text.split()) > c["max_woerter_wendepunkt"]:
+            return None
+        if BACK_RUF.search(text) and self._back_sperre(m, text) is not None:
+            return None                                # Pruefung c, R4 gilt auch fuer "danach back"
+        a = self.sprecher.ansage("VORSCHAU", p.art, text, m.zeit, self._pruefung(p), gesagt)
+        if a is not None:
+            self._vorschau_zuletzt = m.zeit
+            p.gesagt = m.zeit
+            if BACK_RUF.search(text):
+                self._back_gesagt(m)
+            self._gesprochen(a, "VORSCHAU", m)
+        return a
 
     def _flash_info(self, m: Merkmale, modus: str | None, gesagt: list):
         """Auftrag 002, S3: ein bestaetigter Flash eines Gegners, kurz - "Ziggs ohne Flash." (213624 19:41: "du sagst
@@ -358,6 +475,12 @@ class Kern:
             wert.bewerte(h, m, cfg, tk)
         # Buch 6, 4.3: eine Objective-Handlung nur mit EV > 0 (nicht bloss besser als HALTEN)
         kand = [h for h in kand if h.daten.get("ev_min") is None or h.ev > h.daten["ev_min"]]
+        # Buch 11, 5.6: Carlos' Korrektur ("Drache ist tot") gilt korrektur_gilt_s lang als Merkmal
+        korr = getattr(self, "korrekturen", {})
+        weg = {k.split(":", 1)[1] for k, t in korr.items() if k.startswith("tot:")
+               and m.zeit - t <= self.cfg["fuehren"]["korrektur_gilt_s"]}
+        if weg:
+            kand = [h for h in kand if h.daten.get("objective") not in weg]
         kand = self._schranken(m, kand, modus)
         bleiben = next((h for h in kand if h.art in ("FARMEN", "HALTEN") or h.daten.get("verloren")), None)
         for h in kand:
@@ -435,13 +558,30 @@ class Kern:
         if p is None:
             return None
         h = p.handlung
+        wp = self._wendepunkt_offen(m) if ev.art == "neu" else None       # Buch 11, 4
         if ev.art == "schritt":
             kategorie, text = "PLAN", ev.text
         else:
-            if h.stumm:
+            if h.stumm and wp is None:
                 return None
             kategorie = "GEFAHR" if (ev.art == "gefahr" and h.art in SICHER) or h.art == "ANNEHMEN" else "PLAN"
             text = h.satz or (h.kurz() if h.art != "WOHIN" else "")   # R6: ein WOHIN ohne Ziel sagt nichts
+            if h.stumm:
+                from .fuehren import stumm_satz
+                # Buch 11, 4: nach einem Wendepunkt auch "Farm die Top-Welle" - oder, ist der Plan nur Halten, das,
+                # was danach kommt; sonst schweigt er (kein "bleib, wo du bist")
+                text = stumm_satz(h) or (f"{self.danach_text[:1].upper()}{self.danach_text[1:]}."
+                                         if self.danach_text else "")
+                if not text and wp != "Aus der Basis":
+                    # nur Halten: die beste Option, die am ungeeichten Kampfmodell haengt, ehrlich als unsicher -
+                    # sonst still (kein "Warte, gerade ist nichts sicher": 164326, 23:41/24:08)
+                    from . import fuehren
+                    offen = next((x for x in sorted(self.kandidaten or [], key=lambda x: -x.ev)
+                                  if fuehren.stumm(x) and not x.stumm and x.ziel is not None
+                                  and x.art not in fuehren.NIE_DANACH), None)
+                    if offen is not None:
+                        k = fuehren.kurz(offen)
+                        text = f"{k[:1].upper()}{k[1:]} nur mit Kampf - unsicher."
             if h.art == "ANNEHMEN":
                 # Buch 7, 4: hoechstens einmal je Gegner und annehmen_wiederholen_s
                 g = h.daten.get("kampf_mit")
@@ -505,7 +645,14 @@ class Kern:
         if p.art in ("BACK_JETZT", "ZURUECK") and ev.art != "schritt" and m.zeit - self._im_brunnen <= 3.0:
             p.gesagt = m.zeit
             return None
-        if ev.art == "neu" and self._laeuft_hin(h, m):
+        # der Schutzplan einer verlorenen Lane (G1) gilt still weiter - ein Wendepunkt aendert ihn nicht (144655)
+        wendepunkt = wp is not None and kategorie == "PLAN" and not h.daten.get("verloren")
+        if wendepunkt and self._wp_leer(wp, h, m):
+            wendepunkt, self._wp = False, None
+            if h.stumm:
+                p.gesagt = m.zeit               # der Plan in Carlos' Kopf gilt weiter (Buch 11, Prinzip 1)
+                return None
+        if ev.art == "neu" and not wendepunkt and self._laeuft_hin(h, m):
             # Buch 5, 2: "Laeufst du schon dorthin, schweigt der Coach" - der Plan gilt als gesagt, damit die
             # Erinnerung (Kapitel 6) greift, wenn du stehen bleibst
             p.gesagt = m.zeit
@@ -521,7 +668,7 @@ class Kern:
         weiter = h.daten.get("wohin") if p.art == "KAUFEN" else None
         ziel = weiter.ziel if weiter is not None and getattr(weiter, "ziel", None) is not None else h.ziel
         schl = (p.art, ziel.name if ziel else "")
-        if kategorie == "PLAN" and ev.art != "schritt" and \
+        if kategorie == "PLAN" and ev.art != "schritt" and not wendepunkt and \
                 m.zeit - self._angesagt.get(schl, -1e9) < self.cfg["sprechen"]["wiederholen_s"]:
             p.gesagt = self._angesagt[schl]
             return None
@@ -548,12 +695,15 @@ class Kern:
         # (NEHMEN/BESTREITEN <-> ABGEBEN_TAUSCHEN); VORBEREITEN -> NEHMEN wird nicht angesagt (4.2)
         from .modi.objective import URTEIL_ARTEN
         okey = None
-        if h.art in URTEIL_ARTEN and ev.art != "schritt" and h.daten.get("objective"):
+        if h.art in URTEIL_ARTEN and ev.art != "schritt" and h.daten.get("objective") and not wendepunkt:
             okey = (h.daten["objective"], h.daten.get("spawn"))
             alt = self._obj_gesagt.get(okey)
             if alt is not None and (alt == "ABGEBEN_TAUSCHEN") == (h.art == "ABGEBEN_TAUSCHEN"):
                 p.gesagt = m.zeit
                 return None
+        if ev.art != "schritt" and not wendepunkt and self._ziel_eben(h, m.zeit):
+            p.gesagt = m.zeit                    # Auftrag 003, Teil A 5: dasselbe Ziel eben erst gesagt
+            return None
         if (grund := self._back_sperre(m, text)) is not None:
             p.gesagt = m.zeit                    # Pruefung c, R4: der Plan gilt still weiter
             self.gate_grund = grund
@@ -565,6 +715,23 @@ class Kern:
         if modus == "BASIS" and self._praefix is not None and m.zeit - self._praefix[0] <= 15:
             text = f"{self._praefix[1]} {text}"
             self._praefix = None
+        # Buch 11, 4: WENDEPUNKT ("Turm ist down: ... Danach ...", Optionen) und FENSTER ("Rumble ist 40 Sekunden weg: ...")
+        from . import fuehren
+        cf = self.cfg["fuehren"]
+        if wendepunkt:
+            opt = fuehren.optionen(self)
+            zwei = fuehren.optionen_satz(*opt, cf["max_woerter_optionen"] - len(wp.split())) if opt else None
+            danach_text = self.danach_text
+            if danach_text and BACK_RUF.search(danach_text) and self._back_sperre(m, danach_text) is not None:
+                danach_text = None                    # Pruefung c, R4: auch "Danach back" zaehlt als Back-Ruf
+            text = f"{wp}. {zwei}" if zwei else fuehren.wendepunkt_satz(wp, text, danach_text,
+                                                                      cf["max_woerter_wendepunkt"])
+            kategorie = "WENDEPUNKT"
+        elif kategorie == "PLAN" and ev.art == "neu" and (fe := self._fenster_offen(m)) is not None \
+                and not any(w in text for w in fe.split()[:2]):      # nennt der Satz ihn schon, keine zweite Zahl
+            neu = f"{fe}: {fuehren._koerper(text)}."
+            if len(neu.split()) <= cf["max_woerter_wendepunkt"]:
+                text, kategorie = neu, "FENSTER"
         def merken(ansage=None, zeit=m.zeit):
             # was ein gesprochener Plan hinterlaesst - sofort oder beim Nachholen (Budget, 9.2)
             p.gesagt = zeit
@@ -573,7 +740,7 @@ class Kern:
                 self._obj_gesagt[okey] = h.art
             if BACK_RUF.search(text):
                 self._back_gesagt(m)
-            self._wohin_merken(h)
+            self._wohin_merken(h, zeit)
             if h.art == "WOHIN" and modus == "BASIS":
                 self._basis["zuletzt"] = zeit      # Ziel 2 (173159 36:50/37:10): die Warteregel wartet ab hier
             if nach_dem_sprechen is not None:
@@ -581,8 +748,11 @@ class Kern:
                     nach_dem_sprechen(ansage)
                 else:
                     nach_dem_sprechen()
-        a = self.sprecher.ansage(kategorie, p.art, text, m.zeit, self._pruefung(p), gesagt,
-                                 danach=merken if kategorie == "PLAN" else None)
+        # ein Wendepunkt bleibt wahr, auch wenn der Plan kurz wegfaellt - nur ein Kampf ueberholt ihn (Buch 11, 4;
+        # 164326 5:49: der Satz wartete hinter einem langen und fiel weg, als der Plan eine Sekunde fehlte)
+        pruefe = (lambda: self.modus.aktuell != "KAMPF") if kategorie == "WENDEPUNKT" else self._pruefung(p)
+        a = self.sprecher.ansage(kategorie, p.art, text, m.zeit, pruefe, gesagt,
+                                 danach=merken if kategorie in ("PLAN", "FENSTER") else None)
         if a is not None:
             # die Lage der Entscheidung, fuer protokoll.py (gesprochen wird vielleicht spaeter - Pruefung B)
             a._wahl = {"zeit": m.zeit, "plan": p.art, "ev": h.ev, "p_tod": h.p_tod, "gehalten": self.fuehrer.gehalten,
@@ -596,6 +766,12 @@ class Kern:
                 self.proben.ansage(m.zeit, "rein")
             if kategorie == "GEFAHR":
                 self._gefahr_gesagt = (m.zeit, set(h.daten.get("gefahr_von", [])), h.p_tod)
+                self._wp = None                          # eine Gefahr ueberholt den Wendepunkt
+            elif kategorie == "WENDEPUNKT":
+                self._wp_text = self._wp["text"] if self._wp else None
+                self._wp, self._wp_zuletzt = None, m.zeit
+            elif kategorie == "FENSTER":
+                self._fe = None
             p.start = {"sicher_weg": m.b.sicherer_ort()[1] if m.b is not None else None, "pos": m.pos}
             if h.art == "ZURUECK":
                 self._rueckzug = (m.zeit, m.pos, [n for n, x in h.daten.get("wer", []) if x >= 0.05],
@@ -643,6 +819,12 @@ class Kern:
 
     def _gesprochen(self, a, kategorie: str, m: Merkmale) -> None:
         a._kategorie = kategorie          # fuer Szenarien (kategorie_max) und Kennzahlen
+        if kategorie in ("PLAN", "WENDEPUNKT", "FENSTER", "VORSCHAU", "ERINNERUNG") and self.fuehrer.plan is not None:
+            from .fuehren import ziel_label
+            a._ziel = ziel_label(self.fuehrer.plan.handlung)      # Buch 11, 7: Widersprueche
+            self._letztes_ziel = (m.zeit, a._ziel)                 # Buch 11, 5.3: die Antwort widerspricht nicht
+            if self.modus.aktuell in ("BASIS", "TOT"):
+                self._basis_satz = m.zeit                          # Buch 11, 4: das Ziel fuer draussen
         self.gesagt.append((m.zeit, kategorie, a.text))
         self._letzte = (kategorie, a.text)
         self._leben_bei_ansage = m.leben
@@ -692,23 +874,33 @@ class Kern:
         self._gesprochen(a, "GEFAHR", m)
         return [a]
 
-    def _klar_unterlegen(self, m: Merkmale, wer: set) -> str | None:
+    def _klar_unterlegen(self, m: Merkmale, wer: set, p_da: dict | None = None) -> str | None:
         """Auftrag 002, S5.2: kommt genau ein Gegner, dein Leben ist >= gefahr_einzel_leben_min und du liegst >=
         gefahr_einzel_level Level UND >= gefahr_einzel_gold Item-Gold vor ihm, ist er keine Gefahr. Seine Werte nach
-        Buch 7, 3.2 geschaetzt, wenn sie veraltet sind (kampf.gegner_werte). Rueckgabe: sein Name."""
+        Buch 7, 3.2 geschaetzt, wenn sie veraltet sind (kampf.gegner_werte).
+        Auftrag 003, Teil A 1: dasselbe fuer zwei - dein Leben >= gefahr_zwei_leben_min (70 %), du liegst vor JEDEM so
+        weit vorn, und kein dritter Gegner hat p_da >= gefahr_zwei_dritter_p_max im Fenster. Rueckgabe: die Namen."""
         from .kampf import gegner_werte
         cs = self.cfg["schranken"]
-        if len(wer) != 1 or m.b is None or m.p is None or m.p.ich is None or m.leben is None \
-                or m.leben < cs["gefahr_einzel_leben_min"]:
+        if not wer or len(wer) > 2 or m.b is None or m.p is None or m.p.ich is None or m.leben is None:
             return None
-        g = next((g for g in m.b.gegner if g.champion in wer), None)
-        if g is None:
+        if m.leben < (cs["gefahr_einzel_leben_min"] if len(wer) == 1 else cs["gefahr_zwei_leben_min"]):
             return None
-        level, gold, _ = gegner_werte(g, m, self.cfg["kampf"])
+        gs = [g for g in m.b.gegner if g.champion in wer]
+        if len(gs) != len(wer):
+            return None
         ich = m.p.ich
-        if ich.level - level >= cs["gefahr_einzel_level"] and ich.item_gold - gold >= cs["gefahr_einzel_gold"]:
-            return g.champion
-        return None
+        for g in gs:
+            level, gold, _ = gegner_werte(g, m, self.cfg["kampf"])
+            if ich.level - level < cs["gefahr_einzel_level"] or ich.item_gold - gold < cs["gefahr_einzel_gold"]:
+                return None
+        if len(gs) == 2:
+            if p_da is None:
+                from . import gefahr as gefahr_modell
+                p_da = gefahr_modell.alle_p_da(m, self.cfg["gefahr"])
+            if any(x >= cs["gefahr_zwei_dritter_p_max"] for n, x in p_da.items() if n not in wer):
+                return None
+        return " und ".join(g.champion for g in gs)
 
     def _back_sperre(self, m: Merkmale, text: str) -> str | None:
         """Pruefung c, R4: ein Back-Ruf nicht unter back_leben_min und nicht in KAMPF (dort gilt RAUS); hoechstens
@@ -744,9 +936,18 @@ class Kern:
             return h.daten.get("kurz")
         return None
 
-    def _wohin_merken(self, h) -> None:
+    def _wohin_merken(self, h, zeit: float | None = None) -> None:
         if (z := self._wohin_ziel(h)) is not None:
             self._wohin_genannt.add(z)
+            if zeit is not None:
+                self._ziel_zeit[z] = zeit
+
+    def _ziel_eben(self, h, zeit: float) -> bool:
+        """Auftrag 003, Teil A 5 (Buch 11, 4 "Stille"): ein reines Ziel (WOHIN) wurde in ziel_wiederholen_s schon gesagt -
+        auch vor einem neuen Basis-Besuch (213624 12:47 "Zum Drachen: ihr seid drei." -> 12:59 "Dann Drachen.")."""
+        z = self._wohin_ziel(h)
+        return h.art in ("WOHIN", "WOHIN_TP_LANE") and z is not None \
+            and zeit - self._ziel_zeit.get(z, -1e9) < self.cfg["fuehren"]["ziel_wiederholen_s"]
 
     def _kurzform(self, p, h, text: str) -> str:
         """Pruefung c, R6: nach der ersten Nennung je Partie nur noch die Kurzform - "Dann Top-Welle." bzw. "Kauf X,
@@ -969,6 +1170,8 @@ class Kern:
         z = basis.wohin(m, self.cfg, "BASIS", self._wohin, self._lage(m))     # dasselbe Ziel wie beim Kauf (C4)
         if not z.satz:
             return None          # Pruefung c, R6: kein sicheres Ziel
+        if self._ziel_eben(z, m.zeit):
+            return None          # Auftrag 003, Teil A 5
         text = z.satz if z.satz.startswith(("Geh", "TP", "Lauf", "Zurück")) else \
             "Geh jetzt: " + z.satz[0].lower() + z.satz[1:]
         text = self._kurzform(None, z, text)       # Pruefung c, R6: "Dann Top-Welle."
@@ -978,7 +1181,7 @@ class Kern:
         if a is not None:
             s["n"] += 1
             s["zuletzt"] = m.zeit
-            self._wohin_merken(z)
+            self._wohin_merken(z, m.zeit)
             self._gesprochen(a, "PLAN", m)
         return a
 
@@ -1211,7 +1414,56 @@ class Kern:
                                                    "schritte": plan.handlung.schritte, "schritt": plan.schritt},
                 "top": [{"art": h.art, "ev": round(h.ev), "grund": h.grund} for h in self.fuehrer.top],
                 "gefahr": self.gefahr,
-                "info": [{"zeit": t, "text": x} for t, x in list(self.info)[-6:]][::-1]}
+                "info": [{"zeit": t, "text": x} for t, x in list(self.info)[-6:]][::-1],
+                # Buch 11, 2 und 3
+                "danach": self.danach_text,
+                "zeitleiste": _zeitleiste_stand(self.zeitleiste, m.zeit if m else 0.0)}
+
+    def kontext(self) -> str | None:
+        """Buch 11, 6 (ersetzt Buch 0, 10.2): hoechstens 30 Zeilen fuer Claude - Modus, Ort, Leben, Gold; Plan mit Grund
+        und danach; Top-3; Zeitleiste; Flash-Tabelle; Stand; Gegner und Mitspieler mit Ort und Zeit."""
+        m = self.m
+        if m is None or m.p is None or m.b is None:
+            return None
+        from . import fuehren, zeitleiste
+        from .fragen import satz
+        p, b = m.p, m.b
+        z = [f"MODUS: {self.modus.aktuell} - du stehst {bereich_worte(m.bereich)}; Leben "
+             f"{int(round((m.leben or 0) * 100))} %, Gold {int(b.gold or 0)}, Level {p.ich.level if p.ich else '?'}."]
+        plan = self.fuehrer.plan
+        if plan is not None:
+            z.append(f"PLAN (entschieden): {satz(plan.handlung)}")
+            if self.danach_text:
+                z.append(f"DANACH: {self.danach_text}")
+        top = [h for h in sorted(self.kandidaten or [], key=lambda h: -h.ev) if not fuehren.stumm(h)][:3]
+        if top:
+            z.append("ALTERNATIVEN: " + " | ".join(f"{fuehren.kurz(h)} ({h.grund or '-'}, EV {h.ev:+.0f})" for h in top))
+        if self.zeitleiste:
+            z.append("ZEITLEISTE (naechste 3 Minuten): " + zeitleiste.als_text(self.zeitleiste, m.zeit, 6))
+        try:
+            from ..antworten import flash_stand
+            wort = {"weg": "OHNE Flash noch {r} s", "da": "Flash wieder da", "unbekannt": "unbekannt",
+                    "ohne": "spielt kein Flash"}
+            z.append("FLASH DER GEGNER: " + "; ".join(f"{c}: " + wort[a].format(r=int(r or 0))
+                                                      for c, a, r in flash_stand(p, self._lagebild)))
+        except Exception:
+            pass
+        from ..zustand import gegenteam
+        wir, die = p.mein_team, gegenteam(p.mein_team)
+        z.append(f"STAND: Kills {p.kills(wir)} zu {p.kills(die)}, Tuerme "
+                 f"{sum(1 for e in p.kills_von('TurretKilled') if e.team == wir)} zu "
+                 f"{sum(1 for e in p.kills_von('TurretKilled') if e.team == die)}, Drachen {len(p.drachen(wir))} zu "
+                 f"{len(p.drachen(die))}, Item-Gold {p.item_gold(wir) - p.item_gold(die):+d}.")
+        for g in b.gegner[:5]:
+            if g.s.tot:
+                z.append(f"- Gegner {g.champion}: tot, noch {int(g.s.respawn or 0)} s")
+            else:
+                wo = (g.ort or "Ort unbekannt") + (f", vor {int(g.seit)} s" if g.seit else ", sichtbar" if g.sichtbar else "")
+                z.append(f"- Gegner {g.champion} L{g.s.level}: {wo}"
+                         + (f", {int(g.abstand)} von dir" if g.abstand is not None else ""))
+        for s, wo, le, *rest in (b.mitspieler or [])[:4]:
+            z.append(f"- Mitspieler {s.champion}: {'tot' if s.tot else (rest[0] if rest and rest[0] else 'unterwegs')}")
+        return "\n".join(z[:30])
 
     def kopfzeile(self) -> str | None:
         """Erste Zeile(n) jeder Claude-Frage (Kapitel 5.2, 10.2): Modus und - wenn der Kern entscheidet - sein Plan."""

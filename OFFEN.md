@@ -17,6 +17,19 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 003 (Buch 11 Fuehren, Schritt 6 Fragen) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 003 /
+Schritt 6"), Bericht in `buecher/auftraege/003_bericht.md`. Carlos hat Stimme und Tempo gewaehlt: Killian, +25 %.
+
+Offen aus Auftrag 003:
+- **Quest-Feld V im HUD lesen** (Auftrag 003, Teil A 5): das Quest-TP gilt erst ab 13:35 als bereit, fertig war die
+  Quest 1,5 bis 4 Minuten frueher. Tuerkiser Ring = laeuft, violett = bereit, dunkel mit Zahl = Abklingzeit
+  (Befund in messungen.md, Auftrag 002, S4). Gehoert nach `hud.py`.
+- **Wendepunkt-Probe nicht ganz gruen** (Buch 11, 7): nach Turmfall, Objective und Basis-Verlassen kommt der Satz
+  nicht immer in 3 s - Ursachen und Zahlen in messungen.md.
+- **Mid-Game-Plaene haengen am ungeeichten Kampfmodell** (Entscheidung 2): Turm- und Objective-Handlungen mit Kampf
+  sind stumm, oft bleibt nur "Farm deine Welle". Gefragt nennt der Coach sie mit "unsicher". Erst die Kampf-Eichung
+  macht Buch 11 im Mid-Game voll wirksam.
+
 **Auftrag 002 (Sofort-Fixes aus 213624) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 002"), Bericht in
 `buecher/auftraege/002_bericht.md`. Carlos' Wuensche aus der Partie 213624 (Notizen und Sprechtaste), je mit dem, was
 sie abdeckt:

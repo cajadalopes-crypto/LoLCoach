@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import re
 import sys
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -21,6 +22,8 @@ ZURUECK = (regeln.RUECKZUG, regeln.BACK)
 VOR = re.compile(r"Geh rein|nimm den Kampf an|Halte deine Stellung|Bleib an deiner Welle|Trade|Spiel auf|Geh auf|"
                  r"Drück|Nehmt", re.I)
 OBJ_EVENTS = ("DragonKill", "BaronKill", "HeraldKill", "HordeKill", "TurretKilled", "InhibKilled")
+STRUKTUR_EVENTS = ("TurretKilled", "InhibKilled")            # Buch 11, 4: Wendepunkt "Struktur faellt"
+OBJ_KILL_EVENTS = ("DragonKill", "BaronKill", "HeraldKill", "HordeKill")
 # Neues Ereignis fuer Kehrtwenden (Kapitel 9.4 Punkt 5, Entscheidung Carlos 27.09.): ein Gegner, der in <= 3000 um
 # dich neu sichtbar wird - in den 5 s davor nirgends sichtbar
 NEU_SICHTBAR_RADIUS = 3000.0
@@ -59,6 +62,12 @@ class Takt:
     plan_obj: str | None = None             # daten["objective"] des Plans (Buch 6, 14: Kennzahl "ohne Chance")
     obj_zieht: dict = field(default_factory=dict)   # Objective -> objective_zieht in diesem Takt
     stumm: str | None = None                # Entscheidung 2: stummer Kampf-Ruf dieses Takts ("REIN: Rein auf Sona!")
+    # Buch 11 (Auftrag 003): Wendepunkte und Leerlauf
+    strukturen: int = 0                     # gefallene Tuerme und Inhibitoren bis hier
+    obj_kills: int = 0                      # Drachen, Baron, Herold, Larven bis hier
+    tot: bool = False                       # du bist tot
+    plan_gesagt: bool = False               # der Plan des Kerns ist gesagt (ungefragt oder als Antwort)
+    danach: str = ""                        # Buch 11, 3: was nach dem Plan kommt
 
 
 def plan_art(kern, modus) -> str | None:
@@ -96,15 +105,39 @@ class Lauf:
     kern: object = None                                  # der Kern nach dem Lauf (Kategorien, Staerken)
     abbrueche: list = field(default_factory=list)       # (Spielzeit, Satz, Grund): mitten im Satz abgebrochen
     spielmodus: str | None = None                        # gameMode der Aufnahme: CLASSIC, SWIFTPLAY (G6)
+    antworten: list = field(default_factory=list)        # Auftrag 003: eingespielte Fragen und ihre Antworten
+
+
+def frage_stellen(text: str, p, lb, plan, fid=None) -> dict:
+    """Eine Frage wie per Sprechtaste (Auftrag 003): zuerst der Fragenweg des Kerns (`antworten.frage_kern`), sonst
+    die alte Sofort-Antwort; was Claude braucht, wird offline nicht gefragt ("quelle": "claude"). Die Antwort geht wie
+    live in `gesagt` ("antwort")."""
+    from lolcoach import antworten
+    t0 = time.perf_counter()
+    r = {}
+    if hasattr(antworten, "frage_kern"):
+        r = antworten.frage_kern(text, p, lb) or {}
+    if not r.get("text"):
+        s = antworten.sofort(text, p, lb)
+        r = dict(r, text=s, quelle="sofort" if s else "claude")
+    dauer = time.perf_counter() - t0
+    aus = {"id": fid, "zeit": p.zeit, "frage": text, "text": r.get("text"), "absicht": r.get("absicht"),
+           "quelle": r.get("quelle", "kern"), "ziel": r.get("ziel"), "dauer": dauer}
+    if aus["text"] and plan is not None:
+        a = regeln.Ansage(f"„{text}“ – {aus['text']}", regeln.WICHTIG, "antwort", zeit=p.zeit, gesprochen=p.zeit)
+        a._ziel = aus["ziel"]
+        plan.gesagt.append(a)
+    return aus
 
 
 def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, kern_stellung: str = "neu",
-                 beim_takt=None) -> Lauf:
+                 beim_takt=None, fragen=None) -> Lauf:
     """Die Aufnahme wie live, nur stumm. `halte_bei`: Spielzeiten, zu denen Partie und Bewertung festgehalten
     werden (der erste Takt ab dieser Zeit). `proben`: je Sekunde Gegner-Ankunft und Positionen (Gefahr-Eichung).
     `rueckruf(soll, p, b, lb, wand)`: an jeder Haltezeit, solange das Lagebild noch diesen Stand hat (Fragen).
     `kern_stellung`: wie --kern (Schritt 3: neu = der Kern spricht in LANE, BASIS, TOT).
-    `beim_takt(p, werk, kern, plan)`: nach jedem Takt des Sprechplans (werkzeuge/protokoll.py)."""
+    `beim_takt(p, werk, kern, plan)`: nach jedem Takt des Sprechplans (werkzeuge/protokoll.py).
+    `fragen`: [(Spielzeit, Text, id)] - zur Zeit wie per Sprechtaste gestellt (Auftrag 003), in `lauf.antworten`."""
     lauf = Lauf(pfad)
     sicht = lage.sicht_fuer(pfad)
     sprecher = stimme.Nachgespielt(sprechplan.ZEICHEN_PRO_SEKUNDE)     # spricht in Spielzeit, wie live
@@ -115,6 +148,7 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
     lauf.kern = kern
     lb = lage.Lagebild() if sicht else None
     offen = sorted(halte_bei)
+    offene_fragen = sorted(fragen or [], key=lambda f: f[0])
     vorher = None
     letzte_probe = -1e9
     for w, d in aufzeichnung.lies_mit_zeit(pfad):
@@ -155,7 +189,15 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
                                plan_ziel(kern.fuehrer.plan),
                                kern.fuehrer.plan.handlung.daten.get("objective") if kern.fuehrer.plan else None,
                                {s: u.zieht for s, u in (kern.m.obj_urteile or {}).items()} if kern.m else {},
-                               getattr(kern, "_stumm_takt", None)))
+                               getattr(kern, "_stumm_takt", None),
+                               sum(len(p.kills_von(e)) for e in STRUKTUR_EVENTS),
+                               sum(len(p.kills_von(e)) for e in OBJ_KILL_EVENTS),
+                               bool(p.ich and p.ich.tot),
+                               bool(kern.fuehrer.plan is not None and kern.fuehrer.plan.gesagt is not None),
+                               getattr(kern, "danach_text", None) or ""))
+        while offene_fragen and p.zeit >= offene_fragen[0][0]:
+            ft, ftext, fid = offene_fragen.pop(0)
+            lauf.antworten.append(frage_stellen(ftext, p, lb, plan, fid))
         while offen and p.zeit >= offen[0]:
             soll = offen.pop(0)
             lauf.halte[soll] = (p, b, lage_kurz(p, b, lb))

@@ -13,19 +13,23 @@ sobald wieder Platz ist - wenn er dann noch gilt.
 | ERINNERUNG   | HINWEIS  | nein              | ja            |
 | BESTAETIGUNG | HINWEIS  | nein              | ja (nie voll) |
 | TECHNIK      | SOFORT   | ja                | frei          |
-| INFO_FLASH   | HINWEIS  | nein              | frei, eigene Grenze (1 je 20 s) |"""
+| INFO_FLASH   | HINWEIS  | nein              | frei, eigene Grenze (1 je 20 s) |
+| WENDEPUNKT   | WICHTIG  | Unterbrechbares   | frei, hoechstens 1 je 8 s (Buch 11, 4) |
+| FENSTER      | WICHTIG  | Unterbrechbares   | ja (zaehlt als PLAN) |
+| VORSCHAU     | WICHTIG  | Unterbrechbares   | ja, hoechstens 1 je 60 s |"""
 from __future__ import annotations
 
 from ..regeln import HINWEIS, SOFORT, WICHTIG, Ansage
 
 PRIO = {"GEFAHR": SOFORT, "PLAN": WICHTIG, "ERINNERUNG": HINWEIS, "BESTAETIGUNG": HINWEIS, "TECHNIK": SOFORT,
-        "INFO_FLASH": HINWEIS}
-FREI = ("GEFAHR", "TECHNIK", "INFO_FLASH")        # zaehlen nicht zum Budget (INFO_FLASH: eigene Grenze, Auftrag 002)
+        "INFO_FLASH": HINWEIS, "WENDEPUNKT": WICHTIG, "FENSTER": WICHTIG, "VORSCHAU": WICHTIG}
+# zaehlen nicht zum Budget (INFO_FLASH: eigene Grenze, Auftrag 002; WENDEPUNKT: hoechstens 1 je 8 s, Buch 11, 4)
+FREI = ("GEFAHR", "TECHNIK", "INFO_FLASH", "WENDEPUNKT")
 
 
 def zaehlt(a: Ansage) -> bool:
     """Zaehlt eine gesprochene Ansage zum Budget (9.2)? Nicht: GEFAHR (Thema gefahr / SOFORT), Briefing, TECHNIK."""
-    return not (a.prio >= SOFORT or a.thema == "gefahr"
+    return not (a.prio >= SOFORT or a.thema in ("gefahr", "wendepunkt")
                 or a.schluessel in ("briefing", "kern:technik", "tod", "kern:INFO_FLASH"))
 
 
@@ -36,7 +40,7 @@ class Sprecher:
         self.wartet: tuple | None = None   # (Kategorie, Art, Text, Pruefung, danach) - Budget voll
         self.bestaetigt_zuletzt = -1e9
         self.kategorien: dict[str, int] = {"GEFAHR": 0, "PLAN": 0, "ERINNERUNG": 0, "BESTAETIGUNG": 0,
-                                           "INFO_FLASH": 0}
+                                           "INFO_FLASH": 0, "WENDEPUNKT": 0, "FENSTER": 0, "VORSCHAU": 0}
 
     def platz(self, zeit: float, gesagt: list) -> bool:
         """Budget frei? (Kapitel 9.2) - gemessen an allem, was gesprochen wurde (auch den alten Regeln)."""
@@ -80,7 +84,8 @@ class Sprecher:
             self.kategorien[kategorie] += 1
         schluessel = "kern:technik" if kategorie == "TECHNIK" else f"kern:{art}"
         return Ansage(text, PRIO[kategorie], schluessel, zeit=zeit, gueltig=8.0 if kategorie != "GEFAHR" else 5.0,
-                      sperre=0.0, thema="gefahr" if kategorie == "GEFAHR" else "", pruefe=pruefe,
+                      sperre=0.0, thema={"GEFAHR": "gefahr", "WENDEPUNKT": "wendepunkt"}.get(kategorie, ""),
+                      pruefe=pruefe,
                       unterbrechbar=kategorie in ("ERINNERUNG", "BESTAETIGUNG"))
 
     def bestaetigung_frei(self, zeit: float, gesagt: list, modus: str | None, gefahr: bool) -> bool:

@@ -4,6 +4,172 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 003 / Schritt 6 – Buch 11 (Führen, Vorausschau, Antworten) und Fragen (27.09.2026)
+
+Grundlage: `buecher/11_fuehren.md`, umgesetzt nach Kapitel 10. Dazu kommen Teil A des Auftrags (Entscheidungen zu 002)
+und Carlos' Wahl der Stimme: Killian, Tempo normal (+25 %). Offline gemessen, der Coach wurde nicht gestartet.
+
+### Zuerst rot
+
+- **58 neue Szenarien:**
+  - Fragen-Probe `2026-09-27_213624_fragen.toml` mit allen 51 gedrückten Fragen und Notizen aus dem
+    Sprechtasten-Log. Der Fragetext ist der erkannte Text, so wie der Kern ihn live bekommt.
+  - Vier Szenarien in `2026-09-27_213624.toml`: `1900-raus-unter-15`, `1247-ziel-nicht-noch-einmal`,
+    `1621-66-prozent-bleibt`, `0944-turm-ist-down`.
+  - Die Wendepunkt-Probe `wendepunkt-ansage` in 213624, 164326 und 173159.
+- **Ergebnis:** **57 von 58 waren mit 6a97391 rot.** Geprüft wurde in einem eigenen Worktree auf dem alten Stand, mit
+  den neuen Messwerkzeugen.
+  - Die Fragen-Probe war 51 von 51 rot: Der alte Weg kennt keine Absicht, 42 Fragen brauchten Claude.
+  - `1621-66-prozent-bleibt` war grün. Es ist ein Wächter für die 70-%-Grenze aus Teil A 1.
+- **Neuer Test:** `test_kern.zwei_klar_unterlegene` war rot (die alte Regel kennt nur einen Gegner).
+- **Neue Prüfschlüssel** (`werkzeuge/szenarien.py`):
+  - `kern_frage = true` spielt die Frage zur Zeit ein wie per Sprechtaste.
+  - Dazu `absicht`, `ohne_claude` und `mit_handlung`.
+  - `wendepunkt_ansage = true` prüft die ganze Datei.
+  - `woerter_max` erlaubt für WENDEPUNKT, VORSCHAU und FENSTER 20 Wörter (`woerter_max_lang`).
+
+### Teil A – Entscheidungen zu 002
+
+1. **Zwei klar unterlegene Gegner** sind keine Gefahr (`Kern._klar_unterlegen`). Bedingungen: dein Leben ≥ 70 %, vor
+   JEDEM ≥ 2 Level und ≥ 1500 Item-Gold (Schätzung aus Buch 7, 3.2), kein dritter Gegner mit `p_da` ≥ 0,2.
+   213624 16:21 bleibt eine Warnung: Riven hatte 66 %.
+2. **RAUS unter 15 % Leben** mit einem Gegner in `kampf_radius` ist robust belegt, auch ohne Balken.
+   213624 19:00 kommt jetzt „Raus, zum Turm!“.
+3. **Stimme und Tempo:** Carlos hat Killian mit +25 % gewählt (`[stimme]`).
+4. **INFO_FLASH und WENDEPUNKT** zählen nicht zum Ziel ≤ 50. `kennzahlen.py` weist beide getrennt aus.
+5. **Offen aus 002:**
+   - **Stille abgeschnitten** (`stimme._Strom._schneide`, `werkzeuge/stille.py`):
+     - Vorn bleiben 0,06 s, hinten 0,15 s. Pausen im Satz bleiben ganz.
+     - Die 8 Stimmproben-Sätze dauern 17,0 s statt 29,5 s.
+     - Der erste hörbare Ton kommt im Median nach 0,27 s statt 0,61 s.
+     - `[stimme] zeichen_pro_s` = 15,9 (vorher 14,2).
+   - **Kein Ziel zweimal in 60 s**, auch nicht nach einem neuen Basis-Besuch (`Kern._ziel_eben`): 213624 12:59
+     „Dann Drachen.“ entfällt.
+   - Das Quest-Feld V im HUD steht in OFFEN.md.
+
+### Buch 11, umgesetzt
+
+- **Zeitleiste** (`kern/zeitleiste.py`), je Takt, 180 s:
+  - Objective-Spawns, Respawns, bekannte Zauber der Gegner, euer Fenster, Buffs, Inhibitoren.
+  - Die nächste Kanone deiner Lane, dein Back-Bedarf (Einkommen der letzten 60 s) und dein TP.
+  - Zu sehen im Dashboard (Kasten „Nächste 3 Minuten“), in `kern.kontext()` und im Protokoll.
+- **`danach`** (`kern/fuehren.danach`), Projektion auf die Kandidaten dieses Takts:
+  - Ihr Weg zählt ab dem Ziel der jetzigen Handlung.
+  - Spawns sind fortgeschrieben.
+  - Stumme und Rückzugs-Arten sind nie `danach`.
+  - Nach einem Back ist `danach` das Ziel aus der Basis.
+  - Im Dashboard („Danach: …“) und im Protokoll.
+- **WENDEPUNKT:** Struktur fällt, Objective fällt, Kill in ≤ 2000 um dich oder dein Ziel, Basis verlassen.
+  - Der Plan gilt dann als ungültig und wird sofort neu gewählt. Der Satz nennt den Anlass vorn:
+    „Turm ist down: Farm deine Top-Welle.“, „Drache drin: …“.
+  - Mit `danach` sind bis 20 Wörter erlaubt, bei zwei nahen Wegen gibt es Optionen.
+  - Er ist frei vom Budget, höchstens einer je 8 s, und wartet das Ende eines Kampfs ab.
+- **Stille statt Wiederholung am Wendepunkt:**
+  - Beim Verlassen der Basis schweigt der Coach, wenn der Basis-Satz jünger als 60 s ist.
+  - Derselbe Anlass mit demselben Ziel in 60 s bleibt still.
+  - Der Schutzplan einer verlorenen Lane (G1) gilt still weiter.
+  - Ist der Plan nur Halten, kommt die beste Option, die am ungeeichten Kampfmodell hängt, mit „unsicher“; gibt es
+    keine, schweigt er.
+- **FENSTER:** Eine neue Information leitet den nächsten Plan-Satz ein, aber nur, wenn der Plan wechselt. Das gilt
+  für den Jungler auf der anderen Seite, den Lane-Gegner tot oder im Brunnen, ihren Top ohne TP und den Flash eines
+  nahen Gegners. Beispiel: „Rumble ist 13 Sekunden weg: Lass die Top-Welle zu dir kommen …“.
+- **VORSCHAU** ab 14:00:
+  - Bedingungen: 45 s ohne Ansage und ein Ereignis der Zeitleiste in ≤ 90 s, das den Plan betrifft. Höchstens eine
+    je 60 s, mit Budget und mit R4.
+  - Beispiel: „Teemo lebt in 15 Sekunden wieder: auf den Top-Inhibitor-Turm noch schnell, dann zurück.“
+- **Fragen** (`kern/fragen.py`, Schritt 6), zuerst an den Kern:
+  - Absichten: JETZT, DANACH, WARUM, ENTWEDER, SOLL_ICH, LAGE, TIMER, WO, KAUF, NOTIZ, OFFEN.
+  - Korrekturen („ich war in der Base“, „Drache ist tot“ für 30 s).
+  - Kein Widerspruch ohne „Neu:“, und eine Antwort gilt als gesagter Plan. Eine Anschlussfrage („Und die anderen?“)
+    erbt die Absicht.
+  - OFFEN geht an Claude, und zwar mit `kern.kontext()` (höchstens 30 Zeilen: Plan, danach, Top-3, Zeitleiste,
+    Flash, Stand, Gegner) statt der Rohlage. Dazu kommen die Regeln aus Kapitel 6 im Systemprompt.
+  - Live verdrahtet in `sprache._beantworte`.
+- **Protokolle:** `protokoll.py --fragen` spielt die Fragen aus dem Log ein und schreibt jede Antwort mit Absicht und
+  Rechenzeit dazu, je Ansage auch `danach` und die Zeitleiste.
+
+### Abnahme
+
+| Abnahme | Soll | Ist |
+|---|---|---|
+| `tests/alle.py` | grün | **10 / 10** |
+| Szenarien, alle 14 Dateien | grün | **150 / 153**: rot ist nur `wendepunkt-ansage` in 213624, 164326, 173159 (s. u.); 2 übersprungen (brauchen Claude) |
+| Konstruierte Lagen | grün | **40 / 40** |
+| Fragen-Probe 213624 | grün | **51 / 51** (vorher 0 / 51) |
+| Protokolle | 213624 (mit Fragen), 164326, 173159 | **ja** |
+
+**Kennzahlen, vorher (6a97391) → nachher** (`kennzahlen.py --nur-kern`, 213624 mit `--fragen`; vorher mit denselben
+Messwerkzeugen):
+
+| Kennzahl | Soll | 213624 | 164326 | 173159 |
+|---|---|---|---|---|
+| Leerlauf ab 14:00 | ≤ 10 % | 51 → **48 %** | 60 → **52 %** | 52 → **48 %** |
+| Wendepunkte ohne Plan-Satz in 60 s | – | 5 → **0** | 14 → **0** | 3 → **3** |
+| Wendepunkt-Verzug, Median | ≤ 3 s | 0,0 → **0,0 s** | 0,3 → **0,0 s** | 0,0 → **0,0 s** |
+| Widersprüche | 0 | 1 → **1** | 0 → **0** | 0 → **0** |
+| Stichwort-Antworten | 0 | 7 → **3** | – | – |
+| Antworten ohne Claude / an Claude | – | 9 / 42 → **46 / 5** | – | – |
+| Antwortzeit ohne Claude, Median | ≤ 1 s | **< 1 ms** Rechenzeit | – | – |
+| ungefragt ohne INFO_FLASH und WENDEPUNKT, je 30 min | ≤ 50 | 39 → **24** | 41 → **37** | 50 → **51** |
+| Fassungswechsel | 0 | 1 → **0** | 0 → **1** | 0 → **1** |
+| Schranken-, Kampf-Verstöße | 0 | **0** | **0** | **0** |
+
+In den übrigen Partien:
+- **Leerlauf:** 102112 40 %, 133930 53 %.
+- **Widersprüche:** je 2 in 102112 und 133930.
+- **Ungefragt ohne INFO_FLASH und WENDEPUNKT:** 37, 54, 39, 50 je 30 min (102112, 133930, 140253, 144655).
+
+Zur Antwortzeit:
+- Offline gibt es nur die Rechenzeit des Kerns. Die Zeit bis zur Stimme live (Spracherkennung + Stimme) misst erst
+  die nächste Partie.
+- Mit Claude brauchte es im Live-Log vorher 1,8 s bis zur Stimme.
+
+**Die Wendepunkt-Probe ist nicht grün.** Nach Turmfall, Objective und Verlassen der Basis kam der Plan-Satz nicht
+immer in ≤ 3 s:
+
+| Partie | zu spät | kein Satz |
+|---|---|---|
+| 213624 | 4 | 4 (in der letzten Minute, 23:57–24:29, die Partie endet) |
+| 164326 | 12 | 0 |
+| 173159 | 11 | 3 |
+
+Die Ursachen, geprüft an 164326:
+- Der Satz wartet hinter einem langen Satz. Seit Auftrag 003 fällt er dabei nicht mehr weg, er kommt aber 4–10 s
+  später.
+- Ein Wendepunkt fällt in eine GEFAHR. Der Rückzug geht vor, der Wendepunkt verfällt nach 10 s.
+- Der Schutzplan (G1) bleibt bewusst still.
+- Mehrere Strukturen fallen in wenigen Sekunden (höchstens ein Wendepunkt je 8 s).
+
+**Leerlauf bleibt bei 40–53 %.** Im Mid-Game ist der Plan meist „Farm die Welle“ (stumm) oder eine Turm- bzw.
+Objective-Handlung, die am ungeeichten Kampfmodell hängt und nach Entscheidung 2 stumm ist. Ungesagte Pläne zählen als
+Leerlauf. Buch 11 wirkt im Mid-Game erst voll, wenn die Kampf-Eichung besteht.
+
+### Abweichungen
+
+1. **`danach` ist eine Projektion auf die Kandidaten dieses Takts:** Weg ab dem Ziel, fortgeschriebene Spawns. Es ist
+   keine neue Kandidatenrechnung aus einer projizierten Lage (Kapitel 3, Schritt 2). Die Modi rechnen mit der
+   Bewertung des Takts (Gegner-Ankunft, Wellen), die sich nicht ohne Weiteres projizieren lässt.
+2. **Zeitleiste:** „Deine Welle kommt an“ ist die nächste Kanonenwelle deiner Lane (Wellen-Uhr), nicht jede Welle.
+3. **Wendepunkte:**
+   - Den Rückzug deckt die vorhandene Bestätigung „Gut raus.“ ab, die ihn als sicher angekommen meldet; er ist kein
+     eigener Wendepunkt.
+   - Den Respawn deckt der TOT-Satz 8 s davor.
+4. **Stille am Wendepunkt** (s. oben) nach Kapitel 1, Prinzip 5, und Kapitel 4 („Wiederholungen … in 60 s“).
+   - Die Kennzahl zählt einen Wendepunkt derselben Art ≤ 60 s nach einem mit Satz als gedeckt, etwa die drei Larven
+     in 35 s.
+   - Beim Verlassen der Basis gilt ein Basis-Satz ≤ 60 s davor als rechtzeitig.
+   - Tot oder im Kampf zählt der Verzug ab dem Ende des Kampfs.
+5. **Gefragt nennt der Coach auch Optionen, die ungefragt stumm bleiben** (Entscheidung 2), mit „mit Kampf –
+   unsicher“ (Kapitel 1, Prinzip 8). Beispiel 12:56: „Zum Drachen: ihr seid zwei. Turm ist gerade keine Option.“
+6. **Fassungswechsel und Widersprüche:**
+   - Der Anlass eines WENDEPUNKT- oder FENSTER-Satzes ist das Ereignis, nicht die Fassung. Verglichen wird der Plan
+     dahinter.
+   - Wendepunkte und der Weg in die Basis gelten als neues Ereignis.
+7. **`173159` 3710:** `text_max` zählt nur die Kurzform am Satzanfang (`^Dann Top-Welle`). Ein Wendepunkt-Satz
+   bestätigt den Plan zu einem neuen Ereignis.
+
+---
+
 ## Auftrag 002 – Sofort-Fixes aus Carlos' Partie 213624 (27.09.2026)
 
 Quelle: `aufnahmen/2026-09-27_213624_notizen.md`, `_sprechtaste.log`, `_ansagen.json`. Bot-Partie, Riven gegen Rumble,

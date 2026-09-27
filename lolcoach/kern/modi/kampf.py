@@ -122,6 +122,10 @@ def raus_beleg(m, cfg: dict) -> bool:
     wir = 1 + sum(1 for s, wo, *_ in b.mitspieler if wo is not None and not s.tot and abstand(wo, b.pos) <= r)
     if len(gegner) >= wir + 1:
         return True
+    # Auftrag 003, Teil A 2: unter raus_leben_ohne_balken (15 %) mit einem Gegner in kampf_radius reicht das allein -
+    # auch ohne seinen Balken (213624 19:00: 12 %, Sona 825 entfernt, Balken unbekannt)
+    if b.leben is not None and b.leben < cfg["schranken"]["raus_leben_ohne_balken"] and gegner:
+        return True
     if b.leben is not None and b.leben < cfg["schranken"]["raus_leben_max"] and gegner:
         naechster = min(gegner, key=lambda g: abstand(g.pos, b.pos))
         le = _leben(naechster)

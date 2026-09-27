@@ -87,7 +87,12 @@ def _kern(lagebild) -> dict | None:
     s = k.stand()
     return {"modus": s["modus"], "bereich": s["bereich"], "grund": s["grund"], "plan": s.get("plan"),
             "top": s.get("top", []), "gefahr": s.get("gefahr", False),
-            "info": [{"zeit": uhr(i["zeit"]), "text": i["text"]} for i in s["info"]]}
+            "info": [{"zeit": uhr(i["zeit"]), "text": i["text"]} for i in s["info"]],
+            # Buch 11, Kapitel 2 und 3: was nach dem Plan kommt, und was in den naechsten Minuten ansteht
+            # (ein aelterer Kern hat beides nicht - dann None und leer, die Seite zeigt nichts davon)
+            "danach": s.get("danach"),
+            "zeitleiste": [{"uhr": e.get("uhr", ""), "in_s": e.get("in_s"), "text": e.get("text", ""),
+                            "art": e.get("art", "")} for e in (s.get("zeitleiste") or [])]}
 
 
 def _jetzt(p: Partie, lagebild) -> dict | None:

@@ -89,3 +89,47 @@ quelle = "Auftrag 002, S5.3: 15:25 'Ich habe Ziggs getowerdived und das ist easy
 lage = "Riven verfolgt Ziggs unter seinen Turm."
 darf_nicht_sagen = ["Lass ihn, Turm"]
 warum = "Auch 'Lass ihn, Turm!' ist ein RAUS - ohne robusten Beleg stumm."
+
+# --- Auftrag 003, Teil A ---
+
+[[szenario]]
+id = "1900-raus-unter-15"
+fenster = ["18:59", "19:04"]
+quelle = "Auftrag 002, Offen 2 / Auftrag 003, Teil A 2: 19:00 Riven 12 %, Sona 825 entfernt, ihr Balken unbekannt - RAUS blieb stumm"
+lage = "Riven mit 12 % Leben, ein Gegner in kampf_radius, kurz vor dem Tod."
+muss_nennen_eins = ["Raus"]
+warum = "Unter 15 % eigenem Leben mit einem Gegner in kampf_radius ist RAUS robust belegt, auch ohne Balken."
+
+[[szenario]]
+id = "1247-ziel-nicht-noch-einmal"
+fenster = ["12:45", "13:05"]
+quelle = "Auftrag 002, Offen 5 / Auftrag 003, Teil A 5: 12:47 'Zum Drachen: ihr seid drei.' -> 12:59 'Dann Drachen.'"
+lage = "Riven nach einem neuen Basis-Besuch, das Ziel ist dasselbe."
+text_max = { "Drachen" = 1 }
+warum = "Dasselbe Ziel in 60 s wird nicht in Kurzform wiederholt, auch nicht nach einem neuen Basis-Besuch (Buch 11, 4: Stille)."
+
+[[szenario]]
+id = "1621-66-prozent-bleibt"
+fenster = ["16:18", "16:25"]
+quelle = "Auftrag 003, Teil A 1: zwei klar unterlegene Gegner sind keine Gefahr - aber nur ab 70 % Leben"
+lage = "Riven mit 66 % Leben, Caitlyn (32 %) und Sona kommen."
+muss_nennen_eins = ["Caitlyn"]
+warum = "66 % liegt unter 70 %: die Warnung bleibt richtig (Waechter fuer die Grenze)."
+
+# --- Auftrag 003, Buch 11 ---
+
+[[szenario]]
+id = "0944-turm-ist-down"
+fenster = ["9:44", "9:52"]
+quelle = "Buch 11, 0: 9:44 und 9:55 'Der erste Tower ist down, was jetzt?'"
+lage = "Carlos nimmt den aeusseren Top-Turm, der Drache lebt."
+muss_nennen_eins = ["Turm ist down"]
+warum = "Buch 11, 4: nach einem Wendepunkt kommt der naechste Plan sofort, mit dem, was passiert ist, vorn."
+
+[[szenario]]
+id = "wendepunkt-ansage"
+fenster = ["0:00", "26:00"]
+quelle = "Buch 11, 7: Wendepunkt-Probe"
+lage = "Ganze Partie."
+wendepunkt_ansage = true
+warum = "Auf jeden Turmfall, Objective-Kill und das Verlassen der Basis folgt in <= 3 s ein Plan-Satz."

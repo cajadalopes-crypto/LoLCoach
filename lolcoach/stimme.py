@@ -38,6 +38,14 @@ PRUEFEN_ALLE = 0.25          # Sekunden: so oft fragt die Stimme waehrend eines 
 # (sprechplan.gefahr, `dringend`).
 MITTEN_PRUEFEN = False
 STUMM_HOECHSTENS = 60.0   # Sekunden: laenger haelt keiner die Sprechtaste - danach gilt sie als losgelassen
+# Stille um jedes Satz-Audio (Carlos 27.09.: "du redest viel zu lange und zu langsam ... immer zu spaet"). Gemessen an
+# Killian +25/+50 %: vorn 0,15-0,18 s digitale Null, hinten 0,55-1,4 s (der Dienst liefert kurze Teilsaetze nie unter
+# 1,87 s) - acht Stimmproben-Saetze auf dem Weg des Coachs: 29,5 s gespielt, davon 8,6 s Stille vorn und hinten.
+# Leise Anlaute ("Feuer", "Hol", "Ziggs") beginnen hoechstens 0,04 s vor dem ersten Betrag ueber STILLE, der Rest
+# hinter dem Satz ist mp3-Rauschen unter 0,001. Geschnitten wird nur vorn und hinten, nie eine Pause im Satz.
+STILLE = 0.01      # Betrag darunter ist Stille (am rohen Audio, vor der Lautstaerke - auch stumm geschnitten)
+VORLAUF = 0.06     # Sekunden Stille, die vor dem ersten Ton bleiben
+NACHLAUF = 0.15    # Sekunden Stille, die nach dem letzten Ton bleiben (Ausklingen; zwischen Teilsaetzen 0,21 s Pause)
 
 
 class _Sapi:
@@ -86,6 +94,9 @@ class _Strom:
         self.fertig = False
         self.fehler: BaseException | None = None
         self._neu = threading.Condition()
+        self._laut = False               # schon ein Ton da?
+        self._vorn: list = []            # Stille davor (roh)
+        self._halt: list = []            # Stille seit dem letzten Ton (roh): Pause im Satz oder sein Ende
         threading.Thread(target=self._lauf, daemon=True).start()
 
     def _lauf(self) -> None:
@@ -95,9 +106,31 @@ class _Strom:
         except BaseException as e:   # noqa: BLE001 - auch Abbrueche des Dienstes: der Sprecher faellt zurueck
             self.fehler = e
         finally:
+            rest = self._halt if self._laut else self._vorn
             with self._neu:
+                if rest:     # hinter dem letzten Ton nur NACHLAUF - der Rest wird nie gespielt
+                    import numpy as np
+                    self.stuecke.append(np.concatenate(rest)[:int(NACHLAUF * self.rate)] * self.faktor)
                 self.fertig = True
                 self._neu.notify_all()
+
+    def _schneide(self, a) -> list:
+        """Vorn bleibt VORLAUF Stille vor dem ersten Ton. Stille nach einem Ton wird zurueckgehalten, bis wieder einer
+        kommt (dann war sie eine Pause im Satz und klingt ganz) - oder bis zum Ende (_lauf: NACHLAUF)."""
+        import numpy as np
+        laut = np.flatnonzero(np.abs(a) > STILLE)
+        if not len(laut):
+            (self._halt if self._laut else self._vorn).append(a)
+            return []
+        if self._laut:
+            raus = self._halt + [a[:laut[-1] + 1]]
+        else:
+            self._laut = True
+            vor = np.concatenate(self._vorn + [a[:laut[0]]])
+            raus = [vor[max(0, len(vor) - int(VORLAUF * self.rate)):], a[laut[0]:laut[-1] + 1]]
+            self._vorn = []
+        self._halt = [a[laut[-1] + 1:]]
+        return [x for x in raus if len(x)]
 
     def _dazu(self, dek, daten) -> None:
         import numpy as np
@@ -108,7 +141,7 @@ class _Strom:
                 a = a[0] if a.ndim == 2 else a
                 a = a.astype(np.float32) / 32768.0 if a.dtype.kind == "i" else a.astype(np.float32)
                 self.rate = f.sample_rate
-                neu.append(a * self.faktor)
+                neu += [x * self.faktor for x in self._schneide(a)]
         if neu:
             with self._neu:
                 self.stuecke.extend(neu)

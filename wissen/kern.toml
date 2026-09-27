@@ -50,12 +50,39 @@ gefahr_einzel_gold = 1500        # ... UND so viel Item-Gold (seine Werte nach B
 # Auftrag 002, S5.3: RAUS im Kampf nur mit robustem Beleg, bis die Kampf-Eichung besteht - sie sind in kampf_radius
 # >= 1 mehr als ihr, oder dein Leben liegt unter raus_leben_max und unter dem Balken des naechsten Gegners
 raus_leben_max = 0.3
+raus_leben_ohne_balken = 0.15    # Auftrag 003, Teil A 2: darunter reicht ein Gegner in kampf_radius, auch ohne Balken
+# Auftrag 003, Teil A 1: auch zwei Gegner sind keine Gefahr, wenn du vor JEDEM gefahr_einzel_level und
+# gefahr_einzel_gold liegst, dein Leben >= gefahr_zwei_leben_min ist und kein dritter p_da >= gefahr_zwei_dritter_p_max hat
+gefahr_zwei_leben_min = 0.7
+gefahr_zwei_dritter_p_max = 0.2
 
 [stimme]
-stand = "Auftrag 002, S2 (27.09.2026)"
-name = "de-DE-KillianNeural"    # Carlos waehlt aus aufnahmen/stimmproben/ (LIESMICH.md); bis dahin bleibt Killian
-tempo = "+50%"                  # S2.2: 20 % schneller als bisher (+25 %); --tempo ueberschreibt es
-zeichen_pro_s = 16.6            # Killian +50 %, gemessen an den Stimmproben (mit Pausen) - Schaetzung des Sprechplans
+stand = "Auftrag 003 (27.09.2026): Carlos hat gewaehlt - Killian, Tempo normal"
+name = "de-DE-KillianNeural"    # Carlos' Wahl aus aufnahmen/stimmproben/ (Auftrag 003)
+tempo = "+25%"                  # Carlos' Wahl: normal (Auftrag 002 hatte +50 % gesetzt); --tempo ueberschreibt es
+zeichen_pro_s = 15.9            # Killian +25 % nach dem Schneiden der Stille (Auftrag 003, werkzeuge/stille.py), mit 0,4 s Nachlauf
+
+[fuehren]
+stand = "Buch 11, 27.09.2026 - Startwerte (Auftrag 003)"
+zeitleiste_s = 180
+wendepunkt_abstand_s = 8
+wendepunkt_kill_radius = 2000
+wendepunkt_gilt_s = 10          # nicht im Buch: so lange wartet ein Wendepunkt auf das Ende von KAMPF/GEFAHR
+danach_min_dauer_s = 5
+vorschau_ab_s = 840
+vorschau_ruhe_s = 45
+vorschau_horizont_s = 90
+vorschau_abstand_s = 60
+optionen_abstand_anteil = 0.15
+optionen_abstand_ge = 150
+max_woerter_wendepunkt = 20
+max_woerter_optionen = 20
+leerlauf_max_s = 60
+antwort_wiederholung_s = 30
+widerspruch_fenster_s = 60
+korrektur_gilt_s = 30
+ziel_wiederholen_s = 60         # Buch 11, 4 "Stille": gleiches Ziel in 60 s (Auftrag 003, Teil A 5)
+fenster_gilt_s = 5              # nicht im Buch: so lange nach einer neuen Information darf ein neuer Plan sie nennen
 
 [info_flash]
 stand = "Auftrag 002, S3 (27.09.2026)"

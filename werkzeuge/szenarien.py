@@ -23,7 +23,12 @@ Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes
                             im Fenster hat einen Plan, dessen Ziel oder Objective diesen Text enthaelt). ANLAUFEN gilt
                             als NEHMEN (Buch 6, 4.3: eine Handlung mit zwei Schritten)
   frage:                    wie per Sprechtaste, geprueft wird die Antwort - braucht Claude, nur mit --mit-claude;
-                            mit sofort = true die Sofort-Antwort ohne Claude (immer geprueft, keine = rot)
+                            mit sofort = true die Sofort-Antwort ohne Claude (immer geprueft, keine = rot); seit
+                            Auftrag 003 mit kern_frage = true der Fragenweg des Kerns (Buch 11, 5), eingespielt wie live:
+                            absicht (erwartete Absicht), ohne_claude (keine Claude-Pflicht), mit_handlung (keine
+                            Stichwort-Antwort), dazu darf_nicht_sagen, muss_nennen_eins, muss_ziel
+  Datei-weit, Auftrag 003:  wendepunkt_ansage = true - auf jeden Turmfall, Objective-Kill und das Verlassen der Basis
+                            im Fenster folgt in <= 3 s ein Plan-Satz (werkzeuge/fuehrmass.py)
   typ = "review":           gegen das gespeicherte Review der Partie - nur mit --mit-claude
 
 Ein Szenario ist rot, wenn ein gepruefter Teil verletzt ist; gruen, wenn mindestens ein Teil geprueft wurde und
@@ -162,8 +167,11 @@ def neue_pruefungen(sz: dict, ansagen: list, stehend: tuple | None = None) -> li
             if sz.get("woerter_schluessel") and not a.schluessel.startswith(sz["woerter_schluessel"]):
                 continue
             n = len(a.text.split())
-            if n > sz["woerter_max"]:
-                aus.append(f"woerter_max {sz['woerter_max']} - {n} Woerter: \"{a.text[:80]}\"")
+            # Auftrag 003 (Buch 11, 4): WENDEPUNKT, VORSCHAU und FENSTER duerfen 14 + 6 Woerter haben
+            grenze = sz["woerter_max"] if getattr(a, "_kategorie", "") not in ("WENDEPUNKT", "VORSCHAU", "FENSTER") \
+                else sz.get("woerter_max_lang", 20)
+            if n > grenze:
+                aus.append(f"woerter_max {grenze} - {n} Woerter: \"{a.text[:80]}\"")
     if sz.get("gold_reicht"):
         for a in ansagen:
             aus += gold_verstoesse(a)
@@ -281,6 +289,27 @@ def review_pruefen(sz: dict, stamm: str) -> tuple[list[str], str | None]:
     return aus, None
 
 
+def kern_frage_pruefen(sz: dict, r: dict | None, champions) -> tuple[list[str], int, str | None]:
+    """Auftrag 003 (Buch 11, 5 und 7): die Antwort des Fragenwegs - (Verstoesse, geprueft 0/1, uebersprungen-Grund)."""
+    import fuehrmass
+    if r is None:
+        return [], 0, "kern_frage (nicht eingespielt)"
+    aus = []
+    text = r.get("text") or ""
+    if sz.get("absicht") and r.get("absicht") != sz["absicht"]:
+        aus.append(f"absicht {sz['absicht']} - erkannt: {r.get('absicht') or 'keine (alter Weg)'}")
+    if sz.get("ohne_claude") and (r.get("quelle") == "claude" or not text):
+        aus.append("ohne_claude - die Antwort braucht Claude")
+    if not text:
+        return aus, 1, None
+    if sz.get("mit_handlung") and not fuehrmass.hat_handlung(text):
+        aus.append(f"mit_handlung - Stichwort-Antwort: \"{text[:80]}\"")
+    aus += text_pruefen(sz, [(r["zeit"], text)], champions)
+    if aus:
+        aus.append(f"Antwort: {text[:140]}")
+    return aus, 1, None
+
+
 def antwort(frage: str, p, lb, wand: float, stamm: str) -> str:
     """Der alte Antwortweg wie live: erst sofort, sonst Claude mit Spielakte und dem Bildschirm des Moments."""
     from lolcoach import antworten, gehirn
@@ -331,8 +360,12 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
             elif s.get("frage") and mit_claude and ns.sekunden(s["zeit"]) == soll and nur != "kern":
                 antworten_[s["id"]] = antwort(s["frage"], p, lb, wand, stamm)
 
+    kern_fragen = [(ns.sekunden(s["zeit"]), s["frage"], s["id"]) for s in szen
+                   if s.get("kern_frage") and s.get("frage") and "zeit" in s]
     if lauf is None:
-        lauf = ns.durchspielen(ns.pfad_zu(stamm), halte_bei=halte, rueckruf=bei_halt, kern_stellung=kern)
+        lauf = ns.durchspielen(ns.pfad_zu(stamm), halte_bei=halte, rueckruf=bei_halt, kern_stellung=kern,
+                               fragen=kern_fragen if nur != "kern" else None)
+    kern_antworten = {r["id"]: r for r in lauf.antworten if r.get("id") is not None}
     soll_modus = cfg.get("spielmodus", "CLASSIC")
     print(f"== {stamm}{' (Bot-Partie)' if cfg.get('bots') else ''} [{lauf.spielmodus}]: {len(lauf.gesagt)} Ansagen "
           f"nachgespielt")
@@ -355,7 +388,13 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
             else:
                 uebersprungen.append("review (--mit-claude)")
         elif nur != "kern":
-            if sz.get("frage"):
+            if sz.get("frage") and sz.get("kern_frage"):
+                v, geprueft_, grund = kern_frage_pruefen(sz, kern_antworten.get(sz["id"]), lauf.champions)
+                if grund:
+                    uebersprungen.append(grund)
+                geprueft += geprueft_
+                verstoesse += v
+            elif sz.get("frage"):
                 if sz["id"] in antworten_:
                     geprueft += 1
                     verstoesse += text_pruefen(sz, [(ns.sekunden(sz["zeit"]), antworten_[sz["id"]])], lauf.champions)
@@ -376,6 +415,15 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                     if len(kw) > sz["kehrtwenden_max"]:
                         verstoesse.append(f"kehrtwenden_max {sz['kehrtwenden_max']} - {len(kw)}: " + "; ".join(
                             f"{ns.uhr(a)} \"{s1[:40]}\" -> {ns.uhr(b)} \"{s2[:40]}\"" for a, s1, b, s2 in kw))
+                if sz.get("wendepunkt_ansage"):
+                    import fuehrmass
+                    geprueft += 1
+                    for t, art, v, vermerk in fuehrmass.wendepunkt_verzug(lauf, von):
+                        if t > bis or vermerk == "tot":
+                            continue
+                        if v is None or v > 3.0:
+                            verstoesse.append(f"wendepunkt_ansage - {ns.uhr(t)} {art}: "
+                                              + ("kein Plan-Satz in 60 s" if v is None else f"Plan-Satz erst nach {v:.0f} s"))
                 if "gesprochen_ohne" in sz:
                     geprueft += 1
                     from lolcoach.stimme import sprechbar

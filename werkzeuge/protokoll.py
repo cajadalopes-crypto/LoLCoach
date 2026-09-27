@@ -5,8 +5,12 @@ Spielt eine Aufnahme wie live nach (`--kern neu`, Stimme in Spielzeit wie stimme
 von wem: Kern oder alte Regel) und die zwei naechstbesten Optionen des Kerns mit EV. Ein abgebrochener Satz ist
 markiert.
 
+Seit Auftrag 003 (Buch 11, 10.6) je Ansage auch `danach` und die Zeitleiste; mit `--fragen` werden die Fragen aus
+`<stamm>_sprechtaste.log` zur Zeit eingespielt (wie per Sprechtaste), ihre Antworten stehen mit im Protokoll.
+
     python werkzeuge/protokoll.py                       # juengste Aufnahme
     python werkzeuge/protokoll.py 2026-09-27_102112 2026-09-27_140253
+    python werkzeuge/protokoll.py 2026-09-27_213624 --fragen
 """
 from __future__ import annotations
 
@@ -42,11 +46,15 @@ def schnappschuss(a, p, werk, kern) -> dict:
         "gold": None if p.gold is None else int(p.gold),
         "plan": None if plan is None else (plan.art, plan.handlung.ev, plan.handlung.p_tod),
         "gefahr": kern.gefahr, "optionen": [_option(h) for h in rest],
+        "danach": getattr(kern, "danach_text", None),
+        "zeitleiste": [f"{ns.uhr(e.zeit)} {e.text}" for e in (getattr(kern, "zeitleiste", None) or [])[:5]],
     }
 
 
-def protokoll(stamm: str, kern: str = "neu") -> Path:
+def protokoll(stamm: str, kern: str = "neu", fragen: bool = False) -> Path:
+    import fuehrmass
     pfad = ns.pfad_zu(stamm)
+    liste = [(f["zeit"], f["text"], i) for i, f in enumerate(fuehrmass.fragen_aus_log(stamm))] if fragen else None
     lagen: dict[int, dict] = {}
     gesehen = [0]
     info = {}
@@ -59,10 +67,11 @@ def protokoll(stamm: str, kern: str = "neu") -> Path:
             lagen[id(a)] = schnappschuss(a, p, werk, kern_)
         gesehen[0] = len(plan.gesagt)
 
-    lauf = ns.durchspielen(pfad, kern_stellung=kern, beim_takt=beim_takt)
+    lauf = ns.durchspielen(pfad, kern_stellung=kern, beim_takt=beim_takt, fragen=liste)
     minuten = lauf.sekunden_mit_daten / 60
-    n = len(lauf.gesagt)
-    vom_kern = sum(1 for a in lauf.gesagt if a.schluessel.startswith("kern:"))
+    ungefragt = [a for a in lauf.gesagt if a.schluessel != "antwort"]
+    n = len(ungefragt)
+    vom_kern = sum(1 for a in ungefragt if a.schluessel.startswith("kern:"))
     zeilen = [
         f"# Protokoll {stamm}",
         "",
@@ -78,16 +87,31 @@ def protokoll(stamm: str, kern: str = "neu") -> Path:
         "keinen Plan.",
         "",
     ]
+    if fragen:
+        zeilen.insert(-1, f"Fragen aus dem Sprechtasten-Log eingespielt: {len(lauf.antworten)} - je Frage die Antwort "
+                          f"des Kerns (Absicht, ohne Claude oder „braucht Claude“), markiert mit **Frage**.")
+        zeilen.insert(-1, "")
     eintraege = [(lagen.get(id(a), {}).get("zeit", a.gesprochen or a.zeit), a) for a in lauf.gesagt]
     # Entscheidung 2 (27.09.): Kampf-Rufe des ungeeichten Modells - berechnet, nicht gesprochen
     eintraege += [(s["zeit"], s) for s in (lauf.kern.stumm_modell if lauf.kern is not None else [])]
     eintraege.sort(key=lambda x: x[0] if x[0] is not None else 0.0)
-    stumm_n = sum(1 for _, a in eintraege if isinstance(a, dict))
+    stumm_n = sum(1 for _, a in eintraege if isinstance(a, dict) and "frage_ohne" not in a)
     if stumm_n:
         zeilen.insert(-1, f"Stumm (Modell nicht geeicht, Entscheidung 2): {stumm_n} Kampf-Rufe (ANNEHMEN, REIN, DREHEN) "
                           f"berechnet, nicht gesprochen - unten mit „stumm“ markiert.")
         zeilen.insert(-1, "")
+    # Fragen, die Claude braucht, stehen offline ohne Antwort (nicht in `gesagt`) - hier mit ihrer Absicht
+    for r in lauf.antworten:
+        if not r.get("text"):
+            eintraege.append((r["zeit"], {"frage_ohne": r}))
+    eintraege.sort(key=lambda x: x[0] if x[0] is not None else 0.0)
     for t_, a in eintraege:
+        if isinstance(a, dict) and "frage_ohne" in a:
+            r = a["frage_ohne"]
+            zeilen.append(f"### {ns.uhr(r['zeit'])} · Frage")
+            zeilen.append(f"- **Frage** ({r.get('absicht') or '?'}, braucht Claude): „{r['frage']}“")
+            zeilen.append("")
+            continue
         if isinstance(a, dict):
             zeilen.append(f"### {ns.uhr(a['zeit'])} · {a.get('modus') or '–'} · stumm: Modell nicht geeicht")
             zeilen.append(f"- **Stumm** (`kern:{a['art']}`): „{a['text']}“")
@@ -100,14 +124,23 @@ def protokoll(stamm: str, kern: str = "neu") -> Path:
         kopf = f"### {ns.uhr(t)} · {la.get('modus', '–')} · {la.get('ort', '?')} · {leben} · {gold}"
         zeilen.append(kopf + (" · GEFAHR" if la.get("gefahr") else ""))
         abgebrochen = " *(mitten im Satz abgebrochen)*" if a.ganz is False else ""
-        zeilen.append(f"- **Gesagt** (`{a.schluessel}`): „{a.text}“{abgebrochen}")
+        if a.schluessel == "antwort":
+            r = next((x for x in lauf.antworten if f"„{x['frage']}“ – {x['text']}" == a.text), {})
+            zeilen.append(f"- **Frage** ({r.get('absicht') or '?'}, {r.get('quelle', '?')}, "
+                          f"{1000 * r.get('dauer', 0):.0f} ms): {a.text}")
+        else:
+            zeilen.append(f"- **Gesagt** (`{a.schluessel}`): „{a.text}“{abgebrochen}")
         if la.get("plan"):
             art, ev, pt = la["plan"]
             zeilen.append(f"- **Plan:** {art} (EV {ev:+.0f}, p_tod {pt:.2f})")
         else:
             zeilen.append("- **Plan:** –")
+        if la.get("danach"):
+            zeilen.append(f"- **Danach:** {la['danach']}")
         if la.get("optionen"):
             zeilen.append("- **Naechstbeste:** " + " · ".join(f"{i}. {o}" for i, o in enumerate(la["optionen"], 1)))
+        if la.get("zeitleiste"):
+            zeilen.append("- **Zeitleiste:** " + " · ".join(la["zeitleiste"]))
         zeilen.append("")
     ZIEL.mkdir(parents=True, exist_ok=True)
     ziel = ZIEL / f"{stamm}.md"
@@ -121,7 +154,7 @@ def main() -> None:
     kern = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--kern=")), "neu")
     staemme = args or [sorted(aufzeichnung.ORDNER.glob("*.jsonl.gz"))[-1].name.removesuffix(".jsonl.gz")]
     for stamm in staemme:
-        print(protokoll(stamm, kern))
+        print(protokoll(stamm, kern, fragen="--fragen" in sys.argv))
 
 
 if __name__ == "__main__":
