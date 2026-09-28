@@ -4,6 +4,175 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 012 – Wellen-Endlosschleife, ignorierte Fragen, Timer-Fehler (28.09.2026)
+
+Grundlage: `buecher/auftraege/012_auftrag.md`, Botpartie `2026-09-28_192113` (Riven gegen Teemo, Win). Offline
+gemessen, der Coach wurde nicht gestartet. Alle zehn Protokolle sind neu erzeugt (213624, 101426 und 192113 mit
+`--fragen`). „Vorher“ ist das Protokoll von 192113 mit `--fragen` auf dem Stand vor diesem Auftrag (273e09f).
+
+### 1. Wellen-Endlosschleife
+
+**Ursache:**
+- `karte.welle_druecken` verlangte nur „≥ 3 eigene Vasallen, mehr als ihre“. Ihre Vasallen 0 oder im Nebel galten
+  als 0, und der Satz hieß dann „ihre Vasallen sind weg“. So galt eine Welle als Ziel, die leer und tief bei ihnen
+  stand, etwa ab 19:30 die Top-Welle bei front 0,64–0,78 vor ihrem Inhibitor-Turm.
+- Mitspieler an der Welle zählten nicht.
+- In der Basis (`basis._seitenwelle_option`) kam die eigene Welle immer als Rückfall, mit dem Grund „sie läuft sonst
+  in deinen Turm“, auch wenn sie zu ihnen lief (20:38, 23:26).
+- Gefragt fiel `fragen._jetzt_satz` auf „Farm deine Top-Welle“ zurück (19:13, 20:30, 21:45).
+- Carlos' Widerspruch änderte nichts: die Welle blieb für den Kern voll.
+
+**Fix:**
+- `karte.welle_ohne_dich` (nur nach der Lane-Phase): Eine Welle braucht dich nicht, wenn eines davon gilt:
+  - sie ist LEER,
+  - sie hat keine ihrer Vasallen, läuft nicht zu dir und steht tief (front ≥ `welle_tief` 0,6),
+  - ein Mitspieler steht an ihrer Front (≤ 1500) und du bist nicht auf dieser Lane.
+- **Welle drücken:** `welle_druecken` braucht jetzt ihre Vasallen (oder einen toten Lane-Gegner). Die Welle darf
+  nicht schon an ihrem Turm stehen. „4 gegen einen Vasallen“ statt „4 gegen 1“.
+- **Basis:** Braucht dich deine Welle nicht, gilt die Welle einer anderen Lane, die auf euren Turm läuft, sonst „Geh
+  nach Top: dort kommt ihre nächste Welle“. Das ist ein festes Ziel je Basis-Aufenthalt (C4, 102112 30:02). „Sie
+  läuft sonst in deinen Turm“ steht nur noch, wenn sie zu dir läuft.
+- **`_makro_ziele`:** Bringt keine Welle zum Drücken etwas, rechnet es auch die Seitenwellen der anderen Lanes.
+- **Korrektur per Sprechtaste** (`fragen.KORREKTUR_WELLE`): „kein einziger Minion“, „reingepusht“, „an deren Nexus“,
+  „mein ADC farmt sie“, „Teemo hat meinen Farm geholt“ und „es gibt keine Topwelle“ setzen die Welle dieser Lane
+  `welle_korrektur_s` (60 s) lang auf LEER.
+- **Fragen:** `_jetzt` nennt keine Welle, die dich nicht braucht. `_ohne_welle` nennt die nächste Welle, die auf
+  euren Turm läuft, sonst dein Team, sonst das nächste Objective.
+
+**Die Wellen-Wiederholungen aus dem Auftrag, jetzt (Protokoll mit `--fragen`):**
+
+| live | Frage | vorher | jetzt |
+|---|---|---|---|
+| 19:13 | „ich bin back, was jetzt?“ | Farm deine Top-Welle | Aus der Basis: Geh nach Top: dort kommt ihre nächste Welle. |
+| 19:40 | Kai'Sa und Support farmen oben, was jetzt? | Drück die Top-Welle: ihre Vasallen sind weg. | Stimmt. Back jetzt: 1050 Gold für Gefräßige Hydra. |
+| 19:48 | mein Top ist reingepusht | (Claude) geh trotzdem hoch | Stimmt. Geh nach Top: dort kommt ihre nächste Welle. |
+| 20:05 | kein einziger Minion | (Claude) | Stimmt. Bleib nah an deinem Team, auf Top ist keine Welle. |
+| 20:09 | was soll ich jetzt machen? | Drück die Top-Welle: ihre Vasallen sind weg. | Bleib nah an deinem Team, auf Top ist keine Welle. |
+| 20:30 | keine Topwelle, warum nicht Mid? | Geh zur Top-Welle: sie läuft sonst in deinen Turm … | Geh nach Top: dort kommt ihre nächste Welle … Auf Mid wartet gerade keine Welle, die sich lohnt. |
+| 20:47 | 50.000 Leute, kein Minion | (Claude) | Stimmt. Drück die Bot-Welle: 4 gegen einen Vasallen. |
+| 23:32 | Riesenschwert gekauft, und jetzt? | Geh zur Top-Welle: sie läuft sonst in deinen Turm. | Geh nach Top: dort kommt ihre nächste Welle. |
+| 23:45 | Topwelle fast an deren Nexus | (Claude) | Stimmt. Geh nach Top: dort kommt ihre nächste Welle. |
+
+**Ungefragt:**
+- 20:04 „Zwei Wege: die Top-Welle drücken … oder die Bot-Welle drücken, ihre Vasallen sind weg“ fällt weg.
+- 20:38 heißt jetzt „Dann nach Top, dort kommt ihre nächste Welle.“ statt „Dann zur Top-Welle, sie läuft sonst in
+  deinen Turm.“
+- 20:51 heißt jetzt „Drück die Bot-Welle, 4 gegen einen Vasallen.“ statt „Drück die Top-Welle, ihre Vasallen sind weg.“
+- 23:26 heißt jetzt „…, dann nach Top, dort kommt ihre nächste Welle.“
+
+In 192113 enthalten ungefragt 3 statt 14 Sätze „Top-Welle“. Alle drei stehen außerhalb der leeren Phase (5:13,
+12:55, 16:37). Von den Antworten nennen 6 statt 21 die Top-Welle.
+
+### 2. Fragen
+
+- **Satz für Satz** (`_innere_frage`): Aus langen, wütenden Sätzen wird die Frage gezogen. Das gilt auch, wenn der
+  ganze Satz OFFEN oder NOTIZ wäre.
+  - „Ich hab dich gefragt, was mach ich, wenn …“ ist die Frage.
+  - „Also ich soll Drache machen …?“ (21:11) ist eine Warum-Frage.
+- **Füllwörter** („jetzt“, „gerade“, „doch“ …) brechen kein Muster (9:45 „Ich bin jetzt in der Base. Wo gehe ich
+  jetzt hin?“). „Topfwelle“ ist die Top-Welle, „warum auch immer“ ist keine Frage.
+- **Neue Absichten:**
+  - RISIKO: „Angst vor Ganks?“, „ist es sicher?“, „obwohl keiner zu sehen ist“. Die Antwort nennt, wer fehlt und
+    seit wann, dann den Plan; geht der Plan nach vorn, dazu „nur hinter deiner Welle“.
+  - AUGE: Kontroll-Auge an den Eingang der Grube (Objective ≤ 90 s), sonst in den Fluss-Busch neben deiner Lane.
+  - COACH: was der Coach coacht und wo ihr Jungler ist. „In der Lage“ ist kein Lagebild mehr.
+- **Erweitert:**
+  - DANACH: „sobald“, „wenn der Turm down ist“, „wenn ich gebacked bin“ → „Nach dem Back: …“ bzw. „Danach: …“.
+  - KAUF: „soll ich … kaufen/verkaufen“.
+  - JETZT: „sag mir, was ich machen soll“, „ich bin back“.
+  - WARUM: „ich soll …“ / „wir sollen …“ stellt eine Ansage in Frage. „Warum nicht?“ ohne Ziel meint die Frage davor
+    (≤ 20 s). Flash-Warum erklärt, wie der Coach Flash sieht. Nennt die Frage das Ziel des Plans, kommt sein Grund,
+    nicht der einer alten Ansage.
+- **Nachfrage:** „Du antwortest nicht auf meine Fragen“ beantwortet die letzte Frage (≤ 180 s): „Zu deiner Frage: …“.
+- **KLAEREN mit Glossar:** gebackt, Prio, gecrasht, Platten.
+- **NOTIZ** bleibt für reine Beschwerden: „du sagst immer/nie …“ ohne Fragezeichen, „das geht so nicht“.
+
+**Fragen in 192113** (78 eingespielt):
+
+| | vorher | jetzt |
+|---|---|---|
+| nur „Notiert.“ | 11 | 5 (reine Beschwerden: 5:03, 15:28, 19:53, 20:35, 28:47) |
+| an Claude | 23 | 10 |
+| Antwort nennt die Top-Welle | 21 | 6 |
+
+**Die „Notiert.“-Antworten, jetzt:**
+- 2:40 „Notiert. Stell das Kontroll-Auge in den Fluss-Busch oberhalb deiner Top-Lane: dort kommt Master Yi zum Gank.“
+- 4:00 „Notiert. Zu deiner Frage: Farm deine Top-Welle, Drache spawnt in 56 Sekunden.“
+- 8:28 „Zu deiner Frage: Ich coache deine Rolle, jetzt Riven auf Top … Master Yi war vor 217 Sekunden in seiner
+  Basis …“
+- 14:38 „Danach: Herold spawnt in 18 Sekunden, dann dorthin.“
+- 15:55 „Zu deiner Frage: Zu Brand und Kai'Sa auf deine Lane: mit dir drei gegen zwei. …“
+- 21:11 „Notiert. Drache spawnt erst in 256 Sekunden. Bleib nah an deinem Team, auf Top ist keine Welle.“
+- 21:57 „Stimmt. Back jetzt: 2200 Gold für Riesenschwert.“
+- 28:42 „Zu deiner Frage: Kauf Tanz des Todes, dann …“
+
+Weitere Beispiele:
+- 2:15 „Kontrollauge?“ bekam „Farm deine Top-Welle“, jetzt einen Ort.
+- 8:04 „Jungle coachen?“ bekam die Kartenlage, jetzt: was der Coach coacht.
+- 9:39 „Angst vor Ganks?“ ging an Claude, jetzt: „Vorsicht: Master Yi fehlt …“.
+- 14:31 „wenn der Turm down ist?“ bekam eine Wiederholung, jetzt: „Danach: Herold spawnt in 24 Sekunden, dann
+  dorthin.“
+- 15:18 „sobald ich im Fountain bin?“ bekam „Back jetzt“, jetzt: „Nach dem Back: …“.
+- 28:21 „Soll ich nichts anderes kaufen?“ ist KAUF.
+
+**2b (andere Partien):** 213624_fragen 56/57 grün, rot nur das alte 0944.
+- Zwei Rückfälle, die der erste Lauf zeigte, sind behoben:
+  - 6:27 „Wie macht sich mein Team? Muss ich mir Sorgen machen?“ bleibt LAGE.
+  - 13:48 „Was mache ich jetzt? Du sagst nie …“ bleibt JETZT.
+- 101426 (auftrag008, auftrag009, kritik008): alle grün.
+
+### 3. Timer
+
+- **Ursache:** „Aus der Basis: Farm Top, Drache in 30 Sekunden.“ wurde bei 4:29,7 gewählt und erst bei 4:37,1
+  gesprochen. Die Stimme sprach noch die Claude-Antwort auf die Win Condition. Die Zahl hört man 2 s nach dem ersten
+  Ton, also 9,7 s zu hoch; das Spiel zeigte 20. Die Sprechlatenz der Stimme war es nicht (erster Ton 4:37,14).
+- **Fix:** `kern.zeit_jetzt` über `auffrischen` (Sprechplan, beim Sprechen). „in/noch N Sekunden“ zählt um Wartezeit
+  und Sprechzeit bis zur Zahl herunter, „seit N Sekunden“ hinauf.
+- **Belege:**
+  - Unit-Test `timer_zur_sprechzeit`: gleiche Lage wie live im Sprechplan, die Zahl stimmt beim Hören (±1 s).
+  - Nachgespielt: „Drache in 28 Sekunden“ (4:29).
+
+### 4. Cassiopeia „aus dem Nebel“ (Befund)
+
+- **Sichtbarkeit:**
+  - 21:25–22:04: bis auf kurze Lücken (≤ 6 s) sichtbar, aber unten, 8400–11800 von Riven.
+  - 22:06–22:22: durchgehend sichtbar, 275–823 von dir.
+  - 22:24–22:29 (Tod): verloren (seit 3,8 → 8,2 s). Auf dem Minimap-Bild 22:26 steht ihr Icon auf Rivens Icon;
+    vermutlich trennt die Verfolgung überlagerte Icons nicht (nicht weiter geprüft).
+- **Ursache des Satzes:** Die Probe für den Rückblick stammt von 22:05, als sie noch unten war (p_da 0). Was danach
+  zu sehen war, zählte nicht.
+- **Kleiner Fix:** Wer seit der Probe zu sehen war, kam nicht aus dem Nebel. Jetzt heißt es: „Raus kam, du bist
+  geblieben – Cassiopeia und Teemo haben dich erreicht.“
+- Carlos' „eine Minute gesehen“: sichtbar ja, nah aber erst 23 s vor dem Tod.
+
+### Prüfungen
+
+- **Neue Szenarien:** `192113_auftrag012` (3) und `192113_fragen` (61 Fragen und der Timer). Auf 273e09f sind 49
+  von 65 rot, nach dem Fix alle grün. Die 16 schon grünen sind Wächter.
+- **Unit-Tests** `timer_zur_sprechzeit` und `absicht_aus_langem_satz`: auf 273e09f rot.
+- **Geändertes Szenario:** `101426_auftrag010` 1400 erwartete „Drück die Mid-Welle“ bei 4 gegen 0 (front 0,13).
+  Genau diesen Satz lehnt Carlos ab. Es prüft jetzt nur noch, dass „ihre Vasallen sind weg“ nicht vorkommt; die Notiz
+  steht im Szenario.
+- **Szenarien gesamt 305 / 309**, 3 übersprungen. Rot sind nur die alten Fälle: 3× Wendepunkt-Probe und 0944.
+- `tests/alle.py` 10 / 10, konstruierte Lagen 40 / 40.
+
+**Kennzahlen:**
+
+| Partie | Warnungen/30 min | Leerlauf ab 14:00 (011 → 012) |
+|---|---|---|
+| 101426 | 13,4 | 52 → 54 % |
+| 164326 | 9,8 | 45 → 50 % |
+| 173159 | 9,4 (011: 10,2) | 52 → 54 % |
+| 133930 | 13,7 | 44 → 47 % |
+| 102112 | 3,9 | 33 → 30 % |
+| 213624 | 10,8 | 31 → 31 % |
+| 192113 | 17,4 | 34 % |
+
+Die Warnungen sind unverändert. Der Leerlauf steigt leicht, weil das leere Drücken wegfällt. 192113 ist die erste
+Botpartie in der Messung; ihre 17,4 Warnungen stehen in OFFEN.
+
+---
+
 ## Auftrag 011 – Warnungsrate nachziehen, Szenario 2522 richtigstellen (28.09.2026)
 
 Grundlage: `buecher/auftraege/011_auftrag.md`. Offline gemessen, der Coach wurde nicht gestartet. Alle neun Protokolle

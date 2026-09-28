@@ -426,6 +426,66 @@ def warnung_nur_mit_neuer_lage():
     assert gefahr_stufe(0.0, cs) == 0 and gefahr_stufe(0.9, cs) == 4
 
 
+def timer_zur_sprechzeit():
+    """Auftrag 012, 3 (192113 4:37): "Drache in 30 Sekunden" gewaehlt bei 4:29,7, gesprochen erst 4:37,1, weil die Stimme
+    noch sprach - die Zahl muss stimmen, wenn man sie hoert (Drache 5:00), nicht, als sie gerechnet wurde."""
+    import re
+    from lolcoach import sprechplan, stimme
+    from lolcoach.kern import zeit_jetzt
+    from lolcoach.regeln import WICHTIG, Ansage
+    zps = sprechplan.ZEICHEN_PRO_SEKUNDE
+    sprecher = stimme.Nachgespielt(zps)
+    plan = sprechplan.Sprechplan(sprecher)
+    uhr = [0.0]
+    # ein langer Satz vorher (live: die Claude-Antwort auf die Win Condition, 4:21-4:36)
+    lang = Ansage("Geh trotzdem jetzt zurück nach Top zur Welle. " * 4, WICHTIG, "kern:WOHIN", zeit=262.0, gueltig=30.0)
+    drache = Ansage("Aus der Basis: Farm Top, Drache in 30 Sekunden.", WICHTIG, "kern:FARMEN", zeit=269.7, gueltig=12.0)
+    drache.auffrischen = lambda t: zeit_jetzt(t, uhr[0] - drache.zeit, zps)
+    t = 262.0
+    while t < 285.0 and drache.gesprochen is None:
+        uhr[0] = t
+        if abs(t - 262.0) < 1e-6:
+            plan.neu([lang])
+        if abs(t - 269.7) < 0.05:
+            plan.neu([drache])
+        sprecher.takt(t)
+        plan.takt(t)
+        t = round(t + 0.1, 2)
+    assert drache.gesprochen is not None and drache.gesprochen > 272.0, drache.gesprochen
+    zahl = int(re.search(r"Drache in (\d+) Sekunden", drache.text).group(1))
+    gehoert = drache.gesprochen + drache.text.index("Drache in") / zps
+    assert abs((300.0 - gehoert) - zahl) <= 1.0, (drache.text, drache.gesprochen)
+    # ohne Warten: nur die Sprechzeit bis zur Zahl; "seit" zaehlt hinauf
+    assert zeit_jetzt("Drache in 30 Sekunden.", 0.0, zps) == "Drache in 30 Sekunden."
+    assert zeit_jetzt("Master Yi fehlt seit 20 Sekunden.", 10.0, zps).startswith("Master Yi fehlt seit 31")
+
+
+def absicht_aus_langem_satz():
+    """Auftrag 012, 2: die Frage steckt in einem langen, wuetenden Satz - Fuellwoerter, Fluch und Beschwerde brechen
+    die Erkennung nicht (192113)."""
+    from lolcoach.kern.fragen import absicht
+    faelle = {
+        "Okay, ich bin jetzt in der Base. Wo gehe ich jetzt hin?": "JETZT",
+        "Sag mir doch, was ich machen soll, du Fotze.": "JETZT",
+        "Meine Welle ist top, Digga, mein Top ist reingepusht bis ins letzte Arschloch.": "JETZT",
+        "Was mache ich denn, wenn dieser innere Top-Turm down ist? Als nächstes, als Macro-Play.": "DANACH",
+        "Was mache ich, sobald ich zurück bin im Fountain?": "DANACH",
+        "Muss ich keine Angst vor Ganks haben, wenn ich den zweiten Turm drücke.": "RISIKO",
+        "Warum ist es sicher, jetzt gerade die Botwelle zu farmen?": "RISIKO",
+        "Was soll ich mit dem Kontrollauge machen?": "AUGE",
+        "Ich habe mich gefragt, ob du in der Lage wäre, auf der Jungle zu coachen.": "COACH",
+        "Ich soll zu meinem eigenen inneren Mitturm gehen, da ist doch gar nichts los.": "WARUM",
+        "Soll ich nichts anderes kaufen, nur Schutzengel?": "KAUF",
+        "Weder keine Antwort und eine weitere Anforderung.": "NOTIZ",
+        "Du sagst echt nie irgendwas anderes, außer dass ich meine Top Wave drücken soll.": "NOTIZ",
+        # unveraendert
+        "Warum bist du dir so sicher, dass der Drache bis dahin nicht schon tot ist?": "GEWISSHEIT",
+        "Wie läuft es bei der Bot-Line?": "LAGE",
+    }
+    for frage, soll in faelle.items():
+        assert absicht(frage) == soll, (frage, absicht(frage), soll)
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
@@ -433,6 +493,6 @@ if __name__ == "__main__":
                  zwei_klar_unterlegene, keine_floskeln, konkrete_sprache, viego_bleibt_viego, kontrollauge_nur_mit_platz,
                  ihr_jungle_heisst_ihr_jungle, keine_verbotenen_gruende, warum_mit_vergleich,
                  vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal, anteil_geglaettet,
-                 warnung_nur_mit_neuer_lage):
+                 warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz):
         test()
         print(f"{test.__name__} OK")

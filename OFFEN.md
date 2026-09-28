@@ -17,6 +17,17 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 012 (Wellen-Endlosschleife, Fragen, Timer, Cassiopeia) umgesetzt** - Zahlen in `buecher/messungen.md`
+("Auftrag 012").
+- Braucht dich deine Welle nicht und gibt es kein anderes Ziel, heisst es "Geh nach Top: dort kommt ihre naechste
+  Welle" (192113 19:48, 23:45 nach "mein Top ist reingepusht"). Ehrlich, aber Carlos will dann ein Makro-Ziel
+  (Mid-Turm, Objective, Gruppe). Offen: soll der Kern in dieser Lage das Team oder das naechste Objective vorziehen,
+  auch wenn beides ungeeicht oder klein im EV ist?
+- 192113 (erste Botpartie in der Messung): 17,4 Warnungen je 30 min.
+- Leerlauf ab 14:00 leicht hoeher (+0 bis +5 Punkte), weil das Druecken leerer Wellen wegfaellt (Szenario 101426 1400
+  angepasst).
+- Cassiopeia 22:24-22:29: vermutlich uebereinanderliegende Icons auf der Minimap, nicht weiter geprueft.
+
 **Auftrag 011 (Warnungsrate, Szenario 2522) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 011").
 - Warnungen je 30 min mit Vorsicht-Saetzen noch ueber 10 in 101426 (13,4: 11 GEFAHR + 5 "Du stehst tief") und in
   133930/140253/144655 (kurze Partien, 11-14); `a1-warnungen-je-30min` (nur GEFAHR) ist gruen.

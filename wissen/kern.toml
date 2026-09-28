@@ -355,6 +355,10 @@ druecken_welle_min = 3          # Auftrag 010, 1: WELLE_DRUECKEN ab so vielen ei
 druecken_weg_max_s = 25          # ... nicht weiter weg als so viele Sekunden
 druecken_s = 12                  # ... so lange dauert das Druecken bis zu ihrem Turm
 druecken_gefahr_s = 15          # ... das Risiko ueber so viele Sekunden (wie SEITENWELLE: nicht die ganze Dauer)
+druecken_am_turm = 0.04          # Auftrag 012, 1: so nah (s) an ihrem Turm ist die Welle schon gedrueckt
+welle_tief = 0.6                 # Auftrag 012, 1: ab hier (s, deine Sicht) steht eine Welle ohne ihre Vasallen tief bei ihnen
+welle_team_radius = 1500         # Auftrag 012, 1: ein Mitspieler so nah an der Front nimmt die Welle
+welle_korrektur_s = 60           # Auftrag 012, 1: "die Welle ist leer" (Sprechtaste) gilt so lange
 druecken_druck = 0.5             # Anteil des Wellenwerts: Druck auf ihre Lane (ihr Laner verliert die Welle am Turm)
 umwandeln_bonus = 400            # Auftrag 009, 2.3: GE fuer jedes Ziel im Umwandel-Fenster, gleich fuer Turm und Objective
                                  # (vorher 200 je Rang aus Kapitel 8: aeusserer Turm 200 ... Nexus 800, Drache 300)

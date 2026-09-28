@@ -153,7 +153,8 @@ def _optionen(m, cfg: dict, modus: str) -> list[Handlung]:
     gruppe = _team(m, modus)
     if gruppe is not None and len(gruppe[0]) >= 3:
         aus.append(gruppe[1])
-    aus.append(_seitenwelle_option(m, cfg, modus, lane))
+    if (sw := _seitenwelle_option(m, cfg, modus, lane)) is not None:
+        aus.append(sw)
     if gruppe is not None and len(gruppe[0]) < 3:
         aus.append(gruppe[1])
     return aus
@@ -185,16 +186,34 @@ def _team(m, modus: str):
     return namen, _mit_gefahr(h, m, (x, y), weg)
 
 
-def _seitenwelle_option(m, cfg: dict, modus: str, lane: str) -> Handlung:
-    """Die Welle deiner Seite: Buch 5, 3 - der Toplaner haelt die Seite, wenn sonst nichts ansteht."""
+def _seitenwelle_option(m, cfg: dict, modus: str, lane: str) -> Handlung | None:
+    """Die Welle deiner Seite: Buch 5, 3 - der Toplaner haelt die Seite, wenn sonst nichts ansteht. Auftrag 012, 1
+    (192113 20:38, 23:26: "Dann zur Top-Welle, sie laeuft sonst in deinen Turm" - sie stand leer an ihrem Nexus):
+    braucht dich deine Welle nicht, die einer anderen Lane, die auf euren Turm laeuft, sonst deine Seite ohne Welle
+    ("Geh nach Top: dort kommt ihre naechste Welle") - ein festes Ziel je Basis-Aufenthalt (C4, 102112 30:02)."""
+    from .karte import welle_ohne_dich
+    if welle_ohne_dich(m, lane, cfg) is not None:
+        andere = [(l, w) for l, w in (m.seitenwellen or {}).items() if l != lane]
+        if not andere:
+            ziel = _lane_turm(m, lane)
+            weg = _brunnen_weg(m, ziel)
+            grund = "dort kommt ihre nächste Welle"
+            h = Handlung("WOHIN", Ziel("lane", lane, ziel, weg), modus, weg, grund=grund, satz=f"Geh nach {lane}: {grund}.")
+            h.daten["kurz"] = f"nach {lane}"
+            h.daten["grund_kurz"] = grund
+            return _mit_gefahr(h, m, ziel, weg, am_turm=True)
+        lane = min(andere, key=lambda lw: _brunnen_weg(m, _lane_turm(m, lw[0])) or 0.0)[0]
     ziel = _lane_turm(m, lane)
     weg = _brunnen_weg(m, ziel)
     w = (m.wellen or {}).get(lane)
     # Buch 4, 4 (Auftrag 008): "dort nimmt sie sonst niemand" nur mit dem, wo dein Team ist
     from ..sprache import team_grund
     team = team_grund(m, lane)
+    # Auftrag 012, 1 (192113 19:24 "sie laeuft sonst in deinen Turm" - sie lief zu ihnen): nur, wenn sie zu dir laeuft
+    zu_dir = w is None or w.zustand in DRUECKT or w.zustand in ("MITTE", "UNBEKANNT", "GEHALTEN_BEI_DIR")
     grund = (vasallen_satz(w.ihre) if w is not None and w.zustand in DRUECKT and w.ihre
-             else f"dort nimmt sie sonst niemand, {team}" if team else "sie läuft sonst in deinen Turm")
+             else f"dort nimmt sie sonst niemand, {team}" if team
+             else "sie läuft sonst in deinen Turm" if zu_dir else "dort kommt ihre nächste Welle")
     h = Handlung("WOHIN", Ziel("lane", f"die {lane}-Welle", ziel, weg), modus, weg, grund=grund,
                  satz=f"Geh zur {lane}-Welle: {grund}.")
     h.daten["kurz"] = f"zur {lane}-Welle"

@@ -12,8 +12,11 @@ id = "1400-mid-welle-statt-halten"
 zeit = "14:00"
 fenster = [["14:01", "14:39"]]
 lage = "Leerlauf 1: Riven auf ihrer Mid-Lane, 97 %, deine Mid-Welle laeuft zu Aurora (2-3 : 0), Herold in 40-50 s; Plan HALTEN."
-satz_mit = [["Mid-Welle"], ["Drück", "drück", "rein"]]
-warum = "Auftrag 010, 1: 'Drück die Mid-Welle in ihren Turm' statt Halten (Challenger: Welle rein, dann Herold)."
+# Auftrag 012, 1: die Mid-Welle stand hier mit 4 gegen 0 auf eurer Seite (front 0,13) - "Drück die Mid-Welle: ihre
+# Vasallen sind weg" ist genau der Satz, den Carlos in 192113 (11:35, 12:12) als sinnlos abgelehnt hat: eine Welle ohne
+# ihre Vasallen laeuft allein. Vorher satz_mit = [["Mid-Welle"], ["Drück", "drück", "rein"]]; der Leerlauf hier ist offen.
+darf_nicht_sagen = ["ihre Vasallen sind weg"]
+warum = "Auftrag 010, 1 mit Auftrag 012, 1: kein Druecken einer Welle ohne ihre Vasallen."
 
 [[szenario]]
 id = "1736-sett-tot-ziel"

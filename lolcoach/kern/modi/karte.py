@@ -438,6 +438,36 @@ def seitenwelle(m, cfg: dict, modus: str, lane: str, w) -> Handlung | None:
 LANE_ROLLE = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot"}
 
 
+ZU_DIR = ("ZU_DIR", "GROSS_ZU_DIR", "GECRASHT_BEI_DIR")
+
+
+def welle_ohne_dich(m, lane: str, cfg: dict) -> str | None:
+    """Auftrag 012, 1 (192113 19:40-20:47: sechsmal "Drueck/Farm die Top-Welle", die Welle stand leer an ihrem
+    Inhibitor-Turm, Kai'Sa und Sona farmten dort): warum dich die Welle dieser Lane nach der Lane-Phase nicht braucht -
+    None, wenn sie dich braucht oder der Kern es nicht weiss.
+      - keine ihrer Vasallen (0 oder im Nebel), tief auf ihrer Haelfte (front >= welle_tief) und sie laeuft nicht zu
+        dir: nichts zu farmen, sie laeuft allein (vorher 9:45: nach Top, die naechste Welle kommt dir entgegen),
+      - ein Mitspieler steht an ihrer Front: er nimmt sie.
+    Eine Korrektur ("die Welle ist leer", kern/fragen.py) setzt die Welle auf LEER."""
+    w = (m.wellen or {}).get(lane)
+    if w is None or m.lane_phase or w.zustand == "UNBEKANNT":
+        return None
+    if w.zustand == "LEER":
+        return f"auf {lane} ist keine Welle"
+    if not w.ihre and w.zustand not in ZU_DIR and w.front is not None and w.front >= cfg["mitte"]["welle_tief"]:
+        return f"auf {lane} sind keine ihrer Vasallen"
+    if w.front is not None and m.b is not None:
+        blau = m.p is None or m.p.mein_team == "ORDER"
+        from ..merkmale import lane_punkt
+        pos = bewertung.einheiten(*lane_punkt(lane, w.front if blau else 1.0 - w.front))
+        dort = [s.champion for s, wo, *_ in m.b.mitspieler if wo is not None and not s.tot
+                and abstand(wo, pos) <= cfg["mitte"]["welle_team_radius"]]
+        # wer schon an der Welle steht, drueckt sie mit (101426 14:13: Mid-Welle mit eurem Midlaner)
+        if dort and w.zustand not in ("GROSS_ZU_DIR", "GECRASHT_BEI_DIR") and m.lane_hier != lane:
+            return f"auf {lane} {'ist' if len(dort) == 1 else 'sind'} {liste(dort[:2])} schon"
+    return None
+
+
 def welle_druecken(m, cfg: dict, modus: str) -> list[Handlung]:
     """Auftrag 010, 1 (Plan nach dem Wendepunkt): eine Welle, die zu ihnen laeuft (ihr seid mehr Vasallen), in ihren
     Turm druecken - je Lane nach der Lane-Phase, nicht weiter als druecken_weg_max_s. Nur ein Makro-Ziel fuer die Luecke
@@ -456,13 +486,21 @@ def welle_druecken(m, cfg: dict, modus: str) -> list[Handlung]:
         unsere, ihre = w.unsere or 0, w.ihre or 0
         if unsere < max(c["druecken_welle_min"], ihre + 1):
             continue
+        # Auftrag 012, 1: mit einem Mitspieler an der Front oder tief ohne ihre Vasallen bringt dir die Welle nichts,
+        # und steht sie schon an ihrem Turm, ist sie gedrueckt
+        if welle_ohne_dich(m, lane, cfg) is not None:
+            continue
         front = w.front if w.front is not None else 0.5
+        if front >= w.turm_ihr - c["druecken_am_turm"]:
+            continue
         pos = bewertung.einheiten(*lane_punkt(lane, front if blau else 1.0 - front))
         weg = m.weg(pos) or 0.0
         if weg > c["druecken_weg_max_s"]:
             continue
         gegner = next((g for g in m.b.gegner if LANE_ROLLE.get(getattr(g.s, "rolle", None)) == lane), None)
         tot = gegner is not None and gegner.s.tot and (gegner.s.respawn or 0) >= weg + 5
+        if not ihre and not tot:
+            continue        # Auftrag 012, 1: ohne ihre Vasallen laeuft die Welle allein ("ihre Vasallen sind weg", 11:35)
         # was du beim Druecken farmst (wie FARMEN: fr x Zeit), dazu der Druck auf ihre Lane
         gewinn = ihre * vw + wert.farm_rate(m.zeit, cfg) * c["druecken_s"] \
             + ww * min(1.0, unsere / 6.0) * c["druecken_druck"] + (ww * 0.5 if tot else 0.0)
@@ -470,7 +508,7 @@ def welle_druecken(m, cfg: dict, modus: str) -> list[Handlung]:
         if tot:
             grund = f"{gegner.champion} ist {int(gegner.s.respawn)} Sekunden tot"
         else:
-            grund = f"{unsere} gegen {ihre} Vasallen" if ihre else "ihre Vasallen sind weg"
+            grund = f"{unsere} gegen {'einen' if ihre == 1 else ihre} Vasallen"      # nie "1 Vasallen" (173159 32:32)
         turm = turm_ihr_name(m, lane)
         from ..sprache import dativ
         satz = f"Drück die {lane}-Welle: {grund}."

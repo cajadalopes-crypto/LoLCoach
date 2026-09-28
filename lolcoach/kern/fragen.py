@@ -14,8 +14,17 @@ Zeitleiste wie die ungefragten Ansagen - ohne Claude, in Millisekunden:
   WO        "wo ist Xin?"                                              -> die vorhandene Sofort-Antwort
   KAUF      "was soll ich kaufen?", "kein Platz im Inventar"           -> Kaufplan (R3), bei vollem Inventar mit Verkauf
   NOTIZ     "notier ...", Rueckmeldungen                               -> "Notiert." und, steckt eine Frage darin, ihre
-                                                                          Antwort
+                                                                          Antwort; "du antwortest nicht" beantwortet
+                                                                          die letzte Frage (Auftrag 012)
+  RISIKO    "muss ich keine Angst haben?", "ist es sicher?"            -> wer fehlt, dann der Plan (Auftrag 012)
+  AUGE      "was mache ich mit dem Kontrollauge?"                      -> ein Ort dafuer (Auftrag 012)
+  COACH     "kannst du auch Jungle coachen?"                           -> was der Coach coacht (Auftrag 012)
   OFFEN     alles andere                                               -> None: Claude mit `kern.kontext()`
+
+Auftrag 012 (192113: 20 Fragen endeten in "Notiert." oder einer Wiederholung): ein langer, wuetender Satz mit einer
+Frage ist eine Frage - die Erkennung sucht sie Satz fuer Satz (`_innere_frage`), Fuellwoerter ("jetzt", "gerade")
+brechen kein Muster, und Carlos' Aussagen ueber die Welle ("kein einziger Minion", "mein ADC farmt sie") sind
+Korrekturen wie "ich bin in der Base".
 
 Regeln (Buch 11, 5): Mindestform Handlung + Ziel + Grund; kein Widerspruch zur letzten Ansage ohne "Neu:"; die Antwort
 gilt danach als gesagter Plan; dieselbe Absicht in antwort_wiederholung_s bekommt mehr Grund; Aussagen von Carlos
@@ -32,22 +41,50 @@ from .handlung import Handlung
 
 NOTIER = re.compile(r"notier|notiz|merk dir|merke dir")
 KEIN_PLATZ = re.compile(r"kein(en)? platz|inventar (ist )?voll|volles inventar")
-KAUF = re.compile(r"(was|welches item|welche items).{0,20}(kauf|bauen)|kaufen\?|build")
-DANACH = re.compile(r"nachdem|und danach|was danach|danach\?|und dann\?")
+KAUF = re.compile(r"(was|welches item|welche items).{0,20}(kauf|bauen)|kaufen\?|build|"
+                  r"(soll|sollte|kann|muss) ich .{0,60}(kaufen|verkaufen)|verkaufen")      # Auftrag 012: 28:21, 28:35
+# Auftrag 012 (192113 14:31 "wenn dieser innere Top-Turm down ist? Als naechstes", 15:18 "sobald ich zurueck bin im
+# Fountain", 18:11 "wenn ich gebacked bin")
+DANACH = re.compile(r"nachdem|und danach|was danach|danach\?|und dann\?|sobald|"
+                    r"wenn (der|die|das|dieser|diese|dieses|er|sie|es) .{0,40}(down|weg|tot|gefallen|kaputt|fällt|"
+                    r"faellt|zerstört|zerstoert)|wenn ich (gebackt|gebacked|zurück|zurueck|back|in der basis|im fountain)")
+DANACH_BACK = re.compile(r"back|basis|base|fountain|faunt|brunnen|zurück|zurueck")
+# Auftrag 012: Fuellwoerter brechen kein Muster (192113 9:45 "Ich bin jetzt in der Base. Wo gehe ich jetzt hin?")
+FUELL = re.compile(r"\b(jetzt|gerade|eigentlich|denn|mal|doch|halt|eben|schon|einfach|genau|bitte) ")
+AUGE = re.compile(r"kontroll ?-?auge|control ?ward|pink ?ward|(^|[^a-zäöüß])wards?([^a-zäöüß]|$)")
+COACH = re.compile(r"(jungle|jungler|mid|bot|support|adc|toplane).{0,40}coach|coach.{0,40}(jungle|jungler|mid|bot|support|"
+                   r"adc)|(spezifiziert|spezialisiert)")
+RISIKO = re.compile(r"angst|sorgen mach|keine sorgen|gefährlich|gefaehrlich|riskant|ist es sicher|warum .{0,20}sicher|"
+                    r"obwohl .{0,50}(leben|zu sehen|sehe|sichtbar)")
+# "du antwortest nicht auf meine Fragen" - die letzte Frage wird beantwortet (192113 4:00, 8:28, 15:55, 28:42)
+NACHFRAGE = re.compile(r"ignorierst .{0,20}frage|antwortest (gar |überhaupt |ueberhaupt )?nicht|nicht (mehr )?(auf "
+                       r"irgendwas )?zu antworten|keine antwort|(hab|habe) dich (doch )?(was )?gefragt")
+# "Ich soll zu meinem inneren Mid-Turm gehen, da ist nichts los" stellt eine Ansage in Frage: WARUM (192113 26:14, 23:58)
+ICH_SOLL = re.compile(r"^(also |dann |und |ja,? )?(ich|wir) soll(en|te|ten)?\b")
+# Carlos ueber die Welle - eine Korrektur wie "ich bin in der Base" (192113 18:46-23:45)
+KORREKTUR_WELLE = re.compile(
+    r"(kein(en)?|nicht (ein)?) (einzige[nrs]? )?(minion|vasall)|(rein|an|durch)gepusht|reingeschoben|"
+    r"(an|bis zu[rm]?|in|bis ins) (deren|ihre[mnr]?) (eigenen? )?(nexus|base|basis|pounden|brunnen)|"
+    r"bis zur (base|basis) des gegners|(adc|support(er)?|mitspieler|leute|champs|kai'?sa|sona)[ ,].{0,60}"
+    r"(farmt|farmen|wegfarmen)|(hat|haben) meinen farm .{0,40}geholt|es gibt keine .{0,12}welle|welle ist (gerade )?leer")
+LAGE_TEAM = re.compile(r"wie macht sich|wie steht|wie läuft|wie laeuft")
+LANE_WORT = {"Top": re.compile(r"top|oben"), "Mid": re.compile(r"(^|[^a-z])mid|mitte"), "Bot": re.compile(r"bot|unten")}
 WARUM_WORT = re.compile(r"(^|[^a-zäöüß])(warum|wieso|weshalb)([^a-zäöüß]|$)")
 WARUM_BEZUG = re.compile(r"soll|sollte|sagst|gesagt|meintest|nicht|(^|[^a-zäöüß])ich([^a-zäöüß]|$)")
 ENTWEDER = re.compile(r"(^|[^a-zäöüß])oder([^a-zäöüß]|$)")
 SOLL_ICH = re.compile(r"(^|[^a-zäöüß])(soll|sollte|kann|darf) ich")
 LAGE = re.compile(r"wie macht sich|wie steht|wie läuft|wie laeuft|wie sieht es (bei uns|insgesamt)|sorgen machen")
 # Auftrag 008, A4 (101426 26:45: "Ich weiss nie, wann wer wo ist ... keine Uebersicht"): das Lagebild auf Abruf
-LAGE_KARTE = re.compile(r"überblick|ueberblick|übersicht|uebersicht|(^|[^a-zäöüß])lage\b|wo sind (alle|die|sie)|"
+# Auftrag 012 (192113 8:04 "Wer ist in der Lage, Jungle zu coachen?" bekam die Kartenlage): "in der Lage" ist keine
+LAGE_KARTE = re.compile(r"überblick|ueberblick|übersicht|uebersicht|(?<!in der)(^|[^a-zäöüß])lage\b|wo sind (alle|die|sie)|"
                         r"wer ist wo|wo steh(en|t) (alle|die gegner)|kartenlage")
 FLASH = re.compile(r"flash|fläch|flaech")
 TIMER = re.compile(r"wann (kommt|spawnt|ist)|timer|wie lange noch")
 WO = re.compile(r"(^|[^a-zäöüß])(wo (ist|sind|steht|war)|wo's|wos )")
 JETZT = re.compile(r"was mache ich|was mach ich|was jetzt|und jetzt|wo gehe? ich hin|wohin|was soll ich (jetzt|machen|tun)|"
-                   r"was tue ich|was nun|welche welle|welche lane|was ist (der )?plan")
-KORREKTUR_BASIS = re.compile(r"(ich (bin|war) (in der|in die) (base|basis))|(bin|war) in der base")
+                   r"was tue ich|was nun|welche welle|welche lane|was ist (der )?plan|"
+                   r"was (ich|wir) (als nächstes |als naechstes )?(machen|tun) soll")        # Auftrag 012: 24:13
+KORREKTUR_BASIS = re.compile(r"(ich (bin|war) (in der|in die) (base|basis))|(bin|war) in der base|ich bin (wieder )?back\b")
 KORREKTUR_TOT = re.compile(r"(drache|herold|baron|larven)( ist)? (tot|weg|gemacht|down)")
 KORREKTUR_BEI_MIR = re.compile(r"(ist|sind|war|waren) (jetzt |doch |direkt |nur )?(bei mir|neben mir|(ein paar|paar|"
                                r"wenige) meter (weg )?(von|neben|bei) mir)")
@@ -69,7 +106,14 @@ TURM_WORT = re.compile(r"turm|tower|türme|towers")
 RAUS_WORT = re.compile(r"(^|[^a-zäöüß])(raus|zurück|zurueck|zurückgehen|zurueckgehen)([^a-zäöüß]|$)")
 # eindeutige Rueckmeldungen - vor allen Fragen (213624 20:32: "Also wie gesagt ... Du sagst nicht, was die naechsten
 # Schritte sind")
-RUECKMELDUNG_KLAR = re.compile(r"^(übrigens|uebrigens|also wie gesagt)|du bist (überhaupt|gar) nicht|du ignorierst")
+# Auftrag 012 (192113 12:12 "Du sagst echt nie irgendwas anderes ...", 5:03 "Weisst du, was gut waere ... Das geht so
+# nicht."): reine Beschwerden - steckt eine Frage darin, beantwortet _innere_frage sie
+RUECKMELDUNG_KLAR = re.compile(r"^(übrigens|uebrigens|also wie gesagt)|du bist (überhaupt|gar) nicht|du ignorierst|"
+                               r"was gut wäre|wäre gut, wenn du|das geht so nicht")
+# ... und ohne Fragezeichen (213624 13:48 "Okay, was mache ich jetzt, Coach? Du sagst nie, was ich als naechstes machen
+# soll." ist JETZT)
+BESCHWERDE = re.compile(r"du sagst (echt |wirklich )?(nie|immer|jedes mal|die ganze zeit)|"
+                        r"du bist .{0,25}(scheiße|scheisse|schrott)")
 # Rueckmeldungen ueber den Coach oder das eigene Spiel (Carlos' Notizen 213624)
 RUECKMELDUNG = re.compile(r"^(übrigens|uebrigens|also wie gesagt|ich habe das gefühl|sag mal, können wir)|du sagst|"
                           r"du redest|du ignorierst|du bedenkst|du bist (überhaupt|gar) nicht|du antwortest|"
@@ -91,9 +135,16 @@ OPTION_WORT = {"drache": "Drache", "baron": "Baron", "herold": "Herold", "larven
                "kampf": "Kampf", "welle": "Welle"}
 
 
+def _norm(frage: str) -> str:
+    """Kleinschreibung und Hoerfehler: "Topfwelle" ist die Top-Welle, "warum auch immer" ist keine Frage (192113)."""
+    f = re.sub(r"\btopf", "top", frage.lower().strip())
+    return f.replace("warum auch immer", "")
+
+
 def absicht(frage: str, klaeren: bool = True) -> str:
-    f = frage.lower()
-    if NOTIER.search(f) or RUECKMELDUNG_KLAR.search(f):
+    f = _norm(frage)
+    g = FUELL.sub("", f)
+    if NOTIER.search(f) or RUECKMELDUNG_KLAR.search(f) or NACHFRAGE.search(f) or (BESCHWERDE.search(f) and "?" not in f):
         return "NOTIZ"
     if KEIN_PLATZ.search(f):
         return "KAUF"
@@ -101,7 +152,15 @@ def absicht(frage: str, klaeren: bool = True) -> str:
         return "DANACH"
     if GEWISSHEIT.search(f):
         return "GEWISSHEIT"
+    if RISIKO.search(f) and not LAGE_TEAM.search(f):      # "Wie macht sich mein Team? Muss ich mir Sorgen machen" (213624)
+        return "RISIKO"
+    if AUGE.search(f):
+        return "AUGE"
+    if COACH.search(f):
+        return "COACH"
     if WARUM_WORT.search(f) and WARUM_BEZUG.search(f):
+        return "WARUM"
+    if ICH_SOLL.search(f):
         return "WARUM"
     if klaeren and KLAEREN.search(f):
         return "KLAEREN"
@@ -113,8 +172,8 @@ def absicht(frage: str, klaeren: bool = True) -> str:
         return "ENTWEDER"
     if LAGE.search(f) or LAGE_KARTE.search(f):
         return "LAGE"
-    if JETZT.search(f) or KORREKTUR_BASIS.search(f) or KORREKTUR_TOT.search(f) or KORREKTUR_BEI_MIR.search(f) \
-            or KORREKTUR_ORT.search(f) or ICH_TOT.search(f):
+    if JETZT.search(f) or JETZT.search(g) or KORREKTUR_BASIS.search(g) or KORREKTUR_TOT.search(f) \
+            or KORREKTUR_BEI_MIR.search(f) or KORREKTUR_ORT.search(f) or ICH_TOT.search(f) or KORREKTUR_WELLE.search(f):
         return "JETZT"
     if SOLL_ICH.search(f):
         return "SOLL_ICH"
@@ -144,18 +203,62 @@ def _sagbar(kern) -> list[Handlung]:
             if not h.stumm and not fuehren.stumm(h) and (h.satz or h.ziel is not None)]
 
 
+def _welle_lane(h: Handlung | None) -> str | None:
+    """Die Lane, deren Welle das Ziel von `h` ist ("die Top-Welle", "deine Top-Welle"), sonst None."""
+    if h is None or h.ziel is None:
+        return None
+    n = h.ziel.name or ""
+    return n.split()[-1].split("-")[0] if n.endswith("-Welle") else None
+
+
+def _welle_weg(kern, h: Handlung | None) -> str | None:
+    """Auftrag 012, 1: der Grund, warum das Wellen-Ziel von `h` dich nicht braucht (karte.welle_ohne_dich), sonst None."""
+    lane = _welle_lane(h)
+    if lane is None or kern.m is None or h.art == "WELLE_REIN_UND_BACK":     # das Wesentliche daran ist der Back
+        return None
+    from .modi.karte import welle_ohne_dich
+    return welle_ohne_dich(kern.m, lane, kern.cfg)
+
+
 def _jetzt(kern) -> Handlung | None:
-    """Der Plan - oder, wenn er nur Halten ist oder am ungeeichten Modell haengt, die beste sagbare Handlung."""
+    """Der Plan - oder, wenn er nur Halten ist oder am ungeeichten Modell haengt, die beste sagbare Handlung. Nie eine
+    Welle, die dich nicht braucht (Auftrag 012, 1: 192113 19:13-23:32 "Farm deine Top-Welle" - leer an ihrem Nexus)."""
     p = kern.fuehrer.plan
     if p is not None and p.handlung.art == "KAUFEN" and kern.m is not None:
         # Auftrag 007, Teil D (213624 10:38: "Kauf Spitzhacke ..." nach dem Kauf): erledigt - dann das Ziel danach
         from .modi.basis import _gekauft
-        if (p.schritt >= 1 or _gekauft(kern.m, p)) and p.handlung.daten.get("wohin") is not None:
+        if (p.schritt >= 1 or _gekauft(kern.m, p)) and p.handlung.daten.get("wohin") is not None \
+                and not _welle_weg(kern, p.handlung.daten["wohin"]):
             return p.handlung.daten["wohin"]
-    if p is not None and not fuehren.stumm(p.handlung) and (p.handlung.satz or fuehren.stumm_satz(p.handlung)):
+    if p is not None and not fuehren.stumm(p.handlung) and (p.handlung.satz or fuehren.stumm_satz(p.handlung)) \
+            and not _welle_weg(kern, p.handlung):
         return p.handlung
-    sagbar = _sagbar(kern)
+    sagbar = [x for x in _sagbar(kern) if not _welle_weg(kern, x)]
     return sagbar[0] if sagbar else None
+
+
+def _ohne_welle(kern, lane: str, warum: str) -> str:
+    """Auftrag 012, 1: deine Welle braucht dich nicht - das naechste Ziel: eine Welle, die auf euren Turm laeuft, dein
+    Team, das naechste Objective; der Grund steht dahinter."""
+    m = kern.m
+    from .modi.karte import welle_ohne_dich
+    alt = None
+    for l, w in sorted((m.seitenwellen or {}).items(), key=lambda lw: -(lw[1].ihre or 0)):
+        if l != lane and welle_ohne_dich(m, l, kern.cfg) is None:
+            alt = f"Geh zur {l}-Welle: {w.ihre} Vasallen laufen auf euren Turm"
+            break
+    if alt is None:
+        from .modi.basis import _team
+        g = _team(m, kern.modus.aktuell or "")
+        if g is not None:
+            alt = f"Geh zu deinem Team: {g[1].grund}"
+    if alt is None:
+        e = next((e for e in kern.zeitleiste or [] if e.art == "objective" and 5 <= e.in_s(m.zeit) <= 120), None)
+        if e is not None:
+            alt = f"Geh schon Richtung {e.text.split()[0]}: {e.text} in {e.in_s(m.zeit)} Sekunden"
+    if alt is None:
+        alt = "Bleib nah an deinem Team"
+    return f"{alt}, {warum}."
 
 
 def _respawn_plan(kern) -> str:
@@ -186,6 +289,10 @@ def _jetzt_satz(kern, h: Handlung | None) -> str:
     if s and not (h is not None and h.art in ("FARMEN", "HALTEN")):
         return s
     lane = kern.m.meine_lane if kern.m is not None and kern.m.meine_lane else "Top"
+    if kern.m is not None:
+        from .modi.karte import welle_ohne_dich
+        if (warum := welle_ohne_dich(kern.m, lane, kern.cfg)) is not None:
+            return _ohne_welle(kern, lane, warum)             # Auftrag 012, 1
     # Auftrag 004, Teil C 3: keine Floskel - die Welle, dazu was als Naechstes kommt (Zeitleiste); Teil A 1: gefragt
     # auch bei einem Farm-Plan die beste Kampf-Option (213624 9:46: der innere Top-Turm stand schon zur Wahl)
     s = _mit_vorschau(kern, s or f"Farm deine {lane}-Welle.")
@@ -325,7 +432,7 @@ def _korrektur(kern, f: str, zeit: float) -> str | None:
     k = getattr(kern, "korrekturen", None)
     if k is None:
         kern.korrekturen = k = {}
-    if KORREKTUR_BASIS.search(f):
+    if KORREKTUR_BASIS.search(FUELL.sub("", f)):
         k["basis"] = zeit
         return "basis"
     if (m := KORREKTUR_TOT.search(f)):
@@ -358,6 +465,10 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
     if m is not None and m.tot and a in ("JETZT", "SOLL_ICH", "ENTWEDER", "DANACH"):
         return _respawn_plan(kern), h                  # Auftrag 008, A3.1
     if a == "JETZT":
+        if (lane := _korrektur_welle(kern, f, zeit)) is not None:
+            # Auftrag 012, 1: "mein Top ist reingepusht", "mein ADC farmt sie" - stimmt, dann das naechste Ziel
+            h = _jetzt(kern)
+            return f"Stimmt. {_jetzt_satz(kern, h)}", h
         korr = _korrektur(kern, f, zeit)
         if korr == "basis" and m is not None:
             opts = [o for o in optionen_in(f) if o not in ("back",)]
@@ -396,6 +507,16 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
                 text += f" Die Alternative wäre {fuehren.kurz(alt)}: {alt.grund or 'weniger wert'}."
         return text, h
     if a == "DANACH":
+        if DANACH_BACK.search(f) and not TURM_WORT.search(f) and m is not None:
+            # Auftrag 012 (192113 15:09/15:18 "Was mache ich, sobald ich zurueck bin im Fountain?"): das Ziel aus der Basis
+            from .modi import basis
+            try:
+                z = basis.wohin(m, kern.cfg, "BASIS", kern._wohin, kern._lage(m))
+            except Exception:
+                z = None
+            if z is not None and z.satz:
+                kopf = "Aus der Basis" if m.bereich == "basis_eigen" else "Nach dem Back"
+                return f"{kopf}: {satz(z)}", z
         if kern.danach is not None:
             d = kern.danach
             return f"Nach {fuehren.kurz(h)}: {fuehren.kurz(d)}" + (f", {d.grund}." if d.grund else "."), h
@@ -412,17 +533,31 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
         for e in kern.zeitleiste or []:
             n = e.in_s(m.zeit)
             if 5 <= n <= 180 and e.art in ("objective", "buff", "inhib"):
-                return f"Nach {jetzt}: {e.text} in {n} Sekunden, dann dorthin.", h
+                # Auftrag 012 (192113 14:31): "Danach", nicht "Nach auf ihren inneren Top-Turm"
+                return f"Danach: {e.text} in {n} Sekunden, dann dorthin.", h
         lane = m.meine_lane or "Top"
-        return f"Nach {jetzt}: zurück zu deiner {lane}-Welle.", h
+        return f"Danach zurück zu deiner {lane}-Welle.", h
     if a == "WARUM":
         k = getattr(m.b, "kauf", None) if m is not None and m.b is not None else None
         if re.search(r"kauf|item", f) and k is not None and getattr(k, "item", None):
             return f"Kauf {k.item}: der nächste Schritt aus deinem eigenen Build.", h
+        if FLASH.search(f):
+            return _flash_warum(), None                    # Auftrag 012 (192113 14:19 "Ich rede doch ueber die Flashes")
         if RAUS_WORT.search(f):
             return _warum_raus(kern, h, zeit), h
-        genannt = _genannt(optionen_in(f), h, m)
-        if genannt is None and (letzte := _letzte_ansage(kern, zeit)) is not None:
+        # die Ziele aus den Warum-Saetzen (192113 20:30 "Es gibt keine Topfwelle ... Warum soll ich nicht zu Midlane
+        # gehen?" meint Mid, nicht Top)
+        teile = " ".join(t for t in re.split(r"(?<=[.!?])\s+", f) if WARUM_WORT.search(t) or ICH_SOLL.search(t))
+        opts = optionen_in(teile or f)
+        vorher = getattr(kern, "_frage_text_letzte", None)
+        if not opts and vorher is not None and zeit - vorher[0] <= 20.0:
+            # Auftrag 012 (192113 10:25 "Warum nicht?" 2 s nach "Sollte ich nicht zum Drake gehen?", 13:53 "Wieso
+            # nicht?" nach der Flash-Antwort): ohne eigenes Ziel meint "warum" die Frage davor
+            if FLASH.search(vorher[1]):
+                return _flash_warum(), None
+            opts = optionen_in(vorher[1])
+        genannt = _genannt(opts, h, m)
+        if not opts and (letzte := _letzte_ansage(kern, zeit)) is not None:
             # Auftrag 004, Teil C 1: "warum?" ohne Ziel meint die letzte gesprochene Ansage
             text = (f"Grund der letzten Ansage: {letzte['grund']}." if letzte["grund"]
                     else f"Die letzte Ansage kam aus dem Plan: {letzte['text']}")
@@ -432,6 +567,13 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
         # Buch 4, 4 (Auftrag 008): zwei Saetze - die entscheidende Beobachtung, dann die Alternative (die genannte
         # oder die zweitbeste) mit ihrem konkreten Nachteil
         if h is None or m is None or m.tot:
+            if genannt is not None and m is not None and not m.tot:
+                # Auftrag 012 (192113 21:45 "Warum soll ich nicht Bot deffen?" -> "Farm deine Top-Welle"): die Option
+                wort = OPTION_WORT.get(genannt, genannt)
+                c = _fuer_option(kern, genannt)
+                if c is not None:
+                    return f"{wort[:1].upper()}{wort[1:]} geht: {_mit_vorbehalt(c)}", c
+                return f"{_warum_nicht(kern, genannt)}. {_jetzt_satz(kern, h)}", h
             return _jetzt_satz(kern, h), h
         if genannt is not None:
             wort = OPTION_WORT.get(genannt, genannt)
@@ -447,6 +589,12 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
         return fuehren.warum_satz(h, alt, m, kern.cfg), h
     if a == "GEWISSHEIT":
         return _gewissheit(kern, f, p, h), h
+    if a == "RISIKO":
+        return _risiko(kern, h), h
+    if a == "AUGE":
+        return _auge(kern), None
+    if a == "COACH":
+        return _coach(kern, p), None
     if a == "ENTWEDER":
         opts = sorted(optionen_in(f), key=VORRANG.index)[:2]
         paar = [(o, _fuer_option(kern, o)) for o in opts]
@@ -509,8 +657,11 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
             return f"Kein Platz: verkauf {k.verkaufen}, dann kauf {', '.join(k.kaufen)}.", h
         if k is not None and k.kaufen:
             from ..kaufplan import mit_ziel
+            # Auftrag 012 (192113 28:35: "Kauf Tanz des Todes, dann kaufen, dann ..."): beim Kauf-Plan sein Ziel danach
+            dann = h.daten.get("wohin") if h is not None and h.art == "KAUFEN" else h
+            dann = fuehren.kurz(dann) if dann is not None else ""
             return f"Kauf {', '.join(mit_ziel(x, getattr(k, 'item', None)) for x in k.kaufen)}" + \
-                (f", dann {fuehren.kurz(h)}." if h is not None else "."), h
+                (f", dann {dann}." if dann else "."), h
         if k is not None and getattr(k, "naechstes", None):
             item, fehlt = k.naechstes
             return f"Noch {fehlt} Gold bis {item}: erst farmen, dann back.", h
@@ -533,10 +684,96 @@ def _wo_gegner(kern, f: str) -> str | None:
     if g.pos is None or g.seit is None:
         return f"{g.champion} habe ich noch nicht gesehen."
     weit = f", {int(round(g.abstand, -2))} von dir" if g.abstand is not None else ""
-    bald = f", kann in {int(g.ankunft)} Sekunden bei dir sein" if g.ankunft is not None and g.ankunft <= 20 else ""
+    bald = f", kann in {int(g.ankunft)} Sekunden bei dir sein" if g.ankunft is not None and 1 <= g.ankunft <= 20 \
+        and g.seit is not None and g.seit <= 20 else ""        # Auftrag 012: nicht "in 0 Sekunden" nach 193 s ohne Sicht
     if g.sichtbar:
         return f"{g.champion} ist zu sehen, {g.ort}{weit}{bald}."
     return f"{g.champion} war vor {int(g.seit)} Sekunden {g.ort}{weit}{bald}."
+
+
+def _korrektur_welle(kern, f: str, zeit: float) -> str | None:
+    """Auftrag 012, 1: Carlos sagt, die Welle einer Lane ist leer oder wird gefarmt - korrigiert welle_korrektur_s lang
+    (Kern._korrekturen_anwenden setzt sie auf LEER, auch in diesem Takt schon). Die Lane aus dem Satz, sonst deine."""
+    if not KORREKTUR_WELLE.search(f) or kern.m is None:
+        return None
+    lane = next((l for l, r in LANE_WORT.items() if r.search(f)), None) or kern.m.meine_lane or "Top"
+    k = getattr(kern, "korrekturen", None)
+    if k is None:
+        kern.korrekturen = k = {}
+    k.setdefault("welle", {})[lane] = zeit
+    kern._korrekturen_anwenden(kern.m)
+    return lane
+
+
+def _flash_warum() -> str:
+    """Auftrag 012 (192113 13:53/14:19: "Warum weisst du von ihnen nichts?"): woher der Coach Flashs kennt."""
+    return ("Einen Flash erkenne ich nur, wenn er auf deinem Bildschirm benutzt wird. Die anderen habe ich noch keinen "
+            "Flash benutzen sehen, darum weiß ich nichts.")
+
+
+def _risiko(kern, h: Handlung | None) -> str:
+    """Auftrag 012 (192113 9:39 "Muss ich keine Angst vor Ganks haben?", 24:29, 24:42, 25:09): wer fehlt und seit wann,
+    ob das fuer deinen Plan gefaehrlich ist, dann der Plan."""
+    m = kern.m
+    jetzt = _jetzt_satz(kern, h)
+    if m is None or m.b is None:
+        return jetzt
+    j = m.b.jungler
+    leben = [g for g in m.b.gegner if not g.s.tot]
+    fehlen = sorted((g for g in leben if not g.sichtbar and (g.seit is None or g.seit > 10.0)),
+                    key=lambda g: (j is None or g.champion != j.champion, -(g.seit or 999.0)))
+    tot = [g.champion for g in m.b.gegner if g.s.tot]
+    if fehlen:
+        # je Gegner seine Zeit ("Master Yi fehlt seit 193 Sekunden, Cassiopeia seit 12")
+        def zeit(g) -> str:
+            return f"seit {int(g.seit)}" if g.seit is not None else "noch nie gesehen"
+        g0 = fehlen[0]
+        was = f"{g0.champion} fehlt {zeit(g0)}{' Sekunden' if g0.seit is not None else ''}" + \
+            "".join(f", {g.champion} {zeit(g)}" for g in fehlen[1:3])
+    else:
+        was = "alle, die leben, sind zu sehen"
+    if tot:
+        was += f", {liste(tot)} {'ist' if len(tot) == 1 else 'sind'} tot"
+    p_tod = h.p_tod if h is not None else 0.0
+    riskant = p_tod >= 0.2 or len(fehlen) >= 3 or (j is not None and any(g.champion == j.champion for g in fehlen))
+    # riskant und der Plan geht nach vorn (192113 25:09 "Ich soll ihn druecken, obwohl keiner zu sehen ist?"): wie
+    vor = riskant and h is not None and h.art in ("DRUECKEN", "MIT_GRUPPE", "PLATTEN", "WELLE_DRUECKEN", "NEHMEN",
+                                                   "ANNEHMEN", "SEITENWELLE", "FARMEN")
+    return f"{'Vorsicht' if riskant else 'Eher sicher'}: {was}. {jetzt}" + \
+        (" Aber nur hinter deiner Welle: raus, sobald einer auftaucht." if vor else "")
+
+
+GRUBE_EINGANG = {"Drache": "der Drachengrube", "Larven": "der Baron-Grube", "Herold": "der Baron-Grube",
+                 "Baron": "der Baron-Grube", "Ältester": "der Drachengrube"}
+AUGE_BUSCH = {"Top": "in den Fluss-Busch oberhalb deiner Top-Lane", "Mid": "in einen Fluss-Busch neben der Mid-Lane",
+              "Bot": "in den Fluss-Busch neben der Bot-Lane"}
+
+
+def _auge(kern) -> str:
+    """Auftrag 012 (192113 2:15/2:27: "Was soll ich mit dem Kontrollauge machen?" -> "Farm deine Top-Welle"): ein Ort -
+    vor ein Objective, das in <= 90 s kommt, sonst in den Fluss-Busch neben deiner Lane, gegen ihren Jungler."""
+    m = kern.m
+    if m is None:
+        return "Stell das Kontroll-Auge in einen Fluss-Busch neben deiner Lane."
+    for e in kern.zeitleiste or []:
+        wort = e.text.split()[0] if e.text else ""
+        if e.art == "objective" and 0 <= e.in_s(m.zeit) <= 90 and wort in GRUBE_EINGANG:
+            return f"Stell das Kontroll-Auge an den Eingang {GRUBE_EINGANG[wort]}: {e.text} in {e.in_s(m.zeit)} Sekunden."
+    ort = AUGE_BUSCH.get(m.meine_lane or "", "in einen Fluss-Busch neben deiner Lane")
+    j = m.b.jungler.champion if m.b is not None and m.b.jungler is not None else "ihr Jungler"
+    return f"Stell das Kontroll-Auge {ort}: dort kommt {j} zum Gank."
+
+
+def _coach(kern, p) -> str:
+    """Auftrag 012 (192113 8:04/8:17: "Kannst du auch Jungle coachen?" -> die Kartenlage): was der Coach coacht."""
+    m = kern.m
+    wer = p.ich.champion if p is not None and p.ich is not None else "dich"
+    lane = f" auf {m.meine_lane}" if m is not None and m.meine_lane else ""
+    s = f"Ich coache deine Rolle, jetzt {wer}{lane}: Wellen, Türme, Objectives und Gefahr."
+    j = m.b.jungler if m is not None and m.b is not None else None
+    if j is not None and (wo := _wo_gegner(kern, j.champion.lower())) is not None:
+        s += f" Vom Jungle sage ich dir, wo ihr Jungler ist: {wo}"
+    return s
 
 
 def _kampf_antwort(kern, lagebild, h: Handlung | None) -> str:
@@ -557,13 +794,19 @@ def _innere_frage(frage: str) -> str | None:
     for t in teile:
         if NOTIER.search(t.lower()):
             continue
+        # Auftrag 012 (192113 14:38 "Ich hab dich gefragt, was mach ich, wenn sobald der down ist.")
+        gefragt = re.match(r"^(ich )?(hab|habe) dich (doch )?(was )?gefragt,? ", t.lower())
+        if gefragt:
+            t = t[gefragt.end():]
         a = absicht(t)
         # Auftrag 005 (213624 20:00, 21:03: "Dann kann ich als Riven ... entscheiden" -> "Nein."): nur echte Fragen -
         # mit Fragezeichen oder mit dem Fragewort vorn
-        vorn = re.match(r"^(warum|wieso|weshalb|soll|sollte|kann|darf|was|wo|wohin|welche|wann|wie)\b", t.lower()) \
-            or re.search(r"\b(soll|sollte) ich\b", t.lower())     # "Dann soll ich doch erst recht kaempfen" (23:45)
-        if a in ("JETZT", "DANACH", "WARUM", "ENTWEDER", "SOLL_ICH", "LAGE", "TIMER", "WO", "KAUF") \
-                and (t.endswith("?") or (vorn and a in ("WARUM", "SOLL_ICH", "JETZT"))):
+        vorn = re.match(r"^(warum|wieso|weshalb|soll|sollte|kann|darf|muss|was|wo|wohin|welche|wann|wie)\b", t.lower()) \
+            or re.search(r"\b(soll|sollte) ich\b", t.lower()) \
+            or ICH_SOLL.search(t.lower()) or gefragt      # "Also ich soll Drache machen ...?" (192113 21:11)
+        if a in ("JETZT", "DANACH", "WARUM", "ENTWEDER", "SOLL_ICH", "LAGE", "TIMER", "WO", "KAUF", "RISIKO", "AUGE",
+                 "COACH") \
+                and (t.endswith("?") or (vorn and a in ("WARUM", "SOLL_ICH", "JETZT", "DANACH", "RISIKO", "KAUF"))):
             return t
     return None
 
@@ -589,18 +832,37 @@ def beantworte(kern, frage: str, p, lagebild=None) -> dict:
             return _abschluss(kern, k, "KLAEREN", None, zeit)
         a = absicht(frage, klaeren=False)        # kein Satz <= 60 s: wie bisher
         kern._frage_letzte = (zeit, a)
+    if m is not None:
+        _korrektur_welle(kern, _norm(frage), zeit)          # Auftrag 012, 1: gilt auch in einer Warum-Frage
+    if a == "OFFEN" and m is not None and (innen := _innere_frage(frage)) is not None:
+        a, frage = absicht(innen), innen                    # Auftrag 012: die Frage in einem langen Satz
+        kern._frage_letzte = (zeit, a)
     if a == "OFFEN" or m is None:
         return {"text": None, "absicht": a, "ziel": None, "quelle": "claude"}
+    echte = getattr(kern, "_echte_frage", None)
     if a == "NOTIZ":
+        fl = frage.lower()
         innen = _innere_frage(frage)
-        text, h = ("Notiert.", None)
-        if KORREKTUR_ALLE_TOT.search(frage.lower()):
-            text = f"Notiert. {_alle_tot(kern)}"
+        nachfrage = NACHFRAGE.search(fl) and not NOTIER.search(fl)
+        text, h = ("" if nachfrage else "Notiert.", None)
+        if KORREKTUR_ALLE_TOT.search(fl):
+            text = f"{text} {_alle_tot(kern)}".strip()
         if innen is not None:
             t2, h = _antwort(kern, absicht(innen), innen, p, lagebild, zeit, False)
             if t2:
-                text = f"{text} {t2}"
-        return _abschluss(kern, text, "NOTIZ", h, zeit)
+                text = f"{text} {t2}".strip()
+            kern._echte_frage = (zeit, innen)
+        elif NACHFRAGE.search(fl) and echte is not None and zeit - echte[0] <= 180.0:
+            # Auftrag 012 (192113 4:00, 8:28, 15:55, 28:42: "du antwortest nicht auf meine Fragen"): die letzte Frage
+            t2, h = _antwort(kern, absicht(echte[1]), echte[1], p, lagebild, zeit, True)
+            if t2:
+                text = f"{text} Zu deiner Frage: {t2}".strip()
+        elif AUGE.search(fl):
+            text = f"{text} {_auge(kern)}".strip()   # Auftrag 012 (192113 2:40): Notiz ueber das Kontroll-Auge
+        # "Du ignorierst meine Fragen. Ich hab dich gefragt, was mach ich, wenn ..." ist die Frage, keine Notiz
+        return _abschluss(kern, text or "Notiert.", absicht(innen) if innen is not None and nachfrage else "NOTIZ", h,
+                          zeit)
+    kern._echte_frage = (zeit, frage)
     text, h = _antwort(kern, a, frage, p, lagebild, zeit, wiederholt)
     if not text:
         return {"text": None, "absicht": a, "ziel": None, "quelle": "claude"}
@@ -611,6 +873,11 @@ def _klaeren(kern, frage: str, zeit: float) -> str | None:
     """Auftrag 009, 3: erklaert den letzten gesprochenen Satz (<= 60 s) konkret - welches Ziel, welcher Turm, warum
     damals. Nennt die Frage ein Thema (Turm, Welle, Back), gilt der letzte Satz dazu. Auch im Tod."""
     f = frage.lower()
+    if WORT_FRAGE.search(f):
+        # Auftrag 012 (192113 8:50 "Was meinst du mit gebackt? Was heisst das?"): ein Wort erklaeren
+        wort = next((s for r, s in GLOSSAR if r.search(f)), None)
+        if wort is not None:
+            return wort
     log = [e for e in (getattr(kern, "_ansage_log", None) or [])
            if zeit - e["zeit"] <= 60.0 and e["kategorie"] not in ("INFO_FLASH", "BESTAETIGUNG")]
     if not log:
@@ -627,13 +894,21 @@ def _klaeren(kern, frage: str, zeit: float) -> str | None:
     return None
 
 
+WORT_FRAGE = re.compile(r"was (meinst du|heißt|heisst|bedeutet)")
+GLOSSAR = ((re.compile(r"gebackt|gebacked"), "„Gebackt“ heißt: zurück in die Basis, per Recall."),
+           (re.compile(r"(^|[^a-z])prio"), "„Prio“ heißt: deine Welle drückt, du darfst als Erster die Lane verlassen."),
+           (re.compile(r"gecrasht|crash"), "„Gecrasht“ heißt: die Welle ist in den Turm gelaufen."),
+           (re.compile(r"platten|plating"), "Platten sind die Panzerplatten an ihren äußeren Türmen bis Minute 14, "
+                                            "jede bringt Gold."))
+
+
 def _abschluss(kern, text: str, a: str, h: Handlung | None, zeit: float) -> dict:
     """Buch 11, 5, Regeln 3 und 4: kein Widerspruch ohne "Neu:"; die Antwort gilt als gesagter Plan."""
     ziel = fuehren.ziel_label(h) if h is not None else None
     letztes = getattr(kern, "_letztes_ziel", None)
     if ziel and letztes is not None and letztes[1] and letztes[1] != ziel \
             and zeit - letztes[0] <= kern.cfg["fuehren"]["widerspruch_fenster_s"] \
-            and a in ("JETZT", "DANACH", "WARUM") and not text.startswith(("Neu:", "Notiert")):
+            and a in ("JETZT", "DANACH", "WARUM") and not text.startswith(("Neu:", "Notiert", "Stimmt")):
         text = f"Neu: {text}"
     p = kern.fuehrer.plan
     if h is not None and p is not None and h is p.handlung:

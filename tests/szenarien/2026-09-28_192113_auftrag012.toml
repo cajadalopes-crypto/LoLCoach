@@ -1,0 +1,33 @@
+# Auftrag 012 (Bot-Partie 192113, Riven Top gegen Teemo, Win): Wellen-Endlosschleife, Timer, Cassiopeia.
+# Bots clearen kaum - die Top-Welle stand ab 19:30 leer und tief bei ihnen, zwei Mitspieler farmten dort.
+
+aufnahme = "2026-09-28_192113"
+spielmodus = "CLASSIC"
+bots = true
+
+# 19:40-20:47: sechsmal "Drück/Farm die Top-Welle", die Welle stand leer an ihrem Inhibitor-Turm (front 0,64-0,78,
+# ihre Vasallen 0 oder im Nebel), Kai'Sa und Sona farmten dort. Ungefragt: 20:04 "Zwei Wege: die Top-Welle drücken",
+# 20:38 "Dann zur Top-Welle, sie läuft sonst in deinen Turm", 20:51 "Drück die Top-Welle, ihre Vasallen sind weg".
+[[szenario]]
+id = "1940-keine-leere-top-welle"
+fenster = ["19:30", "21:00"]
+lage = "Top-Welle leer und tief bei ihnen (ihre Vasallen 0 oder im Nebel), Kai'Sa und Sona oben."
+darf_nicht_sagen = ["Top-Welle"]
+warum = "Eine Welle ohne ihre Vasallen, die allein zu ihnen läuft, bringt dir nichts (Auftrag 012, 1)."
+
+# 23:26 "Kauf Stahlsiegel für Schutzengel, dann zur Top-Welle, sie läuft sonst in deinen Turm." - die Top-Welle stand
+# gecrasht an ihrem Nexus (GECRASHT_BEI_IHM, front 0,76-0,82).
+[[szenario]]
+id = "2326-top-welle-am-nexus"
+fenster = ["23:15", "24:00"]
+lage = "Top-Welle gecrasht tief bei ihnen, Riven in der Basis."
+darf_nicht_sagen = ["Top-Welle", "läuft sonst in deinen Turm"]
+warum = "\"sie läuft sonst in deinen Turm\" stimmt nur, wenn sie zu dir läuft (Auftrag 012, 1)."
+
+# 22:31 "Cassiopeia kam aus dem Nebel, niemand hatte Cassiopeia gesehen." - sie war 22:06-22:22 durchgehend sichtbar,
+# 275-823 von dir; die Probe stammte von 22:05, als sie noch unten war (p_da 0).
+[[szenario]]
+id = "2231-cassiopeia-nicht-aus-dem-nebel"
+fenster = ["22:25", "22:45"]
+darf_nicht_sagen = ["aus dem Nebel"]
+warum = "Wer seit der Probe zu sehen war, kam nicht aus dem Nebel (Auftrag 012, 4)."

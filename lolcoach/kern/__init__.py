@@ -95,6 +95,27 @@ def _leben_jetzt(text: str, m) -> str:
     return re.sub(r"\d+ Prozent Leben", f"{int(round(m.leben * 100))} Prozent Leben", text)
 
 
+ZAEHLT_RUNTER = re.compile(r"\b(in|noch|Noch) (\d+) Sekunden")
+ZAEHLT_HOCH = re.compile(r"\b(seit) (\d+) Sekunden")
+
+
+def zeit_jetzt(text: str, alter_s: float, zeichen_pro_s: float) -> str:
+    """Auftrag 012, 3 (192113 4:37: "Drache in 30 Sekunden", das Spiel zeigte 20): eine Zeit im Satz gilt, wenn man
+    sie HOERT - gewaehlt 4:29,7, gesprochen 4:37,1 (die Stimme sprach noch), die Zahl kam 2 s nach dem ersten Ton.
+    "in / noch N Sekunden" zaehlt um das Warten (`alter_s`) und die Sprechzeit bis zur Zahl herunter, "seit N Sekunden"
+    hinauf. Minuten-Angaben (ab 90 s) bleiben: dort machen ein paar Sekunden nichts aus."""
+    def neu(m, vor: int) -> str:
+        n = int(m.group(2)) + vor * (alter_s + m.start() / zeichen_pro_s)
+        return f"{m.group(1)} {max(1, int(round(n)))} Sekunden"
+    text = ZAEHLT_RUNTER.sub(lambda m: neu(m, -1), text)
+    return ZAEHLT_HOCH.sub(lambda m: neu(m, 1), text)
+
+
+def _zeichen_pro_s() -> float:
+    from ..sprechplan import ZEICHEN_PRO_SEKUNDE
+    return ZEICHEN_PRO_SEKUNDE
+
+
 def _makro_nutzt() -> set:
     from .makro import NUTZT_FENSTER
     return NUTZT_FENSTER
@@ -874,6 +895,10 @@ class Kern:
         from . import wert
         from .makro import teamplan_bonus
         neu = karte.welle_druecken(m, self.cfg, modus)
+        # Auftrag 012, 1: bringt keine Welle zum Druecken etwas, die Wellen, die auf euren Turm laufen (andere Lane)
+        for lane, w in (m.seitenwellen or {}).items():
+            if (h := karte.seitenwelle(m, self.cfg, modus, lane, w)) is not None:
+                neu.append(h)
         plan = self.fuehrer.plan
         if plan is not None and plan.art == "WELLE_DRUECKEN":
             self._wd_lane = (m.zeit, plan.handlung.daten.get("lane"))
@@ -1302,6 +1327,16 @@ class Kern:
             g = next((x for x in m.b.gegner if x.champion == bei[0] and not x.s.tot), None)
             if g is not None:
                 g.pos, g.sichtbar, g.seit, g.abstand, g.ankunft = m.pos, True, 0.0, 0.0, 0.0
+        # Auftrag 012, 1 (192113 19:48 "mein Top ist reingepusht", 20:05 "es gibt keinen einzigen Minion"): die Welle
+        # dieser Lane ist leer - welle_korrektur_s lang, dann gilt wieder die Minimap
+        from dataclasses import replace
+        for lane, t in (k.get("welle") or {}).items():
+            w = (m.wellen or {}).get(lane)
+            if w is not None and 0 <= m.zeit - t <= self.cfg["mitte"]["welle_korrektur_s"]:
+                m.wellen[lane] = replace(w, zustand="LEER", unsere=0, ihre=0)
+                (m.seitenwellen or {}).pop(lane, None)
+                if m.welle is w:
+                    m.welle = m.wellen[lane]
         ort = k.get("ort")
         if ort is not None and m.zeit - ort[1] <= gilt:
             from .merkmale import OBJ_GRUBE
@@ -1353,7 +1388,9 @@ class Kern:
 
     def _gesprochen(self, a, kategorie: str, m: Merkmale) -> None:
         a._kategorie = kategorie          # fuer Szenarien (kategorie_max) und Kennzahlen
-        a.auffrischen = lambda t: _leben_jetzt(t, self.m)      # Kritik 008: die Leben-Zahl beim Sprechen (Sprechplan)
+        # Kritik 008: die Leben-Zahl beim Sprechen (Sprechplan); Auftrag 012, 3: Timer zur Zeit, zu der man sie hoert
+        a.auffrischen = lambda t, a=a: zeit_jetzt(_leben_jetzt(t, self.m), (self.m.zeit if self.m is not None else a.zeit) - a.zeit,
+                                                   _zeichen_pro_s())
         # Auftrag 004, Teil C 1: jede Ansage merkt sich 60 s lang ihren Grund und ihre Lage - "warum?" meint sie
         plan = self.fuehrer.plan
         grund = (plan.handlung.grund if plan is not None and kategorie not in ("INFO_FLASH", "VORSICHT", "LAGEBILD")
@@ -1661,6 +1698,11 @@ class Kern:
         gewarnt = frozenset(g.champion for g in (self.m.b.gegner if self.m is not None and self.m.b is not None else [])
                             for e in (getattr(self, "_ansage_log", None) or []) if zeit - e["zeit"] <= 60.0
                             and g.champion in e["text"])
+        # Auftrag 012, 4 (192113 22:31 "Cassiopeia kam aus dem Nebel" - 22:06-22:22 stand sie sichtbar neben dir, die
+        # Probe war von 22:05): wer seit der Probe zu sehen war, kam nicht aus dem Nebel
+        if probe is not None and self.m is not None and self.m.b is not None:
+            gewarnt |= frozenset(g.champion for g in self.m.b.gegner
+                                 if g.seit is not None and g.seit <= zeit - probe["zeit"])
         wiederbelebt = frozenset(n for n, t in getattr(self, "_zuletzt_tot", {}).items() if 0 <= zeit - t <= 20.0
                                  and self.m is not None and self.m.b is not None
                                  and any(g.champion == n and not g.s.tot for g in self.m.b.gegner))

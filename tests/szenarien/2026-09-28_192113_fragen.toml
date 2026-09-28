@@ -1,0 +1,629 @@
+# Fragen-Probe Auftrag 012: die Fragen aus 192113 (Bot-Partie, Riven Top gegen Teemo, Win), `frage` = erkannter Text.
+# Gegner: Teemo, Master Yi, Cassiopeia, Pantheon, Alistar. Geprueft werden Absicht und Inhalt der Antwort - nie
+# nur "Notiert.", wenn eine Frage drinsteckt. Zeiten = Ende des Drueckens (fuehrmass); wo zwei Fragen sich im Log
+# ueberkreuzen (13:29/13:45/13:53, 14:19/14:31, 28:35/28:42), ist die Reihenfolge wie live gesetzt.
+# Reine Beschwerden ohne Frage (9:02, 16:15, 18:55, 19:53, 20:35, 22:41, 24:55, 25:26, 28:47, 29:40) bleiben
+# NOTIZ oder Claude und stehen hier nicht.
+
+aufnahme = "2026-09-28_192113"
+spielmodus = "CLASSIC"
+bots = true
+
+[[szenario]]
+id = "0217-kontrollauge"
+zeit = "2:17"
+frage = "Was soll ich mit dem Kontrollauge machen?"
+kern_frage = true
+absicht = "AUGE"
+ohne_claude = true
+muss_nennen_eins = ["Busch", "Fluss", "Grube", "Eingang"]
+darf_nicht_sagen = ["Farm deine"]
+warum = "Die Frage nach dem Kontroll-Auge bekommt einen Ort, nicht den Plan."
+
+[[szenario]]
+id = "0229-kontrollauge-wieder"
+zeit = "2:29"
+frage = "Was soll ich mit dem Kontrollauge machen?"
+kern_frage = true
+absicht = "AUGE"
+ohne_claude = true
+muss_nennen_eins = ["Busch", "Fluss", "Grube", "Eingang"]
+darf_nicht_sagen = ["Farm deine"]
+warum = "Wiederholt: dieselbe Frage, wieder ein Ort."
+
+[[szenario]]
+id = "0249-notiz-mit-kontrollauge"
+zeit = "2:49"
+frage = "Notier mal die ganze Zeit, dass wenn ich dich frage, was ich mit meinem Kontrollauge machen soll, du mir einfach sagst, farm deine Topwelle, wer bist du denn? Mein Gott oder was? Ich frag dich was, du bist mein Coach."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Kontroll-Auge"]
+warum = "Notiz mit dem Thema Kontroll-Auge: Notiert und die Antwort dazu."
+
+[[szenario]]
+id = "0354-soll-ich-nicht-durchpushen"
+zeit = "3:54"
+frage = "Soll ich nicht durchpushen?"
+kern_frage = true
+absicht = "SOLL_ICH"
+ohne_claude = true
+muss_nennen_eins = ["Nein", "Back", "back"]
+warum = "Ja/Nein mit Grund."
+
+[[szenario]]
+id = "0403-nachfrage-antworten"
+zeit = "4:03"
+frage = "Okay, du scheinst gar nicht mehr auf irgendwas zu antworten, was ich dich frage. Bitte notieren."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Zu deiner Frage"]
+warum = "\"Du antwortest nicht auf meine Fragen\": die letzte Frage (3:54) wird beantwortet."
+
+[[szenario]]
+id = "0410-warum-nicht-durchpushen"
+zeit = "4:10"
+frage = "Warum soll ich nicht durchpushen?"
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+warum = "Warum mit Grund."
+
+[[szenario]]
+id = "0422-win-condition"
+zeit = "4:22"
+frage = "Was ist eigentlich unsere Wind Condition?"
+kern_frage = true
+absicht = "OFFEN"
+warum = "Abwägung beider Teams: Claude."
+
+[[szenario]]
+id = "0516-timer-rueckmeldung"
+zeit = "5:16"
+frage = "Weißt du, was gut wäre, wenn du die Timer dementsprechend ansagst, wann sie auch kommen? Beispielsweise hast du gesagt, Drache in 30 Sekunden, bei mir stand aber Drache in 20 Sekunden. Das heißt, du bist 10 Sekunden zu spät dran mit dem, was du sagst. Das geht so nicht."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Notiert"]
+warum = "Rückmeldung zum Timer: notiert."
+
+[[szenario]]
+id = "0707-was-jetzt-genau"
+zeit = "7:07"
+frage = "So, was mache ich jetzt genau?"
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+warum = "JETZT."
+
+[[szenario]]
+id = "0713-bot-lane"
+zeit = "7:13"
+frage = "Wie läuft es bei der Bot-Line?"
+kern_frage = true
+absicht = "LAGE"
+ohne_claude = true
+warum = "LAGE."
+
+[[szenario]]
+id = "0808-jungle-coachen"
+zeit = "8:08"
+frage = "Wer ist eigentlich auch in der Lage, Jungle zu coachen oder bist du noch auf Toplane das spezifiziert?"
+kern_frage = true
+absicht = "COACH"
+ohne_claude = true
+muss_nennen_eins = ["Jungle", "Jungler"]
+darf_nicht_sagen = ["nicht tief gehen", "Platten"]
+warum = "Eine Frage an den Coach selbst - nicht die Kartenlage (\"in der Lage\" ist kein Lagebild)."
+
+[[szenario]]
+id = "0820-jungle-coachen-wieder"
+zeit = "8:20"
+frage = "Ich habe mich gefragt, ob du in der Lage wäre, auf der Jungle zu coachen."
+kern_frage = true
+absicht = "COACH"
+ohne_claude = true
+muss_nennen_eins = ["Jungle", "Jungler"]
+darf_nicht_sagen = ["nicht tief gehen"]
+warum = "Dieselbe Frage anders gestellt."
+
+[[szenario]]
+id = "0831-ignorierst-frage"
+zeit = "8:31"
+frage = "Okay, du ignorierst mal wieder meine Frage, was soll der Scheiß?"
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Zu deiner Frage"]
+warum = "\"Du ignorierst meine Frage\": die Frage von 8:20 wird beantwortet."
+
+[[szenario]]
+id = "0842-warum-keine-platten"
+zeit = "8:42"
+frage = "Warum sollte ich mir nicht die Platings holen?"
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+warum = "WARUM."
+
+[[szenario]]
+id = "0852-was-heisst-gebackt"
+zeit = "8:52"
+frage = "Was meinst du mitgebackt? Was heißt das?"
+kern_frage = true
+absicht = "KLAEREN"
+ohne_claude = true
+muss_nennen_eins = ["Basis"]
+warum = "Ein Wort erklären: gebackt = in die Basis zurück."
+
+[[szenario]]
+id = "0942-angst-vor-ganks"
+zeit = "9:42"
+frage = "Muss ich keine Angst vor Ganks haben, wenn ich den zweiten Turm drücke."
+kern_frage = true
+absicht = "RISIKO"
+ohne_claude = true
+muss_nennen_eins = ["Master Yi", "fehlt", "fehlen"]
+warum = "Gefahr-Frage: wer fehlt, wie riskant ist der Turm."
+
+[[szenario]]
+id = "0946-in-der-base-wohin"
+zeit = "9:46"
+frage = "Okay, ich bin jetzt in der Base. Wo gehe ich jetzt hin?"
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+darf_nicht_sagen = ["Bleib und farm", "Noch nicht"]
+warum = "\"Ich bin jetzt in der Base. Wo gehe ich jetzt hin?\" - das Füllwort \"jetzt\" darf die Erkennung nicht brechen."
+
+[[szenario]]
+id = "1024-soll-ich-zum-drake"
+zeit = "10:24"
+frage = "Sollte ich nicht zum Drake gehen und da unterstützen."
+kern_frage = true
+absicht = "SOLL_ICH"
+ohne_claude = true
+muss_nennen_eins = ["Drache"]
+warum = "SOLL_ICH mit Drache."
+
+[[szenario]]
+id = "1026-warum-nicht"
+zeit = "10:26"
+frage = "Warum nicht?"
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+muss_nennen_eins = ["Drache"]
+warum = "\"Warum nicht?\" 2 s nach der Drache-Frage meint den Drachen, nicht die letzte Ansage."
+
+[[szenario]]
+id = "1034-warum-nicht-zum-drake"
+zeit = "10:34"
+frage = "Ich frage dich, warum ich beim Drake nicht unterstützen soll."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+muss_nennen_eins = ["Drache"]
+warum = "WARUM mit Drache."
+
+[[szenario]]
+id = "1136-was-mache-ich-jetzt"
+zeit = "11:36"
+frage = "Was mache ich jetzt?"
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+warum = "JETZT."
+
+[[szenario]]
+id = "1231-du-sagst-nie-etwas-anderes"
+zeit = "12:31"
+frage = "Du sagst echt nie irgendwas anderes, außer dass ich meine Top Wave drücken soll. Drück Top Welle, drück Top Welle. Egal, was für ein Spielstatus ist, es ist immer drück die Top Welle, drück die Top Welle, warum auch immer. Du gibst keinen Grund für nichts und wenn ich dich frage, soll ich nicht zum Drake gehen, sagst du drück die Top Welle. Das ist unfassbar. Also du bist immer noch absolut scheiße."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+warum = "Reine Beschwerde (kein Fragesatz): Notiz."
+
+[[szenario]]
+id = "1340-warum-immer-toplane"
+zeit = "13:40.0"
+frage = "Bro, checkst du, was Makro bedeutet? Warum lässt du mich die ganze Zeit auf die Toplane gehen? Warum soll ich nicht unterstützen, die Midlane ersten Tower zu holen oder Botlane? Warum soll ich nicht versuchen, irgendwie ein Objective zu bekommen? Warum soll ich die ganze Zeit in jedem Spiel, seitdem dieser Coach existiert, seit dem allerersten Tag, seit der ersten Minute, wo ich ihn angemacht habe, ist es immer, geh zur Toplane und push die durch. Es ist kein Makro, es ist kein Guidance, es ist gar nichts. Es ist Schrott."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+muss_nennen_eins = ["Mid", "Bot", "Turm", "Drache", "Herold", "Larven"]
+darf_nicht_sagen = ["Grund der letzten Ansage"]
+warum = "Warum-Fragen nach Mid-Turm, Bot und Objective: die Antwort vergleicht mit ihnen."
+
+[[szenario]]
+id = "1352-wer-hat-flash"
+zeit = "13:52.0"
+frage = "Eurita, du sagst es jedes Mal, das einzige Makroplay, was du kennst, ist, geh zur Top-Welle, sonst nimmt sie sonst niemand. Alter, halt deine Fresse. Sag mir doch mal lieber, wer von meinen Gegnern Flash hat und wer nicht."
+kern_frage = true
+absicht = "TIMER"
+ohne_claude = true
+muss_nennen_eins = ["Flash"]
+warum = "Flash-Tabelle."
+
+[[szenario]]
+id = "1354-wieso-nicht-flash"
+zeit = "13:54.1"
+frage = "Wieso nicht?"
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+muss_nennen_eins = ["Flash"]
+warum = "\"Wieso nicht?\" nach der Flash-Antwort meint die Flash-Antwort."
+
+[[szenario]]
+id = "1430-warum-weisst-du-nichts-flash"
+zeit = "14:30.0"
+frage = "Was? Ich frage dich, warum haben die, warum weißt du von ihnen nichts und du sagst, sonst nimmt sie sonst niemand? Ich rede doch gerade über die Flashes, du Bastard. Du laberst wieder die größte Scheiße. Ey, das ist wieder eine richtige Qual. Du machst gar nichts, du bringst wieder nichts. Ich lasse dich Stunden über Stunden arbeiten und es kommt nur Scheiße rum."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+muss_nennen_eins = ["Flash"]
+warum = "\"Warum weißt du von ihnen nichts ... über die Flashes\": wie der Coach Flash sieht."
+
+[[szenario]]
+id = "1435-wenn-turm-down-danach"
+zeit = "14:35.8"
+frage = "Was mache ich denn, wenn dieser innere Top-Turm down ist? Als nächstes, als Macro-Play."
+kern_frage = true
+absicht = "DANACH"
+ohne_claude = true
+darf_nicht_sagen = ["Drück ihren inneren Top-Turm: Level"]
+warum = "\"Was mache ich, wenn dieser Turm down ist? Als Nächstes\" ist DANACH."
+
+[[szenario]]
+id = "1441-ignorierst-danach"
+zeit = "14:41"
+frage = "Du ignorierst einfach meine Fragen. Ich hab dich gefragt, was mach ich, wenn sobald der down ist."
+kern_frage = true
+absicht = "DANACH"
+ohne_claude = true
+darf_nicht_sagen = ["Drück ihren inneren Top-Turm: Level"]
+warum = "\"Du ignorierst meine Fragen. Ich hab dich gefragt, was mach ich, wenn sobald der down ist.\" - die Frage steckt drin."
+
+[[szenario]]
+id = "1522-sobald-im-fountain-lang"
+zeit = "15:22.4"
+frage = "Ja okay, du hast mir gerade im Backcloud Code oder im Chat gesagt, dass du mir jetzt ganz genau sagst, was die nächsten Schritte sind. Immer noch nicht. Ich muss dir alles aus der Nase ziehen und selbst dann haust du nur Scheiße raus. Was mache ich jetzt, sobald ich im Back bin, im Fountain?"
+kern_frage = true
+absicht = "DANACH"
+ohne_claude = true
+muss_nennen_eins = ["Nach dem Back", "Aus der Basis"]
+warum = "\"Was mache ich jetzt, sobald ich im Back bin, im Fountain?\" - das Ziel nach dem Back."
+
+[[szenario]]
+id = "1521-sobald-im-fountain"
+zeit = "15:21.0"
+frage = "Was mache ich, sobald ich zurück bin im Fountain?"
+kern_frage = true
+absicht = "DANACH"
+ohne_claude = true
+muss_nennen_eins = ["Nach dem Back", "Aus der Basis"]
+warum = "Dasselbe kurz."
+
+[[szenario]]
+id = "1536-funktionierst-du-noch"
+zeit = "15:36"
+frage = "Du sagst die ganze Zeit neu und back jetzt. Digga, ey, funktionierst du noch? Du bist scheiße. Du bist absolut scheiße."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+warum = "Beschwerde: Notiz."
+
+[[szenario]]
+id = "1549-warum-topwelle-durchpushen"
+zeit = "15:49"
+frage = "Warum soll ich Topfwelle durchpushen? Ist das nicht extrem behindert und dumm?"
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+darf_nicht_sagen = ["Grund der letzten Ansage: drei kommen"]
+warum = "Die Frage nennt das Ziel des Plans: sein Grund, nicht der einer alten Rückzugs-Ansage."
+
+[[szenario]]
+id = "1603-antwortest-nicht"
+zeit = "16:03"
+frage = "Was? Du antwortest gar nicht auf meine Fragen, du Hurensohn. Ey, sorry, ich kann mir das nicht geben. Der Junge, der bringt mich zu Weißglut."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Zu deiner Frage"]
+warum = "Die Frage von 15:49 wird beantwortet."
+
+[[szenario]]
+id = "1656-tp-oder-laufen"
+zeit = "16:56"
+frage = "Soll ich erst zurück teleportieren oder direkt vom Bot aus nach Toplauf?"
+kern_frage = true
+absicht = "ENTWEDER"
+ohne_claude = true
+warum = "ENTWEDER."
+
+[[szenario]]
+id = "1706-spielstate"
+zeit = "17:06"
+frage = "Okay, was soll ich jetzt machen zum aktuellen Spielstate?"
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+warum = "JETZT."
+
+[[szenario]]
+id = "1816-wenn-ich-gebacked-bin"
+zeit = "18:16"
+frage = "Okay, dann, wenn ich gebacked bin, du musst doch weitersprechen. Du sagst, meine Fresse, was soll ich machen?"
+kern_frage = true
+absicht = "DANACH"
+ohne_claude = true
+warum = "\"wenn ich gebacked bin, was soll ich machen\" - nach dem Back."
+
+[[szenario]]
+id = "1817-bin-back-was-jetzt"
+zeit = "18:17"
+frage = "Ja, ich bin back, was jetzt?"
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+warum = "JETZT."
+
+[[szenario]]
+id = "1846-top-farmen-andere"
+zeit = "18:46.0"
+frage = "Okay, zur Top-Welle, die Alternative ist Top-Welle. Ja, ganz klar. Ganz toll. Super. Ganz, ganz großartig. Auf der Top-Lane sind gerade auch zwei, drei Champs von mir, die alles halt wegfarmen. Das ist ein dummer Makro-Call. Was machst du hier? Du bist so dumm. Du bist dümmer als ein Bronzespieler."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+darf_nicht_sagen = ["Top-Welle"]
+muss_nennen_eins = ["Stimmt"]
+warum = "\"Auf der Top-Lane sind zwei, drei Champs von mir, die alles wegfarmen\" ist eine Korrektur: Stimmt, dann etwas anderes."
+
+[[szenario]]
+id = "1914-bin-back-was-jetzt"
+zeit = "19:14"
+frage = "Okay, ich bin back. Was jetzt?"
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+darf_nicht_sagen = ["Top-Welle"]
+warum = "Top-Welle tief und leer: nicht dorthin."
+
+[[szenario]]
+id = "1940-zwei-leute-farmen-top"
+zeit = "19:40.0"
+frage = "Du sagst farm deine Topwelle. Wir haben gerade zwei Leute, Kai'Sa und mein Support, der gerade die Topwelle farmt, so ziemlich an deren eigenen Pounden. Also so richtig an deren Base. Da wird gerade gefarmt. Und du sagst mir, ich soll die Topwelle farm. Was soll ich jetzt machen?"
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+darf_nicht_sagen = ["Top-Welle"]
+muss_nennen_eins = ["Stimmt"]
+warum = "Kai'Sa und Sona farmen oben an ihrer Basis: Korrektur, dann ein anderes Ziel."
+
+[[szenario]]
+id = "1948-top-reingepusht"
+zeit = "19:48.0"
+frage = "Meine Welle ist top, Digga, mein Top ist reingepusht bis ins letzte Arschloch."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+darf_nicht_sagen = ["Top-Welle"]
+muss_nennen_eins = ["Stimmt"]
+warum = "Korrektur."
+
+[[szenario]]
+id = "2009-was-jetzt"
+zeit = "20:09.0"
+frage = "Was soll ich jetzt machen, du Hurensohn?"
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+darf_nicht_sagen = ["Top-Welle"]
+warum = "JETZT ohne Top-Welle."
+
+[[szenario]]
+id = "2014-kein-minion"
+zeit = "20:14.0"
+frage = "Bruderherz, es wird in dem Moment abgeholt, es gibt keinen einzigen Minion zum Farmen. Die Wave ist angepusht bis zur Base des Gegners."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+darf_nicht_sagen = ["Top-Welle"]
+muss_nennen_eins = ["Stimmt"]
+warum = "Korrektur."
+
+[[szenario]]
+id = "2024-teemo-hat-farm-geholt"
+zeit = "20:24"
+frage = "Teemo, der gegnerische Teemo hat meinen Farm unter seinem Turm geholt. Das geht gar nicht."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+darf_nicht_sagen = ["Top-Welle"]
+muss_nennen_eins = ["Stimmt"]
+warum = "\"Teemo hat meinen Farm unter seinem Turm geholt\": die Welle ist weg."
+
+[[szenario]]
+id = "2039-warum-nicht-mid"
+zeit = "20:39"
+frage = "Es gibt keine Topfwelle zum Drücken, du Hurensohn. Guck dir diesen WaveState doch mal an. Warum soll ich nicht zu Midlane gehen? Da bin ich viel schneller und da sind wenigstens Minions und da sind keine verbindeten Charaktere."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+darf_nicht_sagen = ["Top-Welle"]
+muss_nennen_eins = ["Mid"]
+warum = "Korrektur (keine Top-Welle) und Warum-Frage nach Mid."
+
+[[szenario]]
+id = "2052-kein-minion-oben"
+zeit = "20:52"
+frage = "Topwelle, Bruder, da sind schon wieder 50.000 Leute, nicht ein einziges Minion für mich zum Farmen."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+darf_nicht_sagen = ["Top-Welle"]
+muss_nennen_eins = ["Stimmt"]
+warum = "Korrektur."
+
+[[szenario]]
+id = "2121-drache-ueber-top"
+zeit = "21:21"
+frage = "Also ich soll Drache machen oder beziehungsweise den erzwingen, der Bot-Side ist. Indem ich zur Top-Lane laufe, bist du eigentlich behindert? Notieren."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Drache"]
+warum = "\"Also ich soll Drache machen ... indem ich zur Top-Lane laufe? Notieren.\" - notiert und die Frage beantwortet."
+
+[[szenario]]
+id = "2138-was-soll-ich-machen"
+zeit = "21:38"
+frage = "Was soll ich jetzt machen?"
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+warum = "JETZT."
+
+[[szenario]]
+id = "2147-warum-nicht-bot-deffen"
+zeit = "21:47"
+frage = "Warum soll ich nicht Botzeit deffen?"
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+muss_nennen_eins = ["Bot"]
+warum = "WARUM mit Bot."
+
+[[szenario]]
+id = "2204-adc-farmt-top"
+zeit = "22:04"
+frage = "Du sagst farm die Topwelle, mein ADC ist mitten in dieser Wave und farmt sie gerade mit dem Supporter zusammen."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+darf_nicht_sagen = ["Top-Welle"]
+muss_nennen_eins = ["Stimmt"]
+warum = "Korrektur."
+
+[[szenario]]
+id = "2337-riesenschwert-was-danach"
+zeit = "23:37"
+frage = "Und jetzt? Ich habe Riesenschwert gekauft. Es kommt kein Follow-up. Es kommt nichts, was ich danach machen soll. Nichts."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+darf_nicht_sagen = ["Top-Welle"]
+warum = "Top-Welle gecrasht an ihrem Nexus."
+
+[[szenario]]
+id = "2354-topwelle-am-nexus"
+zeit = "23:54"
+frage = "Bruder, Herzi, Topwelle ist fast an deren eigenen Nexus. Was für ich soll die Topwelle pushen? Bist du eigentlich geistesbehindert?"
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+darf_nicht_sagen = ["Top-Welle"]
+muss_nennen_eins = ["Stimmt"]
+warum = "Korrektur."
+
+[[szenario]]
+id = "2402-drache-erst-in-zwei-minuten"
+zeit = "24:02"
+frage = "Wir sollen auf den Drachen gehen, der erst in zwei Minuten kommt."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+muss_nennen_eins = ["Drache"]
+warum = "\"Wir sollen auf den Drachen gehen, der erst in zwei Minuten kommt\" stellt eine Ansage in Frage."
+
+[[szenario]]
+id = "2415-sag-mir-was-ich-machen-soll"
+zeit = "24:15"
+frage = "Sag mir doch, was ich machen soll, du Fotze."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+warum = "\"Sag mir doch, was ich machen soll\" ist JETZT."
+
+[[szenario]]
+id = "2438-keine-sorgen-vier-unsichtbar"
+zeit = "24:38"
+frage = "Soll ich mir keine Sorgen machen, dass vier Leute von meinen Gegnern gerade am Leben sind, aber ich keinen einzigen davon außer Alistar auf der Midlane sehe? Soll ich einfach weiterfuschen, die Bot-Fave?"
+kern_frage = true
+absicht = "RISIKO"
+ohne_claude = true
+muss_nennen_eins = ["fehlt", "fehlen", "zu sehen"]
+warum = "Gefahr-Frage."
+
+[[szenario]]
+id = "2444-warum-sicher-botwelle"
+zeit = "24:44"
+frage = "Warum ist es sicher, jetzt gerade die Botwelle zu farmen?"
+kern_frage = true
+absicht = "RISIKO"
+ohne_claude = true
+muss_nennen_eins = ["fehlt", "fehlen", "zu sehen", "unten"]
+warum = "Gefahr-Frage."
+
+[[szenario]]
+id = "2514-druecken-obwohl-keiner-zu-sehen"
+zeit = "25:14"
+frage = "Ich soll ihn drücken, obwohl fünf Gegner leben und keiner von denen auf der Map zu sehen ist."
+kern_frage = true
+absicht = "RISIKO"
+ohne_claude = true
+muss_nennen_eins = ["fehlt", "fehlen", "zu sehen"]
+warum = "Gefahr-Frage."
+
+[[szenario]]
+id = "2619-innerer-mitturm"
+zeit = "26:19"
+frage = "Ich soll zu meinem eigenen inneren Mitturm gehen, da ist doch gar nichts los."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+warum = "\"Ich soll zu meinem inneren Mid-Turm gehen, da ist nichts los\": der Grund."
+
+[[szenario]]
+id = "2823-nur-schutzengel-kaufen"
+zeit = "28:23"
+frage = "Soll ich nichts anderes kaufen, nur Schutzengel?"
+kern_frage = true
+absicht = "KAUF"
+ohne_claude = true
+muss_nennen_eins = ["Kauf", "kauf", "Gold"]
+warum = "Kauf-Frage."
+
+[[szenario]]
+id = "2840-trank-verkaufen"
+zeit = "28:40.0"
+frage = "Du antwortest nicht und gibst mir weitere Befehle. Das triggert mich absolut komplett geisteskrank. Soll ich nicht mit meinen 4000 Gold vielleicht mal meinen Trank verkaufen und damit irgendwie ein richtig krasses Item holen, was zum Spielgeschehen fassen würde?"
+kern_frage = true
+absicht = "KAUF"
+ohne_claude = true
+muss_nennen_eins = ["Kauf", "kauf", "Gold"]
+warum = "Kauf-Frage mit Verkaufen."
+
+[[szenario]]
+id = "2847-keine-antwort"
+zeit = "28:47.5"
+frage = "Weder keine Antwort und eine weitere Anforderung. Ich muss das Ding gleich stummen, bevor ich meinen Bildschirm einschlage."
+kern_frage = true
+absicht = "NOTIZ"
+ohne_claude = true
+muss_nennen_eins = ["Zu deiner Frage"]
+warum = "Die Kauf-Frage wird beantwortet."
+
+# 4:37 live: "Aus der Basis: Farm Top, Drache in 30 Sekunden." - gewählt bei 4:29,7, gesprochen 4:37,1, die Zahl hört
+# man 2 s später: das Spiel zeigte 20. Nachgespielt wartet der Satz nicht (die Claude-Antwort davor fehlt), aber die Zahl
+# muss zur Zeit stimmen, zu der man sie hört. Hier (mit den Fragen davor) kommt der Satz wie live aus der Basis.
+[[szenario]]
+id = "0437-drache-timer-zur-sprechzeit"
+fenster = ["4:28", "4:50"]
+darf_nicht_sagen = ["Drache in 30 Sekunden"]
+muss_nennen_eins = ["Drache in 2", "Drache in 1"]
+warum = "Ein Timer im Satz gilt beim Hören, nicht beim Rechnen (Auftrag 012, 3)."
+
