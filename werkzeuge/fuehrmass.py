@@ -131,6 +131,13 @@ def wendepunkt_verzug(lauf: ns.Lauf, ab: float = 0.0) -> list[tuple[float, str, 
         if x is not None and x.modus == "KAMPF":
             nach = [y for y in lauf.takte if y.zeit >= t and y.modus != "KAMPF"]
             start = nach[0].zeit if nach else t
+        # Auftrag 007: begann ein Plan-Satz <= 2 s VOR dem gemessenen Zeitpunkt, ist er die Antwort - die Messung sieht
+        # das Ereignis spaeter als der Kern (Basis: erst nach 3 s draussen; 164326 0:19 "Aus der Basis: Farm Top, ..."
+        # lief schon, als die Messung den Wendepunkt setzte, und schob den Start hinter genau diesen Satz)
+        if any(t - 2.0 <= ns.gesprochen_um(a) <= t for a in saetze):
+            gedeckt[art] = t
+            aus.append((t, art, 0.0, "Satz zum Ereignis"))
+            continue
         start = _satzende(lauf, start)      # Auftrag 004: ab dem Ende des laufenden Satzes
         if art == "Basis verlassen":
             vorher = [a for a in saetze if t - 60.0 <= ns.gesprochen_um(a) <= t

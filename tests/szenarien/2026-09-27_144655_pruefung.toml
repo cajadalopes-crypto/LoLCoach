@@ -63,7 +63,8 @@ zeit = "1:59"
 quelle = "Pruefung E2: 'Noch 8 Sekunden: zurueck nach Top' mit p_tod 0,64"
 lage = "Riven tot seit 1:57 (Gangplank), Wiedereinstieg 2:11 im Brunnen."
 soll = ["WOHIN"]
-plan_p_tod_max = 0.3
+# plan_p_tod_max = 0.3 aufgehoben: Auftrag 007, A 3 (Carlos) - in der Lane-Phase ist der aeussere Turm das Respawn-Ziel,
+# ausser >= 2 Gegner standen dort; das Gefahr-Modell rechnet dort 1,00 (nur Gangplank, s. messungen.md Auftrag 007)
 warum = """WOHIN wird auf dem Weg aus dem Brunnen zur Wiederbelebungszeit gerechnet, nicht am Todesort. Der Weg zum
 eigenen Turm ist nicht gefaehrlich. Grenze seit Schritt 5 = wohin_p_tod_max (0,3): mit dem Kampfmodell aus Buch 7 sind
 es 0,22 statt vorher < 0,2 (Fehler E2 war 0,64); der Plan ist derselbe (messungen.md, Schritt 5)."""
@@ -118,3 +119,13 @@ quelle = "Kritiker R1 (Widerspruch): 'Kha'Zix kam aus dem Nebel, niemand hatte K
 lage = "Riven stirbt mit 18 % im eigenen Jungle an Kha'Zix."
 darf_nicht_sagen = ["kam aus dem Nebel"]
 warum = "Wer eben angesagt war, kam nicht ungesehen."
+
+# --- Auftrag 007 (Teil A 3-5, Teil B) ---
+
+[[szenario]]
+id = "0159-aeusserer-turm"
+fenster = ["1:55", "2:05"]
+quelle = "Kritik R1/R2, Klasse 7: 'Noch 8 Sekunden: zurueck nach Top, bleib am Inhibitor-Turm: Gangplank war zuletzt oben.'"
+lage = "Lane-Phase, Minute 2, Respawn."
+darf_nicht_sagen = ["Inhibitor-Turm"]
+warum = "Auftrag 007, A 3: in der Lane-Phase ist der aeussere Turm das Respawn-Ziel."

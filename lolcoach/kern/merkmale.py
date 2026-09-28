@@ -87,6 +87,7 @@ class Merkmale:
     objectives: list[ObjectiveLage] = field(default_factory=list)
     mitspieler: list = field(default_factory=list)       # (Spieler, Spiel-Einheiten)
     bedrohung: list = field(default_factory=list)        # (Struktur in Worten, Position, deine Laufzeit)
+    belagerung: tuple | None = None   # Auftrag 007, A 4 (Buch 5, 7, Nachtrag): (Ort in Worten, Position, Grund)
     daten_frisch: bool = True
     mein_tempo: float = 340.0
     # Schritt 3
@@ -512,6 +513,7 @@ class MerkmalBau:
             m.objectives.append(ObjectiveLage(schl, t <= zeit, max(0.0, t - zeit), obj, weg,
                                               m.team_nah(obj, c["grube_radius"]), erreicht, fenster, unbekannt))
         m.bedrohung = self._bedrohung(p, b, lb, m)
+        m.belagerung = self._belagerung(p, b, m)
         if lb is not None and getattr(lb, "mitspieler", None):
             m.ult_mitspieler = {name: v[2] for name, v in lb.mitspieler.items()
                                 if zeit - v[0] <= 3.0 and v[2] is not None}
@@ -641,6 +643,9 @@ class MerkmalBau:
                          k.get("gegner", 0), m.zeit - k["seit"], k["tote_jetzt"][0] - k["tote"][0],
                          k["tote_jetzt"][1] - k["tote"][1], m.weg(k["pos"]))
 
+    def _belagerung(self, p, b, m: Merkmale):
+        return _belagerung_von(self, p, b, m)
+
     def _bedrohung(self, p, b, lb, m: Merkmale) -> list:
         """Kapitel 5.1 VERTEIDIGEN: >= 2 Gegner sichtbar in 2500 um einen eigenen Turm/Nexus, oder die gegnerische
         Welle steht an eurem Inhibitor-Turm/Nexus einer Lane ohne Inhibitor und kein Mitspieler ist dort."""
@@ -665,6 +670,53 @@ class MerkmalBau:
                 if front <= c["verteidigen_welle_front"] and m.team_nah(pos, c["verteidigen_radius"]) == 0:
                     aus.append((f"die {lane}-Lane ohne Inhibitor", pos, m.weg(pos)))
         return aus
+
+
+def _belagerung_von(bau, p, b, m: Merkmale):
+    """Auftrag 007, A 4 (Buch 5, Kapitel 7, Nachtrag): wird eure Basis belagert? (Ort in Worten, Position, Grund) oder
+    None. Ausloeser: >= 3 Gegner sichtbar in 3000 um euren Inhibitor(-Turm) oder Nexus; >= 2 eigene Tuerme in 30 s;
+    Baron- oder Aeltesten-Buff bei ihnen und >= 3 von ihnen in eurer Haelfte. Ausnahme Nexus-Rennen: du bist in ihrer
+    Basis, ein Inhibitor von ihnen ist weg und >= 2 von euch sind dort."""
+    from ..zustand import struktur
+    c = bau.cfg["modus"]
+    if p is None or b is None or not p.mein_team:
+        return None
+    mein, feind = p.mein_team, gegenteam(p.mein_team)
+    zahl = {2: "zwei", 3: "drei", 4: "vier", 5: "fünf"}
+    if m.bereich == "basis_fremd" and any(e.art == "InhibKilled" and e.team == mein for e in p.ereignisse) \
+            and (m.team_nah(NEXUS[feind], 4000) >= 2 or sum(1 for g in b.gegner if g.s.tot) >= 2):
+        return None           # Nexus-Rennen (164326 42:33: ihr Nexus fiel zuerst)
+    sichtbar = [g for g in b.gegner if g.sichtbar and not g.s.tot and g.pos is not None]
+    orte = [(f"euren {l}-Inhibitor", TUERME[(mein, l, "Inhib")]) for l in ("Top", "Mid", "Bot")] \
+        + [("euren Nexus", NEXUS[mein])]
+    for name, pos in orte:
+        n = sum(1 for g in sichtbar if abstand(g.pos, pos) <= c["belagerung_radius"])
+        if n >= c["belagerung_gegner"]:
+            return name, pos, f"{zahl.get(n, n)} von ihnen an {name}"
+    weg = [e for e in p.ereignisse if e.art in ("TurretKilled", "InhibKilled") and e.team == feind
+           and 0 <= m.zeit - e.zeit <= c["belagerung_tuerme_s"]]
+    if len(weg) >= 2:
+        st = struktur(weg[-1].daten.get(weg[-1].art, ""))
+        lane = st.lane if st is not None and st.lane in ("Top", "Mid", "Bot") else None
+        pos = TUERME.get((mein, lane, "Inhib")) if lane else NEXUS[mein]
+        return (f"eure {lane}-Seite" if lane else "eure Basis"), pos, \
+            f"{zahl.get(len(weg), len(weg))} eurer Türme in {int(c['belagerung_tuerme_s'])} Sekunden"
+    buff = None
+    for e in p.ereignisse:
+        if e.team != feind:
+            continue
+        if e.art == "BaronKill" and 0 <= m.zeit - e.zeit <= 180:
+            buff = "Baron-Buff"
+        elif e.art == "DragonKill" and e.daten.get("DragonType") == "Elder" and 0 <= m.zeit - e.zeit <= 150:
+            buff = "Ältesten-Buff"
+    if buff:
+        # Abweichung (messungen.md, Auftrag 007): "auf einer Lane in eurer Haelfte" als "in eurer Haelfte"
+        da = [g for g in b.gegner if not g.s.tot and g.pos is not None
+              and (g.sichtbar or (g.seit is not None and g.seit <= 10.0))
+              and abstand(g.pos, BRUNNEN[mein]) < abstand(g.pos, BRUNNEN[feind])]
+        if len(da) >= 3:
+            return "eure Basis", NEXUS[mein], f"{buff}, {zahl.get(len(da), len(da))} von ihnen in eurer Hälfte"
+    return None
 
 
 def meine_seite(m: Merkmale) -> str | None:

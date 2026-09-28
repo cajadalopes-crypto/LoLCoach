@@ -1334,7 +1334,9 @@ _FESTHALTEN: list = []   # Zeiger, die erst beim Beenden sterben duerfen (dann g
 def kamera_gibt_nur_einmal_frei():
     """dxcam gab die Staging-Textur zweimal frei - von Hand und spaeter noch einmal durch den Garbage Collector -,
     und der Coach baute sie ~25-mal je Sekunde neu: 26./27.09.2026 viermal Zugriffsverletzung in _ctypes.pyd.
-    Jetzt: eine Textur je Ausschnittgroesse, und nach release() + gc.collect() fehlt keine Referenz."""
+    Jetzt: eine Textur je Ausschnittgroesse, und nach release() + gc.collect() fehlt keine Referenz.
+    Auftrag 007, C3: jede Textur hat gleich die Groesse ihres Ausschnitts - auch ohne neues Bild (ruhiger oder
+    ausgeschalteter Bildschirm) und egal, wie gross der Bildschirm ist (vorher: (7680, 2160) statt (200, 100))."""
     import ctypes
     import gc
     try:
@@ -1348,8 +1350,9 @@ def kamera_gibt_nur_einmal_frei():
     for box in [(0, 0, 200, 100), (0, 0, 100, 200), (0, 0, 200, 100), (0, 0, 100, 200)]:
         k.hole(box)
     assert sorted(k._flaechen) == [(100, 200), (200, 100)], sorted(k._flaechen)
+    for groesse, f in k._flaechen.items():
+        assert (f.width, f.height) == groesse, (groesse, f.width, f.height)
     s = k._flaechen[(200, 100)]
-    assert (s.width, s.height) == (200, 100), (s.width, s.height)
     p = ctypes.cast(ctypes.cast(s.texture, ctypes.c_void_p).value, ctypes.POINTER(IUnknown))
     _FESTHALTEN.append(p)
     for _ in range(3):
@@ -1361,6 +1364,40 @@ def kamera_gibt_nur_einmal_frei():
     for _ in range(n):
         p.Release()
     assert n == 3, f"{3 - n} Freigabe(n) zu viel"
+
+
+def flash_clips_rund_um_den_anlass():
+    """Auftrag 007, A6: ein Anlass (Sprung, Chat-Ping) gibt einen Clip mit Bildern davor und danach; ein zweiter
+    Anlass im selben Moment kommt in denselben Clip; 32:9 nimmt die 16:9-Mitte als Spielbild."""
+    import json
+    import tempfile
+    import time
+    import numpy as np
+    from lolcoach import lage
+    assert lage.spielbild(7680, 2160) == (1920, 3840) and lage.spielbild(3840, 2160) == (0, 3840)
+    with tempfile.TemporaryDirectory() as tmp:
+        clips = lage.FlashClips(Path(tmp) / "x_flashclips")
+        for i in range(40):                       # 12,5 Bilder/s, 3,2 s
+            t = 100.0 + i * 0.08
+            if abs(t - 101.52) < 1e-6:
+                clips.anlass("spur", 101.5, "feind")
+            if abs(t - 101.68) < 1e-6:
+                clips.anlass("minimap", 101.6, "Ahri")          # derselbe Flash, bestaetigt: kein zweiter Clip
+            if abs(t - 102.8) < 1e-6:
+                clips.anlass("chat", 102.8, "Ahri Blitz")        # kommt nicht mehr ganz: Ende schreibt ihn
+            clips.bild(t, np.full((900, 1600, 3), i, dtype=np.uint8))
+        clips.alle_abschliessen()
+        frist = time.time() + 5
+        while clips.geschrieben < 2 and time.time() < frist:
+            time.sleep(0.02)
+        ordner = sorted((Path(tmp) / "x_flashclips").iterdir())
+        assert [o.name for o in ordner] == ["101500_spur", "102800_chat"], [o.name for o in ordner]
+        info = json.loads((ordner[0] / "anlass.json").read_text(encoding="utf-8"))
+        assert [a[0] for a in info["anlass"]] == ["spur", "minimap"], info
+        assert min(info["bilder"]) <= -0.9 and max(info["bilder"]) >= 0.45, info["bilder"]     # davor und danach
+        bilder = sorted(ordner[0].glob("*.jpg"))
+        assert len(bilder) == len(info["bilder"]) >= 17, len(bilder)
+        assert cv2.imread(str(bilder[0])).shape == (450, 800, 3)
 
 
 def minimap_groesse_aus_der_einstellung():
@@ -1543,6 +1580,6 @@ if __name__ == "__main__":
                  von_deiner_position_aus, wachhund_meldet_datenluecke, modus_sperre_budget,
                  sofort_back_und_objective, minimap_groesse_aus_der_einstellung,
                  bestaetigung_back_im_fenster, minimap_farben_relativ, wellenleser_ring_und_nachbar,
-                 nur_gefahr_bricht_saetze_ab, zauber_timer_auf_dem_dashboard):
+                 nur_gefahr_bricht_saetze_ab, zauber_timer_auf_dem_dashboard, flash_clips_rund_um_den_anlass):
         test()
         print(f"{test.__name__} OK")

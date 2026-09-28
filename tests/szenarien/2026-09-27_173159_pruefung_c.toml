@@ -198,3 +198,37 @@ quelle = "Kritiker R1: 'Kai'Sa kam aus dem Nebel, niemand hatte Kai'Sa gesehen.'
 lage = "Riven stirbt in ihrer Basis, Kai'Sa ist 7 s vorher dort wiederbelebt."
 darf_nicht_sagen = ["kam aus dem Nebel"]
 warum = "Der Rueckblick sagt nichts gegen das, was der Coach wusste: ein Respawn ist kein Nebel."
+
+# --- Auftrag 007 (Teil A 3-5, Teil B) ---
+
+[[szenario]]
+id = "0639-kein-back-in-gefahr"
+fenster = ["6:37", "6:45"]
+quelle = "Kritik R2, Klasse 9: 'Back jetzt: 1400 Gold fuer den Brutalisierer.' in GEFAHR, Cho'Gath und Olaf kommen"
+lage = "Lane, 73 %, zwei Gegner kommen."
+darf_nicht_sagen = ["Back jetzt"]
+warum = "In GEFAHR ist es ZURUECK, kein Back-Ruf (Auftrag 007, B 9)."
+
+[[szenario]]
+id = "3459-kein-back-in-ihrer-basis"
+fenster = ["34:57", "35:05"]
+quelle = "Kritik R1/R2, Klasse 9: 'Back jetzt: 38 Prozent Leben.' in ihrer Basis, zwei Respawns neben dir"
+lage = "Riven in ihrer Basis, 38 %, GEFAHR."
+darf_nicht_sagen = ["Back jetzt"]
+warum = "In GEFAHR ist es ZURUECK, kein Back-Ruf."
+
+[[szenario]]
+id = "2017-baron-grube-kein-turm"
+fenster = ["20:15", "20:21"]
+quelle = "Kritik R2, Klasse 10: an der Baron-Grube, vier Gegner tot -> 'Drueck den inneren Top-Turm'"
+lage = "Riven an der Baron-Grube, das Team nimmt den Baron 20:39."
+darf_nicht_sagen = ["Drück den inneren Top-Turm"]
+warum = "Im Fenster bleibt das erste erreichbare Ziel - das Objective, an dem du stehst."
+
+[[szenario]]
+id = "3650-belagerung"
+fenster = ["36:48", "37:10"]
+quelle = "Kritik R1, Klasse 8: 'Zwei eurer Tuerme weg. Dann Top-Welle.' - ihr Aeltesten-Buff, Belagerung"
+lage = "Riven in der Basis, zwei eigene Tuerme in 30 s gefallen."
+darf_nicht_sagen = ["Top-Welle"]
+warum = "Auftrag 007, A 4 (Buch 5, 7, Nachtrag): Belagerung holt dich auch aus der Ferne zur Verteidigung."

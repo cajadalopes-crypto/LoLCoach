@@ -312,6 +312,27 @@ def _kein_ziel(modus: str) -> Handlung:
 def _sicherer(m, cfg: dict, modus: str, erstes, p_am, grenze: float) -> Handlung:
     """G2: kein Ziel unter der Grenze - dein Team (>= 2), dann dein Turm auf der Seite des Ziels weiter hinten (mit
     Schutz-Zusatz), sonst am inneren Turm der Seite mit den wenigsten Gegnern auf dein Team warten."""
+    # Auftrag 007, A 3 (Entscheidung zu 005_frage 1): in der Lane-Phase ist das Respawn-Ziel der aeussere Turm - ausser
+    # >= 2 Gegner standen in den letzten 10 s sichtbar <= 2000 davon; dann der innere, mit ehrlichem Grund (144655
+    # 1:59, 164326 12:59: "bleib am Inhibitor-Turm: Gangplank war zuletzt oben" kostete die ganze Welle)
+    if m.lane_phase and m.b is not None:
+        from ...bewertung import abstand
+        h00 = erstes[0] if erstes is not None else None
+        k00 = h00.daten.get("kurz") if h00 is not None else None
+        l00 = k00 if k00 in ("Top", "Mid", "Bot") else lane_von(m)
+        aussen = _turm_option(m, modus, l00, "aussen", f"Zurück nach {l00}: an deinen äußeren Turm, dort kommt deine "
+                              f"Welle.", "dort kommt deine Welle", f"zum äußeren {l00}-Turm")
+        if aussen is not None:
+            dort = [g.champion for g in m.b.gegner if not g.s.tot and g.pos is not None
+                    and (g.sichtbar or (g.seit is not None and g.seit <= 10.0))
+                    and abstand(g.pos, aussen.ziel.pos) <= 2000]
+            if len(dort) < 2:
+                return aussen
+            wer = " und ".join(dort[:2])
+            innen = _turm_option(m, modus, l00, "innen", f"Bleib am inneren Turm: {wer} stehen an deinem äußeren.",
+                                 f"{wer} stehen an deinem äußeren", f"zum inneren {l00}-Turm")
+            if innen is not None:
+                return innen
     gruppe = _team(m, modus)
     if gruppe is not None and len(gruppe[0]) >= 2:
         # Pruefung c, R6: sind >= 2 Mitspieler zusammen, ist das Ziel dein Team - ist es dort zu gefaehrlich, gibt es

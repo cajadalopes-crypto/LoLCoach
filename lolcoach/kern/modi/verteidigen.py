@@ -38,7 +38,7 @@ def kandidaten(m, cfg: dict) -> list[Handlung]:
         if vorn is None:
             continue
         weg = m.weg(vorn[2])
-        if weg is None or weg > cmo["verteidigen_weg_s"]:
+        if weg is None or (weg > cmo["verteidigen_weg_s"] and getattr(m, "belagerung", None) is None):
             continue
         dort = [g for g in sichtbar if abstand(g.pos, vorn[2]) <= cmo["verteidigen_radius"]]
         wir = 1 + m.team_nah(vorn[2], cmo["verteidigen_radius"])
@@ -64,6 +64,15 @@ def kandidaten(m, cfg: dict) -> list[Handlung]:
             aus.append(h)
             if b.kraft_gegen(dort) < 0.6:
                 aus += _tauschen(m, cfg, lane)
+    bel = getattr(m, "belagerung", None)
+    if bel is not None and not any(h.art != "HALTEN" for h in aus):
+        # Auftrag 007, A 4 (Buch 5, 7, Nachtrag): die Belagerung holt dich auch aus der Ferne - der Weg zaehlt als Kosten
+        name, pos, grund = bel
+        weg = m.weg(pos) or 0.0
+        h = Handlung("ZUR_GRUPPE", Ziel("turm", name, pos, weg), "VERTEIDIGEN", weg + 10.0,
+                     gewinn=cmo["belagerung_gewinn"], grund=grund, satz=f"Zurück, verteidige {name}: {grund}.")
+        h.daten["ziel_pos"] = pos
+        aus.append(h)
     return aus
 
 

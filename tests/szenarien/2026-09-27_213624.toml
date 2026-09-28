@@ -114,7 +114,7 @@ fenster = ["16:18", "16:25"]
 quelle = "Auftrag 003, Teil A 1 (Waechter: 'Raus: Caitlyn und Sona kommen' bei 66 %) - umgestellt in Auftrag 004, Teil B; Carlos 16:31: 'Warum sagst du, ich soll zurueckgehen? Gar keinen Sinn.'"
 lage = "Riven L13 mit 66 % Leben und zwei Mitspielern am inneren Mid-Turm, Caitlyn (L8, 32 %) und Sona kommen."
 darf_nicht_sagen = ["Raus zum", "Caitlyn und Sona kommen"]
-warum = "Auftrag 004, Teil B: Level 13 gegen 8, ihr seid drei - robust klar ueberlegen (Leben >= 60 %), der Plan mit der Gruppe haelt. Die 70-%-Grenze aus 003 gilt fuer dich allein (zwei klar unterlegene), nicht mit Team. Rueckfrage in 004_frage.md."
+warum = "Auftrag 004, Teil B: Level 13 gegen 8, ihr seid drei - robust klar ueberlegen (Leben >= 60 %), der Plan mit der Gruppe haelt. Die 70-%-Grenze aus 003 gilt fuer dich allein (zwei klar unterlegene), nicht mit Team. Bestaetigt von Carlos (Auftrag 007, A 2)."
 
 # --- Auftrag 003, Buch 11 ---
 
@@ -141,7 +141,8 @@ id = "0944-nach-turmfall-kein-farmen"
 fenster = ["9:44", "10:05"]
 quelle = "Auftrag 004, Teil B: nach dem Turmfall 'Farm deine Top-Welle, bis sich etwas oeffnet' - Riven 9/0 vorn"
 lage = "Carlos nimmt den aeusseren Top-Turm, der Drache lebt, sein Team ist unten."
-darf_nicht_sagen = ["bis sich etwas öffnet", "Turm ist down: Farm"]
+darf_nicht_sagen = ["bis sich etwas öffnet", "dort nimmt die Welle sonst niemand"]
+# Auftrag 007, A 1: "Turm ist down: Farm ..." ist erlaubt, wenn der Satz einen Grund und das Naechste nennt (Carlos: B)
 warum = "Nach einem Wendepunkt nennt der Satz ein Ziel ausser Farmen - der naechste Turm oder der Drache mit Team (Ueberlegenheits-Regel)."
 
 # --- Auftrag 005, Runde 1 (Kritiker) ---
@@ -153,3 +154,21 @@ quelle = "Kritiker R1 (Grund passt nicht): 'Euer Turm ist weg: Drueck den innere
 lage = "Ein eigener Turm faellt auf der anderen Seite, Riven drueckt Top."
 darf_nicht_sagen = ["Euer Turm ist weg:"]
 warum = "Nachricht und Plan getrennt, mit Lane - der Verlust ist nicht der Grund fuers Druecken."
+
+# --- Auftrag 007 (Teil A 3-5, Teil B) ---
+
+[[szenario]]
+id = "1711-kein-back-in-basis"
+fenster = ["17:09", "17:15"]
+quelle = "Kritik R2, Klasse 9: 'Back jetzt: 2700 Gold fuer Gefraessige Hydra.' - Carlos steht schon in der Basis"
+lage = "Riven in eurer Basis, Leben steigt von 62 auf 78 %."
+darf_nicht_sagen = ["Back jetzt"]
+warum = "In der Basis kein Back-Ruf (Auftrag 007, B 9)."
+
+[[szenario]]
+id = "2411-rueckzug-episode"
+fenster = ["24:10", "24:22"]
+quelle = "Auftrag 007 (gefunden an der Wendepunkt-Probe): GEFAHR 'Raus zum Mid-Tier-1-Turm: Xin Zhao und Ziggs kommen' wurde nicht gesagt"
+lage = "Riven nach dem Inhibitor, drei Gegner kommen; eine Rueckzugs-Episode von 15:31 galt noch, weil ein stiller Back-Plan sie offen hielt."
+muss_nennen_eins = ["Raus", "raus"]
+warum = "Nur ein Rueckzug haelt die Episode offen (Pruefung D) - eine neue Gefahr Minuten spaeter ist ein neuer Rueckzug."

@@ -20,6 +20,11 @@ grube_radius = 1500
 # nicht im Buch, Schritt 2: VERTEIDIGEN (Kapitel 5.1) - Bedrohung an einer eigenen Struktur
 verteidigen_radius = 2500
 verteidigen_weg_s = 15
+# Auftrag 007, A 4 (Buch 5, 7, Nachtrag): Belagerung der eigenen Basis - VERTEIDIGEN auch aus der Ferne
+belagerung_radius = 3000        # >= belagerung_gegner sichtbar so nah an eurem Inhibitor(-Turm) oder Nexus ...
+belagerung_gegner = 3
+belagerung_tuerme_s = 30        # ... oder >= 2 eigene Tuerme in so vielen s ...
+belagerung_gewinn = 1500        # GE der Verteidigung (der Weg zaehlt als Kosten ueber die Dauer)
 verteidigen_welle_front = 0.2   # gegnerische Welle so nah an eurer Basis (0 = eure Basis .. 1 = seine), Lane ohne Inhibitor
 # nicht im Buch, Schritt 2: KAMPF - "sein Balken faellt" / "dein Leben faellt" in 3 s
 kampf_leben_trend = -0.10
@@ -93,6 +98,10 @@ level_allein = 3                # vor JEDEM in G so viele Level ...
 level_mit_gold = 2              # ... oder so viele Level UND ...
 gold = 2000                     # ... so viel Item-Gold
 koepfe_plus = 2                 # ... oder so viele Koepfe mehr
+kampf_fenster_s = 30            # Auftrag 007 (Klasse 6): EINE Zaehlung fuer "ihr seid X" am Objective - wer in so vielen s
+                                # an der Grube sein kann; Ansage und Antwort benutzen dieselbe (ueberlegen.koepfe)
+lang_objective_s = 25           # Auftrag 007, A 5: Baron, Aeltester und Objectives mit laengerer Toetungszeit ...
+lang_ungesehen_s = 20           # ... sind nur klar ueberlegen, wenn hoechstens EIN lebender Gegner so lange ungesehen ist
 halten_s = 5                    # ein Urteil "ueberlegen" haelt so lange, wenn es einen Takt lang unklar wird (kein Flackern,
                                 # 102112 26:38-26:41: der Drache fiel zweimal heraus und wurde neu angesagt); nie gegen
                                 # "unterlegen"
@@ -259,6 +268,7 @@ hysterese_zu_mitte_s = 1        # AN (gemessen: 173159 7 -> 10 von 12, 144655 9 
 [recall]
 stand = "Buch 3, 27.09.2026 - Startwerte (Schaetzung), an Szenarien kalibrieren"
 leben_back = 0.4
+back_vor_farmen_gold = 500      # Auftrag 007 (Klasse 11): Gold >= naechster Kauf + so viel: Back ist Kandidat vor Farmen
 horten_ab = 1500
 horten_zuschlag = 100           # GE je 500 Gold ueber horten_ab
 spike_bonus = 300               # GE, wenn ein Kern-Item fertig wird

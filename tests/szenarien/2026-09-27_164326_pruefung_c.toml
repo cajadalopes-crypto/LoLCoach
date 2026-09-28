@@ -157,3 +157,93 @@ quelle = "Kritiker R1 (Grund passt nicht): 'Euer Turm ist weg: Verkauf Dorans Kl
 lage = "Ein eigener Turm faellt woanders, Riven ist in der Basis."
 darf_nicht_sagen = ["Euer Turm ist weg:"]
 warum = "Ein Verlust auf der anderen Seite ist Nachricht, kein Grund: ein eigener Satz, mit Lane."
+
+# --- Auftrag 007 (Teil A 3-5, Teil B) ---
+
+[[szenario]]
+id = "1623-back-statt-farmen"
+fenster = ["16:21", "16:27"]
+quelle = "Kritik R2, Klasse 11: 'Turm ist down: Farm Top, Teemo lebt in 12 Sekunden wieder.' bei 39 % und 1267 Gold"
+lage = "Riven 39 % Leben, 1267 Gold, recallt 8 s spaeter."
+darf_nicht_sagen = ["Farm Top"]
+warum = "Leben unter 40 %: Back ist Kandidat vor Farmen (Auftrag 007, B 11)."
+
+[[szenario]]
+id = "2556-back-statt-farmen"
+fenster = ["25:54", "26:00"]
+quelle = "Kritik R2, Klasse 11: 'Turm ist down: Farm Top ...' bei 2713 Gold"
+lage = "Riven 58 %, 2713 Gold unausgegeben."
+darf_nicht_sagen = ["Farm Top"]
+warum = "Gold >= naechste Stufe + 500: Back vor Farmen (Auftrag 007, B 11)."
+
+[[szenario]]
+id = "2837-back-statt-farmen"
+fenster = ["28:35", "28:40"]
+quelle = "Kritik R2, Klasse 11: 'Euer Bot-Turm ist weg. Farm Bot ...' bei 3095 Gold"
+lage = "Riven 82 %, 3095 Gold, zwei Gegner kommen."
+darf_nicht_sagen = ["Farm Bot"]
+warum = "Gold >= naechste Stufe + 500: Back vor Farmen."
+
+[[szenario]]
+id = "3949-kein-back-nach-baron"
+fenster = ["39:47", "39:53"]
+quelle = "Kritik R2, Klasse 9: 'Back jetzt: 1500 Gold im Beutel.' 34 s nach 'Baron bestreiten', 100 %"
+lage = "Riven 100 % Leben, 1500 Gold, 34 s nach der Baron-Ansage, kein Ereignis dazwischen."
+darf_nicht_sagen = ["Back jetzt"]
+warum = "Ein Back nur aus Gold loest eine eben gesagte Objective-Ansage nicht ohne Ereignis ab (Auftrag 007, B 9)."
+
+[[szenario]]
+id = "3514-turmziel-bleibt"
+fenster = ["35:12", "35:18"]
+quelle = "Kritik R2, Klasse 10: 14 s nach 'Mid-Inhibitor-Turm jetzt' -> 'Drueck den inneren Bot-Turm'"
+lage = "Riven auf der Mid-Lane, Ziel Mid-Inhibitor-Turm, kein Ereignis."
+darf_nicht_sagen = ["inneren Bot-Turm"]
+warum = "Ein Turmziel wechselt nur mit Ereignis (Auftrag 007, B 10)."
+
+[[szenario]]
+id = "3554-grube-ziel-bleibt"
+fenster = ["35:52", "35:58"]
+quelle = "Kritik R2, Klasse 10: in der Drachengrube, der Drache faellt 9 s spaeter -> 'Mit der Gruppe zum inneren Bot-Turm'"
+lage = "Riven mit Team an der Drachengrube, 3 gegen 1."
+darf_nicht_sagen = ["zum inneren Bot-Turm"]
+warum = "Im Fenster bleibt das erste erreichbare Ziel - hier das Objective, an dem du stehst."
+
+[[szenario]]
+id = "4209-fenster-ziel-bleibt"
+fenster = ["42:07", "42:12"]
+quelle = "Kritik R2, Klasse 10: Mid-Inhibitor-Turm faellt, Fenster offen -> 'Mit der Gruppe zum inneren Bot-Turm'"
+lage = "Umwandel-Fenster, drei Gegner tot, Riven Mid."
+darf_nicht_sagen = ["inneren Bot-Turm"]
+warum = "Im Umwandel-Fenster: Inhibitor und Nexus, nicht zurueck zu einem Aussenturm."
+
+[[szenario]]
+id = "4233-nexus-ziel-bleibt"
+fenster = ["42:31", "42:36"]
+quelle = "Kritik R2, Klasse 10: in ihrer Basis am Nexus-Turm -> 'Drueck den inneren Bot-Turm'"
+lage = "Riven in ihrer Basis, drei Gegner tot."
+darf_nicht_sagen = ["inneren Bot-Turm"]
+warum = "Das erste erreichbare Ziel im Fenster bleibt, bis es faellt oder das Fenster zu ist."
+
+[[szenario]]
+id = "0418-flash-einmal"
+fenster = ["4:15", "4:22"]
+quelle = "Kritik R2, Einzelfall: 'Teemo ohne Flash.' 3:13 und wieder 4:18 - derselbe Verbrauch"
+lage = "Teemos Flash seit 3:04 weg, ein Chat-Ping um 4:18."
+darf_nicht_sagen = ["Teemo ohne Flash"]
+warum = "Dieselbe Flash-Meldung hoechstens einmal je Verbrauch."
+
+[[szenario]]
+id = "1259-aeusserer-turm"
+fenster = ["12:55", "13:05"]
+quelle = "Kritik R1/R2, Klasse 7: 'Noch 8 Sekunden, zurueck nach Top, bleib am Inhibitor-Turm: Naafiri war zuletzt unten.'"
+lage = "Lane-Phase, Respawn, am aeusseren Turm keine zwei Gegner."
+darf_nicht_sagen = ["Inhibitor-Turm"]
+warum = "Auftrag 007, A 3: in der Lane-Phase ist der aeussere Turm das Respawn-Ziel."
+
+[[szenario]]
+id = "2101-baron-ungesehene"
+fenster = ["20:58", "21:05"]
+quelle = "Kritik R2 (gefaehrlich): 'Baron jetzt: Level 16 gegen 14.' - alle fuenf leben, drei lange ungesehen"
+lage = "Riven 100 %, alle Gegner leben, mehrere seit ueber 20 s ungesehen."
+darf_nicht_sagen = ["Baron jetzt"]
+warum = "Auftrag 007, A 5: bei Baron, Aeltestem und Objectives ueber 25 s hoechstens ein lebender Gegner laenger als 20 s ungesehen."

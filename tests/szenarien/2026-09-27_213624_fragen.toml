@@ -756,3 +756,17 @@ absicht = "WARUM"
 ohne_claude = true
 darf_nicht_sagen = ["zu weit oder zu wenige"]
 warum = "Kein geratener Grund: was der Kern weiss."
+
+# --- Auftrag 007 (Teil B, Klasse 6) ---
+
+[[szenario]]
+id = "1054-gleich-gezaehlt"
+zeit = "10:54"
+frage = "Warum soll ich nicht meinem Drake helfen?"
+quelle = "Kritik R2, Klasse 6: '... dort ist keiner von euch' - 6 s spaeter 'Drache bestreiten, fuenf gegen vier'"
+lage = "Riven in der Basis, das Team laeuft zum Drachen."
+kern_frage = true
+absicht = "WARUM"
+ohne_claude = true
+darf_nicht_sagen = ["dort ist keiner von euch"]
+warum = "Eine Zaehlung fuer 'ihr seid X' (wer in kampf_fenster_s dort sein kann); wer schon dort steht, sagt der Satz ausdruecklich."

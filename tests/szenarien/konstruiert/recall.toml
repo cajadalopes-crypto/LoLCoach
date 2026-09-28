@@ -16,9 +16,9 @@ kanone_in = 45
 lane_gegner = { level = 5, abstand = 2500 }
 jungler = { p_meine_seite = 0.7, seit = 8 }
 kauf = { lohnt = true }
-soll = ["BACK_JETZT", "WELLE_REIN_UND_BACK"]
+soll = ["BACK_JETZT", "WELLE_REIN_UND_BACK", "ZURUECK"]
 darf_nicht = ["TRADE", "ALL_IN"]
-warum = "40 %, kein Flash, Gold fuer ein Bauteil, der Jungler war eben oben (102112, 5:45)."
+warum = "40 %, kein Flash, Gold fuer ein Bauteil, der Jungler war eben oben (102112, 5:45). Auftrag 007, Klasse 9: schlaegt das Gefahr-Modell an (Jungler 70 % auf deiner Seite), ist es ZURUECK - raus, dann back - statt eines Back-Rufs."
 
 [[lage]]
 id = "k-kein-back-unter-schwelle"

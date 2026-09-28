@@ -128,6 +128,7 @@ class Beobachter:
         self.lane_weg: bool = False
         self.tp_top: float | None = None
         self.flash_gesehen: set = set()
+        self.flash_bis: dict = {}             # Auftrag 007: Spielername -> Flash zurueck (einmal je Verbrauch)
         self.erst = True
 
     def takt(self, m, modus: str | None, lagebild, cfg: dict, ziel=None) -> tuple[str | None, str | None]:
@@ -200,9 +201,13 @@ class Beobachter:
                     if t.zauber != "SummonerFlash" or schl in self.flash_gesehen or t.zurueck <= m.zeit:
                         continue
                     self.flash_gesehen.add(schl)
+                    bis = self.flash_bis.get(t.name)
+                    if bis is not None and t.seit < bis - 5.0:
+                        continue          # Auftrag 007: derselbe Verbrauch, schon gemeldet (164326 3:13 und 4:18)
                     g = next((x for x in b.gegner if x.s.name == t.name), None)
                     if g is not None and g.abstand is not None and g.abstand <= 2000:
                         fe = f"{g.champion} ohne Flash"
+                        self.flash_bis[t.name] = t.zurueck
         else:
             self.flash_gesehen = {(t.name, round(t.seit)) for t in getattr(getattr(lagebild, "zauber", None), "timer", {}).values()}
         if b.jungler is not None and b.jungler.sichtbar:
@@ -357,4 +362,45 @@ def farmen_mit_vorschau(h: Handlung, zeitleiste: list, jetzt: float, danach_text
         else:
             continue
         return f"Farm {wo}, {was}" + (f", dann {danach_text.split(':')[0]}" if danach_text else "") + "."
+    return ""
+
+
+def farmen_satz(h: Handlung, m, zeitleiste: list, danach_text: str | None, cfg: dict) -> str:
+    """Auftrag 007, A 1 (Entscheidung zu 004_frage 1): am Wendepunkt kommt FARMEN immer als Satz - mit Grund UND dem,
+    was als Naechstes kommt: ein Ereignis der Zeitleiste, der Lane-Gegner weg, die Back-Bedingung, danach."""
+    s = farmen_mit_vorschau(h, zeitleiste, m.zeit, danach_text, cfg)
+    if s or h.ziel is None:
+        return s
+    lane = next((w for w in ("Top", "Mid", "Bot") if w in h.ziel.name), None)
+    wo = lane or h.ziel.name
+    b = m.b
+    g = b.lane if b is not None else None
+    if g is not None and g.s.tot and g.s.respawn >= 10:
+        return f"Farm {wo}, {g.champion} ist {int(g.s.respawn)} Sekunden weg."
+    k = getattr(b, "kauf", None) if b is not None else None
+    n = getattr(k, "naechstes", None) if k is not None else None
+    if n and b.gold is not None:
+        from .modi import _akk
+        item, fehlt = n
+        ziel = int((b.gold + fehlt + 49) // 50 * 50)
+        return f"Farm {wo}, bei {ziel} Gold back für {_akk(item)}."
+    if k is not None and getattr(k, "kaufen", None):
+        return f"Farm {wo}, {k.kaufen[0]} ist schon bezahlbar: nach der Welle back."
+    if danach_text:
+        return f"Farm {wo}, danach {danach_text.split(':')[0]}."
+    return f"Farm {wo}: dort nimmt die Welle sonst niemand."
+
+
+def halten_satz(m, zeitleiste: list, danach_text: str | None, cfg: dict) -> str:
+    """Auftrag 007, A 1: auch ein Halte-Plan bekommt am Wendepunkt einen Satz, wenn es etwas Ehrliches zu sagen gibt -
+    was danach kommt, das naechste Ereignis der Zeitleiste, oder dein Team neben dir. Sonst still (kein "Warte, gerade
+    ist nichts sicher", 164326 23:41)."""
+    if danach_text:
+        return f"{danach_text[:1].upper()}{danach_text[1:]}."
+    for e in zeitleiste or []:
+        n = e.in_s(m.zeit)
+        if 5 <= n <= cfg["fuehren"]["vorschau_horizont_s"] and e.art in ("objective", "buff", "inhib", "tp"):
+            return f"Warte hier: {e.text} in {n} Sekunden."
+    if m.pos is not None and m.team_nah(m.pos, 2500) >= 2:
+        return "Bleib bei deinem Team."
     return ""

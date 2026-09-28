@@ -186,6 +186,30 @@ Eintritt nach Buch 0, 5.1, in der Fassung aus Schritt 2.
 | `HALTEN_UNTER_TURM` | ≥ 2 Gegner belagern, ihr seid dort weniger | „Bleib hinter dem Turm, nicht rein: zu dritt gegen fünf. Klär nur, was kommt.“ |
 | `TAUSCHEN` | Verteidigung aussichtslos (`kraft_gegen` < 0,6) **und** ein gleichwertiges Ziel woanders ist in ≤ 20 s erreichbar | „Die Mid-Seite ist verloren – drück den äußeren Top-Turm, dort ist keiner.“ |
 
+### Nachtrag 7.1 – Belagerung der eigenen Basis (Auftrag 007, 28.09.2026)
+
+Entschieden von Carlos (Antwort auf `005_frage.md`, 2). Anlass war 173159, 36:50: „Zwei eurer Türme weg. Dann
+Top-Welle.“ Der Gegner hatte den Ältesten-Buff und belagerte die Basis.
+
+**Auslöser**, eines davon reicht:
+- ≥ 3 Gegner sichtbar in 3000 um euren Inhibitor-Turm, Inhibitor oder Nexus;
+- ≥ 2 eigene Türme (oder Inhibitoren) fallen in 30 s;
+- der Gegner hat den Baron- oder Ältesten-Buff, und ≥ 3 von ihnen stehen in eurer Hälfte.
+
+**Wirkung:**
+- Der Modus ist VERTEIDIGEN, auch aus der Ferne (nicht in der Lane-Phase).
+- `WELLE_KLAEREN` und `HALTEN_UNTER_TURM` gelten dann ohne die Grenze von 15 s. Der Weg zählt als Kosten über die Dauer.
+- Gibt es keinen solchen Kandidaten, heißt es `ZUR_GRUPPE` zum belagerten Ort: „Zurück, verteidige euren
+  Mid-Inhibitor: drei von ihnen an eurem Mid-Inhibitor.“
+
+**Ausnahme Nexus-Rennen:** Du bist selbst in ihrer Basis, einer ihrer Inhibitoren ist weg, und ≥ 2 von euch sind dort.
+Dann fällt ihr Nexus vor ihrer Ankunft an eurem, und die Belagerung holt dich nicht zurück.
+
+**Abweichung:** „≥ 3 auf einer Lane in eurer Hälfte“ wird als „≥ 3 in eurer Hälfte“ gelesen. Die Lane-Zuordnung
+unbekannter Positionen ist zu unsicher.
+
+Parameter: `[modus] belagerung_radius`, `belagerung_gegner`, `belagerung_tuerme_s`, `belagerung_gewinn`.
+
 ---
 
 ## 8. Umwandeln: nach einem gewonnenen Kampf

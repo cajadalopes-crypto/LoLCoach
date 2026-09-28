@@ -386,9 +386,10 @@ def grund(m, o, u: Urteil, art: str) -> str:
         if len(tote) >= 1:
             return f"{' und '.join(tote[:2])} {'ist' if len(tote) == 1 else 'sind'} tot, keiner kommt rechtzeitig"
         return "keiner von ihnen kommt rechtzeitig"
-    wir = len(u.auf.get("wir", [])) if u.auf else max(1, u.n)
-    if art == "NEHMEN":
-        wir = max(1, u.n)                     # die, die es nehmen (n*), nicht jeder, der irgendwann kaeme
+    # Auftrag 007 (Klasse 6): EINE Zaehlung fuer "ihr seid X" - dieselbe wie in der Antwort (ueberlegen.koepfe)
+    from . import konfig
+    from .ueberlegen import koepfe
+    wir = 1 + sum(koepfe(m, o.pos, konfig()["ueberlegen"]["kampf_fenster_s"]))
     if wir < 2:
         die = sorted(u.auf.get("die", []) if u.auf else [], key=lambda x: -x[1] * x[2])
         # Pruefung c, R2: kein "du schlaegst X" (das Modell ist nicht geeicht) - wer kommt, wird nur benannt

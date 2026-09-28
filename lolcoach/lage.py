@@ -7,6 +7,8 @@ API-Schnappschuss in Spielzeit um - so laufen Live und Aufnahme gleich.
 from __future__ import annotations
 
 import json
+import os
+import re
 import threading
 import time
 from collections import deque
@@ -531,15 +533,49 @@ def _dxcam_flicken() -> None:
     stagesurf.StageSurface._geflickt = True
 
 
+class _Groesse:
+    """Nur die Kante, die dxcams StageSurface beim Bau abfragt (`output.surface_size`)."""
+
+    def __init__(self, groesse: tuple[int, int]):
+        self.surface_size = groesse
+
+
+def _gdi(box: tuple[int, int, int, int]) -> np.ndarray:
+    """Genau der Ausschnitt per BitBlt (Minimap bei 7680 x 2160: 8 ms). PIL kopierte erst den ganzen Bildschirm und
+    schnitt dann aus - 125 ms fuer jeden noch so kleinen Ausschnitt (Auftrag 007, C1, gemessen 28.09.2026)."""
+    import win32con
+    import win32gui
+    import win32ui
+    l, o, r, u = box
+    b, h = r - l, u - o
+    hdc = win32gui.GetDC(0)
+    quelle = win32ui.CreateDCFromHandle(hdc)
+    ziel = quelle.CreateCompatibleDC()
+    bmp = win32ui.CreateBitmap()
+    try:
+        bmp.CreateCompatibleBitmap(quelle, b, h)
+        ziel.SelectObject(bmp)
+        ziel.BitBlt((0, 0), (b, h), quelle, (l, o), win32con.SRCCOPY)
+        return np.frombuffer(bmp.GetBitmapBits(True), dtype=np.uint8).reshape(h, b, 4)[..., :3].copy()
+    finally:
+        ziel.DeleteDC()
+        quelle.DeleteDC()
+        win32gui.ReleaseDC(0, hdc)
+        win32gui.DeleteObject(bmp.GetHandle())
+
+
 class _Kamera:
-    """Bildschirmausschnitte: Desktop-Duplizierung (dxcam, 2-5 ms), sonst GDI (~110 ms)."""
+    """Bildschirmausschnitte: Desktop-Duplizierung (dxcam, 2-5 ms), sonst GDI (nur der Ausschnitt).
+    `LOLCOACH_KAMERA=gdi` erzwingt GDI - fuer die Generalprobe bei ausgeschaltetem Bildschirm: dann liefert die
+    Duplizierung gar kein Bild (28.09.2026 gemessen: AcquireNextFrame nur Zeitueberschreitung), GDI schon."""
 
     def __init__(self):
         self._dx = None
         try:
-            import dxcam
-            _dxcam_flicken()
-            self._dx = dxcam.create(output_color="BGR")
+            if os.environ.get("LOLCOACH_KAMERA", "").lower() != "gdi":
+                import dxcam
+                _dxcam_flicken()
+                self._dx = dxcam.create(output_color="BGR")
         except Exception:
             self._dx = None
         self._letzt: dict[tuple, np.ndarray] = {}
@@ -556,9 +592,12 @@ class _Kamera:
                     self._flaechen, self._duplikator = {}, dx._duplicator
                 groesse = (box[2] - box[0], box[3] - box[1])
                 if (f := self._flaechen.get(groesse)) is None:
+                    # gleich in Ausschnittgroesse: StageSurface baut sonst erst den ganzen Bildschirm (7680 x 2160 =
+                    # 66 MB je Ausschnittgroesse) und schrumpft erst mit dem naechsten NEUEN Bild - bei ruhigem
+                    # Bildschirm nie (Auftrag 007, C3: der Kamera-Test fand (7680, 2160) statt (200, 100))
                     from dxcam.core.stagesurf import StageSurface
-                    f = self._flaechen[groesse] = StageSurface(output=dx._output, device=dx._device)
-                dx._stagesurf = f      # dxcam baut sie beim ersten Mal auf `groesse` um, danach nie wieder
+                    f = self._flaechen[groesse] = StageSurface(output=_Groesse(groesse), device=dx._device)
+                dx._stagesurf = f      # passt schon; dxcam baut nur bei gedrehtem Bildschirm noch einmal um
                 bild = dx.grab(region=box)
                 if bild is None:          # Bildschirm unveraendert seit dem letzten Mal
                     return self._letzt.get(box)
@@ -566,8 +605,7 @@ class _Kamera:
                 return bild
             except Exception:
                 self._dx = None           # z. B. anderer Monitor: auf GDI ausweichen
-        from PIL import ImageGrab
-        return cv2.cvtColor(np.asarray(ImageGrab.grab(bbox=box, all_screens=True)), cv2.COLOR_RGB2BGR)
+        return _gdi(box)
 
 
 # Chat unten links, grosszuegig (Anteil des Spielfensters) - genau geeicht wird an einer Partie.
@@ -579,10 +617,94 @@ CHAT = (0.0, 0.70, 0.32, 0.95)
 BILDSCHIRM_BREITE = 1600   # fuer Claude: Lebensbalken und Namen noch lesbar, ~150 KB je Bild
 SCHIRM_ALLE = 5.0          # Sekunden: so oft ein Spielbild auf die Platte (Review), ~45 MB je 30-min-Partie
 SPUR_ALLE = 0.08           # Sekunden: so oft sucht die Balkenspur Flash-Spruenge auf dem Spielbild (~12/s)
+# Spielbild = die Mitte im Seitenverhaeltnis 16:9 (Auftrag 007, C2). Auf Carlos' 7680 x 2160 (randlos = ganzer
+# Schirm) kopierte der Beobachter 12-mal je Sekunde 66 MB und stauchte sie auf 1600 x 450: Lebensbalken halb so hoch
+# wie vermessen (lebensbalken rechnet mit der Bildbreite) - die Balkenspur waere blind gewesen. Die Mitte hat den
+# Massstab von 4K, und Q W E R D F sitzen dort wie immer (hud.eigene rechnet von der Mitte aus).
+SPIELBILD_SEITEN = 16 / 9
+
+# Flash-Clips (Auftrag 007, A6, Stufe 1: nur sammeln): nach jedem Sprung (Balkenspur, Minimap) und jedem Chat-Ping
+# "Blitz"/"Flash" 1,5 s Spielbild rund um den Anlass nach aufnahmen/<stamm>_flashclips/<Wanduhr ms>_<anlass>/.
+# Die Erkennung baut erst jemand, wenn 20 echte Clips da sind.
+CLIP_VOR = 1.0             # Sekunden Spielbild vor dem Anlass (der Sprung selbst liegt meist davor: Bestaetigung, Chat)
+CLIP_NACH = 0.5            # ... und danach
+CLIP_RING = 2.5            # Sekunden Spurbilder im Speicher (~30 Bilder, ~35 MB): ein Anlass darf 1,5 s spaet kommen
+CLIP_BREITE = 800          # px: halbe Spurbreite, JPEG ~40 KB je Bild
+CLIP_QUALITAET = 70
+CLIP_WORTE = re.compile(r"blitz|flash", re.IGNORECASE)    # Chat-Ping (zauber.WOERTER)
 # Sekunden: aeltere Minimap-Bilder der laufenden Partie werden entfernt. Bis 27.09. 20 min - dann war die Lane-Phase
 # einer 35-min-Partie weg, bevor man die Welle daran eichen konnte (Buch 1, 1.4). Jetzt die ganze Partie; aufgeraeumt
 # wird nach der Partie (bilder_aufraeumen: alles ausser den letzten drei Partien).
 BILDER_BEHALTEN = 90 * 60
+
+
+def spielbild(breite: int, hoehe: int) -> tuple[int, int]:
+    """(links, Breite) des Spielbilds im Fenster: die Mitte in SPIELBILD_SEITEN, schmalere Fenster ganz."""
+    b = min(breite, round(hoehe * SPIELBILD_SEITEN))
+    return (breite - b) // 2, b
+
+
+class FlashClips:
+    """Ringpuffer der Spurbilder (~12/s) und je Anlass ein Clip von CLIP_VOR bis CLIP_NACH um ihn. Geschrieben wird
+    im Hintergrund, der Takt wartet nie; Anlaesse naeher als CLIP_NACH beieinander werden ein Clip."""
+
+    def __init__(self, ordner: Path | None):
+        self.ordner = ordner
+        self._ring: deque[tuple[float, np.ndarray]] = deque()
+        self._offen: list[list] = []          # [Zeit, [[Anlass, Text], ...]]
+        self._fertig: deque[float] = deque(maxlen=8)
+        self._schloss = threading.Lock()
+        self.geschrieben = 0
+
+    def anlass(self, art: str, zeit: float, text: str = "") -> None:
+        if self.ordner is None:
+            return
+        with self._schloss:
+            if any(abs(z - zeit) <= CLIP_NACH for z in self._fertig):
+                return
+            for o in self._offen:
+                if abs(o[0] - zeit) <= CLIP_NACH:
+                    o[1].append([art, text])
+                    return
+            self._offen.append([zeit, [[art, text]]])
+
+    def bild(self, t: float, klein: np.ndarray) -> None:
+        """Ein Spurbild (aus dem Faden der Balkenspur) - schliesst Clips ab, deren Nachlauf jetzt da ist."""
+        if self.ordner is None:
+            return
+        h, b = klein.shape[:2]
+        self._ring.append((t, cv2.resize(klein, (CLIP_BREITE, round(CLIP_BREITE * h / b)),
+                                         interpolation=cv2.INTER_AREA)))
+        while self._ring and self._ring[0][0] < t - CLIP_RING:
+            self._ring.popleft()
+        self._abschliessen(lambda o: t >= o[0] + CLIP_NACH)
+
+    def alle_abschliessen(self) -> None:
+        """Beim Beenden: offene Clips mit dem, was da ist."""
+        self._abschliessen(lambda o: True)
+
+    def _abschliessen(self, reif) -> None:
+        with self._schloss:
+            fertig = [o for o in self._offen if reif(o)]
+            self._offen = [o for o in self._offen if not reif(o)]
+            self._fertig.extend(o[0] for o in fertig)
+        for zeit, anlaesse in fertig:
+            bilder = [(bt, bb) for bt, bb in list(self._ring) if zeit - CLIP_VOR <= bt <= zeit + CLIP_NACH]
+            if bilder:
+                threading.Thread(target=self._schreiben, args=(zeit, anlaesse, bilder), daemon=True).start()
+
+    def _schreiben(self, zeit: float, anlaesse: list, bilder: list) -> None:
+        try:
+            ziel = self.ordner / f"{int(zeit * 1000)}_{anlaesse[0][0]}"
+            ziel.mkdir(parents=True, exist_ok=True)
+            for bt, bb in bilder:
+                cv2.imwrite(str(ziel / f"{int(bt * 1000)}.jpg"), bb, [cv2.IMWRITE_JPEG_QUALITY, CLIP_QUALITAET])
+            (ziel / "anlass.json").write_text(json.dumps(
+                {"w": round(zeit, 3), "anlass": anlaesse, "bilder": [round(bt - zeit, 3) for bt, _ in bilder]},
+                ensure_ascii=False), encoding="utf-8")
+            self.geschrieben += 1
+        except OSError:
+            pass
 
 
 class Beobachter(threading.Thread):
@@ -651,6 +773,8 @@ class Beobachter(threading.Thread):
             self.fehler = f"Chat: {e}"
         self._spur_bild: tuple[float, np.ndarray] | None = None
         self._spur_signal = threading.Event()
+        self.clips = FlashClips(self.ordner.with_name(self.ordner.name.removesuffix("_bilder") + "_flashclips")
+                                if self.ordner else None)
         threading.Thread(target=self._spur_lauf, args=(leser,), daemon=True).start()
         letzte_spur = 0.0
         if self.ordner:   # fortgesetzte Partie: abgebrochene Protokolle erst saeubern, sonst ist das Angehaengte unlesbar
@@ -662,6 +786,7 @@ class Beobachter(threading.Thread):
         gespeichert: list[Path] = []
         letztes_bild = letzter_chat = 0.0
         chat_zeilen: set[str] = set()
+        blitz_pings: set[str] = set()     # Chat-Zeitstempel, zu denen schon ein Clip laeuft
         try:
             while not self._halt.is_set():
                 start = time.time()
@@ -670,6 +795,9 @@ class Beobachter(threading.Thread):
                     if f and self.champions:
                         l, o, r, u = f
                         breite, hoehe = r - l, u - o
+                        ml, mb = spielbild(breite, hoehe)       # Spielbild: die 16:9-Mitte (32:9-Schirm)
+                        mitte = (l + ml, o, l + ml + mb, u)
+                        self._mitte_anteil = (ml / breite, (ml + mb) / breite)
                         k = minimap.faktor()     # Minimap-Groesse aus der game.cfg (nur gelesen, stat alle 2 s)
                         if verfolger is None or verfolger.champions != self.champions:
                             verfolger = minimap.Verfolger(list(self.champions), hoehe=round(hoehe * k))
@@ -687,6 +815,8 @@ class Beobachter(threading.Thread):
                             with self._schloss:
                                 self._neu.append((start, sichtungen))
                                 self._ereignisse += [("sprung", s) for s in spruenge]
+                            for s in spruenge:
+                                self.clips.anlass("minimap", s.zeit, s.champion_id)
                             if protokoll:
                                 protokoll.write(json.dumps({"w": round(start, 3), "s": [
                                     # Guete dazu: 0 = unter einem Icon mitgefuehrt (erschlossen), nicht gesehen -
@@ -708,10 +838,10 @@ class Beobachter(threading.Thread):
                         if start - letzte_spur >= SPUR_ALLE and not self._spur_signal.is_set():
                             letzte_spur = start
                             try:
-                                spiel = kamera.hole((l, o, r, u))
+                                spiel = kamera.hole(mitte)
                                 if spiel is not None:
                                     self._spur_bild = (start, cv2.resize(
-                                        spiel, (BILDSCHIRM_BREITE, round(BILDSCHIRM_BREITE * hoehe / breite)),
+                                        spiel, (BILDSCHIRM_BREITE, round(BILDSCHIRM_BREITE * hoehe / mb)),
                                         interpolation=cv2.INTER_AREA))
                                     self._spur_signal.set()
                             except Exception as e:
@@ -719,7 +849,7 @@ class Beobachter(threading.Thread):
                         if start - letzter_chat >= 1.0:  # Chat, Mitspieler-Leiste, Bildschirm einmal je Sekunde
                             letzter_chat = start
                             try:   # eigener Schutz: ein Fehler hier darf Chat und Leiste nicht mitreissen
-                                ganz = kamera.hole((l, o, r, u))
+                                ganz = kamera.hole(mitte)
                                 if ganz is not None:
                                     if (eig := hud.eigene(ganz)) is not None:   # Q W E R D F bereit?
                                         with self._schloss:
@@ -727,7 +857,7 @@ class Beobachter(threading.Thread):
                                         if (q := hud.quest(ganz)) is not None:   # Auftrag 006, W2: nur lesen
                                             with self._schloss:
                                                 self._ereignisse.append(("quest", start, q))
-                                    klein = cv2.resize(ganz, (BILDSCHIRM_BREITE, round(BILDSCHIRM_BREITE * hoehe / breite)),
+                                    klein = cv2.resize(ganz, (BILDSCHIRM_BREITE, round(BILDSCHIRM_BREITE * hoehe / mb)),
                                                        interpolation=cv2.INTER_AREA)
                                     self._balken_pruefen(start, klein, leser)
                                     ok, jpg = cv2.imencode(".jpg", klein, [cv2.IMWRITE_JPEG_QUALITY, 70])
@@ -758,8 +888,8 @@ class Beobachter(threading.Thread):
                                     with self._schloss:
                                         self._ereignisse.append(("wellen", start, punkte))
                         if leser and letzter_chat == start:
-                            a, b, c, d = CHAT
-                            box = (l + int(a * breite), o + int(b * hoehe), l + int(c * breite), o + int(d * hoehe))
+                            a, b, c, d = CHAT   # Breite in 16:9-Einheiten: der Chat klebt am linken Rand (32:9)
+                            box = (l + int(a * mb), o + int(b * hoehe), l + int(c * mb), o + int(d * hoehe))
                             chatbild = kamera.hole(box)
                             if chatbild is not None:
                                 neue = [z for z in leser.zeilen(chatbild) if z not in chat_zeilen and len(z) > 3]
@@ -767,6 +897,14 @@ class Beobachter(threading.Thread):
                                     chat_zeilen.update(neue)
                                     with self._schloss:
                                         self._ereignisse += [("chat", start, z) for z in neue]
+                                    for z in neue:
+                                        # je Zeitstempel ("14:48") ein Clip: die Texterkennung las denselben Ping in
+                                        # der Generalprobe 28.09. dreimal verschieden (drei Clips aus einem Ping)
+                                        stempel = re.match(r"\s*(\d{1,2}:\d{2})", z)
+                                        schl = stempel.group(1) if stempel else z
+                                        if CLIP_WORTE.search(z) and schl not in blitz_pings:
+                                            blitz_pings.add(schl)
+                                            self.clips.anlass("chat", start, z)
                                     if self.ordner:  # Material zum Eichen des Chat-Lesers
                                         cv2.imwrite(str(self.ordner / f"chat_{int(start * 1000)}.jpg"), chatbild,
                                                     [cv2.IMWRITE_JPEG_QUALITY, 80])
@@ -777,6 +915,7 @@ class Beobachter(threading.Thread):
                 del self.messung[:-300]
                 self._halt.wait(max(0.0, self.takt - dauer))
         finally:
+            self.clips.alle_abschliessen()
             if protokoll:
                 protokoll.close()
             if self._ereignis_datei:
@@ -819,6 +958,9 @@ class Beobachter(threading.Thread):
                 balken = lebensbalken.finde(klein)
                 bilder.append((t, klein))
                 spruenge = spur.neu(t, balken, klein.shape[1])
+                for s in spruenge:
+                    self.clips.anlass("spur", s.zeit, s.team)
+                self.clips.bild(t, klein)
                 with self._schloss:
                     self._ereignisse.append(("balkenspur", t, [[b.x, b.y, b.team, b.anteil] for b in balken]))
                 for s in spruenge:
@@ -832,6 +974,10 @@ class Beobachter(threading.Thread):
                             name_von = lebensbalken.namen_lesen(davor, [b_von], leser)[0][1]
                         name_nach = lebensbalken.namen_lesen(landung, [b_nach], leser)[0][1]
                     rahmen = minimap.kamerarahmen(getattr(self, "_letzte_karte", None))
+                    if rahmen:   # das Spielbild ist nur die 16:9-Mitte: nur ihr Teil des Kamerarahmens (32:9)
+                        a0, a1 = getattr(self, "_mitte_anteil", (0.0, 1.0))
+                        rb = rahmen[2] - rahmen[0]
+                        rahmen = (rahmen[0] + a0 * rb, rahmen[1], rahmen[0] + a1 * rb, rahmen[3])
                     with self._schloss:
                         self._ereignisse.append(("schirm_sprung", s.zeit, [s.team, s.anteil, *s.von, *s.nach, s.weite,
                                                                           name_von, name_nach,

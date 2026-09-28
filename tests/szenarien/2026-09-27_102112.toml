@@ -37,7 +37,7 @@ Sett seit eben tot (noch 14 s). Welle 7:4 fuer dich, Front in der Mitte.
 Fiddlesticks vor 30 s im oberen Fluss gesehen, 5976 Einheiten entfernt. Galio vor 6 s in der Flussmitte.
 Kai'Sa und Sona unten sichtbar."""
 modus = ["LANE"]
-soll = ["WELLE_REIN_UND_BACK", "BACK_JETZT"]
+soll = ["WELLE_REIN_UND_BACK", "BACK_JETZT", "ZURUECK"]   # Auftrag 007, Klasse 9: in GEFAHR ist es ZURUECK
 darf_nicht = ["PLATTEN", "ALL_IN", "TRADE"]
 darf_nicht_sagen = ["Platte"]
 warum = """Der gegnerische Jungler war zuletzt auf deiner Seite; mit 37 % ohne Flash ist ein Gank ein sicherer
@@ -252,3 +252,13 @@ quelle = "Kritiker R1 (unverstaendlich): 'Turm ist down: Back. Danach back.'"
 lage = "Turmfall, der Plan ist Back."
 darf_nicht_sagen = ["Danach back"]
 warum = "Danach nennt, was NACH dem Plan kommt - nie denselben Schritt noch einmal."
+
+# --- Auftrag 007 (Teil A 3-5, Teil B) ---
+
+[[szenario]]
+id = "3715-ein-ziel-je-basis"
+fenster = ["37:20", "38:20"]
+quelle = "Kritik R1/R2, Einzelfall: 37:15 'zu deinem Team', 37:35 'Dann Baron.', 38:12 'Dann Top-Welle.'"
+lage = "Ein Basis-Aufenthalt, drei Ziele."
+darf_nicht_sagen = ["Dann Baron", "Dann Top-Welle"]
+warum = "Ein Ziel je Basis-Aufenthalt (Auftrag 007)."

@@ -246,13 +246,13 @@ def _warum_nicht(kern, option: str) -> str:
             return f"{wort} spawnt erst in {int(o.spawn_in)} Sekunden"
         if o is not None and o.lebt:
             # Auftrag 005 (213624 10:54, 11:38): kein geratener Grund - was der Kern weiss: Weg und wer von euch dort ist
+            # Auftrag 007 (Klasse 6): dieselbe Zaehlung wie die Ansage (ueberlegen.koepfe)
+            from .ueberlegen import koepfe, koepfe_satz
             weg = m.weg(o.pos) if o.pos is not None else None
-            n = m.team_nah(o.pos, 2500) if o.pos is not None else 0
-            wer = {0: "keiner von euch", 1: "einer von euch"}.get(n, f"{n} von euch")
+            wer = koepfe_satz(*koepfe(m, o.pos, kern.cfg["ueberlegen"]["kampf_fenster_s"]))
             if m.bereich == "basis_eigen":
-                return f"{wort}: du bist in der Basis, dort ist {wer}"
-            return f"{wort}: du brauchst {int(weg)} Sekunden hin, dort ist {wer}" if weg is not None \
-                else f"{wort}: dort ist {wer}"
+                return f"{wort}: du bist in der Basis, {wer}"
+            return f"{wort}: du brauchst {int(weg)} Sekunden hin, {wer}" if weg is not None else f"{wort}: {wer}"
     if option == "kampf":
         return "Den Kampf rechnet der Coach noch nicht sicher"
     # Auftrag 004, Teil C 3: nie ohne Grund - aus den Schranken dieses Takts, sonst aus dem, was fehlt
@@ -613,11 +613,12 @@ def _gewissheit(kern, f: str, p, h: Handlung | None) -> str:
 
 
 def _team_an(kern, ort) -> int:
-    from ..bewertung import abstand
+    """Wer von euch schon an `ort` steht - dieselbe Zaehlung wie ueberall (Auftrag 007, Klasse 6)."""
+    from .ueberlegen import koepfe
     m = kern.m
     if m is None or m.b is None or ort is None:
         return 0
-    return sum(1 for s, wo, *_ in (m.b.mitspieler or []) if wo is not None and not s.tot and abstand(wo, ort) <= 2000)
+    return koepfe(m, ort, 0.0)[0]
 
 
 def _an_der_grube(kern, f: str, zeit: float):

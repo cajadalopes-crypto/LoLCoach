@@ -16,7 +16,6 @@ from __future__ import annotations
 import json
 import re
 from collections import deque
-from functools import lru_cache
 from pathlib import Path
 
 from .. import wissen
@@ -41,6 +40,9 @@ VOR_SCHRANKE = frozenset(("DRUECKEN", "MIT_GRUPPE", "NEHMEN", "BESTREITEN", "ZUR
                           "SEITENWELLE", "WELLE_KLAEREN", "VORBEREITEN_OBJECTIVE", "ANNEHMEN"))
 # R2: haengen am ungeeichten p_gewinn - berechnet, protokolliert, stumm (bis die Kampf-Eichung besteht)
 MODELL_STUMM = frozenset(("BESTREITEN", "TP_SPIEL"))
+# Auftrag 007: Turmziele (Klasse 10) und die Ansagen, die ein Back nur aus Gold nicht ohne Ereignis abloest (Klasse 9)
+TURM_ARTEN = frozenset(("DRUECKEN", "MIT_GRUPPE", "PLATTEN"))
+VOR_ARTEN = frozenset(("NEHMEN", "BESTREITEN", "MIT_GRUPPE", "DRUECKEN", "ZUR_GRUPPE", "PLATTEN"))
 # Auftrag 004, Teil B: diese sprechen bei robuster Ueberlegenheit auch ohne Kampfmodell - und sind bei klarer
 # Unterlegenheit aus (kern/ueberlegen.py)
 UEBERLEGEN_ARTEN = frozenset(("DRUECKEN", "MIT_GRUPPE", "NEHMEN", "BESTREITEN", "ANNEHMEN", "REIN"))
@@ -62,8 +64,9 @@ VOR_TEXT = re.compile(r"Geh rein|nimm den Kampf an|Halte deine Stellung|Bleib an
                       r"Geh auf|Drück|Nehmt", re.I)
 
 
-@lru_cache(maxsize=1)
 def _zeitleiste_stand(eintraege: list, jetzt: float) -> list[dict]:
+    # Auftrag 007: ohne lru_cache - eine Liste ist nicht hashbar; seit Auftrag 003 warf das Dashboard hier bei jedem
+    # Takt TypeError (Generalprobe 28.09.: "Dashboard: TypeError: unhashable type: 'list'")
     from .zeitleiste import fuer_stand
     return fuer_stand(eintraege, jetzt)
 
@@ -110,6 +113,9 @@ class Kern:
         # neues Ereignis (9.4 Punkt 5) und Bestaetigungen
         self._sicht: deque = deque()              # (Zeit, sichtbare Gegner in 3000)
         self._ereignis_t = -1e9
+        self._wp_ereignis_t = -1e9                # Auftrag 007: der letzte Wendepunkt (Turm, Objective, Kill in der Naehe)
+        self._turmziel: dict | None = None        # Auftrag 007, Klasse 10: das zuletzt gesagte Turmziel
+        self._basis_seit, self._basis_ziel, self._war_basis = -1e9, None, False   # Einzelfall: ein Ziel je Basis
         self._kills = self._objs = None
         self._leben_bei_ansage: float | None = None
         # Buch 7: Entscheidungspunkte (3.3), die laufende Kampf-Episode (5), ANNEHMEN je Gegner (4)
@@ -233,6 +239,10 @@ class Kern:
                     sep["rueckkehr"] = True           # G1: danach darf die kurze Fassung kommen (auch einer ruhenden)
         self._ereignisse_merken(m, p)
         self._korrekturen_anwenden(m)              # Auftrag 004, Teil C 2 (Buch 11, 5.6)
+        basis = m.bereich == "basis_eigen"         # Auftrag 007: ein Basis-Aufenthalt beginnt
+        if basis and not self._war_basis:
+            self._basis_seit = m.zeit
+        self._war_basis = basis
         if m.b is not None:                        # Auftrag 005: wer wann zuletzt tot war (Rueckblick "wiederbelebt")
             zt = getattr(self, "_zuletzt_tot", None)
             if zt is None:
@@ -291,7 +301,10 @@ class Kern:
             if (a := self._basis_warten(m, gesagt)) is not None:
                 aus.append(a)
         plan = self.fuehrer.plan
-        if plan is not None and plan.art in ("ZURUECK", "BACK_JETZT") and self._rueckzug_ep is not None:
+        # Auftrag 007: nur ein Rueckzug haelt die Episode offen - ein stiller Back-Plan hielt sie in 213624 von 15:31 bis
+        # 24:10 offen, und "Raus zum Mid-Tier-1-Turm: Xin Zhao und Ziggs kommen" (24:11, GEFAHR) galt als derselbe Rueckzug
+        if plan is not None and plan.art == "ZURUECK" and self._rueckzug_ep is not None \
+                and m.zeit - self._rueckzug_ep["zuletzt"] <= RUECKZUG_EPISODE_S:
             self._rueckzug_ep["zuletzt"] = m.zeit
         if not aus and not self.gefahr:       # "Denk dran" nie in GEFAHR (Pruefung D)
             er = self.fuehrer.erinnern(m, self._nicht_ausgefuehrt)
@@ -344,6 +357,7 @@ class Kern:
             self._wp = {"zeit": m.zeit, "text": wp, "erst": (self._wp or {}).get("erst", m.zeit)
                         if wp.startswith(("Zwei", "Drei", "Vier")) else m.zeit}
             self._ereignis_t = m.zeit                  # auch fuer Kehrtwenden ein neues Ereignis
+            self._wp_ereignis_t = m.zeit
             if modus != "KAMPF" and plan is not None and not (plan.art in SICHER and self.gefahr):
                 self.fuehrer.plan = None               # erledigt oder ungueltig: der naechste Plan kommt sofort
         if fe is not None:
@@ -443,9 +457,10 @@ class Kern:
         feinde = {s.name for s in m.p.gegner()}
         for t in list(z.timer.values()):
             schl = (t.name, round(t.seit))
+            bis = getattr(self, "_flash_bis", {}).get(t.name)
             if t.zauber == "SummonerFlash" and t.name in feinde and t.zurueck > m.zeit \
-                    and schl not in self._flash_gemeldet:
-                self._flash_offen[schl] = t
+                    and schl not in self._flash_gemeldet and not (bis is not None and t.seit < bis - 5.0):
+                self._flash_offen[schl] = t        # Auftrag 007: einmal je Verbrauch (164326 3:13 und 4:18)
         self._flash_offen = {k: t for k, t in self._flash_offen.items() if t.zurueck > m.zeit + c["rest_min_s"]}
         if not self._flash_offen or m.zeit - self._kampf_zuletzt < c["nach_kampf_s"] \
                 or m.zeit - self._flash_zuletzt < c["abstand_s"]:
@@ -456,6 +471,11 @@ class Kern:
         a = self.sprecher.ansage("INFO_FLASH", "INFO_FLASH", text, m.zeit, None, gesagt)
         if a is not None:
             self._flash_gemeldet |= set(self._flash_offen)
+            fb = getattr(self, "_flash_bis", None)
+            if fb is None:
+                self._flash_bis = fb = {}
+            for t in self._flash_offen.values():
+                fb[t.name] = max(fb.get(t.name, 0.0), t.zurueck)
             self._flash_offen = {}
             self._flash_zuletzt = m.zeit
             self._gesprochen(a, "INFO_FLASH", m)
@@ -526,6 +546,9 @@ class Kern:
         if weg:
             kand = [h for h in kand if h.daten.get("objective") not in weg]
         self.kandidaten_roh = list(kand)          # Auftrag 004, Teil C: auch was stumm bleibt, mit seinem Grund
+        # Auftrag 007: vor den Schranken und vor "je Art die bessere Fassung" - sonst sieht der Turmfilter nur noch einen
+        # Turm je Art (164326 42:08: der innere Bot-Turm verdraengte den Mid-Inhibitor-Turm schon vorher)
+        kand = self._turmziel_halten(m, kand)          # Klasse 10
         kand = self._schranken(m, kand, modus)
         bleiben = next((h for h in kand if h.art in ("FARMEN", "HALTEN") or h.daten.get("verloren")), None)
         for h in kand:
@@ -581,6 +604,13 @@ class Kern:
                          for g in m.b.gegner if g.champion in von) if von else False
             if not vorbei:
                 kand = [h for h in kand if h.art not in VORWAERTS]
+        from .fuehren import BACK_ARTEN
+        # Auftrag 007, Klasse 9: kein Back-Ruf in GEFAHR (das ist ZURUECK) und keiner in der Basis (173159 6:39, 34:59;
+        # 213624 17:11)
+        if (gefahr and any(h.art == "ZURUECK" for h in kand)) or m.bereich == "basis_eigen":
+            kand = [h for h in kand if h.art not in BACK_ARTEN]
+        # Klasse 11 erst hier: FARMEN ist der Bezug der Gefahr-Rechnung oben (lane.toml k-leben-kritisch-trotz-welle)
+        kand = self._back_vor_farmen(m, kand, modus, gefahr)
         plan = self.fuehrer.plan
         als = plan.als() if plan is not None else None
         if gefahr:
@@ -595,6 +625,66 @@ class Kern:
             kand = [h for h in kand if not h.daten.get("nur_bei_gefahr")]
         kand = [h for h in kand if not (h.daten.get("klein") and h.p_tod >= cfg["gefahr"]["p_min"])]
         return kand, gefahr
+
+    def _back_vor_farmen(self, m: Merkmale, kand: list, modus: str | None = None, gefahr: bool = False) -> list:
+        """Auftrag 007, Klasse 11: Gold >= naechster Kauf + back_vor_farmen_gold oder Leben < leben_back - dann ist Back
+        Kandidat vor Farmen (164326 16:23, 25:56, 28:37). Ausnahme: ein Objective oder ein Fenster steht in <= 30 s an,
+        dann bleibt Farmen und sein Satz nennt es."""
+        from .fuehren import BACK_ARTEN
+        if m.b is None or not any(h.art == "FARMEN" for h in kand):
+            return kand
+        k, cr = m.kauf, self.cfg["recall"]
+        viel = k is not None and bool(k.kaufen) and (m.b.gold or 0) >= k.kosten + cr["back_vor_farmen_gold"]
+        wenig = m.leben is not None and m.leben < cr["leben_back"]
+        if not (viel or wenig):
+            return kand
+        bald = any(e.art == "objective" and 0 <= e.in_s(m.zeit) <= 30 for e in self.zeitleiste or []) \
+            or self._fenster_offen(m) is not None
+        if bald:
+            return kand
+        kand = [h for h in kand if h.art != "FARMEN"]
+        if not any(h.art in BACK_ARTEN for h in kand) and modus not in ("KAMPF", "TOT", "BASIS", None) \
+                and not gefahr and m.bereich != "basis_eigen":
+            # kein Back-Kandidat (die Lane-Regeln boten keinen): BACK_JETZT mit jedem Back-Grund - nie_back sperrt ihn
+            # weiter, wenn Gegner nah sind (164326 28:37: dann bleibt nur Halten, und der Rueckzug kommt)
+            from .modi.gruppe import _back_ohne_lane
+            kand += _back_ohne_lane(m, self.cfg, modus)
+        return kand
+
+    def _turmziel_halten(self, m: Merkmale, kand: list) -> list:
+        """Auftrag 007, Klasse 10: ein Turmziel wechselt nur mit Ereignis; im Umwandel-Fenster bleibt das erste
+        erreichbare Ziel, bis es faellt oder das Fenster zu ist (164326 35:14, 42:33). An der Grube, wo mit dir ein
+        lebendes Objective genommen wird, gibt es keinen Turm woanders (164326 35:54, 173159 20:17). Faellt das Ziel
+        im Fenster, gilt Buch 5, 8 streng: der hoechste Rang zuerst (42:09)."""
+        from .merkmale import OBJ_GRUBE
+        from .modi import karte
+        turm = [h for h in kand if h.art in TURM_ARTEN and h.ziel is not None]
+        if not turm:
+            return kand
+        if (m.bereich or "").startswith("grube:"):
+            o = next((x for x in m.objectives if x.lebt and m.bereich == f"grube:{OBJ_GRUBE.get(x.schl, x.schl)}"),
+                     None)
+            if o is not None and m.team_nah(o.pos, 2500) >= 1:
+                return [h for h in kand if h not in turm]
+        fenster = karte.umwandeln(m, self.cfg) is not None
+        def rang(h):
+            return karte.ORDNUNG.get((h.daten.get("turm") or ("", "", ""))[2], 0)
+        tz = self._turmziel
+        if tz is not None:
+            gleich = [h for h in turm if h.ziel.name == tz["name"]]
+            if gleich and ((tz["fenster"] and fenster) or self._wp_ereignis_t <= tz["zeit"]):
+                return [h for h in kand if h not in turm or h.ziel.name == tz["name"]]
+            if not gleich and tz["fenster"] and fenster:
+                # das Ziel ist gerade kein Kandidat (Schranke, Weg), aber nicht gefallen: im Fenster nicht zurueck auf einen
+                # niedrigeren Rang (164326 42:33: Nexus-Turm -> "Drueck den inneren Bot-Turm")
+                kand = [h for h in kand if h not in turm or rang(h) >= tz.get("rang", 0)]
+                turm = [h for h in turm if rang(h) >= tz.get("rang", 0)]
+                if not turm:
+                    return kand
+        if fenster:
+            hoch = max(rang(h) for h in turm)
+            return [h for h in kand if h not in turm or rang(h) == hoch]
+        return kand
 
     # --- Sprechen ----------------------------------------------------------------------
 
@@ -617,9 +707,10 @@ class Kern:
                 # was danach kommt; sonst schweigt er (kein "bleib, wo du bist")
                 # Auftrag 004, Teil A 1: bleibt nur FARMEN, dann nur mit Vorschau ("Farm Top, Drache in 70 Sekunden,
                 # dann zum Drachen."); nur Halten: das, was danach kommt; sonst still - nie ungefragt "unsicher"
-                from .fuehren import farmen_mit_vorschau
-                text = (farmen_mit_vorschau(h, self.zeitleiste, m.zeit, self.danach_text, self.cfg) if h.art == "FARMEN"
-                        else (f"{self.danach_text[:1].upper()}{self.danach_text[1:]}." if self.danach_text else ""))
+                from .fuehren import farmen_satz          # Auftrag 007, A 1: immer ein Satz, nie ohne Grund
+                from .fuehren import halten_satz          # Auftrag 007, A 1: am Wendepunkt immer ein Satz
+                text = (farmen_satz(h, m, self.zeitleiste, self.danach_text, self.cfg) if h.art == "FARMEN"
+                        else halten_satz(m, self.zeitleiste, self.danach_text, self.cfg))
             if h.art == "ANNEHMEN":
                 # Buch 7, 4: hoechstens einmal je Gegner und annehmen_wiederholen_s
                 g = h.daten.get("kampf_mit")
@@ -627,6 +718,22 @@ class Kern:
                     p.gesagt = m.zeit
                     return None
         if not text:
+            return None
+        from .fuehren import BACK_ARTEN, ziel_label
+        # Auftrag 007, Klasse 9: ein Back nur aus Gold loest eine eben gesagte Objective- oder Turm-Ansage nicht ohne
+        # Ereignis ab (164326 39:15 "Baron bestreiten" -> 39:49 "Back jetzt: 1500 Gold im Beutel", 100 % Leben)
+        if p.art in BACK_ARTEN and ev.art == "neu" and (m.leben is None or m.leben >= self.cfg["recall"]["leben_back"]):
+            vor = next((e for e in reversed(getattr(self, "_ansage_log", None) or [])
+                        if e["art"] in VOR_ARTEN and m.zeit - e["zeit"] <= 60.0), None)
+            if vor is not None and self._wp_ereignis_t < vor["zeit"]:
+                p.gesagt = m.zeit
+                return None
+        # Auftrag 007, Einzelfall (102112 37:15-38:12: Team, Baron, Top-Welle): ein Ziel je Basis-Aufenthalt
+        if m.bereich == "basis_eigen" and (h.art in ("WOHIN", "WOHIN_TP_LANE") or ev.art == "schritt") \
+                and h.art in ("WOHIN", "WOHIN_TP_LANE", "KAUFEN") \
+                and self._basis_ziel is not None and self._basis_ziel[0] >= self._basis_seit \
+                and self._basis_ziel[1] != ziel_label(h):
+            p.gesagt = m.zeit
             return None
         # Pruefung A / Buch 0 7.5: stehst du schon am sicheren Ort, wird der Rueckzug nicht gesagt - der Plan haelt
         if ev.art != "schritt" and h.daten.get("dort"):
@@ -896,6 +1003,16 @@ class Kern:
                     "ziel": _f.ziel_label(plan.handlung) if plan is not None and kategorie != "INFO_FLASH" else None})
         while log and log[0]["zeit"] < m.zeit - 60.0:
             log.popleft()
+        if plan is not None and kategorie in ("PLAN", "WENDEPUNKT", "FENSTER") and plan.handlung.ziel is not None:
+            ph = plan.handlung
+            if ph.art in TURM_ARTEN:                  # Auftrag 007, Klasse 10: das Turmziel merken
+                from .modi import karte
+                self._turmziel = {"name": ph.ziel.name, "zeit": m.zeit,
+                                  "fenster": karte.umwandeln(m, self.cfg) is not None,
+                                  "rang": karte.ORDNUNG.get((ph.daten.get("turm") or ("", "", ""))[2], 0)}
+            if m.bereich == "basis_eigen" and ph.art in ("KAUFEN", "WOHIN", "WOHIN_TP_LANE"):
+                from .fuehren import ziel_label as _zl
+                self._basis_ziel = (m.zeit, _zl(ph))  # Auftrag 007: das Ziel dieses Basis-Aufenthalts
         if kategorie in ("PLAN", "WENDEPUNKT", "FENSTER", "VORSCHAU", "ERINNERUNG") and self.fuehrer.plan is not None:
             from .fuehren import ziel_label
             a._ziel = ziel_label(self.fuehrer.plan.handlung)      # Buch 11, 7: Widersprueche
@@ -996,6 +1113,8 @@ class Kern:
         rufe = [t for t in self._back_rufe if m.zeit - t < 600]
         if len(rufe) >= cs["back_max_je_10min"]:
             return f"Back gesperrt: {len(rufe)} in 10 min"
+        if rufe and self._ereignis_t < rufe[-1] and self._back_recall < rufe[-1]:
+            return "Back gesperrt: seit dem letzten Back-Ruf nichts passiert"   # Auftrag 007, Klasse 9
         if rufe and m.zeit - rufe[-1] < cs["back_ignoriert_s"] and self._back_recall < rufe[-1]:
             stufe = bool(m.kauf is not None and m.kauf.kern_fertig)
             if not ((le is not None and le < cs["back_ausnahme_leben"]) or (stufe and not self._back_stufe)):
@@ -1088,7 +1207,11 @@ class Kern:
         from .ueberlegen import lage
         ort = h.daten.get("ziel_pos") or (h.ziel.pos if h.ziel is not None else None) or m.pos
         fenster = max(self.cfg["kampf"]["fenster_s"], min(h.dauer or 0.0, 45.0))
-        u, grund = lage(m, self.cfg, ort, fenster)
+        cu, obj = self.cfg["ueberlegen"], h.daten.get("objective")
+        urt = (m.obj_urteile or {}).get(obj) if obj else None
+        lang = bool(obj) and (obj in ("baron", "aeltester") or (urt is not None and urt.dauer > cu["lang_objective_s"]))
+        u, grund = lage(m, self.cfg, ort, fenster, lang=lang,          # Auftrag 007, A 5 und Klasse 6
+                        wir_fenster=cu["kampf_fenster_s"] if obj else None)
         merk = getattr(self, "_ueberlegen_merk", None)
         if merk is None:
             self._ueberlegen_merk = merk = {}
@@ -1288,6 +1411,10 @@ class Kern:
             return None          # Pruefung c, R6: kein sicheres Ziel
         if self._ziel_eben(z, m.zeit):
             return None          # Auftrag 003, Teil A 5
+        from .fuehren import ziel_label
+        if self._basis_ziel is not None and self._basis_ziel[0] >= self._basis_seit \
+                and self._basis_ziel[1] != ziel_label(z):
+            return None          # Auftrag 007: ein Ziel je Basis-Aufenthalt (102112 37:15 Team -> 37:35 "Dann Baron.")
         text = z.satz if z.satz.startswith(("Geh", "TP", "Lauf", "Zurück")) else \
             "Geh jetzt: " + z.satz[0].lower() + z.satz[1:]
         text = self._kurzform(None, z, text)       # Pruefung c, R6: "Dann Top-Welle."

@@ -60,6 +60,8 @@ class Modus:
                     grenze = c["objective_nah_s"] + (10.0 if self.aktuell == "OBJECTIVE" else 0.0)
                     if o.weg <= grenze:
                         return "OBJECTIVE", f"Plan {o.schl}, du {int(o.weg)} s entfernt"
+        if getattr(m, "belagerung", None) is not None and not m.lane_phase:
+            return "VERTEIDIGEN", f"Belagerung: {m.belagerung[2]}"     # Auftrag 007, A 4: auch aus der Ferne
         for name, _, weg in m.bedrohung:
             if weg is not None and weg <= c["verteidigen_weg_s"]:
                 return "VERTEIDIGEN", f"Bedrohung an {name}, {int(weg)} s von dir"
