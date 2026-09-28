@@ -248,6 +248,13 @@ turm_toleranz = 0.02
 icon_deckung = true
 # nicht im Buch (Qualitaetsrunde 1): GECRASHT_BEI_DIR schaltet sofort wie GECRASHT_BEI_IHM (1.4 nennt nur diesen)
 crash_dir_sofort = true
+# Auftrag 006, W1 (Fehlerursachen 173159/164326, Qualitaetsrunde 2) - je ein Schalter, false = wie vorher:
+icon_deckung_zone = false       # AUS (gemessen: 144655 9 -> 6 von 11, 164326 13 -> 13, 173159 7 -> 7). Icon-Deckung senkt die Zahl auf 1, zaehlt aber nicht ueber die Crash-Zone hinaus
+                                # (173159 7:33, 164326 5:01: Icon am Zonenrand zog die Zone bis 0,49, ein roter am Knick)
+trend_farbwechsel = false       # AUS (gemessen: 173159 +1, 164326 -1 bei 10:57). Der Trend beginnt neu, wenn die Front die Farbe wechselt (173159 11:07: die Front glitt
+                                # ohne Sprung von unserer auf ihre Welle, die Regression trug unseren Vormarsch weiter)
+hysterese_zu_mitte_s = 1        # AN (gemessen: 173159 7 -> 10 von 12, 144655 9 -> 9, 164326 13 -> 13). Hysterese zwischen ZU_IHM, ZU_DIR und MITTE (vorher zustand_hysterese_s = 3; 11:57,
+                                # 12:49, 164326 3:59: roh war 1-2 s vorher richtig)
 
 [recall]
 stand = "Buch 3, 27.09.2026 - Startwerte (Schaetzung), an Szenarien kalibrieren"

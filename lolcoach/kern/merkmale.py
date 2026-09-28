@@ -227,6 +227,17 @@ def lane_phase_bis(c: dict, p) -> float:
     return float(c["lane_phase_bis_s"])
 
 
+ZU_MITTE = frozenset(("ZU_IHM", "ZU_DIR", "MITTE"))
+
+
+def _farbe(x) -> str | None:
+    """Wessen Welle bildet die Front dieser Lesung? "wir" / "die" nach der Zahl der Front-Vasallen, sonst None."""
+    if len(x) <= 5:
+        return None
+    w, d = len(x[4]), len(x[5])
+    return "wir" if w > d else "die" if d > w else None
+
+
 class WellenPuffer:
     """Buch 1, 1.2/1.4: die Lesungen deiner Lane der letzten 20 s -> geglaettete Welle und ihr Zustand (Hysterese
     3 s, GECRASHT_BEI_IHM sofort - er ist ein Plan-Schritt)."""
@@ -281,6 +292,18 @@ class WellenPuffer:
             if abs(punkte[i][1] - punkte[i - 1][1]) > self.c["front_sprung"]:
                 punkte = punkte[i:]
                 break
+        if c.get("trend_farbwechsel", False):
+            # Auftrag 006, W1: wechselt die Front die Farbe (unsere Welle -> ihre), ist es eine andere Welle, auch ohne
+            # Sprung - der Trend beginnt dort neu (173159 11:07)
+            farben = [(x[0], _farbe(x)) for x in self.lesungen if x[3] is not None]
+            letzte = next((f for _, f in reversed(farben) if f is not None), None)
+            ab = None
+            for t, f in reversed(farben):
+                if f is not None and f != letzte:
+                    break
+                ab = t
+            if ab is not None:
+                punkte = [q for q in punkte if q[0] >= ab]
         if len(punkte) >= 3 and punkte[-1][0] - punkte[0][0] >= 5.0:
             mt = sum(t for t, _ in punkte) / len(punkte)
             mf = sum(f for _, f in punkte) / len(punkte)
@@ -304,15 +327,20 @@ class WellenPuffer:
                      else max(dein + z, ich + r + tol))
             ab_i = (ihr - z if (r is None or ich is None or not ihr - z <= ich <= ihr + tol)
                     else min(ihr - z, ich - r - tol))
+            deckt_d, deckt_i = bis_d > dein + z, ab_i < ihr - z
+            if c.get("icon_deckung_zone", False):
+                # Auftrag 006, W1: die Deckung senkt die Zahl auf 1, gezaehlt wird aber nur in der Zone - ein Vasall
+                # am Knick ist kein Crash (173159 7:33, 164326 5:01)
+                bis_d, ab_i = dein + z, ihr - z
 
             def zone(x, i, von, bis):
                 return sum(von <= s <= bis for s in x[i])
             am_dein = (statistics.median(zone(x, 4, dein - tol, dein + z) for x in quelle),
                        statistics.median(zone(x, 5, dein - tol, bis_d) for x in quelle),
-                       bis_d > dein + z)
+                       deckt_d)
             am_ihr = (statistics.median(zone(x, 4, ab_i, ihr + tol) for x in quelle),
                       statistics.median(zone(x, 5, ihr - z, ihr + tol) for x in quelle),
-                      ab_i < ihr - z)
+                      deckt_i)
         roh = self._roh(zeit, frisch, unsere, ihre, front, trend, dein, ihr, am_dein, am_ihr)
         if roh == self.zustand:
             self.kandidat = None
@@ -323,7 +351,10 @@ class WellenPuffer:
         else:
             if self.kandidat != roh:
                 self.kandidat, self.kandidat_seit = roh, zeit
-            if zeit - self.kandidat_seit >= c["zustand_hysterese_s"]:
+            hy = c["zustand_hysterese_s"]
+            if roh in ZU_MITTE and self.zustand in ZU_MITTE and "hysterese_zu_mitte_s" in c:
+                hy = c["hysterese_zu_mitte_s"]        # Auftrag 006, W1
+            if zeit - self.kandidat_seit >= hy:
                 self.zustand, self.seit, self.kandidat = roh, zeit, None
         nd = [x[6] for x in quelle if len(x) > 6 and x[6] is not None]
         ni = [x[7] for x in quelle if len(x) > 7 and x[7] is not None]

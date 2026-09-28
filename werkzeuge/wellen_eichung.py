@@ -8,6 +8,11 @@ Buch 1 1.4 oder "unklar"). Mit `--auswerten` die Trefferquote (Abnahme: >= 80 %,
 
     python werkzeuge/wellen_eichung.py <aufnahme> [--anzahl 20] [--tafel <datei-ohne-endung>]
     python werkzeuge/wellen_eichung.py <aufnahme> --auswerten
+    python werkzeuge/wellen_eichung.py <aufnahme> --neu [--schalter icon_deckung_zone=false ...]
+
+--neu rechnet mit dem aktuellen Code nach und vergleicht mit der Beschriftung (--auswerten nimmt den gespeicherten
+Kern-Zustand vom Tag der Tafel). --schalter setzt Werte aus [welle] fuer diesen Lauf (Auftrag 006: die Wirkung je
+Schalter messen).
 """
 from __future__ import annotations
 
@@ -220,6 +225,34 @@ def auswerten(pfad: Path) -> None:
             print(f"   {e['nr']:2d} {e['zeit']}: Kern {e['kern']}, wahr {e['wahr']}")
 
 
+def neu_auswerten(pfad: Path, schalter: list[str] = ()) -> tuple[int, int]:
+    """Auftrag 006, W1: die Beschriftung gegen den NEU gerechneten Zustand (aktueller Code, [welle] samt `schalter`)."""
+    c = konfig()["welle"]
+    for s in schalter:
+        k, _, v = s.partition("=")
+        c[k] = {"true": True, "false": False}.get(v.lower(), None) if v.lower() in ("true", "false") else float(v)
+    stamm = pfad.name.removesuffix(".jsonl.gz")
+    d = json.loads((ABLAGE / f"{stamm}.json").read_text(encoding="utf-8"))
+    zeilen, _ = durchrechnen(pfad)
+    klar = [e for e in d["punkte"] if e.get("wahr") and e["wahr"] != "unklar"]
+    treffer = 0
+    fehler = []
+    for e in klar:
+        m, s = e["zeit"].split(":")
+        z = int(m) * 60 + int(s)
+        # die Tafel nennt die Spielzeit auf die Sekunde abgeschnitten: das Bild in [z, z + 1)
+        kand = [x for x in zeilen if z <= x["zeit"] < z + 1] or sorted(zeilen, key=lambda x: abs(x["zeit"] - z - 0.5))[:1]
+        kern = kand[0]["kern"] if kand else None
+        if kern == e["wahr"]:
+            treffer += 1
+        else:
+            fehler.append(f"   {e['nr']:2d} {e['zeit']}: Kern {kern}, wahr {e['wahr']}")
+    print(f"{stamm} neu gerechnet{' mit ' + ', '.join(schalter) if schalter else ''}: {treffer} von {len(klar)} "
+          f"eindeutigen richtig ({100 * treffer / len(klar):.0f} %)")
+    print("\n".join(fehler))
+    return treffer, len(klar)
+
+
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser()
@@ -227,9 +260,14 @@ def main() -> None:
     ap.add_argument("--anzahl", type=int, default=20)
     ap.add_argument("--tafel", help="Bildtafel an diesen Ort (ohne Endung)")
     ap.add_argument("--auswerten", action="store_true")
+    ap.add_argument("--neu", action="store_true", help="mit dem aktuellen Code nachrechnen und vergleichen")
+    ap.add_argument("--schalter", nargs="*", default=[], help="Werte aus [welle] fuer diesen Lauf, z. B. crash_zone=0.1")
     ap.add_argument("--mit", default="", help="feste Zeitpunkte, z. B. 3:13,5:17")
     a = ap.parse_args()
     pfad = Path(a.aufnahme) if Path(a.aufnahme).exists() else aufzeichnung.ORDNER / f"{a.aufnahme}.jsonl.gz"
+    if a.neu:
+        neu_auswerten(pfad, a.schalter)
+        return
     if a.auswerten:
         auswerten(pfad)
     else:
