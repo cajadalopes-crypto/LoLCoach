@@ -4,6 +4,84 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 005 – Selbstprüfung mit einem unabhängigen Kritiker, zwei Runden (28.09.2026)
+
+Grundlage: `buecher/auftraege/005_auftrag.md`. Je Runde drei Kritiker-Agenten ohne Codewissen (Rolle:
+Challenger-Toplaner, Riven-Main, und Coach). Jeder bekam die Protokolle, Carlos' Notizen aus 213624 und die drei
+Prüfungen vom 27.09. und bewertete jede gesprochene Ansage und Antwort mit ok, schwach oder falsch. Die Klassen und
+Beispiele stehen in `buecher/auftraege/005_kritik_runde1.md` und `005_kritik_runde2.md`. Offline gemessen, der Coach
+wurde nicht gestartet.
+
+### Runde 1 → Fixes (`76e2a3b`)
+
+Gebaut wurden nur Klassen mit „falsch“ ≥ 2. Jede bekam ein Szenario aus einem echten Fall, alle 13 zuerst rot.
+
+1. **Überlegenheit zählt, wer da sein kann:** `[ueberlegen] p_da_min` 0,3 → 0,1.
+   - Bei 0,3 fehlten 90 s Ungesehene: 173159 28:52 „Nimm den Kampf“, drei kamen, Tod 29:03; 164326 28:58 „Rein auf
+     Lux!“.
+   - Das ist strenger, keine Schranke wird gelockert.
+2. **Ein Verlust der anderen Seite ist eine Nachricht, kein Grund:**
+   - „Euer Bot-Turm ist weg. Drück den inneren Top-Turm …“ statt „Euer Turm ist weg: Drück …“ (`fuehren.verbinden`,
+     mit Lane aus `zustand.struktur`).
+   - „Danach“ wiederholt nie den Plan (102112 27:51 „Back. Danach back.“).
+3. **Einkommen:** Sprünge über 100 Gold je Takt (Startgold, Kopfgeld, Platten) zählen nicht, vor 1:30 gibt es keins.
+   Damit fällt 164326 0:19 „Caulfields in 41 Sekunden kaufbar“ bei 0 Gold weg.
+4. **Rückblick:** Wer ≤ 60 s angesagt war oder ≤ 20 s wiederbelebt ist, „kam nicht aus dem Nebel“ (173159 35:13,
+   144655 9:23). Bei einem Respawn: „… ist gerade neben dir wiederbelebt.“
+5. **Notizen:**
+   - Eine innere Frage braucht ein „?“ oder ein Fragewort vorn. Nur „soll ich“ darf mitten im Satz stehen, etwa „Dann
+     soll ich doch erst recht kämpfen“ (23:45).
+   - Das beendet „Notiert. Nein. …“ (213624 20:00, 21:03).
+6. **Objective-Antworten:**
+   - Statt „lohnt gerade nicht: zu weit oder zu wenige von euch“ (geraten) kommen Fakten: Weg zur Grube und wer von
+     euch dort ist.
+   - Der gehaltene Plan zählt als Option (12:56 „Keins von beiden … Jetzt: Drache mit Malzahar“).
+   - Antworten mit Richtung: „Zum Drachen mit Malzahar: …“.
+
+**Nicht gebaut:**
+- Grundsatz, in `005_frage.md`: Warten am Inhibitor-Turm (Schranke G2), Rückkehr bei einer Belagerung (neue Regel),
+  Baron mit drei Ungesehenen.
+- Kritiker irrt: „Level 20 gibt es nicht“ (die Quest hebt das Cap), „Caulfields gegen seinen Build“ (Bauteil von
+  Axiombogen, Eklipse, Hydra), „Eklipse in 63 Sekunden“ (330 Gold fehlten, 5,2 Gold/s).
+- Ohne gemeinsame Ursache: Back ohne Ereignis, springende Turmziele.
+
+### Ergebnis: falsch und schwach je 30 min
+
+„Vorher“ ist die Kritik der Runde 1 am Stand nach Auftrag 004 (`16e579b`). „Nach Runde 1“ ist die Kritik der Runde 2
+am Stand `76e2a3b`. Nach Runde 2 wurde nichts mehr gebaut, „nach Runde 2“ ist also derselbe Stand. In Klammern steht
+Runde 1 ohne die Kritiker-Irrtümer (Level 20, Caulfields, Eklipse).
+
+| Partie | falsch vorher | falsch nach Runde 1 | falsch nach Runde 2 | schwach vorher | schwach nach Runde 1 / 2 |
+|---|---|---|---|---|---|
+| 164326 (echt) | 11,9 (8,4) | 9,8 | 9,8 | 27,3 | 12,6 |
+| 173159 (echt) | 7,0 | 3,9 | 3,9 | 13,3 | 16,4 |
+| 144655 (echt) | 6,2 | 3,1 | 3,1 | 15,5 | 15,5 |
+| 213624 (Bot, Fragen) | 19,1 | 15,5 | 15,5 | 45,4 | 32,3 |
+| 102112 (Bot) | 11,8 (7,9) | 3,0 | 3,0 | 15,8 | 11,8 |
+| **alle** | 56 Sätze | 36 Sätze | 36 Sätze | 115 | 83 |
+
+- **Was zählt:** Vorher und nachher haben verschiedene Kritiker bewertet. Die Streuung ist groß: Klasse 8 fiel von 3
+  auf 0, ohne dass etwas gebaut wurde. Klasse 10 stieg von 3 auf 7, weil der Kritiker strenger war.
+- **Belastbar ist das Verschwinden der behobenen Klassen:**
+  - Die Klassen 2, 3 und 5 stehen bei 0.
+  - Die Klassen 1 und 4 haben je einen Rest mit anderer Ursache.
+  - Dazu kommen die 13 Szenarien.
+- **Offen für die nächsten Aufträge:**
+  - Klasse 6: Antwort und Ansage zählen „euch“ verschieden.
+  - Klasse 10: überlegene Turmziele wechseln sich ab.
+  - Klasse 11: FARMEN mit Vorschau, wo Back fällig ist.
+
+### Tests und Szenarien
+
+- `tests/alle.py`: 9 / 10. Weiter scheitert nur `kamera_gibt_nur_einmal_frei` an der Umgebung (Bildschirm 7680 × 2160,
+  s. Auftrag 004). Die übrigen Bausteintests sind einzeln grün.
+- Szenarien: **163 / 167**, 2 übersprungen. Rot: 3 × Wendepunkt-Probe, `0944-erster-tower-was-jetzt` (wie nach 004).
+  Konstruierte Lagen **40 / 40**.
+- Geändertes Szenario: `2631-zu-zweit-rein` bekam ein Fenster auf den Kampf (26:29–26:38). Der Wendepunkt-Satz zum
+  Turmfall um 26:40 ist kein Kampfruf und fiel sonst unter `max_woerter = 8`.
+
+---
+
 ## Auftrag 004 – Überlegenheit, echte Antworten, Kampf-Eichung (28.09.2026)
 
 Grundlage: `buecher/auftraege/004_auftrag.md`. Offline gemessen, der Coach wurde nicht gestartet. Vorher = `2b455b3`

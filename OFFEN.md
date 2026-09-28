@@ -17,6 +17,15 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 005 (Selbstpruefung mit Kritiker, zwei Runden) umgesetzt** - Zahlen in `buecher/messungen.md`
+("Auftrag 005"), Klassen in `005_kritik_runde1.md` / `005_kritik_runde2.md`, Rueckfragen in `005_frage.md`.
+
+Offen aus Auftrag 005 (Klassen mit falsch >= 2 nach Runde 2, nicht gebaut):
+- **Antwort und Ansage zaehlen "euch" verschieden** (Klasse 6): an der Grube (2500) gegen in 45 s dort (213624 11:00/11:38).
+- **Ueberlegene Turmziele wechseln sich ab** (Klasse 10): 164326 35:14, 42:33 - das Urteil haengt am Ziel.
+- **FARMEN mit Vorschau statt Back** (Klasse 11): 164326 16:23, 25:56, 28:37 - seit 004 hoerbar.
+- **Back in Gefahr oder in der Basis** (Klasse 9): 173159 6:39, 34:59; 213624 17:11.
+
 **Auftrag 004 (Ueberlegenheit, echte Antworten, Kampf-Eichung) umgesetzt** - Zahlen in `buecher/messungen.md`
 ("Auftrag 004"), Bericht in `buecher/auftraege/004_bericht.md`, Rueckfrage in `004_frage.md`.
 
