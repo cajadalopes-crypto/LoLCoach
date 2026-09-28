@@ -232,3 +232,21 @@ quelle = "Kritik R1, Klasse 8: 'Zwei eurer Tuerme weg. Dann Top-Welle.' - ihr Ae
 lage = "Riven in der Basis, zwei eigene Tuerme in 30 s gefallen."
 darf_nicht_sagen = ["Top-Welle"]
 warum = "Auftrag 007, A 4 (Buch 5, 7, Nachtrag): Belagerung holt dich auch aus der Ferne zur Verteidigung."
+
+# --- Auftrag 007, Teil D (Kritik Runde 3) ---
+
+[[szenario]]
+id = "3509-respawn-am-nexus"
+fenster = ["35:07", "35:15"]
+quelle = "Kritik R3 (gefaehrlich): 'Nexus-Turm jetzt: Yasuo und Olaf sind noch 32 Sekunden tot.' - Kai'Sa und Cho'Gath 35:06/35:07 wiederbelebt, Tod 35:21"
+lage = "Riven 49 % in ihrer Basis, zwei Gegner eben an ihrem Brunnen neben dem Nexus-Turm aufgestanden."
+darf_nicht_sagen = ["Nexus-Turm jetzt"]
+warum = "Wer eben wiederbelebt ist, steht an seinem Brunnen - nicht 'vor 70 s gesehen, Ort unbekannt'."
+
+[[szenario]]
+id = "2607-kein-warte-hier"
+fenster = ["26:05", "26:10"]
+quelle = "Kritik R3: 'Turm ist down: Warte hier, Baron spawnt in 32 Sekunden.' bei 20 % und 2807 Gold"
+lage = "Riven 20 % Leben, 2807 Gold, Cho'Gath und Zilean kommen."
+darf_nicht_sagen = ["Warte hier"]
+warum = "Ein Halte-Plan sagt am Wendepunkt kein Warten auf ein Ereignis."

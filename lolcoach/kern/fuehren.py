@@ -395,12 +395,8 @@ def halten_satz(m, zeitleiste: list, danach_text: str | None, cfg: dict) -> str:
     """Auftrag 007, A 1: auch ein Halte-Plan bekommt am Wendepunkt einen Satz, wenn es etwas Ehrliches zu sagen gibt -
     was danach kommt, das naechste Ereignis der Zeitleiste, oder dein Team neben dir. Sonst still (kein "Warte, gerade
     ist nichts sicher", 164326 23:41)."""
+    # Kritik Runde 3 (Auftrag 007, Teil D): "Warte hier: Baron spawnt in 32 Sekunden" bei 20 % Leben, "Bleib bei
+    # deinem Team" 8 s vor "Back jetzt" - ein Halte-Plan hat keinen Grund zu warten; er sagt nur, was danach kommt
     if danach_text:
         return f"{danach_text[:1].upper()}{danach_text[1:]}."
-    for e in zeitleiste or []:
-        n = e.in_s(m.zeit)
-        if 5 <= n <= cfg["fuehren"]["vorschau_horizont_s"] and e.art in ("objective", "buff", "inhib", "tp"):
-            return f"Warte hier: {e.text} in {n} Sekunden."
-    if m.pos is not None and m.team_nah(m.pos, 2500) >= 2:
-        return "Bleib bei deinem Team."
     return ""

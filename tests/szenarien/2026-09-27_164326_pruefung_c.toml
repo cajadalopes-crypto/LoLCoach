@@ -247,3 +247,21 @@ quelle = "Kritik R2 (gefaehrlich): 'Baron jetzt: Level 16 gegen 14.' - alle fuen
 lage = "Riven 100 %, alle Gegner leben, mehrere seit ueber 20 s ungesehen."
 darf_nicht_sagen = ["Baron jetzt"]
 warum = "Auftrag 007, A 5: bei Baron, Aeltestem und Objectives ueber 25 s hoechstens ein lebender Gegner laenger als 20 s ungesehen."
+
+# --- Auftrag 007, Teil D (Kritik Runde 3) ---
+
+[[szenario]]
+id = "1628-kein-farm-nach-back"
+fenster = ["16:26", "16:32"]
+quelle = "Kritik R3: 'Turm ist down: Farm Top, Teemo lebt in 7 Sekunden wieder.' 14 s nach dem Back-Ruf, 40 %"
+lage = "Riven 40 % Leben, 1277 Gold, recallt nach 'Back jetzt'."
+darf_nicht_sagen = ["Farm Top"]
+warum = "Ein Wendepunkt widerspricht keinem eben gesagten Back (<= 30 s, ohne Recall)."
+
+[[szenario]]
+id = "3534-drache-bleibt"
+fenster = ["35:32", "35:38"]
+quelle = "Kritik R3: 'Mid-Inhibitor-Turm jetzt ...' 28 s nach 'zum Drachen', 7 s vor dem Spawn, ohne Ereignis"
+lage = "Riven auf dem Weg zum Drachen, der Drache spawnt gleich."
+darf_nicht_sagen = ["Mid-Inhibitor-Turm jetzt"]
+warum = "Ein eben gesagtes Objective-Ziel wechselt nicht ohne Ereignis zu einem Turm (Klasse 10, fuer Objectives)."

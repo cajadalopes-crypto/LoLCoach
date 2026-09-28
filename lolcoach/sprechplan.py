@@ -28,6 +28,8 @@ def _zeichen_pro_s() -> float:
 ZEICHEN_PRO_SEKUNDE = _zeichen_pro_s()
 PAUSE = 1.5                  # zwischen zwei Saetzen (2,0 bis 26.09.; die Schaetzung ist jetzt ehrlicher)
 RUHE_VOR_HINWEIS = 8.0       # Hinweise nur, wenn es so lange still war
+RUHE_VOR_FLASH = 1.5         # Auftrag 007: "X ohne Flash" (3 Woerter, gilt 8 s) - mit 8 s Ruhe erklang sie nach jedem
+                             # Satz kurz davor nie und galt trotzdem als gemeldet (213624 8:41 "Rumble ohne Flash")
 THEMA_SPERRE = 30.0          # zwei Ansagen zum selben Thema (back, druck, gefahr, objective) nicht so kurz hintereinander
 THEMA_SPERRE_JE = {"gefahr": 12.0,   # Gefahr aendert sich schnell: eine neue Warnung darf eher kommen
                    "druck": 8.0}     # ein Kampf-Fenster auch: aus "trade hart" wird mit seinem Flash ein Kill
@@ -239,14 +241,18 @@ class Sprechplan:
             return None
         kandidaten = self.warte
         if self.geredet(zeit) > BUDGET_ANTEIL * BUDGET_FENSTER:
-            kandidaten = [a for a in self.warte if not (a.prio == HINWEIS or a.schluessel.startswith(BEIWERK))]
+            # "X ohne Flash" zaehlt beim Kern nicht zum Budget (kern/sprechen.FREI, Auftrag 002) - hier auch nicht: sonst
+            # verfiel sie beim vollen Budget, galt aber als gemeldet (Auftrag 007: 213624 8:41 "Rumble ohne Flash")
+            kandidaten = [a for a in self.warte if not ((a.prio == HINWEIS and a.schluessel != "kern:INFO_FLASH")
+                                                        or a.schluessel.startswith(BEIWERK))]
             if not kandidaten:
                 return None
         # bei gleichem Vorrang geht eine Gefahr vor (Pruefpartie 2, 19:39: "Du hast 5900 Gold ... recall" verdraengte
         # "Du stehst tief, Varus und Rakan seit 32 s weg" - 16 s vor dem Tod)
         # Auftrag 004, Teil A 2: ein Wendepunkt stellt sich vor alle wartenden PLAN-Saetze (er unterbricht nicht)
         a = max(kandidaten, key=lambda a: (a.prio, a.thema == "gefahr", a.thema == "wendepunkt", a.zeit))
-        frei = self.frei_ab + (RUHE_VOR_HINWEIS if a.prio == HINWEIS else 0.0)
+        frei = self.frei_ab + ((RUHE_VOR_FLASH if a.schluessel == "kern:INFO_FLASH" else RUHE_VOR_HINWEIS)
+                               if a.prio == HINWEIS else 0.0)
         # Live 26.09. 21:21: das Briefing (~50 s) hielt "Gragas hat Flash benutzt" 9 s und Vaynes Flash 16 s auf.
         # Laeuft etwas Unterbrechbares, darf eine wichtige Ansage es abbrechen.
         laeuft = self._laeuft

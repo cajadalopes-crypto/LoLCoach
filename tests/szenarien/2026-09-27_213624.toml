@@ -172,3 +172,13 @@ quelle = "Auftrag 007 (gefunden an der Wendepunkt-Probe): GEFAHR 'Raus zum Mid-T
 lage = "Riven nach dem Inhibitor, drei Gegner kommen; eine Rueckzugs-Episode von 15:31 galt noch, weil ein stiller Back-Plan sie offen hielt."
 muss_nennen_eins = ["Raus", "raus"]
 warum = "Nur ein Rueckzug haelt die Episode offen (Pruefung D) - eine neue Gefahr Minuten spaeter ist ein neuer Rueckzug."
+
+# --- Auftrag 007, Teil D (Kritik Runde 3) ---
+
+[[szenario]]
+id = "2357-kein-warte-nach-back"
+fenster = ["23:56", "24:00"]
+quelle = "Kritik R3: 'Inhibitor ist down: Warte hier, Drache spawnt in 34 Sekunden.' 1 s nach 'Mid-Welle rein, dann back'"
+lage = "Riven mit 3300 Gold auf der Mid-Lane, eben 'dann back' gesagt."
+darf_nicht_sagen = ["Warte hier"]
+warum = "Kein Warte-Satz gegen ein eben gesagtes Back."

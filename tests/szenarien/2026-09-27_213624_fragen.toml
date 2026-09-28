@@ -770,3 +770,17 @@ absicht = "WARUM"
 ohne_claude = true
 darf_nicht_sagen = ["dort ist keiner von euch"]
 warum = "Eine Zaehlung fuer 'ihr seid X' (wer in kampf_fenster_s dort sein kann); wer schon dort steht, sagt der Satz ausdruecklich."
+
+# --- Auftrag 007, Teil D (Kritik Runde 3) ---
+
+[[szenario]]
+id = "1038-schon-gekauft"
+zeit = "10:38"
+frage = "Okay, habe ich und was jetzt?"
+quelle = "Kritik R1-R3: 'Kauf Spitzhacke, dann zur Top-Welle ...' - Carlos hatte schon gekauft (1059 -> 389 Gold)"
+lage = "Riven in der Basis, der Kauf ist erledigt."
+kern_frage = true
+absicht = "JETZT"
+ohne_claude = true
+darf_nicht_sagen = ["Kauf Spitzhacke"]
+warum = "Ist der Kauf erledigt, nennt die Antwort nur noch das Ziel danach."

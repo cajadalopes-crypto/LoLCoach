@@ -262,3 +262,13 @@ quelle = "Kritik R1/R2, Einzelfall: 37:15 'zu deinem Team', 37:35 'Dann Baron.',
 lage = "Ein Basis-Aufenthalt, drei Ziele."
 darf_nicht_sagen = ["Dann Baron", "Dann Top-Welle"]
 warum = "Ein Ziel je Basis-Aufenthalt (Auftrag 007)."
+
+# --- Auftrag 007, Teil D (Kritik Runde 3) ---
+
+[[szenario]]
+id = "1341-kein-warte-hier"
+fenster = ["13:39", "13:45"]
+quelle = "Kritik R3: 'Drache weg. Warte hier, Herold spawnt in 79 Sekunden.' - 79 s Leerlauf auf der Mid-Lane"
+lage = "Riven auf der Mid-Lane, die Top-Kanone kommt 13:57."
+darf_nicht_sagen = ["Warte hier"]
+warum = "Ein Halte-Plan sagt am Wendepunkt kein Warten auf ein Ereignis."

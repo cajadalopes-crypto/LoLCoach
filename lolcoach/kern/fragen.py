@@ -131,6 +131,11 @@ def _sagbar(kern) -> list[Handlung]:
 def _jetzt(kern) -> Handlung | None:
     """Der Plan - oder, wenn er nur Halten ist oder am ungeeichten Modell haengt, die beste sagbare Handlung."""
     p = kern.fuehrer.plan
+    if p is not None and p.handlung.art == "KAUFEN" and kern.m is not None:
+        # Auftrag 007, Teil D (213624 10:38: "Kauf Spitzhacke ..." nach dem Kauf): erledigt - dann das Ziel danach
+        from .modi.basis import _gekauft
+        if (p.schritt >= 1 or _gekauft(kern.m, p)) and p.handlung.daten.get("wohin") is not None:
+            return p.handlung.daten["wohin"]
     if p is not None and not fuehren.stumm(p.handlung) and (p.handlung.satz or fuehren.stumm_satz(p.handlung)):
         return p.handlung
     sagbar = _sagbar(kern)

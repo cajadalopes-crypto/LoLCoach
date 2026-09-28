@@ -250,6 +250,7 @@ class Kern:
             for g in m.b.gegner:
                 if g.s.tot:
                     zt[g.champion] = m.zeit
+            self._respawn_orte(m, zt)
         self._fuehren_vorher(m, modus)             # Buch 11: Zeitleiste, Wendepunkte, neue Informationen
         self._schutz_episode(m)
         if m.b is not None and not m.tot:
@@ -658,9 +659,22 @@ class Kern:
         im Fenster, gilt Buch 5, 8 streng: der hoechste Rang zuerst (42:09)."""
         from .merkmale import OBJ_GRUBE
         from .modi import karte
+        tz = self._turmziel
+        if tz is not None and ((tz["fenster"] and karte.umwandeln(m, self.cfg) is None) or m.zeit - tz["zeit"] > 120.0):
+            self._turmziel = None   # das Fenster ist zu oder das Ziel alt (102112 36:32: ein Nexus-Turm von 33:02 hielt noch)
         turm = [h for h in kand if h.art in TURM_ARTEN and h.ziel is not None]
         if not turm:
             return kand
+        # Teil D (Kritik Runde 3): ein eben gesagtes Objective-Ziel (<= 60 s; es lebt oder spawnt in <= 45 s) wechselt
+        # ohne Wendepunkt nicht zu einem Turm (164326 35:34: "Mid-Inhibitor-Turm jetzt" 28 s nach "zum Drachen")
+        obj_label = {"drachen": "drache", "baron": "baron", "herold": "herold", "larven": "larven",
+                     "ältesten": "aeltester"}
+        vor = next((e for e in reversed(getattr(self, "_ansage_log", None) or [])
+                    if m.zeit - e["zeit"] <= 60.0 and e.get("ziel") in obj_label), None)
+        if vor is not None and self._wp_ereignis_t < vor["zeit"]:
+            o = next((x for x in m.objectives if x.schl == obj_label[vor["ziel"]]), None)
+            if o is not None and (o.lebt or o.spawn_in <= 45.0):
+                return [h for h in kand if h not in turm]
         if (m.bereich or "").startswith("grube:"):
             o = next((x for x in m.objectives if x.lebt and m.bereich == f"grube:{OBJ_GRUBE.get(x.schl, x.schl)}"),
                      None)
@@ -711,6 +725,8 @@ class Kern:
                 from .fuehren import halten_satz          # Auftrag 007, A 1: am Wendepunkt immer ein Satz
                 text = (farmen_satz(h, m, self.zeitleiste, self.danach_text, self.cfg) if h.art == "FARMEN"
                         else halten_satz(m, self.zeitleiste, self.danach_text, self.cfg))
+                if self._back_rufe and m.zeit - self._back_rufe[-1] <= 30.0 and self._back_recall < self._back_rufe[-1]:
+                    text = ""   # Teil D: kein Farm-Satz gegen ein eben gesagtes Back (164326 16:28, 213624 23:57)
             if h.art == "ANNEHMEN":
                 # Buch 7, 4: hoechstens einmal je Gegner und annehmen_wiederholen_s
                 g = h.daten.get("kampf_mit")
@@ -967,6 +983,23 @@ class Kern:
                 return False       # Buch 6, 14.4: zieht das Objective beim Sprechen nicht mehr, faellt der Satz weg
             return q is p and q.schritt == schritt
         return pruefe
+
+    def _respawn_orte(self, m: Merkmale, zt: dict) -> None:
+        """Auftrag 007, Teil D (Kritik Runde 3, gefaehrlich): wer eben wiederbelebt ist und seitdem nicht gesehen wurde,
+        steht an seinem Brunnen - nicht "vor 70 s gesehen, Ort unbekannt" (173159 35:09: "Nexus-Turm jetzt", Kai'Sa und
+        Cho'Gath standen 35:06/35:07 daneben auf, Tod 35:21)."""
+        from ..bewertung import BRUNNEN, abstand
+        for g in m.b.gegner:
+            t = zt.get(g.champion)
+            if g.s.tot or t is None or g.sichtbar:
+                continue
+            seit = m.zeit - t
+            if seit > 25.0 or (g.seit is not None and g.seit <= seit) or g.s.team not in BRUNNEN:
+                continue
+            g.pos, g.seit = BRUNNEN[g.s.team], seit
+            if m.pos is not None:
+                g.abstand = abstand(g.pos, m.pos)
+                g.ankunft = max(0.0, g.abstand * 1.15 / (g.tempo or 350.0) - seit)
 
     def _korrekturen_anwenden(self, m: Merkmale) -> None:
         """Buch 11, 5.6 (Auftrag 004, Teil C 2): Carlos' Aussagen ueberschreiben das Merkmal korrektur_gilt_s lang -
