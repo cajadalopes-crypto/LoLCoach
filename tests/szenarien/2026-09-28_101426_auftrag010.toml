@@ -1,0 +1,96 @@
+# Auftrag 010: Plan nach dem Wendepunkt - die Leerlauf-Stichproben aus Auftrag 009 (messungen.md, "Auftrag 009", 5).
+# Carlos' Testpartie 101426, Riven Mid gegen Aurora. Gegner: Sett, Viego, Aurora, Twitch, Bard.
+# Jedes Szenario war auf 064a6b4 (Stand nach Auftrag 009) rot, ausser den Waechtern (steht dabei).
+
+aufnahme = "2026-09-28_101426"
+spielmodus = "CLASSIC"
+
+# --- 1. Plan nach dem Wendepunkt: die sechs Leerlauf-Faelle -------------------------------------------------------
+
+[[szenario]]
+id = "1400-mid-welle-statt-halten"
+zeit = "14:00"
+fenster = [["14:01", "14:39"]]
+lage = "Leerlauf 1: Riven auf ihrer Mid-Lane, 97 %, deine Mid-Welle laeuft zu Aurora (2-3 : 0), Herold in 40-50 s; Plan HALTEN."
+satz_mit = [["Mid-Welle"], ["Drück", "drück", "rein"]]
+warum = "Auftrag 010, 1: 'Drück die Mid-Welle in ihren Turm' statt Halten (Challenger: Welle rein, dann Herold)."
+
+[[szenario]]
+id = "1736-sett-tot-ziel"
+zeit = "17:36"
+fenster = [["17:44", "18:23"]]
+lage = "Leerlauf 3: aus der Basis in euren oberen Jungle, 100 %; Sett 36 s tot, deine Top-Welle laeuft zu ihnen (5 : 0); Plan HALTEN."
+kategorie_min = { "PLAN|WENDEPUNKT|FENSTER" = 1 }
+warum = "Auftrag 010, 1: Sett ist tot - ein Wellen-Ziel (Challenger: Top-Seitenwelle)."
+
+[[szenario]]
+id = "2440-bard-tot-ziel"
+zeit = "24:40"
+fenster = [["24:40", "25:30"]]
+lage = "Leerlauf 7: in ihrem oberen Jungle, 99 %; Bard tot, Top-Welle 3 : 0 zu ihnen; 24:25 'Geh zu deinem Team'; Plan HALTEN 50 s."
+kategorie_min = { "PLAN|WENDEPUNKT|FENSTER" = 1 }
+warum = "Auftrag 010, 1: 50 s ohne Ziel - Welle oder Team."
+
+[[szenario]]
+id = "3338-drache-drin-ziel"
+zeit = "33:38"
+fenster = [["33:38", "34:11"]]
+lage = "Leerlauf 10: ihr unterer Jungle, 87 %; Twitch und Bard tot, der Drache ist drin; Plan HALTEN."
+kategorie_min = { "PLAN|WENDEPUNKT|FENSTER" = 1 }
+warum = "Auftrag 010, 1: Drache drin, zwei tot - ein Ziel (Challenger: mit allen auf ihren Mid-Inhibitor-Turm)."
+
+# Gegenbeispiele (Waechter, auf 064a6b4 gruen): ein Rueckzug oder Back-Ruf gilt noch - Stille ist richtig
+[[szenario]]
+id = "2230-rueckzug-gilt-still"
+zeit = "22:30"
+fenster = [["22:30", "22:38"]]
+lage = "Leerlauf 5: 22:26 'Zurueck unter deinen inneren Mid-Turm: zwei kommen.'"
+kategorie_max = { "PLAN|WENDEPUNKT|FENSTER" = 0 }
+warum = "Auftrag 010, 1: der Rueckzug gilt - kein neues Ziel."
+
+[[szenario]]
+id = "2302-back-gilt-still"
+zeit = "23:02"
+fenster = [["23:02", "23:18"]]
+lage = "Leerlauf 6: 22:52 'Back jetzt, 900 Gold fuer Spitzhacke', Riven noch auf der Bot-Lane."
+kategorie_max = { "PLAN|WENDEPUNKT|FENSTER" = 0 }
+warum = "Auftrag 010, 1: der Back-Ruf gilt - kein neues Ziel."
+
+[[szenario]]
+id = "2809-back-gilt-still"
+zeit = "28:09"
+fenster = [["28:09", "28:15"]]
+lage = "Leerlauf 8: 27:59 'Back jetzt, 15 Prozent Leben'."
+kategorie_max = { "PLAN|WENDEPUNKT|FENSTER" = 0 }
+warum = "Auftrag 010, 1: der Back-Ruf gilt - kein neues Ziel."
+
+# --- 2. Info ohne Folgen ------------------------------------------------------------------------------------------
+
+[[szenario]]
+id = "gut-raus-nicht-allein"
+zeit = "0:00"
+fenster = [["0:00", "36:00"]]
+lage = "Kritik 009: 'Gut raus.' (9:13, 22:39) allein - Info ohne Folgen."
+text_max = { "^(Gut raus|Sauber umgewandelt)\\.$" = 0 }
+warum = "Auftrag 010, 2: eine Bestaetigung nur zusammen mit der naechsten Handlung."
+
+[[szenario]]
+id = "1037-flash-ohne-ort"
+zeit = "10:37"
+# Bis 10:38,8 kennt der Kern weder Rivens noch Auroras Ort (die Minimap verliert Riven); ab 10:38,9 steht Aurora
+# sichtbar 1190 vor Riven - dann ist der Flash-Satz richtig (Aurora ist nah, Riven kann draufgehen).
+fenster = [["10:33", "10:38.8"]]
+lage = "Kritik 009: 'Aurora ohne Flash.' um 10:37 - ohne bekannten Ort, keine Folge."
+darf_nicht_sagen = ["Aurora ohne Flash"]
+warum = "Auftrag 010, 2: ein Flash ungefragt nur, wenn der Gegner nah ist (sonst Lagebild und Dashboard)."
+
+# --- 3. Rueckzug auf eine andere Lane -----------------------------------------------------------------------------
+
+[[szenario]]
+id = "2335-von-der-bot-lane"
+zeit = "23:35"
+fenster = [["23:35", "23:38"]]
+lage = "Riven auf der Bot-Lane, der schnellste sichere Ort ist dein innerer Mid-Turm; Twitch in 685, Bard ungesehen."
+satz_mit = [["Von der Bot-Lane"], ["Mid-Turm"]]
+darf_nicht_sagen = ["Zurück unter deinen inneren Mid-Turm"]
+warum = "Auftrag 010, 3 (Kritik 009: falsch): 'Von der Bot-Lane zurück zu deinem inneren Mid-Turm: zwei kommen.'"

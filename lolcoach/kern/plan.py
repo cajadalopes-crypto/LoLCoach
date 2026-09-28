@@ -137,11 +137,16 @@ class PlanFuehrer:
         if beste.art != p.als():
             diff = beste.ev - p.handlung.ev
             schwelle = max(self.c["hysterese_ge"], self.c["hysterese_anteil"] * abs(p.handlung.ev))
+            # Auftrag 010, 1: HALTEN ist kein gesagter Plan - gegen ein Makro-Ziel schuetzt es nichts (101426 24:45: die
+            # Mid-Welle war 64 GE besser, die Hysterese von 150 hielt das Stehenbleiben)
+            makro = p.art == "HALTEN" and beste.daten.get("makro")
+            if makro:
+                schwelle = 1.0
             if diff >= schwelle:
                 if self._besser is None or self._besser[0] != beste.art:
                     self._besser = (beste.art, zeit)
                 # halten_s schuetzt eine Wahl - nicht einen Plan, der nur kam, weil sein Vorgaenger fehlte (G3)
-                gehalten_s = 0.0 if self._erzwungen else self.c["halten_s"]
+                gehalten_s = 0.0 if self._erzwungen or makro else self.c["halten_s"]
                 stabil_s = self.c["stabil_s"]
                 if self.wendepunkt and (p.handlung.stumm or p.handlung.daten.get("modell_stumm")):
                     # Auftrag 004, Teil A 2: am offenen Wendepunkt schuetzt nichts einen stummen Plan - er wurde nie

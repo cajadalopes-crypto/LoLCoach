@@ -4,6 +4,125 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 010 – Plan nach dem Wendepunkt (28.09.2026)
+
+Grundlage: `buecher/auftraege/010_auftrag.md`. Offline gemessen, der Coach wurde nicht gestartet. Alle neun Protokolle
+sind neu erzeugt (101426 und 213624 mit `--fragen`).
+
+### 1. Plan nach dem Wendepunkt
+
+**Befund vorher.** In den Leerlauf-Stichproben aus 009 bot der Kern in UNTERWEGS/GRUPPE fast nur HALTEN und ZURUECK an.
+Die Lane-Handlungen (Welle, Back) entstehen dort nur ohne nahes Objective. Türme hängen oft am Kampfmodell (stumm, „X
+kommt vorher“).
+
+**Gebaut:**
+
+- **`karte.welle_druecken` (neue Art WELLE_DRUECKEN):**
+  - Wann: nach der Lane-Phase eine Welle, die zu ihnen läuft (≥ 3 eigene Vasallen, mehr als ihre), höchstens 25 s weg.
+  - Satz: „Drück die Mid-Welle: 4 gegen 1 Vasallen.“ oder „…: Sett ist 36 Sekunden tot.“ (≤ 8 Wörter).
+  - Gewinn: was du dabei farmst (wie FARMEN), dazu der Druck auf ihre Lane. Das Risiko zählt über 15 s wie bei
+    SEITENWELLE.
+  - Einordnung: „vor“, R1-Schranke, nach einer Warnung 20 s gesperrt, Ruf nach vorn für den Todesrückblick (R9).
+- **`Kern._makro_ziele` (am Ende der Kandidaten):**
+  - Auslöser: Bliebe in UNTERWEGS, GRUPPE, SEITE oder OBJECTIVE nur HALTEN, sucht der Kern einmal ein Wellen-Ziel.
+  - Die Welle der Lane, auf der du stehst, geht vor; 45 s lang bleibt es dieselbe Lane.
+  - Still bleibt der Kern, solange etwas anderes noch gilt:
+    - eine Warnung (≤ 20 s),
+    - ein Rückzug oder Back-Ruf (≤ 30 s),
+    - ein Turm- oder Objective-Ruf (≤ 60 s, bis zum nächsten Wendepunkt).
+- **Bewertung (Abweichung vom Wortlaut „positiver EV“):** Das Ziel muss mehr EV haben als HALTEN. Positiv im absoluten
+  Sinn ist dort fast nichts, denn auch HALTEN hat −150 bis −1200 durch das Risiko am Ort. Die längere Dauer kostet dabei
+  keinen Zeitwert, denn die Alternative ist Stehenbleiben. Ohne das verlor jede Welle nur am Zeitwert: 300 GE über 33 s
+  gegen 10 s Halten.
+- **Plan-Wechsel:** HALTEN schützt gegen ein Makro-Ziel keine Hysterese (101426 24:45: 64 GE besser, Schwelle 150).
+- **Back nach einem gewonnenen Kampf:** Er fällt erst weg, wenn ein Umwandel-Ziel sprechbar ist (`zuerst_filtern`).
+  Vorher strich ein stummer Turm auch den Back (101426 17:09).
+
+**Die zehn Stichproben aus 009** (`2026-09-28_101426_auftrag010.toml`; auf `064a6b4` rot, außer den Wächtern):
+
+| # | Fenster | jetzt | Szenario |
+|---|---|---|---|
+| 1 | 14:00–14:39 | 14:13 „Drück die Mid-Welle: ihre Vasallen sind weg.“, 14:34 „Zu Urgot und Kayn zum Baron …“ | grün |
+| 2 | 17:03–17:15 | still: Turm stumm (Bard kommt vorher), Back gesperrt (R4: 3 Back-Rufe in 10 min), keine Welle ≥ 3 | offen |
+| 3 | 17:36–18:23 | 17:55 „Aus der Basis: Drück die Mid-Welle, ihre Vasallen sind weg.“ | grün |
+| 5 | 22:30–22:38 | still (der Rückzug gilt) | Wächter grün |
+| 6 | 23:02–23:18 | still (der Back-Ruf gilt) | Wächter grün |
+| 7 | 24:40–25:30 | 24:43 „Drück die Mid-Welle: 4 gegen 1 Vasallen.“ | grün |
+| 8 | 28:09–28:15 | still (der Back-Ruf gilt) | Wächter grün |
+| 9 | 30:21–30:53 | still: 46 % und 900 Gold sind kein Back-Grund, die Mid-Welle läuft zu dir | offen |
+| 10 | 33:38–34:11 | 33:47 „Drache drin: Drück die Mid-Welle, 4 gegen 2 Vasallen.“ | grün |
+
+Die zwei offenen Fälle stehen in `tests/szenarien/offen/2026-09-28_101426_leerlauf.toml` (mit Grund). Fall 4 (21:08,
+FARMEN als stummer Grundplan) ist kein HALTEN-Fall und blieb, wie er war.
+
+**Leerlauf ab 14:00** (`kennzahlen.py --nur-kern`; vorher auf `064a6b4` im Worktree gemessen):
+
+| Partie | vorher | jetzt | Widersprüche vorher → jetzt | ungefragt je 30 min vorher → jetzt |
+|---|---|---|---|---|
+| 101426 | 59 % | **51 %** | 1 → 2 | 68 → 77 |
+| 102112 | 32 % | 33 % | 0 → 1 | 76 → 83 |
+| 133930 | 62 % | **44 %** | 1 → 3 | 74 → 87 |
+| 164326 | 51 % | **44 %** | 2 → 2 | 74 → 79 |
+| 173159 | 51 % | 52 % | 1 → 2 | 69 → 72 |
+| 213624 | 31 % | 31 % | 0 → 0 | 79 → 83 |
+
+(140253, 144655, 145702 haben keine Zeit nach 14:00.)
+
+- **Wo es nicht besser wird (101426, Gründe je Takt mit `k010_warum3.py`):**
+  - Am häufigsten ist ein anderer Plan als HALTEN aktiv, der nicht gesagt ist. FARMEN auf der Seite ist 120 s in
+    101426, 80–220 s in den anderen – ein stummer Grundplan, kein HALTEN.
+  - Danach kommt „EV schlechter oder Schranke“: Die Welle liegt in Gefahr (`p_tod` ≥ 0,3) oder das Risiko dort ist
+    deutlich höher als am Ort.
+  - Dann „keine Welle zum Drücken“.
+- **173159** bleibt: 382 Takte hält ein Turm- oder Objective-Ruf von vorher still (die neue Regel gegen Lückenfüller),
+  dazu 210 Takte nach Warnungen.
+- **Zwischenstände, verworfen:**
+  - Ohne die Sperre nach Turm- oder Objective-Rufen und ohne die 45-s-Lane lag der Leerlauf tiefer (101426 42 %,
+    164326 40 %, 133930 36 %).
+  - Dafür kamen doppelt so viele Widersprüche (164326: 8), z. B. „Drück die Bot-Welle“ und 33 s später „Drück die
+    Top-Welle“.
+  - In 164326 39:30 hieß es „Drück die Top-Welle“ 15 s nach „Baron bestreiten“.
+- **Menge:** Die Welle wird 12–15-mal je Partie gesagt (101426: 15 in 22 min nach 14:00).
+
+### 2. Info ohne Folgen
+
+- **Bestätigungen („Gut raus.“, „Sauber umgewandelt.“, „Guter TP.“):** Sie werden nicht mehr allein gesagt, sondern
+  vor den nächsten Plan-Satz in ≤ 20 s gestellt, z. B. „Gut raus. Dann zur Top-Welle: dein Team ist in der Mitte.“ Kommt
+  keiner, fällt die Bestätigung weg; das Review hat sie. In den neun Protokollen gibt es 6 solche Paare und keine allein.
+- **Flash-Meldung:** Sie kommt ungefragt nur für einen Gegner ≤ 5000 von dir, der in den letzten 20 s gesehen wurde.
+  Die anderen warten, bis sie nah sind, und stehen im Lagebild und im Dashboard.
+  - 101426 10:37 „Aurora ohne Flash.“ ohne bekannten Ort kommt jetzt 10:38, als Aurora sichtbar 1190 vor Riven steht.
+  - 213624 4:55 „Sona ohne Flash.“ (Sona unten, Riven oben) kommt nicht mehr; Szenario `0455-…` angepasst.
+- **Szenarien und Tests:** `gut-raus-nicht-allein` und `1037-flash-ohne-ort` rot → grün. Unit-Test
+  `info_flash_kurz_und_gebuendelt` erweitert (war rot).
+
+### 3. Rückzug auf eine andere Lane
+
+„Von der Bot-Lane zurück zu deinem inneren Mid-Turm: zwei kommen.“ (101426 23:35). Die Form hat 10 Wörter.
+`s23-gefahr-hoechstens-8` (213624) nimmt sie aus (`woerter_ausnahme`). Szenario `2335-von-der-bot-lane` rot → grün.
+
+### 4. Wackelnde Einschätzung (102112 25:22)
+
+Rivens Anteil am Objective ist das Mittel der letzten 1,5 s (`objective.glaetten`, im Objective-Gedächtnis). Für
+102112 25:22 heißt das: 0,14 → 0,57 statt 1,0. Unit-Test `anteil_geglaettet` (war rot). Die Wahl um 25:22 ändert das
+nicht: Der Turm ist gesagt, bevor der zweite Wert kommt, und `2522-…` bleibt rot wie in 009.
+
+### 5. Nur notiert
+
+41 % nach schnellem Lebensverlust (101426 29:36): Zeile in `OFFEN.md`.
+
+### Prüfungen
+
+- **Szenarien 236 / 242**, 3 übersprungen.
+  - Rot sind nur die bekannten Fälle: 3× Wendepunkt-Probe (18 späte Sätze, in 009: 24), 0944, `2522-…` und
+    `a1-warnungen-je-30min` (Entscheidungen aus 009).
+  - Neu: `2026-09-28_101426_auftrag010.toml` (10 Szenarien), dazu 2 offene Fälle in `offen/`.
+- `tests/alle.py` **10 / 10**, konstruierte Lagen **40 / 40**.
+- **Suche Vorwärts bei < 40 % / `p_tod` ≥ 0,3** (009, `k009_vor_suche.py`): 0.
+- **Warnungen je 30 min:** wie in 009 (101426 15,0, 164326 11,9, 173159 11,0).
+
+---
+
 ## Auftrag 009 – Letzte Sperren vor Testpartie 2 (28.09.2026)
 
 Grundlage: `buecher/auftraege/009_auftrag.md`. Offline gemessen, der Coach wurde nicht gestartet. Alle neun Protokolle

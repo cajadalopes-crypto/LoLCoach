@@ -332,6 +332,13 @@ def zurueck_saetze(h: Handlung, m=None, bleiben: Handlung | None = None) -> None
     # 101426 32:07: "Raus zum Turm ist schwammig - zu meinem Tier 1?")
     from ..sprache import an, unter
     raus = f"Zurück {unter(ort)}"
+    # Auftrag 010, 3 (101426 23:35, Kritik 009: "Zurueck unter deinen inneren Mid-Turm" auf der Bot-Lane las sich wie
+    # ein Fehler): liegt der sichere Ort an einer anderen Lane, nennt der Satz den Ausgangspunkt
+    import re as _re
+    hier = getattr(m, "lane_hier", None) if m is not None else None
+    ziel_lane = _re.search(r"\b(Top|Mid|Bot)-", ort)
+    if hier and ziel_lane and ziel_lane.group(1) != hier:
+        raus = f"Von der {hier}-Lane zurück zu {ort}"
     leben = m.leben if m is not None else None
     if wer:
         h.grund = f"{liste(wer[:3])} {'kommt' if len(wer) == 1 else 'kommen'}"

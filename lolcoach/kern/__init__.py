@@ -28,16 +28,20 @@ from .modus import Modus, bereich_worte
 ZIEL_ARTEN = ("DRUECKEN", "MIT_GRUPPE", "SEITENWELLE", "ZUR_GRUPPE")
 # Pruefung E4: nach einer GEFAHR-Ansage 20 s nichts, was nach vorn geht, ausser die Gefahr ist sichtbar vorbei
 VORWAERTS = frozenset(("TRADE", "ALL_IN", "PLATTEN", "DRUECKEN", "MIT_GRUPPE", "STAPELN", "WELLE_REIN_UND_BACK",
-                       "VORBEREITEN_OBJECTIVE"))
+                       "VORBEREITEN_OBJECTIVE", "WELLE_DRUECKEN"))
+# Auftrag 010, 1: in diesen Modi sucht der Kern ein Makro-Ziel, wenn sonst nur HALTEN bliebe
+MAKRO_MODI = frozenset(("UNTERWEGS", "GRUPPE", "SEITE", "OBJECTIVE"))
+VORSATZ_S = 20.0           # Auftrag 010, 2: so lange wartet eine Bestaetigung auf den naechsten Plan-Satz
 NACH_GEFAHR_S = 20.0
 GUT_RAUS_S = 10.0          # G4: so lange nach dem Rueckzug-Satz wird "Gut raus" beurteilt ...
 GUT_RAUS_VERLUST = 0.20    # ... und dein Leben darf darin nicht um so viel fallen
 WELLEN_ARTEN = frozenset(("FARMEN", "WELLE_REIN_UND_BACK", "STAPELN", "WELLE_HALTEN", "PLATTEN", "UNTER_TURM_FARMEN",
-                          "VORBEREITEN_OBJECTIVE"))
+                          "VORBEREITEN_OBJECTIVE", "WELLE_DRUECKEN"))
 RUECKZUG_EPISODE_S = 15.0
 # Qualitaetsrunde 3, R1: Vorwaerts-Handlungen - unter vor_leben_min kein Kandidat, mit p_tod >= vor_p_tod_max nie gesagt
 VOR_SCHRANKE = frozenset(("DRUECKEN", "MIT_GRUPPE", "NEHMEN", "BESTREITEN", "ZUR_GRUPPE", "TP_SPIEL", "PLATTEN",
-                          "SEITENWELLE", "WELLE_KLAEREN", "VORBEREITEN_OBJECTIVE", "ANNEHMEN", "TRADE", "ALL_IN"))
+                          "SEITENWELLE", "WELLE_KLAEREN", "VORBEREITEN_OBJECTIVE", "ANNEHMEN", "TRADE", "ALL_IN",
+                          "WELLE_DRUECKEN"))
 # Auftrag 009, 1 (101426 2:35: "Trade Aurora: dein Combo macht etwa 400" bei 15 % Leben, 2:43 tot): TRADE und ALL_IN
 # haengen am Lane-Duell (Buch 2, zurueckgestellt) - berechnet, protokolliert, stumm
 BUCH2_STUMM = frozenset(("TRADE", "ALL_IN"))
@@ -55,7 +59,7 @@ UEBERLEGEN_ARTEN = frozenset(("DRUECKEN", "MIT_GRUPPE", "NEHMEN", "BESTREITEN", 
 BACK_RUF = re.compile(r"\bback\b", re.I)     # R4: ein Back-Ruf (Back jetzt, Jetzt back, ... dann back)
 VORWAERTS_RUF = frozenset(("DRUECKEN", "MIT_GRUPPE", "NEHMEN", "BESTREITEN", "ZUR_GRUPPE", "TP_SPIEL", "ANNEHMEN",
                            "VORBEREITEN_OBJECTIVE", "PLATTEN", "SEITENWELLE", "WELLE_KLAEREN", "REIN", "DREHEN",
-                           "TRADE", "ALL_IN"))       # R9: ein Ruf nach vorn vor einem Tod   # Pruefung D: so lange nach dem letzten ZURUECK-Plan gilt es als derselbe Rueckzug
+                           "TRADE", "ALL_IN", "WELLE_DRUECKEN"))       # R9: ein Ruf nach vorn vor einem Tod   # Pruefung D: so lange nach dem letzten ZURUECK-Plan gilt es als derselbe Rueckzug
 
 KERN_MODI_3 = ("LANE", "BASIS", "TOT")
 KERN_MODI_4 = KERN_MODI_3 + ("SEITE", "GRUPPE", "UNTERWEGS", "VERTEIDIGEN")     # Schritt 4 (Buch 5)
@@ -186,6 +190,7 @@ class Kern:
         self._lagebild_zuletzt = -1e9             # Auftrag 008, A4: das letzte ungefragte Lagebild
         self._stand: tuple | None = None          # Auftrag 009, 2.3: (seit, Ort) - du stehst still (Recall-Kanal)
         self._ohne_ort_seit: float | None = None  # Auftrag 009: seit wann die Minimap dich verloren hat
+        self._vorsatz: tuple[float, str] | None = None  # Auftrag 010, 2: Bestaetigung vor dem naechsten Plan-Satz
         self._gold_verlauf: deque = deque()        # (Zeit, Gold) - dein Einkommen fuer den Back-Bedarf
         self._flash_offen: dict = {}
         self._flash_gemeldet: set = set()
@@ -549,21 +554,33 @@ class Kern:
         if not self._flash_offen or m.zeit - self._kampf_zuletzt < c["nach_kampf_s"] \
                 or m.zeit - self._flash_zuletzt < c["abstand_s"]:
             return None
+        # Auftrag 010, 2 (Kritik 009: "Aurora ohne Flash." ohne Ort ist Info ohne Folgen): ungefragt nur fuer einen
+        # Gegner, der nah ist und eben gesehen wurde - die anderen warten (bis sie nah sind) und stehen im Lagebild
+        nah = {k: t for k, t in self._flash_offen.items() if self._flash_nah(m, t.name, c)}
+        if not nah:
+            return None
         from .modi import liste
-        namen = list(dict.fromkeys(t.champion for t in sorted(self._flash_offen.values(), key=lambda t: t.seit)))
+        namen = list(dict.fromkeys(t.champion for t in sorted(nah.values(), key=lambda t: t.seit)))
         text = f"{liste(namen)} ohne Flash."
         a = self.sprecher.ansage("INFO_FLASH", "INFO_FLASH", text, m.zeit, None, gesagt)
         if a is not None:
-            self._flash_gemeldet |= set(self._flash_offen)
+            self._flash_gemeldet |= set(nah)
             fb = getattr(self, "_flash_bis", None)
             if fb is None:
                 self._flash_bis = fb = {}
-            for t in self._flash_offen.values():
+            for t in nah.values():
                 fb[t.name] = max(fb.get(t.name, 0.0), t.zurueck)
-            self._flash_offen = {}
+            self._flash_offen = {k: t for k, t in self._flash_offen.items() if k not in nah}
             self._flash_zuletzt = m.zeit
             self._gesprochen(a, "INFO_FLASH", m)
         return a
+
+    @staticmethod
+    def _flash_nah(m: Merkmale, name: str, c: dict) -> bool:
+        """Auftrag 010, 2: der Gegner ist nah (<= nah_abstand) und vor <= nah_seit_s gesehen."""
+        g = next((x for x in (m.b.gegner if m.b is not None else []) if x.s.name == name), None)
+        return g is not None and not g.s.tot and g.abstand is not None and g.abstand <= c["nah_abstand"] \
+            and (g.sichtbar or (g.seit is not None and g.seit <= c["nah_seit_s"]))
 
     def _vorsicht(self, m: Merkmale, modus: str | None, gesagt: list):
         """Auftrag 008, A1: ungesehene Gefahr (Jungler, MIA) ist kein "Raus" mehr - hoechstens ein Vorsicht-Satz je
@@ -818,7 +835,57 @@ class Kern:
             # Kampf, weil er als Plan Kandidat blieb, und schlug mit seinem Back-Wert den freien Drachen)
             kand = [h for h in kand if not h.daten.get("nur_bei_gefahr")]
         kand = [h for h in kand if not (h.daten.get("klein") and h.p_tod >= cfg["gefahr"]["p_min"])]
+        if not gefahr and modus in MAKRO_MODI:
+            kand += self._makro_ziele(m, modus, kand, tk)          # Auftrag 010, 1
         return kand, gefahr
+
+    def _makro_ziele(self, m: Merkmale, modus: str, kand: list, tk: float) -> list:
+        """Auftrag 010, 1 (Leerlauf 009: in 6 von 10 Stichproben nach einem Wendepunkt nur HALTEN): bliebe sonst nur
+        HALTEN, sucht der Kern einmal ein Makro-Ziel, das sich schon berechnen laesst - eine Welle in ihren Turm
+        druecken (karte.welle_druecken). Es muss mehr EV haben als HALTEN; ein eben gesagter Rueckzug oder Back-Ruf
+        (<= 30 s) und eine Gefahr-Ansage (<= NACH_GEFAHR_S) gelten weiter - dann bleibt es still."""
+        from .fuehren import BACK_ARTEN
+        from .modi import karte
+        halten = next((h for h in kand if h.art == "HALTEN"), None)
+        if halten is None or any(h.ev > halten.ev for h in kand if h is not halten) or m.b is None or m.tot \
+                or m.bereich == "basis_eigen":
+            return []
+        if self._gefahr_gesagt is not None and m.zeit - self._gefahr_gesagt[0] < NACH_GEFAHR_S:
+            return []
+        log = getattr(self, "_ansage_log", None) or []
+        if any(m.zeit - e["zeit"] <= 30.0 and (e["art"] in BACK_ARTEN or e["art"] in ("ZURUECK", "RAUS")
+                                               or BACK_RUF.search(e["text"]))
+               for e in log):
+            return []
+        # ein eben gesagtes Objective- oder Turmziel (<= 60 s) gilt bis zum naechsten Wendepunkt weiter - kein
+        # Lueckenfueller dagegen (wie Klasse 9; 164326 39:30: "Baron bestreiten", 15 s spaeter "Drueck die Top-Welle")
+        if any(m.zeit - e["zeit"] <= 60.0 and e["art"] in VOR_ARTEN and self._wp_ereignis_t < e["zeit"] for e in log):
+            return []
+        from . import wert
+        from .makro import teamplan_bonus
+        neu = karte.welle_druecken(m, self.cfg, modus)
+        plan = self.fuehrer.plan
+        if plan is not None and plan.art == "WELLE_DRUECKEN":
+            self._wd_lane = (m.zeit, plan.handlung.daten.get("lane"))
+        # die Welle der Lane, auf der du stehst, zuerst (101426 14:13: "Drueck die Top-Welle" auf der Mid-Lane)
+        hier = [h for h in neu if h.daten.get("lane") == m.lane_hier]
+        wd = getattr(self, "_wd_lane", None)
+        if hier:
+            neu = hier
+        elif wd is not None and m.zeit - wd[0] <= 45.0:
+            # eine Welle, bis sie drin ist - nicht alle paar Sekunden eine andere Lane (101426 33:44 Bot, 33:49 Mid;
+            # 164326 16:44 Bot, 17:17 Top): 45 s nach dem letzten Takt mit diesem Plan nur dieselbe Lane
+            neu = [h for h in neu if h.daten.get("lane") == wd[1]]
+        zw = wert.zeitwert(m.zeit, self.cfg)
+        for h in neu:
+            wert.bewerte(h, m, self.cfg, tk)
+            # bliebe sonst nur HALTEN, hat deine Zeit keinen anderen Wert: die laengere Dauer kostet nicht mehr als
+            # das Stehenbleiben (101426: 300 GE Welle ueber 33 s verloren gegen 10 s Halten nur am Zeitwert)
+            h.ev += max(0.0, h.dauer - halten.dauer) * zw + teamplan_bonus(h, self.makro.tp)
+        alt = self._schranke_takt
+        neu = self._schranken(m, neu, modus)                       # R1: nicht unter 40 % Leben, nicht mit p_tod >= 0,3
+        self._schranke_takt = (alt or []) + (self._schranke_takt or []) or None
+        return [h for h in neu if h.ev > halten.ev]
 
     def _back_vor_farmen(self, m: Merkmale, kand: list, modus: str | None = None, gefahr: bool = False) -> list:
         """Auftrag 007, Klasse 11: Gold >= naechster Kauf + back_vor_farmen_gold oder Leben < leben_back - dann ist Back
@@ -1119,6 +1186,10 @@ class Kern:
                     nach_dem_sprechen()
         # ein Wendepunkt bleibt wahr, auch wenn der Plan kurz wegfaellt - nur ein Kampf ueberholt ihn (Buch 11, 4;
         # 164326 5:49: der Satz wartete hinter einem langen und fiel weg, als der Plan eine Sekunde fehlte)
+        if kategorie in ("PLAN", "WENDEPUNKT", "FENSTER") and self._vorsatz is not None:
+            if m.zeit - self._vorsatz[0] <= VORSATZ_S and self.modus.aktuell != "KAMPF":
+                text = f"{self._vorsatz[1]} {text}"               # Auftrag 010, 2
+            self._vorsatz = None
         pruefe = (lambda: self.modus.aktuell != "KAMPF") if kategorie == "WENDEPUNKT" else self._pruefung(p)
         a = self.sprecher.ansage(kategorie, p.art, text, m.zeit, pruefe, gesagt,
                                  danach=merken if kategorie in ("PLAN", "FENSTER") else None)
@@ -1843,14 +1914,13 @@ class Kern:
             text, self._fokus_bestaetigt = "Kontroll-Auge gekauft - genau der Fokus.", True
         if text is None:
             return None
-        # G4: nie in KAMPF - auch nicht, wenn der Satz erst spaeter drankommt (133930 7:01)
-        a = self.sprecher.ansage("BESTAETIGUNG", "bestaetigung", text, zeit,
-                                 lambda: self.modus.aktuell != "KAMPF", gesagt)
-        if a is not None:
-            self.sprecher.bestaetigt_zuletzt = zeit
-            self.staerken.append((zeit, text))
-            self._gesprochen(a, "BESTAETIGUNG", m)
-        return a
+        # Auftrag 010, 2 (Kritik 009: "Gut raus." allein ist Info ohne Folgen): die Bestaetigung steht vor dem
+        # naechsten Plan-Satz ("Gut raus. Drück die Mid-Welle ..."); kommt in VORSATZ_S keiner, faellt sie weg (das
+        # Review hat sie in `staerken`)
+        self._vorsatz = (zeit, text)
+        self.sprecher.bestaetigt_zuletzt = zeit
+        self.staerken.append((zeit, text))
+        return None
 
     def _mitte_merken(self, m: Merkmale) -> None:
         """Buch 5, 9: solange einer dieser Plaene laeuft, merken, woran sein Ausgang zu erkennen ist."""

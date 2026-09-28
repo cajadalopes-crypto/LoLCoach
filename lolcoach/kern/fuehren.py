@@ -48,6 +48,8 @@ def kurz(h: Handlung | None) -> str:
         return OBJ_ZUM.get(o, o)
     if h.art == "ZUR_GRUPPE":
         return "zu deinem Team"
+    if h.art == "WELLE_DRUECKEN" and h.daten.get("lane"):
+        return f"die {h.daten['lane']}-Welle drücken"
     if h.art in ("SEITENWELLE", "WELLE_KLAEREN") and h.daten.get("lane"):
         return f"{h.daten['lane']}-Welle"
     from .sprache import dativ

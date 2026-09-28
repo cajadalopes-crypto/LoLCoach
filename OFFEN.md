@@ -17,6 +17,18 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 010 (Plan nach dem Wendepunkt) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 010"), Bericht in
+`010_bericht.md`.
+
+Offen aus Auftrag 010:
+- **41 % nach schnellem Lebensverlust** (101426 29:36 "Weiter auf ihren Nexus-Turm", knapp ueber der R1-Grenze 40 %):
+  die Grenze eventuell mit Sicherheitsabstand oder mit dem Lebenstrend statt dem Schnappschuss, sobald Buch 2/R1 noch
+  einmal angefasst wird (nah an der bekannten Verzoegerung der Leben-Zahl, 008).
+- **Zwei Leerlauf-Faelle ohne Ziel** (`tests/szenarien/offen/2026-09-28_101426_leerlauf.toml`): 17:03 (Turm stumm,
+  Back gesperrt, keine Welle), 30:21 (46 % und 900 Gold sind kein Back-Grund).
+- **WELLE_DRUECKEN kennt nur Wellen, die zu ihnen laufen** - eine Welle, die zu dir laeuft (ZU_DIR), ist weiter FARMEN
+  (stumm).
+
 **Auftrag 009 (letzte Sperren vor Testpartie 2) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 009"),
 Bericht und Fragen in `009_bericht.md`.
 

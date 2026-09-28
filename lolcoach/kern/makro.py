@@ -20,9 +20,9 @@ from __future__ import annotations
 
 from .sprache import kartenseite, gross
 
-NUTZT_FENSTER = {"PLATTEN", "DRUECKEN", "SEITENWELLE", "TRADE", "ALL_IN", "MIT_GRUPPE"}       # Buch 4, 5 (nicht Farmen)
+NUTZT_FENSTER = {"PLATTEN", "DRUECKEN", "SEITENWELLE", "TRADE", "ALL_IN", "MIT_GRUPPE", "WELLE_DRUECKEN"}       # Buch 4, 5 (nicht Farmen)
 VOR = {"DRUECKEN", "MIT_GRUPPE", "NEHMEN", "BESTREITEN", "PLATTEN", "ZUR_GRUPPE"}
-SEITE_AKTION = {"SEITENWELLE", "PLATTEN", "DRUECKEN", "FARMEN", "WELLE_KLAEREN"}
+SEITE_AKTION = {"SEITENWELLE", "PLATTEN", "DRUECKEN", "FARMEN", "WELLE_KLAEREN", "WELLE_DRUECKEN"}
 ZAHL = {3: "Drei", 4: "Vier", 5: "Alle fünf"}
 LEGENDAER = 2200          # Item-Gold ab dem ein Item als fertig zaehlt
 

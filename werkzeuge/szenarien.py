@@ -169,6 +169,8 @@ def neue_pruefungen(sz: dict, ansagen: list, stehend: tuple | None = None) -> li
         for a in ansagen:
             if sz.get("woerter_schluessel") and not a.schluessel.startswith(sz["woerter_schluessel"]):
                 continue
+            if sz.get("woerter_ausnahme") and re.search(sz["woerter_ausnahme"], a.text):
+                continue             # Auftrag 010: eine ausdruecklich laengere Form (Regex)
             n = len(a.text.split())
             # Auftrag 003 (Buch 11, 4): WENDEPUNKT, VORSCHAU und FENSTER duerfen 14 + 6 Woerter haben
             # Auftrag 008, A4: das Lagebild hat seine eigene Grenze (<= 16 Woerter) - es zaehlt zur langen
@@ -195,7 +197,8 @@ def neue_pruefungen(sz: dict, ansagen: list, stehend: tuple | None = None) -> li
                 break
     # Auftrag 008: mindestens n Kern-Saetze einer Kategorie (A4: das Lagebild kommt ungefragt)
     for kat, n in (sz.get("kategorie_min") or {}).items():
-        treffer = [a for a in ansagen if getattr(a, "_kategorie", None) == kat]
+        # Auftrag 010: mehrere Kategorien mit "|" ("PLAN|WENDEPUNKT|FENSTER" = ein Plan-Satz)
+        treffer = [a for a in ansagen if getattr(a, "_kategorie", None) in kat.split("|")]
         if len(treffer) < n:
             aus.append(f"kategorie_min {kat} {n} - {len(treffer)}")
     # Auftrag 008, A2: jeder Turm mit Besitzer, kein "Tier", kein Satz nur "Dann <Ort>."
@@ -206,7 +209,7 @@ def neue_pruefungen(sz: dict, ansagen: list, stehend: tuple | None = None) -> li
                 aus.append(f"sprache_konkret - {ns.uhr(ns.gesprochen_um(a))} {v}: \"{a.text[:80]}\"")
     # Qualitaetsrunde 3: hoechstens n Kern-Saetze einer Kategorie (R5: "hoechstens 2 GEFAHR-Saetze")
     for kat, n in (sz.get("kategorie_max") or {}).items():
-        treffer = [a for a in ansagen if getattr(a, "_kategorie", None) == kat]
+        treffer = [a for a in ansagen if getattr(a, "_kategorie", None) in kat.split("|")]
         if len(treffer) > n:
             aus.append(f"kategorie_max {kat} {n} - {len(treffer)}: "
                        + " / ".join(f"{ns.uhr(ns.gesprochen_um(a))} {a.text[:40]}" for a in treffer))

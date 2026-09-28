@@ -1,0 +1,26 @@
+# Auftrag 010, 1: zwei Leerlauf-Faelle aus 101426, die mit dem heutigen Kern nicht besser werden (messungen.md,
+# "Auftrag 010"). Hier, nicht in tests/szenarien/, weil sie ohne neue Regeln (Back-Gruende, Kampf-Eichung) rot bleiben.
+# 1703: der Turm ist stumm (Bard kommt vorher, Kampfmodell), der Back ist gesperrt (3 Back-Rufe in 10 min, R4), keine
+#       Welle mit >= 3 eigenen Vasallen in 25 s.
+# 3021: 46 % Leben und 900 Gold sind kein Back-Grund (leben_back 0,4; das Gold reicht fuer kein Bauteil + 500), deine
+#       Mid-Welle laeuft zu dir (nichts zu druecken).
+
+aufnahme = "2026-09-28_101426"
+spielmodus = "CLASSIC"
+
+[[szenario]]
+id = "1703-drei-tot-ziel"
+zeit = "17:03"
+fenster = [["17:03", "17:15"]]
+lage = "Leerlauf 2: unterer Fluss, 93 %, 1000 Gold; Viego, Aurora, Twitch tot; der Turm ist stumm (Bard kommt vorher); Plan HALTEN."
+kategorie_min = { "PLAN|WENDEPUNKT|FENSTER" = 1 }
+warum = "Auftrag 010, 1: nach dem Wendepunkt ein Ziel - hier Back mit 875 Gold fuer die Spitzhacke (der Turm haengt am Kampfmodell)."
+
+[[szenario]]
+id = "3021-mid-nach-rueckzug"
+zeit = "30:21"
+fenster = [["30:21", "30:53"]]
+lage = "Leerlauf 9: eigene Mid-Lane, 46 %, 900 Gold; ihre Welle kommt zu dir (4 : ?); 30:09 Rueckzug; Plan HALTEN."
+kategorie_min = { "PLAN|WENDEPUNKT|FENSTER" = 1 }
+warum = "Auftrag 010, 1: nach dem Rueckzug ein Ziel (Challenger: Back jetzt, 46 % und 900 Gold)."
+

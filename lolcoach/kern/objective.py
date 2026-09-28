@@ -302,6 +302,7 @@ def urteil(m, o, cfg: dict) -> Urteil:
     return u
 
 
+ANTEIL_GLAETTEN_S = 1.5   # Auftrag 010, 4: der Anteil am Objective ist das Mittel ueber so viele Sekunden
 URTEIL_STABIL_S = 3.0     # ohne Ereignis kippt ein Urteil erst, wenn der neue Wert so lange besteht
 
 
@@ -324,6 +325,7 @@ def urteile(m, cfg: dict) -> dict:
         for o in m.objectives:
             u = urteil(m, o, cfg)
             if gd is not None:
+                u.anteil = glaetten(gd.setdefault("_anteil", {}).setdefault(o.schl, []), m.zeit, u.anteil)
                 # kippt sofort mit einem Ereignis, sonst erst, wenn der neue Wert URTEIL_STABIL_S lang besteht (die
                 # Ereignisliste ist unvollstaendig - Leben, Wege, ein Drachen-Kill; streng gehalten blieb in 102112
                 # nach 35:16 ein falsches "zieht nicht" minutenlang stehen; Abweichung, messungen.md Schritt 5)
@@ -341,6 +343,18 @@ def urteile(m, cfg: dict) -> dict:
             aus[o.schl] = u
         m.obj_urteile = aus
     return m.obj_urteile
+
+
+def glaetten(verlauf: list, zeit: float, wert: float, fenster: float = ANTEIL_GLAETTEN_S) -> float:
+    """Auftrag 010, 4 (102112 25:22: Rivens Anteil am Drachen sprang in 0,5 s von 0,14 auf 1,0, als Tryndamere als
+    "mit" zaehlte - die Ansage fiel genau an der Kippgrenze): das Mittel der Werte der letzten `fenster` Sekunden.
+    `verlauf` ist die Liste [(zeit, wert)] aus dem Gedaechtnis; eine Zeit rueckwaerts (neue Partie) leert sie."""
+    if verlauf and zeit < verlauf[-1][0]:
+        verlauf.clear()
+    verlauf.append((zeit, wert))
+    while verlauf and verlauf[0][0] < zeit - fenster:
+        verlauf.pop(0)
+    return sum(w for _, w in verlauf) / len(verlauf)
 
 
 def urteil_von(m, o, cfg: dict) -> Urteil:

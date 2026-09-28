@@ -328,9 +328,7 @@ def umwandeln_zuerst(m, cfg: dict, aus: list[Handlung]) -> list[Handlung]:
             o.satz = f"{name} zuerst, der liegt neben euch; danach {nominativ(t.ziel.name)}, {rest_text}."
             o.daten["danach_turm"] = t.ziel.name
         o.daten["zuerst"] = True        # die Tuerme fallen erst weg, wenn o die Schranken uebersteht (zuerst_filtern)
-    if any(h.daten.get("umwandeln") for h in aus):
-        return [h for h in aus if h.art not in ("BACK_JETZT", "WELLE_REIN_UND_BACK")]
-    return aus
+    return aus         # Back streicht erst zuerst_filtern, wenn ein Umwandel-Ziel die Schranken uebersteht
 
 
 def zuerst_filtern(kand: list[Handlung]) -> list[Handlung]:
@@ -338,7 +336,11 @@ def zuerst_filtern(kand: list[Handlung]) -> list[Handlung]:
     sind die Umwandel-Tuerme jetzt keine Wahl - vorher nicht, sonst bleibt nur Back, wenn das Objective stumm ist
     (213624 16:17: der Herold neben euch war stumm, der innere Mid-Turm schon gestrichen)."""
     if any(h.daten.get("zuerst") for h in kand):
-        return [h for h in kand if not (h.daten.get("umwandeln") and h.daten.get("turm"))]
+        kand = [h for h in kand if not (h.daten.get("umwandeln") and h.daten.get("turm"))]
+    # Kapitel 8: nach einem gewonnenen Kampf erst umwandeln, das Gold wartet - aber nur, wenn ein Umwandel-Ziel
+    # sprechbar ist (Auftrag 010, 101426 17:09: der Turm war stumm, Bard kam vorher, und der Back fehlte - nur HALTEN)
+    if any(h.daten.get("umwandeln") for h in kand):
+        kand = [h for h in kand if h.art not in ("BACK_JETZT", "WELLE_REIN_UND_BACK")]
     return kand
 
 
@@ -431,6 +433,56 @@ def seitenwelle(m, cfg: dict, modus: str, lane: str, w) -> Handlung | None:
                  gefahr_t=min(weg + 10.0, 30.0), grund=grund, satz=satz, schritte=[f"zu {name}", "abräumen"])
     h.daten.update(lane=lane, ziel_pos=pos)
     return h
+
+
+LANE_ROLLE = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot"}
+
+
+def welle_druecken(m, cfg: dict, modus: str) -> list[Handlung]:
+    """Auftrag 010, 1 (Plan nach dem Wendepunkt): eine Welle, die zu ihnen laeuft (ihr seid mehr Vasallen), in ihren
+    Turm druecken - je Lane nach der Lane-Phase, nicht weiter als druecken_weg_max_s. Nur ein Makro-Ziel fuer die Luecke
+    nach einem Wendepunkt (kern._makro_ziele): der Kern fragt es erst, wenn sonst nur HALTEN bliebe."""
+    if m.lane_phase or not m.wellen or m.b is None or m.pos is None:
+        return []
+    c = cfg["mitte"]
+    blau = m.p is None or m.p.mein_team == "ORDER"
+    from ..merkmale import lane_punkt
+    from .lane import turm_ihr_name
+    ww, vw = wert.wellenwert(m.zeit, cfg), wert.vasall_wert(m.zeit, cfg)
+    aus = []
+    for lane, w in m.wellen.items():
+        if w is None or w.zustand not in ("ZU_IHM", "GROSS_ZU_IHM", "MITTE"):
+            continue
+        unsere, ihre = w.unsere or 0, w.ihre or 0
+        if unsere < max(c["druecken_welle_min"], ihre + 1):
+            continue
+        front = w.front if w.front is not None else 0.5
+        pos = bewertung.einheiten(*lane_punkt(lane, front if blau else 1.0 - front))
+        weg = m.weg(pos) or 0.0
+        if weg > c["druecken_weg_max_s"]:
+            continue
+        gegner = next((g for g in m.b.gegner if LANE_ROLLE.get(getattr(g.s, "rolle", None)) == lane), None)
+        tot = gegner is not None and gegner.s.tot and (gegner.s.respawn or 0) >= weg + 5
+        # was du beim Druecken farmst (wie FARMEN: fr x Zeit), dazu der Druck auf ihre Lane
+        gewinn = ihre * vw + wert.farm_rate(m.zeit, cfg) * c["druecken_s"] \
+            + ww * min(1.0, unsere / 6.0) * c["druecken_druck"] + (ww * 0.5 if tot else 0.0)
+        # <= 8 Woerter wie ein Warnsatz - er kommt oft in unruhigen Momenten (102112 26:13, Fiddlesticks kam)
+        if tot:
+            grund = f"{gegner.champion} ist {int(gegner.s.respawn)} Sekunden tot"
+        else:
+            grund = f"{unsere} gegen {ihre} Vasallen" if ihre else "ihre Vasallen sind weg"
+        turm = turm_ihr_name(m, lane)
+        from ..sprache import dativ
+        satz = f"Drück die {lane}-Welle: {grund}."
+        dauer = weg + c["druecken_s"]
+        # das Risiko ueber dasselbe kurze Fenster wie HALTEN und SEITENWELLE (sonst verliert jedes Ziel gegen das
+        # Stehenbleiben, nur weil es laenger dauert - 101426 24:45: p_tod 0,13 ueber 16 s gegen 0,07 ueber 10 s)
+        h = Handlung("WELLE_DRUECKEN", Ziel("lane", f"die {lane}-Welle", pos, weg), modus, dauer, gewinn=gewinn,
+                     gefahr_t=min(dauer, c["druecken_gefahr_s"]), grund=grund, satz=satz,
+                     schritte=[f"zur {lane}-Welle", f"bis zu {dativ(turm)}"])
+        h.daten.update(lane=lane, ziel_pos=pos, makro=True)
+        aus.append(h)
+    return aus
 
 
 def kampf_kippt(k) -> bool:

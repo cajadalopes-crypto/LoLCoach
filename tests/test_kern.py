@@ -153,8 +153,12 @@ def info_flash_kurz_und_gebuendelt():
     timer: dict = {}
     k._lagebild = NS(zauber=NS(timer=timer))
 
+    # Auftrag 010, 2: ungefragt nur fuer nahe, eben gesehene Gegner - Caitlyn steht erst weit weg
+    ort = {"z": 1200.0, "s": 2500.0, "c": 9000.0}
+
     def m(t):
-        return NS(zeit=t, p=p, leben=1.0)
+        lagen = [NS(s=NS(name=n, tot=False), abstand=d, sichtbar=True, seit=0.0) for n, d in ort.items()]
+        return NS(zeit=t, p=p, leben=1.0, b=NS(gegner=lagen))
 
     timer[("z", "SummonerFlash")] = Timer("z", "Ziggs", "SummonerFlash", 400.0, "Minimap", 100.0)
     assert k._flash_info(m(101), "KAMPF", []) is None                       # nicht in KAMPF
@@ -167,8 +171,15 @@ def info_flash_kurz_und_gebuendelt():
     timer[("c", "SummonerFlash")] = Timer("c", "Caitlyn", "SummonerFlash", 420.0, "Chat", 112.0)
     assert k._flash_info(m(115), "LANE", []) is None                        # hoechstens einer je 20 s
     a = k._flash_info(m(125), "LANE", [])
-    assert a is not None and a.text == "Sona und Caitlyn ohne Flash.", a    # zusammengefasst, Ziggs nicht noch einmal
-    assert k._flash_info(m(150), "LANE", []) is None                        # nichts Neues
+    assert a is not None and a.text == "Sona ohne Flash.", a                # Caitlyn ist weit weg: sie wartet
+    ort["c"] = 3000.0
+    a = k._flash_info(m(150), "LANE", [])
+    assert a is not None and a.text == "Caitlyn ohne Flash.", a             # jetzt nah, Ziggs nicht noch einmal
+    k2 = Kern(stellung="neu")
+    k2._lagebild = NS(zauber=NS(timer={("c", "SummonerFlash"): Timer("c", "Caitlyn", "SummonerFlash", 420.0, "Chat",
+                                                                     112.0)}))
+    ort["c"] = 9000.0
+    assert k2._flash_info(m(125), "LANE", []) is None                       # weit weg: nicht ungefragt
 
 
 def zwei_klar_unterlegene():
@@ -393,12 +404,23 @@ def recall_kanal():
     assert kanal_reicht(3.0, None)
 
 
+def anteil_geglaettet():
+    """Auftrag 010, 4: Rivens Anteil am Drachen (102112 25:22) sprang in 0,5 s von 0,14 auf 1,0, als Tryndamere als
+    "mit" zaehlte - geglaettet ueber 1,5 s ist er 0,57 statt 1,0; aeltere Werte fallen heraus."""
+    from lolcoach.kern.objective import glaetten
+    v: list = []
+    assert abs(glaetten(v, 1522.30, 0.1387) - 0.1387) < 1e-9
+    assert abs(glaetten(v, 1522.85, 0.9982) - 0.5685) < 1e-3
+    assert abs(glaetten(v, 1524.20, 0.9982) - 0.9982) < 1e-9          # 1522,30 ist aelter als 1,5 s
+    assert glaetten(v, 100.0, 0.2) == 0.2                               # Zeit rueckwaerts: neue Partie
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
                  gold_reicht_fuer_das_genannte_item, info_flash_kurz_und_gebuendelt, zahlen_wie_spieler,
                  zwei_klar_unterlegene, keine_floskeln, konkrete_sprache, viego_bleibt_viego, kontrollauge_nur_mit_platz,
                  ihr_jungle_heisst_ihr_jungle, keine_verbotenen_gruende, warum_mit_vergleich,
-                 vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal):
+                 vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal, anteil_geglaettet):
         test()
         print(f"{test.__name__} OK")

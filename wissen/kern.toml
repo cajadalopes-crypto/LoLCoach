@@ -151,6 +151,8 @@ stand = "Auftrag 002, S3 (27.09.2026)"
 abstand_s = 20                  # hoechstens eine Flash-Ansage je so viele Sekunden, mehrere in einem Satz
 nach_kampf_s = 3                # nicht in KAMPF; danach so viele Sekunden warten
 rest_min_s = 10                 # kommt der Flash in weniger als so vielen Sekunden zurueck, lohnt der Satz nicht mehr
+nah_abstand = 5000              # Auftrag 010, 2: ungefragt nur fuer einen Gegner so nah bei dir ...
+nah_seit_s = 20                 # ... und vor hoechstens so vielen Sekunden gesehen (sonst Lagebild und Dashboard)
 
 [sprechen]
 stand = "Buch 0 Kapitel 7.7, Schritt 2/3"
@@ -347,6 +349,11 @@ max_woerter = 8
 [mitte]
 stand = "Buch 5, 27.09.2026 - Startwerte (Schaetzung), an Szenarien kalibrieren"
 drache_zuerst_s = 10             # Auftrag 009, 2.3: ein Objective im Umwandel-Fenster so nah geht vor jeden Turm
+druecken_welle_min = 3          # Auftrag 010, 1: WELLE_DRUECKEN ab so vielen eigenen Vasallen (und mehr als ihre)
+druecken_weg_max_s = 25          # ... nicht weiter weg als so viele Sekunden
+druecken_s = 12                  # ... so lange dauert das Druecken bis zu ihrem Turm
+druecken_gefahr_s = 15          # ... das Risiko ueber so viele Sekunden (wie SEITENWELLE: nicht die ganze Dauer)
+druecken_druck = 0.5             # Anteil des Wellenwerts: Druck auf ihre Lane (ihr Laner verliert die Welle am Turm)
 umwandeln_bonus = 400            # Auftrag 009, 2.3: GE fuer jedes Ziel im Umwandel-Fenster, gleich fuer Turm und Objective
                                  # (vorher 200 je Rang aus Kapitel 8: aeusserer Turm 200 ... Nexus 800, Drache 300)
 seitenwelle_min = 6
