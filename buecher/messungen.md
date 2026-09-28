@@ -84,11 +84,18 @@ Wächter.
 - **Kamera:** dxcam baute jede Staging-Textur zuerst in voller Bildschirmgröße (66 MB) und verkleinerte sie erst beim
   nächsten neuen Bild. Jetzt baut sie gleich in Ausschnittgröße. Der Kamera-Test prüft nur noch Textur = Ausschnitt.
 - **GDI-Rückfall** kopiert nur noch den Ausschnitt: Minimap 8 ms statt 125 ms.
-- **Fensterlage:** `game.cfg` steht auf randlos (WindowMode 2). Randlos nimmt League die Desktopauflösung, also
-  7680 × 2160 bei (0, 0).
-  - **Annahme, die erst die erste echte Partie prüft:** Das HUD sitzt bei 32:9 an den Rändern (Minimap rechts unten
-    außen).
-  - Stimmt das nicht, meldet der Coach eine blinde Minimap („minimap_blind_wird_gesagt“).
+- **Fensterlage (korrigiert 28.09.2026, Carlos):** League läuft randlos als **3840 × 2160-Fenster in der Mitte** des
+  7680 × 2160-Schirms (`game.cfg`: WindowMode 2, Width 3840, Height 2160). Links und rechts bleiben je 1920 px für
+  YouTube oder Discord. Die Minimap sitzt rechts unten **im Spielfenster** (Schirm-x 4969–5733), nicht am rechten
+  Schirmrand.
+  - ~~Annahme: Randlos nimmt League die Desktopauflösung, also 7680 × 2160 bei (0, 0), und das HUD sitzt bei 32:9 an
+    den Rändern (Minimap rechts unten außen).~~ Das war falsch; die Datei sagte schon damals Width 3840.
+  - **Geprüft im Code:** Der Coach findet das Fenster über seinen Titel (`bild.spielfenster`: FindWindow und
+    ClientToScreen). Minimap, HUD, Spielbild und Chat rechnet er ab der linken oberen Fensterecke. dxcam kopiert nur den
+    Ausschnitt (CopySubresourceRegion), nie den ganzen Schirm.
+  - **Je Takt kopiert:** Minimap 764 × 764 (~25/s). Das Spielfenster 3840 × 2160 kommt 12/s für die Balkenspur und
+    1/s für HUD, Tasten und das Claude-Bild. Mitspieler-Leiste und Chat kommen 1/s. Bei einem 16:9-Fenster ist das
+    Spielbild das ganze Fenster.
 
 **C2, Generalprobe:** 2 × 2,5 min, nachgebautes Fenster 7680 × 2160, Partie 164326, HUD im 32:9-Nachbau.
 
@@ -105,8 +112,20 @@ Wächter.
   Spielbild.
 - Zum Vergleich: live 4K in 164326, 173159 und 213624 lieferte im Median 25 Minimap-Bilder/s, im 5-%-Quantil 11–14. Nach
   dem Fix kopiert 7680 genau dieselben Ausschnitte wie 4K.
-- **Offen:** Die Generalprobe mit eingeschaltetem Bildschirm wiederholen: `python werkzeuge/generalprobe.py
-  --ohne-gehirn --ohne-review`. Sie erkennt einen ausgeschalteten Schirm selbst.
+- ~~**Offen:** Die Generalprobe mit eingeschaltetem Bildschirm wiederholen.~~ Erledigt am 28.09.2026 (s. unten).
+
+**C2 nachgeholt (28.09.2026, Bildschirm an, Desktop-Duplizierung):** je 2,5 min, Partie 164326.
+
+| Messung | Vollbild 7680 × 2160 | **Fenster 3840 × 2160 bei x = 1920** (Carlos' Aufbau) | Soll |
+|---|---|---|---|
+| Takt (Minimap-Bilder/s) | Mittel 23,8, Median 24, 5 % 16, schlechteste Sekunde 10 | **Mittel 24,7, Median 25, 5 % 17, schlechteste Sekunde 13** | ≥ 10 / s |
+| Minimap gefunden | 3548 / 3548 | **3652 / 3654** | ja |
+| HUD gelesen | 145 / 145, Tasten 145 | **146 / 146, Tasten 146** | ja |
+| Fehler | keine | **keine** | keine |
+| CPU / Speicher | 523 % eines Kerns; 331 MB (Spitze 375) | 545 % eines Kerns; 335 MB (Spitze 382) | – |
+
+- **Beweis der Fensterlage:** Mit Schirm-Koordinaten hätte der Coach bei x = 1920 neben die Minimap geschaut. Er fand
+  sie in 3652 von 3654 Bildern.
 - **Probe-Umbau:** Die alten Probebilder fehlten. Jetzt nimmt sie Partie 164326 und das 32:9-HUD. Eine pulsierende
   Ecke erzwingt echte Takte. Sie misst CPU und Speicher mit und beendet den Prozessbaum.
 - **Nebenwirkung:** Beim Start holte der Coach einmal das Review einer alten Probe nach, das ist ein Claude-Aufruf.

@@ -21,9 +21,10 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 ("Auftrag 007"), Kritik in `007_kritik_runde3.md`, Bericht und Fragen in `007_bericht.md`.
 
 Offen aus Auftrag 007:
-- **Generalprobe mit eingeschaltetem Bildschirm** wiederholen (`python werkzeuge/generalprobe.py --ohne-gehirn
-  --ohne-review`): der Takt >= 10/s ueber dxcam ist noch nicht nachgewiesen (Bildschirm war aus, GDI: 6/s).
-- **HUD bei 32:9:** Annahme "Minimap am rechten Rand" - die erste echte Partie auf 7680 x 2160 prueft sie.
+- ~~Generalprobe mit eingeschaltetem Bildschirm~~ erledigt 28.09.: Fenster 3840 x 2160 bei x = 1920 (Carlos' Aufbau),
+  Takt Median 25/s, Minimap 3652/3654, HUD 146/146, keine Fehler.
+- ~~HUD bei 32:9, Minimap am rechten Rand~~ falsch angenommen: League laeuft als 3840 x 2160-Fenster in der
+  Schirmmitte, alle Ausschnitte rechnen vom Fenster aus (`buecher/messungen.md`, Auftrag 007, C1).
 - **164326 2,8 falsch je 30 min** (Schwelle 2): Top-Inhibitor gegen den Drachen daneben (Buch 6, 8 Rangfolge) -
   Entscheidung; "Raus" waehrend des Recalls (Schranke) - Entscheidung.
 - **Flash-Clips** werden live gesammelt; die Erkennung erst ab 20 echten Clips. `bilder_aufraeumen` raeumt sie nicht auf.
