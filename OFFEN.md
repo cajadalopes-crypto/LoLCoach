@@ -17,6 +17,13 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 014 (Stratege: Schutzschicht, Tor) - Tor knapp verfehlt, kein Live-Einbau** - Zahlen in
+`buecher/messungen.md` ("Auftrag 014").
+- Offen: "falsch" beim Strategen in der alten Menge 12,5 gegen 9,2 beim Kern (Tor: hoechstens +2). Reste pruefbar:
+  Mitspieler-Orte, Sichtbarkeit, Gold (steht alles in der Lage, `stratege.pruefe` kennt es noch nicht).
+- `stratege.VORWAERTS` nimmt "Nimm die Welle" faelschlich als Vorwaerts-Handlung.
+- Laenge im Median 30 Woerter statt hoechstens 25.
+
 **Auftrag 012 (Wellen-Endlosschleife, Fragen, Timer, Cassiopeia) umgesetzt** - Zahlen in `buecher/messungen.md`
 ("Auftrag 012").
 - Braucht dich deine Welle nicht und gibt es kein anderes Ziel, heisst es "Geh nach Top: dort kommt ihre naechste

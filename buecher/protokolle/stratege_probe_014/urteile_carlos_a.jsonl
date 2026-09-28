@@ -1,0 +1,100 @@
+{"id":"m15","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A gibt Grund und Plan bei halbem Leben, B nur Telegramm"}
+{"id":"m22","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A beantwortet die Frage mit Grund und Folgeplan, B verweist nur zurueck"}
+{"id":"n04","besser":"A","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Klarer Turmplan mit Grund; Yone war Mitte, nicht unten"}
+{"id":"m09","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B denkt Gruppe und Makro, A nur Telegramm-Warnung"}
+{"id":"m41","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A nimmt meinen Einwand ernst, B wiederholt nur den Plan wirr"}
+{"id":"n03","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":true,"warum":"Vier Gegner in unserem Botjungle, B schickt mich trotzdem bot pushen"}
+{"id":"n19","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A hat Grund und Folgeplan, B nennt keinen Kampf konkret"}
+{"id":"m08","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Back plus Anschluss ans Team, hilft mir sofort"}
+{"id":"m19","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Beide richtig, B sagt noch warum und was danach"}
+{"id":"m53","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B mit Mitspielern und Gefahr, A nur Telegramm"}
+{"id":"n13","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Zwei Gegner tot, Drache ist die Chance; aber nicht vier gegen eins"}
+{"id":"n01","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Gold reicht nicht fuer Auge plus Hydra, A knapp aber korrekt"}
+{"id":"m20","besser":"gleich","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Beide wiederholen nur die erste Antwort"}
+{"id":"m62","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A beantwortet meine Sorge direkt, B schickt mich quer ueber die Karte"}
+{"id":"m01","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B begruendet Rueckzug; Viego ist aber sichtbar nah, nicht unklar"}
+{"id":"m49","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A sagt erst kaufen, mit Grund; B nur Stimmt plus Wiederholung"}
+{"id":"n20","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Tot: Plan fuer nach dem Respawn hilft, etwas lang"}
+{"id":"m14","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B mit Leben und Rueckzugsplan; Sett ist aber nah, nicht weit"}
+{"id":"m63","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A folgt dem Back mit Grund, B schiebt allein weiter vor"}
+{"id":"n09","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Sinnvoller Gruppenplan mit Sicht, besser als Schweigen"}
+{"id":"m10","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Tief im Gegnerjungle, B warnt mit Grund und Plan"}
+{"id":"m18","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A gibt Gruppenplan, B nur Warnung ohne Handlung"}
+{"id":"m42","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Sett ist in der Basis, Kai'Sa oben; A erfindet Mitspieler"}
+{"id":"m39","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B sagt Kauf, TP, Zeitpunkt und Gefahr, A nur Floskel"}
+{"id":"n11","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B begruendet Top-Farm mit Team Mitte, A redet von Mid-Busch"}
+{"id":"m65","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A erklaert meinen Einwand, B wiederholt nur"}
+{"id":"n02","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Back mit Grund hilft; Gold reicht nicht fuer Auge plus Hammer"}
+{"id":"m47","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A gibt Grund und Folgeplan, geht aber auf Top-Einwand kaum ein"}
+{"id":"n08","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A mit Grund und klarer Ansage, B knappes Telegramm"}
+{"id":"m51","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Kanone kommt top in 5 s, A sagt keine Welle"}
+{"id":"n26","besser":"B","A_falsch":false,"A_gefaehrlich":true,"B_falsch":true,"B_gefaehrlich":false,"warum":"23 Prozent allein nach Top ist riskant; Zilean ist aber sichtbar"}
+{"id":"n18","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Bei 41 Prozent sammeln passt; Hammer ist mit 1006 Gold nicht bezahlbar"}
+{"id":"m52","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B nimmt meinen Aerger auf und gibt Grund"}
+{"id":"n10","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Kurzer brauchbarer Hinweis, wenn auch etwas vage"}
+{"id":"n23","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Konkreter Plan mit Grund und Zeitpunkt"}
+{"id":"m02","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Ich stehe am Drachen; oben ist niemand von uns fuer drei gegen eins"}
+{"id":"m40","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B mit TP und Grund, A nur Wiederholung"}
+{"id":"m16","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B wirr beim Tod, Viego steht in ihrem Jungle"}
+{"id":"m03","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Drei tot: Turm mit der Gruppe ist der richtige Makro-Call"}
+{"id":"m33","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B beantwortet mit konkretem Grund, A ist Leerformel"}
+{"id":"m00","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B begruendet mit Aurora nah; A Telegramm und falsche Vasallenzahl"}
+{"id":"n07","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Yone und Naafiri nah, Rueckzug mit Grund hilft"}
+{"id":"m67","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A nutzt 6000 Gold fuer Schutzengel, B vergisst den Einkauf"}
+{"id":"m21","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A beantwortet die Frage mit Grund, B nur Telegramm"}
+{"id":"m61","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B sagt keine Top-Welle, Kanone kommt aber; A gibt klaren Plan"}
+{"id":"m57","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A glaubt mir und gibt Welle ab, B nur Stimmt"}
+{"id":"m54","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B geht auf meinen Mid-Vorschlag ein, A wiegelt ab"}
+{"id":"m50","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B nimmt meine Beobachtung auf und gibt Folgeplan"}
+{"id":"n12","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A mit konkretem Grund, B Stichworte"}
+{"id":"m59","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Ich will Folgeplan, B liefert mit Mitspielern, A wiederholt"}
+{"id":"m55","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A gibt echte Alternative Bot-Welle, B widerspruechlich"}
+{"id":"n24","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Vier tot, Baron ist der Siegeszug; Schweigen verschenkt es"}
+{"id":"n17","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Kai'Sa direkt neben mir, Warnung hilft"}
+{"id":"m25","besser":"A","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A erklaert Rolle und Jungler-Info; Distanz ist erfunden"}
+{"id":"m66","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"48 Prozent und 5000 Gold: Back mit Grund ist genau richtig"}
+{"id":"m37","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B beantwortet meine Frage vollstaendig mit Grund"}
+{"id":"m64","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A korrigiert sachlich, B uebersieht Alistar direkt neben mir"}
+{"id":"n06","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Zwei Gegner direkt bei mir, Rueckzug mit Grund"}
+{"id":"m68","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Ich habe 4129 Gold, B sagt nichts zu kaufen"}
+{"id":"m69","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":true,"warum":"Allein in ihrer Basis mit drei Gegnern: B schickt mich rein"}
+{"id":"m13","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"31 Prozent allein bot: B sagt wohin und was kaufen"}
+{"id":"m48","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Beide richtig, A als ganzer Satz mit Gruppenplan"}
+{"id":"m44","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Sett ist in der Basis, Pantheon nicht bei mir; B knapp aber korrekt"}
+{"id":"m56","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"A beantwortet mit Distanz und Pantheon daneben, B redet Unsinn"}
+{"id":"m07","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B mit Lagebild und Gruppe; nur Bard ist wirklich sichtbar"}
+{"id":"m30","besser":"gleich","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Keiner beantwortet mein Warum klar; B will mit 99 Gold kaufen"}
+{"id":"n29","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B nennt Mitspieler und Grund, A nur Stichwort"}
+{"id":"m43","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B erfindet Sett und Kai'Sa am Turm; A klar: bot bleiben"}
+{"id":"m31","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A beantwortet endlich mein Warum mit echten Gruenden"}
+{"id":"m27","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Cassio fehlt 12 s, nicht 4 Minuten; A korrekt mit Plan"}
+{"id":"m05","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Tot: Plan fuer Respawn und Drache hilft"}
+{"id":"m45","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A sagt Kauf, Timing und Gefahr, B wiederholt nur"}
+{"id":"m34","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Beide beantworten Flash, A warnt zusaetzlich vor Pantheon"}
+{"id":"n16","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Olaf steht direkt auf mir, Schweigen waere fatal"}
+{"id":"m29","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B glaubt mir und plant Drache als Gruppe, A widerspricht sich"}
+{"id":"m60","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A gibt Ablauf bis zum Drachen, B nur Telegramm"}
+{"id":"m11","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A mit Grund und Folgeplan, B unbegruendet"}
+{"id":"n21","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B erfindet Nordbusch und Welle an der Grube"}
+{"id":"n14","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Teemo direkt bei mir, A zieht zurueck; B falsche Respawnzeit"}
+{"id":"m38","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B mit Item und Grund, A Telegramm mit falscher Zahl"}
+{"id":"n25","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Alle fuenf unsichtbar, sie mit Buffs: sammeln vor Baron passt"}
+{"id":"n00","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"39 Prozent: Back mit Grund, besser als Schweigen"}
+{"id":"m12","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Drache kommt, wir weit vorn; A zieht mich weg, B nennt Drache"}
+{"id":"n05","besser":"A","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A mit Ablauf Welle dann Turm; Yone war aber Mitte"}
+{"id":"m26","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"A erklaert Backen richtig, B deutet es falsch"}
+{"id":"m28","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B sagt Kauf, Timing und Gefahr, A nur Wiederholung"}
+{"id":"m04","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Sett tot: klarer Push mit Zeitfenster und Rueckzug"}
+{"id":"n22","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A begruendet Rueckzug bei 20 Prozent, beide vergessen Back"}
+{"id":"m32","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"8 Prozent: A konkret mit Pantheon neben mir"}
+{"id":"n15","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Yasuo 824 entfernt, halbes Leben: Warnung noetig"}
+{"id":"m17","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Viego ist in der Basis, nicht nah; A gibt Folgeziel"}
+{"id":"m06","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Welle plus Drache als Gruppe: genau der Makroplan"}
+{"id":"m46","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B sagt was kaufen und mit wem, A wiederholt"}
+{"id":"m35","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B erklaert den Grund und den Gruppenpunkt, A wieder nur Top farmen"}
+{"id":"n28","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B denkt an Baron und Gruppe; Yasuo war Mitte, nicht unten"}
+{"id":"m23","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"A ignoriert meine Bot-Frage; B antwortet, Positionen ungenau"}
+{"id":"m36","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B erklaert endlich, warum Flash unbekannt; Pantheon ist sichtbar"}
+{"id":"m24","besser":"A","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A beantwortet die Rollenfrage direkt; Distanz zu Yi erfunden"}
+{"id":"n27","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A folgt dem Verteidigungsplan mit Grund, B schickt mich weg"}
+{"id":"m58","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B gibt Kauf plus Folgeplan Drache mit Grund"}

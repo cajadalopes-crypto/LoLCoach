@@ -486,6 +486,30 @@ def absicht_aus_langem_satz():
         assert absicht(frage) == soll, (frage, absicht(frage), soll)
 
 
+def stratege_pruefung():
+    """Auftrag 014, A2: die gefaehrlichen Muster der Probe 013 werden verworfen, harmlose Saetze nicht."""
+    from lolcoach.stratege import pruefe
+    lage = {"champions": ["Riven", "Master Yi", "Teemo", "Sona", "Kai'Sa"], "jungler": "Master Yi",
+            "gegner": [{"name": "Master Yi", "sichtbar": False, "seit": 288.0, "tot": False},
+                       {"name": "Teemo", "sichtbar": True, "seit": 0.0, "tot": False}],
+            "flash": 0.0, "tp": 56.0, "ult": True,
+            "vorn": {"verboten": False, "leben": 90, "gesperrt": [], "ziele": [], "erlaubt": []}}
+    assert pruefe("Yi ist seit 288 Sekunden in seiner Base, kein Gank-Risiko gerade.", lage)      # 013 9:42
+    assert pruefe("Back, jetzt, 36 Prozent Leben ist R1.", lage)                                  # 013 19:06
+    assert pruefe("Teleportier dich zurück nach Top.", lage)                                      # TP in 56 s
+    assert pruefe("Aurora ist ohne Flash, geh rein.", lage)                                       # nicht in der Partie
+    assert not pruefe("Farm die Welle fertig, danach zu Sona und Kai'Sa in den Fluss.", lage)
+    assert not pruefe("Dein TP ist in 56 s wieder da, bis dahin bleib oben.", lage)
+    baron = dict(lage, vorn={"verboten": False, "leben": 90, "gesperrt": ["auf den Baron"], "ziele": ["baron"],
+                             "erlaubt": []})
+    assert pruefe("Geh mit Sona und Kai'Sa Richtung Baron.", baron)                                # 013 20:24
+    r1 = dict(lage, vorn={"verboten": True, "leben": 36, "gesperrt": [], "ziele": [], "erlaubt": ["back jetzt"]})
+    assert pruefe("Push jetzt den inneren Bot-Turm, Level 14 gegen 8.", r1)
+    assert not pruefe("Back jetzt, danach mit der Gruppe zum Drachen.", r1)
+    assert not pruefe("Mid-Welle rein, dann back.", r1)
+    assert not pruefe("Nicht drücken, zurück unter deinen Turm.", r1)
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
@@ -493,6 +517,7 @@ if __name__ == "__main__":
                  zwei_klar_unterlegene, keine_floskeln, konkrete_sprache, viego_bleibt_viego, kontrollauge_nur_mit_platz,
                  ihr_jungle_heisst_ihr_jungle, keine_verbotenen_gruende, warum_mit_vergleich,
                  vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal, anteil_geglaettet,
-                 warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz):
+                 warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
+                 stratege_pruefung):
         test()
         print(f"{test.__name__} OK")

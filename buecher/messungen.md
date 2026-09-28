@@ -4,6 +4,88 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 014 – Stratege: Schutzschicht und Tor (28./29.09.2026)
+
+Grundlage: `buecher/auftraege/014_auftrag.md`. Offline, der Coach wurde nicht gestartet. **Das Tor aus A5 ist knapp
+verfehlt, deshalb gibt es kein Teil B;** am Sprechweg des Live-Coachs ist nichts geändert. Tabellen:
+`buecher/protokolle/STRATEGE_PROBE_014.md`. Rohdaten: `buecher/protokolle/stratege_probe_014/` (Momente mit Prompt und
+Prüf-Lage, Antworten mit allen Versuchen, Blind-Vorlagen a/b, Urteile).
+
+### Teil A
+
+- **A1 `kern.kontext()`:**
+  - Gegner steht jetzt als „jetzt sichtbar …“ oder „zuletzt gesehen vor N s …, jetzt unbekannt, kann überall sein“
+    (`gegner_zeile`).
+  - Neue Zeile DEINE ZAUBER (Flash, TP, Ult, nur was bekannt ist).
+  - Neue Zeile „NACH VORN VERBOTEN (Leben N %). Erlaubt: …“ unter `vor_leben_min`, sonst „ZU RISKANT, NICHT
+    VORSCHLAGEN: …“ für Vorwärts-Ziele mit p_tod ≥ 0,3 (`Kern.vorn()`).
+  - Bei den Alternativen steht „Wert“ statt „EV“.
+  - Das gilt auch für die heutigen Claude-Antworten (`mit_claude`).
+- **A2 `stratege.pruefe(satz, lage)`:** Verworfen wird
+  - ein Satz nach vorn trotz R1 oder zu einem zu riskanten Objective (verneint oder auf „danach“ verschoben zählt
+    nicht; „Welle rein“ zählt nicht),
+  - ein innerer Begriff (R1, EV, Wert-Zahl, Kern, Kandidat, gesperrt, Modell, Todesrisiko-Zahl),
+  - eine Entwarnung für einen Gegner, der länger als 20 s nicht zu sehen war,
+  - ein Champion, der nicht in der Partie ist,
+  - TP, Flash oder Ult, die nicht bereit sind.
+
+  Die Lage für die Prüfung baut `stratege.pruef_lage(kern, p)`. Unit-Test `stratege_pruefung` mit den Mustern aus
+  013.
+- **A3/A4:**
+  - `stratege.STRATEGE_SYSTEM`: der Prompt aus 013 Lauf 2 plus innere Begriffe, Sichtung, Porten, keine Umkehr in 30 s
+    ohne neue Lage, Ton, ≤ 25 Wörter.
+  - Die Probe gibt dem Strategen seine letzten zwei Sätze (≤ 60 s) mit; der Plan steht in der Kopfzeile.
+- **Fallback in der Probe:** Beim ersten Verwerfen wird einmal neu gefragt, mit dem Grund; beim zweiten gilt der
+  Kern-Satz.
+
+### A5 – Probe
+
+- **Momente:**
+  - die 70 aus 013, neu erfasst mit A1;
+  - 30 neue aus 164326 und 173159: je 8 Wendepunkte und 7 Leerlauf-Fenster ab 14:00, Zufall mit Seed 14. Sie dienen
+    nur der Prüfung.
+- **Abo:** 105 Aufrufe, keine Fehler.
+- **Verwerfen:** Beim ersten Versuch wurden 5 von 100 Sätzen verworfen (TP nicht bereit 2, nach vorn trotz R1 1,
+  Entwarnung ohne Sicht 2). Die Wiederholung war jedes Mal gültig, der Kern-Fallback wurde nie gebraucht.
+  - „Nimm die Welle“ galt fälschlich als Vorwärts-Handlung (164326 16:20). Das kostet nur eine Wiederholung;
+    `VORWAERTS` sollte „nimm die Welle/Kanone“ ausnehmen, bevor es live geht.
+- **Latenz:** erster Satz im Median 1,7 s (p90 3,2 s), ganze Antwort 4,7 s, mit Wiederholung bis zum gültigen Satz
+  p90 7,5 s.
+- **Länge:** im Median 30 Wörter (Regel ≤ 25, nicht ganz gehalten), höchstens 40.
+- **Kritik:** vier frische Kritiker, Challenger und Carlos je zweimal, mit verschiedener A/B-Mischung. Gezählt wird
+  das Mittel der vier.
+
+| Tor (alles muss gelten) | alt (70) | neu (30) | |
+|---|---|---|---|
+| „gefährlich“ Stratege ≤ Kern | 0,2 ≤ 1,5 | 0,0 ≤ 2,8 | ja |
+| Vorwärts-Sätze trotz R1 nach A2 | 0 | 0 | ja |
+| innere Begriffe nach A2 | 0 | 0 | ja |
+| „falsch“ Stratege ≤ Kern + 2 | **12,5 vs. 9,2 (+3,3)** | 4,2 vs. 3,2 (+1,0) | **nein (alt)** |
+| Gewinnquote Stratege ≥ 65 % (neu) | 78 % | **81 %** | ja |
+
+Ein grober Prüfer aus 013 fand als zweite Meinung einen Vorwärts-Satz trotz R1 (101426 23:10, „danach zusammen als
+Gruppe Richtung Drache erzwingen“). Von Hand geprüft ist das kein Verstoß: Es ist aufgeschoben und in der Gruppe, und
+die Schranke dort war „klar unterlegen“, nicht Leben oder p_tod.
+
+Gegenüber 013 (Lauf 2) sank „gefährlich“ beim Strategen von 3 auf 0–0,2, die Quote stieg von 69–70 % auf 78–81 %.
+„Falsch“ bleibt ein Rest.
+
+**Was die Kritiker am Strategen noch falsch fanden** (jede Stelle von allen vier markiert):
+- **Mitspieler an Orte gestellt, wo sie nicht sind:** „Push den inneren Bot-Turm mit Sett und Kai'Sa“, Sett stand in
+  der Basis (192113 16:50, 16:56, 17:06).
+- **Gold falsch gerechnet:** „Kontroll-Auge zuerst, dann Gefräßige Hydra“, das Gold reicht nicht für beides (164326
+  18:17, 22:08).
+- **Sichtbarkeit falsch:** „Pantheon sehe ich grad nicht“, obwohl er sichtbar war (192113 14:37). „Vier von ihnen
+  sichtbar“, obwohl nur Bard zu sehen war (101426 22:34). „Cassio seit über 4 Minuten“ statt 12 s (192113 9:42).
+- **Spielstand falsch:** „Drache erst, wenn ihr zusammensteht“, der Drache war schon genommen (101426 33:43).
+- **Unsinn im Tod:** „beim Release … recallen“ (101426 32:21).
+- **„Gebackt“ falsch erklärt** (192113 8:52).
+
+Das alles lässt sich prüfen: Mitspieler-Orte, Sichtbarkeit und Gold stehen in der Lage. Die Prüfung A2 kennt es noch
+nicht.
+
+---
+
 ## Auftrag 013 – Probe: Claude als Makro-Stratege (28.09.2026)
 
 Grundlage: `buecher/auftraege/013_auftrag.md`. Offline, der Live-Coach ist unverändert. Werkzeug:

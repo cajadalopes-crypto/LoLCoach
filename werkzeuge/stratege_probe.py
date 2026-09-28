@@ -412,6 +412,352 @@ def kritik(lauf_nr: int) -> str:
     return text
 
 
+# --- Auftrag 014: Probe mit Schutzschicht (A1-A4) und Tor (A5) ----------------------------------------------------------
+#
+#     python werkzeuge/stratege_probe.py sammeln14        # die 70 aus 013 neu erfassen (Lage A1) + 30 neue (164326/173159)
+#     python werkzeuge/stratege_probe.py fragen14         # Stratege mit Pruefung (A2), eine Wiederholung, sonst der Kern
+#     python werkzeuge/stratege_probe.py blind14          # zwei Blind-Vorlagen (a, b) mit verschiedener A/B-Mischung
+#     python werkzeuge/stratege_probe.py kritik14         # Urteile zaehlen, Tor pruefen
+#     python werkzeuge/stratege_probe.py bericht14        # buecher/protokolle/STRATEGE_PROBE_014.md
+
+AUS14 = AUS.parent / "stratege_probe_014"
+BERICHT14 = BERICHT.parent / "STRATEGE_PROBE_014.md"
+ALT = ("2026-09-28_192113", "2026-09-28_101426")
+NEU = ("2026-09-27_164326", "2026-09-27_173159")
+
+
+def _leerlauf_fenster(lauf, ab: float = 840.0, mindestens: float = 5.0) -> list[tuple[float, float]]:
+    """Fenster ab 14:00 ohne gueltigen, gesagten Plan (lebend, nicht KAMPF/TOT) - wie fuehrmass.leerlauf, als Liste."""
+    aus, start, letzt = [], None, None
+    for t in lauf.takte:
+        ok = (t.zeit >= ab and t.modus not in (None, "KAMPF", "TOT") and not getattr(t, "tot", False)
+              and not getattr(t, "plan_gesagt", False))
+        if ok and start is None:
+            start = t.zeit
+        if not ok and start is not None:
+            if letzt - start >= mindestens:
+                aus.append((start, letzt))
+            start = None
+        letzt = t.zeit
+    return aus
+
+
+def _wendepunkte(lauf, ab: float) -> list[tuple[float, str]]:
+    wp, letzt = [], -1e9
+    for t, art in fuehrmass.wendepunkte(lauf, ab):
+        if art in ("Struktur", "Objective") and t - letzt >= 60.0:
+            wp.append((t, art))
+            letzt = t
+    return wp
+
+
+def _erfassen(stamm: str, ziele: list, fragen_: list) -> list[dict]:
+    """Je Ziel (Zeit, Art, Info) die Lage im ersten Takt ab dieser Zeit - Prompt ohne Verlauf, Lage fuer die Pruefung,
+    was der Kern sagt."""
+    from lolcoach import gehirn, stratege
+    pfad = ns.pfad_zu(stamm)
+    g = gehirn.Gehirn()
+    akte = ns.AUFNAHMEN / f"{stamm}_spielakte.md"
+    g.akte = akte.read_text(encoding="utf-8") if akte.exists() else None
+    offen = sorted(ziele, key=lambda x: x[0])
+    erfasst = []
+
+    def beim_takt(p, werk, kern, plan):
+        while offen and p.zeit >= offen[0][0]:
+            t, art, info = offen.pop(0)
+            if kern.m is None or kern.m.b is None:
+                continue
+            if art == "frage":
+                frage, fid = info
+                anlass, ende = frage, f"Frage des Spielers: {frage}"
+            else:
+                frage, fid = None, None
+                was = "Leerlauf: seit ein paar Sekunden kein Plan-Satz" if art == "leerlauf" else f"Wendepunkt ({info})"
+                anlass, ende = "Was jetzt, und warum?", f"ANLASS: {was} um {ns.uhr(p.zeit)}. Was jetzt, und warum?"
+            lage = kern.kontext() or ""
+            inhalt = g.kontext(anlass, p, lage)
+            if (kopf := kern.kopfzeile()):
+                inhalt = f"{kopf}\n\n{inhalt}"
+            inhalt += f"\n\nKANDIDATEN DES COACHS (gerechnet, keine Vorgabe):\n{_kandidaten(kern)}"
+            erfasst.append({"stamm": stamm, "zeit": p.zeit, "uhr": ns.uhr(p.zeit), "art": art,
+                            "anlass": info if art != "frage" else None, "frage": frage, "fid": fid,
+                            "basis": inhalt, "ende": ende, "kontext": lage, "lage_satz": _lage_satz(kern),
+                            "r1": _r1(kern), "leben": kern.m.leben, "pruef_lage": stratege.pruef_lage(kern, p)})
+    lauf = ns.durchspielen(pfad, beim_takt=beim_takt, fragen=fragen_ or None)
+    antworten = {r["id"]: r for r in lauf.antworten}
+    for e in erfasst:
+        if e["art"] == "frage":
+            r = antworten.get(e["fid"]) or {}
+            e["kern"], e["kern_absicht"] = r.get("text"), r.get("absicht")
+        else:
+            gesagt = [a for a in lauf.gesagt if a.schluessel.startswith("kern:") and a.schluessel != "kern:INFO_FLASH"
+                      and e["zeit"] - 1.0 <= ns.gesprochen_um(a) <= e["zeit"] + 8.0]
+            e["kern"] = gesagt[0].text if gesagt else None
+    return erfasst
+
+
+def sammeln14() -> None:
+    from lolcoach.kern import fragen as F
+    AUS14.mkdir(parents=True, exist_ok=True)
+    alt = json.loads((AUS / "momente.json").read_text(encoding="utf-8"))
+    momente = []
+    for stamm in ALT:
+        vorher = [e for e in alt if e["stamm"] == stamm]
+        fragen_ = []
+        if stamm.endswith("192113"):
+            for i, f in enumerate(fuehrmass.fragen_aus_log(stamm)):
+                if F.absicht(f["text"]) in ("NOTIZ", "OFFEN") and F._innere_frage(f["text"]) is None:
+                    continue
+                fragen_.append((f["zeit"], f["text"], f"f{i}"))
+        text_je_fid = {fid: text for _, text, fid in fragen_}
+        # dieselben Momente wie 013: die Zeit des erfassten Takts, dieselben Fragen davor (derselbe Kern-Zustand)
+        ziele = [(e["zeit"], e["art"], (text_je_fid[e["fid"]], e["fid"]) if e["art"] == "frage" else e["anlass"])
+                 for e in vorher]
+        neu = {(round(x["zeit"], 2), x["art"]): x for x in _erfassen(stamm, ziele, fragen_)}
+        for e in vorher:
+            x = neu.get((round(e["zeit"], 2), e["art"]))
+            if x is not None:
+                x["id"] = e["id"]
+                momente.append(x)
+    rnd = random.Random(14)
+    zaehler = 0
+    for stamm in NEU:
+        lauf1 = ns.durchspielen(ns.pfad_zu(stamm))
+        wp = _wendepunkte(lauf1, 600.0)
+        ll = [((a + b) / 2, a, b) for a, b in _leerlauf_fenster(lauf1)]
+        wp = sorted(rnd.sample(wp, min(8, len(wp))))
+        ll = sorted(rnd.sample(ll, min(15 - len(wp), len(ll))))
+        ziele = [(t, "wendepunkt", art) for t, art in wp] + [(t, "leerlauf", "Leerlauf") for t, *_ in ll]
+        for x in sorted(_erfassen(stamm, ziele, []), key=lambda x: x["zeit"]):
+            x["id"] = f"n{zaehler:02d}"
+            zaehler += 1
+            momente.append(x)
+    (AUS14 / "momente.json").write_text(json.dumps(momente, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"{len(momente)} Momente: alt {sum(1 for e in momente if e['stamm'] in ALT)}, "
+          f"neu {sum(1 for e in momente if e['stamm'] in NEU)}")
+
+
+def _frage_einmal(prompt: str, system: str) -> dict:
+    from lolcoach import llm
+    t0 = time.perf_counter()
+    erster = [None]
+
+    def bei_satz(s):
+        if erster[0] is None:
+            erster[0] = time.perf_counter() - t0
+    try:
+        text = llm.frage_strom(prompt, bei_satz, system=system, modell="sonnet", timeout=40, aufwand="low",
+                               nachladen=True).strip()
+        fehler = None
+    except llm.LLMFehler as x:
+        text, fehler = "", str(x)
+    return {"text": " ".join(text.split()), "erster_s": erster[0], "ende_s": time.perf_counter() - t0,
+            "fehler": fehler}
+
+
+def fragen14() -> None:
+    """A2-A4: Verlauf (eigene Saetze <= 60 s), Pruefung, bei Verwerfen einmal neu mit dem Grund, sonst der Kern-Satz."""
+    from lolcoach import llm, stratege
+    system = stratege.STRATEGE_SYSTEM
+    (AUS14 / "system.txt").write_text(system, encoding="utf-8")
+    momente = json.loads((AUS14 / "momente.json").read_text(encoding="utf-8"))
+    ziel = AUS14 / "antworten.jsonl"
+    fertig = {json.loads(z)["id"]: json.loads(z) for z in ziel.read_text(encoding="utf-8").splitlines()} \
+        if ziel.exists() else {}
+    llm.vorhalten("sonnet", system, "low")
+    verlauf: dict[str, list] = {}
+    for e in sorted(momente, key=lambda e: (e["stamm"], e["zeit"])):
+        v = verlauf.setdefault(e["stamm"], [])
+        if e["id"] in fertig:
+            r = fertig[e["id"]]
+            if r["quelle"] == "stratege":
+                v.append((e["zeit"], r["text"]))
+            continue
+        eigene = [(t, s) for t, s in v if e["zeit"] - t <= 60.0][-2:]
+        prompt = e["basis"]
+        if eigene:
+            prompt += "\n\nDEINE LETZTEN SAETZE (hoechstens 60 s alt): " + " | ".join(
+                f"{ns.uhr(t)} „{s}“" for t, s in eigene)
+        prompt += f"\n\n{e['ende']}"
+        versuche = []
+        a = _frage_einmal(prompt, system)
+        a["gruende"] = stratege.pruefe(a["text"], e["pruef_lage"]) if a["text"] else ["keine Antwort"]
+        versuche.append(a)
+        if a["gruende"]:
+            b = _frage_einmal(prompt + f"\n\nDein Vorschlag „{a['text']}“ wurde verworfen: {'; '.join(a['gruende'])}. "
+                              "Sag es neu, ohne das.", system)
+            b["gruende"] = stratege.pruefe(b["text"], e["pruef_lage"]) if b["text"] else ["keine Antwort"]
+            versuche.append(b)
+        ok = next((x for x in versuche if not x["gruende"]), None)
+        if ok is not None:
+            quelle, text = "stratege", ok["text"]
+            v.append((e["zeit"], text))
+        else:
+            quelle, text = ("kern", e["kern"]) if e.get("kern") else ("still", None)
+        r = {"id": e["id"], "quelle": quelle, "text": text, "versuche": versuche, "uhrzeit": time.strftime("%H:%M:%S")}
+        with ziel.open("a", encoding="utf-8") as d:
+            d.write(json.dumps(r, ensure_ascii=False) + "\n")
+        print(f"{e['id']} {e['stamm'][-6:]} {e['uhr']} {quelle} {len(versuche)}x "
+              f"{(text or '-')[:80]} {'VERWORFEN: ' + '; '.join(versuche[0]['gruende']) if versuche[0]['gruende'] else ''}",
+              flush=True)
+
+
+def _antworten14() -> dict:
+    return {r["id"]: r for r in map(json.loads, (AUS14 / "antworten.jsonl").read_text(encoding="utf-8").splitlines())}
+
+
+def blind14() -> None:
+    momente = json.loads((AUS14 / "momente.json").read_text(encoding="utf-8"))
+    antw = _antworten14()
+    for durchgang, samen in (("a", 141), ("b", 142)):
+        rnd = random.Random(samen)
+        schluessel, teile = {}, []
+        for e in rnd.sample(momente, len(momente)):
+            r = antw.get(e["id"]) or {}
+            s = r.get("text") or "(still – der Coach sagt in diesem Moment nichts)"
+            kern = e.get("kern") or "(still – der Coach sagt in diesem Moment nichts)"
+            a_ist_kern = rnd.random() < 0.5
+            schluessel[e["id"]] = "kern" if a_ist_kern else "stratege"
+            a, b = (kern, s) if a_ist_kern else (s, kern)
+            was = f"Frage des Spielers: „{e['frage']}“" if e["frage"] else (
+                "Keine Frage – Leerlauf, der Coach schweigt seit ein paar Sekunden." if e["art"] == "leerlauf"
+                else f"Keine Frage – Wendepunkt ({e['anlass']}).")
+            teile.append(f"## {e['id']} · {e['uhr']}\n\n{was}\n\nLAGE (was der Coach weiß):\n{e['kontext']}\n\n"
+                         f"**A:** {a}\n\n**B:** {b}\n")
+        (AUS14 / f"blind_{durchgang}.md").write_text("\n".join(teile), encoding="utf-8")
+        (AUS14 / f"blind_{durchgang}_schluessel.json").write_text(json.dumps(schluessel, indent=1), encoding="utf-8")
+    print(f"{len(momente)} Momente, zwei Vorlagen in {AUS14}")
+
+
+def _zaehle14(rolle: str, durchgang: str, momente: dict) -> dict | None:
+    d = AUS14 / f"urteile_{rolle}_{durchgang}.jsonl"
+    if not d.exists():
+        return None
+    schl = json.loads((AUS14 / f"blind_{durchgang}_schluessel.json").read_text(encoding="utf-8"))
+    z = {m: {"s": 0, "k": 0, "g": 0, "sf": 0, "kf": 0, "sg": 0, "kg": 0, "n": 0} for m in ("alt", "neu")}
+    for zeile in d.read_text(encoding="utf-8").splitlines():
+        if not zeile.strip():
+            continue
+        u = json.loads(zeile)
+        if u.get("id") not in schl:
+            continue
+        menge = "neu" if momente[u["id"]]["stamm"] in NEU else "alt"
+        s_seite = "B" if schl[u["id"]] == "kern" else "A"
+        k_seite = "A" if s_seite == "B" else "B"
+        x = z[menge]
+        x["n"] += 1
+        x["g" if u["besser"] == "gleich" else ("s" if u["besser"] == s_seite else "k")] += 1
+        x["sf"] += bool(u.get(f"{s_seite}_falsch"))
+        x["kf"] += bool(u.get(f"{k_seite}_falsch"))
+        x["sg"] += bool(u.get(f"{s_seite}_gefaehrlich"))
+        x["kg"] += bool(u.get(f"{k_seite}_gefaehrlich"))
+    return z
+
+
+def kritik14() -> tuple[str, bool]:
+    from lolcoach import stratege
+    momente = {e["id"]: e for e in json.loads((AUS14 / "momente.json").read_text(encoding="utf-8"))}
+    antw = _antworten14()
+    laeufe = {(r, d): _zaehle14(r, d, momente) for r in ("challenger", "carlos") for d in ("a", "b")}
+    laeufe = {k: v for k, v in laeufe.items() if v is not None}
+    zeilen = ["| Kritiker | Menge | Stratege besser | Kern besser | gleich | Quote Stratege | falsch S / K | "
+              "gefährlich S / K |", "|---|---|---|---|---|---|---|---|"]
+    mittel = {m: {k: 0.0 for k in ("s", "k", "g", "sf", "kf", "sg", "kg")} for m in ("alt", "neu")}
+    for (rolle, dg), z in laeufe.items():
+        for m in ("alt", "neu"):
+            x = z[m]
+            n = x["s"] + x["k"]
+            zeilen.append(f"| {rolle} {dg} | {m} ({x['n']}) | {x['s']} | {x['k']} | {x['g']} | "
+                          f"{100 * x['s'] / n if n else 0:.0f} % | {x['sf']} / {x['kf']} | {x['sg']} / {x['kg']} |")
+            for k in mittel[m]:
+                mittel[m][k] += x[k] / len(laeufe)
+    for m in ("alt", "neu"):
+        x = mittel[m]
+        n = x["s"] + x["k"]
+        zeilen.append(f"| **Mittel** | {m} | {x['s']:.1f} | {x['k']:.1f} | {x['g']:.1f} | "
+                      f"**{100 * x['s'] / n if n else 0:.0f} %** | {x['sf']:.1f} / {x['kf']:.1f} | "
+                      f"{x['sg']:.1f} / {x['kg']:.1f} |")
+    # automatisch: die gesprochenen Stratege-Saetze noch einmal durch die Pruefung, dazu der Pruefer aus 013
+    champs = _champions()
+    vor_r1 = innere = zweit = 0
+    for i, r in antw.items():
+        if r["quelle"] != "stratege":
+            continue
+        gruende = stratege.pruefe(r["text"], momente[i]["pruef_lage"])
+        vor_r1 += any(g.startswith(("nach vorn", "zu riskantes")) for g in gruende)
+        zweit += any(f.startswith("Vorwaerts trotz R1") for f in pruefe(momente[i] | {"prompt": momente[i]["basis"]},
+                                                                         r["text"], champs))
+        innere += any(g.startswith("innerer Begriff") for g in gruende)
+    tor = {
+        "gefährlich S ≤ K (alt)": mittel["alt"]["sg"] <= mittel["alt"]["kg"],
+        "gefährlich S ≤ K (neu)": mittel["neu"]["sg"] <= mittel["neu"]["kg"],
+        "0 Vorwärts-Sätze trotz R1": vor_r1 == 0,
+        "0 innere Begriffe": innere == 0,
+        "falsch S ≤ K + 2 (alt)": mittel["alt"]["sf"] <= mittel["alt"]["kf"] + 2,
+        "falsch S ≤ K + 2 (neu)": mittel["neu"]["sf"] <= mittel["neu"]["kf"] + 2,
+        "Quote ≥ 65 % (neu)": (mittel["neu"]["s"] / (mittel["neu"]["s"] + mittel["neu"]["k"])
+                               if mittel["neu"]["s"] + mittel["neu"]["k"] else 0) >= 0.65,
+    }
+    text = ("**Blind-Kritik (je Rolle zwei Durchgänge, neue Kritiker; Mittel über alle vier)**\n\n" + "\n".join(zeilen)
+            + f"\n\n**Automatisch** (gesprochene Stratege-Sätze): Vorwärts trotz R1 {vor_r1}, innere Begriffe {innere}; "
+            + f"zweite Meinung (grober Prüfer aus 013, von Hand nachzusehen): {zweit}."
+            + "\n\n**Tor:** " + " · ".join(f"{k}: {'ja' if v else 'NEIN'}" for k, v in tor.items())
+            + f"\n\n**Tor {'geschafft' if all(tor.values()) else 'nicht geschafft'}.**")
+    (AUS14 / "kritik.md").write_text(text, encoding="utf-8")
+    return text, all(tor.values())
+
+
+def bericht14() -> None:
+    momente = json.loads((AUS14 / "momente.json").read_text(encoding="utf-8"))
+    antw = _antworten14()
+    versuche = [x for r in antw.values() for x in r["versuche"]]
+    erste = [r["versuche"][0] for r in antw.values()]
+    ok = [x for x in versuche if x["text"] and not x["fehler"]]
+    quellen = {q: sum(1 for r in antw.values() if r["quelle"] == q) for q in ("stratege", "kern", "still")}
+    verworfen = [(i, r["versuche"][0]["gruende"]) for i, r in antw.items() if r["versuche"][0]["gruende"]]
+    arten = {}
+    for _, gr in verworfen:
+        for g in gr:
+            k = g.split(" (")[0]
+            arten[k] = arten.get(k, 0) + 1
+    endlich = [r["versuche"][-1]["ende_s"] + (r["versuche"][0]["ende_s"] if len(r["versuche"]) > 1 else 0)
+               for r in antw.values()]
+    t = ["# Stratege-Probe mit Schutzschicht (Auftrag 014)", "",
+         "Offline nachgespielt, Systemprompt `stratege.STRATEGE_SYSTEM` (A3/A4), Lage mit A1 (`kern.kontext()`: "
+         "„zuletzt gesehen vor N s … jetzt unbekannt“, DEINE ZAUBER, NACH VORN VERBOTEN). Jeder Satz geht durch "
+         "`stratege.pruefe` (A2); verworfen wird einmal neu gefragt, mit dem Grund, danach gilt der Kern-Satz. "
+         "Menge **alt** = die 70 Momente aus 013 (192113, 101426), **neu** = 30 aus 164326 und 173159 (Wendepunkte "
+         "und Leerlauf, nicht zum Bauen benutzt).", "",
+         f"- Aufrufe: {len(versuche)} ({len(antw)} Momente, {len(versuche) - len(antw)} Wiederholungen), Fehler: "
+         f"{sum(1 for x in versuche if x['fehler'])}",
+         f"- Gesprochen: Stratege {quellen['stratege']}, Kern-Satz (Fallback) {quellen['kern']}, still {quellen['still']}",
+         f"- Beim ersten Versuch verworfen: {len(verworfen)} von {len(antw)} – "
+         + ", ".join(f"{k} {v}" for k, v in sorted(arten.items(), key=lambda kv: -kv[1])),
+         f"- Latenz erster Satz (erster Versuch): Median {statistics.median([x['erster_s'] for x in erste if x['erster_s']]):.1f} s, "
+         f"p90 {_p90([x['erster_s'] for x in erste if x['erster_s']]):.1f} s; ganze Antwort Median "
+         f"{statistics.median([x['ende_s'] for x in ok]):.1f} s; mit Wiederholung bis zum gültigen Satz p90 "
+         f"{_p90(endlich):.1f} s",
+         f"- Länge: Median {statistics.median([len(x['text'].split()) for x in ok]):.0f} Wörter, höchstens "
+         f"{max(len(x['text'].split()) for x in ok)}", ""]
+    if (AUS14 / "kritik.md").exists():
+        t += [(AUS14 / "kritik.md").read_text(encoding="utf-8"), ""]
+    for stamm in ALT + NEU:
+        t += [f"## Partie {stamm} ({'neu' if stamm in NEU else 'alt'})", "",
+              "| Zeit | Lage in einem Satz | Carlos' Frage | Coach live (Kern) | Stratege | Quelle | Verworfen (1. Versuch) |",
+              "|---|---|---|---|---|---|---|"]
+        for e in sorted((e for e in momente if e["stamm"] == stamm), key=lambda e: e["zeit"]):
+            r = antw.get(e["id"]) or {}
+            v0 = r.get("versuche", [{}])[0]
+            frage = e["frage"] or ("– (Leerlauf)" if e["art"] == "leerlauf" else f"– (Wendepunkt: {e['anlass']})")
+            weg = (f"„{v0.get('text', '')}“ – {'; '.join(v0['gruende'])}" if v0.get("gruende") else "–")
+            zelle = [e["uhr"], e["lage_satz"], frage, e.get("kern") or "still", r.get("text") or "still",
+                     r.get("quelle", "?"), weg]
+            t.append("| " + " | ".join(z.replace("|", "/").replace("\n", " ") for z in zelle) + " |")
+        t.append("")
+    BERICHT14.write_text("\n".join(t), encoding="utf-8")
+    print(BERICHT14)
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     arg = sys.argv[1:]
@@ -427,6 +773,10 @@ if __name__ == "__main__":
         blind(nr)
     elif arg and arg[0] == "kritik":
         print(kritik(nr))
+    elif arg and arg[0] in ("sammeln14", "fragen14", "blind14", "bericht14"):
+        {"sammeln14": sammeln14, "fragen14": fragen14, "blind14": blind14, "bericht14": bericht14}[arg[0]]()
+    elif arg and arg[0] == "kritik14":
+        print(kritik14()[0])
     elif arg and arg[0] == "bericht":
         laeufe = [int(x) for x in arg[arg.index("--laeufe") + 1].split(",")] if "--laeufe" in arg else [nr]
         kritik = {}

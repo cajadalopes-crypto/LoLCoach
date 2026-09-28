@@ -99,6 +99,21 @@ ZAEHLT_RUNTER = re.compile(r"\b(in|noch|Noch) (\d+) Sekunden")
 ZAEHLT_HOCH = re.compile(r"\b(seit) (\d+) Sekunden")
 
 
+def gegner_zeile(g) -> str:
+    """Auftrag 014, A1 (013: "Yi vor 288 s in seiner Basis" wurde "seit 288 s in seiner Basis, kein Gank-Risiko"):
+    ohne Doppeldeutung - "jetzt sichtbar ..." oder "zuletzt gesehen vor N s ..., jetzt unbekannt, kann ueberall sein"."""
+    if g.s.tot:
+        return f"{g.champion}: tot, noch {int(g.s.respawn or 0)} s"
+    weit = f", {int(g.abstand)} von dir" if g.abstand is not None else ""
+    if g.sichtbar:
+        return f"{g.champion} L{g.s.level}: jetzt sichtbar, {g.ort or 'Ort unbekannt'}{weit}"
+    if g.seit is None or g.pos is None:
+        return f"{g.champion} L{g.s.level}: noch nicht gesehen, Ort unbekannt"
+    if g.seit <= 10:
+        return f"{g.champion} L{g.s.level}: zuletzt gesehen vor {int(g.seit)} s {g.ort}{weit}, jetzt nicht zu sehen"
+    return f"{g.champion} L{g.s.level}: zuletzt gesehen vor {int(g.seit)} s {g.ort}, jetzt unbekannt, kann überall sein"
+
+
 def zeit_jetzt(text: str, alter_s: float, zeichen_pro_s: float) -> str:
     """Auftrag 012, 3 (192113 4:37: "Drache in 30 Sekunden", das Spiel zeigte 20): eine Zeit im Satz gilt, wenn man
     sie HOERT - gewaehlt 4:29,7, gesprochen 4:37,1 (die Stimme sprach noch), die Zahl kam 2 s nach dem ersten Ton.
@@ -2102,6 +2117,8 @@ class Kern:
         p, b = m.p, m.b
         z = [f"MODUS: {self.modus.aktuell} - du stehst {bereich_worte(m.bereich)}; Leben "
              f"{int(round((m.leben or 0) * 100))} %, Gold {int(b.gold or 0)}, Level {p.ich.level if p.ich else '?'}."]
+        if (zauber := self._eigene_zauber()):
+            z.append(f"DEINE ZAUBER: {zauber}")               # Auftrag 014, A1
         plan = self.fuehrer.plan
         if plan is not None:
             z.append(f"PLAN (entschieden): {satz(plan.handlung)}")
@@ -2109,7 +2126,12 @@ class Kern:
                 z.append(f"DANACH: {self.danach_text}")
         top = [h for h in sorted(self.kandidaten or [], key=lambda h: -h.ev) if not fuehren.stumm(h)][:3]
         if top:
-            z.append("ALTERNATIVEN: " + " | ".join(f"{fuehren.kurz(h)} ({h.grund or '-'}, EV {h.ev:+.0f})" for h in top))
+            z.append("ALTERNATIVEN: " + " | ".join(f"{fuehren.kurz(h)} ({h.grund or '-'}, Wert {h.ev:+.0f})" for h in top))
+        v = self.vorn()
+        if v["verboten"]:                          # Auftrag 014, A1: R1 als eigene Zeile, mit dem, was erlaubt ist
+            z.append(f"NACH VORN VERBOTEN (Leben {v['leben']} %). Erlaubt: {', '.join(v['erlaubt']) or 'zurück, back'}.")
+        elif v["gesperrt"]:
+            z.append(f"ZU RISKANT, NICHT VORSCHLAGEN: {', '.join(v['gesperrt'])}.")
         if self.zeitleiste:
             z.append("ZEITLEISTE (naechste 3 Minuten): " + zeitleiste.als_text(self.zeitleiste, m.zeit, 6))
         try:
@@ -2134,15 +2156,54 @@ class Kern:
                  f"{sum(1 for e in p.kills_von('TurretKilled') if e.team == die)}, Drachen {len(p.drachen(wir))} zu "
                  f"{len(p.drachen(die))}, Item-Gold {p.item_gold(wir) - p.item_gold(die):+d}.")
         for g in b.gegner[:5]:
-            if g.s.tot:
-                z.append(f"- Gegner {g.champion}: tot, noch {int(g.s.respawn or 0)} s")
-            else:
-                wo = (g.ort or "Ort unbekannt") + (f", vor {int(g.seit)} s" if g.seit else ", sichtbar" if g.sichtbar else "")
-                z.append(f"- Gegner {g.champion} L{g.s.level}: {wo}"
-                         + (f", {int(g.abstand)} von dir" if g.abstand is not None else ""))
+            z.append(f"- Gegner {gegner_zeile(g)}")         # Auftrag 014, A1: "zuletzt gesehen vor 288 s", nie "vor 288 s"
         for s, wo, le, *rest in (b.mitspieler or [])[:4]:
             z.append(f"- Mitspieler {s.champion}: {'tot' if s.tot else (rest[0] if rest and rest[0] else 'unterwegs')}")
         return "\n".join(z[:30])
+
+    def _eigene_zauber(self) -> str:
+        """Auftrag 014, A1: "Flash bereit; TP in 56 s; Ult bereit" - nur, was der Coach weiss."""
+        m = self.m
+        b = m.b if m is not None else None
+        if b is None:
+            return ""
+        teile = []
+        if b.flash is not None:
+            teile.append("Flash bereit" if b.flash <= 0 else f"Flash in {int(b.flash)} s")
+        if m.tp_in is not None:
+            teile.append("TP bereit" if m.tp_in <= 0 else f"TP in {int(m.tp_in)} s")
+        if b.ult is not None:
+            teile.append("Ult bereit" if b.ult else "Ult nicht bereit")
+        return "; ".join(teile)
+
+    def vorn(self) -> dict:
+        """Auftrag 014, A1/A2: R1 fuer den Strategen - `verboten` (Leben unter vor_leben_min: nichts nach vorn),
+        `gesperrt` (Vorwaerts-Ziele mit p_tod >= vor_p_tod_max), `ziele` (ihre Objectives/Lanes als Woerter) und
+        `erlaubt` (was der Kern in diesem Takt sagen darf)."""
+        from . import fuehren
+        m = self.m
+        cs = self.cfg["schranken"]
+        le = m.leben if m is not None else None
+        verboten = le is not None and le < cs["vor_leben_min"] and not (m.tot if m is not None else False)
+        roh = getattr(self, "kandidaten_roh", None) or self.kandidaten or []
+        gesperrt, ziele = [], []
+        for h in roh:
+            if h.art in VOR_SCHRANKE and h.p_tod >= cs["vor_p_tod_max"]:
+                k = fuehren.kurz(h)
+                if k and k not in gesperrt:
+                    gesperrt.append(k)
+                o = h.daten.get("objective")
+                if o:
+                    ziele.append(o)
+        erlaubt = []
+        for h in sorted(self.kandidaten or [], key=lambda h: -h.ev):
+            if h.art in VOR_SCHRANKE or fuehren.stumm(h):
+                continue
+            k = fuehren.kurz(h)
+            if k and k not in erlaubt:
+                erlaubt.append(k)
+        return {"verboten": verboten, "leben": None if le is None else int(round(le * 100)),
+                "gesperrt": gesperrt[:4], "ziele": sorted(set(ziele)), "erlaubt": erlaubt[:4]}
 
     def kopfzeile(self) -> str | None:
         """Erste Zeile(n) jeder Claude-Frage (Kapitel 5.2, 10.2): Modus und - wenn der Kern entscheidet - sein Plan."""
