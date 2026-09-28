@@ -4,6 +4,49 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 013 – Probe: Claude als Makro-Stratege (28.09.2026)
+
+Grundlage: `buecher/auftraege/013_auftrag.md`. Offline, der Live-Coach ist unverändert. Werkzeug:
+`werkzeuge/stratege_probe.py`, Ausgabe: `buecher/protokolle/STRATEGE_PROBE.md`. Rohdaten (Momente, Prompts,
+Antworten, Blind-Vorlagen, Urteile): `buecher/protokolle/stratege_probe/`.
+
+- **Momente (70):**
+  - 192113: 41 Fragen, die der Kern beantwortet. Notizen, Nachfragen und Beschwerden sind ausgenommen; gleichmäßig
+    ausgedünnt auf 41.
+  - 192113: 10 Wendepunkte ab 10:00 (Turm, Objective; höchstens einer je 60 s).
+  - 101426: 10 Leerlauf-Fenster aus 009 (Fenstermitte) und 9 Wendepunkte ab 14:00.
+  - Kills zählen nicht als Wendepunkte: das waren über 50, zu viele für das Budget.
+- **Kontext:**
+  - Wie live: Kopfzeile, `kern.kontext()` und die Spielakte über `gehirn`.
+  - Dazu die Kandidaten des Kerns (Wert, Todesrisiko, Grund, stumm/gesperrt) und die Zeile R1.
+  - Aufruf: `llm.frage_strom`, sonnet, Aufwand low, vorgehaltener Prozess.
+- **Läufe:**
+  - Lauf 1: Systemprompt `STRATEGE`.
+  - Lauf 2: derselbe mit einer Längenregel (≤ 25 Wörter). Lauf 1 sprach im Median 52 Wörter, rund 20 s Stimme – der
+    handwerkliche Fehler, den der Auftrag als Beispiel nennt.
+  - Sonst ist nichts geändert.
+
+| | Lauf 1 | Lauf 2 |
+|---|---|---|
+| Aufrufe / Fehler | 70 / 0 | 70 / 0 |
+| erster Satz Median / p90 | 1,7 / 2,8 s | 1,5 / 2,6 s |
+| ganze Antwort Median / p90 | 5,4 / 6,8 s | 4,3 / 5,6 s |
+| Wörter Median / max | 52 / 92 | 26 / 39 |
+| Dauer der 70 Aufrufe | 6,5 min | 5,2 min |
+| Fakten-Flags (automatisch) | 6 | 1 |
+| Stratege besser: Challenger / Carlos (ohne „gleich“) | 58 % / 65 % | 69 % / 70 % |
+| „falsch“ Stratege / Kern: Challenger, Carlos | 28/5, 21/3 | 14/11, 18/11 |
+| „gefährlich“ Stratege / Kern: Challenger, Carlos | 3/1, 2/2 | 3/1, 3/1 |
+
+- **Abo:** 140 Aufrufe in zwei Blöcken zu 5–7 min, keine Grenze, keine Ablehnung, kein Abbruch.
+- **Faktenprüfer:** Er ist grob. Er findet erfundene Zahlen und Rat nach vorn trotz R1 und hat jeden Treffer von Hand
+  gesehen. Die wichtigste Fehlerklasse fand er nicht: „vor 288 s in seiner Basis“ gelesen als „seit 288 s in der
+  Basis“. Die fanden die Kritiker. Einzelheiten stehen in `stratege_probe/kritik_2.md`.
+- **Streuung der Kritiker:** Die Kern-Antworten sind in beiden Läufen wörtlich gleich. Trotzdem wurden sie einmal 3–5,
+  einmal 11-mal als falsch markiert. Unterschiede unter etwa 5 Fällen sind nicht belastbar.
+
+---
+
 ## Auftrag 012 – Wellen-Endlosschleife, ignorierte Fragen, Timer-Fehler (28.09.2026)
 
 Grundlage: `buecher/auftraege/012_auftrag.md`, Botpartie `2026-09-28_192113` (Riven gegen Teemo, Win). Offline

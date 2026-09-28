@@ -1,0 +1,70 @@
+{"id":"m00","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B denkt an Herold mit Urgot und Kayn, A nur Telegramm-Welle"}
+{"id":"m01","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Bei 13 % ist Recall richtig; A laeuft nur zum Turm, Positionen falsch"}
+{"id":"m02","besser":"A","A_falsch":true,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":true,"warum":"B schickt mich quer ueber die Karte, drei gegen eins erfunden"}
+{"id":"m03","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Back plus Anschluss an Mid-Push, genau richtig erklaert"}
+{"id":"m04","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Sett tot, Push sinnvoll mit Folgeplan; Kanone/Plating aber falsch"}
+{"id":"m05","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Tot: B gibt Plan fuer Drache als Gruppe nach Respawn"}
+{"id":"m06","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Aurora tot, Team am Fluss: Drachen-Call mit Grund"}
+{"id":"m07","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"A klar; B wirr, ranged clear passt nicht zu Riven"}
+{"id":"m08","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Back nach Drache mit Grund und Anschluss statt Schweigen"}
+{"id":"m09","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B sagt Gankgefahr und wohin danach, A nur Aufzaehlung"}
+{"id":"m10","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Allein im Feindjungle: Warnung und Gruppenplan helfen"}
+{"id":"m11","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Aurora ohne Flash nah, Pick mit Rueckzugsplan; A zu passiv"}
+{"id":"m12","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B redet Unsinn ueber Drache fuers Team woanders"}
+{"id":"m13","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"31 % allein: Rueckzug und Back sinnvoll, wenn auch etwas widerspruechlich"}
+{"id":"m14","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Drei tot, Fenster offen: Nexus-Turm jetzt, A verschenkt es"}
+{"id":"m15","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A sagt was tun und warum, B nur Telegramm"}
+{"id":"m16","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B verwirrt: recallen obwohl tot"}
+{"id":"m17","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Drache ist drin; B wirr und will ihn erneut erzwingen"}
+{"id":"m18","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B wartet auf gegnerische Respawns, verschenkt das Fenster"}
+{"id":"m19","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B nennt den genauen Busch und den Grund"}
+{"id":"m20","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B praeziser Platz, A vage"}
+{"id":"m21","besser":"A","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A beantwortet die Frage mit Grund; Teemo-Q-Satz Unsinn"}
+{"id":"m22","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A erklaert Warum mit Yi-Gefahr, B roboterhaft"}
+{"id":"m23","besser":"A","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A redet ueber Bot, B ignoriert Frage"}
+{"id":"m24","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B beantwortet klar: coacht die gespielte Rolle"}
+{"id":"m25","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B ehrliche Antwort zur Rolle, A behauptet Grenze"}
+{"id":"m26","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B erklaert gebackt falsch"}
+{"id":"m27","besser":"B","A_falsch":true,"A_gefaehrlich":true,"B_falsch":false,"B_gefaehrlich":false,"warum":"A haelt 288 s alten Yi fuer sicher weg"}
+{"id":"m28","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B: erst kaufen, dann Top mit Grund und Yi-Warnung"}
+{"id":"m29","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A sagt ja mit Gruppenplan, B widerspricht sich"}
+{"id":"m30","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A erklaert und geht auf Drache ein, B wiederholt Top"}
+{"id":"m31","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B antwortet wenigstens, Logik aber schief; A ignoriert Frage"}
+{"id":"m32","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Gleicher Call, B mit Grund und Folgeplan"}
+{"id":"m33","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A Floskel, B echter Grund mit Pantheon"}
+{"id":"m34","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Genau die Flash-Frage beantwortet, ohne Wellengerede"}
+{"id":"m35","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B nimmt Kritik auf, Plan Richtung Herold; A wieder Top-Welle"}
+{"id":"m36","besser":"B","A_falsch":true,"A_gefaehrlich":true,"B_falsch":false,"B_gefaehrlich":false,"warum":"A erfindet Pantheon-Flash, schickt mich zu drei Gegnern"}
+{"id":"m37","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Herold in 18 s liegt nah; A ignoriert ihn"}
+{"id":"m38","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Beide back, A mit Grund"}
+{"id":"m39","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A: Kauf, TP, Drache-Gruppe; B Telegramm"}
+{"id":"m40","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A mit Grund und Mitspielern, B nur Ansage"}
+{"id":"m41","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A beantwortet Frage, danach Drache sammeln; B Leerformel"}
+{"id":"m42","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B Back-Plan fuer Tiamat vor Drache mit Grund"}
+{"id":"m43","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A beantwortet TP-Frage direkt mit Folgeplan"}
+{"id":"m44","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B erfindet Sett und Kai'Sa neben mir"}
+{"id":"m45","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B sagt Kauf und Plan, A vergisst Einkauf"}
+{"id":"m46","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B mit Kauf, Timing und Gefahr"}
+{"id":"m47","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A erklaert Rueckzug und Plan danach, trotz Jargon"}
+{"id":"m48","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B Back mit Folgeplan und Baron-Einordnung"}
+{"id":"m49","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B glaubt mir, A sagt stimmt und wiederholt Top"}
+{"id":"m50","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A glaubt mir und gibt TP-Folgeplan"}
+{"id":"m51","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B gibt Gruppenziel, A vage"}
+{"id":"m52","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B erfindet Baron-Plan und schickt wieder zur Top-Welle"}
+{"id":"m53","besser":"gleich","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Beide wieder Top, wo Mitspieler farmen"}
+{"id":"m54","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B glaubt mir und erlaubt Mid mit Yi-Warnung"}
+{"id":"m55","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"A gibt Alternative Bot; B Unsinn mit Wellenwert verkaufen"}
+{"id":"m56","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B beantwortet Warum mit Pantheon direkt neben mir"}
+{"id":"m57","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B glaubt mir, gibt TP-Folgeplan"}
+{"id":"m58","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B wirr: Shop schliesst, recallen obwohl tot"}
+{"id":"m59","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A liefert das geforderte Follow-up, B genau nicht"}
+{"id":"m60","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A: Back, dann gruppieren, Zeit reicht; B Telegramm"}
+{"id":"m61","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B: Gold reicht nicht fuer Schutzengel, Baron erfunden"}
+{"id":"m62","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A nimmt Sorge ernst, Plan Richtung Drache"}
+{"id":"m63","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Back fuer Schutzengel vor Drache, mit Grund"}
+{"id":"m64","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B behauptet Yi in Basis, obwohl 126 s unsichtbar"}
+{"id":"m65","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B glaubt mir, Back fuer Schutzengel; A nennt Back schlechter"}
+{"id":"m66","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A verbietet Back mit 5000 Gold, lieber still"}
+{"id":"m67","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B: Schutzengel kaufen, dann Ziel; A ignoriert 6000 Gold"}
+{"id":"m68","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"4129 Gold: B sagt nichts zu kaufen"}
+{"id":"m69","besser":"B","A_falsch":false,"A_gefaehrlich":true,"B_falsch":false,"B_gefaehrlich":false,"warum":"A: rein in ihre Basis mit Yi und Teemo"}

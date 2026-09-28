@@ -1,0 +1,70 @@
+{"id":"m00","besser":"A","A_falsch":true,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"A folgt Plan (Zahl 6 statt 5); B erfindet drei Gegner, Aurora ohne Flash wäre Kill"}
+{"id":"m01","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"A: erst Turm, dann weg, nennt Gefahr; B nur Back, falsche Prozent"}
+{"id":"m02","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B: Top-Turm von der Drachengrube, drei gegen eins erfunden"}
+{"id":"m03","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A setzt Plan konkret um, Zeitfenster genannt; Schweigen verschenkt es"}
+{"id":"m04","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B nutzt Setts Todeszeit und gibt Folgeplan"}
+{"id":"m05","besser":"gleich","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Tot; B etwas Drachenplan, sonst Füllsätze"}
+{"id":"m06","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B: Welle, dann Drache mit Team in 34 s"}
+{"id":"m07","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Drache steht an, Back lässt Team vier gegen fünf"}
+{"id":"m08","besser":"A","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Back nach Drache richtig, aber Gegner stehen 1500-3000 nah"}
+{"id":"m09","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B gibt Handlung: clearen, zu Mid, nicht pushen"}
+{"id":"m10","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Allein in ihrem Jungle, drei mid: Warnung und Sammeln sinnvoll"}
+{"id":"m11","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A: drei kommen erfunden, Viego tot; B zur Gruppe"}
+{"id":"m12","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A Drache 8 statt 13 s; B nennt Bard/Aurora nahe"}
+{"id":"m13","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"31 % allein unten: Hinweis zur Gruppe nötig"}
+{"id":"m14","besser":"gleich","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Beide Nexus-Turm; A übersieht Sett, B knapp"}
+{"id":"m15","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A: Sett nähert sich unbelegt; B korrekt und vorsichtig"}
+{"id":"m16","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B: recallen obwohl tot, Unsinn"}
+{"id":"m17","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Drache schon geholt; B befiehlt Mitspieler, widersprüchlich"}
+{"id":"m18","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Sett zuletzt 494 entfernt, B sagt weit weg"}
+{"id":"m19","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B konkreter Platz mit Grund"}
+{"id":"m20","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Kontrollauge am eigenen Turm verschenkt; Flussbusch besser"}
+{"id":"m21","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A beantwortet die Frage und nennt Kauf"}
+{"id":"m22","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A erklärt und gibt Ablauf; B nur Techniksatz"}
+{"id":"m23","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A: Yi vor 138 s als sicher in Basis, Botbild wirr"}
+{"id":"m24","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B ehrlich zur Rolle plus Jungler-Info"}
+{"id":"m25","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B beantwortet Frage mit Jungler-Info"}
+{"id":"m26","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B erklärt Begriff falsch"}
+{"id":"m27","besser":"B","A_falsch":true,"A_gefaehrlich":true,"B_falsch":false,"B_gefaehrlich":false,"warum":"Yi 288 s unbekannt, A sagt kein Gank-Risiko"}
+{"id":"m28","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A vergisst Kauf trotz Gold"}
+{"id":"m29","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Mit Sett zum Drachen ist Teamplan; B sagt Nein und dann doch"}
+{"id":"m30","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A begründet Drache als Gruppe; B keine Antwort"}
+{"id":"m31","besser":"gleich","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"A unverständlich; B erfindet vier Mitspieler unten"}
+{"id":"m32","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B nennt die zwei Gegner konkret"}
+{"id":"m33","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A leerer Satz; B konkrete Gefahr Pantheon"}
+{"id":"m34","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A beantwortet Flash-Frage knapp, wie gewünscht"}
+{"id":"m35","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B nimmt Kritik auf, Herold als Objective; A wirr"}
+{"id":"m36","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B erklärt, warum Flashs unbekannt sind"}
+{"id":"m37","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A beantwortet Danach sicher; Herold allein bei Cassio/Ali riskant"}
+{"id":"m38","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"A begründet Back; B Prozent falsch"}
+{"id":"m39","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A: Kauf, Welle, dann Drache mit Gruppe"}
+{"id":"m40","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Gleicher Inhalt, A mit Zeitdruck konkreter"}
+{"id":"m41","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B widerspricht sich selbst; A mit Folgeplan Drache"}
+{"id":"m42","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Drache in 40 s; B schickt zum Back"}
+{"id":"m43","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A beantwortet Frage klar mit Grund"}
+{"id":"m44","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B plus Drache-Folgeplan und Yi-Hinweis"}
+{"id":"m45","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A vergisst Kauf mit 2832 Gold"}
+{"id":"m46","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B Kauf und gruppiert gegen drei oben"}
+{"id":"m47","besser":"B","A_falsch":false,"A_gefaehrlich":true,"B_falsch":false,"B_gefaehrlich":false,"warum":"Recall im Gegnerjungle neben Pantheon/Yi; erst zurücklaufen"}
+{"id":"m48","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B mit Grund für Top: Team dort"}
+{"id":"m49","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A ignoriert Einwand; B nimmt ihn auf"}
+{"id":"m50","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A nimmt Einwand auf, nennt TP-Zeit"}
+{"id":"m51","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"B: Yi kommt unbelegt, Sett ist in Basis"}
+{"id":"m52","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":true,"warum":"Baron zu dritt, alle Gegner leben, Todesrisiko 0,39"}
+{"id":"m53","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B gruppiert, Auge, Kanone"}
+{"id":"m54","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B nimmt Einwand an, Mid mit Yi-Check"}
+{"id":"m55","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Yi vor 68 s gesehen, nicht seit 68 s auf Mid"}
+{"id":"m56","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B beantwortet Warum mit Positionen; A leer"}
+{"id":"m57","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B nimmt Einwand auf, nennt TP"}
+{"id":"m58","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B mit Folgeplan Gruppe und Drache"}
+{"id":"m59","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A gibt Follow-up und Gefahr; B wiederholt"}
+{"id":"m60","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"A: Farm, Kauf, dann Drache"}
+{"id":"m61","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"Kauf vor Drache sinnvoll; Teemo-Ort 71 s alt"}
+{"id":"m62","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Teemo und Pantheon sind sichtbar, A sagt unsichtbar"}
+{"id":"m63","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Back höchster EV, Yi seit 100 s fehlend"}
+{"id":"m64","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B sieht Alistar direkt bei dir; A übersieht ihn"}
+{"id":"m65","besser":"B","A_falsch":true,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"Back hat besten EV, A nennt es schlechter"}
+{"id":"m66","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"5056 Gold, 48 %: Back ansagen ist Pflicht"}
+{"id":"m67","besser":"B","A_falsch":false,"A_gefaehrlich":false,"B_falsch":false,"B_gefaehrlich":false,"warum":"B nennt Kauf und Ziel nach Respawn"}
+{"id":"m68","besser":"A","A_falsch":false,"A_gefaehrlich":false,"B_falsch":true,"B_gefaehrlich":false,"warum":"4129 Gold, B sagt nichts zu kaufen"}
+{"id":"m69","besser":"B","A_falsch":false,"A_gefaehrlich":true,"B_falsch":false,"B_gefaehrlich":false,"warum":"Allein gegen drei in ihrer Basis ist Tod"}

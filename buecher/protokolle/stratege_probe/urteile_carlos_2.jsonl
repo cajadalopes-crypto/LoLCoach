@@ -1,0 +1,70 @@
+{"id": "m00", "besser": "A", "A_falsch": true, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "B erfindet drei Gegner, Plan ist Bot drücken; A zählt nur falsch"}
+{"id": "m01", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "A mit Grund und Richtung; B nennt falsches Leben"}
+{"id": "m02", "besser": "A", "A_falsch": true, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "A sieht Twitch/Viego nah; B Top-Turm von Drachengrube unsinnig"}
+{"id": "m03", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "Back fürs Item mit Folgeplan, Schweigen bringt nichts"}
+{"id": "m04", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B nutzt Setts Tod und plant danach Gruppe"}
+{"id": "m05", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "Tot, B redet Belangloses, Sett lebt"}
+{"id": "m06", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B verbindet Welle mit Drachen-Call, Team steht bereit"}
+{"id": "m07", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "Item holen sinnvoll; B schickt zu Gruppe, die nicht da ist"}
+{"id": "m08", "besser": "A", "A_falsch": true, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "Back richtig, aber 'kein Risiko' bei Aurora 1500 überzogen"}
+{"id": "m09", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B gibt Handlung und Grund, A nur Aufzählung"}
+{"id": "m10", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A warnt vor drei Mid, sinnvoller Sammelplan"}
+{"id": "m11", "besser": "B", "A_falsch": true, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B zur Gruppe mit Drachenplan; A erfindet drei und falschen Turm"}
+{"id": "m12", "besser": "B", "A_falsch": true, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B warnt vor Bard/Aurora; A Drachenzeit falsch"}
+{"id": "m13", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "31 Prozent allein, B schickt zur Gruppe"}
+{"id": "m14", "besser": "B", "A_falsch": true, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A sagt kein Risiko, ignoriert Sett 1500 sichtbar"}
+{"id": "m15", "besser": "B", "A_falsch": true, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A behauptet Sett nähert sich, der steht in Basis"}
+{"id": "m16", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "Tot, B redet nur Leeres"}
+{"id": "m17", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "B befiehlt Mitspielern, Drache längst genommen"}
+{"id": "m18", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": true, "warum": "B nennt Sett weit weg, er ist 494 entfernt"}
+{"id": "m19", "besser": "gleich", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "Beide beantworten die Frage brauchbar"}
+{"id": "m20", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "Flussbusch sinnvoller als Kontrollauge am eigenen Turm"}
+{"id": "m21", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A beantwortet die Frage mit Grund und Folgeplan"}
+{"id": "m22", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A erklärt warum und was danach; B nur Zahlen"}
+{"id": "m23", "besser": "A", "A_falsch": true, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A beantwortet Bot-Frage, Yi-Basis aber veraltet"}
+{"id": "m24", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B beantwortet Jungle-Frage ehrlich mit Yi-Info"}
+{"id": "m25", "besser": "B", "A_falsch": true, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B beantwortet die Frage; A behauptet nur Top-Sicht"}
+{"id": "m26", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "A erklärt Backen richtig, B Unsinn"}
+{"id": "m27", "besser": "B", "A_falsch": true, "A_gefaehrlich": true, "B_falsch": false, "B_gefaehrlich": false, "warum": "A nennt 288 s alte Info kein Gank-Risiko"}
+{"id": "m28", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B vergisst den Kauf nicht, gibt Grund"}
+{"id": "m29", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "A sagt klar ja mit Grund; B widerspricht sich"}
+{"id": "m30", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A erklärt, B wiederholt Top"}
+{"id": "m31", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "B erklärt wenigstens, aber Zahl am Drachen falsch"}
+{"id": "m32", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B nennt echte Gefahr Teemo und Pantheon"}
+{"id": "m33", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A Floskel, B nennt Pantheon als Grund"}
+{"id": "m34", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B beantwortet Flash und warnt vor Pantheon"}
+{"id": "m35", "besser": "B", "A_falsch": true, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B geht auf Makro ein, A wieder Top-Welle"}
+{"id": "m36", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B erklärt genau, warum Flashs unbekannt sind"}
+{"id": "m37", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A beantwortet danach mit Grund, B knapp Herold solo"}
+{"id": "m38", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "A mit Grund; B nennt falsches Leben"}
+{"id": "m39", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A beantwortet mit Kauf, Weg und Folgeplan"}
+{"id": "m40", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "Gleicher Inhalt, A mit Grund und Zeit"}
+{"id": "m41", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "B widerspricht sich selbst, A antwortet"}
+{"id": "m42", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B plant Item und Sicherheit, A nur Telegramm"}
+{"id": "m43", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A beantwortet klar mit Grund"}
+{"id": "m44", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B gibt Plan plus Folgeschritt Drache"}
+{"id": "m45", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A vergisst Kauf bei 2800 Gold"}
+{"id": "m46", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B mit Kauf und Gruppe, A überspringt Kauf"}
+{"id": "m47", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B knapp richtig; A belehrt mit Jargon, recall im Feindjungle"}
+{"id": "m48", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B mit Folgeplan zum Team"}
+{"id": "m49", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B glaubt ihm, A ignoriert Beobachtung"}
+{"id": "m50", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A glaubt und gibt Folgeplan mit TP"}
+{"id": "m51", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "B gruppiert mit Sett, der in Basis steht"}
+{"id": "m52", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": true, "warum": "B schickt zu Baron trotz Todesrisiko nach vorn"}
+{"id": "m53", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B mit Gruppe und Grund statt Telegramm"}
+{"id": "m54", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B glaubt ihm und gibt Mid-Plan"}
+{"id": "m55", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "A gibt Ziel; B liest alte Yi-Info als aktuell"}
+{"id": "m56", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B beantwortet warum mit echter Gefahr"}
+{"id": "m57", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B glaubt und erklärt Back und TP"}
+{"id": "m58", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B mit Kauf und Folgeplan"}
+{"id": "m59", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A gibt den geforderten Folgeplan mit Grund"}
+{"id": "m60", "besser": "A", "A_falsch": true, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A beantwortet Drachenfrage, Schutzengel-Gold aber falsch"}
+{"id": "m61", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "A richtig; B Schutzengel noch nicht bezahlbar"}
+{"id": "m62", "besser": "A", "A_falsch": true, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A beantwortet Sorge direkt, nennt aber Sichtbare unsichtbar"}
+{"id": "m63", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A wählt besseres Back mit Grund"}
+{"id": "m64", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A nimmt Sorge ernst und gibt Abbruchregel"}
+{"id": "m65", "besser": "B", "A_falsch": true, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A nennt Back schlechter, B glaubt und schickt back"}
+{"id": "m66", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "A mit Grund bei 48 Prozent"}
+{"id": "m67", "besser": "B", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": false, "B_gefaehrlich": false, "warum": "B gibt Kauf und Ziel, A nur warten"}
+{"id": "m68", "besser": "A", "A_falsch": false, "A_gefaehrlich": false, "B_falsch": true, "B_gefaehrlich": false, "warum": "A beantwortet Kauffrage, B ignoriert 4129 Gold"}
+{"id": "m69", "besser": "B", "A_falsch": false, "A_gefaehrlich": true, "B_falsch": false, "B_gefaehrlich": false, "warum": "A allein in ihrer Basis gegen drei, B zieht zurück"}
