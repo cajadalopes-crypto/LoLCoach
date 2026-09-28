@@ -277,6 +277,16 @@ class Gespraech:
             antwort = (r or {}).get("text")
             if r and r.get("absicht") == "NOTIZ":
                 self._notiere(text, p)
+            # Auftrag 015, B1: echte Fragen an den Makro-Strategen (der Kern hat Korrekturen schon gesetzt); Faktfragen,
+            # KLAEREN und Notizen bleiben beim Kern. Klappt es nicht, antwortet der Kern wie bisher.
+            makro = getattr(getattr(self.lagebild, "kern", None), "makro_stratege", None)
+            if makro is not None and r is not None and self._stratege_antwort(makro, text, r, p, erkannt, start):
+                return
+            if antwort is None and makro is not None and makro.aktiv and not makro.bereit():
+                antwort = self.antworten.sofort(text, p, self.lagebild)   # Ausfall: kein zweiter Claude-Aufruf
+                if antwort is None:
+                    self.sprecher.freigeben()
+                    return
             if antwort is None:
                 antwort = self.antworten.sofort(text, p, self.lagebild)
             if antwort is None:
@@ -333,6 +343,35 @@ class Gespraech:
         if self.gesagt is not None:
             from .regeln import WICHTIG, Ansage
             self.gesagt.append(Ansage(f"„{text}“ – {antwort}", WICHTIG, "antwort", zeit=p.zeit, gesprochen=p.zeit))
+
+    def _stratege_antwort(self, makro, text: str, r: dict, p, erkannt: float, start: float) -> bool:
+        """Auftrag 015, B1: die Antwort des Strategen, Satz fuer Satz an die Stimme. False: der Kern antwortet."""
+        strom = hasattr(self.sprecher, "antworte_teil")
+        gesprochen: list[str] = []
+
+        def satz(s: str) -> None:
+            if not gesprochen:
+                self._zeiten(p, erkannt, time.monotonic() - start, "Stratege", text)
+            gesprochen.append(s)
+            if strom:
+                self.sprecher.antworte_teil(s)
+        antwort = makro.antworte(text, r.get("absicht"), p, bei_satz=satz)
+        if not antwort:
+            if gesprochen and strom:          # schon angefangen, dann doch verworfen: nichts mehr nachschieben
+                self.sprecher.antworte_ende()
+                return True
+            return False
+        if strom:
+            self.sprecher.antworte_ende()
+        else:
+            self.sprecher.antworte(antwort)
+        print(f"  Coach (Stratege): {antwort}", flush=True)
+        if self.gesagt is not None:
+            from .regeln import WICHTIG, Ansage
+            a = Ansage(f"„{text}“ – {antwort}", WICHTIG, "antwort", zeit=p.zeit, gesprochen=p.zeit)
+            a._quelle = "stratege"
+            self.gesagt.append(a)
+        return True
 
     def _zeiten(self, p, erkannt: float, stimme: float, wie: str, text: str) -> None:
         """Wie lange er warten musste - je Frage ins Tastenprotokoll: Spracherkennung, bis die ersten Worte an die

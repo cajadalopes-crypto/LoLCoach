@@ -510,6 +510,111 @@ def stratege_pruefung():
     assert not pruefe("Nicht drücken, zurück unter deinen Turm.", r1)
 
 
+def stratege_pruefung_015():
+    """Auftrag 015, 1: die Sachfehler aus STRATEGE_PROBE_014 (Mitspieler, Gold, Sichtbarkeit, Objective, Laenge)."""
+    from lolcoach.stratege import kuerzen, pruefe
+    vorn = {"verboten": False, "leben": 90, "gesperrt": [], "ziele": [], "erlaubt": []}
+    lage = {"champions": ["Riven", "Sett", "Kai'Sa", "Sona", "Brand", "Master Yi", "Pantheon", "Teemo", "Cassiopeia",
+                          "Alistar"], "jungler": "Master Yi", "flash": 0.0, "tp": 0.0, "ult": True, "vorn": vorn,
+            "gegner": [{"name": "Master Yi", "sichtbar": False, "seit": 60.0, "tot": False, "seite": "unten"},
+                       {"name": "Pantheon", "sichtbar": True, "seit": 0.0, "tot": False, "seite": "mitte"}],
+            "mitspieler": [{"name": "Sett", "tot": False, "seite": "basis", "basis": True, "ankunft": 45.0},
+                           {"name": "Kai'Sa", "tot": False, "seite": "oben", "basis": False, "ankunft": 40.0},
+                           {"name": "Sona", "tot": False, "seite": "unten", "basis": False, "ankunft": 5.0}],
+            "gold": 1475, "items": [3077],
+            "objectives": [{"schl": "drache", "lebt": False, "spawn_in": 290.0}]}
+    # 1. Mitspieler (192113 16:50: "Push den inneren Bot-Turm mit Sett und Kai'Sa", Sett in der Basis)
+    assert pruefe("Push den inneren Bot-Turm mit Sett und Kai'Sa, solange Cassiopeia weg ist.", lage)
+    assert pruefe("Sett und Kai'Sa stehen unten bei dir, geh mit rein.", lage)
+    assert not pruefe("Farm die Welle mit Sona zusammen fertig.", lage)
+    assert not pruefe("Geh zu Sett in die Basis, dann mit Sett zum Mid-Turm.", lage)
+    # 2. Gold (164326 18:17: "Kontroll-Auge zuerst kaufen, dann Gefraessige Hydra fertig", 1475 Gold)
+    assert pruefe("Back jetzt, Kontroll-Auge zuerst kaufen, dann Gefräßige Hydra fertig.", lage)
+    assert not pruefe("Back jetzt und kauf Caulfields Kriegshammer für die Gefräßige Hydra.", lage)
+    # 3. Sichtbarkeit (192113 14:37: "Yi und Pantheon seh ich grad nicht", Pantheon war sichtbar)
+    assert pruefe("Yi und Pantheon seh ich grad nicht, bleib hinter der Welle.", lage)
+    assert pruefe("Master Yi steht unten bei Sona, geh nicht hin.", lage)
+    assert not pruefe("Master Yi war vor 60 Sekunden unten, er kann überall sein.", lage)
+    # 4. Objective (101426 33:43: "Drache erst, wenn ihr zusammensteht" - der Drache war genommen)
+    assert pruefe("Drache erst, wenn ihr komplett zusammensteht, nicht vorher.", lage)
+    assert not pruefe("Der Drache kommt erst in 290 Sekunden, bis dahin Welle farmen.", lage)
+    # 5. "Nimm die Welle" ist kein Vorwaerts-Rat (164326 16:20)
+    r1 = dict(lage, vorn={"verboten": True, "leben": 36, "gesperrt": [], "ziele": [], "erlaubt": []})
+    assert not pruefe("Nimm die Welle mit und bleib am Turm.", r1)
+    assert pruefe("Nimm die Welle, dann auf den inneren Top-Turm.", r1)
+    # Fehlalarme aus dem Lauf mit 100 Momenten (Auftrag 015): nichts davon ist falsch
+    fern = dict(lage, mitspieler=[{"name": "Sona", "tot": False, "seite": "unten", "basis": False, "ankunft": 26.0}],
+                tp=37.0)
+    assert not pruefe("Master Yi ist unklar und Pantheon steht direkt unten.", lage)
+    assert not pruefe("Pantheon steht im oberen Jungle und Master Yi ist unsichtbar.", lage)
+    assert not pruefe("Warte auf den Drachen um 22:20, geh nicht allein rein.", lage)
+    assert not pruefe("Geh nicht Richtung Drache, solange Master Yi unbekannt ist.", lage)
+    assert not pruefe("Geh danach mit TP in 37s nach oben.", fern)
+    assert not pruefe("Unten steht es zwei gegen zwei mit Sona und Cassiopeia.", fern)
+    assert not pruefe("Zurück zum Turm, dann back für den Kriegshammer.", r1)
+    assert pruefe("Cassio, Yi und Pantheon sind unsichtbar, bleib hinten.", lage)          # 192113 24:38
+    # 6. Laenge: ueber 30 Woerter auf ganze Saetze
+    lang = ("Geh zurück zu deinem Turm, weil drei Gegner kommen und du allein bist. " * 3).strip()
+    assert len(kuerzen(lang).split()) <= 30 and kuerzen(lang).endswith(".")
+
+
+def makro_stratege_wege():
+    """Auftrag 015, Teil B: Verwerfen -> einmal neu -> Kern; Abo-Fehler -> still Ausfall; Wellen-Satz weg; der
+    Wendepunkt-Satz des Kerns wird ersetzt oder, wenn der Stratege nichts Gueltiges hat, doch gesprochen."""
+    from types import SimpleNamespace as NS
+    from lolcoach import stratege
+    from lolcoach.regeln import WICHTIG, Ansage
+    from lolcoach.stratege_live import MakroStratege
+    lage = {"champions": ["Riven"], "gegner": [], "mitspieler": [], "jungler": None, "flash": None, "tp": None,
+            "ult": None, "gold": 0, "items": [], "objectives": [],
+            "vorn": {"verboten": True, "leben": 30, "gesperrt": [], "ziele": [], "erlaubt": ["back jetzt"]}}
+    alt = stratege.pruef_lage
+    stratege.pruef_lage = lambda kern, p: lage
+    try:
+        kern = NS(m=NS(tot=False, bereich="lane:Top", b=None), modus=NS(aktuell="LANE"), gefahr=False,
+                  kontext=lambda: "", kopfzeile=lambda: None, kandidaten=[], kandidaten_roh=[])
+        gesagt = []
+        plan = NS(einwerfen=gesagt.append, gesagt=[])
+        p = NS(zeit=900.0, ich=NS(tot=False), kills_von=lambda k: [])
+
+        def antwort(*texte):
+            reste = list(texte)
+
+            def f(prompt, bei_satz, system, timeout):
+                t = reste.pop(0)
+                for s in stratege._saetze(t):
+                    bei_satz(s)
+                return t
+            return f
+        ms = MakroStratege(kern, plan, frage_fn=antwort("Push den Turm jetzt.", "Push ihren Turm."), synchron=True,
+                           aktiv=True)
+        assert ms.antworte("Was jetzt?", "JETZT", p) is None                       # zweimal verworfen: der Kern
+        assert len(ms.protokoll[-1]["versuche"]) == 2 and ms.protokoll[-1]["quelle"] == "kern"
+        ms.frage_fn = antwort("Push den Turm jetzt.", "Back jetzt, dein Leben ist zu niedrig.")
+        assert ms.antworte("Was jetzt?", "JETZT", p) == "Back jetzt, dein Leben ist zu niedrig."
+        assert ms.antworte("Wann kommt der Drache?", "TIMER", p) is None             # Faktfrage: beim Kern
+
+        def kaputt(*a):
+            raise RuntimeError("Abo")
+        ms.frage_fn = kaputt
+        assert ms.antworte("Was jetzt?", "JETZT", p) is None and not ms.bereit()    # Ausfall, still
+        ms.ausfall_bis = -1e9
+        welle = Ansage("Drück die Top-Welle: 4 gegen 1 Vasallen.", WICHTIG, "kern:WELLE_DRUECKEN", zeit=900.0)
+        wp = Ansage("Ihr äußerer Top-Turm ist weg. Farm Top.", WICHTIG, "kern:FARMEN", zeit=900.0)
+        wp._kategorie = "WENDEPUNKT"
+        ms.frage_fn = antwort("Back jetzt, danach mit deinem Team zum Mid-Turm.")
+        rest = ms.bearbeite([welle, wp], p)
+        assert rest == [] and len(gesagt) == 1 and gesagt[0].schluessel.startswith("stratege:")
+        gesagt.clear()
+        ms.frage_fn = antwort("Push den Turm.", "Push den Turm.")
+        wp2 = Ansage("Ihr innerer Top-Turm ist weg. Farm Top.", WICHTIG, "kern:FARMEN", zeit=905.0)
+        wp2._kategorie = "WENDEPUNKT"
+        assert ms.bearbeite([wp2], NS(zeit=905.0, ich=NS(tot=False), kills_von=lambda k: [])) == []
+        assert gesagt == [wp2]                                                        # Fallback: der Kern-Satz
+    finally:
+        stratege.pruef_lage = alt
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
@@ -518,6 +623,6 @@ if __name__ == "__main__":
                  ihr_jungle_heisst_ihr_jungle, keine_verbotenen_gruende, warum_mit_vergleich,
                  vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal, anteil_geglaettet,
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
-                 stratege_pruefung):
+                 stratege_pruefung, stratege_pruefung_015, makro_stratege_wege):
         test()
         print(f"{test.__name__} OK")

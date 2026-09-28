@@ -57,7 +57,7 @@ def schnappschuss(a, p, werk, kern) -> dict:
     }
 
 
-def protokoll(stamm: str, kern: str = "neu", fragen: bool = False) -> Path:
+def protokoll(stamm: str, kern: str = "neu", fragen: bool = False, stratege: str | None = None) -> Path:
     import fuehrmass
     pfad = ns.pfad_zu(stamm)
     liste = [(f["zeit"], f["text"], i) for i, f in enumerate(fuehrmass.fragen_aus_log(stamm))] if fragen else None
@@ -73,7 +73,7 @@ def protokoll(stamm: str, kern: str = "neu", fragen: bool = False) -> Path:
             lagen[id(a)] = schnappschuss(a, p, werk, kern_)
         gesehen[0] = len(plan.gesagt)
 
-    lauf = ns.durchspielen(pfad, kern_stellung=kern, beim_takt=beim_takt, fragen=liste)
+    lauf = ns.durchspielen(pfad, kern_stellung=kern, beim_takt=beim_takt, fragen=liste, stratege=stratege)
     minuten = lauf.sekunden_mit_daten / 60
     ungefragt = [a for a in lauf.gesagt if a.schluessel != "antwort"]
     n = len(ungefragt)
@@ -86,7 +86,9 @@ def protokoll(stamm: str, kern: str = "neu", fragen: bool = False) -> Path:
         f"(werkzeuge/protokoll.py)",
         "",
         f"**{n} ungefragte Ansagen** ({n / minuten * 30 if minuten else 0:.0f} je 30 min), davon {vom_kern} vom Kern, "
-        f"{n - vom_kern} von alten Regeln · mitten im Satz abgebrochen: {len(lauf.abbrueche)}",
+        + (f"{vom_str} vom Stratege, " if (vom_str := sum(1 for a in ungefragt if a.schluessel.startswith("stratege:")))
+           else "")
+        + f"{n - vom_kern - vom_str} von alten Regeln · mitten im Satz abgebrochen: {len(lauf.abbrueche)}",
         "",
         "Je Ansage: Spielzeit · Modus · Ort · Leben · Gold, dann was gesagt wurde (Schluessel = Kern oder alte Regel), der "
         "Plan des Kerns und seine zwei naechstbesten Optionen. Ausserhalb der Kern-Modi (OBJECTIVE, KAMPF) hat der Kern "
@@ -152,8 +154,17 @@ def protokoll(stamm: str, kern: str = "neu", fragen: bool = False) -> Path:
         if la.get("zeitleiste"):
             zeilen.append("- **Zeitleiste:** " + " · ".join(la["zeitleiste"]))
         zeilen.append("")
+    if getattr(lauf, "stratege", None) is not None:
+        # Auftrag 015, B6: je Aufruf des Strategen Anlass, Quelle und verworfene Saetze mit Grund
+        ms = lauf.stratege
+        zeilen += ["", f"## Stratege (Aufzeichnungs-Stub): {len(ms.protokoll)} Aufrufe", ""]
+        for e in ms.protokoll:
+            weg = [f"„{v['satz']}“ – {'; '.join(v['gruende'])}" for x in e["versuche"] for v in x.get("verworfen", [])]
+            zeilen.append(f"- {ns.uhr(e['zeit'])} {e['art']}: Quelle {e['quelle']}"
+                          + (f" – „{e['text']}“" if e.get("text") else "")
+                          + (f" · verworfen: {' | '.join(weg)}" if weg else ""))
     ZIEL.mkdir(parents=True, exist_ok=True)
-    ziel = ZIEL / f"{stamm}.md"
+    ziel = ZIEL / (f"{stamm}_stratege_stub.md" if stratege else f"{stamm}.md")
     ziel.write_text("\n".join(zeilen), encoding="utf-8")
     return ziel
 
@@ -164,7 +175,8 @@ def main() -> None:
     kern = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--kern=")), "neu")
     staemme = args or [sorted(aufzeichnung.ORDNER.glob("*.jsonl.gz"))[-1].name.removesuffix(".jsonl.gz")]
     for stamm in staemme:
-        print(protokoll(stamm, kern, fragen="--fragen" in sys.argv))
+        print(protokoll(stamm, kern, fragen="--fragen" in sys.argv,
+                        stratege="stub" if "--stratege-stub" in sys.argv else None))
 
 
 if __name__ == "__main__":

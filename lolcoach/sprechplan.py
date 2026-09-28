@@ -59,8 +59,9 @@ BEIWERK = ("gold", "plan:back", "objstart", "objgegner", "vorwarnung", "cs", "au
 
 
 def kern(a: Ansage) -> bool:
-    """Eine Ansage des Entscheidungskerns (Buch 0, 9.6)."""
-    return a.schluessel.startswith("kern:")
+    """Eine Ansage des Entscheidungskerns (Buch 0, 9.6) - oder des Makro-Strategen, der seinen Plan-Satz ersetzt
+    (Auftrag 015)."""
+    return a.schluessel.startswith(("kern:", "stratege:"))
 
 
 _RAUS = re.compile(r"\bjetzt zurück|\braus zu\b", re.I)

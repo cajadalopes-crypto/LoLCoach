@@ -17,6 +17,12 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 015 (Stratege live, Pruefung erweitert) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 015").
+Offen bis zur naechsten echten Partie:
+- Ob der Stratege live besser ankommt als der Kern (Carlos entscheidet mit der Partie; Schalter `--ohne-stratege`).
+- Die Objective-Pruefung ist streng ("Richtung Baron" ohne Spawn-Zeit wird verworfen) - kostet eine Wiederholung.
+- Ein einzelner Satz ueber 30 Woerter bleibt ganz (gekuerzt wird auf ganze Saetze).
+
 **Auftrag 014 (Stratege: Schutzschicht, Tor) - Tor knapp verfehlt, kein Live-Einbau** - Zahlen in
 `buecher/messungen.md` ("Auftrag 014").
 - Offen: "falsch" beim Strategen in der alten Menge 12,5 gegen 9,2 beim Kern (Tor: hoechstens +2). Reste pruefbar:

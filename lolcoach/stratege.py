@@ -146,12 +146,18 @@ STRATEGE_SYSTEM = (
     "hoechstens 25 Woerter insgesamt, zwei kurze Saetze, kein Absatz - er hoert zu, waehrend er spielt.")
 
 VORWAERTS = _re.compile(
-    r"\b(drück|drücke|drückt|push|pusht|pushen|erzwing\w*|nimm (den|ihren|das|die)|rein(gehen)?\b|geh (rein|drauf)|"
-    r"greif\w* an|angreifen|all.?in\b|invad\w*|tauch\w*|dive\b|kampf (nehmen|annehmen)|nimm den kampf|"
-    r"richtung (baron|drache|drachen|herold|turm|inhib\w*|nexus)|zum (baron|drachen|herold|turm|inhibitor|nexus)|"
-    r"auf (ihren|den) \w*[- ]?(turm|inhib\w*|nexus)|turm (nehmen|holen|drücken)|splitt?\w*|split.?push\w*)", _re.I)
+    r"\b(drück|drücke|drückt|push|pusht|pushen|erzwing\w*|nimm (den|ihren|das|die)(?! (welle|kanone|vasallen|cs)\b)|"
+    r"rein(gehen)?\b|geh (rein|drauf)|"
+    r"greif\w* an|angreifen|all[- ]?in\b|invad\w*|tauch\w*|dive\b|kampf (nehmen|annehmen)|nimm den kampf|"
+    r"richtung (baron|drache|drachen|herold|inhib\w*|nexus)|zum (baron|drachen|herold|inhibitor|nexus)|"
+    r"auf (ihren|den|die) ([\w-]+ ){0,2}[\w-]*(turm|inhib\w*|nexus)|turm (nehmen|holen|drücken)|splitt?\w*|"
+    r"split.?push\w*)", _re.I)
 VOR_AUFGESCHOBEN = _re.compile(r"(nicht|kein|nie\b|statt|erst wenn|sobald|wenn du wieder|nach dem (back|kauf|respawn)|"
-                               r"danach|dann|später|zurück, |heil)\W*(\w+\W+){0,6}$", _re.I)
+                               r"später|zurück, |heil)\W*(\w+\W+){0,6}$", _re.I)
+# "danach" / "dann" verschiebt nur nach einer Erholung ("Back jetzt, danach mit der Gruppe zum Drachen") - nicht nach
+# "Nimm die Welle, dann auf den inneren Top-Turm" (Auftrag 015)
+VOR_DANACH = _re.compile(r"(danach|dann)\W*(\w+\W+){0,6}$", _re.I)
+ERHOLUNG = _re.compile(r"back|recall|heil|kauf|respawn|basis|lebst|zurück", _re.I)
 VOR_VERNEINT_DANACH = _re.compile(r"^\W*(\w+\W+){0,4}(nicht|verboten|zu riskant|gestrichen|lass|vergiss)", _re.I)
 INNERE = _re.compile(r"\bR[12]\b|\bEV\b|p_tod|todesrisiko\W+(\w+\W+){0,3}\d|\b\d[.,]\d\d\b|\bkerns?\b|kandidat|"
                      r"gesperrt|\bmodell\b|hysterese|\bwert [+-]?\d", _re.I)
@@ -159,10 +165,10 @@ ENTWARNUNG = _re.compile(r"kein(e|en)? (gank-?)?(risiko|gefahr|sorge)|keine angs
                          r"in der (basis|base)|ist eh (in|im|weg)|steht (eh |noch |gerade )?(in|im) (seiner|der) (basis|base)|"
                          r"\bsafe\b|\bsicher\b", _re.I)
 TP_WORT = _re.compile(r"\b(tp|teleport\w*|port\w*)\b", _re.I)
-TP_OK = _re.compile(r"in \d+ s|sobald|wenn dein tp|tp ist wieder|ohne tp|kein tp|tp (ist )?(noch )?nicht", _re.I)
+TP_OK = _re.compile(r"in \d+ ?s\b|in \d+ sekunden|sobald|wenn dein tp|tp ist wieder|ohne tp|kein tp|tp (ist )?(noch )?nicht", _re.I)
 FLASH_EIGEN = _re.compile(r"\b(dein(en)? flash|mit flash|flash (rein|rüber|drüber|hinterher))", _re.I)
 ULT_EIGEN = _re.compile(r"\b(dein(e|er)? (ult|r)|mit (der |deiner )?ult|ult (rein|drauf))\b", _re.I)
-OBJ_WORT = {"drache": r"drache|drachen", "baron": r"baron", "herold": r"herold", "larven": r"larven",
+OBJ_WORT = {"drache": r"drache|drachen", "baron": r"baron(?!-buff)", "herold": r"herold", "larven": r"larven",
             "aeltester": r"ältest\w*"}
 
 
@@ -174,19 +180,197 @@ def _alle_champions() -> list[str]:
         return []
 
 
+def _seite(ort: str | None) -> str | None:
+    """oben / unten / mitte / basis aus einem Ort ("in eurem oberen Jungle", "auf der Mid-Lane", "in eurer Basis")."""
+    o = (ort or "").lower()
+    if "basis" in o or "brunnen" in o:
+        return "basis"
+    if any(w in o for w in ("ober", "oben", "top")):
+        return "oben"
+    if any(w in o for w in ("unter", "unten", "bot")):
+        return "unten"
+    if any(w in o for w in ("mitte", "mid")):
+        return "mitte"
+    return None
+
+
 def pruef_lage(kern, p) -> dict:
     """Was `pruefe` ueber die Lage wissen muss - nur Daten (JSON-faehig, fuer Protokoll und Nachspielen)."""
+    from .bewertung import WEGFAKTOR, abstand
     m = kern.m
     b = m.b if m is not None else None
     j = b.jungler if b is not None else None
+    gesehen = {s.champion: (wo, ort) for s, wo, _, ort in (b.mitspieler if b is not None else [])}
+    mitspieler = []
+    if p is not None and p.ich is not None:
+        for s in p.team(p.mein_team):
+            if s is p.ich or s.name == p.ich.name:
+                continue
+            wo, ort = gesehen.get(s.champion, (None, None))
+            ankunft = (abstand(wo, b.pos) * WEGFAKTOR / (m.mein_tempo or 340.0)
+                       if wo is not None and b is not None and b.pos is not None else None)
+            mitspieler.append({"name": s.champion, "tot": bool(s.tot), "seite": _seite(ort),
+                               "basis": _seite(ort) == "basis", "ankunft": ankunft})
     return {
         "champions": sorted({s.champion for s in p.spieler}) if p is not None else [],
-        "gegner": [{"name": g.champion, "sichtbar": bool(g.sichtbar), "seit": g.seit, "tot": bool(g.s.tot)}
-                   for g in (b.gegner if b is not None else [])],
+        "gegner": [{"name": g.champion, "sichtbar": bool(g.sichtbar), "seit": g.seit, "tot": bool(g.s.tot),
+                    "seite": _seite(g.ort)} for g in (b.gegner if b is not None else [])],
+        "mitspieler": mitspieler,
         "jungler": j.champion if j is not None else None,
         "flash": b.flash if b is not None else None, "tp": m.tp_in if m is not None else None,
         "ult": b.ult if b is not None else None, "vorn": kern.vorn(),
+        "gold": int(b.gold or 0) if b is not None else None,
+        "items": list(p.ich.items) if p is not None and p.ich is not None else [],
+        "ich_basis": bool(m is not None and m.bereich == "basis_eigen"),
+        "objectives": [{"schl": o.schl, "lebt": bool(o.lebt), "spawn_in": o.spawn_in}
+                       for o in (m.objectives or [] if m is not None else [])],
     }
+
+
+# --- Auftrag 015: Pruefungen aus den Sachfehlern der Probe 014 ---------------------------------------------------------
+
+LAENGE_HOECHSTENS = 30
+ORT_WORT = {"oben": r"oben|top", "unten": r"unten|bot", "mitte": r"in der mitte|mid", "basis": r"basis|base"}
+# eine Namensliste: "Sett", "Master Yi", "Sett und Kai'Sa", "Cassio, Yi und Pantheon" (nur grosse Woerter)
+NAMEN = r"(?P<namen>[A-ZÄÖÜ][\w'’.]*(?: [A-ZÄÖÜ][\w'’.]*)?(?:(?:, | und | oder )[A-ZÄÖÜ][\w'’.]*(?: [A-ZÄÖÜ][\w'’.]*)?)*)"
+BEGLEITER = _re.compile(r"\bmit " + NAMEN)
+TREFFEN = _re.compile(r"\bzu (deinem team|euch|\w+)|sammel|gruppier|treff|warte auf|zusammen mit|\bgegen\b", _re.I)
+STEHT = _re.compile(NAMEN + r" (steht|stehen|ist|sind|läuft|laufen|wartet|warten|kommt|kommen) (gerade |jetzt |schon |"
+                    r"noch |eh |direkt |bereits )?(?P<ort>oben|unten|mid\b|in der mitte|top\b|bot\b|in (eurer|der|ihrer|"
+                    r"seiner) (basis|base)|bei dir|im|in|am|an)\b")
+UNSICHTBAR = _re.compile(NAMEN + r" ((ist|sind|bleibt|bleiben) )?((gerade|grad|noch|jetzt|beide|alle|eh) )?"
+                         r"(unsichtbar|nicht zu sehen|nicht sichtbar|verschwunden)|" + NAMEN.replace("namen", "namen2")
+                         + r" (sehe?|seh) ich (\w+ )?nicht")
+VIELLEICHT = _re.compile(r"zuletzt|\bwar\b|waren|vor \d+|vermutlich|wahrscheinlich|könnte|kann|vielleicht|unbekannt",
+                         _re.I)
+OBJ_ZIEL = _re.compile(r"\b(zum|zur|richtung|nimm|hol|mach|erzwing\w*|auf den|an den|bestreit\w*|start\w*|geht|geh)\b",
+                       _re.I)
+OBJ_ZEIT = _re.compile(r"in \d+|spawnt|kommt in|erst in|minute|sekunden|\d+:\d\d|um \d", _re.I)
+OBJ_NEIN = _re.compile(r"nicht (richtung|zum|zur|auf|an|zu)|statt|kein(en)? (drachen|baron|herold)", _re.I)
+OBJ_FAKT = _re.compile(r"genommen|geholt|ist weg|ist tot|haben den|habt den|vorbei|gefallen", _re.I)
+KAUF_WORT = _re.compile(r"kauf|hol dir|zuerst|fertig|besorg", _re.I)
+KAUF_SPAETER = _re.compile(r"beim nächsten back|später|nächstes mal", _re.I)
+_ITEMS: dict | None = None
+
+
+def kuerzen(text: str, woerter: int = LAENGE_HOECHSTENS) -> str:
+    """Auftrag 015, 6: ueber `woerter` Woerter wird auf ganze Saetze gekuerzt (der erste bleibt immer)."""
+    aus, n = [], 0
+    for s in _saetze(text):
+        w = len(s.split())
+        if aus and n + w > woerter:
+            break
+        aus.append(s)
+        n += w
+    return " ".join(aus)
+
+
+def _items() -> dict:
+    """Name -> (Preis gesamt, Grundpreis, Bauteile) der kaufbaren Items auf der Kluft."""
+    global _ITEMS
+    if _ITEMS is None:
+        _ITEMS = {}
+        try:
+            from . import ddragon
+            alle = ddragon.items()
+            for i, v in alle.items():
+                g = v.get("gold", {})
+                if not g.get("purchasable") or not v.get("maps", {}).get("11") or v.get("requiredChampion"):
+                    continue
+                if v["name"] not in _ITEMS or int(i) < _ITEMS[v["name"]][3]:
+                    _ITEMS[v["name"]] = (g.get("total", 0), g.get("base", 0), [int(x) for x in v.get("from", [])],
+                                         int(i))
+            _ITEMS["_id"] = {int(i): v for i, v in alle.items()}
+        except Exception:
+            _ITEMS = {}
+    return _ITEMS
+
+
+def _restpreis(item_id: int, besitz: list[int]) -> int:
+    """Was ein Item noch kostet, wenn Bauteile schon im Inventar liegen (rekursiv)."""
+    alle = _items().get("_id", {})
+    if item_id in besitz:
+        besitz.remove(item_id)
+        return 0
+    v = alle.get(item_id, {})
+    g = v.get("gold", {})
+    return g.get("base", 0) + sum(_restpreis(int(c), besitz) for c in v.get("from", []))
+
+
+def _namen_in(text: str, namen: list[str]) -> list[str]:
+    """Die Champions, die in `text` stehen - auch kurz ("Yi" fuer Master Yi, "Cassio" fuer Cassiopeia)."""
+    woerter = _re.findall(r"[A-ZÄÖÜ][\w'’]*", text)
+    aus = []
+    for n in namen:
+        teile = n.split()
+        if any(w in teile or (len(w) >= 4 and n.lower().startswith(w.lower())) for w in woerter):
+            aus.append(n)
+    return aus
+
+
+def pruefe_015(s: str, lage: dict) -> list[str]:
+    """Auftrag 015, 1: Mitspieler am falschen Ort, Gold, Sichtbarkeit falsch herum, Objective nicht da."""
+    gruende = []
+    mit = {x["name"]: x for x in lage.get("mitspieler") or []}
+    gegner = {x["name"]: x for x in lage.get("gegner") or []}
+    # 1. Mitspieler als Begleiter oder an einem Ort
+    if not TREFFEN.search(s):
+        for m in BEGLEITER.finditer(s):
+            for n in _namen_in(m.group("namen"), list(mit)):
+                x = mit[n]
+                basis = x["basis"] and not lage.get("ich_basis")          # ihr steht beide in der Basis: ok
+                if x["tot"] or basis or (x["ankunft"] is not None and x["ankunft"] > 15.0):
+                    wo = "tot" if x["tot"] else "in der Basis" if x["basis"] else f"{int(x['ankunft'])} s weg"
+                    gruende.append(f"Mitspieler nicht dabei ({n}: {wo})")
+    for m in STEHT.finditer(s):
+        ort = m.group("ort").lower()
+        for n in _namen_in(m.group("namen"), list(mit)):
+            x = mit[n]
+            if x["tot"]:
+                gruende.append(f"Mitspieler tot ({n})")
+                continue
+            if ort == "bei dir":
+                if x["ankunft"] is not None and x["ankunft"] > 15.0:
+                    gruende.append(f"Mitspieler nicht bei dir ({n}: {int(x['ankunft'])} s weg)")
+                continue
+            gesagt = next((k for k, r in ORT_WORT.items() if _re.fullmatch(r, ort) or _re.search(r, ort)), None)
+            if gesagt and x["seite"] and gesagt != x["seite"]:
+                gruende.append(f"Mitspieler woanders ({n}: {x['seite']}, nicht {gesagt})")
+    # 3. Sichtbarkeit falsch herum
+    for m in UNSICHTBAR.finditer(s):
+        for n in _namen_in(m.group("namen") or m.group("namen2") or "", list(gegner)):
+            if gegner[n]["sichtbar"]:
+                gruende.append(f"Gegner ist sichtbar ({n})")
+    for m in STEHT.finditer(s):
+        for n in _namen_in(m.group("namen"), list(gegner)):
+            x = gegner[n]
+            if not x["sichtbar"] and not x["tot"] and (x["seit"] is None or x["seit"] > 10) \
+                    and not VIELLEICHT.search(s[max(0, m.start() - 20):m.end() + 25]):
+                gruende.append(f"Ort als aktuell für einen Unsichtbaren ({n})")
+    # 4. Objective nicht da
+    for o in lage.get("objectives") or []:
+        muster = OBJ_WORT.get(o["schl"])
+        if not muster or o["lebt"]:
+            continue
+        if _re.search(muster, s, _re.I) and (OBJ_ZIEL.search(s) or _re.search(r"\berst\b|\bwenn\b", s, _re.I)) \
+                and not OBJ_ZEIT.search(s) and not OBJ_FAKT.search(s) and not OBJ_NEIN.search(s):
+            gruende.append(f"Objective nicht da ({o['schl']})")
+    # 2. Gold
+    gold = lage.get("gold")
+    if gold is not None and KAUF_WORT.search(s) and not KAUF_SPAETER.search(s):
+        items = _items()
+        rest = _re.sub(r"für ((die|den|das|deine|deinen|dein|eine|einen) )?[\wÄÖÜäöüß' -]+", " ", s)
+        namen = sorted((n for n in items if n != "_id" and _re.search(rf"(?<!\w){_re.escape(n)}(?!\w)", rest)),
+                       key=len, reverse=True)
+        genannt, preis, besitz = [], 0, list(lage.get("items") or [])
+        for n in namen:
+            if any(n in g for g in genannt):
+                continue
+            genannt.append(n)
+            preis += _restpreis(items[n][3], besitz)
+        if genannt and preis > gold:
+            gruende.append(f"Gold reicht nicht ({' + '.join(genannt)} = {preis}, du hast {gold})")
+    return gruende
 
 
 def _saetze(text: str) -> list[str]:
@@ -198,7 +382,8 @@ def _nach_vorn(satz: str) -> str | None:
     for m in VORWAERTS.finditer(satz):
         vor, nach = satz[:m.start()], satz[m.end():]
         welle_rein = m.group(0).lower().startswith("rein") and _re.search(r"welle\W*$", vor, _re.I)   # "Welle rein"
-        if welle_rein or VOR_AUFGESCHOBEN.search(vor) or VOR_VERNEINT_DANACH.search(nach):
+        spaeter = VOR_DANACH.search(vor) and ERHOLUNG.search(vor)
+        if welle_rein or spaeter or VOR_AUFGESCHOBEN.search(vor) or VOR_VERNEINT_DANACH.search(nach):
             continue
         return m.group(0)
     return None
@@ -234,6 +419,8 @@ def pruefe(satz: str, lage: dict) -> list[str]:
             gruende.append("dein Flash ist nicht bereit")
         if ULT_EIGEN.search(s) and lage.get("ult") is False:
             gruende.append("deine Ult ist nicht bereit")
+    for s in _saetze(satz):
+        gruende += pruefe_015(s, lage)
     im_spiel = set(lage.get("champions") or [])
     for n in _alle_champions():
         if n not in im_spiel and _re.search(rf"(?<!\w){_re.escape(n)}(?!\w)", satz):

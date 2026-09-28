@@ -581,11 +581,13 @@ def fragen14() -> None:
         prompt += f"\n\n{e['ende']}"
         versuche = []
         a = _frage_einmal(prompt, system)
+        a["text"] = stratege.kuerzen(a["text"])          # Auftrag 015, 6
         a["gruende"] = stratege.pruefe(a["text"], e["pruef_lage"]) if a["text"] else ["keine Antwort"]
         versuche.append(a)
         if a["gruende"]:
             b = _frage_einmal(prompt + f"\n\nDein Vorschlag „{a['text']}“ wurde verworfen: {'; '.join(a['gruende'])}. "
                               "Sag es neu, ohne das.", system)
+            b["text"] = stratege.kuerzen(b["text"])
             b["gruende"] = stratege.pruefe(b["text"], e["pruef_lage"]) if b["text"] else ["keine Antwort"]
             versuche.append(b)
         ok = next((x for x in versuche if not x["gruende"]), None)
@@ -773,6 +775,11 @@ if __name__ == "__main__":
         blind(nr)
     elif arg and arg[0] == "kritik":
         print(kritik(nr))
+    elif arg and arg[0] in ("sammeln15", "fragen15", "bericht15"):
+        # Auftrag 015: dieselben 100 Momente mit der erweiterten Pruefung, ohne neue Kritik
+        AUS14 = AUS.parent / "stratege_probe_015"
+        BERICHT14 = BERICHT.parent / "STRATEGE_PROBE_015.md"
+        {"sammeln15": sammeln14, "fragen15": fragen14, "bericht15": bericht14}[arg[0]]()
     elif arg and arg[0] in ("sammeln14", "fragen14", "blind14", "bericht14"):
         {"sammeln14": sammeln14, "fragen14": fragen14, "blind14": blind14, "bericht14": bericht14}[arg[0]]()
     elif arg and arg[0] == "kritik14":

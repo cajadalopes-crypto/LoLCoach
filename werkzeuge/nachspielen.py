@@ -106,9 +106,10 @@ class Lauf:
     abbrueche: list = field(default_factory=list)       # (Spielzeit, Satz, Grund): mitten im Satz abgebrochen
     spielmodus: str | None = None                        # gameMode der Aufnahme: CLASSIC, SWIFTPLAY (G6)
     antworten: list = field(default_factory=list)        # Auftrag 003: eingespielte Fragen und ihre Antworten
+    stratege: object = None                              # Auftrag 015: der Makro-Stratege mit Stub (Protokoll)
 
 
-def frage_stellen(text: str, p, lb, plan, fid=None) -> dict:
+def frage_stellen(text: str, p, lb, plan, fid=None, stratege=None) -> dict:
     """Eine Frage wie per Sprechtaste (Auftrag 003): zuerst der Fragenweg des Kerns (`antworten.frage_kern`), sonst
     die alte Sofort-Antwort; was Claude braucht, wird offline nicht gefragt ("quelle": "claude"). Die Antwort geht wie
     live in `gesagt` ("antwort")."""
@@ -117,6 +118,11 @@ def frage_stellen(text: str, p, lb, plan, fid=None) -> dict:
     r = {}
     if hasattr(antworten, "frage_kern"):
         r = antworten.frage_kern(text, p, lb) or {}
+    if stratege is not None and r:
+        # Auftrag 015, B1 (mit dem Aufzeichnungs-Stub, ohne Abo)
+        s = stratege.antworte(text, r.get("absicht"), p)
+        if s:
+            r = dict(r, text=s, quelle="stratege")
     if not r.get("text"):
         s = antworten.sofort(text, p, lb)
         r = dict(r, text=s, quelle="sofort" if s else "claude")
@@ -131,7 +137,7 @@ def frage_stellen(text: str, p, lb, plan, fid=None) -> dict:
 
 
 def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, kern_stellung: str = "neu",
-                 beim_takt=None, fragen=None) -> Lauf:
+                 beim_takt=None, fragen=None, stratege: str | None = None) -> Lauf:
     """Die Aufnahme wie live, nur stumm. `halte_bei`: Spielzeiten, zu denen Partie und Bewertung festgehalten
     werden (der erste Takt ab dieser Zeit). `proben`: je Sekunde Gegner-Ankunft und Positionen (Gefahr-Eichung).
     `rueckruf(soll, p, b, lb, wand)`: an jeder Haltezeit, solange das Lagebild noch diesen Stand hat (Fragen).
@@ -146,6 +152,12 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
     werk.kern = plan.kern = kern
     kern.transport = plan
     lauf.kern = kern
+    ms = None
+    if stratege == "stub":
+        # Auftrag 015, B5: die Stratege-Wege im Nachspielen, mit Aufzeichnungs-Stub statt Abo, synchron
+        from lolcoach.stratege_live import AufzeichnungsStub, MakroStratege
+        ms = MakroStratege(kern, plan, frage_fn=AufzeichnungsStub(), synchron=True, aktiv=True)
+        kern.makro_stratege = lauf.stratege = ms
     lb = lage.Lagebild() if sicht else None
     offen = sorted(halte_bei)
     offene_fragen = sorted(fragen or [], key=lambda f: f[0])
@@ -159,6 +171,8 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
             lb.ereignisse(lambda wb: p.zeit - (w - wb), sicht.ereignisse(), p)
         neu = werk.pruefe(p, lb)
         neu += kern.takt(p, lb)
+        if ms is not None:
+            neu = ms.bearbeite(neu, p, lb)
         for a in neu:
             a._b = werk.b
         plan.neu(neu)
@@ -197,7 +211,7 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
                                getattr(kern, "danach_text", None) or ""))
         while offene_fragen and p.zeit >= offene_fragen[0][0]:
             ft, ftext, fid = offene_fragen.pop(0)
-            lauf.antworten.append(frage_stellen(ftext, p, lb, plan, fid))
+            lauf.antworten.append(frage_stellen(ftext, p, lb, plan, fid, ms))
         while offen and p.zeit >= offen[0]:
             soll = offen.pop(0)
             lauf.halte[soll] = (p, b, lage_kurz(p, b, lb))

@@ -392,6 +392,14 @@ kampf_wert_je_gegner = 300
 # ... mit der Gruppe faellt ein Turm schneller (je Mitspieler dabei)
 gruppe_turm_faktor = 0.6
 
+[stratege]                       # Auftrag 015: Claude als Makro-Stratege (lolcoach/stratege_live.py)
+aktiv = true                     # Schalter; live auch: python -m lolcoach live --ohne-stratege
+erster_satz_max_s = 4.0          # B2: kommt der erste gueltige Satz spaeter, spricht der Kern
+ausfall_s = 30.0                 # so lange ohne Antwort (oder ein Fehler) = Ausfall: still weiter mit dem Kern
+pause_nach_ausfall_s = 120.0     # ... und so lange danach nur der Kern
+leerlauf_ab_s = 840              # B3: ab 14:00 ...
+leerlauf_s = 45                  # ... nach so vielen Sekunden ohne Plan-Satz und Warnung, hoechstens einmal je so viele
+
 [quest_tp]
 # Quest-TP der Toplane ohne Teleport (saison2026.md, Rollenquests; kern/quest_tp.py) -> m.tp_in
 stand = "Messung 27.09.2026 an Riven-Partien 164326, 173159, 213624, 102112 (Quest-Slot V im Schirmbild)"

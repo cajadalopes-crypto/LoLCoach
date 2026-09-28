@@ -25,7 +25,7 @@ from . import (ansicht, aufzeichnung, bericht, komponist, lage, liveapi, llm, pr
 def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, sicht=None,
               anzeigen=(), alle: int = 5, nur_coach: bool = False, gehirn: bool = False,
               gehirn_ablage=None, kern_ablage=None, kern_stellung: str = "neu",
-              fokus: str | None = None) -> sprechplan.Sprechplan:
+              fokus: str | None = None, makro: bool = False) -> sprechplan.Sprechplan:
     """Gemeinsamer Kern fuer Live und Aufnahme.
 
     `quelle` liefert (Wanduhr, Rohdaten); `sicht` hat `zwischen(bis, champions)`
@@ -55,6 +55,15 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
         for a in anzeigen:
             if hasattr(a, "gehirn_setzen"):
                 a.gehirn_setzen(stratege_.gehirn)
+    makro_ = None
+    if makro and kern_stellung == "neu":
+        # Auftrag 015: Claude als Makro-Stratege (Fragen, Wendepunkte, Leerlauf) - Schalter [stratege] aktiv
+        from .stratege_live import MakroStratege
+        makro_ = MakroStratege(kern_, plan, gehirn=stratege_.gehirn if stratege_ else None,
+                               ablage=kern_ablage.with_name(kern_ablage.name.replace("_kern.jsonl", "_stratege.jsonl"))
+                               if kern_ablage else None)
+        kern_.makro_stratege = makro_
+        print(f"Makro-Stratege: {'an' if makro_.aktiv else 'aus ([stratege] aktiv = false)'}", flush=True)
     gemeldet: set = set()
 
     def sicher(name: str, f, *a):
@@ -119,6 +128,10 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
     def schritt_coach(p):
         ansagen = werk.pruefe(p, lagebild)
         ansagen += kern_.takt(p, lagebild)          # der Kern spricht in seinen Modi (kern.KERN_MODI)
+        if makro_ is not None:
+            neu_ = sicher("Stratege", makro_.bearbeite, ansagen, p, lagebild)
+            if neu_ is not None:                    # ein Fehler im Strategen: die Ansagen des Kerns wie bisher
+                ansagen = neu_
         ansagen += technik
         technik.clear()
         tot = bool(p.ich and p.ich.tot)
@@ -394,7 +407,8 @@ def live(args) -> None:
                                  schreiber.pfad.name.removesuffix(".jsonl.gz") + "_spielakte.md") if schreiber else None,
                              kern_ablage=schreiber.pfad.with_name(
                                  schreiber.pfad.name.removesuffix(".jsonl.gz") + "_kern.jsonl") if schreiber else None,
-                             kern_stellung=args.kern, fokus=_fokus())
+                             kern_stellung=args.kern, fokus=_fokus(),
+                             makro=not args.ohne_stratege and not args.ohne_gehirn)
         finally:
             hund.halt()
             if beobachter:
@@ -605,6 +619,8 @@ def main() -> None:
     lv.add_argument("--ohne-dashboard", action="store_true")
     lv.add_argument("--ohne-sprache", action="store_true", help="keine Fragen per Mikrofon")
     lv.add_argument("--ohne-gehirn", action="store_true", help="kein Briefing, keine situativen Saetze (spart Claude-Aufrufe)")
+    lv.add_argument("--ohne-stratege", action="store_true",
+                    help="kein Makro-Stratege (Auftrag 015): Fragen, Wendepunkte und Leerlauf wieder nur mit dem Kern")
     lv.add_argument("--ptt", default="maus5", help="Push-to-Talk-Taste (maus4, maus5, f9, ...)")
     lv.add_argument("--modell-frage", default="sonnet", help="Claude-Modell fuer freie Fragen")
     ab = unter.add_parser("abspielen")

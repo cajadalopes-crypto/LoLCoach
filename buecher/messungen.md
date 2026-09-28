@@ -4,6 +4,109 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 015 – Stratege live, Prüfung erweitert (29.09.2026)
+
+Grundlage: `buecher/auftraege/015_auftrag.md`. Der Coach (`python -m lolcoach`) wurde nicht gestartet. Die
+Generalprobe startet einen eigenen Coach-Prozess gegen einen nachgebauten Client (`aufnahmen_probe/`).
+
+### 1. Prüfung erweitert (`stratege.pruefe`, Unit-Test `stratege_pruefung_015`)
+
+Die Prüfung verwirft einen Satz in diesen Fällen:
+- **Mitspieler am falschen Ort:** „mit X“ oder „X steht …“, obwohl X tot ist, in der Basis steht (während du draußen
+  bist) oder mehr als 15 s von dir entfernt ist, oder obwohl die Seite nicht stimmt.
+- **Gold:** Die genannten Käufe kosten zusammen mehr als dein Gold. Dafür wird der Restpreis gerechnet (Bauteile im
+  Inventar zählen ab); „für die X“ ist ein Ziel, kein Kauf.
+- **Sichtbarkeit falsch herum:** „X seh ich nicht“ oder „X unsichtbar“, obwohl X sichtbar ist; oder „X steht …“ als
+  aktueller Ort für einen, der länger als 10 s unsichtbar ist.
+- **Objective nicht da:** Das Objective wird als Ziel genannt, es fehlt aber die Spawn-Zeit oder -Uhrzeit, und es ist
+  weder verneint noch als genommen genannt.
+
+Außerdem:
+- **Kein Fehlalarm mehr:** „Nimm/hol/farm die Welle“, „allein“ und „zurück zum Turm“ gelten nicht als Vorwärts-Rat;
+  „danach/dann …“ verschiebt nur nach einer Erholung (back, kaufen, Respawn).
+- **Länge:** hart gekürzt auf ganze Sätze mit höchstens 30 Wörtern (`kuerzen`).
+- Die Prüf-Lage kennt jetzt Mitspieler mit Seite und Ankunft, Gold, Items, Objectives und ob du in der Basis bist.
+
+**Die 100 Momente aus 014, neu erfasst, ohne neue Kritik** (`STRATEGE_PROBE_015.md`):
+
+| Lauf | beim 1. Versuch verworfen | Kern springt ein | Latenz 1. Satz (Median / p90) | bis zum gültigen Satz p90 |
+|---|---|---|---|---|
+| 1 (erste Fassung) | 17 | 4 | – | – |
+| 2 (Fehlalarme: Namenslisten, Uhrzeit, Verneinung, TP „in 37s“) | 14 | 2 | 2,0 / 2,9 s | 9,0 s |
+| **3 (dazu „allein“, „für Eklipse“, „Baron-Buff“)** | **9** | **1 (1 %)** | **2,1 / 3,4 s** | **8,1 s** |
+
+- **Die 9 im letzten Lauf:** Objective nicht da 5, Mitspieler nicht dabei 2, Entwarnung ohne Sicht 1, nach vorn trotz
+  R1 1, Gold 1.
+- **Die 5 Objective-Fälle** sind nach der Regel richtig, aber streng: ein Ziel ohne Spawn-Zeit, z. B. „dann Richtung
+  Baron sammeln“ 60 s vor dem Spawn. Nach der Wiederholung nannte der Stratege sie mit Zeit oder ließ sie weg.
+- **Länge:** Median 25 Wörter, höchstens 33 (ein einzelner Satz über 30 bleibt ganz).
+- **Kern springt ein:** deutlich unter der Grenze von 15 %.
+
+### 2. Teil B eingebaut (`lolcoach/stratege_live.py`)
+
+- **B1 Fragen** (`sprache.py`): JETZT, DANACH, WARUM, ENTWEDER, SOLL_ICH, RISIKO, AUGE, COACH, GEWISSHEIT und OFFEN
+  gehen an den Strategen. Er spricht gestreamt, Satz für Satz, jeder Satz geprüft. Beim Kern bleiben TIMER, WO, LAGE,
+  KAUF, KLAEREN und NOTIZ. Die Korrektur „die Welle ist leer“ setzt der Kern vorher. Fällt der Stratege aus, gibt es
+  keinen zweiten Claude-Aufruf.
+- **B2 Wendepunkte:**
+  - Der WENDEPUNKT-Satz des Kerns wird ersetzt. Nach Respawn, Ankunft in der Basis oder zwei Kills in 10 s wird der
+    nächste PLAN-Satz des Kerns innerhalb von 5 s ersetzt; kommt keiner, fragt der Stratege allein, aber nur, wenn
+    10 s nichts Planendes kam.
+  - Kommt der erste gültige Satz nicht in 4 s, spricht der Kern.
+  - Warnungen gehen vor: Stratege-Sätze sind WICHTIG, in KAMPF und bis 10 s nach einer Gefahr wirft der Sprechplan sie
+    nicht ein.
+- **B3 Leerlauf:** ab 14:00, nach 45 s ohne Plan-Satz und ohne Warnung, höchstens einmal je 45 s.
+- **B4:** WELLE_DRUECKEN des Kerns kommt nur, wenn der Stratege aus ist oder ausgefallen.
+- **B5:**
+  - Die Szenarien laufen weiter mit dem Kern.
+  - Nachspielen mit dem Aufzeichnungs-Stub: `protokoll.py --stratege-stub` → `<stamm>_stratege_stub.md`.
+  - Unit-Test `makro_stratege_wege`: Verwerfen → neu → Kern, Ausfall still, Welle weg, Wendepunkt ersetzt oder
+    Fallback.
+- **B6:** `<aufnahme>_stratege.jsonl` mit Anlass, Quelle (stratege/kern/still), allen Versuchen, Latenzen und
+  verworfenen Sätzen samt Grund. Im Stub-Protokoll steht ein Abschnitt „Stratege“.
+- **Schalter:** `[stratege] aktiv` in `wissen/kern.toml`; live `--ohne-stratege`. `--ohne-gehirn` schaltet ihn
+  ebenfalls aus.
+- **Ausfall:** 30 s nichts oder ein Fehler → einmal im Log „Stratege: Ausfall …“, 120 s nur der Kern, kein Satz an
+  Carlos.
+
+**Sprechmenge** (ungefragt je 30 min, Stub-Protokoll gegen Kern-Protokoll; Soll ≤ ~75):
+
+| Partie | nur Kern | mit Stratege (Stub) | Stratege-Aufrufe |
+|---|---|---|---|
+| 101426 | 70 | 64 | 42 |
+| 102112 | 78 | 73 | 36 |
+| 133930 | 81 | 78 | 21 |
+| 140253 | 45 | 53 | 7 |
+| 144655 | 40 | 47 | 4 |
+| 164326 | 74 | 77 | 48 |
+| 173159 | 70 | 68 | 34 |
+| 213624 | 67 | 66 | 49 |
+| 192113 | 65 | 65 | 83 (mit Fragen) |
+
+In der ersten Fassung (ohne das 5-s-Fenster) lag sie bei 70–87. Seit dem Fenster ersetzt der Stratege den Plan-Satz
+des Kerns nach Respawn und Basis, statt einen zweiten Satz dazuzusprechen.
+
+**Generalprobe** (`--breite 3840 --links 1920`, 164326 ab 22:00, echtes Claude über das Abo):
+- **Aufrufe:** 5 Anlässe in 3 min (4 Wendepunkte, 1 Leerlauf). 4 sprach der Stratege, 1 der Kern: der erste Satz kam
+  nach 4,6 s, über der 4-s-Grenze.
+- **Latenz:** erster gültiger Satz nach 1,0 / 1,4 / 2,2 / 2,3 / 4,6 s. In Spielzeit vom Anlass bis zum ersten
+  gesprochenen Teil 1–3 s, dazu etwa 0,45 s bis zum Ton.
+- **Verworfen:** 0. Fehler der Probe: keine; Takt Median 7/s.
+- **Reihenfolge:** Beim ersten Durchgang kam ein dritter Satzteil vor dem zweiten. Das ist behoben: spätere Teile
+  bekommen eine minimal ältere Zeit.
+- **Ausfall nachgestellt** (`LOLCOACH_STRATEGE_AUSFALL=31`): Am Wendepunkt sprach nach 4 s der Kern. Einmal
+  „Stratege: Ausfall“ im Log, dann 120 s nur der Kern, die Wellen-Sätze wieder als Fallback, kein Satz an Carlos.
+- In diesem Lauf meldete die Minimap-Texterkennung einmal „Another RecognizeAsync operation is already running“. Das
+  gehört nicht zum Strategen; im ersten Lauf war es nicht da.
+- Belege: `stratege_probe_015/generalprobe_claude_stratege.jsonl`, `generalprobe_ausfall_coach.log`.
+
+### Prüfungen
+
+- **Szenarien 305 / 309**, 3 übersprungen. Rot sind nur die alten Fälle: 3× Wendepunkt-Probe und 0944.
+- `tests/alle.py` 10 / 10, konstruierte Lagen 40 / 40.
+
+---
+
 ## Auftrag 014 – Stratege: Schutzschicht und Tor (28./29.09.2026)
 
 Grundlage: `buecher/auftraege/014_auftrag.md`. Offline, der Coach wurde nicht gestartet. **Das Tor aus A5 ist knapp

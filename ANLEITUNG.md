@@ -30,6 +30,17 @@ wartest, warum und was du nächstes Mal tust.
     "Was soll ich kaufen?", "Was meinst du damit?"
   - **Notiz für die Entwicklung:** mit "Notiz" anfangen - der Coach sagt nur "Notiert"
     und schreibt es mit. Danach lese ich es.
+- **Makro-Stratege (seit 29.09.2026):** Deine Fragen, die Momente nach einem Turm, Objective,
+  Respawn oder Kill-Doppel und längere Stille ab Minute 14 beantwortet Claude als Stratege.
+  Der Coach rechnet weiter alles selbst, warnt immer zuerst und prüft jeden Satz des
+  Strategen, bevor er ihn sagt. Timer, Flash, Stand, Kauf und "Was meinst du damit?"
+  beantwortet weiter der Coach allein. Braucht Claude zu lange oder fällt aus, spricht der
+  Coach still wie bisher weiter.
+  - **Ausschalten**, falls live etwas klemmt: Coach beenden und neu starten mit
+    `python -m lolcoach live --ohne-stratege` - oder dauerhaft in `wissen/kern.toml` unter
+    `[stratege]` die Zeile `aktiv = true` auf `aktiv = false` setzen.
+  - Was der Stratege gesagt und was die Prüfung verworfen hat, steht nach der Partie in
+    `aufnahmen/<Partie>_stratege.jsonl`.
 - **Flash-Timer:** Pingt ein Mitspieler im Chat "Urgot Blitz" (oder "urgot ult"), läuft
   ein Timer. Der Coach sieht Flash auch selbst auf der Minimap.
 
@@ -55,4 +66,5 @@ Das Review entsteht automatisch (1-3 Minuten nach Spielende). Ansehen:
 - Mikrofon/Taste testen ohne Partie: `python -m lolcoach mikrotest`
 - Claude antwortet nicht: `python -m lolcoach llm "test"` - sagt es "nicht angemeldet",
   im Terminal `claude` starten und `/login`.
-- Weniger Claude-Aufrufe (kein Briefing, keine situativen Sätze): `--ohne-gehirn`
+- Weniger Claude-Aufrufe (kein Briefing, keine situativen Sätze, kein Makro-Stratege): `--ohne-gehirn`
+- Nur den Makro-Strategen aus: `python -m lolcoach live --ohne-stratege`
