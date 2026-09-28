@@ -1,0 +1,13 @@
+# Auftrag 011: Warnungsrate nachziehen - Carlos' Testpartie 101426 (Riven Mid gegen Aurora).
+# Auf bf7c7ba (Stand nach Auftrag 010) rot.
+
+aufnahme = "2026-09-28_101426"
+spielmodus = "CLASSIC"
+
+[[szenario]]
+id = "2010-keine-wiederholung"
+zeit = "20:10"
+fenster = [["20:00", "20:15"]]
+lage = "20:01 'Zurueck unter deinen inneren Mid-Turm: drei kommen.', 20:10 derselbe Satz - dieselben Koepfe, dasselbe Ziel, p_tod nur eine Stufe hoeher."
+kategorie_max = { GEFAHR = 1 }
+warum = "Auftrag 011, 1.2: keine Wiederholung ohne neue Lage (kein neuer Kopf, kein neues Ziel, p_tod hoechstens eine Stufe hoeher)."

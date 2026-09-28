@@ -91,6 +91,8 @@ id = "2335-von-der-bot-lane"
 zeit = "23:35"
 fenster = [["23:35", "23:38"]]
 lage = "Riven auf der Bot-Lane, der schnellste sichere Ort ist dein innerer Mid-Turm; Twitch in 685, Bard ungesehen."
-satz_mit = [["Von der Bot-Lane"], ["Mid-Turm"]]
+# Auftrag 011, 1.1: seit 011 faellt die Warnung hier weg (Twitch sichtbar, kommt aber nicht naeher; Bard 15 s
+# ungesehen zaehlt nur gepaart) - die Form "Von der Bot-Lane ..." prueft jetzt 213624 22:09
+# (2026-09-27_213624_auftrag011.toml); hier bleibt nur das Verbot der missverstaendlichen Form
 darf_nicht_sagen = ["Zurück unter deinen inneren Mid-Turm"]
 warum = "Auftrag 010, 3 (Kritik 009: falsch): 'Von der Bot-Lane zurück zu deinem inneren Mid-Turm: zwei kommen.'"

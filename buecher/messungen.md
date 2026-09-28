@@ -4,6 +4,79 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 011 – Warnungsrate nachziehen, Szenario 2522 richtigstellen (28.09.2026)
+
+Grundlage: `buecher/auftraege/011_auftrag.md`. Offline gemessen, der Coach wurde nicht gestartet. Alle neun Protokolle
+sind neu erzeugt.
+
+### 1. Warnungsrate
+
+- **1.1 Ungesehen zählt nur gepaart:** In `_warnung_ohne_beleg` zählt ein Gegner, der länger als `eben_gesehen_s`
+  (5 s) ungesehen ist, nur dann als Kopf, wenn zugleich ein Sichtbarer nah ist **und näher kommt**. Bis 20 s ungesehen
+  gilt also nur gepaart.
+- **1.2 Keine Wiederholung ohne neue Lage:** Dieselbe Warnung (keine neuen Köpfe, dasselbe Ziel) kommt in
+  `gefahr_gleiche_s` (60 s) nicht wieder, außer `p_tod` steigt um mehr als eine Stufe (`gefahr_stufen` 0,15 / 0,3 /
+  0,5 / 0,7; vorher: +0,2).
+  - „Back jetzt“ nach einem Rückzug gilt als dieselbe Richtung.
+  - Unit-Test `warnung_nur_mit_neuer_lage` (auf `bf7c7ba` rot: `gefahr_stufe` fehlte).
+- **101426, die vier Fälle aus dem Auftrag:**
+
+| Fall | vorher | jetzt | warum |
+|---|---|---|---|
+| 20:01 | „Zurück unter deinen inneren Mid-Turm: drei kommen.“ | still | kein Sichtbarer kam näher – die Ungesehenen zählen nicht (1.1) |
+| 20:10 | derselbe Satz 9 s später | bleibt, jetzt die erste Warnung vor dem Tod | Twitch und Bard kommen sichtbar näher, Aurora 9 s ungesehen zählt gepaart |
+| 21:35 | „Zurück unter euren inneren Bot-Turm: drei kommen.“ | bleibt | Twitch kommt sichtbar näher, Bard 9 s ungesehen |
+| 23:35 | „Von der Bot-Lane zurück …: zwei kommen.“ | still | Twitch sichtbar, kommt aber nicht näher (1.1) |
+
+- **Außerdem:**
+  - 22:38 „Back jetzt: 850 Gold …“ (GEFAHR, 13 s nach dem Rückzug 22:25) fällt weg (1.2).
+  - Szenario `2010-keine-wiederholung` (auf `bf7c7ba` rot: 20:01 und 20:10) ist grün, ebenso `2016-viego-zaehlt-mit`
+    (20:10 warnt).
+
+**Warnungen je 30 min** (`kennzahlen.py`: GEFAHR ohne Kampf-Rufe, dazu VORSICHT; vorher = Stand nach 010):
+
+| 101426 | 102112 | 133930 | 140253 | 144655 | 164326 | 173159 | 213624 |
+|---|---|---|---|---|---|---|---|
+| 15,0 → **13,4** | 3,9 → 3,9 | 15,1 → 13,7 | 13,9 → 11,1 | 12,4 → 12,4 | 11,9 → **9,8** | 11,0 → 10,2 | 10,8 → 10,8 |
+
+(145702: 0,5 min, keine.)
+
+**`a1-warnungen-je-30min` ist grün:** 11 GEFAHR-Sätze in 101426 (Schranke 11; vorher 13). Der Rest je Satz
+(`k011_warn.py`):
+
+| | 101426 | 164326 | 173159 |
+|---|---|---|---|
+| echte Mehrfachgefahr (Sichtbare, ≤ 5 s ungesehen) | 3 | 6 | 1 |
+| 20:16-Art (braucht einen Ungesehenen > 5 s, gepaart) | 4 | 3 | 2 |
+| Leben unter 40 % oder klar hinten | 1 | 3 | 4 |
+| Kampf-RAUS und „Back jetzt“ bei wenig Leben | 3 | 1 | 4 |
+
+In 101426 kommen zu den 11 GEFAHR-Sätzen 5 Vorsicht-Sätze („Du stehst tief: …“). Deshalb steht die Kennzahl (mit
+VORSICHT) bei 13,4 und nicht unter 10. Die 20:16-Art sind 9:00, 20:10, 21:35 und 22:25 – je ein sichtbarer, näher
+kommender Gegner plus ein 9–15 s Ungesehener.
+
+### 2. Szenario 2522
+
+`2522-kein-baron-drache-lebt` (102112) erwartet jetzt den akzeptierten Ausgang: `soll = ["DRUECKEN", "MIT_GRUPPE"]`
+(Split: Tryndamere nimmt den Drachen allein, Riven geht auf den äußeren Mid-Turm), weiter nie „Baron“. Das Verhalten ist
+unverändert. Grund und alte Erwartung stehen im Szenario.
+
+### Nebenwirkung
+
+`2335-von-der-bot-lane` (010) hatte keine Warnung mehr zu prüfen. Die Form „Von der Bot-Lane zurück zu …“ prüft jetzt
+`2209-von-der-bot-lane` (213624 22:09; vor 010 hieß es dort „Zurück unter euren Mid-Turm“). In 101426 23:35 bleibt nur
+das Verbot der alten Form.
+
+### Prüfungen
+
+- **Szenarien 240 / 244**, 3 übersprungen.
+  - Rot sind nur die alten Fälle: 3× Wendepunkt-Probe (19 späte Sätze, 010: 18) und 0944.
+  - `a1-warnungen-je-30min` und `2522-…` sind grün.
+- `tests/alle.py` **10 / 10**, konstruierte Lagen **40 / 40**.
+- **Leerlauf ab 14:00** kaum verändert: 101426 52 %, 164326 45 %, 173159 52 % (010: 51 / 44 / 52).
+
+---
+
 ## Auftrag 010 – Plan nach dem Wendepunkt (28.09.2026)
 
 Grundlage: `buecher/auftraege/010_auftrag.md`. Offline gemessen, der Coach wurde nicht gestartet. Alle neun Protokolle

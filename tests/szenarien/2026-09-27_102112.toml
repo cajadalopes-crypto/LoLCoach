@@ -81,10 +81,14 @@ Drache lebt (seit 15 s), 17-18 s von dir. Baron 23-25 s von dir.
 Kai'Sa und Sona seit eben tot (~29-35 s), Galio stirbt genau in diesem Takt (bei dir). Sett oben (11.400 entfernt), Fiddlesticks lange ungesehen.
 Tryndamere bei dir im unteren Jungle, Corki oben, Nasus und Brand in der Basis."""
 modus = ["OBJECTIVE", "UNTERWEGS", "SEITE"]   # SEITE seit Schritt 5 (Bot-Lane, neue Eintrittsregel)
-soll = ["ANLAUFEN", "NEHMEN"]
+# Auftrag 011, 2: seit 009 entschieden - Tryndamere nimmt den Drachen allein (86 %, Rivens Anteil 0,14), Riven geht
+# auf den aeusseren Mid-Turm (Split). Der EV entscheidet, der Rang aus Buch 6, 8 nur noch bei Gleichstand (Auftrag 009,
+# 2.3). Vorher soll = ["ANLAUFEN", "NEHMEN"]; der Kern-Plan ist seit 009 DRUECKEN.
+soll = ["DRUECKEN", "MIT_GRUPPE"]
 darf_nicht_sagen = ["Baron"]
-warum = """Drei Gegner tot, der Drache lebt 17 Sekunden von dir, Tryndamere steht daneben: das ist ein freier Drache.
-Baron ist weiter weg, dauert viel laenger, und zwei deiner Mitspieler sind in der Basis.
+warum = """Drei Gegner tot, der Drache lebt 17 Sekunden von dir, Tryndamere steht daneben und nimmt ihn allein: Riven
+nutzt das Fenster am aeusseren Mid-Turm (Split, Entscheidung zu 009). Nie Baron: er ist weiter weg, dauert viel
+laenger, und zwei deiner Mitspieler sind in der Basis.
 Code-Fehler dahinter: regeln._lebende_objectives liefert Baron immer zuerst; komponist.zahlen prueft die
 Laufzeit zum Drachen (b.zum_objective), sagt aber Baron."""
 

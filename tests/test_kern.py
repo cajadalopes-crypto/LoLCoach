@@ -415,12 +415,24 @@ def anteil_geglaettet():
     assert glaetten(v, 100.0, 0.2) == 0.2                               # Zeit rueckwaerts: neue Partie
 
 
+def warnung_nur_mit_neuer_lage():
+    """Auftrag 011, 1.2: dieselbe Warnung wird nur wiederholt, wenn p_tod um mehr als eine Stufe steigt (101426
+    20:01 -> 20:10: 0,23 -> 0,43 ist eine Stufe - keine Wiederholung)."""
+    from lolcoach.kern import gefahr_stufe
+    cs = konfig()["schranken"]
+    assert gefahr_stufe(0.23, cs) - gefahr_stufe(0.10, cs) == 1
+    assert gefahr_stufe(0.43, cs) - gefahr_stufe(0.23, cs) == 1          # 20:10: keine Wiederholung
+    assert gefahr_stufe(0.55, cs) - gefahr_stufe(0.23, cs) == 2          # deutlich hoeher: wieder warnen
+    assert gefahr_stufe(0.0, cs) == 0 and gefahr_stufe(0.9, cs) == 4
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
                  gold_reicht_fuer_das_genannte_item, info_flash_kurz_und_gebuendelt, zahlen_wie_spieler,
                  zwei_klar_unterlegene, keine_floskeln, konkrete_sprache, viego_bleibt_viego, kontrollauge_nur_mit_platz,
                  ihr_jungle_heisst_ihr_jungle, keine_verbotenen_gruende, warum_mit_vergleich,
-                 vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal, anteil_geglaettet):
+                 vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal, anteil_geglaettet,
+                 warnung_nur_mit_neuer_lage):
         test()
         print(f"{test.__name__} OK")

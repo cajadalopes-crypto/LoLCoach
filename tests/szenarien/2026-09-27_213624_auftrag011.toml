@@ -1,0 +1,13 @@
+# Auftrag 011 (zu Auftrag 010, 3): der Rueckzug auf eine andere Lane nennt den Ausgangspunkt - Bot-Partie 213624.
+
+aufnahme = "2026-09-27_213624"
+spielmodus = "CLASSIC"
+bots = true
+
+[[szenario]]
+id = "2209-von-der-bot-lane"
+zeit = "22:09"
+fenster = [["22:07", "22:12"]]
+lage = "Riven auf der Bot-Lane, 29 %; der schnellste sichere Ort ist euer aeusserer Mid-Turm; zwei kommen."
+satz_mit = [["Von der Bot-Lane"], ["Mid-Turm"]]
+warum = "Auftrag 010, 3: liegt der sichere Ort an einer anderen Lane, nennt der Satz den Ausgangspunkt (auf 064a6b4: 'Zurueck unter euren Mid-Turm')."

@@ -81,6 +81,12 @@ def _zeitleiste_stand(eintraege: list, jetzt: float) -> list[dict]:
     return fuer_stand(eintraege, jetzt)
 
 
+def gefahr_stufe(p_tod: float, cs: dict) -> int:
+    """Auftrag 011, 1.2: die Stufe eines p_tod (0 bis len(gefahr_stufen)) - eine Warnung wird nur wiederholt, wenn sie
+    um mehr als eine Stufe steigt."""
+    return sum(1 for s in cs["gefahr_stufen"] if p_tod >= s)
+
+
 def _leben_jetzt(text: str, m) -> str:
     """Die Leben-Zahl im Satz ist die von jetzt, nicht die vom Moment der Wahl (Kritik 008, 173159 22:17: "Back jetzt:
     29 Prozent Leben" bei 13 % - gewaehlt 2 s vorher, nachgeholt, als das Budget wieder frei war)."""
@@ -669,8 +675,12 @@ class Kern:
             return "keiner sichtbar und nah"
         # Auftrag 009, 2.1 (101426 20:16): ein Ungesehener zaehlt als Kopf, wenn er seit <= kopf_ungesehen_s fehlt und
         # von seiner letzten Sichtung aus in <= ankunft_s da sein kann (g.ankunft: Weg / Tempo minus die Zeit seither)
+        # Auftrag 011, 1.1: laenger als eben_gesehen_s ungesehen zaehlt nur gepaart - wenn zugleich ein Sichtbarer nah
+        # ist UND naeher kommt; ein Ungesehener ohne nahen, kommenden Sichtbaren loest nichts aus
+        gepaart = any(g.kommt_naeher for g in nah)
+        ungesehen_s = c["kopf_ungesehen_s"] if gepaart else c["eben_gesehen_s"]
         ihre = [g for g in b.gegner if not g.s.tot and g.ankunft is not None and g.ankunft <= c["ankunft_s"]
-                and (g.sichtbar or (g.seit is not None and g.seit <= c["kopf_ungesehen_s"]))]
+                and (g.sichtbar or (g.seit is not None and g.seit <= ungesehen_s))]
         wir = 1 + (sum(koepfe(m, m.pos, c["ankunft_s"])) if m.pos is not None else 0)
         if len(ihre) >= wir + 1:
             return None
@@ -1101,8 +1111,13 @@ class Kern:
             alt = self._gefahr_gesagt
             # Pruefung c, R5: dieselbe Gegnermenge gefahr_gleiche_s (45 s) nicht erneut - ausser p_tod steigt deutlich
             # (164326 22:39/23:12: zweimal "Teemo und Naafiri kommen")
+            # Auftrag 011, 1.2 (101426 20:01/20:10: zweimal "drei kommen", p_tod 0,23 -> 0,43): wiederholt wird nur mit
+            # neuer Lage - ein neuer Kopf, ein anderes Ziel (Fluchtrichtung) oder p_tod mehr als eine Stufe hoeher; "Back
+            # jetzt" nach einem Rueckzug ist dieselbe Richtung (101426 22:25 "Zurueck unter ...", 22:38 "Back jetzt")
+            ziel = h.ziel.name if h.ziel is not None else None
             if alt is not None and m.zeit - alt[0] < cs["gefahr_gleiche_s"] and von <= alt[1] \
-                    and h.p_tod < alt[2] + cs["gefahr_anstieg"]:
+                    and (len(alt) < 4 or alt[3] == ziel or ziel == "Basis") \
+                    and gefahr_stufe(h.p_tod, cs) - gefahr_stufe(alt[2], cs) <= 1:
                 p.gesagt = alt[0]
                 return None
             # Auftrag 008, A1 (3): so nah am sicheren Ort kommt der Satz zu spaet - du bist gleich dort
@@ -1205,7 +1220,8 @@ class Kern:
             elif p.art == "ANNEHMEN":
                 self.proben.ansage(m.zeit, "rein")
             if kategorie == "GEFAHR":
-                self._gefahr_gesagt = (m.zeit, set(h.daten.get("gefahr_von", [])), h.p_tod)
+                self._gefahr_gesagt = (m.zeit, set(h.daten.get("gefahr_von", [])), h.p_tod,
+                                       h.ziel.name if h.ziel is not None else None)
                 self._wp = None                          # eine Gefahr ueberholt den Wendepunkt
             elif kategorie == "WENDEPUNKT":
                 self._wp_text = self._wp["text"] if self._wp else None

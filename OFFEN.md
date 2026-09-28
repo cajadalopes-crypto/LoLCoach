@@ -17,6 +17,10 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 011 (Warnungsrate, Szenario 2522) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 011").
+- Warnungen je 30 min mit Vorsicht-Saetzen noch ueber 10 in 101426 (13,4: 11 GEFAHR + 5 "Du stehst tief") und in
+  133930/140253/144655 (kurze Partien, 11-14); `a1-warnungen-je-30min` (nur GEFAHR) ist gruen.
+
 **Auftrag 010 (Plan nach dem Wendepunkt) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 010"), Bericht in
 `010_bericht.md`.
 

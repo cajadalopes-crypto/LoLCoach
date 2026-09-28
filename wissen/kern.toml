@@ -43,6 +43,8 @@ back_max_je_10min = 3            # R4
 back_leben_min = 0.10            # R4: darunter kein Back-Ruf (dann gilt RAUS)
 back_ausnahme_leben = 0.3        # R4: faellt das Leben darunter, darf ein neuer Back-Ruf frueher kommen
 gefahr_gleiche_s = 60            # R5: dieselbe Gegnermenge wird so lange nicht erneut gewarnt ... (Auftrag 008, A1: 45 -> 60)
+gefahr_stufen = [0.15, 0.3, 0.5, 0.7]   # Auftrag 011, 1.2: p_tod-Stufen - dieselbe Warnung erst wieder, wenn sie um
+                                        # mehr als eine Stufe steigt (ersetzt gefahr_anstieg)
 gefahr_anstieg = 0.2             # ... ausser p_tod steigt um so viel (Auftrag 008, A1: 0,15 -> 0,2)
 gefahr_lane_leben_min = 0.6      # R5: kommt nur der Lane-Gegner, ist das ab so viel Leben keine Gefahr ...
 gefahr_lane_kraft_min = -0.5     # ... und wenn kraefte() mindestens so hoch ist (bis Buch 2 die Matchups bringt)
