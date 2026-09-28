@@ -347,12 +347,58 @@ def vorsicht_statt_raus():
     assert k._vorsicht(m(1085.0), "SEITE", []) is not None
 
 
+def drache_vor_inhibitor():
+    """Auftrag 009, 2.3 (Teil 0 aus 008): im Umwandel-Fenster geht ein Objective <= 10 s neben dir vor jeden Turm -
+    danach der Turm, wenn das Fenster reicht; ist es weiter weg, entscheidet der EV (beide bleiben Kandidaten)."""
+    from lolcoach.kern.handlung import Handlung, Ziel
+    from lolcoach.kern.modi import karte
+    from types import SimpleNamespace as NS
+    cfg = konfig()
+
+    def lage(weg):
+        d = Handlung("NEHMEN", Ziel("objective", "den Drachen", (9800.0, 4400.0), weg), "GRUPPE", weg,
+                     gefahr_t=weg + 14.0, satz="Zum Drachen: ihr seid vier.")
+        d.daten["objective"] = "drache"
+        t = Handlung("MIT_GRUPPE", Ziel("turm", "ihren Mid-Inhibitor", (11000.0, 11000.0), 25.0), "GRUPPE", 25.0,
+                     gewinn=1000.0, gefahr_t=33.0)
+        t.daten.update(turm=("CHAOS", "Mid", "Inhibitor"), umwandeln=True)
+        return d, t
+
+    alt = karte.umwandeln
+    try:
+        karte.umwandeln = lambda m, c: 60.0
+        d, t = lage(6.0)
+        assert karte.zuerst_filtern(karte.umwandeln_zuerst(NS(mein_tempo=345.0), cfg, [d, t])) == [d]
+        assert karte.zuerst_filtern([t]) == [t]            # ist der Drache stumm, bleibt der Turm
+        assert d.satz == ("Drache zuerst, der liegt neben euch; danach ihr Mid-Inhibitor, sie sind noch 60 Sekunden "
+                          "tot."), d.satz
+        d, t = lage(18.0)                       # weiter als 10 s: der EV entscheidet
+        assert karte.zuerst_filtern(karte.umwandeln_zuerst(NS(mein_tempo=345.0), cfg, [d, t])) == [d, t]
+        karte.umwandeln = lambda m, c: 25.0
+        d, t = lage(6.0)                        # das Fenster reicht nicht fuer den Turm danach: nur der Drache
+        assert karte.zuerst_filtern(karte.umwandeln_zuerst(NS(mein_tempo=345.0), cfg, [d, t])) == [d]
+        assert d.satz == "Zum Drachen: ihr seid vier.", d.satz
+    finally:
+        karte.umwandeln = alt
+
+
+def recall_kanal():
+    """Auftrag 009, 2.3 (Teil 0 aus 008): im Recall-Kanal warnt der Kern nur, wenn der erste Gegner vor Kanal-Ende
+    + 1 s da sein kann (102112 13:22: Kanal noch 0,5 s, Sett in 5,7 s - still; 213624 4:29: noch 3,5 s, Rumble in
+    3,9 s - Warnung)."""
+    from lolcoach.kern.modi import kanal_reicht
+    assert kanal_reicht(0.5, 5.7)
+    assert not kanal_reicht(3.5, 3.9)
+    assert not kanal_reicht(3.0, 4.0)            # genau Kanal-Ende + 1 s: warnen
+    assert kanal_reicht(3.0, None)
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
                  gold_reicht_fuer_das_genannte_item, info_flash_kurz_und_gebuendelt, zahlen_wie_spieler,
                  zwei_klar_unterlegene, keine_floskeln, konkrete_sprache, viego_bleibt_viego, kontrollauge_nur_mit_platz,
                  ihr_jungle_heisst_ihr_jungle, keine_verbotenen_gruende, warum_mit_vergleich,
-                 vorsicht_statt_raus):
+                 vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal):
         test()
         print(f"{test.__name__} OK")

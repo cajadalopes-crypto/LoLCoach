@@ -71,7 +71,8 @@ def _handlung(art: str, m, cfg: dict, modus: str, o, u, satz: str, grund: str, s
                    ev_min=0.0, P_kampf=round(u.P_kampf, 3), faellt_in=round(u.t1, 1),
                    in_grube=m.bereich == f"grube:{OBJ_GRUBE[o.schl]}")
     if karte.umwandeln(m, cfg) is not None and o.schl in ORDNUNG:
-        h.folgewert += 200.0 * ORDNUNG[o.schl]      # wie turm_handlungen: die Reihenfolge aus Kapitel 8
+        # Auftrag 009, 2.3: derselbe Umwandel-Bonus wie bei den Tuermen, Kapitel 8 nur noch bei Gleichstand
+        h.folgewert += cfg["mitte"]["umwandeln_bonus"] + 1.0 * ORDNUNG[o.schl]
     return h
 
 

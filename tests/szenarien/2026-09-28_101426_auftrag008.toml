@@ -37,7 +37,9 @@ warum = "A1, Bedingung 1 (vorher: 'Raus zum Bot-Tier-1-Turm: Twitch und Viego ko
 [[szenario]]
 id = "2335-ungesehen-kein-raus"
 zeit = "23:35"
-fenster = [["23:30", "23:42"]]
+# Auftrag 009, Entscheidung 2.1: ab 23:35,9 ist Twitch sichtbar in 685 und Bard (15 s ungesehen, von der letzten
+# Sichtung in 0 s da) zaehlt als Kopf - zwei gegen einen, die Warnung dort ist richtig. Geprueft bis davor.
+fenster = [["23:30", "23:35.5"]]
 lage = "Riven Bot, 72 %. Alle Gegner 10-17 s ungesehen, keiner sichtbar."
 darf_nicht_sagen = ["Raus zu", "Raus zum", "Zurück unter"]
 warum = "A1, Bedingung 1 (vorher: 'Raus zum Mid-Tier-2-Turm: Sett, Bard und Twitch kommen')."

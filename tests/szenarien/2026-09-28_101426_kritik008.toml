@@ -36,5 +36,7 @@ lage = "Riven seit 31:49 tot; kein Kauf-Plan gewaehlt."
 kern_frage = true
 ohne_claude = true
 darf_nicht_sagen = ["Dann zuerst in den Shop", "Farm"]
-muss_nennen_eins = ["zurück auf", "kauf"]
-warum = "A3.1: der Respawn-Plan nennt Zeit, Kauf und Ziel - 'Dann zuerst in den Shop' war an der Frage vorbei."
+# Auftrag 009, 3: dieselbe Frage erklaert jetzt den letzten Satz ("Raus, zu eurem Top-Turm!") statt des Respawn-Plans
+# (vorher muss_nennen_eins = ["zurück auf", "kauf"]; 3217-klaeren-raus-zum-turm in 2026-09-28_101426_auftrag009.toml)
+muss_nennen_eins = ["Top-Turm"]
+warum = "A3.1, seit Auftrag 009 KLAEREN: 'Dann zuerst in den Shop' war an der Frage vorbei - die Frage meint 'Raus zum Turm'."

@@ -28,7 +28,8 @@ Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes
                             mit sofort = true die Sofort-Antwort ohne Claude (immer geprueft, keine = rot); seit
                             Auftrag 003 mit kern_frage = true der Fragenweg des Kerns (Buch 11, 5), eingespielt wie live:
                             absicht (erwartete Absicht), ohne_claude (keine Claude-Pflicht), mit_handlung (keine
-                            Stichwort-Antwort), dazu darf_nicht_sagen, muss_nennen_eins, muss_ziel
+                            Stichwort-Antwort), dazu darf_nicht_sagen, muss_nennen_eins, muss_ziel; seit Auftrag
+                            009 auch muss_nennen_alle (jedes Wort muss in einem Satz bzw. der Antwort stehen)
   Datei-weit, Auftrag 003:  wendepunkt_ansage = true - auf jeden Turmfall, Objective-Kill und das Verlassen der Basis
                             im Fenster folgt in <= 3 s ein Plan-Satz (werkzeuge/fuehrmass.py)
   typ = "review":           gegen das gespeicherte Review der Partie - nur mit --mit-claude
@@ -250,6 +251,9 @@ def text_pruefen(sz: dict, texte: list[tuple[float, str]], champions, stehend: t
     if sz.get("muss_nennen_eins") and not any(w.lower() in s.lower() for _, s in texte + ([stehend] if stehend else [])
                                                   for w in sz["muss_nennen_eins"]):
         aus.append(f"muss_nennen_eins {sz['muss_nennen_eins']} - nichts davon gesagt")
+    for w in sz.get("muss_nennen_alle", []):
+        if not any(w.lower() in s.lower() for _, s in texte):
+            aus.append(f"muss_nennen_alle '{w}' - nicht gesagt" + (f": \"{texte[0][1][:110]}\"" if texte else ""))
     if sz.get("muss_ziel") and not any(hat_ziel(s, champions) for _, s in texte):
         aus.append("muss_ziel - kein Satz mit aufloesbarem Ziel" + ("" if texte else " (gar nichts gesagt)"))
     if sz.get("muss_item"):
@@ -419,7 +423,8 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                 von, bis = fenster(sz)
                 ansagen = [a for a in lauf.gesagt if im_fenster(sz, ns.gesprochen_um(a))]
                 texte = [(ns.gesprochen_um(a), a.text) for a in ansagen]
-                teile = [k for k in ("darf_nicht_sagen", "muss_nennen_eins", "muss_ziel") if sz.get(k)]
+                teile = [k for k in ("darf_nicht_sagen", "muss_nennen_eins", "muss_nennen_alle", "muss_ziel")
+                         if sz.get(k)]
                 if teile:
                     geprueft += 1
                     stehend = stehende_ansage(lauf, von) if kern != "alt" else None

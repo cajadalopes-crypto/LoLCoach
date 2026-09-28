@@ -298,18 +298,48 @@ def umwandeln_zuerst(m, cfg: dict, aus: list[Handlung]) -> list[Handlung]:
     Buch 6, 8: Objectives haben einen Platz in der Reihenfolge (Baron/Aeltester 2,5, Drache 1,5) - ein erreichbares
     Objective verdraengt die Tuerme dahinter. Die 200 GE je Rang in turm_handlungen reichten dafuer nicht (102112 25:22:
     der aeussere Mid-Turm, 1048, gegen den freien Drachen, 221 - Buch 6 sagt dort NEHMEN)."""
-    if umwandeln(m, cfg) is None:
+    fenster = umwandeln(m, cfg)
+    if fenster is None:
         return aus
+    # Auftrag 009, 2.3 (Teil 0 aus 008, 164326 35:01): der EV entscheidet mit Weg und Fenster, ORDNUNG nur bei
+    # Gleichstand. Liegen Objective und Turm im Fenster und das Objective ist <= drache_zuerst_s weg: erst das
+    # Objective, danach der Turm, wenn das Fenster dann noch reicht
+    from ...bewertung import WEGFAKTOR, abstand
+    from ..sprache import gross, nominativ
     from .objective import ORDNUNG as OBJ_ORDNUNG
-    obj = [OBJ_ORDNUNG[h.daten["objective"]] for h in aus
-           if h.art in ("NEHMEN", "BESTREITEN") and h.daten.get("objective") in OBJ_ORDNUNG]
-    if obj:
-        rang = max(obj)
-        aus = [h for h in aus if not (h.daten.get("umwandeln") and h.daten.get("turm")
-                                      and ORDNUNG.get(h.daten["turm"][2], 0) < rang)]
+    kopf = {"drache": "Drache", "baron": "Baron", "aeltester": "Ältester Drache", "herold": "Herold", "larven": "Larven"}
+    objs = [h for h in aus if h.art in ("NEHMEN", "BESTREITEN") and h.daten.get("objective") in OBJ_ORDNUNG]
+    tuerme = [h for h in aus if h.daten.get("umwandeln") and h.daten.get("turm")]
+    nah = [h for h in objs if h.ziel is not None and h.ziel.weg is not None
+           and h.ziel.weg <= cfg["mitte"]["drache_zuerst_s"] and (h.gefahr_t or h.dauer) <= fenster]
+    if nah and tuerme:
+        o = max(nah, key=lambda h: OBJ_ORDNUNG[h.daten["objective"]])
+        t = max(tuerme, key=lambda h: (h.gewinn + h.folgewert, ORDNUNG.get(h.daten["turm"][2], 0)))
+        rest = fenster - (o.gefahr_t or o.dauer)
+        hin = abstand(o.ziel.pos, t.ziel.pos) * WEGFAKTOR / (m.mein_tempo or 345.0) if o.ziel.pos and t.ziel.pos \
+            else 1e9
+        name = kopf.get(o.daten["objective"], gross(o.daten["objective"]))
+        if rest >= hin + (t.gefahr_t - t.dauer if t.gefahr_t else 0.0):
+            # das Fenster ist der kuerzeste Respawn - oder der Rest des Baron-Buffs (101426 33:21: "sie sind noch 120
+            # Sekunden tot" war der Buff)
+            rest_text = (f"der Baron-Buff hält noch {int(fenster)} Sekunden"
+                         if getattr(m, "p", None) is not None and baron_fenster(m, cfg) is not None
+                         else f"sie sind noch {int(fenster)} Sekunden tot")
+            o.satz = f"{name} zuerst, der liegt neben euch; danach {nominativ(t.ziel.name)}, {rest_text}."
+            o.daten["danach_turm"] = t.ziel.name
+        o.daten["zuerst"] = True        # die Tuerme fallen erst weg, wenn o die Schranken uebersteht (zuerst_filtern)
     if any(h.daten.get("umwandeln") for h in aus):
         return [h for h in aus if h.art not in ("BACK_JETZT", "WELLE_REIN_UND_BACK")]
     return aus
+
+
+def zuerst_filtern(kand: list[Handlung]) -> list[Handlung]:
+    """Auftrag 009, 2.3: hat ein Objective neben euch (daten["zuerst"], umwandeln_zuerst) die Schranken ueberstanden,
+    sind die Umwandel-Tuerme jetzt keine Wahl - vorher nicht, sonst bleibt nur Back, wenn das Objective stumm ist
+    (213624 16:17: der Herold neben euch war stumm, der innere Mid-Turm schon gestrichen)."""
+    if any(h.daten.get("zuerst") for h in kand):
+        return [h for h in kand if not (h.daten.get("umwandeln") and h.daten.get("turm"))]
+    return kand
 
 
 # Buch 5, 8: Nexus-Tuerme und Nexus vor Inhibitor-Turm und Inhibitor vor innerem vor aeusserem Turm
@@ -346,7 +376,9 @@ def turm_handlungen(m, cfg: dict, modus: str, art: str, split: bool) -> list[Han
         gewinn = turm_gewinn(z, m, cfg)
         folge = 0.0
         if fenster_um is not None:
-            folge = 200.0 * ORDNUNG[z.stufe]        # die Reihenfolge aus Kapitel 8: das erste erreichbare gewinnt
+            # Auftrag 009, 2.3: im Fenster bekommt jedes Ziel (Turm wie Objective) denselben Umwandel-Bonus - die
+            # Reihenfolge aus Kapitel 8 (vorher 200 GE je Rang) gilt nur noch bei Gleichstand (1 GE je Rang)
+            folge = c["umwandeln_bonus"] + 1.0 * ORDNUNG[z.stufe]
             folge += dahinter(z, m, cfg, mit, z.weg + dauer)
         grund = fenster_grund(z, m, z.weg + dauer, ernste(m, kommen, z.pos, z.weg + dauer) or kommen[:1])
         from ..sprache import dativ, gross, nominativ           # Auftrag 008, A2: "ihren inneren Top-Turm"

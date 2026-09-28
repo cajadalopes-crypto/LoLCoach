@@ -103,8 +103,9 @@ def protokoll(stamm: str, kern: str = "neu", fragen: bool = False) -> Path:
     eintraege.sort(key=lambda x: x[0] if x[0] is not None else 0.0)
     stumm_n = sum(1 for _, a in eintraege if isinstance(a, dict) and "frage_ohne" not in a)
     if stumm_n:
-        zeilen.insert(-1, f"Stumm (Modell nicht geeicht, Entscheidung 2): {stumm_n} Kampf-Rufe (ANNEHMEN, REIN, DREHEN) "
-                          f"berechnet, nicht gesprochen - unten mit „stumm“ markiert.")
+        zeilen.insert(-1, f"Stumm: {stumm_n} Rufe berechnet, nicht gesprochen (Modell nicht geeicht, Entscheidung 2; "
+                          f"Trade/All-in: Buch 2 zurückgestellt; Recall reicht, Auftrag 009) - unten mit „stumm“ "
+                          f"und dem Grund markiert.")
         zeilen.insert(-1, "")
     # Fragen, die Claude braucht, stehen offline ohne Antwort (nicht in `gesagt`) - hier mit ihrer Absicht
     for r in lauf.antworten:
@@ -119,7 +120,8 @@ def protokoll(stamm: str, kern: str = "neu", fragen: bool = False) -> Path:
             zeilen.append("")
             continue
         if isinstance(a, dict):
-            zeilen.append(f"### {ns.uhr(a['zeit'])} · {a.get('modus') or '–'} · stumm: Modell nicht geeicht")
+            zeilen.append(f"### {ns.uhr(a['zeit'])} · {a.get('modus') or '–'} · stumm: "
+                          f"{a.get('grund') or 'Modell nicht geeicht'}")
             zeilen.append(f"- **Stumm** (`kern:{a['art']}`): „{a['text']}“")
             zeilen.append("")
             continue

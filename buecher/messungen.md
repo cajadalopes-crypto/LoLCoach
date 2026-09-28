@@ -4,6 +4,212 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 009 – Letzte Sperren vor Testpartie 2 (28.09.2026)
+
+Grundlage: `buecher/auftraege/009_auftrag.md`. Offline gemessen, der Coach wurde nicht gestartet. Alle neun Protokolle
+sind mit dem Stand dieses Auftrags neu erzeugt (101426 und 213624 mit `--fragen`).
+
+### 1. „Trade“ bei 15 % Leben
+
+- **Fix:** `TRADE` und `ALL_IN` stehen in der R1-Liste (`VOR_SCHRANKE`) und sind stumm (`BUCH2_STUMM`), bis Buch 2 kommt.
+  Sie werden weiter berechnet; im Protokoll steht „stumm: Buch 2 zurückgestellt“ (`_stumm` hat jetzt einen Grund; 23
+  solche Zeilen in 102112, 140253, 164326, 213624). In 101426 2:35 streicht schon R1 den Trade (15 % Leben).
+- **Andere Vorwärts-Handlungen außerhalb der R1-Liste** (`handlung.VOR` und `VORWAERTS` gegen `VOR_SCHRANKE`):
+  - `REIN` und `DREHEN` kommen aus der Kampf-Tabelle, nicht aus den Kandidaten: stumm bis zur Kampf-Eichung, außer robust
+    überlegen; `DREHEN` hat eine eigene Leben-Schwelle (`drehen_eigen_leben`). Nicht geändert.
+  - `ANLAUFEN` erzeugt kein Modus (nur ein Plan-Schritt von `NEHMEN`).
+  - `WELLE_REIN_UND_BACK` und `STAPELN` sind nach Buch 1, 3 neutral. Neu: mit `p_tod` ≥ 0,3 sind sie kein Kandidat
+    (`WELLE_VOR`). Unter 40 % Leben bleiben sie, weil „erst die Welle rein, dann back“ dort der Rat ist.
+- **Szenario** `0235-kein-trade-bei-15` (101426): auf `122431c` rot, jetzt grün.
+- **Suche in allen neun Protokollen** (`k009_vor_suche.py`: gesprochene Vorwärts-Handlungen der R1-Liste und Kampf-Rufe
+  mit Leben < 40 % oder `p_tod` ≥ 0,3; Wellen-Handlungen mit `p_tod` ≥ 0,3):
+  - vorher (Protokolle auf `122431c`): 3 – 101426 2:35 „Trade Aurora …“ (15 %), 101426 10:54 und 173159 9:59 „…-Welle
+    rein, dann back“ (`p_tod` 0,38 und 0,36),
+  - jetzt: **0**.
+
+### 2. Entscheidungen zu 008
+
+**2.1 Ungesehene Gegner als Köpfe.** In `_warnung_ohne_beleg` zählt ein Gegner als Kopf, wenn er sichtbar ist oder seit
+≤ `kopf_ungesehen_s` (20 s) fehlt, jeweils mit `ankunft` ≤ 5 s. `ankunft` ist für Ungesehene schon Weg ÷ Tempo minus
+die Zeit seit der Sichtung (wie `verteidiger_ab`). Bedingung 1 (ein Gegner **sichtbar** und nah) bleibt.
+
+- `2016-viego-zaehlt-mit`: rot → grün. 20:01 und 20:10 „Zurück unter deinen inneren Mid-Turm: drei kommen.“
+- `1400-viego-weit-still`: Wächter, grün.
+- **Folge:** Neu warnen in 101426 auch 21:35 (Twitch sichtbar in 1360, Bard 9 s ungesehen in 0 s da, Viego kommt) und
+  23:35 (Twitch sichtbar in 685, Bard 15 s ungesehen). Warnungen je 30 min (`kennzahlen.py`): 101426 11,7 → **15,0**,
+  164326 8,4 → **11,9**, 173159 7,8 → **10,2**. `a1-warnungen-je-30min` (`kategorie_max` 11, jetzt 13) ist rot, siehe
+  „Offen“.
+- `2335-ungesehen-kein-raus` (008) prüft jetzt bis 23:35,5. Ab 23:35,9 ist die Warnung nach 2.1 richtig: zwei gegen
+  einen.
+
+**2.2 Lagebild.** 30 s Stille, höchstens alle 90 s (stand so). Neu: die Folgerung ist eine Handlung oder Grenze
+(`kartenlage.folgerung(streng=True)` für das ungefragte Lagebild):
+
+- „X steht nah bei dir“ → „X steht nah bei dir: nicht allein nach vorn“,
+- „Oben ist 20 Sekunden frei“ → „…: Welle drücken“ (oder der Plan),
+- „Drei unten: oben ist frei“ → „…: Welle drücken“, wenn oben deine Seite ist; sonst kein ungefragtes Lagebild,
+- „X braucht N Sekunden zu dir“ nur mit Plan („…: auf ihren Turm geht“), „Keiner von ihnen ist nah“ nie ungefragt.
+- Auf Frage bleibt die Beschreibung erlaubt. Szenario `lagebild-folgerung-handelt`: rot (5 beschreibende) → grün; 101426
+  hat jetzt 6 Lagebilder, alle mit „nicht allein nach vorn“.
+
+**2.3 Drache vor Inhibitor.** `karte.ORDNUNG` wirkt nur noch bei Gleichstand (1 GE je Rang). Der Rang-Filter in
+`umwandeln_zuerst` ist weg.
+
+- **Gleicher Umwandel-Bonus:** Im Fenster bekommt jedes Ziel denselben Bonus (`umwandeln_bonus` 400 GE), Turm wie
+  Objective. Vorher gab es 200 GE je Rang (äußerer Turm 200 … Nexus 800, Drache 300). Nur 1 GE je Rang ließ Back vor
+  jeden Turm rutschen (213624 16:17).
+- **Objective neben euch:** Liegt es im Fenster und ≤ `drache_zuerst_s` (10 s) weg, fallen die Umwandel-Türme weg
+  (`zuerst_filtern`, erst nach den Schranken – ist das Objective stumm, bleiben die Türme). Reicht das Fenster danach noch
+  für den besten Turm, nennt der Satz beides:
+  - 101426 33:21: „Drache zuerst, der liegt neben euch; danach ihr Bot-Inhibitor-Turm, der Baron-Buff hält noch 120
+    Sekunden.“
+  - Unit-Test `drache_vor_inhibitor` war auf `122431c` rot.
+- **Ohne Ort kein neuer Plan:** Nach einem Kampf wartet der Kern bis zu 2 s auf den Ort. Ohne Ort gibt es kein Turmziel;
+  213624 16:17 sagte deshalb „Drei von ihnen tot: Back jetzt“, 0,3 s später war der innere Mid-Turm da. `1617-…` ist
+  wieder grün.
+- **164326 35:01** („Ihr Top-Inhibitor jetzt“ quer über die Karte) bleibt. Der Drache spawnt dort erst in 40 s und liegt
+  19 s weg, die Regel greift nicht. Der Inhibitor ist in 41 s erreichbar (Fenster 42 s) und hat den besten EV.
+- **`2522-kein-baron-drache-lebt` (102112) ist jetzt rot:**
+  - Der EV wählt den äußeren Mid-Turm (Gewinn 660 + „dahinter“ 776) statt des Drachens 18 s neben Riven.
+  - Tryndamere nimmt den Drachen allein zu 86 %, Rivens Anteil ist 0,14 (83 GE).
+  - 0,5 s später springt das Urteil auf Anteil 1,0 (Tryndamere zählt als „mit“), aber der Turm ist schon gesagt; die
+    Hysterese (150 GE) hält ihn.
+  - Vorher entschied der Rang-Filter. Zu entscheiden, siehe „Offen“. Zwei Versuche sind verworfen:
+    - Türme, die nach dem Fenster fallen, wie ohne Fenster behandeln: das kippte 3632 (Mid-Inhibitor, Sona 14 s tot).
+    - Einen frischen, ungesagten Plan ohne Hysterese: der Turm war schon gesagt.
+
+**2.3 Recall-Kanal.**
+
+- **Kanal:** Nach einem Back-Ruf (≤ 30 s) gilt Stillstand außerhalb der Basis (≤ 80 Einheiten, ≥ 1 s) als Kanal.
+- **Warnung darin:** Der Kern warnt (GEFAHR und Kampf-RAUS) nur, wenn der erste Gegner (sichtbar oder ≤ 20 s ungesehen)
+  vor Kanal-Ende + 1 s da sein kann. Sonst steht „Recall reicht“ als Gate-Grund, bzw. der RAUS-Ruf ist stumm.
+- **Wächter aus echten Partien:**
+  - `0429-recall-kanal-warnung-bleibt` (213624): Rumble in 3,9 s, Kanal noch 3,5 s – warnen.
+  - `1322-recall-kanal-reicht` (102112): Sett in 5,7 s, Kanal noch 0,5 s – still.
+- **Rot zuerst:** Beide Wächter waren schon grün, denn die drei Fälle aus 007 (102112 13:22, 213624 4:29, 164326 24:14)
+  sind seit A1 still bzw. richtig. Rot zuerst war nur der Unit-Test `recall_kanal`. In den neun Protokollen griff die
+  Regel nie.
+
+### 3. KLAEREN
+
+- **Absicht:** neu für „was soll das (bedeuten)“, „was meinst du“, „macht keinen Sinn“, „schwammig“, „nichtssagend“,
+  „versteh ich nicht“ (nach WARUM).
+- **Erklärung je Ansage:** Jede Ansage merkt sich beim Übergeben, was sie meinte (`_erklaerung`):
+  - bei Rückzug den sicheren Ort und wer wie weit weg war,
+  - bei Plänen Ziel, Weg und Welle mit Grund.
+- **Antwort:** Sie nimmt den letzten Satz ≤ 60 s, zum Thema der Frage (Turm/Raus, Welle, Back), und gilt auch im Tod.
+  Ohne Satz antwortet der Coach wie bisher.
+- **Beispiele (101426):**
+  - 32:17: „Vor 34 Sekunden: „Raus, zu eurem Top-Turm!“ Zu eurem inneren Top-Turm, weil Aurora und Twitch 2 Sekunden
+    weg waren.“ Vorher kam „Du lebst in 29 Sekunden wieder …“.
+  - 31:07 („Was soll damit Welle heißen?“, vorher Claude): „… Gemeint war: zur Mid-Welle; dort stehen 0 ihrer und 2
+    deiner Vasallen. Grund: Sie läuft sonst in deinen Turm.“ Die Erklärung zeigt nebenbei, dass der Grund damals schwach
+    war.
+- **Angepasst:** `3207-tot-respawn-mit-kauf` (Kritik 008, dieselbe Frage) erwartet jetzt „Top-Turm“ statt des
+  Respawn-Plans.
+- **Bleibt JETZT:** „Welche Welle, auf welcher Lane?“ (213624 13:16).
+
+### 4. Sprachfehler
+
+- **Kein Possessiv vor Champion-Namen:** „Aurora ist Level 6“ (Makro SPIKE).
+- **Schutzplan mit fertigem Item:** `lane._bauteil` gibt das nächste Kern-Item aus Carlos' Build („kein Trade bis zum
+  Axiombogen“, „bis zur Eklipse“).
+  - Die kurze Fassung nennt jetzt den Grund: „Weiter an deinem Turm farmen: Gangplank ist vorn.“
+  - Sie kommt öfter, weil das Ziel-Item über den Tod gleich bleibt (144655 6:42, Szenario `0701-…`).
+- **Bauteile mit Ziel:** `kaufplan.mit_ziel` („Kauf Langschwert für die Eklipse“, „Tiamat für die Gefräßige Hydra“) in
+  KAUFEN, Respawn-Plan und Kauf-Antwort. Der Artikel kommt aus `akk_artikel`, „zur/zum“ aus `_dat`.
+- **Szenarien:** `kein-possessiv-vor-champion`, `1211-schutzplan-fertiges-item`, `bauteil-mit-ziel`: rot → grün.
+
+### 5. Leerlauf (nur gemessen)
+
+101426 ab 14:00 (`fuehrmass.leerlauf`: lebend, nicht KAMPF, kein gültiger gesagter Plan): 25 Fenster ≥ 5 s, zusammen
+584 s. Zehn davon zufällig (`k009_leerlauf.py`, Seed 9; mit dem Endstand dieselben), je mit der Lage in der
+Fenstermitte und dem letzten Satz davor:
+
+| # | Fenster | Lage (Mitte des Fensters) | Was ein Challenger-Coach gesagt hätte |
+|---|---|---|---|
+| 1 | 14:00–14:39 (39 s) | Mid, 97 %, Aurora sichtbar in 1100, deine Mid-Welle läuft zu ihr (3:0), Herold in 40 s; 14:00 kam der Teamplan „3100 Gold vorn … Drache und ihre Türme erzwingen“, danach Plan HALTEN | „Drück die Mid-Welle in ihren Turm, dann mit Kayn zum Herold – der kommt in 40 Sekunden.“ |
+| 2 | 17:03–17:15 (12 s) | Unterer Fluss, 93 %, 1000 Gold; Viego, Aurora und Twitch tot; 16:56 „Drück ihren inneren Top-Turm“, jetzt Plan HALTEN | „Drei von ihnen tot, ihr steht unten: mit allen auf ihren Bot-Turm, danach back mit 1000 Gold.“ (der Kern sagte 16:56 „ihren inneren Top-Turm“ – quer über die Karte) |
+| 3 | 17:36–18:23 (47 s) | Mid-Lane, 99 %, 200 Gold; Sett tot, Twitch vor 6 s in 4300; ihr äußerer Mid-Turm ist gefallen, Plan HALTEN | „Sett ist tot: hol die Top-Seitenwelle, Aurora steht Mid.“ |
+| 4 | 21:08–21:35 (28 s) | Bot-Lane, 96 %, Plan FARMEN (21:07 „Farm Bot“), Aurora tot, Drache in 32 s | „Welle fertig, dann zum Drachen: er kommt in 30 Sekunden, Aurora ist tot.“ |
+| 5 | 22:30–22:38 (8 s) | Nach „Zurück unter deinen inneren Mid-Turm: zwei kommen“ (22:26), Ort unbekannt | nichts – Stille ist richtig (der Rückzug gilt) |
+| 6 | 23:02–23:18 (16 s) | Bot-Lane, 85 %, 1000 Gold; 22:52 „Back jetzt, 900 Gold für Spitzhacke“ | nichts – Stille ist richtig (der Back-Ruf gilt, 10–26 s alt) |
+| 7 | 24:40–25:30 (50 s) | In ihrem oberen Jungle, 99 %, 130 Gold; Bard tot, Twitch vor 2 s in 3400, Baron lebt; 24:25 „Geh zu deinem Team“ | „Bard ist tot: Sicht am Baron legen, dein Team kommt nach – nicht allein tiefer.“ |
+| 8 | 28:09–28:15 (6 s) | Bot, 30 %; 27:59 „Back jetzt, 15 Prozent Leben“ | nichts – Stille ist richtig (der Back-Ruf gilt) |
+| 9 | 30:21–30:53 (32 s) | Eigene Mid-Lane, 46 %, 900 Gold; Bard vor 3 s in 3350; 30:09 Rückzug, 30:39 Lagebild; die Welle läuft zu dir | „Back jetzt: 46 Prozent und 900 Gold, die Welle läuft zu deinem Turm, du verlierst nichts.“ |
+| 10 | 33:38–34:11 (34 s) | Ihr unterer Jungle, 87 %; Twitch und Bard tot; 33:21 „Zum Drachen mit Yunara“, der Drache ist drin | „Drache drin, zwei tot: mit allen auf ihren Mid-Inhibitor-Turm.“ |
+
+- **Stille richtig:** 3 von 10 (5, 6, 8). Ein Rückzug oder Back-Ruf gilt noch, 6–16 s.
+- **Ein Satz fehlt:** 7 von 10.
+  - In sechs davon (1, 2, 3, 7, 9, 10) ist der Plan des Kerns HALTEN ohne Ziel: Nach einem Wendepunkt (Turm, Objective,
+    Kills) hat er in UNTERWEGS/GRUPPE keinen Kandidaten mit positivem EV.
+  - In 4 steht FARMEN als stummer Grundplan, obwohl der Drache in 30 s kommt.
+- Nichts gebaut (Auftrag: nur messen).
+
+### Prüfungen
+
+- **Szenarien:** 226 / 232 grün, 3 übersprungen.
+  - Rot sind die alten Fälle: 3× Wendepunkt-Probe (24 späte Sätze, im letzten 008-Lauf 28) und 0944.
+  - Neu rot: `2522-kein-baron-drache-lebt` (2.3) und `a1-warnungen-je-30min` (2.1).
+  - Der volle Lauf lag vor der letzten Satzänderung (Baron-Buff statt „sie sind noch 120 Sekunden tot“). Danach liefen
+    die 101426-Dateien (28 / 29, rot nur a1) und `test_kern` noch einmal.
+- **Neu (11 Szenarien und 2 Unit-Tests, auf `122431c` alle rot außer den Wächtern 1400, 0429, 1322):**
+  - `2026-09-28_101426_auftrag009.toml` (9),
+  - `2026-09-27_213624_auftrag009.toml` (1 Wächter),
+  - `2026-09-27_102112_auftrag009.toml` (1 Wächter),
+  - Unit-Tests `drache_vor_inhibitor`, `recall_kanal`.
+- **Weitere:** `tests/alle.py` **10 / 10**, konstruierte Lagen **40 / 40**.
+- **Kennzahlen (`kennzahlen.py --nur-kern`):**
+
+| | 101426 | 164326 | 173159 |
+|---|---|---|---|
+| Warnungen je 30 min (≤ 10) | 15,0 | 11,9 | 10,2 |
+| vage Sätze (0) | 0 | 0 | 0 |
+| ungefragt je 30 min | 68 | 74 | 69 |
+| Leerlauf ab 14:00 | 59 % | 51 % | 51 % |
+
+### Nachzählung 101426 (ein frischer Challenger-, ein frischer Carlos-Kritiker)
+
+Zwei neue Agenten ohne Code, je eine Rolle, auf dem Protokoll 101426 (`--fragen`). Drei Stellen änderten sich
+danach noch; beide haben sie nachbewertet: 16:56, 17:39 und 33:21. Die Urteile liegen im Scratchpad
+(`k009_krit/urteile_*.jsonl`), gezählt mit `k009_zaehlen.py`.
+
+| | 008 (Kritik 008) | 009 |
+|---|---|---|
+| ok / schwach / falsch / gefährlich | 81 / 7 / 3 / 0 | 83 / 4 / 1 / 0 |
+| falsch je 30 min (≤ 2) | 2,5 | **0,8** |
+| Warum nachvollziehbar (≥ 90 %) | 91 % | 95 % (69/73) |
+| Info ohne Folgen | 1 | 6 (5,0 je 30 min) |
+| hilft / neutral / nervt (Carlos) | 88 / 2 / 10 % | 86 / 4 / 10 % (69/3/8 von 80) |
+| Antworten beantwortet / vorbei | – | 9 / 1 |
+
+- **falsch (1):** 23:35 „Zurück unter deinen inneren Mid-Turm: zwei kommen.“ auf der Bot-Lane – der Ort nach Laufzeit
+  ist der Mid-Turm, liest sich aber falsch.
+- **schwach (4):**
+  - „Gut raus.“ (2×) und „Aurora ohne Flash.“ ohne Ort: Info ohne Folgen.
+  - 29:36 „Weiter auf ihren Nexus-Turm“ bei 41 % nach schnellem Lebensverlust: vorwärts bei wenig Leben, über der
+    R1-Grenze.
+- **nervt (8):**
+  - drei abgebrochene Sätze,
+  - „Mid-Welle“ ohne Zustand (15:15, 30:53),
+  - „Raus, zu deinem Turm!“ (8:22),
+  - Wiederholung 20:10 (9 s nach 20:01, `p_tod` stieg),
+  - 11:12 wie 9:25.
+- **vorbei (1):** 19:25 „Wo's Twitch?“ – die Karte zeigte ihn 3100 weg, Carlos sah ihn bei sich (Minimap-Verzug).
+- Beide KLAEREN-Antworten (31:07, 32:17) zählen als beantwortet.
+
+### Offen
+
+1. **Warnungen über 10 je 30 min** (101426 15,0; 164326 11,9; 173159 10,2): Das ist der Preis von Entscheidung 2.1.
+   Die neuen Warnungen (20:01, 20:10, 21:35, 23:35 in 101426) sind nach Lage richtig; 20:10 wiederholt 20:01 nach
+   9 s. Möglich wäre: ein Ungesehener zählt nur, wenn ein Sichtbarer näher kommt, oder `kopf_ungesehen_s` 15 statt 20.
+   Nicht gebaut – Entscheidung.
+2. **2522 (102112 25:22): Drache oder Turm, wenn ein Mitspieler den Drachen allein nimmt?** Der EV sagt Turm (Rivens
+   Anteil 0,14), Buch 6, 8 sagte Drache. Entscheidung.
+3. **Leerlauf:** 6 von 10 Stichproben zeigen einen fehlenden Plan nach Wendepunkten (HALTEN ohne Ziel).
+
+---
+
 ## Auftrag 008 – Carlos' Testpartie 101426 und Buch 4 (Kartenlage und Makro) (28.09.2026)
 
 Grundlage: `buecher/auftraege/008_auftrag.md` (neue Fassung: Teil 0, Teil A, Teil 1). Offline gemessen, der Coach wurde

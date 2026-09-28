@@ -1,0 +1,16 @@
+# Auftrag 009, 2.3: Warnung im Recall-Kanal (Teil 0 aus Auftrag 008) - Bot-Partie 213624, Riven Top gegen Rumble.
+# Gegner: Rumble, Xin Zhao, Ziggs, Caitlyn, Sona.
+
+aufnahme = "2026-09-27_213624"
+spielmodus = "CLASSIC"
+bots = true
+
+# Waechter: Riven steht ab 4:24 still (Kanal bis ~4:32,5, 4:33 in der Basis); Rumble sichtbar, in 3,9 s da - vor
+# Kanal-Ende + 1 s. Die Warnung bleibt (auf 122431c gruen).
+[[szenario]]
+id = "0429-recall-kanal-warnung-bleibt"
+zeit = "4:29"
+fenster = [["4:26", "4:33"]]
+lage = "4:20 'Back jetzt', Kanal ab 4:24,5; um 4:29 Rumble sichtbar in 1590, Ankunft 3,9 s - vor Kanal-Ende + 1 s."
+kategorie_min = { GEFAHR = 1 }
+warum = "Teil 0 (008): kann der erste Gegner vor Kanal-Ende + 1 s da sein, wird gewarnt - nie abgeschwaecht."

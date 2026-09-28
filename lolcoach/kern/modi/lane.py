@@ -35,7 +35,9 @@ def _kanone_vor(m, spawn_zeit: float) -> float | None:
     return (passend or kanonen or [None])[-1]
 
 
-SCHUTZ_KURZ = "Weiter: an deinem Turm farmen, kein Trade."     # G1: nach Tod oder Basis (<= 8 Woerter)
+SCHUTZ_KURZ = "Weiter an deinem Turm farmen: {wer} ist vorn."   # G1: nach Tod oder Basis (<= 8 Woerter); Auftrag
+# 009: mit dem Grund - seit das Ziel-Item ein fertiges ist, bleibt es ueber den Tod gleich und die kurze Fassung kommt
+# oefter (144655 6:42: "Weiter: an deinem Turm farmen, kein Trade." ohne Gangplank)
 
 
 def kandidaten(m, cfg: dict, lane: str | None = None, modus: str = "LANE", arten=None,
@@ -48,19 +50,15 @@ def kandidaten(m, cfg: dict, lane: str | None = None, modus: str = "LANE", arten
 
 
 def _bauteil(m) -> str | None:
-    """Was die Lane wieder oeffnet: das naechste Bauteil aus dem Kaufplan (Pruefung A: "kein Trade bis zum
-    Brutalisierer")."""
+    """Was die Lane wieder oeffnet: das naechste fertige Item aus Carlos' Build (Auftrag 009, 4: "kein Trade bis
+    Langschwert", 101426 12:11, war unsinnig - ein Bauteil oeffnet keine Lane)."""
     from ... import kaufplan
     b = m.b
     try:
         k = kaufplan.plan(b.ich.champion_id, tuple(b.ich.items), float(b.gold or 0))
     except Exception:
         return None
-    if k is None:
-        return None
-    if k.kaufen and k.kaufen[0] != "Stiefel":
-        return k.kaufen[0]
-    return k.naechstes[0] if k.naechstes else k.item
+    return k.item if k is not None else None
 
 
 def bauteil_gekauft(m, teil: str | None) -> bool:
@@ -213,7 +211,7 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None, plan=None) -> 
         h = Handlung("WELLE_HALTEN", Ziel("lane", welle), modus, 10.0, gewinn=fr * 10.0 + 0.5 * ww, gefahr_t=10.0,
                      grund=grund, satz=satz)
         h.daten.update(am_turm=True, schutz=True, verloren=True, lane_gegner=g.champion, bauteil=teil, tode=tode,
-                       kurz_satz=SCHUTZ_KURZ)
+                       kurz_satz=SCHUTZ_KURZ.format(wer=g.champion))
         h.abbruch.append(_lane_wieder_offen)
         aus = [x for x in aus if x.art not in ("FARMEN", "WELLE_HALTEN")] + [h]
 

@@ -440,7 +440,13 @@ def kaufen(m, cfg: dict, modus: str, ziel: Handlung) -> Handlung | None:
     k = m.kauf
     if k is None or not k.kaufen:
         return None
+    from ...kaufplan import mit_ziel
     teile = [_akk(x) for x in k.kaufen[:2]]
+    # Auftrag 009, 4: das (erste) Bauteil mit seinem Ziel - "Kauf Langschwert fuer die Gefraessige Hydra"
+    ziel_item = getattr(k, "item", None)
+    i = next((j for j, x in enumerate(k.kaufen[:2]) if mit_ziel(x, ziel_item) != x), None)
+    if i is not None:
+        teile[i] = mit_ziel(k.kaufen[i], ziel_item)
     if kontrollauge_dazu(m):
         if _fokus_kontrollauge(m):
             teile = ["ein Kontroll-Auge"] + teile

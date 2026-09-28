@@ -185,6 +185,12 @@ def abwesenheit(m, cfg: dict, zustand: str) -> float:
     return ww * n
 
 
+def kanal_reicht(rest_s: float, erster_s: float | None, rand_s: float = 1.0) -> bool:
+    """Auftrag 009, 2.3 (Teil 0 aus 008): reicht der Recall-Kanal (noch `rest_s`), bevor der erste Gegner da ist
+    (`erster_s`, None = keiner bekannt)? Gewarnt wird nur, wenn er vor Kanal-Ende + `rand_s` bei dir sein kann."""
+    return erster_s is None or erster_s > rest_s + rand_s
+
+
 def nie_back(m, cfg: dict) -> str | None:
     """Buch 3, 2.2: nie back in KAMPF, mit einem sichtbaren Gegner in 1500, der dich im Kanal erreicht, oder kurz vor
     einem Objective auf deiner Seite, wenn du voll bist. Rueckgabe: der Grund, sonst None."""

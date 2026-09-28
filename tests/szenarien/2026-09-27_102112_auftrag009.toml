@@ -1,0 +1,13 @@
+# Auftrag 009, 2.3: Warnung im Recall-Kanal (Teil 0 aus Auftrag 008) - 102112, Riven Top.
+# Riven steht ab 13:14,5 still im Kanal (Back-Ruf davor), 13:23 in der Basis.
+
+aufnahme = "2026-09-27_102112"
+spielmodus = "CLASSIC"
+
+[[szenario]]
+id = "1322-recall-kanal-reicht"
+zeit = "13:22"
+fenster = [["13:19", "13:23"]]
+lage = "Kanal endet ~13:22,5; Sett sichtbar in 2400, kommt naeher, Ankunft 5,7 s - erst nach Kanal-Ende + 1 s."
+darf_nicht_sagen = ["Raus", "Zurück unter"]
+warum = "Teil 0 (008): reicht die Zeit fuer den Recall, bleibt es still (vorher 'Raus zum Mid-Tier-1-Turm: Sett kommt')."

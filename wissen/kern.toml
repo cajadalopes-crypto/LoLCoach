@@ -65,6 +65,8 @@ gefahr_zwei_dritter_p_max = 0.2
 stand = "Auftrag 008, A1 (28.09.2026, 101426: 36 Warnungen in 34 min, Carlos hoerte weg) - aendert Buch 0, 7.5 und Buch 11, 4"
 ankunft_s = 5                    # (1) ein SICHTBARER Gegner kommt naeher (oder steht in 1500) und ist in so vielen s bei dir
 eben_gesehen_s = 5               # (2) fuer "ihre Koepfe": sichtbar oder so kurz ungesehen (in den Busch, in den Nebel)
+kopf_ungesehen_s = 20            # Auftrag 009, 2.1: ersetzt eben_gesehen_s bei den Koepfen - ungesehen <= so lange UND
+                                 # von der letzten Sichtung aus in <= ankunft_s da (101426 20:16: Viego 17 s ungesehen)
 leben_max = 0.4                  # (2) oder dein Leben darunter und unter dem des naechsten Gegners
 sicher_s = 5                     # (3) so nah am sicheren Ort kein Warnsatz mehr (du bist gleich dort)
 vorsicht_abstand_s = 90          # ungesehene Gefahr: hoechstens ein Vorsicht-Satz je so viele s ...
@@ -312,6 +314,9 @@ horten_zuschlag = 100           # GE je 500 Gold ueber horten_ab
 spike_bonus = 300               # GE, wenn ein Kern-Item fertig wird
 vorlauf_bonus = 0.3             # Anteil am Objective-Wert
 kanal_s = 8
+kanal_rand_s = 1.0               # Auftrag 009, 2.3: im Kanal warnen nur, wenn der erste Gegner vor Kanal-Ende + so viel da ist
+kanal_min_s = 1.0                # so lange still stehen (nach einem Back-Ruf), bis es als Kanal gilt
+kanal_stand = 80                 # Einheiten: so wenig Bewegung gilt als Stillstand (Minimap-Rauschen)
 einkauf_s = 3
 tp_lane_wert_min = 180          # GE, verlorene Welle/Platten, ab dem TP zur Lane lohnt
 nie_back_gegner_abstand = 1500
@@ -341,6 +346,9 @@ max_woerter = 8
 
 [mitte]
 stand = "Buch 5, 27.09.2026 - Startwerte (Schaetzung), an Szenarien kalibrieren"
+drache_zuerst_s = 10             # Auftrag 009, 2.3: ein Objective im Umwandel-Fenster so nah geht vor jeden Turm
+umwandeln_bonus = 400            # Auftrag 009, 2.3: GE fuer jedes Ziel im Umwandel-Fenster, gleich fuer Turm und Objective
+                                 # (vorher 200 je Rang aus Kapitel 8: aeusserer Turm 200 ... Nexus 800, Drache 300)
 seitenwelle_min = 6
 seitenwelle_frei_s = 30
 seitenwelle_turmschutz = 150    # GE: verhinderter Platten-/Turmschaden

@@ -37,7 +37,13 @@ WELLEN_ARTEN = frozenset(("FARMEN", "WELLE_REIN_UND_BACK", "STAPELN", "WELLE_HAL
 RUECKZUG_EPISODE_S = 15.0
 # Qualitaetsrunde 3, R1: Vorwaerts-Handlungen - unter vor_leben_min kein Kandidat, mit p_tod >= vor_p_tod_max nie gesagt
 VOR_SCHRANKE = frozenset(("DRUECKEN", "MIT_GRUPPE", "NEHMEN", "BESTREITEN", "ZUR_GRUPPE", "TP_SPIEL", "PLATTEN",
-                          "SEITENWELLE", "WELLE_KLAEREN", "VORBEREITEN_OBJECTIVE", "ANNEHMEN"))
+                          "SEITENWELLE", "WELLE_KLAEREN", "VORBEREITEN_OBJECTIVE", "ANNEHMEN", "TRADE", "ALL_IN"))
+# Auftrag 009, 1 (101426 2:35: "Trade Aurora: dein Combo macht etwa 400" bei 15 % Leben, 2:43 tot): TRADE und ALL_IN
+# haengen am Lane-Duell (Buch 2, zurueckgestellt) - berechnet, protokolliert, stumm
+BUCH2_STUMM = frozenset(("TRADE", "ALL_IN"))
+# Auftrag 009, 1: Wellen-Handlungen nach vorn (Buch 1, 3: neutral) - mit p_tod >= vor_p_tod_max kein Kandidat; unter
+# 40 % Leben bleiben sie (erst die Welle rein, dann back ist dort der Rat)
+WELLE_VOR = frozenset(("WELLE_REIN_UND_BACK", "STAPELN"))
 # R2: haengen am ungeeichten p_gewinn - berechnet, protokolliert, stumm (bis die Kampf-Eichung besteht)
 MODELL_STUMM = frozenset(("BESTREITEN", "TP_SPIEL"))
 # Auftrag 007: Turmziele (Klasse 10) und die Ansagen, die ein Back nur aus Gold nicht ohne Ereignis abloest (Klasse 9)
@@ -178,6 +184,8 @@ class Kern:
         from .makro import Makro
         self.makro = Makro()                      # Buch 4, 3 und 5: Teamplan und Makro-Infos
         self._lagebild_zuletzt = -1e9             # Auftrag 008, A4: das letzte ungefragte Lagebild
+        self._stand: tuple | None = None          # Auftrag 009, 2.3: (seit, Ort) - du stehst still (Recall-Kanal)
+        self._ohne_ort_seit: float | None = None  # Auftrag 009: seit wann die Minimap dich verloren hat
         self._gold_verlauf: deque = deque()        # (Zeit, Gold) - dein Einkommen fuer den Back-Bedarf
         self._flash_offen: dict = {}
         self._flash_gemeldet: set = set()
@@ -243,6 +251,7 @@ class Kern:
             self._wohin = {}           # draussen: der naechste Aufenthalt waehlt neu
         if modus == "BASIS" and self._modus_vorher not in ("TOT", "BASIS"):
             self._back_recall = m.zeit               # R4: recallt - der letzte Back-Ruf war nicht ignoriert
+        self._kanal_verfolgen(m)
         if m.b is not None and m.pos is not None:
             self._sicher_weg.append((m.zeit, m.b.sicherer_ort()[1]))
             while self._sicher_weg and self._sicher_weg[0][0] < m.zeit - 2.5:
@@ -290,9 +299,16 @@ class Kern:
         if not m.daten_frisch and modus != "TOT":
             self._modus_vorher = modus
             return []          # 4.3: ohne frische Daten keine neuen Plaene
-        if m.pos is None and modus not in ("TOT", "BASIS", None) and self.fuehrer.plan is not None:
+        if m.pos is not None:
+            self._ohne_ort_seit = None
+        elif self._ohne_ort_seit is None:
+            self._ohne_ort_seit = m.zeit
+        if m.pos is None and modus not in ("TOT", "BASIS", None) and (
+                self.fuehrer.plan is not None or m.zeit - self._ohne_ort_seit < 2.0):
             # 4.3 auch fuer den Ort: verliert die Minimap dich kurz, haelt der Plan (102112 36:06: ohne Ort kein Turm-
-            # Ziel, DRUECKEN kippte fuer 8 s auf FARMEN)
+            # Ziel, DRUECKEN kippte fuer 8 s auf FARMEN). Auftrag 009: auch ohne Plan (nach einem Kampf) wartet der Kern
+            # bis zu 2 s auf den Ort (213624 16:17: "Drei von ihnen tot: Back jetzt" ohne Ort, weil ohne Ort kein
+            # Turmziel entsteht - 0,3 s spaeter war der innere Mid-Turm da)
             self._modus_vorher = modus
             return []
         kand, self.gefahr = self._kandidaten(m, modus)
@@ -385,8 +401,10 @@ class Kern:
         from .fuehren import kurz as plan_kurz
         pl = self.fuehrer.plan
         vor = plan_kurz(pl.handlung) if pl is not None and pl.art in VOR_ARTEN else None
-        a = self.sprecher.ansage("LAGEBILD", "LAGEBILD", kartenlage.satz(k, m, kurz=True, plan_kurz=vor), m.zeit, None,
-                                 gesagt)
+        text = kartenlage.satz(k, m, kurz=True, plan_kurz=vor, streng=True)
+        if text is None:
+            return None                  # Auftrag 009, 2.2: die Folgerung beschreibt nur - kein Lagebild
+        a = self.sprecher.ansage("LAGEBILD", "LAGEBILD", text, m.zeit, None, gesagt)
         if a is not None:
             self._lagebild_zuletzt = m.zeit
             self._gesprochen(a, "LAGEBILD", m)
@@ -582,6 +600,42 @@ class Kern:
             self._gesprochen(a, "VORSICHT", m)
         return a
 
+    def _kanal_verfolgen(self, m: Merkmale) -> None:
+        """Auftrag 009, 2.3: dein Recall-Kanal - nach einem Back-Ruf (<= 30 s) stehst du ausserhalb der Basis still
+        (<= kanal_stand Einheiten); der Kanal begann, als du stehen bliebst."""
+        from ..bewertung import abstand
+        c = self.cfg["recall"]
+        if m.pos is None or m.tot or m.bereich == "basis_eigen":
+            self._stand = None
+            return
+        st = self._stand
+        if st is None or abstand(st[1], m.pos) > c["kanal_stand"]:
+            self._stand = (m.zeit, m.pos)
+
+    def _kanal_reicht(self, m: Merkmale) -> str | None:
+        """Auftrag 009, 2.3 (Teil 0 aus 008): im Recall-Kanal warnt der Kern nur, wenn der erste Gegner vor Kanal-Ende
+        + kanal_rand_s bei dir sein kann - sonst der Grund, warum nicht. Eine echte Gefahr wird nie abgeschwaecht."""
+        from .modi import kanal_reicht
+        c, st = self.cfg["recall"], self._stand
+        if st is None or m.b is None or m.zeit - st[0] < c["kanal_min_s"]:
+            return None
+        gesagt = self.transport.gesagt if self.transport is not None else []
+        back = any(a.gesprochen is not None and 0.0 <= st[0] - a.gesprochen <= 30.0 and BACK_RUF.search(a.text)
+                   and a.schluessel.startswith("kern:") for a in gesagt[-12:])
+        if not back:
+            return None
+        rest = st[0] + c["kanal_s"] - m.zeit
+        if rest <= 0.0:
+            return None
+        ku = self.cfg["warnung"]["kopf_ungesehen_s"]
+        an = [g.ankunft for g in m.b.gegner if not g.s.tot and g.ankunft is not None
+              and (g.sichtbar or (g.seit is not None and g.seit <= ku))]
+        erster = min(an, default=None)
+        if not kanal_reicht(rest, erster, c["kanal_rand_s"]):
+            return None
+        return f"Recall reicht: noch {rest:.1f} s, der erste Gegner in {erster:.1f} s" if erster is not None \
+            else f"Recall reicht: noch {rest:.1f} s"
+
     def _warnung_ohne_beleg(self, m: Merkmale) -> str | None:
         """Auftrag 008, A1 (aendert Buch 0, 7.5 und Buch 11, 4): GEFAHR nur, wenn (1) ein Gegner SICHTBAR naeher kommt
         (oder schon in 1500 steht) und in <= ankunft_s bei dir sein kann, UND (2) ihr robust unterlegen seid - in
@@ -596,8 +650,10 @@ class Kern:
                and g.ankunft <= c["ankunft_s"] and (g.kommt_naeher or (g.abstand is not None and g.abstand <= NAH))]
         if not nah:
             return "keiner sichtbar und nah"
+        # Auftrag 009, 2.1 (101426 20:16): ein Ungesehener zaehlt als Kopf, wenn er seit <= kopf_ungesehen_s fehlt und
+        # von seiner letzten Sichtung aus in <= ankunft_s da sein kann (g.ankunft: Weg / Tempo minus die Zeit seither)
         ihre = [g for g in b.gegner if not g.s.tot and g.ankunft is not None and g.ankunft <= c["ankunft_s"]
-                and (g.sichtbar or (g.seit is not None and g.seit <= c["eben_gesehen_s"]))]
+                and (g.sichtbar or (g.seit is not None and g.seit <= c["kopf_ungesehen_s"]))]
         wir = 1 + (sum(koepfe(m, m.pos, c["ankunft_s"])) if m.pos is not None else 0)
         if len(ihre) >= wir + 1:
             return None
@@ -682,6 +738,8 @@ class Kern:
         # Turm je Art (164326 42:08: der innere Bot-Turm verdraengte den Mid-Inhibitor-Turm schon vorher)
         kand = self._turmziel_halten(m, kand)          # Klasse 10
         kand = self._schranken(m, kand, modus)
+        from .modi.karte import zuerst_filtern
+        kand = zuerst_filtern(kand)                    # Auftrag 009, 2.3: Drache neben euch vor den Tuermen
         bleiben = next((h for h in kand if h.art in ("FARMEN", "HALTEN") or h.daten.get("verloren")), None)
         for h in kand:
             if h.art == "ZURUECK":
@@ -723,6 +781,8 @@ class Kern:
                 gefahr, self.gate_grund = False, f"nur {einer}, du liegst klar vorn"
             elif (warum_nicht := self._warnung_ohne_beleg(m)) is not None:
                 gefahr, self.gate_grund = False, warum_nicht       # Auftrag 008, A1
+            elif (reicht := self._kanal_reicht(m)) is not None:
+                gefahr, self.gate_grund = False, reicht            # Auftrag 009, 2.3 (Teil 0 aus 008)
         # der Plan fuer die verlorene Lane gilt gegen den Lane-Gegner allein - kommt noch wer, ist er keine Wahl
         # (140253 8:15: "Yasuo ist vorn: ... farm dort", waehrend Brand und Yasuo kamen)
         if farmen is not None and farmen.daten.get("verloren"):
@@ -1163,6 +1223,47 @@ class Kern:
                 m.pos = o.pos
                 m.bereich = f"grube:{OBJ_GRUBE.get(ort[0], ort[0])}"
 
+    def _erklaerung(self, a, kategorie: str, m: Merkmale, plan) -> str | None:
+        """Auftrag 009, 3 (101426 32:17 "Raus zum Turm ... was soll das ueberhaupt bedeuten?"): was der Satz damals
+        konkret meinte - welches Ziel, welcher Turm, warum. Fuer KLAEREN (kern/fragen.py)."""
+        from .sprache import gross
+        from .fragen import liste
+        art = a.schluessel.split(":", 1)[-1]
+        b = getattr(m, "b", None)            # konstruierte Lagen in den Tests haben kein b
+        if b is None or kategorie in ("INFO_FLASH", "BESTAETIGUNG"):
+            return None
+        if art in ("RAUS", "ZURUECK", "WELLE_UND_RAUS") or (kategorie == "GEFAHR" and art not in ("REIN", "DREHEN")):
+            ort = b.sicherer_ort()[0]
+            wer = sorted((g for g in b.gegner if not g.s.tot and g.ankunft is not None and g.ankunft <= 10.0
+                          and (g.sichtbar or (g.seit is not None and g.seit <= 5.0))), key=lambda g: g.ankunft)
+            s = f"Zu {ort}"
+            if wer:
+                n = max(1, int(round(wer[0].ankunft)))
+                s += (f", weil {liste([g.champion for g in wer[:3]])} {n} Sekunde{'' if n == 1 else 'n'} weg "
+                      f"{'war' if len(wer) == 1 else 'waren'}")
+            elif m.leben is not None:
+                s += f", weil du nur {int(round(m.leben * 100))} Prozent Leben hattest"
+            return s + "."
+        if plan is None or kategorie in ("INFO_FLASH", "VORSICHT", "LAGEBILD", "MAKRO", "BESTAETIGUNG"):
+            return None
+        h = plan.handlung
+        from .fuehren import kurz
+        was = kurz(h)
+        if not was:
+            return None
+        s = f"Gemeint war: {was}"
+        if h.ziel is not None and h.ziel.weg and h.art not in ("WOHIN", "WOHIN_TP_LANE", "KAUFEN"):
+            s += f", {int(round(h.ziel.weg))} Sekunden von dir"      # aus der Basis ist der Weg ab dem Brunnen
+        lane = h.daten.get("lane") or (h.ziel.name.split()[-1].split("-")[0] if h.ziel is not None
+                                        and h.ziel.name.endswith("-Welle") else None)
+        w = (m.wellen or {}).get(lane) if lane else None
+        if w is not None and w.ihre is not None and w.unsere is not None:
+            s += f"; dort stehen {w.ihre} ihrer und {w.unsere} deiner Vasallen"
+        s += "."
+        if h.grund:
+            s += f" Grund: {gross(h.grund.rstrip('.'))}."
+        return s
+
     def _gesprochen(self, a, kategorie: str, m: Merkmale) -> None:
         a._kategorie = kategorie          # fuer Szenarien (kategorie_max) und Kennzahlen
         a.auffrischen = lambda t: _leben_jetzt(t, self.m)      # Kritik 008: die Leben-Zahl beim Sprechen (Sprechplan)
@@ -1176,7 +1277,7 @@ class Kern:
             self._ansage_log = log = deque()
         from . import fuehren as _f
         log.append({"zeit": m.zeit, "text": a.text, "art": a.schluessel.split(":", 1)[-1], "kategorie": kategorie,
-                    "grund": grund, "leben": m.leben,
+                    "grund": grund, "leben": m.leben, "erkl": self._erklaerung(a, kategorie, m, plan),
                     "ziel": _f.ziel_label(plan.handlung) if plan is not None and kategorie != "INFO_FLASH" else None})
         while log and log[0]["zeit"] < m.zeit - 60.0:
             log.popleft()
@@ -1231,6 +1332,9 @@ class Kern:
             if ueberlegen_lage(m, self.cfg, m.pos)[0] != "ueberlegen":
                 self._stumm(m, art, satz, "KAMPF")    # Entscheidung 2: Modell nicht geeicht (Auftrag 004: ausser klar
                 return []                             # ueberlegen)
+        if art == "RAUS" and (reicht := self._kanal_reicht(m)) is not None:
+            self._stumm(m, art, satz, "KAMPF", grund=reicht)      # Auftrag 009, 2.3: der Recall wird fertig
+            return []
         if art == "RAUS" and not self.cfg["kampf"].get("geeicht", False):
             from .modi.kampf import raus_beleg
             if not raus_beleg(m, self.cfg):
@@ -1365,6 +1469,13 @@ class Kern:
                 if h.p_tod >= cs["vor_p_tod_max"]:
                     weg.append(f"{h.art}: p_tod {h.p_tod:.2f}")
                     continue
+                if h.art in BUCH2_STUMM:
+                    self._stumm(m, h.art, h.satz or h.kurz(), modus, schluessel=h.ziel.name if h.ziel else None,
+                                grund="Buch 2 zurückgestellt")
+                    continue
+            if h.art in WELLE_VOR and h.p_tod >= cs["vor_p_tod_max"]:
+                weg.append(f"{h.art}: p_tod {h.p_tod:.2f}")
+                continue
             if h.art in UEBERLEGEN_ARTEN or h.art in MODELL_STUMM or h.daten.get("modell_stumm"):
                 u, grund = self._ueberlegen(m, h)
                 if u == "unterlegen" and h.art in UEBERLEGEN_ARTEN:
@@ -1406,7 +1517,8 @@ class Kern:
             return "ueberlegen", merk[schl][1]        # kein Flackern: das Urteil haelt halten_s
         return u, grund
 
-    def _stumm(self, m: Merkmale, art: str, text: str, modus: str | None, schluessel: str | None = None) -> None:
+    def _stumm(self, m: Merkmale, art: str, text: str, modus: str | None, schluessel: str | None = None,
+               grund: str = "Modell nicht geeicht") -> None:
         """Entscheidung 2: ein Kampf-Ruf des ungeeichten Modells - ins Protokoll, nicht in die Stimme. Derselbe Ruf
         (Art und Text, oder Art und `schluessel`, etwa das Ziel) steht hoechstens alle annehmen_wiederholen_s einmal
         darin."""
@@ -1415,7 +1527,8 @@ class Kern:
         if alt is not None and m.zeit - alt["zeit"] < self.cfg["kampf"]["annehmen_wiederholen_s"]:
             self._stumm_takt = self._stumm_takt or f"{art}: {text}"
             return
-        self.stumm_modell.append({"zeit": m.zeit, "art": art, "text": text, "modus": modus, "schluessel": schluessel})
+        self.stumm_modell.append({"zeit": m.zeit, "art": art, "text": text, "modus": modus, "schluessel": schluessel,
+                                  "grund": grund})
         self._stumm_takt = f"{art}: {text}"
 
     def rueckblick_text(self, zeit: float, taeter: str | None, beteiligt: list[str], turm: bool,

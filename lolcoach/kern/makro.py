@@ -136,7 +136,8 @@ class Makro:
             if alt is not None and frisch and nah and vorn and (items > alt[0] or level > alt[1]):
                 was = (f"hat {['kein', 'ein', 'zwei', 'drei', 'vier', 'fünf', 'sechs'][min(items, 6)]} "
                        f"Item{'s' if items != 1 else ''}") if items > alt[0] else f"ist Level {level}"
-                kandidaten.append(("MAKRO", "SPIKE", f"Ihr {st.champion} {was}: Kämpfe gegen {st.champion} nur mit "
+                # Auftrag 009, 4: kein Possessiv vor dem Namen ("Ihr Aurora ist Level 6", 101426 4:39)
+                kandidaten.append(("MAKRO", "SPIKE", f"{st.champion} {was}: Kämpfe gegen {st.champion} nur mit "
                                    f"Team.", ("spike", st.champion, items, level), "nur mit Team"))
         for kat, art_, text, schl, folg in kandidaten:
             if self._neu(schl, folg, m.zeit, cfg):

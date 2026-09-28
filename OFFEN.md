@@ -17,6 +17,23 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 009 (letzte Sperren vor Testpartie 2) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 009"),
+Bericht und Fragen in `009_bericht.md`.
+
+Offen aus Auftrag 009:
+- **Warnungen je 30 min wieder ueber 10** (101426 15,0, 164326 11,9, 173159 10,2): Folge von Entscheidung 2.1
+  (Ungesehene <= 20 s als Koepfe) - 101426 20:01, 20:10, 21:35, 23:35 neu. Entscheidung im Bericht.
+- **2522-kein-baron-drache-lebt (102112) rot:** ohne den Rang-Filter waehlt der EV den aeusseren Mid-Turm, weil
+  Tryndamere den Drachen allein zu 86 % nimmt (Rivens Anteil 0,14); 0,5 s spaeter springt das Urteil (Anteil 1,0) und
+  die Hysterese haelt den gesagten Turm. Entscheidung im Bericht.
+- **Leerlauf ab 14:00:** in 6 von 10 Stichproben hat der Kern nach einem Wendepunkt nur HALTEN (kein Ziel mit EV > 0)
+  in UNTERWEGS/GRUPPE - Tabelle in messungen.md.
+- **"Zurueck unter deinen inneren Mid-Turm" auf der Bot-Lane** (101426 23:35, Kritiker: falsch): der sichere Ort nach
+  Laufzeit ist dort der Mid-Turm, liest sich aber falsch.
+- **DANACH-Antwort "Nach auf ihren Mid-Inhibitor-Turm: ..."** (213624 16:42): Grammatik von `fuehren.kurz` in
+  "Nach {...}" - war schon vorher so.
+- **Abgebrochene Saetze** (3 in 101426) stoeren den Carlos-Kritiker am meisten nach vagen Saetzen.
+
 **Auftrag 008 (Testpartie 101426, Buch 4 Kartenlage und Makro) umgesetzt** - Zahlen in `buecher/messungen.md`
 ("Auftrag 008"), Kritik in `008_kritik.md`, Bericht und Fragen in `008_bericht.md`.
 
@@ -29,7 +46,7 @@ Offen aus Auftrag 008:
   Makro kamen dazu.
 - **Abgebrochene Saetze** (4 in der Kritik): Transport im Sprechplan.
 - **Wiederholte Frage, gleiche Antwort** (213624 10:19/10:26 "kein Platz"): die Antwort passt sich nicht an.
-- **20:16 in 101426**: A1 warnt nicht (sichtbar zwei gegen zwei, Viego 17 s ungesehen) - Entscheidung im Bericht.
+- ~~**20:16 in 101426**: A1 warnt nicht~~ erledigt (Auftrag 009, 2.1: warnt um 20:01/20:10).
 - **Szenario 2411 (213624)** ist nach A1 ohne Pruefung (uebersprungen): die Episoden-Regel prueft kein Fall mehr.
 - **Viego mit Standard-Skin**: der Gestalt-Fix liest rawSkinName - fehlt der beim Standard-Skin, heisst Viego in fremder
   Gestalt weiter wie der Getoetete.

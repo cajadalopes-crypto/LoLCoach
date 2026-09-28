@@ -1,0 +1,99 @@
+# Auftrag 009: letzte Sperren vor Testpartie 2 - Carlos' Testpartie 101426 (Riven Mid gegen Aurora, echte Gegner).
+# Gegner: Sett (Top), Viego (Jungle), Aurora (Mid), Twitch (Bot), Bard (Support). Dein Team: Urgot, Kayn, Yunara, Xerath.
+# Jedes Szenario war auf 122431c (Stand nach Auftrag 008) rot, ausser den Waechtern (steht dabei).
+
+aufnahme = "2026-09-28_101426"
+spielmodus = "CLASSIC"
+
+# --- 1. Gefaehrlich: "Trade" bei 15 % Leben -----------------------------------------------------------------------
+
+[[szenario]]
+id = "0235-kein-trade-bei-15"
+zeit = "2:35"
+fenster = [["2:28", "2:43"]]
+lage = "Riven Mid mit 15 % Leben, Aurora 330 Leben; Plan TRADE (p_tod 0.20). Um 2:43 war Riven tot."
+darf_nicht_sagen = ["Trade", "Combo"]
+warum = "R1: unter 40 % Leben keine Vorwaerts-Handlung; TRADE und ALL_IN sind stumm, bis Buch 2 kommt."
+
+# --- 2.1 Ungesehene Gegner als Koepfe --------------------------------------------------------------------------------
+
+[[szenario]]
+id = "2016-viego-zaehlt-mit"
+zeit = "20:11"
+fenster = [["20:05", "20:16"]]
+lage = "Sichtbar zwei gegen zwei, Viego 17 s ungesehen, von seiner letzten Sichtung aus in <= 5 s bei dir. Tod 20:16."
+kategorie_min = { GEFAHR = 1 }
+warum = "Entscheidung 2.1: ein Gegner, <= 20 s ungesehen und von der letzten Sichtung in <= 5 s da, zaehlt als Kopf."
+
+# Waechter: 14:00 - nur Aurora sichtbar, Viego und Bard weit weg zuletzt gesehen (auf 122431c schon gruen)
+[[szenario]]
+id = "1400-viego-weit-still"
+zeit = "14:00"
+fenster = [["13:58", "14:06"]]
+lage = "Riven Mid, 100 %. Nur Aurora sichtbar; Viego zuletzt weit weg gesehen."
+darf_nicht_sagen = ["Raus zu", "Raus,", "Zurück unter"]
+warum = "Entscheidung 2.1: wer zuletzt weit weg war, zaehlt nicht als Kopf."
+
+# --- 2.2 Lagebild: die Folgerung ist eine Handlung oder Grenze --------------------------------------------------
+
+[[szenario]]
+id = "lagebild-folgerung-handelt"
+zeit = "0:00"
+fenster = [["14:00", "35:00"]]
+lage = "Ab 14:00. Vorher u. a. 'Aurora steht nah bei dir.' und 'Keiner von ihnen ist nah bei dir.' als Folgerung."
+kategorie_min = { LAGEBILD = 1 }
+text_max = { "steht nah bei dir\\.|braucht \\d+ Sekunden zu dir\\.|Keiner von ihnen ist nah bei dir\\." = 0 }
+warum = "Entscheidung 2.2: die Folgerung muss eine Handlung oder Grenze sein, eine Beschreibung allein reicht nicht."
+
+# --- 4. Kleine Sprachfehler --------------------------------------------------------------------------------------
+
+[[szenario]]
+id = "kein-possessiv-vor-champion"
+zeit = "0:00"
+fenster = [["0:00", "35:00"]]
+lage = "Vorher 'Ihr Aurora ist Level 6' und 'Ihr Aurora hat drei Items'."
+darf_nicht_sagen = ["Ihr Aurora", "Ihr Sett", "Ihr Viego", "Ihr Twitch", "Ihr Bard"]
+warum = "Auftrag 009, 4: kein Possessiv vor Champion-Namen."
+
+[[szenario]]
+id = "1211-schutzplan-fertiges-item"
+zeit = "12:11"
+fenster = [["0:00", "35:00"]]
+lage = "Vorher 12:11 'kein Trade bis Langschwert' - ein Bauteil als Schutzplan."
+darf_nicht_sagen = ["kein Trade bis Langschwert", "kein Trade bis Spitzhacke", "kein Trade bis Tiamat"]
+warum = "Auftrag 009, 4: im Schutzplan steht nur ein fertiges Item aus Carlos' Build."
+
+[[szenario]]
+id = "bauteil-mit-ziel"
+zeit = "0:00"
+fenster = [["0:00", "35:00"]]
+lage = "Vorher 'Kauf Langschwert und ein Kontroll-Auge, dann zur Mid-Welle' - das Bauteil ohne Ziel."
+text_max = { "Kauf Langschwert(?! für)|Kauf Spitzhacke(?! für)|kauf Langschwert(?! für)" = 0 }
+warum = "Auftrag 009, 4: ein Bauteil wird immer mit dem Ziel genannt ('Kauf Langschwert für die Hydra')."
+
+# --- 3. KLAEREN: "Was soll das bedeuten?" -------------------------------------------------------------------------
+
+[[szenario]]
+id = "3217-klaeren-raus-zum-turm"
+zeit = "32:17"
+frage = "Raus zum Turm ist auch eine super schnummige Aussage. Was soll das überhaupt bedeuten? Soll ich jetzt zu meinem Turm zurücklaufen, zu meinem Tier 1 oder so? Also, macht gar keinen Sinn, was du gerade erzählst."
+quelle = "Kern 0 ms: 'Du lebst in 29 Sekunden wieder: kauf Langschwert, dann zurück auf Mid.' - an der Frage vorbei"
+lage = "Riven seit 31:55 tot. Um 31:43 kam 'Raus, zu eurem Top-Turm!', Twitch und Aurora kamen."
+kern_frage = true
+absicht = "KLAEREN"
+ohne_claude = true
+muss_nennen_alle = ["Top", "Twitch"]
+darf_nicht_sagen = ["lebst in"]
+warum = "Auftrag 009, 3: die Antwort erklaert den letzten Satz - welcher Turm, warum damals - auch im Tod."
+
+[[szenario]]
+id = "3107-klaeren-welle"
+zeit = "31:07"
+frage = "Was soll damit Welle heißen, so richtig nichtssagend?"
+quelle = "Claude (OFFEN) - bezog sich auf 30:53 'Dann zur Mid-Welle: sie läuft sonst in deinen Turm.'"
+lage = "Riven kommt aus der Basis; die Mid-Welle laeuft auf ihren Turm zu."
+kern_frage = true
+absicht = "KLAEREN"
+ohne_claude = true
+muss_nennen_alle = ["Mid-Welle"]
+warum = "Auftrag 009, 3: die Antwort erklaert den Satz von 30:53 konkret (wo, wie weit, warum)."

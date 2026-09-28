@@ -56,6 +56,14 @@ ICH_TOT = re.compile(r"(ich bin|bin) (schon |auch |doch |gerade )?tot")
 KORREKTUR_ALLE_TOT = re.compile(r"alle (sind )?tot|sind (doch )?alle tot")
 KORREKTUR_ORT = re.compile(r"(ich bin|bin) (jetzt )?(beim|am|an der|in der) (drache|drachen|baron|herold|larven|grube)")
 # Auftrag 004, Teil C 4: eine Frage nach der Gewissheit ("Warum bist du dir so sicher, dass ...?")
+# Auftrag 009, 3 (101426 32:17 "Raus zum Turm ... Was soll das ueberhaupt bedeuten?", 31:07 "Was soll damit Welle
+# heissen, so richtig nichtssagend?"): die Frage meint den letzten gesprochenen Satz
+# ("Welche Welle, auf welcher Lane?" ist eine JETZT-Frage - 213624 13:16)
+KLAEREN = re.compile(r"was (soll|heißt|heisst|bedeutet|meinst)( du)? (das|damit|dies)|was meinst du|"
+                     r"macht (gar |überhaupt |ueberhaupt )?keinen sinn|"
+                     r"schwammig|schnummig|nichtssagend|versteh(e)? (ich )?(das |dich )?nicht")
+KLAEREN_BEZUG = {"turm": re.compile(r"turm|tower|raus|zurück|zurueck"), "welle": re.compile(r"welle|farm"),
+                 "back": re.compile(r"(^|[^a-z])back|basis|recall")}
 GEWISSHEIT = re.compile(r"bist du (dir )?(so |ganz )?sicher|woher wei(ß|ss)t du|wie sicher|sicher, dass")
 TURM_WORT = re.compile(r"turm|tower|türme|towers")
 RAUS_WORT = re.compile(r"(^|[^a-zäöüß])(raus|zurück|zurueck|zurückgehen|zurueckgehen)([^a-zäöüß]|$)")
@@ -83,7 +91,7 @@ OPTION_WORT = {"drache": "Drache", "baron": "Baron", "herold": "Herold", "larven
                "kampf": "Kampf", "welle": "Welle"}
 
 
-def absicht(frage: str) -> str:
+def absicht(frage: str, klaeren: bool = True) -> str:
     f = frage.lower()
     if NOTIER.search(f) or RUECKMELDUNG_KLAR.search(f):
         return "NOTIZ"
@@ -95,6 +103,8 @@ def absicht(frage: str) -> str:
         return "GEWISSHEIT"
     if WARUM_WORT.search(f) and WARUM_BEZUG.search(f):
         return "WARUM"
+    if klaeren and KLAEREN.search(f):
+        return "KLAEREN"
     if KAUF.search(f):
         return "KAUF"
     if FLASH.search(f):
@@ -162,7 +172,9 @@ def _respawn_plan(kern) -> str:
     k = getattr(m.b, "kauf", None) if m is not None and m.b is not None else None
     lane = (m.meine_lane if m is not None else None) or "deine Lane"
     if k is not None and getattr(k, "kaufen", None):
-        return f"{zeit}: kauf {' und '.join(k.kaufen[:2])}, dann zurück auf {lane}."
+        from ..kaufplan import mit_ziel
+        ziel = getattr(k, "item", None)
+        return f"{zeit}: kauf {' und '.join(mit_ziel(x, ziel) for x in k.kaufen[:2])}, dann zurück auf {lane}."
     return f"{zeit}, dann zurück auf {lane}."
 
 
@@ -496,7 +508,9 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
         if k is not None and getattr(k, "verkaufen", None) and k.kaufen:
             return f"Kein Platz: verkauf {k.verkaufen}, dann kauf {', '.join(k.kaufen)}.", h
         if k is not None and k.kaufen:
-            return f"Kauf {', '.join(k.kaufen)}" + (f", dann {fuehren.kurz(h)}." if h is not None else "."), h
+            from ..kaufplan import mit_ziel
+            return f"Kauf {', '.join(mit_ziel(x, getattr(k, 'item', None)) for x in k.kaufen)}" + \
+                (f", dann {fuehren.kurz(h)}." if h is not None else "."), h
         if k is not None and getattr(k, "naechstes", None):
             item, fehlt = k.naechstes
             return f"Noch {fehlt} Gold bis {item}: erst farmen, dann back.", h
@@ -570,6 +584,11 @@ def beantworte(kern, frage: str, p, lagebild=None) -> dict:
     vorige = getattr(kern, "_frage_text_merken", None)
     kern._frage_text_letzte = vorige                       # die Frage davor (Auftrag 008, A3.4)
     kern._frage_text_merken = (zeit, frage.lower())
+    if a == "KLAEREN":
+        if (k := _klaeren(kern, frage, zeit)) is not None:
+            return _abschluss(kern, k, "KLAEREN", None, zeit)
+        a = absicht(frage, klaeren=False)        # kein Satz <= 60 s: wie bisher
+        kern._frage_letzte = (zeit, a)
     if a == "OFFEN" or m is None:
         return {"text": None, "absicht": a, "ziel": None, "quelle": "claude"}
     if a == "NOTIZ":
@@ -586,6 +605,26 @@ def beantworte(kern, frage: str, p, lagebild=None) -> dict:
     if not text:
         return {"text": None, "absicht": a, "ziel": None, "quelle": "claude"}
     return _abschluss(kern, text, a, h, zeit)
+
+
+def _klaeren(kern, frage: str, zeit: float) -> str | None:
+    """Auftrag 009, 3: erklaert den letzten gesprochenen Satz (<= 60 s) konkret - welches Ziel, welcher Turm, warum
+    damals. Nennt die Frage ein Thema (Turm, Welle, Back), gilt der letzte Satz dazu. Auch im Tod."""
+    f = frage.lower()
+    log = [e for e in (getattr(kern, "_ansage_log", None) or [])
+           if zeit - e["zeit"] <= 60.0 and e["kategorie"] not in ("INFO_FLASH", "BESTAETIGUNG")]
+    if not log:
+        return None
+    themen = [re_ for w, re_ in KLAEREN_BEZUG.items() if re_.search(f)]
+    e = next((x for x in reversed(log) if any(r.search(x["text"].lower()) for r in themen)), None) if themen else None
+    e = e or log[-1]
+    alt = int(round(zeit - e["zeit"]))
+    wann = f"Vor {alt} Sekunden: „{e['text']}“ " if alt >= 10 else ""
+    if e.get("erkl"):
+        return f"{wann}{e['erkl']}".strip()
+    if e.get("grund"):
+        return f"{wann}Der Grund damals: {e['grund']}.".strip()
+    return None
 
 
 def _abschluss(kern, text: str, a: str, h: Handlung | None, zeit: float) -> dict:

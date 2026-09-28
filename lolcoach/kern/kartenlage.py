@@ -131,10 +131,12 @@ def _namen(namen: list[str]) -> str:
     return namen[0] if len(namen) == 1 else ", ".join(namen[:-1]) + " und " + namen[-1]
 
 
-def folgerung(k: Kartenlage, m, plan_kurz: str | None = None) -> str:
+def folgerung(k: Kartenlage, m, plan_kurz: str | None = None, streng: bool = False) -> str | None:
     """Was aus der Lage folgt - Buch 4, 1.3: nur mit Wirkung auf dich. Der erste passende Satz:
     drei fehlen -> nicht tief; deine Seite leer und lange frei -> frei; zwei auf deiner Seite -> nicht allein vor; zwei
-    tot -> dein Plan jetzt; eine grosse Gruppe woanders -> deine Seite; sonst, wie weit der Naechste ist."""
+    tot -> dein Plan jetzt; eine grosse Gruppe woanders -> deine Seite; sonst, wie weit der Naechste ist.
+    Auftrag 009, 2.2: die Folgerung ist eine Handlung oder Grenze ("oben ist frei: Welle druecken", "nicht allein nach
+    vorn"); `streng` (ungefragt): beschreibt sie nur, None - dann kein Lagebild."""
     mein = _seite(m.pos) if m.pos is not None else None
     n_mein = len(k.je_seite.get(mein, [])) if mein else 0
     dort = "in der Mitte" if mein == "Mitte" else mein
@@ -142,7 +144,7 @@ def folgerung(k: Kartenlage, m, plan_kurz: str | None = None) -> str:
         return f"{ZAHL_GROSS.get(len(k.unbekannt), len(k.unbekannt))} fehlen: nicht tief gehen"
     if mein and n_mein == 0 and k.fenster.get(mein, 0) >= 20:
         wo = "Mitte" if mein == "Mitte" else mein
-        return f"{wo[:1].upper()}{wo[1:]} ist {int(k.fenster[mein] // 5 * 5)} Sekunden frei"
+        return f"{wo[:1].upper()}{wo[1:]} ist {int(k.fenster[mein] // 5 * 5)} Sekunden frei: {plan_kurz or 'Welle drücken'}"
     if n_mein >= 2:
         return f"{ZAHL_GROSS.get(n_mein, n_mein)} {dort}: nicht allein nach vorn"
     if len(k.tot) >= 2 and plan_kurz:
@@ -150,20 +152,27 @@ def folgerung(k: Kartenlage, m, plan_kurz: str | None = None) -> str:
     gross = max(SEITEN, key=lambda s: len(k.je_seite.get(s, [])))
     if len(k.je_seite.get(gross, [])) >= 3 and gross != mein:
         andere = mein or next(s for s in SEITEN if s != gross)
-        return f"{ZAHL_GROSS.get(len(k.je_seite[gross]))} {'in der Mitte' if gross == 'Mitte' else gross}: " \
-               f"{'die Mitte' if andere == 'Mitte' else andere} ist frei"
+        frei = f"{'die Mitte' if andere == 'Mitte' else andere} ist frei"
+        if andere == mein:
+            frei += f": {plan_kurz or 'Welle drücken'}"
+        elif streng:
+            return None
+        return f"{ZAHL_GROSS.get(len(k.je_seite[gross]))} {'in der Mitte' if gross == 'Mitte' else gross}: {frei}"
     if m.b is not None:
         # nur wer frisch gesehen ist (101426: "der Naechste braucht 0 Sekunden zu dir" - ein Ungesehener)
         nah = [g for g in m.b.gegner if not g.s.tot and g.ankunft is not None and g.pos is not None
                and (g.sichtbar or (g.seit is not None and g.seit <= 5))]
         if nah:
             g = min(nah, key=lambda x: x.ankunft)
-            return f"{g.champion} steht nah bei dir" if g.ankunft < 5 else \
-                f"{g.champion} braucht {int(g.ankunft)} Sekunden zu dir"
-    return "keiner von ihnen ist nah bei dir"
+            if g.ankunft < 5:
+                return f"{g.champion} steht nah bei dir: nicht allein nach vorn"
+            if g.ankunft >= 10 and plan_kurz:
+                return f"{g.champion} braucht {int(g.ankunft)} Sekunden zu dir: {plan_kurz} geht"
+            return None if streng else f"{g.champion} braucht {int(g.ankunft)} Sekunden zu dir"
+    return None if streng else "keiner von ihnen ist nah bei dir"
 
 
-def satz(k: Kartenlage, m, kurz: bool = False, plan_kurz: str | None = None) -> str:
+def satz(k: Kartenlage, m, kurz: bool = False, plan_kurz: str | None = None, streng: bool = False) -> str | None:
     """A4: wer wo ist (nach Kartenseite), bekannte Flashs und Tote, dann die Folgerung - "Viego und Twitch unten,
     Aurora Mitte ohne Flash bis 24:10, Sett fehlt. Oben ist frei." `kurz` (ungefragt): <= 16 Woerter, ohne Uhrzeiten."""
     from .zeitleiste import _uhr
@@ -189,7 +198,9 @@ def satz(k: Kartenlage, m, kurz: bool = False, plan_kurz: str | None = None) -> 
                      _namen([f"{n} tot bis {_uhr(tote[n])}" for n in k.tot]))
     if k.unbekannt:
         teile.append(f"{_namen(k.unbekannt)} {'fehlt' if len(k.unbekannt) == 1 else 'fehlen'}")
-    f = folgerung(k, m, plan_kurz)
+    f = folgerung(k, m, plan_kurz, streng)
+    if f is None:
+        return None
 
     def bauen(t):
         erster = ", ".join(t) if t else "Keiner von ihnen ist zu sehen"

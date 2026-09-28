@@ -117,10 +117,50 @@ def _akk(name: str) -> str:
     return "den " + name[4:] if name.startswith("Der ") else name
 
 
+_WEIBLICH = ("hydra", "klinge", "axt", "hacke", "eklipse", "schneide", "sense", "lanze", "kette", "rüstung", "maske",
+             "sichel", "peitsche", "glefe", "robe", "krone", "kappe", "tiamat")
+_MAENNLICH = ("hammer", "bogen", "schild", "helm", "dolch", "mantel", "umhang", "gürtel", "handschuh", "stab", "panzer",
+              "brutalisierer", "schlitzer", "reißer", "zahn", "splitter", "stein", "himmel", "anker", "streitkolben")
+_SAECHLICH = ("schwert", "horn", "amulett", "buch", "messer", "juwel", "siegel", "herz", "visier", "medaillon")
+
+
+def akk_artikel(name: str) -> str:
+    """"Gefraessige Hydra" -> "die Gefraessige Hydra", "Axiombogen" -> "den Axiombogen", "Caulfields Kriegshammer"
+    bleibt (Name im Genitiv), unbekannt ohne Artikel."""
+    if name.startswith(("Der ", "Die ", "Das ")):
+        return _akk(name) if name.startswith("Der ") else name[:1].lower() + name[1:]
+    w = name.split()
+    if len(w) > 1 and w[0].endswith("s") and w[0][:1].isupper():
+        return name
+    letztes = w[-1].lower()
+    for endungen, art in ((_WEIBLICH, "die"), (_MAENNLICH, "den"), (_SAECHLICH, "das")):
+        if letztes.endswith(endungen):
+            return f"{art} {name}"
+    return name
+
+
+def mit_ziel(name: str, ziel: str | None) -> str:
+    """Auftrag 009, 4: ein Bauteil wird mit seinem Ziel genannt - "Langschwert fuer die Gefraessige Hydra"."""
+    ids = _nach_name()
+    t, z = ids.get(name), ids.get(ziel) if ziel else None
+    if t is None or z is None or t == z or t not in _baum(z):
+        return name
+    return f"{name} für {akk_artikel(ziel)}"
+
+
 def _dat(name: str) -> str:
     """'Der Brutalisierer' -> 'zum Brutalisierer' ist zu viel Grammatik - 'bis Brutalisierer' klingt falsch,
-    'bis zum Brutalisierer' richtig; ohne Artikel: 'bis Caulfields Kriegshammer'."""
-    return "zum " + name[4:] if name.startswith("Der ") else name
+    'bis zum Brutalisierer' richtig; ohne Artikel: 'bis Caulfields Kriegshammer'. Auftrag 009: auch 'bis zur Eklipse',
+    'bis zum Axiombogen' (akk_artikel kennt das Geschlecht)."""
+    if name.startswith("Der "):
+        return "zum " + name[4:]
+    a = akk_artikel(name)
+    if a == name:
+        return name
+    w = name.split()
+    if len(w) > 1 and w[0].endswith("e"):
+        w[0] += "n"                                  # Dativ, schwach: "zur Gefraessigen Hydra"
+    return {"die": "zur", "den": "zum", "das": "zum"}[a.split(" ", 1)[0]] + " " + " ".join(w)
 
 
 def _baum_kosten(item: int, inventar: list[int]) -> tuple[int, list[int]]:

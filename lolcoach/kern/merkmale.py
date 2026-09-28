@@ -69,6 +69,7 @@ class KaufInfo:
     kern_fertig: bool           # ein Kern-Item wird fertig (spike_bonus)
     satz: str = ""              # "den Brutalisierer, und wenn du den Trank verkaufst, auch Stiefel"
     verkaufen: str | None = None    # Inventar voll: erst dieses Item verkaufen (kaufplan)
+    item: str | None = None         # das naechste Kern-Item (Auftrag 009, 4: Bauteile mit ihrem Ziel nennen)
 
 
 @dataclass
@@ -762,7 +763,7 @@ def kauf_info(b) -> KaufInfo | None:
     except Exception:
         satz, lohnt = "", False
     return KaufInfo(list(k.kaufen), int(k.kosten), bool(lohnt), k.item in k.kaufen, satz,
-                    getattr(k, "verkaufen", None))
+                    getattr(k, "verkaufen", None), k.item)
 
 
 def lane_hier(m: Merkmale) -> str | None:
