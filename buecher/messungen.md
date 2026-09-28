@@ -4,6 +4,108 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 006 – Wahrnehmung: Welle, Quest-Anzeige, Flash im Spielbild (28.09.2026)
+
+Grundlage: `buecher/auftraege/006_auftrag.md`. Offline gemessen, der Coach wurde nicht gestartet. Das Entscheiden bleibt
+unangetastet.
+
+### W1. Welle (Soll: 173159 ≥ 80 % der eindeutigen, 144655 und 164326 nicht schlechter)
+
+`wellen_eichung.py --neu` rechnet jetzt mit dem aktuellen Code nach. `--auswerten` las nur den gespeicherten Zustand
+vom Tag der Tafel. Mit `--schalter` lässt sich jeder Schalter aus `[welle]` einzeln setzen. Mit allen Schaltern aus
+reproduziert es die alten Zahlen genau.
+
+Drei Ansatzpunkte aus den Fehlerursachen der Qualitätsrunde 2, je ein Schalter:
+
+| Schalter | 173159 | 144655 | 164326 | gesetzt |
+|---|---|---|---|---|
+| vorher (alle aus) | 7 / 12 | 9 / 11 | 13 / 15 | – |
+| `hysterese_zu_mitte_s = 1`: zwischen ZU_IHM, ZU_DIR und MITTE 1 s statt 3 s | **10 / 12** (11:07, 11:57, 12:49) | 9 / 11 | 13 / 15 (3:59 behoben, 10:57 neu falsch) | **an** |
+| `icon_deckung_zone`: die Icon-Deckung zählt nur in der Crash-Zone | 7 / 12 (7:33 bleibt) | **6 / 11** (3:13, 5:31, 5:38) | 13 / 15 (5:01 behoben, 3:59 bleibt) | aus |
+| `trend_farbwechsel`: der Trend beginnt neu, wenn die Front die Farbe wechselt | 8 / 12 (11:07) | 9 / 11 | 12 / 15 (10:57 neu falsch) | aus |
+| alle drei an | 10 / 12 | 6 / 11 | 12 / 15 | – |
+
+**Ergebnis:** 173159 **10 von 12 (83 %)**, 144655 9 von 11 (82 %), 164326 13 von 15 (87 %). Das Soll ist erreicht.
+
+- Die Icon-Deckung aus Qualitätsrunde 1 trägt 144655. Sie auf die Zone zu begrenzen kostet dort drei Treffer, und
+  173159 7:33 behebt es trotzdem nicht.
+- Offen bleiben 173159 7:33 (Icon am Zonenrand) und 9:25 (übereinanderliegende Vasallen, `Wellenleser.punkte`). Beide
+  sind Wahrnehmung im Bild, kein Schwellwert.
+- Szenarien, Tests und konstruierte Lagen sind unverändert (163 / 167, 40 / 40).
+
+### W2. Quest-Fortschritt im HUD: passiv lesbar
+
+- **Der Quest-Platz V liegt rechts neben den Items und ist ohne Tastendruck immer zu sehen:**
+  - Solange die Quest läuft, zeigt er einen **türkisen Ring**, der wächst. Sein Anteil in 164326 steigt von 0,19 um
+    10:00 auf 0,26 um 12:02, der Fortschritt ist also sichtbar.
+  - Ab dem Quest-Ende zeigt er das **violette TP-Symbol** mit einem gelben „V“.
+  - Während der Abklingzeit ist er dunkel.
+- Bilder: `buecher/quest_pruefung/quest_164326_verlauf.png` (3:00, 6:00, 9:00, 11:00, 11:55, 12:05: der Ring wächst,
+  dann violett) und `quest_164326_vorher_nachher.png` (11:40 / 12:10, Items und Platz V).
+- **Erkennung** (`hud.quest`): Farbanteile im Quadrat um den Platz, violett oder türkis ≥ 0,08. Das erste violette
+  Schirmbild je Partie:
+
+  | Partie | erstes violett | Handmessung (Auftrag 002, S4) | Quest-TP bereit im Kern (nachgespielt) | vorher |
+  |---|---|---|---|---|
+  | 213624 | 9:46 | 9:31–9:46 | 9:51 | 13:35 |
+  | 102112 | 11:31 | 11:10–11:36 | 11:36 | 13:35 |
+  | 173159 | 11:40 | 11:30–11:51 | 11:46 | 13:35 |
+  | 164326 | 12:07 | 11:51–12:07 | 12:12 | 13:35 |
+  | 144655 | nie (9,7 min) | – | – | – |
+
+- **Umbau:**
+  - Live liest der Beobachter V einmal je Sekunde aus dem Spielbild, das er ohnehin holt (Ereignis „quest“, nur
+    lesen, **kein Tastendruck**).
+  - Aufnahmen ohne diese Lesung bekommen sie aus den Schirmbildern (alle 5 s, `lage._quest_aus_bildern`).
+  - Ein Wechsel zählt erst nach zwei gleichen Lesungen, deshalb liegt „bereit im Kern“ bis zu 5 s hinter dem ersten
+    Bild.
+  - `QuestTP` nimmt das erste bestätigte Violett als Quest-Ende. Ist V nach einer Nutzung wieder violett, gilt es
+    sofort als bereit.
+  - Die Regel „bereit ab 13:35“ bleibt der Rückfall.
+  - Schalter: `[quest_tp] hud_lesen`, `hud_frisch_s`.
+  - Test: `test_quest_tp.test_quest_ende_aus_dem_hud`.
+
+### W3. Flash im Spielbild: Machbarkeit
+
+**Was aufgenommen wird** (`lage.Beobachter`):
+
+| Ausschnitt | Rate live | auf der Platte |
+|---|---|---|
+| Minimap | mit dem Takt | 1 / s (764 × 764) |
+| ganzes Spielbild | ~12 / s für die Balkenspur (Flash-Sprünge über den Lebensbalken, `SPUR_ALLE` 0,08 s), 1 / s für HUD, eigene Tasten, Balken und jetzt V | alle 5 s, auf 1600 Breite verkleinert (`schirm_*.jpg`) |
+| Chat (links unten) | 1 / s | bei neuen Zeilen (`chat_*.jpg`) |
+| Mitspieler-Leiste | 1 / s | nein |
+
+**Fünf gegnerische Flashs**, je das nächste gesicherte Schirmbild (Bilder in `buecher/flash_pruefung/`):
+
+| Flash | Quelle | Bild | Blitz erkennbar? |
+|---|---|---|---|
+| 164326 14:47 Teemo | Bildschirm (Balkenspur) | +0,8 s | nein, Teemo ist nicht im Bild |
+| 164326 22:21 Teemo | Chat | −1,0 s | nein, Riven steht im Brunnen |
+| 164326 33:19 Teemo | Bildschirm | −0,5 s | nein. Teemo ist im Bild, im Kampf ohne gelben Blitz, zu viele Effekte |
+| 173159 21:25 Zilean | Bildschirm | +0,5 s | unklar: ein heller Schein an Riven, eher ihr eigener Effekt |
+| 173159 2:34 Cho'Gath | Minimap | +1,1 s | nein |
+
+**Befund:**
+- **Mit dem, was auf der Platte liegt, lässt sich das nicht prüfen.** Ein Flash-Blitz leuchtet nur ~0,3 s, die
+  Schirmbilder kommen alle 5 s. Selbst ±0,5 s daneben ist nichts mehr zu sehen.
+- **Live liegt das Spielbild mit ~12 / s vor.** Einen Blitz im Bild sähe man also in 3–4 Bildern, aber nur, wenn der
+  Flashende auf dem Bildschirm ist. Genau diese Flashs findet schon die Balkenspur: 4 von 12 in 164326 und 5 von 9 in
+  173159 haben die Quelle „Bildschirm“.
+- Die übrigen passieren außerhalb des Bildes. Für sie bleiben Chat und Minimap die einzigen Quellen.
+- Ein gelber Blitz brächte also vor allem eine Bestätigung (Flash statt Dash), kaum neue Flashs.
+- **Wenn gebaut werden soll, zuerst messen:**
+  - nach einem Sprung der Balkenspur 1–2 s des Spielbilds mit 12 / s sichern;
+  - dann an 20 echten Flashs zählen, wie oft der Blitz zu sehen ist und wie oft ein Dash ihn vortäuscht.
+
+### Tests und Szenarien
+
+- `tests/alle.py`: 9 / 10 (neu: `test_quest_ende_aus_dem_hud`). Weiter scheitert nur `kamera_gibt_nur_einmal_frei` an
+  der Umgebung.
+- Szenarien: **163 / 167** (unverändert), konstruierte Lagen **40 / 40**.
+
+---
+
 ## Auftrag 005 – Selbstprüfung mit einem unabhängigen Kritiker, zwei Runden (28.09.2026)
 
 Grundlage: `buecher/auftraege/005_auftrag.md`. Je Runde drei Kritiker-Agenten ohne Codewissen (Rolle:

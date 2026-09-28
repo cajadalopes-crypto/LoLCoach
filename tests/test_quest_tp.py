@@ -70,8 +70,29 @@ def test_einzelbild_ist_kein_teleport():
     assert fahre(q, p, lb, bilder, 910.0) == 0.0 and q.benutzt is None
 
 
+def test_quest_ende_aus_dem_hud():
+    """Auftrag 006, W2: das violette V im HUD macht das Quest-TP bereit - vor 13:35; ohne Lesung gilt die Regel."""
+    import cv2
+    import numpy as np
+    from lolcoach import hud
+    bild = np.zeros((900, 1600, 3), np.uint8)
+    assert hud.quest(bild) == "dunkel"
+    cv2.circle(bild, (1020, 852), 9, (230, 70, 200), -1)          # violett (BGR)
+    assert hud.quest(bild) == "bereit", hud.quest(bild)
+    bild[:] = 0
+    cv2.circle(bild, (1020, 852), 10, (200, 190, 30), 3)          # tuerkiser Ring
+    assert hud.quest(bild) == "laeuft", hud.quest(bild)
+    p, lb = lage()
+    q = QuestTP(CFG)
+    lb.quest = ("laeuft", 600.0, 700.0)
+    assert q.tp_in(p, lb, 700.0) is None
+    lb.quest = ("bereit", 706.0, 706.0)
+    assert q.tp_in(p, lb, 707.0) == 0.0                              # 11:47, nicht erst 13:35
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    for f in (test_regel, test_teleport_aus_dem_brunnen, test_recall_ist_kein_teleport, test_einzelbild_ist_kein_teleport):
+    for f in (test_regel, test_teleport_aus_dem_brunnen, test_recall_ist_kein_teleport, test_einzelbild_ist_kein_teleport,
+              test_quest_ende_aus_dem_hud):
         f()
     print("Quest-TP OK")

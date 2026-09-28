@@ -81,6 +81,8 @@ class Lagebild:
         self.eigene: dict[str, tuple[bool, float]] = {}     # Taste -> (bereit, seit Spielzeit), aus dem HUD
         self._eigene_kandidat: dict[str, tuple[bool, float]] = {}   # Wechsel, einmal gelesen, noch unbestaetigt
         self.eigene_zeit: float | None = None
+        self.quest: tuple[str, float, float] | None = None   # Auftrag 006, W2: (Zustand, seit, zuletzt gelesen) von V
+        self._quest_kandidat: tuple[str, float] | None = None
         self.platten: dict[tuple[str, str, str], int] = {}   # (Team, Lane, Stufe) -> verbleibende Platten (Minimap)
         self.gegner_leben: dict[str, tuple[float, float]] = {}   # Spielername -> (Zeit, Leben 0..1) aus dem Spielbild
         self.gegner_mana: dict[str, tuple[float, float]] = {}    # ... (Zeit, Mana 0..1) aus dem Balken darunter
@@ -103,6 +105,19 @@ class Lagebild:
             bereit, seit = z
             aus[schl] = 0.0 if bereit else max(1.0, cooldown(schl, p.ich, seit) - (jetzt - seit))
         return aus
+
+    def _quest_lesen(self, zustand: str, zeit: float) -> None:
+        """Auftrag 006, W2: ein Wechsel am Quest-Platz zaehlt erst, wenn ihn zwei Lesungen hintereinander zeigen (wie
+        bei den Tasten) - ein offener Shop oder ein Effekt darf das Quest-Ende nicht vortaeuschen."""
+        if self.quest is not None and self.quest[0] == zustand:
+            self._quest_kandidat = None
+            self.quest = (zustand, self.quest[1], zeit)
+            return
+        k = self._quest_kandidat
+        if k is not None and k[0] == zustand:
+            self.quest, self._quest_kandidat = (zustand, k[1], zeit), None
+        else:
+            self._quest_kandidat = (zustand, zeit)
 
     def eigene_faehigkeiten(self, jetzt: float) -> dict[str, bool] | None:
         """Q W E R bereit? (aus dem HUD, frisch)"""
@@ -187,6 +202,8 @@ class Lagebild:
                     else:
                         self._eigene_kandidat.pop(taste, None)
                 self.eigene_zeit = zeit
+            elif e[0] == "quest":
+                self._quest_lesen(e[2], zeit_von_wand(e[1]))
             elif e[0] == "hud":
                 # Reihenfolge der Leiste = Reihenfolge des Teams ohne dich (geprueft an Partie 2)
                 andere = [s for s in p.team(p.mein_team) if s is not p.ich] if p.ich else []
@@ -707,6 +724,9 @@ class Beobachter(threading.Thread):
                                     if (eig := hud.eigene(ganz)) is not None:   # Q W E R D F bereit?
                                         with self._schloss:
                                             self._ereignisse.append(("eigene", start, eig))
+                                        if (q := hud.quest(ganz)) is not None:   # Auftrag 006, W2: nur lesen
+                                            with self._schloss:
+                                                self._ereignisse.append(("quest", start, q))
                                     klein = cv2.resize(ganz, (BILDSCHIRM_BREITE, round(BILDSCHIRM_BREITE * hoehe / breite)),
                                                        interpolation=cv2.INTER_AREA)
                                     self._balken_pruefen(start, klein, leser)
@@ -942,6 +962,8 @@ class SichtAusProtokoll:
                     pass
         if not any(e[0] == "platten" for e in self._e):
             self._e += _platten_aus_bildern(ordner)
+        if not any(e[0] == "quest" for e in self._e):
+            self._e += _quest_aus_bildern(ordner)       # Auftrag 006, W2: aeltere Aufnahmen
         self._e.sort(key=lambda e: e[1].zeit if e[0] == "sprung" else e[1])
         self.bilder = self._s
         self.i = self.j = 0
@@ -965,6 +987,19 @@ class SichtAusProtokoll:
             aus.append(e)
             self.j += 1
         return aus
+
+
+def _quest_aus_bildern(ordner: Path) -> list[tuple]:
+    """Auftrag 006, W2: der Quest-Platz V aus den gesicherten Schirmbildern (schirm_<ms>.jpg, alle 5 s)."""
+    from . import hud
+    aus = []
+    for b in sorted(ordner.glob("schirm_*.jpg")):
+        if not b.stem[7:].isdigit():
+            continue
+        img = cv2.imread(str(b))
+        if img is not None and (q := hud.quest(img)) is not None:
+            aus.append(("quest", int(b.stem[7:]) / 1000, q))
+    return aus
 
 
 def _platten_aus_bildern(ordner: Path, jedes: int = 3) -> list[tuple]:

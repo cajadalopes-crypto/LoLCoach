@@ -58,6 +58,33 @@ TASTEN = {"Q": (-318, 116, 26, 24), "W": (-230, 116, 26, 24), "E": (-142, 116, 2
 GELB_AB = 8          # so viele gelbe Pixel im Buchstaben: bereit (gemessen: bereit 20-30, weg 0)
 
 
+# Auftrag 006, W2: der Quest-Platz V rechts neben den Items - nur LESEN, der Coach drueckt V nie (CLAUDE.md).
+# (Mitte x relativ zur Fenstermitte, Mitte y als Abstand vom unteren Rand, halbe Kantenlaenge) bei 2160, vermessen an
+# den Schirmbildern (164326 12:10: violett um (1020, 852) bei 1600 x 900). Violett = Quest-TP bereit, tuerkis = die
+# Quest laeuft (der Ring waechst, 164326: Anteil 0,19 um 10:00 bis 0,26 um 12:02), sonst dunkel (Abklingzeit).
+QUEST = (528, 115, 26)
+QUEST_ANTEIL = 0.08
+
+
+def quest(fenster: np.ndarray) -> str | None:
+    """Der Quest-Platz V: "bereit" (violettes TP-Symbol), "laeuft" (tuerkiser Ring) oder "dunkel"; None ohne Bild."""
+    h, b = fenster.shape[:2]
+    s = h / REF
+    cx, cy, r = round(b / 2 + QUEST[0] * s), round(h - QUEST[1] * s), max(2, round(QUEST[2] * s))
+    feld = fenster[max(0, cy - r):cy + r + 1, max(0, cx - r):cx + r + 1]
+    if feld.size == 0:
+        return None
+    hsv = cv2.cvtColor(feld, cv2.COLOR_BGR2HSV)
+    n = feld.shape[0] * feld.shape[1]
+    violett = float((cv2.inRange(hsv, (125, 90, 120), (165, 255, 255)) > 0).sum()) / n
+    tuerkis = float((cv2.inRange(hsv, (80, 90, 120), (100, 255, 255)) > 0).sum()) / n
+    if violett >= QUEST_ANTEIL and violett >= tuerkis:
+        return "bereit"
+    if tuerkis >= QUEST_ANTEIL:
+        return "laeuft"
+    return "dunkel"
+
+
 def eigene(fenster: np.ndarray) -> dict[str, bool] | None:
     """Q W E R D F: bereit (True) oder nicht (False), aus dem ganzen Spielfenster (BGR).
     None, wenn keiner der Buchstaben zu finden ist (z. B. HUD ausgeblendet)."""

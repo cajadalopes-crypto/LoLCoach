@@ -336,6 +336,10 @@ sprung_min = 3500               # Einheiten, wie lage._fernsprung
 tempo_min = 750                 # Einheiten/s; Laufen gemessen bis 590, Teleports 880-4250
 tempo_basis_min = 1100          # aus der Basis (Heimgarde): Laufen gemessen bis 780
 bestaetigt_s = 2.5              # steht ein Bild binnen so vieler s wieder naeher am Absprung: Einzelbild, verworfen
+# Auftrag 006, W2: der Quest-Platz V wird passiv gelesen (hud.quest, kein Tastendruck) - violett = Quest-TP bereit.
+# Gemessen an den Schirmbildern: 213624 9:46, 102112 11:31, 173159 11:40, 164326 12:07 (je im Fenster der Handmessung)
+hud_lesen = true
+hud_frisch_s = 10               # so alt darf die letzte Lesung sein (Schirmbilder der Aufnahmen: alle 5 s)
 
 [kampf]
 stand = "Buch 7, 27.09.2026 - Startwerte (Schaetzung), an Aufnahmen kalibrieren (Kapitel 3.3)"

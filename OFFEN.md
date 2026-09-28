@@ -17,6 +17,14 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 006 (Wahrnehmung: Welle, Quest-Anzeige, Flash) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 006").
+- Welle 173159 jetzt 10 von 12 eindeutigen (hysterese_zu_mitte_s); offen 7:33 (Icon am Zonenrand) und 9:25
+  (uebereinanderliegende Vasallen, Wellenleser.punkte).
+- Quest-Platz V wird passiv gelesen: Quest-TP ab dem Quest-Ende (9:51-12:12 statt 13:35). **Erledigt** ist damit der
+  Punkt "Quest-Feld V im HUD lesen" aus Auftrag 003.
+- Flash im Spielbild: mit den gesicherten Bildern nicht pruefbar; live 12/s vorhanden, sichtbare Flashs findet schon die
+  Balkenspur. Entscheidung bei Claude (Chat).
+
 **Auftrag 005 (Selbstpruefung mit Kritiker, zwei Runden) umgesetzt** - Zahlen in `buecher/messungen.md`
 ("Auftrag 005"), Klassen in `005_kritik_runde1.md` / `005_kritik_runde2.md`, Rueckfragen in `005_frage.md`.
 

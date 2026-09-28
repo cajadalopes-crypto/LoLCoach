@@ -32,6 +32,7 @@ class QuestTP:
         self.kandidat: tuple | None = None  # (Zeit, Landung, Absprung) bis bestaetigt_s ohne Widerspruch
         self.benutzt: float | None = None   # Spielzeit der letzten erkannten Landung
         self.gelesen = -1e9                 # Zeit der letzten verarbeiteten Sichtung
+        self.quest_ende: float | None = None  # Auftrag 006, W2: erstes bestaetigtes violettes V im HUD
 
     def gilt(self, p) -> bool:
         ich = getattr(p, "ich", None)
@@ -43,8 +44,16 @@ class QuestTP:
         if not self.gilt(p):
             return None
         self._beobachten(p, lb, zeit)
+        q = getattr(lb, "quest", None) if self.c.get("hud_lesen", False) else None
+        if q is not None and q[0] == "bereit" and self.quest_ende is None and q[1] >= self.c["sprung_ab_s"]:
+            self.quest_ende = q[1]           # Auftrag 006, W2: das Quest-Ende steht im HUD, nicht erst um 13:35
         if self.benutzt is not None:
+            frisch = q is not None and zeit - q[2] <= self.c.get("hud_frisch_s", 10.0)
+            if frisch and q[0] == "bereit" and q[1] > self.benutzt:
+                return 0.0                   # V ist wieder violett: frueher bereit als die Abklingzeit (Zaubertempo)
             return max(0.0, self.benutzt + self.c["abklingzeit_s"] - zeit)
+        if self.quest_ende is not None:
+            return 0.0
         return 0.0 if zeit >= self.c["quest_ende_s"] else None
 
     def _beobachten(self, p, lb, zeit: float) -> None:
