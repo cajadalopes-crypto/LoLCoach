@@ -190,11 +190,15 @@ def _seitenwelle_option(m, cfg: dict, modus: str, lane: str) -> Handlung:
     ziel = _lane_turm(m, lane)
     weg = _brunnen_weg(m, ziel)
     w = (m.wellen or {}).get(lane)
+    # Buch 4, 4 (Auftrag 008): "dort nimmt sie sonst niemand" nur mit dem, wo dein Team ist
+    from ..sprache import team_grund
+    team = team_grund(m, lane)
     grund = (vasallen_satz(w.ihre) if w is not None and w.zustand in DRUECKT and w.ihre
-             else "dort nimmt sie sonst niemand")
+             else f"dort nimmt sie sonst niemand, {team}" if team else "sie läuft sonst in deinen Turm")
     h = Handlung("WOHIN", Ziel("lane", f"die {lane}-Welle", ziel, weg), modus, weg, grund=grund,
                  satz=f"Geh zur {lane}-Welle: {grund}.")
     h.daten["kurz"] = f"zur {lane}-Welle"
+    h.daten["grund_kurz"] = team or grund
     return _mit_gefahr(h, m, ziel, weg, am_turm=True)
 
 
@@ -286,7 +290,8 @@ def wohin(m, cfg: dict, modus: str, merker: dict | None = None, lage=None) -> Ha
             if h.daten.get("kurz") in ("Top", "Mid", "Bot"):
                 lane = h.daten["kurz"]
                 zuletzt = _zuletzt(m, wer[0][0] if wer else None)
-                h.satz, h.grund = f"Zurück nach {lane}, bleib am Turm: {zuletzt}.", f"bleib am Turm, {zuletzt}"
+                h.satz, h.grund = (f"Zurück nach {lane}, bleib an deinem {lane}-Turm: {zuletzt}.",
+                                   f"bleib an deinem {lane}-Turm, {zuletzt}")
             else:
                 continue             # ein eiliges Objective, das nicht sicher ist: das naechste Ziel
         wahl = h
@@ -320,8 +325,8 @@ def _sicherer(m, cfg: dict, modus: str, erstes, p_am, grenze: float) -> Handlung
         h00 = erstes[0] if erstes is not None else None
         k00 = h00.daten.get("kurz") if h00 is not None else None
         l00 = k00 if k00 in ("Top", "Mid", "Bot") else lane_von(m)
-        aussen = _turm_option(m, modus, l00, "aussen", f"Zurück nach {l00}: an deinen äußeren Turm, dort kommt deine "
-                              f"Welle.", "dort kommt deine Welle", f"zum äußeren {l00}-Turm")
+        aussen = _turm_option(m, modus, l00, "aussen", f"Zurück nach {l00}: an deinen äußeren {l00}-Turm, dort kommt "
+                              f"deine Welle.", "dort kommt deine Welle", f"zu deinem äußeren {l00}-Turm")
         if aussen is not None:
             dort = [g.champion for g in m.b.gegner if not g.s.tot and g.pos is not None
                     and (g.sichtbar or (g.seit is not None and g.seit <= 10.0))
@@ -329,8 +334,8 @@ def _sicherer(m, cfg: dict, modus: str, erstes, p_am, grenze: float) -> Handlung
             if len(dort) < 2:
                 return aussen
             wer = " und ".join(dort[:2])
-            innen = _turm_option(m, modus, l00, "innen", f"Bleib am inneren Turm: {wer} stehen an deinem äußeren.",
-                                 f"{wer} stehen an deinem äußeren", f"zum inneren {l00}-Turm")
+            innen = _turm_option(m, modus, l00, "innen", f"Bleib an deinem inneren {l00}-Turm: {wer} stehen an deinem "
+                                 f"äußeren.", f"{wer} stehen an deinem äußeren", f"zu deinem inneren {l00}-Turm")
             if innen is not None:
                 return innen
     gruppe = _team(m, modus)
@@ -344,11 +349,11 @@ def _sicherer(m, cfg: dict, modus: str, erstes, p_am, grenze: float) -> Handlung
     kurz = h0.daten.get("kurz") if h0 is not None else None
     lane = kurz if kurz in ("Top", "Mid", "Bot") else lane_von(m)
     ziel0 = h0.ziel.pos if h0 is not None and h0.ziel is not None else None
-    for stufe, turm, kurz in (("aussen", "äußeren Turm", f"zum äußeren {lane}-Turm"),
-                              ("innen", "inneren Turm", f"zum inneren {lane}-Turm"),
-                              ("Inhib", "Inhibitor-Turm", f"zum {lane}-Inhibitor-Turm")):
-        h = _turm_option(m, modus, lane, stufe, f"Zurück nach {lane}, bleib am {turm}: {zuletzt}.",
-                         f"bleib am Turm, {zuletzt}", kurz)
+    for stufe, turm, kurz in (("aussen", f"äußeren {lane}-Turm", f"zu deinem äußeren {lane}-Turm"),
+                              ("innen", f"inneren {lane}-Turm", f"zu deinem inneren {lane}-Turm"),
+                              ("Inhib", f"{lane}-Inhibitor-Turm", f"zu deinem {lane}-Inhibitor-Turm")):
+        h = _turm_option(m, modus, lane, stufe, f"Zurück nach {lane}, bleib an deinem {turm}: {zuletzt}.",
+                         f"bleib an deinem {turm}, {zuletzt}", kurz)
         if h is None or (ziel0 is not None and h.ziel.pos == ziel0):
             continue
         if p_am(h)[0] < grenze:
@@ -368,8 +373,9 @@ def _sicherer(m, cfg: dict, modus: str, erstes, p_am, grenze: float) -> Handlung
     for stufe in ("innen", "Inhib", "aussen"):
         # Pruefung c, R6: "Top-Inhibitor-Turm", nie "Inhibitor-Top-Turm"
         name = {"innen": f"inneren {seite}-Turm", "Inhib": f"{seite}-Inhibitor-Turm", "aussen": f"äußeren {seite}-Turm"}[stufe]
-        h = _turm_option(m, modus, seite, stufe, f"Warte am {name} auf dein Team: {grund}.",
-                         f"warte dort auf dein Team, {grund}", f"zum {name}")
+        dein = "deinem" if seite == lane_von(m) else "eurem"
+        h = _turm_option(m, modus, seite, stufe, f"Warte an {dein} {name} auf dein Team: {grund}.",
+                         f"warte dort auf dein Team, {grund}", f"zu {dein} {name}")
         if h is not None and p_am(h)[0] < grenze:
             return h
     return _kein_ziel(modus)      # Pruefung c, R6: ein Rueckfall-Ziel mit p_tod >= 0,3 wird nicht gesagt
@@ -413,14 +419,15 @@ def _weg_zur_lane(m, lane: str) -> float:
 
 
 def kontrollauge_dazu(m) -> bool:
-    """Buch 3, 3.3: keins im Inventar, ein Platz frei, nach dem Kern-Kauf >= 75 Gold uebrig."""
+    """Buch 3, 3.3: keins im Inventar, ein Platz frei NACH dem Kern-Kauf, danach >= 75 Gold uebrig. Auftrag 008, A3.3
+    (101426 28:39 "Kauf Tiamat und ein Kontroll-Auge" bei fuenf Items: der eine freie Platz war fuer Tiamat - R3 pruefte
+    jedes Item allein gegen das Inventar vor dem Kauf)."""
+    from ... import kaufplan
     b, k = m.b, m.kauf
     if KONTROLLAUGE in b.ich.items:
         return False
-    it = ddragon.items()
-    belegt = [i for i in b.ich.items if i in it and "Trinket" not in it[i].get("tags", [])]
     rest = b.gold - (k.kosten if k is not None and k.kaufen else 0)
-    return len(belegt) < 6 and rest >= 75
+    return kaufplan.plaetze_nach(b.ich.items, k.kaufen if k is not None and k.kaufen else []) >= 1 and rest >= 75
 
 
 def _fokus_kontrollauge(m) -> bool:

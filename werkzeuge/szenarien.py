@@ -13,7 +13,9 @@ Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes
                             Qualitaetsrunde 3: je_10min_max = { "muster" = n } (in keinem 10-Minuten-Fenster mehr
                             als n Treffer), kategorie_max = { "GEFAHR" = n } (Kern-Saetze einer Kategorie); seit
                             Auftrag 002: gesprochen_ohne = ["regex", ...] (was die Stimme bekommt, stimme.sprechbar,
-                            passt auf keins - "6/0", "3000" Ziffer fuer Ziffer)
+                            passt auf keins - "6/0", "3000" Ziffer fuer Ziffer); seit Auftrag 008:
+                            kategorie_min = { "LAGEBILD" = n } (mindestens n Kern-Saetze der Kategorie),
+                            sprache_konkret = true (kein gesprochener Satz mit vager Form, kern.sprache.vage_formen)
   Datei:                    spielmodus = "CLASSIC" | "SWIFTPLAY" (Vorgabe CLASSIC) - muss zum gameMode der Aufnahme
                             passen, sonst rot (Qualitaetsrunde 2, G6: 133930 und 140253 sind Swiftplay)
   Kern (Modus, Plan-Art):   modus und [[modus_soll]] ab Schritt 2 (irgendein Takt in zeit +-2 s hat einen der
@@ -168,7 +170,9 @@ def neue_pruefungen(sz: dict, ansagen: list, stehend: tuple | None = None) -> li
                 continue
             n = len(a.text.split())
             # Auftrag 003 (Buch 11, 4): WENDEPUNKT, VORSCHAU und FENSTER duerfen 14 + 6 Woerter haben
-            grenze = sz["woerter_max"] if getattr(a, "_kategorie", "") not in ("WENDEPUNKT", "VORSCHAU", "FENSTER") \
+            # Auftrag 008, A4: das Lagebild hat seine eigene Grenze (<= 16 Woerter) - es zaehlt zur langen
+            grenze = sz["woerter_max"] if getattr(a, "_kategorie", "") not in ("WENDEPUNKT", "VORSCHAU", "FENSTER",
+                                                                              "LAGEBILD") \
                 else sz.get("woerter_max_lang", 20)
             if n > grenze:
                 aus.append(f"woerter_max {grenze} - {n} Woerter: \"{a.text[:80]}\"")
@@ -188,6 +192,17 @@ def neue_pruefungen(sz: dict, ansagen: list, stehend: tuple | None = None) -> li
                 aus.append(f"je_10min_max '{muster}' {n} - {len(drin)} ab {ns.uhr(t0)}: "
                            + ", ".join(ns.uhr(t) for t in drin))
                 break
+    # Auftrag 008: mindestens n Kern-Saetze einer Kategorie (A4: das Lagebild kommt ungefragt)
+    for kat, n in (sz.get("kategorie_min") or {}).items():
+        treffer = [a for a in ansagen if getattr(a, "_kategorie", None) == kat]
+        if len(treffer) < n:
+            aus.append(f"kategorie_min {kat} {n} - {len(treffer)}")
+    # Auftrag 008, A2: jeder Turm mit Besitzer, kein "Tier", kein Satz nur "Dann <Ort>."
+    if sz.get("sprache_konkret"):
+        from lolcoach.kern.sprache import vage_formen, verbotene_gruende
+        for a in ansagen:
+            for v in vage_formen(a.text) + verbotene_gruende(a.text):      # A2 und Buch 4, 4
+                aus.append(f"sprache_konkret - {ns.uhr(ns.gesprochen_um(a))} {v}: \"{a.text[:80]}\"")
     # Qualitaetsrunde 3: hoechstens n Kern-Saetze einer Kategorie (R5: "hoechstens 2 GEFAHR-Saetze")
     for kat, n in (sz.get("kategorie_max") or {}).items():
         treffer = [a for a in ansagen if getattr(a, "_kategorie", None) == kat]
@@ -439,7 +454,7 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                                           + " / ".join(f"{ns.uhr(t)} {s[:40]}" for t, s in texte))
                 if any(k in sz for k in ("ziele_max", "satz_mit", "fassung_einmal", "woerter_max", "gold_reicht",
                                          "text_max", "planwechsel_max", "max_woerter", "alte_regeln_max",
-                                         "je_10min_max", "kategorie_max")):
+                                         "je_10min_max", "kategorie_max", "kategorie_min", "sprache_konkret")):
                     geprueft += 1
                     verstoesse += neue_pruefungen(sz, ansagen, stehende_ansage(lauf, von) if kern != "alt" else None)
         if "modus" in sz and "zeit" in sz and nur != "alt":

@@ -75,6 +75,8 @@ def flucht(m, cfg: dict) -> tuple[bool, str]:
     b = m.b
     ort, weg = b.sicherer_ort()
     wort = "Turm" if "Turm" in ort else "Basis" if "Basis" in ort else ort.split(",")[0].split(" und ")[0]
+    if wort == "Turm" and ort.startswith("eurem "):
+        wort = "eurem " + ort.split()[-1]          # "eurem Top-Turm" statt "deinem Turm" (Kritik 008)
     if weg is None:
         return False, wort
     ch = K.champion_werte(cfg, b.ich.champion_id)
@@ -155,12 +157,13 @@ def entscheide(m, cfg: dict, weg_von: bool, hin_zu) -> tuple[str, str, str | Non
                 return "DREHEN", f"Dreh um, {g.champion} fast tot!", g.champion
     if ziel is not None and p >= c["rein_p_min"]:
         if K._turm(m, ziel.pos) < 0 and not _dive_ok(m, cfg, ziel, fast_tot, p):
-            return ("RAUS", "Lass ihn, Turm!", None) if hin_zu(ziel) else ("HALTEN", "", None)
+            return ("RAUS", "Lass ihn, ihr Turm!", None) if hin_zu(ziel) else ("HALTEN", "", None)
         return "REIN", (f"Rein, {ziel.champion} fast tot!" if fast_tot else f"Rein auf {ziel.champion}!"), ziel.champion
     if p <= c["raus_p_max"]:
         if kann:
-            return "RAUS", (f"Raus, zum {ort}!" if ort == "Turm" else "Raus, zur Basis!" if ort == "Basis"
-                            else f"Raus zu {ort}!"), None
+            # Auftrag 008, A2: "Raus, zu deinem Turm!" / "Raus, zu Kayn!" (vorher "Raus, zum Turm!")
+            return "RAUS", ("Raus, zu deinem Turm!" if ort == "Turm" else "Raus, in deine Basis!" if ort == "Basis"
+                            else f"Raus, zu {ort}!"), None     # ort kann "eurem Top-Turm" sein
         if ziel is not None and K._turm(m, ziel.pos) >= 0:
             # kein Fluchtweg: wer ohnehin stirbt, soll etwas mitnehmen
             return "REIN", f"Rein auf {ziel.champion}!", ziel.champion
@@ -368,7 +371,7 @@ def rueckblick(probe: dict | None, taeter: str | None, beteiligt: list[str], tur
         return None
     wer = [n for n in beteiligt if n] or ([taeter] if taeter else [])
     if turm or (probe["unter_turm"] and len(wer) <= 1):
-        return ("Allein unter seinem Turm – der Turm hat entschieden. Tauch nur, wenn er fast tot ist und du mehr als "
+        return ("Allein unter ihrem Turm – ihr Turm hat entschieden. Tauch nur, wenn er fast tot ist und du mehr als "
                 "die Hälfte Leben hast.")
     if taeter and taeter in wiederbelebt:
         # Auftrag 005 (173159 35:13): kein Nebel - er stand eben neben dir wieder auf

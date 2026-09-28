@@ -1,0 +1,15 @@
+# Auftrag 008, Teil 1: Buch 4 (Kartenlage und Makro), Kapitel 6 - Szenarien aus 213624 (Bot-Partie, Riven Top).
+# Jedes Szenario war auf dem Stand vor Auftrag 008 (dac2581) rot.
+
+aufnahme = "2026-09-27_213624"
+spielmodus = "CLASSIC"
+bots = true
+
+[[szenario]]
+id = "1617-drei-von-ihnen-tot"
+fenster = [["16:15", "16:45"]]
+lage = """Ab 16:17 drei, ab 16:22 vier von ihnen tot (Xin Zhao, Rumble, Ziggs, Caitlyn); Carlos um 16:35: 'Alle sind tot.'
+Plan: mit der Gruppe auf ihren Mid-Turm. Vorher sagte der Coach dazu nichts bis 16:42 ('Turm ist down: Mit der Gruppe
+zum Mid-Inhibitor-Turm, Level 13 gegen 8')."""
+satz_mit = [["von ihnen tot", "von ihnen sind tot"], ["Turm", "Inhibitor", "Drache", "Drachen", "Baron", "Herold"]]
+warum = "Buch 4, 6: ein Makro-Satz mit Beobachtung - 'Drei von ihnen tot: Mid-Inhibitor jetzt'."

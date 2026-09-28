@@ -105,6 +105,21 @@ def lage(m, cfg: dict, ort, fenster_s: float | None = None, lang: bool = False,
     return None, ""
 
 
+def klar_hinten(m, cfg: dict, G: list) -> bool:
+    """Die Level- und Gold-Bedingung von "klar unterlegen" gegen eine gegebene Gruppe (Auftrag 008, A1: die robust
+    gezaehlten Koepfe statt aller mit p_da >= p_da_min): jeder in G liegt >= level_allein Level vor dir, oder
+    >= level_mit_gold Level UND >= gold Item-Gold."""
+    from .kampf import gegner_werte
+    c = cfg["ueberlegen"]
+    ich = m.p.ich if m.p is not None else None
+    if ich is None or not G:
+        return False
+    werte = [gegner_werte(g, m, cfg["kampf"]) for g in G]
+    lv = min(w[0] - ich.level for w in werte)
+    gd = min(w[1] - ich.item_gold for w in werte)
+    return lv >= c["level_allein"] or (lv >= c["level_mit_gold"] and gd >= c["gold"])
+
+
 def mit_grund(h, grund: str) -> None:
     """Der Satz nennt die Ueberlegenheit statt des Fenster-Grundes ("Drueck den inneren Top-Turm: Level 17 gegen 12.")."""
     if h.satz and "allein" in h.satz.split(": ", 1)[0] and ", ihr seid" in grund:

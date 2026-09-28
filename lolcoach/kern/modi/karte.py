@@ -101,13 +101,13 @@ def hinten_ziele(m) -> list[TurmZiel]:
     _, feind = _teams(m)
     stehen = bewertung.stehende_tuerme(m.p)
     offen = inhibs_offen(m.p, feind)
-    orte = [(lane, "Inhibitor", INHIBITOREN[(feind, lane)], f"den {lane}-Inhibitor") for lane in ("Top", "Mid", "Bot")
+    orte = [(lane, "Inhibitor", INHIBITOREN[(feind, lane)], f"ihren {lane}-Inhibitor") for lane in ("Top", "Mid", "Bot")
             if (feind, lane, "Inhib") not in stehen and lane not in offen]
     if offen:
         if nexus_tuerme_weg(m.p, feind) < 2:
-            orte.append(("Mid", "Nexus-Turm", min(NEXUS_TUERME[feind], key=lambda q: m.weg(q) or 0.0), "den Nexus-Turm"))
+            orte.append(("Mid", "Nexus-Turm", min(NEXUS_TUERME[feind], key=lambda q: m.weg(q) or 0.0), "ihren Nexus-Turm"))
         else:
-            orte.append(("Mid", "Nexus", NEXUS[feind], "den Nexus"))
+            orte.append(("Mid", "Nexus", NEXUS[feind], "ihren Nexus"))
     aus = []
     for lane, stufe, pos, name in orte:
         ank, unb = verteidiger(m, pos)
@@ -349,22 +349,20 @@ def turm_handlungen(m, cfg: dict, modus: str, art: str, split: bool) -> list[Han
             folge = 200.0 * ORDNUNG[z.stufe]        # die Reihenfolge aus Kapitel 8: das erste erreichbare gewinnt
             folge += dahinter(z, m, cfg, mit, z.weg + dauer)
         grund = fenster_grund(z, m, z.weg + dauer, ernste(m, kommen, z.pos, z.weg + dauer) or kommen[:1])
-        name = z.name[4:] if z.name.startswith("den ") else z.name       # "inneren Top-Turm"
-        if fenster_um is not None and z.stufe == "Inhib":
-            satz = f"{z.lane}-Inhibitor-Turm jetzt: {grund}."
-        elif fenster_um is not None and z.stufe in HINTEN:
-            satz = f"{name[0].upper()}{name[1:]} jetzt: {grund}."
+        from ..sprache import dativ, gross, nominativ           # Auftrag 008, A2: "ihren inneren Top-Turm"
+        if fenster_um is not None and z.stufe in HINTEN + ("Inhib",):
+            satz = f"{gross(nominativ(z.name))} jetzt: {grund}."
         elif art == "MIT_GRUPPE":
-            satz = f"Mit der Gruppe zum {name}: {grund}."
+            satz = f"Mit der Gruppe zu {dativ(z.name)}: {grund}."
         else:
-            satz = f"Drück den {name}: {grund}."
+            satz = f"Drück {z.name}: {grund}."
         if fenster_um is not None and mit == 0 and art == "DRUECKEN" and len(m.tote_gegner) >= 3:
             satz = satz.rstrip(".") + ". Ruf dein Team."
         # Kapitel 2: EV = gewinn * p_erfolg - weg * zeitwert - p_tod(weg + dauer) * TK - am Turm arbeitest du, der Weg
         # ist die verlorene Zeit
         h = Handlung(art, Ziel("turm", z.name, z.pos, z.weg), modus, z.weg, gewinn=gewinn, folgewert=folge,
                      gefahr_t=z.weg + dauer, grund=grund, satz=satz,
-                     schritte=[f"zu {z.name}", "Turm", "danach back" if fenster_um is not None else "weiter"])
+                     schritte=[f"zu {dativ(z.name)}", "Turm", "danach back" if fenster_um is not None else "weiter"])
         h.daten.update(turm=(z.team, z.lane, z.stufe), umwandeln=fenster_um is not None, ziel_pos=z.pos,
                        nexus_weg=nexus_tuerme_weg(m.p, z.team) if z.stufe == "Nexus-Turm" else 0,
                        # Pruefung c, R2.3: gesprochen nur, wenn das Ziel VOR dem ersten Verteidiger faellt - traegt es nur

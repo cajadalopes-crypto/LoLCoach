@@ -1,0 +1,13 @@
+# Auftrag 008, Kritik-Runde (008_kritik.md): Befunde der neuen Kritiker aus 173159 (Riven Top gegen Cho'Gath, echt).
+# War auf dem Stand vor dem Fix rot.
+
+aufnahme = "2026-09-27_173159"
+spielmodus = "CLASSIC"
+
+[[szenario]]
+id = "2217-leben-von-jetzt"
+fenster = [["22:15", "22:22"]]
+quelle = "Kritik 008 (falsch, falscher Grund): 'Back jetzt: 29 Prozent Leben.' - das Protokoll zeigt 13 %"
+lage = "Riven verliert im unteren Jungle schnell Leben (22:13 39 %, 22:17 13 %); der Back-Plan wurde bei 29 % gewaehlt."
+darf_nicht_sagen = ["29 Prozent Leben"]
+warum = "Die Zahl im Satz ist die, die beim Sprechen stimmt."

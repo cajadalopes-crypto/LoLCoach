@@ -50,10 +50,11 @@ def kurz(h: Handlung | None) -> str:
         return "zu deinem Team"
     if h.art in ("SEITENWELLE", "WELLE_KLAEREN") and h.daten.get("lane"):
         return f"{h.daten['lane']}-Welle"
+    from .sprache import dativ
     if h.art == "PLATTEN" and h.ziel is not None:
-        return f"Platten am {h.ziel.name.removeprefix('den ')}"
+        return f"Platten an {dativ(h.ziel.name)}"
     if h.art in ("DRUECKEN", "MIT_GRUPPE") and h.ziel is not None:
-        return f"auf {h.ziel.name}" if h.ziel.name.startswith("den ") else h.ziel.name
+        return f"auf {h.ziel.name}" if h.ziel.name.startswith(("den ", "ihren ")) else h.ziel.name
     return h.ziel.name if h.ziel is not None else h.art.lower()
 
 
@@ -151,19 +152,33 @@ class Beobachter:
             neu_o = objectives - self.objectives
             if neu_s:
                 _, art, team, _name = sorted(neu_s)[-1]
-                ding = "Inhibitor" if art == "InhibKilled" else "Turm"
-                if team == p.mein_team:
-                    wp = f"{ding} ist down"
+                # Auftrag 005: mit Lane - "Euer Turm ist weg" allein klang nach Grund fuer alles Folgende; Auftrag 008,
+                # A2: mit Besitzer und Lage - "Ihr aeusserer Mid-Turm ist weg" (vorher "Turm ist down")
+                from ..zustand import struktur
+                from .sprache import turm as turm_wort
+                st = struktur(_name)
+                poss = "ihr" if team == p.mein_team else "euer"
+                if st is None or st.lane == "?":
+                    ding = "Inhibitor" if art == "InhibKilled" else "Turm"
+                    wp = f"{'Ihr' if poss == 'ihr' else 'Euer'} {ding} ist weg"
+                elif art == "InhibKilled":
+                    wp = f"{'Ihr' if poss == 'ihr' else 'Euer'} {st.lane}-Inhibitor ist weg"
                 else:
-                    # Auftrag 005: mit Lane - "Euer Turm ist weg" allein klang nach Grund fuer alles Folgende
-                    from ..zustand import struktur
-                    st = struktur(_name)
-                    wp = f"Euer {st.lane}-{ding} ist weg" if st is not None and st.lane != "?" else f"Euer {ding} ist weg"
+                    stufe = "Nexus-Turm" if st.stufe == "Nexus" else st.stufe
+                    w = turm_wort(poss, st.lane, stufe, "nom")
+                    wp = f"{w[:1].upper()}{w[1:]} ist weg"
             elif neu_o:
                 _, art, team, typ = sorted(neu_o)[-1]
                 name = {"DragonKill": "Ältester" if typ == "Elder" else "Drache", "BaronKill": "Baron",
                         "HeraldKill": "Herold", "HordeKill": "Larven"}[art]
-                wp = f"{name} {'drin' if team == p.mein_team else 'weg'}"
+                # Auftrag 008 (Kritik, 164326 33:02: "Baron weg. Farm Top" klang nach Entwarnung - sie hatten den Buff)
+                akk = {"Drache": "den Drachen", "Ältester": "den Ältesten", "Baron": "den Baron", "Herold": "den Herold",
+                       "Larven": "die Larven"}[name]
+                wp = f"{name} drin" if team == p.mein_team else f"Sie haben {akk}"
+            elif len(tote) >= 3 and len(self.tote) < 3:
+                # Buch 4, 6 (Auftrag 008; 213624 16:22-16:41: vier von ihnen tot, gesagt wurde nichts davon): der dritte
+                # Tote ist ein Wendepunkt - "Drei von ihnen tot: mit der Gruppe zu ihrem Mid-Inhibitor-Turm."
+                wp = f"{({3: 'Drei', 4: 'Vier'}).get(len(tote), 'Alle fünf')} von ihnen tot"
             else:
                 # Kill in der Naehe von dir oder deinem Ziel
                 for champ in tote - self.tote:
@@ -239,7 +254,7 @@ def nachricht(was: str) -> bool:
     """Auftrag 005: ein Wendepunkt der anderen Seite (euer Turm weg, Drache weg) ist eine Nachricht, kein Grund - der
     Plan danach steht als eigener Satz (Kritiker R1: "Euer Turm ist weg: Drueck den inneren Top-Turm" las sich wie
     'weil')."""
-    return was.startswith(("Euer ", "Zwei eurer", "Drei eurer", "Vier eurer")) or was.endswith(" weg")
+    return was.startswith(("Euer ", "Zwei eurer", "Drei eurer", "Vier eurer", "Sie haben")) or was.endswith(" weg")
 
 
 def verbinden(was: str, koerper: str) -> str:
@@ -308,12 +323,84 @@ def vorschau_satz(kern, m, zeitleiste: list, danach_h: Handlung | None) -> str |
         if n > c["vorschau_horizont_s"] or n < 10:
             continue
         if e.art == "objective" and danach_h is not None and danach_h.daten.get("objective") == e.schl and jetzt:
+            # Buch 4, 5 (Auftrag 008): der Vorlauf mit Warum - "bis dahin Bot-Welle, 6 Vasallen laufen in deinen Turm"
+            grund = p.handlung.grund
+            mit = f"{OBJ_WORT.get(e.schl, e.schl)} in {n} Sekunden: bis dahin {jetzt}, {grund}, dann {kurz(danach_h)}."
+            if grund and len(mit.split()) <= c["max_woerter_wendepunkt"]:
+                return mit
             return f"{OBJ_WORT.get(e.schl, e.schl)} in {n} Sekunden: bis dahin {jetzt}, dann {kurz(danach_h)}."
         if e.art == "respawn" and p.art in ("DRUECKEN", "MIT_GRUPPE", "PLATTEN") and jetzt:
             return f"{e.schl} lebt in {n} Sekunden wieder: {jetzt} noch schnell, dann zurück."
         if e.art == "buff" and e.text.startswith("euer") and jetzt:
             return f"Euer Buff noch {n} Sekunden: jetzt {jetzt}, danach back."
     return None
+
+
+def ev_teile(h: Handlung, m, cfg: dict) -> dict[str, float]:
+    """Die Groessen, die den EV tragen (wert.bewerte): Nutzen (Gewinn x Erfolg + Folgewert - Kosten), Risiko
+    (- p_tod x Todeskosten), Zeit (- Dauer x Zeitwert)."""
+    from .wert import zeitwert
+    pe = h.p_erfolg if h.p_erfolg is not None else 1.0 - h.p_tod
+    return {"nutzen": pe * h.gewinn + h.folgewert - h.kosten, "risiko": -h.p_tod * (h.verlust or 0.0),
+            "zeit": -h.dauer * zeitwert(m.zeit, cfg)}
+
+
+def entscheidend(h: Handlung, h2: Handlung, m, cfg: dict) -> str | None:
+    """Buch 4, 4 (Auftrag 008): welche Groesse die Wahl von h gegen h2 entschieden hat - gemessen, wie das Buch es will:
+    ohne ihren Unterschied gerechnet kippt die Wahl. Von den kippenden die mit dem groessten Beitrag; None, wenn keine
+    allein kippt (dann tragen mehrere)."""
+    a, b = ev_teile(h, m, cfg), ev_teile(h2, m, cfg)
+    d = h.ev - h2.ev
+    beitrag = {k: a[k] - b[k] for k in a}
+    kippt = {k: v for k, v in beitrag.items() if v > 0 and d - v <= 0}
+    return max(kippt, key=kippt.get) if kippt else None
+
+
+def _ankunft(m, name: str) -> float | None:
+    g = next((x for x in (m.b.gegner if m.b is not None else []) if x.champion == name), None)
+    return g.ankunft if g is not None else None
+
+
+def nachteil(alt: Handlung, h: Handlung, m, cfg: dict) -> str:
+    """Der konkrete Nachteil der Alternative gegen den Plan (Buch 4, 4: "Der Turm oben haette Rumble in 15 Sekunden bei
+    dir") - Risiko, Weg oder Nutzen, je nachdem, was die Wahl entschied."""
+    k = entscheidend(h, alt, m, cfg)
+    wer = [n for n, x in (alt.daten.get("wer") or []) if x >= 0.05]
+    if (k == "risiko" or (k is None and alt.p_tod - h.p_tod >= 0.1)) and wer:
+        t = _ankunft(m, wer[0])
+        return (f"dort wäre {wer[0]} in {max(1, int(t))} Sekunden bei dir" if t is not None and t <= 60
+                else f"zu riskant, {wer[0]} kann dort sein")
+    if k == "zeit" or (k is None and alt.dauer - h.dauer >= 10):
+        return f"{int(max(1, alt.dauer - h.dauer))} Sekunden weiter weg"
+    return "bringt weniger"
+
+
+_ZUM = {"den Drachen": "zum Drachen", "den Baron": "zum Baron", "den Herold": "zum Herold", "die Larven": "zu den Larven",
+        "den Ältesten": "zum Ältesten"}
+
+
+def _wohin_wort(h: Handlung) -> str:
+    k = kurz(h) or h.art.lower()
+    k = _ZUM.get(k, k)
+    return k[:1].upper() + k[1:]
+
+
+def warum_satz(h: Handlung, alt: Handlung | None, m, cfg: dict) -> str:
+    """WARUM (Buch 4, 4 / Buch 11, 5), zwei Saetze: die entscheidende Beobachtung, dann die Alternative mit ihrem
+    konkreten Nachteil - "Drache, weil drei von ihnen tot sind. Der Turm oben haette Rumble in 15 Sekunden bei dir."."""
+    kh = _wohin_wort(h)
+    k = entscheidend(h, alt, m, cfg) if alt is not None else None
+    zusatz = {"risiko": "dort ist es sicherer", "zeit": "es liegt näher"}.get(k)
+    if h.satz:
+        # der Plan-Satz selbst (mit Verb - 213624 11:35: "Auf ihren inneren Top-Turm: ..." galt als Stichwort-Antwort)
+        s1 = h.satz.strip().rstrip(".!") + (f", {zusatz}" if zusatz else "")
+    elif zusatz:
+        s1 = f"{kh}: {zusatz}" + (f", {h.grund}" if h.grund else "")
+    else:
+        s1 = f"{kh}: {h.grund}" if h.grund else kh
+    if alt is None:
+        return s1 + "."
+    return f"{s1}. {_wohin_wort(alt)}: {nachteil(alt, h, m, cfg)}."
 
 
 def stumm_satz(h: Handlung) -> str:
@@ -388,7 +475,11 @@ def farmen_satz(h: Handlung, m, zeitleiste: list, danach_text: str | None, cfg: 
         return f"Farm {wo}, {k.kaufen[0]} ist schon bezahlbar: nach der Welle back."
     if danach_text:
         return f"Farm {wo}, danach {danach_text.split(':')[0]}."
-    return f"Farm {wo}: dort nimmt die Welle sonst niemand."
+    # Buch 4, 4 (Auftrag 008): die Floskel nur mit dem, wo dein Team ist
+    from .sprache import team_grund
+    team = team_grund(m, lane) if lane else None
+    return (f"Farm {wo}: dort nimmt die Welle sonst niemand, {team}." if team
+            else f"Farm {wo}, sonst läuft die Welle in deinen Turm.")
 
 
 def halten_satz(m, zeitleiste: list, danach_text: str | None, cfg: dict) -> str:

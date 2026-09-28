@@ -38,7 +38,7 @@ quelle = "Pruefung E1: '... mindestens 690 Schaden und auf dir liegen 0 Gold Kop
 lage = """Riven stirbt 10:05 gegen Yasuo. Seit Entscheidung 2 (Kampf-Rufe stumm) kommt vorher 9:49 "Raus zu deinem
 Mid-Tier-1-Turm: Brand und Yasuo kommen." - Riven bleibt. Fenster seit Schritt 5 bis 10:20."""
 darf_nicht_sagen = ["hieß es", "mindestens", "Kopfgeld"]
-satz_mit = [["Raus kam", "Duell gegen", "Prozent gegen", "aus dem Nebel", "unter seinem Turm"]]   # Buch 7, 10: Tabelle 8
+satz_mit = [["Raus kam", "Duell gegen", "Prozent gegen", "aus dem Nebel", "unter seinem Turm", "unter ihrem Turm"]]   # Buch 7, 10: Tabelle 8; Auftrag 008, A2
 woerter_max = 25
 woerter_schluessel = "tod"
 warum = "Wie 0843: Lehre statt Zahlen."

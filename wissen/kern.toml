@@ -42,8 +42,8 @@ back_ignoriert_s = 90            # R4: nach einem Back-Ruf ohne Recall kommt ein
 back_max_je_10min = 3            # R4
 back_leben_min = 0.10            # R4: darunter kein Back-Ruf (dann gilt RAUS)
 back_ausnahme_leben = 0.3        # R4: faellt das Leben darunter, darf ein neuer Back-Ruf frueher kommen
-gefahr_gleiche_s = 45            # R5: dieselbe Gegnermenge wird so lange nicht erneut gewarnt ...
-gefahr_anstieg = 0.15            # ... ausser p_tod steigt um so viel
+gefahr_gleiche_s = 60            # R5: dieselbe Gegnermenge wird so lange nicht erneut gewarnt ... (Auftrag 008, A1: 45 -> 60)
+gefahr_anstieg = 0.2             # ... ausser p_tod steigt um so viel (Auftrag 008, A1: 0,15 -> 0,2)
 gefahr_lane_leben_min = 0.6      # R5: kommt nur der Lane-Gegner, ist das ab so viel Leben keine Gefahr ...
 gefahr_lane_kraft_min = -0.5     # ... und wenn kraefte() mindestens so hoch ist (bis Buch 2 die Matchups bringt)
 sicher_naeher = 300              # R5: laeufst du in 2 s so viel naeher an den sicheren Ort, kein Gefahr-Satz
@@ -60,6 +60,44 @@ raus_leben_ohne_balken = 0.15    # Auftrag 003, Teil A 2: darunter reicht ein Ge
 # gefahr_einzel_gold liegst, dein Leben >= gefahr_zwei_leben_min ist und kein dritter p_da >= gefahr_zwei_dritter_p_max hat
 gefahr_zwei_leben_min = 0.7
 gefahr_zwei_dritter_p_max = 0.2
+
+[warnung]
+stand = "Auftrag 008, A1 (28.09.2026, 101426: 36 Warnungen in 34 min, Carlos hoerte weg) - aendert Buch 0, 7.5 und Buch 11, 4"
+ankunft_s = 5                    # (1) ein SICHTBARER Gegner kommt naeher (oder steht in 1500) und ist in so vielen s bei dir
+eben_gesehen_s = 5               # (2) fuer "ihre Koepfe": sichtbar oder so kurz ungesehen (in den Busch, in den Nebel)
+leben_max = 0.4                  # (2) oder dein Leben darunter und unter dem des naechsten Gegners
+sicher_s = 5                     # (3) so nah am sicheren Ort kein Warnsatz mehr (du bist gleich dort)
+vorsicht_abstand_s = 90          # ungesehene Gefahr: hoechstens ein Vorsicht-Satz je so viele s ...
+vorsicht_fehlt_s = 20            # ... wenn so viele Gegner seit so vielen s fehlen ...
+vorsicht_min = 2
+vorsicht_ankunft_s = 10          # ... die von ihrer letzten Sichtung aus in so vielen s bei dir sein koennen
+vorsicht_fluss = 0.2             # ... und du so weit jenseits des Flusses stehst (Minimap-Anteil; 0,06 traf Riven
+                                 # mitten auf ihrer Mid-Lane, 101426 6:33; 0,1 jedes Schieben auf der Top-Lane, 213624:
+                                 # acht Vorsicht-Saetze in 25 min) - oder in ihrem Jungle, ihrer Basis
+vorsicht_gleiche_s = 180         # dieselben Fehlenden nicht noch einmal in so vielen s
+vorsicht_nur_jungle = true       # Kritik 008: nur in ihrem Jungle oder ihrer Basis - auf der eigenen Lane war "Du stehst
+                                 # tief" fuer die Kritiker (Carlos-Rolle) falsch oder nervig (5-mal, 101426 24:47, 31:23)
+
+[makro]
+stand = "Buch 4, 28.09.2026 - Startwerte (Auftrag 008)"
+mia_s = 15
+mia_nah_s = 10
+tausch_min_gegner = 3
+gruppe_min_gegner = 3
+makro_abstand_s = 45
+info_wiederholen_s = 60
+teamplan_abstand_s = 300
+teamplan_umschwung_gold = 2000
+teamplan_ab_s = 840
+max_gruende = 2
+teamplan_kurve_min = 2           # nicht im Buch: "skaliert besser" erst ab so vielen Punkten Unterschied (spaet)
+jungler_fenster_min_s = 10       # nicht im Buch: Jungler-Sichtung weit - das Fenster muss so lang sein (164326 30:48: 15 s)
+# nicht im Buch (Auftrag 008, A4): Kartenlage und Lagebild
+bekannt_s = 20                   # so lange gilt eine Sichtung als "wo er ist" (danach: fehlt)
+lagebild_ab_s = 840              # A4: ungefragt ab 14:00 ...
+lagebild_abstand_s = 90          # ... hoechstens einmal je so viele s ...
+lagebild_ruhe_s = 30             # ... und nur, wenn so lange nichts anderes gesagt wurde (A4 sagt "in dieser Zeit" =
+                                 # 90 s; 101426 hatte nach 14:00 keine Stille ueber 67 s - dann kaeme es nie. Abweichung)
 
 [stimme]
 stand = "Auftrag 003 (27.09.2026): Carlos hat gewaehlt - Killian, Tempo normal"

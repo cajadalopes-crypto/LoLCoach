@@ -35,7 +35,7 @@ def _kanone_vor(m, spawn_zeit: float) -> float | None:
     return (passend or kanonen or [None])[-1]
 
 
-SCHUTZ_KURZ = "Weiter: am Turm farmen, kein Trade."     # G1: nach Tod oder Basis (<= 8 Woerter)
+SCHUTZ_KURZ = "Weiter: an deinem Turm farmen, kein Trade."     # G1: nach Tod oder Basis (<= 8 Woerter)
 
 
 def kandidaten(m, cfg: dict, lane: str | None = None, modus: str = "LANE", arten=None,
@@ -163,7 +163,8 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None, plan=None) -> 
                 else:
                     grund = f"{g.champion} braucht {int(fenster)} Sekunden zu dir"
                 ziel = turm_ihr_name(m, lane)
-                am = "am " + ziel.split(" ", 1)[1] if ziel.startswith("den ") else ziel
+                from ..sprache import dativ
+                am = "an " + dativ(ziel)                   # Auftrag 008, A2: "an ihrem äußeren Top-Turm"
                 h = Handlung("PLATTEN", Ziel("turm", ziel), modus, dauer,
                              gewinn=n * wert.platte_gold(m.zeit) + fr * dauer, grund=grund,
                              satz=f"Platte {am}: {grund}.")
@@ -207,7 +208,7 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None, plan=None) -> 
         grund = f"{g.champion} ist vorn"
         # <= 18 Woerter (G1); die kurze Fassung nach Tod oder Basis steht in daten["kurz_satz"]
         # Auftrag 002, S2.3: hoechstens 14 Woerter ("Welle zu deinem Turm ziehen, dort farmen" waren 15)
-        satz = (f"{g.champion} ist vorn: Welle zum Turm ziehen, farmen, "
+        satz = (f"{g.champion} ist vorn: Welle zu deinem Turm ziehen, farmen, "
                 + (f"kein Trade bis {_dat(teil)}." if teil else "kein Trade."))
         h = Handlung("WELLE_HALTEN", Ziel("lane", welle), modus, 10.0, gewinn=fr * 10.0 + 0.5 * ww, gefahr_t=10.0,
                      grund=grund, satz=satz)

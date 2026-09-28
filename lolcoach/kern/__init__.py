@@ -71,6 +71,19 @@ def _zeitleiste_stand(eintraege: list, jetzt: float) -> list[dict]:
     return fuer_stand(eintraege, jetzt)
 
 
+def _leben_jetzt(text: str, m) -> str:
+    """Die Leben-Zahl im Satz ist die von jetzt, nicht die vom Moment der Wahl (Kritik 008, 173159 22:17: "Back jetzt:
+    29 Prozent Leben" bei 13 % - gewaehlt 2 s vorher, nachgeholt, als das Budget wieder frei war)."""
+    if m.leben is None or "Prozent Leben" not in text:
+        return text
+    return re.sub(r"\d+ Prozent Leben", f"{int(round(m.leben * 100))} Prozent Leben", text)
+
+
+def _makro_nutzt() -> set:
+    from .makro import NUTZT_FENSTER
+    return NUTZT_FENSTER
+
+
 def konfig() -> dict:
     """wissen/kern.toml (einmal je Prozess gelesen)."""
     return wissen.lade("kern")
@@ -160,6 +173,11 @@ class Kern:
         self._wp_zuletzt = -1e9
         self._fe: dict | None = None              # neue Information (FENSTER) {"zeit", "text"}
         self._vorschau_zuletzt = -1e9
+        self._vorsicht_zuletzt = -1e9            # Auftrag 008, A1: der letzte Vorsicht-Satz (ungesehene Gefahr)
+        self.kartenlage = None                    # Buch 4, 2 (Auftrag 008): wo die Gegner sind
+        from .makro import Makro
+        self.makro = Makro()                      # Buch 4, 3 und 5: Teamplan und Makro-Infos
+        self._lagebild_zuletzt = -1e9             # Auftrag 008, A4: das letzte ungefragte Lagebild
         self._gold_verlauf: deque = deque()        # (Zeit, Gold) - dein Einkommen fuer den Back-Bedarf
         self._flash_offen: dict = {}
         self._flash_gemeldet: set = set()
@@ -252,6 +270,8 @@ class Kern:
                     zt[g.champion] = m.zeit
             self._respawn_orte(m, zt)
         self._fuehren_vorher(m, modus)             # Buch 11: Zeitleiste, Wendepunkte, neue Informationen
+        from . import kartenlage
+        self.kartenlage = kartenlage.bauen(m, self._lagebild, self.cfg["makro"])     # Buch 4, 2
         self._schutz_episode(m)
         if m.b is not None and not m.tot:
             self.proben.takt(m, self.cfg)
@@ -316,16 +336,61 @@ class Kern:
                 aus.append(a)
         if not aus:
             if (a := self.sprecher.nachholen(m.zeit, gesagt)) is not None:
+                a.text = _leben_jetzt(a.text, m)          # nachgeholt: die Zahl von jetzt (173159 22:17)
                 self._gesprochen(a, "PLAN", m)
                 aus.append(a)
         if not aus:
             if (a := self._flash_info(m, modus, gesagt)) is not None:
                 aus.append(a)
         if not aus:
+            if (a := self._vorsicht(m, modus, gesagt)) is not None:
+                aus.append(a)
+        if not aus:
             if (a := self._vorschau(m, modus, gesagt)) is not None:
+                aus.append(a)
+        if not aus:
+            if (a := self._makro_info(m, modus, gesagt)) is not None:
+                aus.append(a)
+        if not aus:
+            if (a := self._lagebild_ungefragt(m, modus, gesagt)) is not None:
                 aus.append(a)
         self._modus_vorher = modus
         return aus
+
+    def _makro_info(self, m: Merkmale, modus: str | None, gesagt: list):
+        """Buch 4, 5 (Auftrag 008): Teamplan, Jungler-Sichtung, Gruppierung, Spike - Budget und Doppelung in makro.py."""
+        info = self.makro.info(self, m, modus)
+        if info is None:
+            return None
+        kategorie, art, text = info[:3]
+        a = self.sprecher.ansage(kategorie, art, text, m.zeit, None, gesagt)
+        if a is not None:
+            self.makro.gesagt(info, m)
+            self._gesprochen(a, kategorie, m)
+        return a
+
+    def _lagebild_ungefragt(self, m: Merkmale, modus: str | None, gesagt: list):
+        """Auftrag 008, A4 (ergaenzt Buch 4, 5): ab lagebild_ab_s hoechstens einmal je lagebild_abstand_s, nur wenn
+        lagebild_ruhe_s lang nichts gesagt wurde - die Kurzform (<= 16 Woerter), immer mit einer Folgerung."""
+        from . import kartenlage
+        c = self.cfg["makro"]
+        k = self.kartenlage
+        if k is None or m.zeit < c["lagebild_ab_s"] or modus in ("KAMPF", None) or self.gefahr \
+                or m.zeit - self._lagebild_zuletzt < c["lagebild_abstand_s"]:
+            return None
+        letzte = max((a.gesprochen for a in gesagt if a.gesprochen is not None), default=-1e9)
+        if m.zeit - letzte < c["lagebild_ruhe_s"] or (m.b is not None and any(
+                g.sichtbar and not g.s.tot and g.ankunft is not None and g.ankunft <= 15 for g in m.b.gegner)):
+            return None                  # nur in ruhigen Momenten (102112 26:13: 15 Woerter, Fiddlesticks kam gerade)
+        from .fuehren import kurz as plan_kurz
+        pl = self.fuehrer.plan
+        vor = plan_kurz(pl.handlung) if pl is not None and pl.art in VOR_ARTEN else None
+        a = self.sprecher.ansage("LAGEBILD", "LAGEBILD", kartenlage.satz(k, m, kurz=True, plan_kurz=vor), m.zeit, None,
+                                 gesagt)
+        if a is not None:
+            self._lagebild_zuletzt = m.zeit
+            self._gesprochen(a, "LAGEBILD", m)
+        return a
 
     # --- Buch 11: Fuehren ------------------------------------------------------------------------------------------
 
@@ -397,7 +462,7 @@ class Kern:
             offen["n"] = n
             zahl = {2: "Zwei", 3: "Drei", 4: "Vier"}.get(n, str(n))
             wir = not wp.startswith("Euer")
-            return f"{zahl} Türme down" if wir else f"{zahl} eurer Türme weg"
+            return f"{zahl} ihrer Türme weg" if wir else f"{zahl} eurer Türme weg"       # Auftrag 008, A2
         if offen is None and m.zeit - self._wp_zuletzt <= 10.0 and (getattr(self, "_wp_text", "") or "").endswith(
                 ("ist down", "ist weg", "Türme down", "Türme weg")):
             return None
@@ -482,6 +547,70 @@ class Kern:
             self._gesprochen(a, "INFO_FLASH", m)
         return a
 
+    def _vorsicht(self, m: Merkmale, modus: str | None, gesagt: list):
+        """Auftrag 008, A1: ungesehene Gefahr (Jungler, MIA) ist kein "Raus" mehr - hoechstens ein Vorsicht-Satz je
+        vorsicht_abstand_s, nur jenseits des Flusses und wenn >= vorsicht_min Gegner seit >= vorsicht_fehlt_s fehlen:
+        "Du stehst tief: Viego und Twitch fehlen seit 30 Sekunden." (101426: 36 Warnungen, die meisten vor Ungesehenen)."""
+        from .merkmale import tief
+        from .modi import liste
+        c = self.cfg["warnung"]
+        if modus not in ("LANE", "SEITE", "UNTERWEGS", "GRUPPE") or m.b is None or self.gefahr \
+                or m.zeit - self._vorsicht_zuletzt < c["vorsicht_abstand_s"] or not tief(m, c["vorsicht_fluss"]) \
+                or (c.get("vorsicht_nur_jungle", True) and m.bereich not in ("jungle_fremd_oben", "jungle_fremd_unten",
+                                                                          "basis_fremd")):
+            return None
+        # nur wer schon gesehen war, "fehlt" (101426 0:36: "Viego, Sett und Aurora fehlen" - zu Spielbeginn), und nur,
+        # wer von seiner letzten Sichtung aus schon bei dir sein kann (213624 1:42: "Ziggs und Caitlyn fehlen" - in der
+        # Lane-Phase unten, Riven oben)
+        fehlen = [g for g in m.b.gegner if not g.s.tot and not g.sichtbar
+                  and g.seit is not None and g.seit >= c["vorsicht_fehlt_s"]
+                  and g.ankunft is not None and g.ankunft <= c["vorsicht_ankunft_s"]]
+        if len(fehlen) < c["vorsicht_min"]:
+            return None
+        fehlen.sort(key=lambda g: (g.s.rolle != "JUNGLE", g.seit if g.seit is not None else 1e9))
+        genannt = fehlen[:3]
+        wer = frozenset(g.champion for g in genannt)
+        alt = getattr(self, "_vorsicht_wer", None)
+        if alt is not None and alt[1] == wer and m.zeit - alt[0] < c["vorsicht_gleiche_s"]:
+            return None                  # dieselben Fehlenden eben erst (213624 16:13 und 17:57: "Xin Zhao und Caitlyn")
+        zeit = f" seit {max(5, 5 * round(min(g.seit for g in genannt) / 5))} Sekunden"
+        text = f"Du stehst tief: {liste([g.champion for g in genannt])} fehlen{zeit}."
+        a = self.sprecher.ansage("VORSICHT", "VORSICHT", text, m.zeit, None, gesagt)
+        if a is not None:
+            self._vorsicht_zuletzt = m.zeit
+            self._vorsicht_wer = (m.zeit, wer)
+            self._gesprochen(a, "VORSICHT", m)
+        return a
+
+    def _warnung_ohne_beleg(self, m: Merkmale) -> str | None:
+        """Auftrag 008, A1 (aendert Buch 0, 7.5 und Buch 11, 4): GEFAHR nur, wenn (1) ein Gegner SICHTBAR naeher kommt
+        (oder schon in 1500 steht) und in <= ankunft_s bei dir sein kann, UND (2) ihr robust unterlegen seid - in
+        ankunft_s sind sie >= 1 Kopf mehr, oder dein Leben liegt unter leben_max und unter dem des naechsten Gegners,
+        oder "klar unterlegen" nach der Ueberlegenheits-Regel. Sonst der Grund, warum nicht (Gate)."""
+        from . import ueberlegen
+        from .gefahr import NAH
+        from .ueberlegen import koepfe
+        c = self.cfg["warnung"]
+        b = m.b
+        nah = [g for g in b.gegner if not g.s.tot and g.sichtbar and g.ankunft is not None
+               and g.ankunft <= c["ankunft_s"] and (g.kommt_naeher or (g.abstand is not None and g.abstand <= NAH))]
+        if not nah:
+            return "keiner sichtbar und nah"
+        ihre = [g for g in b.gegner if not g.s.tot and g.ankunft is not None and g.ankunft <= c["ankunft_s"]
+                and (g.sichtbar or (g.seit is not None and g.seit <= c["eben_gesehen_s"]))]
+        wir = 1 + (sum(koepfe(m, m.pos, c["ankunft_s"])) if m.pos is not None else 0)
+        if len(ihre) >= wir + 1:
+            return None
+        naechster = min(nah, key=lambda g: g.abstand if g.abstand is not None else 1e9)
+        sein = naechster.leben if naechster.leben is not None else 1.0
+        if m.leben is not None and m.leben < c["leben_max"] and m.leben < sein:
+            return None
+        # "klar unterlegen" nach der Ueberlegenheits-Regel - ueber dieselben robusten Koepfe: ihre G (p_da >= 0,1) zaehlt
+        # Ungesehene mit, auch in 5 s (101426 14:00: nur Aurora sichtbar, Viego 0,15 und Bard 0,1 -> "drei gegen eins")
+        if ihre and len(ihre) >= wir and ueberlegen.klar_hinten(m, self.cfg, ihre):
+            return None
+        return f"nicht unterlegen: {len(ihre)} gegen {wir}"
+
     # --- Kandidaten --------------------------------------------------------------------
 
     def _kandidaten(self, m: Merkmale, modus: str | None) -> tuple[list, bool]:
@@ -536,8 +665,10 @@ class Kern:
                     self._stumm_annehmen = (m.zeit, set(annehmen.daten.get("gruppe", [])))
                     annehmen = None
         tk = wert.todeskosten(m, cfg)
+        from .makro import teamplan_bonus
         for h in kand:
             wert.bewerte(h, m, cfg, tk)
+            h.ev += teamplan_bonus(h, self.makro.tp)      # Buch 4, 3: beim Gleichstand die zum Teamplan passende
         # Buch 6, 4.3: eine Objective-Handlung nur mit EV > 0 (nicht bloss besser als HALTEN)
         kand = [h for h in kand if h.daten.get("ev_min") is None or h.ev > h.daten["ev_min"]]
         # Buch 11, 5.6: Carlos' Korrektur ("Drache ist tot") gilt korrektur_gilt_s lang als Merkmal
@@ -590,6 +721,8 @@ class Kern:
                 # Auftrag 002, S5.2: genau ein Gegner, den du klar ueberragst, ist keine Gefahr (213624 15:15, 17:32,
                 # 21:37 "Ziggs kommt" - Riven mit 20+ Kills); verallgemeinert R5 ueber den Lane-Gegner hinaus
                 gefahr, self.gate_grund = False, f"nur {einer}, du liegst klar vorn"
+            elif (warum_nicht := self._warnung_ohne_beleg(m)) is not None:
+                gefahr, self.gate_grund = False, warum_nicht       # Auftrag 008, A1
         # der Plan fuer die verlorene Lane gilt gegen den Lane-Gegner allein - kommt noch wer, ist er keine Wahl
         # (140253 8:15: "Yasuo ist vorn: ... farm dort", waehrend Brand und Yasuo kamen)
         if farmen is not None and farmen.daten.get("verloren"):
@@ -845,6 +978,11 @@ class Kern:
                     and h.p_tod < alt[2] + cs["gefahr_anstieg"]:
                 p.gesagt = alt[0]
                 return None
+            # Auftrag 008, A1 (3): so nah am sicheren Ort kommt der Satz zu spaet - du bist gleich dort
+            weg = m.b.sicherer_ort()[1] if m.b is not None else None
+            if h.art == "ZURUECK" and weg is not None and weg <= self.cfg["warnung"]["sicher_s"]:
+                p.gesagt = m.zeit
+                return None
             # Pruefung c, R5: kein Gefahr-Satz, waehrend du schon zum sicheren Ort laeufst
             if h.art in ("ZURUECK", "RAUS") and len(self._sicher_weg) >= 2 and self._sicher_weg[0][1] is not None \
                     and self._sicher_weg[-1][1] is not None and m.zeit - self._sicher_weg[0][0] >= 1.5 \
@@ -870,6 +1008,7 @@ class Kern:
             self.gate_grund = grund
             return None
         text = self._kurzform(p, h, text)        # Pruefung c, R6
+        text = _leben_jetzt(text, m)
         if kategorie != "GEFAHR":
             from .modi import kuerze
             text = kuerze(text, self.cfg["sprechen"]["max_woerter"])      # Auftrag 002, S2.3
@@ -895,7 +1034,10 @@ class Kern:
                                                                           cf["max_woerter_wendepunkt"])
             kategorie = "WENDEPUNKT"
         elif kategorie == "PLAN" and ev.art == "neu" and (fe := self._fenster_offen(m)) is not None \
-                and not any(w in text for w in fe.split()[:2]):      # nennt der Satz ihn schon, keine zweite Zahl
+                and not any(w in text for w in fe.split()[:2]) \
+                and not (fe.endswith(" gesehen") and h.art not in _makro_nutzt()):
+            # nennt der Satz ihn schon, keine zweite Zahl; eine Jungler-Sichtung nur vor einem Plan, der das Fenster
+            # nutzt (Buch 4, 5 - 144655 6:42: "Kha'Zix im unteren Fluss gesehen: ... Welle zu deinem Turm ziehen")
             neu = f"{fe}: {fuehren._koerper(text)}."
             if len(neu.split()) <= cf["max_woerter_wendepunkt"]:
                 text, kategorie = neu, "FENSTER"
@@ -1023,9 +1165,11 @@ class Kern:
 
     def _gesprochen(self, a, kategorie: str, m: Merkmale) -> None:
         a._kategorie = kategorie          # fuer Szenarien (kategorie_max) und Kennzahlen
+        a.auffrischen = lambda t: _leben_jetzt(t, self.m)      # Kritik 008: die Leben-Zahl beim Sprechen (Sprechplan)
         # Auftrag 004, Teil C 1: jede Ansage merkt sich 60 s lang ihren Grund und ihre Lage - "warum?" meint sie
         plan = self.fuehrer.plan
-        grund = (plan.handlung.grund if plan is not None and kategorie != "INFO_FLASH" and plan.handlung.grund
+        grund = (plan.handlung.grund if plan is not None and kategorie not in ("INFO_FLASH", "VORSICHT", "LAGEBILD")
+                 and plan.handlung.grund
                  else (a.text.split(": ", 1)[1].rstrip(".!") if ": " in a.text else ""))
         log = getattr(self, "_ansage_log", None)
         if log is None:
@@ -1181,20 +1325,25 @@ class Kern:
             and zeit - self._ziel_zeit.get(z, -1e9) < self.cfg["fuehren"]["ziel_wiederholen_s"]
 
     def _kurzform(self, p, h, text: str) -> str:
-        """Pruefung c, R6: nach der ersten Nennung je Partie nur noch die Kurzform - "Dann Top-Welle." bzw. "Kauf X,
-        dann Top-Welle." statt jedes Mal "dort nimmt sie sonst niemand"."""
+        """Pruefung c, R6: nach der ersten Nennung je Partie die Kurzform statt jedes Mal "dort nimmt sie sonst
+        niemand". Auftrag 008, A2: nie nur "Dann Top-Welle." (101426 31:04: "Was soll 'Mid-Welle' heissen,
+        nichtssagend") - das Ziel und die Beobachtung, ohne die Floskel davor: "Dann zur Top-Welle: dein Team ist
+        unten." Ohne Beobachtung bleibt der ganze Satz."""
         z = self._wohin_ziel(h)
         if z is None or z not in self._wohin_genannt:
             return text
-        kurz = re.sub(r"^(zur|zum|zu den) ", "", z)
-        # R10 (102112 38:01 "Dann Deinem Team."): "zu deinem Team", "auf ..." bleiben, wie sie sind
-        if h.art != "KAUFEN" and not re.match(r"^(zu|auf|in|an) ", kurz):
-            kurz = kurz[0].upper() + kurz[1:]
+        w = h.daten.get("wohin") if h.art == "KAUFEN" else h
+        grund = (w.daten.get("grund_kurz") or w.grund) if w is not None else None
+        if not grund or "sonst niemand" in grund:
+            return text
+        ziel = f"nach {z}" if z in ("Top", "Mid", "Bot") else z
         if h.art == "KAUFEN" and ", dann " in text:
-            return text.rsplit(", dann ", 1)[0] + f", dann {kurz}."     # das letzte ", dann" ist der Weiterweg
+            return text.rsplit(", dann ", 1)[0] + f", dann {ziel}: {grund}."     # das letzte ", dann" ist der Weiterweg
         if h.art in ("WOHIN", "WOHIN_TP_LANE"):
-            praefix = re.match(r"^(Noch \d+ Sekunden: )", text)
-            return (praefix.group(1) if praefix else "") + f"Dann {kurz}."
+            praefix = re.match(r"^Noch (\d+) Sekunden: ", text)
+            if praefix:                  # 144655 6:27: "Noch 8 Sekunden: Dann zu ...: ..." - zwei Doppelpunkte
+                return f"Noch {praefix.group(1)} Sekunden, dann {ziel}: {grund}."
+            return f"Dann {ziel}: {grund}."
         return text
 
     def _schranken(self, m: Merkmale, kand: list, modus: str | None) -> list:
@@ -1693,7 +1842,13 @@ class Kern:
                 "info": [{"zeit": t, "text": x} for t, x in list(self.info)[-6:]][::-1],
                 # Buch 11, 2 und 3
                 "danach": self.danach_text,
-                "zeitleiste": _zeitleiste_stand(self.zeitleiste, m.zeit if m else 0.0)}
+                "zeitleiste": _zeitleiste_stand(self.zeitleiste, m.zeit if m else 0.0),
+                # Buch 4, 2: wie viele von ihnen oben, Mitte, unten, unbekannt, tot - und das Fenster je Seite
+                "kartenlage": self.kartenlage.stand() if self.kartenlage is not None else None,
+                # Buch 4, 3: wer will das Spiel wann entscheiden
+                "teamplan": None if self.makro.tp is None else {
+                    "plan": self.makro.tp.plan, "satz": self.makro.tp.satz, "punkte": self.makro.tp.punkte,
+                    "kurve_wir": list(self.makro.tp.kurve_wir), "kurve_die": list(self.makro.tp.kurve_die)}}
 
     def kontext(self) -> str | None:
         """Buch 11, 6 (ersetzt Buch 0, 10.2): hoechstens 30 Zeilen fuer Claude - Modus, Ort, Leben, Gold; Plan mit Grund
@@ -1724,6 +1879,13 @@ class Kern:
                                                       for c, a, r in flash_stand(p, self._lagebild)))
         except Exception:
             pass
+        if self.makro.tp is not None:            # Buch 4, 3
+            tp = self.makro.tp
+            z.append(f"TEAMPLAN: {tp.plan} - {tp.satz} (Kurven frueh/sechs/spaet: ihr {tp.kurve_wir}, sie {tp.kurve_die})")
+        if self.kartenlage is not None:          # Buch 4, 2
+            k = self.kartenlage
+            z.append(f"KARTENLAGE: {k.zeile()}; frei (s bis der erste Gegner dort sein kann): "
+                     + ", ".join(f"{s} {int(v)}" for s, v in k.fenster.items()))
         from ..zustand import gegenteam
         wir, die = p.mein_team, gegenteam(p.mein_team)
         z.append(f"STAND: Kills {p.kills(wir)} zu {p.kills(die)}, Tuerme "

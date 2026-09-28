@@ -196,7 +196,17 @@ def stehende_tuerme(p: Partie) -> dict[tuple[str, str, str], tuple[float, float]
     return {k: v for k, v in TUERME.items() if k not in weg}
 
 
-TURM_DE = {"aussen": "den äußeren {lane}-Turm", "innen": "den inneren {lane}-Turm", "Inhib": "den {lane}-Inhibitor-Turm"}
+# Auftrag 008, A2: jeder Turm mit Besitzer und Lage, ohne "Tier" (101426 27:00: "Zu welchem Bot Tier 2 - meinem oder
+# dem des Gegners?") - ihre Tuerme im Akkusativ, wie die Ziele heissen ("Drueck ihren inneren Top-Turm")
+TURM_DE = {"aussen": "ihren äußeren {lane}-Turm", "innen": "ihren inneren {lane}-Turm",
+           "Inhib": "ihren {lane}-Inhibitor-Turm"}
+
+
+def eigener_turm_name(k: tuple[str, str, str], meine_lane: str | None) -> str:
+    """Dein Turm im Dativ ("zu ...", "an ..."): "deinem äußeren Mid-Turm" auf deiner Lane, sonst "eurem inneren Bot-Turm"
+    (Auftrag 008, A2 - vorher "deinem Mid-Tier-1-Turm")."""
+    from .kern.sprache import turm
+    return turm("dein" if k[1] == meine_lane else "euer", k[1], k[2], "dat")
 INHIB_ZURUECK = 300.0      # Sekunden, bis ein Inhibitor wieder steht
 
 
@@ -679,13 +689,13 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
             lane = LANE_DER_ROLLE.get(p.ich.rolle)
             k = next((k for st in TIER for k in tuerme if k[0] == mein and k[1] == lane and k[2] == st), None)
         if k is not None:
-            b.turm_name = f"deinem {k[1]}-Tier-{TIER[k[2]]}-Turm"
+            b.turm_name = eigener_turm_name(k, LANE_DER_ROLLE.get(p.ich.rolle))
     if b.pos:
         eigene = [(k, v) for k, v in tuerme.items() if k[0] == mein] + [(None, BRUNNEN[mein])]
         naechster, wo = min(eigene, key=lambda kv: abstand(b.pos, kv[1]))
         b.zum_turm = abstand(b.pos, wo) * WEGFAKTOR / b.mein_tempo
         # Carlos, live 26.09.: "Was ist denn mein Tower? Er soll sagen Top, Mid, Bot - Tier 1, 2, 3."
-        b.turm_name = ("deinem " + f"{naechster[1]}-Tier-{TIER[naechster[2]]}-Turm") if naechster else "deiner Basis"
+        b.turm_name = eigener_turm_name(naechster, LANE_DER_ROLLE.get(p.ich.rolle)) if naechster else "deiner Basis"
         b.unter_gegnerturm = any(abstand(b.pos, v) <= TURM_REICHWEITE for (t, _, _), v in tuerme.items() if t == feind)
         b.unter_eigenem_turm = any(abstand(b.pos, v) <= TURM_REICHWEITE for (t, _, _), v in tuerme.items() if t == mein)
         if (lane := LANE_DER_ROLLE.get(p.ich.rolle)) and lb is not None:

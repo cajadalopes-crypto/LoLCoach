@@ -231,9 +231,21 @@ def _zauber_schluessel(z: dict) -> str:
     return ZAUBER_GLEICH.get(s, s)
 
 
+_SKIN = re.compile(r"game_character_skin_displayname_([A-Za-z]+)_\d+")
+
+
 def _champion_id(roh: dict) -> str:
     raw = roh.get("rawChampionName", "")
     return raw.rsplit("_", 1)[-1] if raw else roh.get("championName", "?")
+
+
+def _gestalt(roh: dict) -> tuple[str, str] | None:
+    """Auftrag 008 (101426 5:25): Viego nimmt die Gestalt eines Getoeteten an - die API nennt ihn dann nach ihm
+    ("Urgot", rawChampionName Urgot), nur rawSkinName sagt noch "Viego". (Name, Id) des eigentlichen Champions."""
+    m = _SKIN.match(roh.get("rawSkinName") or "")
+    if m and m.group(1) != _champion_id(roh):
+        return m.group(1), m.group(1)
+    return None
 
 
 def _spieler(roh: dict) -> Spieler:
@@ -250,8 +262,8 @@ def _spieler(roh: dict) -> Spieler:
         rolle = "JUNGLE" if any("Smite" in z for z in zauber) else ""
     return Spieler(
         name=roh.get("riotIdGameName") or roh.get("summonerName") or roh.get("championName", "?"),
-        champion=roh.get("championName", "?"),
-        champion_id=_champion_id(roh),
+        champion=(_gestalt(roh) or (roh.get("championName", "?"),))[0],
+        champion_id=(_gestalt(roh) or (None, _champion_id(roh)))[1],
         team=roh.get("team", ""),
         rolle=rolle,
         level=int(roh.get("level", 0)),

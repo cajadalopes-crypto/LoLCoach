@@ -1,0 +1,24 @@
+# Auftrag 008, Teil 1: Buch 4 (Kartenlage und Makro), Kapitel 6 - Szenarien aus 173159 (Riven Top gegen Cho'Gath, echt).
+# Jedes Szenario war auf dem Stand vor Auftrag 008 (dac2581) rot, ausser dem Waechter (steht dabei).
+
+aufnahme = "2026-09-27_173159"
+spielmodus = "CLASSIC"
+
+[[szenario]]
+id = "1400-teamplan"
+zeit = "14:00"
+fenster = [["14:00", "14:45"]]
+lage = """14:00. Stand: Item-Gold +1675 fuer euch (Punkte +275). Kurven (frueh/sechs/spaet, Summe der fuenf): ihr (2, 5, 2),
+sie (0, 3, 4). Jetzt 5 gegen 3, spaet 2 gegen 4 - vorn, aber sie skalieren besser."""
+satz_mit = [["Gold vorn", "liegt vorn"], ["skalieren"]]
+warum = "Buch 4, 3: vorn, aber sie skalieren besser heisst beenden, bevor es kippt: vor Minute 30 Baron oder Inhibitor."
+
+# Waechter (war schon gruen): die Jungler-Sichtung ohne Wirkung wird nicht gesagt.
+[[szenario]]
+id = "1058-olaf-unten-ohne-wirkung"
+zeit = "10:58"
+fenster = [["10:56", "11:10"]]
+lage = """Olaf unten gesehen, 35 s bis zu Riven; Riven farmt oben (FARMEN, p_tod 0,31 - Yasuo und Cho'Gath in der Naehe),
+kein Kandidat nutzt das Fenster (keine Platten, kein Turm, keine Seitenwelle)."""
+darf_nicht_sagen = ["Olaf unten gesehen"]
+warum = "Buch 4, 1.3 und 5: eine Info ohne Wirkung auf deinen Plan steht nur auf dem Dashboard."

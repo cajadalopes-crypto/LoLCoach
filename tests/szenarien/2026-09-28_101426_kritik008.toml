@@ -1,0 +1,40 @@
+# Auftrag 008, Kritik-Runde (008_kritik.md): Befunde der neuen Kritiker aus Carlos' Testpartie 101426.
+# Auf dem Stand der Kritik rot - die Saetze stehen so im kritisierten Protokoll (Scratchpad k008_krit).
+
+aufnahme = "2026-09-28_101426"
+spielmodus = "CLASSIC"
+
+[[szenario]]
+id = "2447-kein-tief-auf-der-lane"
+fenster = [["24:44", "24:52"]]
+quelle = "Kritik 008 (falsch, Warnung ohne Beleg): 'Du stehst tief: Viego und Twitch fehlen seit 20 Sekunden.' auf der Lane, 100 %"
+lage = "Riven auf ihrer Mid-Lane in ihrer Haelfte, 100 % Leben, p_tod 0,07."
+darf_nicht_sagen = ["Du stehst tief"]
+warum = "A1: jenseits des Flusses heisst in ihrem Jungle oder ihrer Basis - auf der eigenen Lane ist das keine Vorsicht wert."
+
+[[szenario]]
+id = "3123-kein-tief-auf-der-lane"
+fenster = [["31:20", "31:28"]]
+quelle = "Kritik 008 (falsch): 'Du stehst tief: Viego, Aurora und Bard fehlen seit 25 Sekunden.' auf der Lane, 100 %"
+lage = "Riven auf ihrer Mid-Lane, 100 % Leben."
+darf_nicht_sagen = ["Du stehst tief"]
+warum = "wie 2447"
+
+[[szenario]]
+id = "2538-raus-mit-lane"
+fenster = [["25:35", "25:42"]]
+quelle = "Kritik 008 (vage): 'Raus, zu deinem Turm!' - Riven war auf der Top-Lane, nicht auf ihrer Mid-Lane"
+lage = "Riven kaempft auf der Top-Lane gegen Aurora und Bard, 12 % Leben."
+darf_nicht_sagen = ["Raus, zu deinem Turm"]
+warum = "A2: dein Turm heisst deine Lane - steht der naechste auf einer anderen, nennt der Satz sie ('Raus, zu eurem Top-Turm!')."
+
+[[szenario]]
+id = "3207-tot-respawn-mit-kauf"
+zeit = "32:07"
+frage = "Raus zum Turm ist auch eine super schnummige Aussage. Was soll das überhaupt bedeuten? Soll ich jetzt zu meinem Turm zurücklaufen, zu meinem Tier 1 oder so? Also, macht gar keinen Sinn, was du gerade erzählst."
+lage = "Riven seit 31:49 tot; kein Kauf-Plan gewaehlt."
+kern_frage = true
+ohne_claude = true
+darf_nicht_sagen = ["Dann zuerst in den Shop", "Farm"]
+muss_nennen_eins = ["zurück auf", "kauf"]
+warum = "A3.1: der Respawn-Plan nennt Zeit, Kauf und Ziel - 'Dann zuerst in den Shop' war an der Frage vorbei."

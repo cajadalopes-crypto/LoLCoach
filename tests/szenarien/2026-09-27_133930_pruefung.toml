@@ -58,10 +58,19 @@ id = "swiftplay-keine-classic-zeiten"
 fenster = [["0:00", "11:00"]]
 quelle = "Pruefung G6: 133930 ist Swiftplay"
 lage = "Swiftplay: keine Larven, kein Herold, Baron 12:00, Elder 15:00; erster Drache nicht belegt."
-darf_nicht_sagen = ["Larven", "Herold", "Atakhan", "um 5 00", "um 8 00", "um 20 00", "Drache in"]
+darf_nicht_sagen = ["Larven", "Herold", "Atakhan", "um 5 00", "um 8 00", "um 20 00"]
 # der erste Drache (Classic 5:00) ist fuer Swiftplay nicht belegt; der Respawn nach einem Kill (300 s) ist es - "Spawn um
-# 10 47" nach dem Drachen 5:47 ist richtig
+# 10 47" nach dem Drachen 5:47 ist richtig. Auftrag 008: "Drache in" deshalb nur bis zum ersten Drachen verboten
+# (9:25 "Ihr aeusserer Top-Turm ist weg. Farm Top, Drache in 78 Sekunden." nennt den Respawn 10:47 - richtig)
 warum = "wie in 140253"
+
+[[szenario]]
+id = "swiftplay-kein-erster-drache"
+fenster = [["0:00", "5:46"]]
+quelle = "Pruefung G6 (aus swiftplay-keine-classic-zeiten, Auftrag 008 geteilt)"
+lage = "Swiftplay: der erste Drache ist nicht belegt (Classic 5:00); getoetet wurde er 5:47."
+darf_nicht_sagen = ["Drache in"]
+warum = "Vor dem ersten Kill gibt es fuer Swiftplay keine Drachen-Zeit."
 
 [[szenario]]
 id = "swiftplay-keine-larven"

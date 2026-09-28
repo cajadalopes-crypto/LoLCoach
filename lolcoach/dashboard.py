@@ -92,7 +92,9 @@ def _kern(lagebild) -> dict | None:
             # (ein aelterer Kern hat beides nicht - dann None und leer, die Seite zeigt nichts davon)
             "danach": s.get("danach"),
             "zeitleiste": [{"uhr": e.get("uhr", ""), "in_s": e.get("in_s"), "text": e.get("text", ""),
-                            "art": e.get("art", "")} for e in (s.get("zeitleiste") or [])]}
+                            "art": e.get("art", "")} for e in (s.get("zeitleiste") or [])],
+            # Buch 4, 2 (Auftrag 008): wie viele von ihnen wo, und wie lange jede Seite frei ist
+            "kartenlage": s.get("kartenlage"), "teamplan": s.get("teamplan")}
 
 
 def _jetzt(p: Partie, lagebild) -> dict | None:

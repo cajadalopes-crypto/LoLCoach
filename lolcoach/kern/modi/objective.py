@@ -209,10 +209,8 @@ def abgeben_tauschen(m, cfg: dict, modus: str, o, tuerme: list[Handlung]) -> Han
     from ...bewertung import abstand
     n = sum(1 for g in m.b.gegner if not g.s.tot and g.pos is not None and abstand(g.pos, o.pos) <= r
             and (g.sichtbar or (g.seit is not None and g.seit <= 10.0)))
-    name = beste.ziel.name[4:] if beste.ziel.name.startswith("den ") else beste.ziel.name
-    erstes, _, rest = name.partition(" ")
-    if erstes.endswith("eren") and rest:
-        name = f"{erstes[:-1]}r {rest}"              # "äußeren Top-Turm" -> "äußerer Top-Turm" (der Tausch zuerst)
+    from ..sprache import nominativ
+    name = nominativ(beste.ziel.name)                # "ihren äußeren Top-Turm" -> "ihr äußerer Top-Turm" (Auftrag 008)
     grund = f"sie sind {ZAHL.get(n, 'zu viert')} {AM[o.schl]}"
     h = Handlung("ABGEBEN_TAUSCHEN", beste.ziel, modus, beste.dauer, gewinn=beste.gewinn, folgewert=beste.folgewert,
                  gefahr_t=beste.gefahr_t, grund=grund, satz=f"{name[0].upper()}{name[1:]} jetzt: {grund}.",

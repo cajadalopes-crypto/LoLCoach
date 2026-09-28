@@ -1,0 +1,14 @@
+# Auftrag 008, Kritik-Runde (008_kritik.md): Befunde der neuen Kritiker aus 164326 (Riven Top gegen Teemo, echt).
+# War auf dem Stand vor dem Fix rot.
+
+aufnahme = "2026-09-27_164326"
+spielmodus = "CLASSIC"
+
+[[szenario]]
+id = "3302-sie-haben-den-baron"
+fenster = [["32:58", "33:12"]]
+quelle = "Kritik 008 (falsch, Widerspruch): 'Baron weg. Farm Top, ...' - 7 s spaeter die Kehrtwende zur Verteidigung"
+lage = "Der Gegner nimmt den Baron; 5 s spaeter sind drei von ihnen in eurer Haelfte (Belagerung)."
+darf_nicht_sagen = ["Baron weg"]
+muss_nennen_eins = ["Sie haben den Baron"]
+warum = "'Baron weg' klang nach Entwarnung - gemeint ist: sie haben den Baron-Buff."

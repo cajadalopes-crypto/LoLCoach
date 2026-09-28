@@ -1,0 +1,166 @@
+# Auftrag 008, Teil A: Carlos' Testpartie 101426 - Riven Mid gegen Aurora, echte Gegner, 34:46.
+# Carlos: "immer noch komplett scheusslich, absolut unertraeglich". 80 ungefragte Ansagen, davon 36 Warnungen; Tode
+# 2:38, 13:04, 20:16, 25:42, 31:49. Gegner: Sett (Top), Viego (Jungle), Aurora (Mid), Twitch (Bot), Bard (Support).
+# Dein Team: Urgot, Kayn, Yunara, Xerath. Viego nimmt ab 5:25 zeitweise Urgots Gestalt an (die API nennt ihn dann
+# "Urgot", nur rawSkinName sagt Viego).
+# Jedes Szenario war auf dem Stand nach Auftrag 007 (4da088d) rot, ausser den Waechtern (steht dabei).
+
+aufnahme = "2026-09-28_101426"
+spielmodus = "CLASSIC"
+
+# --- A1: Warnungen radikal seltener ------------------------------------------------------------------------------
+
+[[szenario]]
+id = "a1-warnungen-je-30min"
+zeit = "0:00"
+fenster = [["0:00", "35:00"]]
+lage = "Die ganze Partie: vorher 30 GEFAHR-Saetze in 35 min, oft dieselbe Warnung alle 30-60 s."
+kategorie_max = { GEFAHR = 11 }
+warum = "A1: hoechstens 10 Warnungen je 30 min (34,8 min -> 11)."
+
+[[szenario]]
+id = "1356-ungesehen-kein-raus"
+zeit = "13:56"
+fenster = [["13:50", "14:05"]]
+lage = "Riven Mid, 100 %. Viego seit 20 s ungesehen, Aurora nicht in Sicht - niemand sichtbar in der Naehe."
+darf_nicht_sagen = ["Raus zu", "Raus zum", "Zurück unter"]
+warum = "A1, Bedingung 1: ungesehene Gefahr ist kein Raus (vorher: 'Raus zum Mid-Tier-1-Turm: Aurora und Viego kommen')."
+
+[[szenario]]
+id = "1616-ungesehen-kein-raus"
+zeit = "16:16"
+fenster = [["16:12", "16:24"]]
+lage = "Riven Bot, 100 %. Twitch seit 16 s ungesehen, Viego nicht in Sicht."
+darf_nicht_sagen = ["Raus zu", "Raus zum", "Zurück unter"]
+warum = "A1, Bedingung 1 (vorher: 'Raus zum Bot-Tier-1-Turm: Twitch und Viego kommen')."
+
+[[szenario]]
+id = "2335-ungesehen-kein-raus"
+zeit = "23:35"
+fenster = [["23:30", "23:42"]]
+lage = "Riven Bot, 72 %. Alle Gegner 10-17 s ungesehen, keiner sichtbar."
+darf_nicht_sagen = ["Raus zu", "Raus zum", "Zurück unter"]
+warum = "A1, Bedingung 1 (vorher: 'Raus zum Mid-Tier-2-Turm: Sett, Bard und Twitch kommen')."
+
+[[szenario]]
+id = "0526-viego-ist-nicht-urgot"
+zeit = "5:26"
+fenster = [["5:20", "5:40"]]
+lage = "Viego hat Urgot getoetet und dessen Gestalt: die API meldet ihn als 'Urgot'. Urgot ist Carlos' Mitspieler."
+darf_nicht_sagen = ["Urgot kommt", "und Urgot", "Urgot und"]
+warum = "Vorher: 'Raus zum Mid-Tier-1-Turm: Aurora und Urgot kommen.' - ein Mitspieler als Gegner genannt."
+
+# Waechter: hier muss die Warnung bleiben (Tod 25:42 gegen Twitch, Aurora und Bard) - war schon gruen.
+# (Ein zweiter Waechter fuer 20:11 - Tod 20:16 gegen Viego, Twitch und Bard - ist nach A1 nicht haltbar: sichtbar
+# standen zwei gegen zwei, Viego war 17 s ungesehen. Offene Frage im Bericht 008.)
+[[szenario]]
+id = "2531-warnung-bleibt"
+zeit = "25:31"
+fenster = [["25:29", "25:36"]]
+lage = "Riven allein, Aurora und Bard sichtbar in 900, zwei gegen eins."
+muss_nennen_eins = ["Raus", "Zurück", "zurück"]
+warum = "A1: sichtbar, nah, zwei gegen eins - die Warnung, die zaehlt, darf nicht unter den seltenen fehlen."
+
+# --- A2: Konkrete Sprache ----------------------------------------------------------------------------------------
+
+[[szenario]]
+id = "a2-konkrete-sprache"
+zeit = "0:00"
+fenster = [["0:00", "35:00"]]
+lage = "Die ganze Partie."
+sprache_konkret = true
+warum = "A2: kein 'Tier-', kein 'Raus, zum Turm', kein Satz nur 'Dann <Ort>.', jeder Turm mit dein/euer/ihr (27:00: 'Zu welchem Bot Tier 2? Meinem oder dem des Gegners?')."
+
+# --- A3: Fehler aus 101426 ---------------------------------------------------------------------------------------
+
+[[szenario]]
+id = "3207-tot-kein-farm"
+zeit = "32:07"
+frage = "Raus zum Turm ist auch eine super schnummige Aussage. Was soll das überhaupt bedeuten? Soll ich jetzt zu meinem Turm zurücklaufen, zu meinem Tier 1 oder so? Also, macht gar keinen Sinn, was du gerade erzählst."
+lage = "Riven seit 31:49 tot."
+kern_frage = true
+ohne_claude = true
+darf_nicht_sagen = ["Farm"]
+muss_nennen_eins = ["Sekunden"]
+warum = "A3.1: tot bekommt den Respawn-Plan, nie 'Farm deine Mid-Welle' (32:22: 'Bist du behindert?')."
+
+[[szenario]]
+id = "3213-ich-bin-tot"
+zeit = "32:13"
+frage = "War meine Mitwerte, ich bin schon tot seit 10 Sekunden."
+lage = "Riven seit 31:49 tot."
+kern_frage = true
+ohne_claude = true
+darf_nicht_sagen = ["Farm", "Sett ist tot"]
+muss_nennen_eins = ["Sekunden"]
+warum = "A3.1: 'ich bin tot' heisst Respawn-Plan (vorher: 'Sett ist tot, noch 4 Sekunden')."
+
+[[szenario]]
+id = "3216-ja-ich-bin-auch-tot"
+zeit = "32:16"
+frage = "Ja, ich bin auch tot."
+lage = "Riven seit 31:49 tot."
+kern_frage = true
+ohne_claude = true
+darf_nicht_sagen = ["Farm"]
+muss_nennen_eins = ["Sekunden"]
+warum = "A3.1 (vorher: braucht Claude)."
+
+[[szenario]]
+id = "2324-kein-afk"
+zeit = "23:24"
+fenster = [["23:15", "23:35"]]
+lage = "Kayn steht laut Minimap still in der Basis - Carlos: 'Stimmt ueberhaupt nicht, er ist die ganze Zeit auf der Map.'"
+darf_nicht_sagen = ["AFK"]
+warum = "A3.2: die alte AFK-Regel ist aus."
+
+[[szenario]]
+id = "2839-kein-kontrollauge-ohne-platz"
+zeit = "28:39"
+fenster = [["28:30", "28:55"]]
+lage = "Fuenf Items und das Schmuckstueck: ein Platz frei. Tiamat fuellt ihn."
+darf_nicht_sagen = ["Kontroll-Auge"]
+warum = "A3.3: 'Kauf Tiamat und ein Kontroll-Auge' passte nicht ins Inventar (28:56: 'Ich habe keinen Platz')."
+
+[[szenario]]
+id = "1924-wo-ist-twitch"
+zeit = "19:24"
+frage = "Wo's Twitch?"
+lage = "Riven an ihrem inneren Bot-Turm, 14 s spaeter: 'Er war ein paar Meter weg von mir.'"
+kern_frage = true
+absicht = "WO"
+ohne_claude = true
+muss_nennen_eins = ["Twitch"]
+warum = "A4: wer wo ist, aus der Kartenlage - vorher ging 'Wo's' an Claude (2,9 s) und die Antwort war falsch."
+
+[[szenario]]
+id = "1938-korrektur-twitch-bei-mir"
+zeit = "19:38"
+frage = "Bro, war so weit weg von mir. Er war ein paar Meter weg von mir. Ich war an deren Tier 2 Bot Tower."
+lage = "19:24 hiess es 'Twitch steht in seinem unteren Jungle, weit weg von euch'. Carlos korrigiert: Twitch war direkt bei ihm."
+kern_frage = true
+ohne_claude = true
+muss_nennen_eins = ["Twitch"]
+darf_nicht_sagen = ["weit weg"]
+warum = "A3.4: eine Korrektur der Lage bekommt eine Antwort aus der korrigierten Lage."
+
+# --- A4: Lagebild auf Abruf und regelmaessig ---------------------------------------------------------------------
+
+[[szenario]]
+id = "2650-lage-auf-abruf"
+zeit = "26:50"
+frage = "Wo sind alle?"
+lage = "26:45: 'Ich weiss nie, wann wer wo ist, wann die Flashes sind ... keine Uebersicht.'"
+kern_frage = true
+absicht = "LAGE"
+ohne_claude = true
+muss_nennen_eins = ["oben", "Mitte", "unten", "fehlt", "fehlen"]
+warum = "A4: wer wo ist, nach Kartenseite, mit Flashs und Toten, dann die Folgerung."
+
+[[szenario]]
+id = "a4-lagebild-ungefragt"
+zeit = "14:00"
+fenster = [["14:00", "35:00"]]
+lage = "Ab 14:00."
+kategorie_min = { LAGEBILD = 2 }
+warum = "A4: ungefragt hoechstens alle 90 s ein Lagebild, wenn sonst nichts gesagt wurde - in 21 min mindestens zweimal."

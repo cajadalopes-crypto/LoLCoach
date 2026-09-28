@@ -21,11 +21,11 @@ warum = """Im Kampf hoechstens fuenf Woerter, nur wenn es den Ausgang aendert (B
 
 [[szenario]]
 id = "0622-tod-gegen-gangplank"
-fenster = ["6:22", "6:40"]
+fenster = ["6:15", "6:40"]      # Auftrag 008: ohne das "Raus" von 6:10 (A1) kommt der Rueckblick schon 6:19
 quelle = "Buch 7, 8: Todesrueckblick nach einem Kampf"
 lage = """Nachgespielt: 6:10 "Raus zu deinem Top-Tier-1-Turm: Gangplank und Kha'Zix kommen." - Riven bleibt und stirbt
 gegen Gangplank. (Vor Entscheidung 2 kam statt des Rueckzugs 6:12 "Rein auf Gangplank!" - dann war es ein Duell.)"""
-satz_mit = [["Raus kam", "Duell gegen", "Prozent gegen", "aus dem Nebel", "unter seinem Turm"], ["Gangplank"]]
+satz_mit = [["Raus kam", "Duell gegen", "Prozent gegen", "aus dem Nebel", "unter seinem Turm", "unter ihrem Turm"], ["Gangplank"]]  # Auftrag 008, A2: neue Woerter
 max_woerter = 25
 darf_nicht_sagen = ["mindestens", "Schaden", "Kopfgeld", "Zahlen"]
 warum = """Satz 1 nach Tabelle 8 - hier Zeile 2: 'Raus kam, du bist geblieben - Gangplank hat dich erreicht.' Keine

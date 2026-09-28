@@ -17,6 +17,23 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 008 (Testpartie 101426, Buch 4 Kartenlage und Makro) umgesetzt** - Zahlen in `buecher/messungen.md`
+("Auftrag 008"), Kritik in `008_kritik.md`, Bericht und Fragen in `008_bericht.md`.
+
+Offen aus Auftrag 008:
+- **Warnungen in 101426 12,5 je 30 min** (Soll <= 10) und **falsch 2,5 je 30 min** (Soll <= 2) - nach der Kritik
+  gebaut (Vorsicht nur in ihrem Jungle), nicht nachgezaehlt.
+- **Leerlauf ab 14:00** 52-59 % in den echten Partien (Buch 11, Soll <= 10 %) - war schon vorher so; Buch 4 fuellt ihn
+  nicht (Makro-Infos nur mit Wirkung).
+- **Ungefragte Ansagen** 68-73 je 30 min (Ziel <= 45 bzw. <= 50 ohne Flash/Wendepunkt: 47-53) - Lagebild, Teamplan,
+  Makro kamen dazu.
+- **Abgebrochene Saetze** (4 in der Kritik): Transport im Sprechplan.
+- **Wiederholte Frage, gleiche Antwort** (213624 10:19/10:26 "kein Platz"): die Antwort passt sich nicht an.
+- **20:16 in 101426**: A1 warnt nicht (sichtbar zwei gegen zwei, Viego 17 s ungesehen) - Entscheidung im Bericht.
+- **Szenario 2411 (213624)** ist nach A1 ohne Pruefung (uebersprungen): die Episoden-Regel prueft kein Fall mehr.
+- **Viego mit Standard-Skin**: der Gestalt-Fix liest rawSkinName - fehlt der beim Standard-Skin, heisst Viego in fremder
+  Gestalt weiter wie der Getoetete.
+
 **Auftrag 007 (Entscheidungen, Fehlerklassen, Live-Tauglichkeit) umgesetzt** - Zahlen in `buecher/messungen.md`
 ("Auftrag 007"), Kritik in `007_kritik_runde3.md`, Bericht und Fragen in `007_bericht.md`.
 

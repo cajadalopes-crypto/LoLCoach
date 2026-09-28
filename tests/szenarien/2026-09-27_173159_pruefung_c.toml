@@ -158,7 +158,7 @@ quelle = "Pruefung c, Ziel 2: 36:50 'Dann Top-Welle.' -> 37:10 'Dann Top-Welle.'
 lage = "Riven in der Basis."
 # Auftrag 003: nur die Kurzform am Satzanfang - ein Wendepunkt-Satz ("Euer Turm ist weg: Dann Top-Welle.") meldet
 # ein neues Ereignis und bestaetigt den Plan (Buch 11, 4)
-text_max = { "^Dann Top-Welle" = 1 }
+text_max = { "^Dann (zur )?Top-Welle" = 1 }  # Auftrag 008, A2: neue Woerter
 warum = "Die Warteregel zaehlt ab dem letzten gesagten Ziel, nicht nur ab Kauf oder Eintritt."
 
 # --- Auftrag 003, Buch 11, 7: Wendepunkt-Probe ---
@@ -222,7 +222,7 @@ id = "2017-baron-grube-kein-turm"
 fenster = ["20:15", "20:21"]
 quelle = "Kritik R2, Klasse 10: an der Baron-Grube, vier Gegner tot -> 'Drueck den inneren Top-Turm'"
 lage = "Riven an der Baron-Grube, das Team nimmt den Baron 20:39."
-darf_nicht_sagen = ["Drück den inneren Top-Turm"]
+darf_nicht_sagen = ["Drück den inneren Top-Turm", "Drück ihren inneren Top-Turm"]  # Auftrag 008, A2: neue Woerter
 warum = "Im Fenster bleibt das erste erreichbare Ziel - das Objective, an dem du stehst."
 
 [[szenario]]

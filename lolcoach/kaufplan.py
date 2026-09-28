@@ -230,6 +230,25 @@ def _noch_zu_kaufen(item: int, inventar: list) -> list[int]:
     return aus
 
 
+def plaetze_nach(inventar, namen: list[str]) -> int:
+    """Auftrag 008, A3.3: freie Plaetze, nachdem die genannten Items gekauft sind - jedes belegt einen Platz, ausser es
+    verbraucht eigene Bauteile (die dann frei werden) oder ist ein Verbrauchsgut, das stapelt."""
+    inv = [int(i) for i in inventar]
+    frei = PLAETZE - _belegt(inv)
+    for name in namen:
+        i = _nach_name().get(name)
+        if i is None:
+            continue
+        if "Consumable" in _tags(i) and (ddragon.items()[i].get("consumed") or i in inv):
+            continue
+        vorher = len(inv)
+        for f in ddragon.items().get(i, {}).get("from") or []:
+            _baum_kosten(int(f), inv)          # verbrauchte eigene Bauteile fallen aus dem Inventar
+        frei += (vorher - len(inv)) - 1
+        inv.append(i)
+    return frei
+
+
 def kaufbar(name: str, inventar, ziel: str | None = None) -> tuple[bool, str]:
     """(kaufbar, Grund wenn nicht) fuer ein genanntes Item - Pruefung 27.09.c, R3, Soll 3:
     passt ins Inventar (Platz frei, oder es verbraucht eigene Bauteile, oder ein Start-Item wird dafuer verkauft),

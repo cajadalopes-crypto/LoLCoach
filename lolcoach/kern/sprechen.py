@@ -16,21 +16,25 @@ sobald wieder Platz ist - wenn er dann noch gilt.
 | INFO_FLASH   | HINWEIS  | nein              | frei, eigene Grenze (1 je 20 s) |
 | WENDEPUNKT   | WICHTIG  | Unterbrechbares   | frei, hoechstens 1 je 8 s (Buch 11, 4) |
 | FENSTER      | WICHTIG  | Unterbrechbares   | ja (zaehlt als PLAN) |
-| VORSCHAU     | WICHTIG  | Unterbrechbares   | ja, hoechstens 1 je 60 s |"""
+| VORSCHAU     | WICHTIG  | Unterbrechbares   | ja, hoechstens 1 je 60 s |
+| VORSICHT     | WICHTIG  | Unterbrechbares   | frei, hoechstens 1 je 90 s (Auftrag 008, A1) |
+| LAGEBILD     | HINWEIS  | nein              | ja, hoechstens 1 je 90 s (Auftrag 008, A4) |
+| MAKRO        | WICHTIG  | Unterbrechbares   | ja, hoechstens 1 je 45 s mit FENSTER und VORSCHAU (Buch 4, 5) |"""
 from __future__ import annotations
 
 from ..regeln import HINWEIS, SOFORT, WICHTIG, Ansage
 
 PRIO = {"GEFAHR": SOFORT, "PLAN": WICHTIG, "ERINNERUNG": HINWEIS, "BESTAETIGUNG": HINWEIS, "TECHNIK": SOFORT,
-        "INFO_FLASH": HINWEIS, "WENDEPUNKT": WICHTIG, "FENSTER": WICHTIG, "VORSCHAU": WICHTIG}
+        "INFO_FLASH": HINWEIS, "WENDEPUNKT": WICHTIG, "FENSTER": WICHTIG, "VORSCHAU": WICHTIG,
+        "VORSICHT": WICHTIG, "LAGEBILD": HINWEIS, "MAKRO": WICHTIG}
 # zaehlen nicht zum Budget (INFO_FLASH: eigene Grenze, Auftrag 002; WENDEPUNKT: hoechstens 1 je 8 s, Buch 11, 4)
-FREI = ("GEFAHR", "TECHNIK", "INFO_FLASH", "WENDEPUNKT")
+FREI = ("GEFAHR", "TECHNIK", "INFO_FLASH", "WENDEPUNKT", "VORSICHT")
 
 
 def zaehlt(a: Ansage) -> bool:
     """Zaehlt eine gesprochene Ansage zum Budget (9.2)? Nicht: GEFAHR (Thema gefahr / SOFORT), Briefing, TECHNIK."""
     return not (a.prio >= SOFORT or a.thema in ("gefahr", "wendepunkt")
-                or a.schluessel in ("briefing", "kern:technik", "tod", "kern:INFO_FLASH"))
+                or a.schluessel in ("briefing", "kern:technik", "tod", "kern:INFO_FLASH", "kern:VORSICHT"))
 
 
 class Sprecher:
@@ -40,7 +44,8 @@ class Sprecher:
         self.wartet: tuple | None = None   # (Kategorie, Art, Text, Pruefung, danach) - Budget voll
         self.bestaetigt_zuletzt = -1e9
         self.kategorien: dict[str, int] = {"GEFAHR": 0, "PLAN": 0, "ERINNERUNG": 0, "BESTAETIGUNG": 0,
-                                           "INFO_FLASH": 0, "WENDEPUNKT": 0, "FENSTER": 0, "VORSCHAU": 0}
+                                           "INFO_FLASH": 0, "WENDEPUNKT": 0, "FENSTER": 0, "VORSCHAU": 0,
+                                           "VORSICHT": 0, "LAGEBILD": 0, "MAKRO": 0}
 
     def platz(self, zeit: float, gesagt: list) -> bool:
         """Budget frei? (Kapitel 9.2) - gemessen an allem, was gesprochen wurde (auch den alten Regeln)."""

@@ -81,7 +81,7 @@ def bauen(e: dict) -> tuple[Merkmale, str]:
     turm = einheiten(*lane_punkt(lane, cfg["welle"]["turm_dein"]))
     if not tot:
         b.zum_turm = abstand(pos, turm) * bewertung.WEGFAKTOR / TEMPO if modus == "LANE" else 0.0
-        b.turm_name = "deinem Top-Tier-1-Turm" if modus == "LANE" else "deiner Basis"
+        b.turm_name = "deinem äußeren Top-Turm" if modus == "LANE" else "deiner Basis"
         b.unter_eigenem_turm = b.zum_turm <= 2.5
         b.tiefe = front if modus == "LANE" else None
     b.tod_kostet = bewertung.todeszeit(ich.level, zeit)
@@ -291,7 +291,7 @@ def bauen_mitte(e: dict) -> tuple[Merkmale, str]:
     eigene = [(k, v) for k, v in stehen.items() if k[0] == "ORDER"] + [(None, BRUNNEN["ORDER"])]
     naechster, wo = min(eigene, key=lambda kv: abstand(pos, kv[1]))
     b.zum_turm = abstand(pos, wo) * bewertung.WEGFAKTOR / TEMPO
-    b.turm_name = (f"deinem {naechster[1]}-Tier-{bewertung.TIER[naechster[2]]}-Turm" if naechster else "deiner Basis")
+    b.turm_name = bewertung.eigener_turm_name(naechster, "Top") if naechster else "deiner Basis"
     b.unter_eigenem_turm = b.zum_turm <= 2.5
     for s, f in zip(freunde, e.get("mitspieler", [])):
         wo_f = pos if f.get("bereich") == ich_d.get("bereich") else _punkt(f.get("bereich"), e, turm, modus)

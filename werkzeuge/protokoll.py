@@ -39,6 +39,12 @@ def schnappschuss(a, p, werk, kern) -> dict:
     gewaehlt = plan.als() if plan is not None else None
     rest = [h for h in kand if h.art != gewaehlt][:2]
     leben = m.leben if m is not None and m.leben is not None else (werk.b.leben if werk.b is not None else None)
+    # Buch 4, 4 (Auftrag 008): welche Groesse die Wahl gegen die Zweitbeste entschied - ohne sie gerechnet kippt sie
+    entscheidend = None
+    if plan is not None and rest and m is not None:
+        from lolcoach.kern import fuehren
+        k = fuehren.entscheidend(plan.handlung, rest[0], m, kern.cfg)
+        entscheidend = f"{k} (ohne ihn kippt die Wahl zu {rest[0].art})" if k else "mehrere Groessen zusammen"
     return {
         "zeit": a.gesprochen, "modus": kern.modus.aktuell or "–",
         "ort": bereich_worte(m.bereich) if m is not None else "Ort unbekannt",
@@ -46,7 +52,7 @@ def schnappschuss(a, p, werk, kern) -> dict:
         "gold": None if p.gold is None else int(p.gold),
         "plan": None if plan is None else (plan.art, plan.handlung.ev, plan.handlung.p_tod),
         "gefahr": kern.gefahr, "optionen": [_option(h) for h in rest],
-        "danach": getattr(kern, "danach_text", None),
+        "danach": getattr(kern, "danach_text", None), "entscheidend": entscheidend,
         "zeitleiste": [f"{ns.uhr(e.zeit)} {e.text}" for e in (getattr(kern, "zeitleiste", None) or [])[:5]],
     }
 
@@ -137,6 +143,8 @@ def protokoll(stamm: str, kern: str = "neu", fragen: bool = False) -> Path:
             zeilen.append("- **Plan:** –")
         if la.get("danach"):
             zeilen.append(f"- **Danach:** {la['danach']}")
+        if la.get("entscheidend") and a.schluessel.startswith("kern:"):
+            zeilen.append(f"- **Entscheidend:** {la['entscheidend']}")
         if la.get("optionen"):
             zeilen.append("- **Naechstbeste:** " + " · ".join(f"{i}. {o}" for i, o in enumerate(la["optionen"], 1)))
         if la.get("zeitleiste"):

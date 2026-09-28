@@ -1222,14 +1222,15 @@ def von_deiner_position_aus():
     saetze = [o.satz for o in entscheider.Entscheider().optionen(basis, False)]
     assert not any("Welle" in s or "seinen Turm" in s for s in saetze), saetze
     assert not any(o.name.startswith("back") for o in entscheider.Entscheider().optionen(basis, False))
-    wohin = [s for s in saetze if s.startswith("Geh auf den ") or s.startswith("Geh ") and "Supervasallen" in s]
+    # Auftrag 008, A2: ihre Tuerme mit Besitzer ("Geh auf ihren aeusseren Mid-Turm")
+    wohin = [s for s in saetze if s.startswith("Geh auf ihren ") or s.startswith("Geh ") and "Supervasallen" in s]
     assert wohin and "Sekunden von dir" in wohin[0], saetze
     zahl = komponist.zahlen(basis, ["Sett", "Galio"], 45, None, 5, 3)
-    assert zahl.startswith("Drückt jetzt den ") and "Sekunden entfernt" in zahl, zahl
+    assert zahl.startswith("Drückt jetzt ihren ") and "Sekunden entfernt" in zahl, zahl
     # Team-Befehl nur, wenn du rechtzeitig dort bist (Buch 0, Schritt 2): 30 s Fenster, der Turm 37 s weg ->
     # kein "Drueckt jetzt", sondern dein eigenes Ziel
     zahl = komponist.zahlen(basis, ["Sett", "Galio"], 30, None, 5, 3)
-    assert not zahl.startswith("Drückt") and "Geh auf den " in zahl and "Sekunden von dir" in zahl, zahl
+    assert not zahl.startswith("Drückt") and "Geh auf ihren " in zahl and "Sekunden von dir" in zahl, zahl
     assert "DEINE POSITION: in eurer Basis" in basis.text() and "Deine Welle:" not in basis.text()
     # Team-Ruf: zweimal, dann nur noch, wenn einer von euch an der Grube steht
     rw = regeln.Regelwerk()

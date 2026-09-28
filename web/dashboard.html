@@ -67,6 +67,8 @@
     <div class="kasten" id="jetztkasten" hidden style="border-color: var(--gut)"><h2>Jetzt</h2>
       <div id="jetztplan" style="font-size:1.15em;margin-bottom:6px"></div><div id="jetztzahlen" class="klein"></div></div>
     <div class="kasten" id="leistekasten" hidden><h2>Nächste 3 Minuten</h2><div id="zeitleiste" class="leiste"></div></div>
+    <div class="kasten" id="kartenkasten" hidden><h2>Kartenlage</h2><div id="kartenlage" class="leiste"></div>
+      <div id="kartenflash" class="klein"></div></div>
     <div class="kasten" id="plankasten" hidden><h2>Dein Lane-Plan</h2><div id="laneplan" class="plan"></div></div>
     <div class="kasten" id="fokuskasten" hidden style="border-color: var(--warn)"><h2>Dein Fokus heute</h2><div id="fokus"></div></div>
     <div class="kasten"><h2>Objectives</h2><div class="obj" id="obj"></div><div class="klein" id="drachen"></div></div>
@@ -221,6 +223,16 @@ function zeige(z) {
       + `<span class="zahl ${s <= 30 ? 'bald' : 'klein'}">${s <= 0 ? 'jetzt' : 'in ' + s + ' s'}</span>`
       + `<span>${esc(e.text || '')}</span>`;
   }).join('');
+  const kl = k && k.kartenlage;                       // Buch 4, Kap. 2: wie viele wo, wie lange jede Seite frei ist
+  $('kartenkasten').hidden = !kl;
+  if (kl) {
+    const zeile = (s, namen, f) => `<span class="zahl">${esc(s)}</span><span class="zahl ${namen.length ? '' : 'klein'}">`
+      + `${namen.length}</span><span>${esc(namen.join(', '))}${f !== undefined ? ` <span class="klein">frei ${f} s</span>` : ''}</span>`;
+    $('kartenlage').innerHTML = ['oben', 'Mitte', 'unten'].map(s => zeile(s, kl.je_seite[s] || [], kl.fenster[s])).join('')
+      + zeile('unbekannt', kl.unbekannt || []) + zeile('tot', kl.tot || []);
+    $('kartenflash').textContent = [(k.teamplan ? 'Teamplan: ' + k.teamplan.satz : '')]
+      .concat((kl.flash || []).map(([c, r]) => `${c} ohne Flash ${r} s`)).filter(Boolean).join(' · ');
+  }
   aufsetzen(z);
   zeichne(z);
 }

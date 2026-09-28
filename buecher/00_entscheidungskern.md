@@ -612,6 +612,24 @@ eigener stehender Turm, eigene Basis, eigene Gruppe mit ≥ 2 Mitspielern. Ein R
 Einheiten auftauchte. Daraus folgt der Brier-Wert für `p_da` im Vergleich zum schlimmsten Fall
 (`p = 1`, wenn `t_min ≤ T`). Abnahme in Schritt 3: `p_da` schlägt den schlimmsten Fall.
 
+**Nachtrag 7.5.1 (Auftrag 008, A1, 28.09.2026): Warnungen radikal seltener.** In Carlos' Testpartie 101426 kamen 36
+Warnungen in 34 Minuten, die meisten vor Gegnern, die niemand sah; er hörte weg, und die wichtigen gingen unter. GEFAHR
+wird jetzt nur gesprochen, wenn alles zutrifft:
+
+1. **Sichtbar und nah:** mindestens ein Gegner ist sichtbar, kommt näher (oder steht schon in 1500) und kann in
+   ≤ `warn_ankunft_s` (5 s) bei dir sein.
+2. **Robust unterlegen:** in 5 s wären sie ≥ 1 Kopf mehr als ihr (gezählt: sichtbar oder höchstens 5 s ungesehen),
+   oder dein Leben liegt unter 40 % und unter dem des nächsten Gegners, oder „klar unterlegen“ (Level und Gold) gegen
+   genau diese Köpfe.
+3. **Nicht schon auf dem Rückzug:** du läufst nicht in 2 s ≥ 300 näher an den sicheren Ort und bist nicht ≤ 5 s von
+   ihm.
+4. **Nicht dieselbe Gegnermenge in 60 s,** außer das Todesrisiko steigt um ≥ 0,2.
+
+Ungesehene Gefahr (Jungler, MIA) ist kein „Raus“ mehr. Höchstens ein Vorsicht-Satz je 90 s, nur jenseits des Flusses
+und wenn ≥ 2 Gegner seit ≥ 20 s fehlen, die schon bei dir sein können: „Du stehst tief: Viego und Twitch fehlen seit 30
+Sekunden.“ Ziel: ≤ 10 Warnungen je 30 min und ≤ 25 % der ungefragten Ansagen. Umsetzung und Messung:
+`buecher/messungen.md`, „Auftrag 008“.
+
 ### 7.6 Die sechs Fragen als Pflichtfelder
 
 Jede Handlung füllt `fragen` aus, und `grund` wählt daraus die **eine** Antwort, die den Ausschlag gibt:

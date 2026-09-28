@@ -322,9 +322,10 @@ def zurueck_saetze(h: Handlung, m=None, bleiben: Handlung | None = None) -> None
     quelle = bleiben if bleiben is not None else h
     wer = wer_kommt(quelle) or wer_kommt(quelle, 0.01)[:2]
     ort = h.daten["ort"]
-    # Auftrag 002, S2.3: "Raus zum Mid-Tier-1-Turm" wie in Buch 0, 9.3 - ein Wort kuerzer als "zu deinem", damit zwei
-    # Namen in 8 Woerter passen
-    raus = f"Raus zum {ort[len('deinem '):]}" if ort.startswith("deinem ") else f"Raus zu {ort}"
+    # Auftrag 008, A2: "Zurueck unter deinen Mid-Turm" - mit Besitzer, ohne "Tier" (vorher "Raus zum Mid-Tier-1-Turm",
+    # 101426 32:07: "Raus zum Turm ist schwammig - zu meinem Tier 1?")
+    from ..sprache import an, unter
+    raus = f"Zurück {unter(ort)}"
     leben = m.leben if m is not None else None
     if wer:
         h.grund = f"{liste(wer[:3])} {'kommt' if len(wer) == 1 else 'kommen'}"
@@ -342,8 +343,7 @@ def zurueck_saetze(h: Handlung, m=None, bleiben: Handlung | None = None) -> None
     h.daten["gefahr_von"] = wer[:3]
     weg = h.ziel.weg if h.ziel is not None else None
     if weg is not None and weg <= 4:
-        praep = "an" if ort.startswith("deinem") else "in" if ort.startswith("deiner") else "bei"
-        h.satz = f"Bleib {praep} {ort}: {h.grund}."
+        h.satz = f"Bleib {an(ort)}: {h.grund}."
     else:
         h.satz = f"{raus}: {h.grund}."
 

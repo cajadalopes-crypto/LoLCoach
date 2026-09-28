@@ -37,7 +37,9 @@ Sett seit eben tot (noch 14 s). Welle 7:4 fuer dich, Front in der Mitte.
 Fiddlesticks vor 30 s im oberen Fluss gesehen, 5976 Einheiten entfernt. Galio vor 6 s in der Flussmitte.
 Kai'Sa und Sona unten sichtbar."""
 modus = ["LANE"]
-soll = ["WELLE_REIN_UND_BACK", "BACK_JETZT", "ZURUECK"]   # Auftrag 007, Klasse 9: in GEFAHR ist es ZURUECK
+soll = ["WELLE_REIN_UND_BACK", "BACK_JETZT", "ZURUECK", "UNTER_TURM_FARMEN"]   # Auftrag 007, Klasse 9: in GEFAHR ist es ZURUECK
+# Auftrag 008, A1: Fiddlesticks war 30 s ungesehen - ungesehene Gefahr ist kein ZURUECK mehr; der sichere Plan "unter
+# deinem Turm farmen" ist richtig, geschuetzt bleibt: keine Platte, kein Trade (darf_nicht)
 darf_nicht = ["PLATTEN", "ALL_IN", "TRADE"]
 darf_nicht_sagen = ["Platte"]
 warum = """Der gegnerische Jungler war zuletzt auf deiner Seite; mit 37 % ohne Flash ist ein Gank ein sicherer
@@ -164,7 +166,8 @@ quelle = "Nachspielen 27.09.: 'Geh jetzt zurueck zu deinem Top-Tier-3-Turm, das 
 lage = """Riven im unteren Fluss bei der Drachengrube, 63 % Leben, Flash weg. Kai'Sa vor 7 s unten (6200),
 Sett vor 26 s unten, Sona vor 20 s unten. Brand, Corki und Tryndamere im eigenen unteren Jungle.
 Naechster eigener stehender Turm: der Top-Inhibitor-Turm, 31 s."""
-soll = ["ZURUECK"]
+# Auftrag 008, A1: keiner sichtbar und nah (Kai'Sa vor 7 s in 6200) - kein Rueckzug-Satz mehr; geprueft bleibt, dass kein
+# Turm auf der anderen Kartenseite als sicherer Ort genannt wird
 darf_nicht_sagen = ["Top-Tier-3-Turm", "Top-Inhibitor-Turm"]
 warum = """Sicherer Ort ist der naechste - hier die eigene Gruppe im unteren Jungle, nicht ein Turm auf der anderen
 Kartenseite (Buch 0, Kapitel 7.5)."""
@@ -260,7 +263,7 @@ id = "3715-ein-ziel-je-basis"
 fenster = ["37:20", "38:20"]
 quelle = "Kritik R1/R2, Einzelfall: 37:15 'zu deinem Team', 37:35 'Dann Baron.', 38:12 'Dann Top-Welle.'"
 lage = "Ein Basis-Aufenthalt, drei Ziele."
-darf_nicht_sagen = ["Dann Baron", "Dann Top-Welle"]
+darf_nicht_sagen = ["Dann Baron", "Dann Top-Welle", "Dann zur Top-Welle", "Dann zum Baron"]  # Auftrag 008, A2: neue Woerter
 warum = "Ein Ziel je Basis-Aufenthalt (Auftrag 007)."
 
 # --- Auftrag 007, Teil D (Kritik Runde 3) ---

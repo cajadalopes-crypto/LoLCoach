@@ -185,6 +185,12 @@ auswerten kann. Dann wird sie zum Auslöser eines WENDEPUNKT.
 - Neu ist eine **Untergrenze**. Ab 14:00 soll es keine Lücke > 60 s ohne gültigen, gesagten Plan geben, während Carlos
   lebt und nicht im Kampf ist (Kennzahl „Leerlauf“, Kapitel 7).
 
+**Nachtrag 4.1 (Auftrag 008, A1, 28.09.2026):** GEFAHR nur noch nach Buch 0, Nachtrag 7.5.1 (sichtbar, nah, robust
+unterlegen, nicht schon auf dem Rückzug, nicht dieselbe Menge in 60 s); ungesehene Gefahr höchstens als Vorsicht-Satz
+je 90 s. Warnungen (GEFAHR und VORSICHT) ≤ 10 je 30 min und ≤ 25 % der ungefragten Ansagen - Kennzahl in
+`werkzeuge/kennzahlen.py`. Dazu (A4) ab 14:00 höchstens einmal je 90 s ein Lagebild in einem ruhigen Moment (Buch 4,
+Kapitel 5).
+
 ## 5. Fragen (Schritt 6; ergänzt Buch 0, Kapitel 10)
 
 `kern/fragen.py` ordnet jede Frage einer Absicht zu. Die Tabelle aus Buch 0, 10.1 gilt, mit diesen Ergänzungen:

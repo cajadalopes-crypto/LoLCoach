@@ -300,6 +300,13 @@ class Sprechplan:
             # Grossschreibung bleibt: meist beginnt der Satz mit einem Champion
             a.text = "Ach nee: " + a.text
             self._widerruf = None
+        if (auffrischen := getattr(a, "auffrischen", None)) is not None:
+            # Kritik 008 (173159 22:17 "Back jetzt: 29 Prozent Leben" bei 13 %): was sich bis zum Sprechen geaendert
+            # hat, sagt der Satz so, wie es jetzt ist - der Kern gibt dafuer eine Funktion mit
+            try:
+                a.text = auffrischen(a.text)
+            except Exception:
+                pass
         a.gesprochen = zeit
         self.zuletzt[a.schluessel] = zeit
         if a.thema:

@@ -117,8 +117,10 @@ id = "0923-gewarnt-nicht-nebel"
 fenster = ["9:18", "9:40"]
 quelle = "Kritiker R1 (Widerspruch): 'Kha'Zix kam aus dem Nebel, niemand hatte Kha'Zix gesehen.' - 8:33 hiess es 'Kha'Zix kommen'"
 lage = "Riven stirbt mit 18 % im eigenen Jungle an Kha'Zix."
-darf_nicht_sagen = ["kam aus dem Nebel"]
-warum = "Wer eben angesagt war, kam nicht ungesehen."
+# Auftrag 008, A1: die Warnung von 8:33 ("Kha'Zix kommen") gibt es nicht mehr - Kha'Zix war ungesehen; damit
+# widerspricht "kam aus dem Nebel" nichts mehr. Geprueft bleibt: der Rueckblick nennt den, der dich getoetet hat.
+muss_nennen_eins = ["Kha'Zix"]
+warum = "Wer eben angesagt war, kam nicht ungesehen - seit A1 wird ein Ungesehener nicht mehr angesagt."
 
 # --- Auftrag 007 (Teil A 3-5, Teil B) ---
 

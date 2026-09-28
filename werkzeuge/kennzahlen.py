@@ -31,6 +31,9 @@
 
 Geht in sinnpruefung.py auf (deren Pruefungen stecken in 1-4 und 7).
 
+  - Auftrag 008: Warnungen (GEFAHR ohne Kampfrufe REIN/ANNEHMEN/DREHEN, und VORSICHT; A1: Soll <= 10 je 30 min und
+    <= 25 % der ungefragten),
+    vage Saetze (A2, kern.sprache.vage_formen: Soll 0, auch in Antworten)
   - Auftrag 003 (Buch 11, 7): ungefragte Ansagen ohne INFO_FLASH und WENDEPUNKT (Ziel <= 50 je 30 min), Leerlauf,
     Wendepunkt-Verzug, Widersprueche, Stichwort-Antworten, Antwortzeit (werkzeuge/fuehrmass.py); mit --fragen werden
     die Fragen aus <stamm>_sprechtaste.log zur Zeit eingespielt
@@ -238,6 +241,13 @@ def schranken_verstoesse(lauf: ns.Lauf) -> list[tuple[float, str]]:
                     ok, grund = kaufbar(name, inventar)
                     if not ok:
                         aus.append((t, f"Kauf {name}: {grund}"))
+                # Auftrag 008, A3.3: das Kontroll-Auge braucht einen Platz NACH den anderen Kaeufen (101426 28:39)
+                if "Kontroll-Auge" in treffer.group(1):
+                    from lolcoach.kaufplan import plaetze_nach
+                    andere = [re.sub(r"^(ein |eine |einen |den |die |das )", "", n.strip())
+                              for n in re.split(r", | und ", treffer.group(1))]
+                    if plaetze_nach(inventar, [n for n in andere if n != "Kontroll-Auge"]) < 1:
+                        aus.append((t, "Kauf Kontroll-Auge: kein Platz nach dem Kauf"))
     return aus
 
 
@@ -296,7 +306,17 @@ def kennzahlen(pfad: Path, kern: str = "neu", fragen: bool = False) -> dict:
             # Auftrag 003, Teil A 4 / Buch 11, 4: INFO_FLASH und WENDEPUNKT zaehlen nicht zum Ziel <= 50 je 30 min
             "ohne_flash_wp": sum(1 for a in gesagt if getattr(a, "_kategorie", None) not in ("INFO_FLASH", "WENDEPUNKT")
                                  and a.schluessel != "kern:INFO_FLASH"),
-            "fuehren": fuehrmass.kennzahlen(lauf, stamm)}
+            "fuehren": fuehrmass.kennzahlen(lauf, stamm),
+            # Auftrag 008, A1 und A2
+            "warnungen": [a for a in gesagt if getattr(a, "_kategorie", None) == "VORSICHT" or (
+                getattr(a, "_kategorie", None) == "GEFAHR" and a.schluessel not in ("kern:REIN", "kern:ANNEHMEN",
+                                                                                   "kern:DREHEN"))],
+            "vage": [(ns.gesprochen_um(a), v, a.text) for a in lauf.gesagt for v in _vage(a.text)]}
+
+
+def _vage(text: str) -> list[str]:
+    from lolcoach.kern.sprache import vage_formen, verbotene_gruende
+    return vage_formen(text) + verbotene_gruende(text)          # A2 und Buch 4, 4
 
 
 def ausgeben(k: dict) -> None:
@@ -306,6 +326,13 @@ def ausgeben(k: dict) -> None:
     ow = k["ohne_flash_wp"]
     print(f"   ohne INFO_FLASH und WENDEPUNKT (Auftrag 003, Ziel <= 50): {ow} "
           f"({ow / k['minuten'] * 30 if k['minuten'] else math.nan:.0f} je 30 min)")
+    w = k["warnungen"]
+    print(f"   Warnungen (Auftrag 008, A1: Soll <= 10 je 30 min und <= 25 %): {len(w)} "
+          f"({len(w) / k['minuten'] * 30 if k['minuten'] else math.nan:.1f} je 30 min, "
+          f"{100 * len(w) / k['ansagen'] if k['ansagen'] else 0:.0f} % der ungefragten)")
+    print(f"   Vage Saetze (A2, Soll 0): {len(k['vage'])}")
+    for t, v, s in k["vage"][:5]:
+        print(f"      {ns.uhr(t)} {v}: {s[:90]}")
     n, sek = k["lane_phase"]
     print(f"   Lane-Phase: {n} Ansagen in {sek / 60:.1f} min = {n / (sek / 30) if sek else math.nan:.2f} je 30 s "
           f"(Abnahme Schritt 3: <= 1)")

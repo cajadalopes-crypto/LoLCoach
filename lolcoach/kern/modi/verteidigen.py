@@ -11,7 +11,8 @@ from ...bewertung import TUERME, abstand
 from ..handlung import Handlung, Ziel
 from . import karte
 
-STUFE_WORT = {"aussen": "am äußeren Turm", "innen": "am inneren Turm", "Inhib": "am Inhibitor-Turm"}
+# Auftrag 008, A2: mit Besitzer ("an eurem inneren Turm")
+STUFE_WORT = {"aussen": "an eurem äußeren Turm", "innen": "an eurem inneren Turm", "Inhib": "an eurem Inhibitor-Turm"}
 
 
 def _eigene_tuerme(m) -> list[tuple[str, str, tuple[float, float]]]:
@@ -58,7 +59,7 @@ def kandidaten(m, cfg: dict) -> list[Handlung]:
         elif len(dort) >= 2 and wir < len(dort):
             h = Handlung("HALTEN_UNTER_TURM", Ziel("turm", f"deinem {lane}-Turm", vorn[2], weg), "VERTEIDIGEN", 10.0,
                          gewinn=0.5 * turmwert, grund=f"{_zahl(wir)} gegen {len(dort)}",
-                         satz=f"Bleib hinter dem Turm, nicht rein: {_zahl(wir)} gegen {len(dort)}. Klär nur, "
+                         satz=f"Bleib hinter eurem {lane}-Turm, nicht rein: {_zahl(wir)} gegen {len(dort)}. Klär nur, "
                               f"was kommt.")
             h.daten.update(am_turm=True, schutz=True)
             aus.append(h)
@@ -82,11 +83,10 @@ def _tauschen(m, cfg: dict, lane: str) -> list[Handlung]:
     for z in karte.turm_ziele(m):
         if z.lane == lane or z.weg > 20 or karte.rechtzeitig(z, z.weg + karte.turm_dauer(z, cfg["mitte"])):
             continue
-        name = z.name[4:] if z.name.startswith("den ") else z.name
         h = Handlung("TAUSCHEN", Ziel("turm", z.name, z.pos, z.weg), "VERTEIDIGEN",
                      z.weg + karte.turm_dauer(z, cfg["mitte"]), gewinn=karte.turm_gewinn(z, m, cfg),
                      grund="dort ist keiner",
-                     satz=f"Die {lane}-Seite ist verloren - drück den {name}, dort ist keiner.")
+                     satz=f"Die {lane}-Seite ist verloren - drück {z.name}, dort ist keiner.")
         h.daten["ziel_pos"] = z.pos
         aus.append(h)
     return aus

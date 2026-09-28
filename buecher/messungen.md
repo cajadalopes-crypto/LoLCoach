@@ -4,6 +4,205 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 008 – Carlos' Testpartie 101426 und Buch 4 (Kartenlage und Makro) (28.09.2026)
+
+Grundlage: `buecher/auftraege/008_auftrag.md` (neue Fassung: Teil 0, Teil A, Teil 1). Offline gemessen, der Coach wurde
+nicht gestartet.
+
+**Die Testpartie:** Carlos' 101426, Riven Mid gegen Aurora, echte Gegner, 34:46.
+- Live kamen 80 ungefragte Ansagen, davon 36 Warnungen.
+- Carlos: „immer noch komplett scheußlich“.
+- Notizen und Sprechtasten-Log habe ich zuerst gelesen; jeder Punkt daraus ist ein Szenario oder steht in `OFFEN.md`.
+
+### Teil 0
+
+- **008_frage.md: B.** Buch 4 statt Buch 2, `008_in_arbeit` gelöscht und neu angelegt.
+- **Die Antworten zu Drache gegen Inhibitor, „Raus“ im Recall und Baron-Buff:** Umgesetzt ist davon nur, was Teil A
+  und Buch 4 berühren:
+  - „Baron-Buff allein ist keine Belagerung“ galt schon (007, Auslöser c).
+  - Der Satz dazu heißt jetzt „Sie haben den Baron.“ statt „Baron weg.“ (Kritik).
+  - **Drache vor Inhibitor über den EV** und **Warnung im Recall-Kanal** sind **nicht gebaut**, siehe „Offen“.
+
+### Teil A – zuerst die Testpartie
+
+**A1 – Warnungen radikal seltener** (`kern/__init__._warnung_ohne_beleg`, `_vorsicht`; `[warnung]` in kern.toml;
+Nachträge Buch 0, 7.5.1 und Buch 11, 4.1). GEFAHR wird nur noch gesprochen, wenn alle vier Bedingungen gelten:
+1. Ein Gegner ist sichtbar und kann in ≤ 5 s bei dir sein.
+2. Ihr seid robust unterlegen:
+   - in 5 s ≥ 1 Kopf mehr, gezählt werden nur Sichtbare und bis 5 s Ungesehene;
+   - oder Leben < 40 % und unter dem des nächsten Gegners;
+   - oder „klar unterlegen“ nach Level und Gold gegen genau diese Köpfe.
+3. Du bist nicht schon auf dem Rückzug: nicht ≥ 300 näher in 2 s und nicht ≤ 5 s vom sicheren Ort.
+4. Dieselbe Gegnermenge kam nicht schon in den letzten 60 s, außer das Todesrisiko steigt um ≥ 0,2
+   (`[schranken]` 45 → 60 s, 0,15 → 0,2).
+
+**Ungesehene Gefahr:** höchstens der Vorsicht-Satz, einer je 90 s. Bedingungen:
+- ≥ 2 Gegner fehlen seit ≥ 20 s und können in ≤ 10 s bei dir sein;
+- dieselben Fehlenden nicht noch einmal in 180 s;
+- du stehst in ihrem Jungle oder ihrer Basis (nach der Kritik, siehe dort).
+
+„Xin oben gesehen: zurück hinter die Welle.“ (Buch 4, 5, Jungler nah) zählt ebenfalls als Vorsicht.
+
+**A2 – Konkrete Sprache** (`kern/sprache.py`):
+- **Turmnamen:**
+  - Besitzer und Lage: „dein äußerer Mid-Turm“, „euer innerer Bot-Turm“, „ihren inneren Top-Turm“.
+  - Rückzug: „Zurück unter deinen Mid-Turm: Aurora und Viego kommen.“
+  - Im Kampf: „Raus, zu deinem Turm!“ bzw. „Raus, zu eurem Top-Turm!“ oder „Raus, zu Kayn!“.
+  - Turmfall: „Ihr äußerer Mid-Turm ist weg.“, zwei Türme: „Zwei ihrer Türme weg.“
+- **Kurzform:** nie nur „Dann <Ort>.“, sondern immer mit Beobachtung („Dann zur Top-Welle: dein Team ist unten.“).
+- **„Dort nimmt sie sonst niemand“** nur mit dem Ort des Teams (Buch 4, 4).
+- **Prüfung:** Eine Regel `vage_formen` + `verbotene_gruende` gilt für
+  - das Szenario `sprache_konkret`,
+  - die Kennzahl „Vage Sätze“,
+  - den Test `konkrete_sprache` (jeder Turmname in jedem Fall, alle konstruierten Lagen).
+- **Nachgezogen:** 14 Szenario-Stellen auf die neuen Wörter. Jedes Verbot bekam die neue Form dazu, nichts wurde
+  gelockert.
+
+**A3 – Fehler aus 101426:**
+1. **Tot:** Tot heißt Respawn-Plan („Du lebst in 29 Sekunden wieder: kauf …, dann zurück auf Mid.“).
+   - „Ich bin tot“ ist jetzt eine Frage nach dem Plan.
+2. **AFK:** Die AFK-Regel ist aus (`sperre._afk`).
+3. **Kontroll-Auge:** nur mit einem Platz **nach** dem Kern-Kauf (`kaufplan.plaetze_nach`).
+   - **Warum R3 nicht griff:** Er prüfte jedes Item einzeln gegen das Inventar vor dem Kauf. Jetzt prüft er gemeinsam,
+     auch in `kennzahlen.py`.
+4. **Korrekturen:** „Er war ein paar Meter weg von mir“ ist eine Korrektur. Wen „er“ meint, steht in der vorigen Frage
+   (hier „Wo's Twitch?“).
+   - Die Antwort: „Stimmt, Twitch war bei dir, das hat die Karte zu spät gezeigt. Jetzt: …“.
+   - „Wo's Twitch?“ beantwortet jetzt der Kern aus der Kartenlage, vorher ging die Frage an Claude.
+
+**A4 – Lagebild** (`kern/kartenlage.py`):
+- **Auf Abruf** („Überblick?“, „Lage?“, „wo sind alle?“, Absicht LAGE), zwei Sätze: wer wo nach Kartenseite, Flashs mit
+  Uhrzeit, Tote, dann die Folgerung.
+  - Beispiel: „Naafiri und Yone Mitte, Caitlyn und Lux unten, Teemo tot bis 16:35. Oben ist 20 Sekunden frei.“
+- **Ungefragt ab 14:00:** höchstens einmal je 90 s, in einem ruhigen Moment, ≤ 16 Wörter.
+
+**A5 – Abnahme:** siehe „Kritik“.
+
+**101426, eigene Szenarien:** `2026-09-28_101426_auftrag008.toml`, **16 / 16 grün**.
+- Auf dem Stand vor 008 waren 14 davon rot.
+- Grün waren schon der Wächter 2531 und 2839: Der Kontroll-Auge-Satz kam in der Wiederholung nicht vor, dafür ist der
+  Unit-Test `kontrollauge_nur_mit_platz` rot.
+- Ein zweiter Wächter (20:11, Tod 20:16) ist nach A1 nicht haltbar, siehe „Offen“.
+
+### Teil 1 – Buch 4
+
+1. **Kartenlage** (`kern/kartenlage.py`):
+   - Je Gegner: letzte Sichtung (Seite, Alter), vermutliche Seite, MIA, Respawn, Flash/TP, Level, Item-Gold.
+   - Zusammengefasst: oben / Mitte / unten / unbekannt / tot, dazu das Fenster je Seite.
+   - Zu sehen im Dashboard (Kasten „Kartenlage“) und in `kern.kontext()`.
+   - Geprüft mit `werkzeuge/dashboard_nachspielen.py --kern` und einem Headless-Screenshot (164326, 16:10): Kasten da,
+     keine JS-Fehler.
+2. **Teamplan** (`kern/teamplan.py`):
+   - Kurven aus `lane_kurve.toml`, dazu der Stand in Gold-Punkten; daraus einer von vier Plänen.
+   - Der Satz kommt einmal ab 14:00, bei einem Umschwung erneut (Inhibitor, Baron, Seele, oder ±2000 Gold und damit ein
+     neuer Plan), höchstens einmal je 300 s.
+   - Bei Gleichstand zweier Handlungen gewinnt die passende (+1 EV).
+   - Beispiel 164326: „4000 Gold vorn und jetzt stärker: Drache und ihre Türme als Gruppe erzwingen.“
+3. **Warum-Regeln:**
+   - **Entscheidender Grund** (`fuehren.entscheidend`): der EV wird in Nutzen, Risiko und Zeit zerlegt. Entscheidend ist
+     die Größe, ohne deren Unterschied die Wahl gegen die zweitbeste kippt.
+     - Das Protokoll zeigt sie je Kern-Satz („Entscheidend: risiko (ohne ihn kippt die Wahl zu HALTEN)“).
+   - **WARUM-Antworten:** der Plan-Satz, dann die Alternative mit ihrem konkreten Nachteil (`fuehren.warum_satz`).
+     - Beispiel: „…, dort ist es sicherer. Zum Drachen: dort wäre Rumble in 15 Sekunden bei dir.“
+   - **Test gegen verbotene Gründe** über alle Satzbausteine (Quelltexte und konstruierte Lagen).
+4. **Makro-Infos** (`kern/makro.py`):
+   - Die Regeln: Teamplan, Jungler-Sichtung weit (nur wenn der Plan das Fenster nutzt) und nah, Gruppierung, Spike
+     (Items und Level 6 ihres Stärksten, wenn er vor dir liegt), drei von ihnen tot (als Wendepunkt).
+   - Budget: eine je 45 s, zusammen mit FENSTER und VORSCHAU.
+   - Doppelung: dieselbe Info höchstens einmal in 60 s, außer die Folgerung ändert sich.
+   - Ohne Wirkung geht die Info nur aufs Dashboard.
+   - Die ältere Jungler-FENSTER-Ansage (Buch 11) steht nur noch vor Plänen, die das Fenster nutzen.
+   - Objective-Vorlauf mit Grund.
+5. **Szenarien (Kapitel 6):** `*_buch4.toml`, **5 / 5 grün**.
+   - Auf `dac2581` waren alle rot außer dem Wächter 173159 10:58.
+   - `164326 1400-teamplan`, `173159 1400-teamplan` (Kurvensummen stehen im Szenario), `213624 1617-drei-von-ihnen-tot`.
+   - Die Jungler-Stelle liegt in **164326 30:48**: In 173159 gibt es keine (siehe „Abweichungen“).
+
+### Kennzahlen (Endstand, `kennzahlen.py --nur-kern`)
+
+| Partie | ungefragt je 30 min | ohne Flash/Wendepunkt | Warnungen je 30 min (Anteil) | vage Sätze | Leerlauf ab 14:00 |
+|---|---|---|---|---|---|
+| 101426 (live vorher: 80 Ansagen, 36 Warnungen) | 68 | 52 | **11,7** (17 %) | 0 | 59 % |
+| 164326 | 72 | 51 | 8,4 (12 %) | 0 | 54 % |
+| 173159 | 67 | 46 | 7,8 (12 %) | 0 | 52 % |
+| 144655 | 37 | 37 | 12,4 (33 %) | 0 | – |
+| 213624 | 78 | 60 | 9,6 (12 %) | 0 | 31 % |
+
+- **Warnungen** sind GEFAHR ohne Kampfrufe (Rein, Annehmen, Dreh um) plus VORSICHT.
+- **Vorher:** Auf dem Stand vor 008 hatte die Wiederholung von 101426 35 GEFAHR-Sätze in 35,9 min.
+- **Soll ≤ 10 je 30 min:** knapp verfehlt in 101426, dazu 144655 (vier Sätze in 10 min).
+
+**Tests:** `tests/alle.py` **10 / 10**, konstruierte Lagen **40 / 40**.
+
+**Szenarien:** **217 / 221 grün**, 3 übersprungen.
+- **Rot, alle schon vor 008:**
+  - die Wendepunkt-Probe in 3 Dateien (12 späte oder fehlende Sätze, vorher 29),
+  - `0944-erster-tower-was-jetzt`.
+
+**Neue Unit-Tests** (alle auf `dac2581` rot):
+- `konkrete_sprache`, `keine_verbotenen_gruende`, `warum_mit_vergleich`, `vorsicht_statt_raus`,
+- `viego_bleibt_viego`, `ihr_jungle_heisst_ihr_jungle`, `kontrollauge_nur_mit_platz`.
+
+### Kritik (Einzelheiten in `008_kritik.md`)
+
+| Partie | falsch je 30 min | Warum ja | hilft | nervt |
+|---|---|---|---|---|
+| 101426 | 2,5 | 91 % | 88 % | 10 % |
+| 164326 | 0,7 | 95 % | 91 % | 4 % |
+| 173159 | 0,8 | 92 % | 93 % | 2 % |
+| 144655 | 0,0 | 70 % | 83 % | 8 % |
+| 213624 | 0,0 | 89 % | 95 % | 5 % |
+
+Kein „gefährlich“. Nach der Zählung gebaut, ohne Nachzählung:
+- Vorsicht nur in ihrem Jungle (5 Fälle),
+- Respawn-Plan mit Kauf,
+- „Raus, zu eurem Top-Turm!“,
+- Leben-Zahl beim Sprechen,
+- „Sie haben den Baron.“
+
+### Abweichungen (entschieden nach Buch 4, Kapitel 1)
+
+1. **A1 „kommt näher“:** Auch wer schon in 1500 steht, zählt, wie `p_da` in 7.5.
+2. **A1 „klar unterlegen“:** gilt nur gegen die robust gezählten Köpfe (Level und Gold). Die Überlegenheits-Regel
+   selbst zählt Ungesehene mit `p_da ≥ 0,1`; in 101426 um 14:00 machte sie aus Aurora allein „drei gegen eins“.
+3. **A4 Lagebild:** 30 s Ruhe statt 90 s. Nach 14:00 gab es in 101426 keine Stille über 67 s, das Lagebild wäre also
+   nie gekommen. Dazu: kein sichtbarer Gegner, der in 15 s bei dir sein kann.
+4. **Vorsicht:** nur Gegner, die schon bei dir sein können; dieselben Fehlenden nicht noch einmal in 180 s; nur in ihrem
+   Jungle oder ihrer Basis. Das ist strenger als A1, nach der Probe (213624: acht Vorsicht-Sätze in 25 min) und der
+   Kritik.
+5. **MIA (Buch 4, 5)** geht im Vorsicht-Satz aus A1 auf. Ein eigener MIA-Satz hätte A1 unterlaufen.
+6. **Teamplan:** „skaliert besser“ erst ab 2 Kurvenpunkten Unterschied (die Kurve ist grob; 213624: −1 gegen 0).
+   Ohne „Ihr seid“, damit der Satz ≤ 14 Wörter hat.
+7. **„Drei von ihnen tot“** ist ein Wendepunkt und keine Makro-Info. Das Makro-Budget war in 213624 um 16:22 durch einen
+   FENSTER-Satz belegt.
+8. **Kapitel 6, Jungler-Sichtung in 173159:** Olaf war dreimal unten (10:58, 11:35, 18:28), Riven farmte oben, und der
+   Kern hatte keine Option, die das Fenster nutzt.
+   - Die positive Stelle liegt deshalb in 164326 um 30:48.
+   - 173159 um 10:58 ist der Wächter „ohne Wirkung, kein Satz“.
+9. **Entscheidender Grund:** Ungefragte Sätze behalten den Grund ihres Moduls (die Beobachtung). Die Gegenrechnung wirkt
+   in WARUM-Antworten und steht im Protokoll.
+10. **Kartenlage „stand“:** Level und Item-Gold aus der API, ohne die Schätzung aus Buch 7, 3.2.
+
+### Unterwegs gefunden und behoben
+
+- **Viego in fremder Gestalt:** Die API nennt ihn „Urgot“ (101426 5:25: „Aurora und Urgot kommen“, Urgot war Carlos'
+  Mitspieler). Jetzt aus `rawSkinName`.
+- **Rotes Team:** Für das rote Team war ihr Jungle „euer Jungle“ (`bereich_aus`; Carlos war in 101426 rot).
+  Betroffen waren Ortsangaben, `tief()` und `meine_seite`.
+- **Leben-Zahl:** Die Zahl im Satz war die vom Moment der Wahl, nicht vom Sprechen (173159 22:17: 29 % statt 13 %).
+- **Doppelte Doppelpunkte:** „Noch 8 Sekunden: Dann zu …: …“ heißt jetzt „Noch 8 Sekunden, dann zu …: …“.
+
+### Offen
+
+- **101426:** 11,7 Warnungen je 30 min und 2,5 „falsch“ je 30 min, jeweils vor den Fixes nach der Kritik gezählt bzw.
+  gemessen.
+- **Leerlauf ab 14:00:** 52–59 %; ungefragt 67–72 je 30 min.
+- **Abgebrochene Sätze:** Das ist der Transport im Sprechplan.
+- **Nicht gebaut** (Teil 0):
+  - Drache vor Inhibitor über den EV;
+  - Warnung im Recall-Kanal nur, wenn der erste Gegner vor Kanal-Ende plus 1 s da sein kann.
+- **20:16 in 101426:** Nach A1 kommt keine Warnung (sichtbar zwei gegen zwei, Viego 17 s ungesehen, Tod 5 s später).
+
 ## Auftrag 007 – Entscheidungen, die restlichen Fehlerklassen, Live-Tauglichkeit (28.09.2026)
 
 Grundlage: `buecher/auftraege/007_auftrag.md`. Offline gemessen, der Coach wurde nicht gegen ein Spiel gestartet. Die

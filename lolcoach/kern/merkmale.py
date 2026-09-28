@@ -164,7 +164,9 @@ def bereich_aus(x: float, y: float, mein_team: str, meine_lane: str | None) -> s
     if "Flussmitte" in ort:
         return "fluss_mitte"
     if "Jungle" in ort:
-        eigen = "eurem" in ort or ("blauen" in ort) == (mein_team == BLAU)
+        # Auftrag 008 (101426 26:59, Riven rot): minimap.ort sagt aus deiner Sicht "in seinem unteren Jungle" - ohne
+        # "blauen" im Text galt das fuer das rote Team als eigen, jeder Ausflug in ihren Jungle hiess "euer Jungle"
+        eigen = "eurem" in ort or ("seinem" not in ort and ("blauen" in ort) == (mein_team == BLAU))
         return f"jungle_{'eigen' if eigen else 'fremd'}_{'oben' if 'oberen' in ort else 'unten'}"
     return {"oben": "lane:Top", "unten": "lane:Bot", "auf der Mid-Lane": "lane:Mid"}.get(ort)
 
@@ -717,6 +719,18 @@ def _belagerung_von(bau, p, b, m: Merkmale):
         if len(da) >= 3:
             return "eure Basis", NEXUS[mein], f"{buff}, {zahl.get(len(da), len(da))} von ihnen in eurer Hälfte"
     return None
+
+
+def tief(m: Merkmale, rand: float = 0.06) -> bool:
+    """Auftrag 008, A1: jenseits des Flusses - in ihrer Kartenhaelfte (der Fluss laeuft auf der Minimap von oben links
+    nach unten rechts, x = y; die blaue Haelfte liegt unten links)."""
+    if m.bereich in ("jungle_fremd_oben", "jungle_fremd_unten", "basis_fremd"):
+        return True
+    if m.pos is None or m.p is None or not m.p.mein_team:
+        return False
+    from ..bewertung import BREITE, HOEHE
+    x, y = m.pos[0] / BREITE, 1.0 - m.pos[1] / HOEHE
+    return (x - y > rand) if m.p.mein_team == "ORDER" else (y - x > rand)
 
 
 def meine_seite(m: Merkmale) -> str | None:

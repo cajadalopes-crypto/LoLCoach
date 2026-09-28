@@ -39,14 +39,20 @@ WARUM_BEZUG = re.compile(r"soll|sollte|sagst|gesagt|meintest|nicht|(^|[^a-zäö�
 ENTWEDER = re.compile(r"(^|[^a-zäöüß])oder([^a-zäöüß]|$)")
 SOLL_ICH = re.compile(r"(^|[^a-zäöüß])(soll|sollte|kann|darf) ich")
 LAGE = re.compile(r"wie macht sich|wie steht|wie läuft|wie laeuft|wie sieht es (bei uns|insgesamt)|sorgen machen")
+# Auftrag 008, A4 (101426 26:45: "Ich weiss nie, wann wer wo ist ... keine Uebersicht"): das Lagebild auf Abruf
+LAGE_KARTE = re.compile(r"überblick|ueberblick|übersicht|uebersicht|(^|[^a-zäöüß])lage\b|wo sind (alle|die|sie)|"
+                        r"wer ist wo|wo steh(en|t) (alle|die gegner)|kartenlage")
 FLASH = re.compile(r"flash|fläch|flaech")
 TIMER = re.compile(r"wann (kommt|spawnt|ist)|timer|wie lange noch")
-WO = re.compile(r"(^|[^a-zäöüß])wo (ist|sind|steht|war)")
+WO = re.compile(r"(^|[^a-zäöüß])(wo (ist|sind|steht|war)|wo's|wos )")
 JETZT = re.compile(r"was mache ich|was mach ich|was jetzt|und jetzt|wo gehe? ich hin|wohin|was soll ich (jetzt|machen|tun)|"
                    r"was tue ich|was nun|welche welle|welche lane|was ist (der )?plan")
 KORREKTUR_BASIS = re.compile(r"(ich (bin|war) (in der|in die) (base|basis))|(bin|war) in der base")
 KORREKTUR_TOT = re.compile(r"(drache|herold|baron|larven)( ist)? (tot|weg|gemacht|down)")
-KORREKTUR_BEI_MIR = re.compile(r"(ist|sind) (jetzt )?bei mir")
+KORREKTUR_BEI_MIR = re.compile(r"(ist|sind|war|waren) (jetzt |doch |direkt |nur )?(bei mir|neben mir|(ein paar|paar|"
+                               r"wenige) meter (weg )?(von|neben|bei) mir)")
+# Auftrag 008, A3.1 (101426 32:13/32:16: "ich bin schon tot seit 10 Sekunden", "ja, ich bin auch tot")
+ICH_TOT = re.compile(r"(ich bin|bin) (schon |auch |doch |gerade )?tot")
 KORREKTUR_ALLE_TOT = re.compile(r"alle (sind )?tot|sind (doch )?alle tot")
 KORREKTUR_ORT = re.compile(r"(ich bin|bin) (jetzt )?(beim|am|an der|in der) (drache|drachen|baron|herold|larven|grube)")
 # Auftrag 004, Teil C 4: eine Frage nach der Gewissheit ("Warum bist du dir so sicher, dass ...?")
@@ -95,10 +101,10 @@ def absicht(frage: str) -> str:
         return "TIMER"
     if ENTWEDER.search(f) and len(optionen_in(f)) >= 2:
         return "ENTWEDER"
-    if LAGE.search(f):
+    if LAGE.search(f) or LAGE_KARTE.search(f):
         return "LAGE"
     if JETZT.search(f) or KORREKTUR_BASIS.search(f) or KORREKTUR_TOT.search(f) or KORREKTUR_BEI_MIR.search(f) \
-            or KORREKTUR_ORT.search(f):
+            or KORREKTUR_ORT.search(f) or ICH_TOT.search(f):
         return "JETZT"
     if SOLL_ICH.search(f):
         return "SOLL_ICH"
@@ -142,8 +148,28 @@ def _jetzt(kern) -> Handlung | None:
     return sagbar[0] if sagbar else None
 
 
+def _respawn_plan(kern) -> str:
+    """Auftrag 008, A3.1: tot bekommt den Respawn-Plan - Zeit, Kauf, Ziel -, nie "Farm deine Mid-Welle" (101426 32:07:
+    "Soll ich zu meinem Turm?" 18 s nach dem Tod -> "Nein. Farm deine Mid-Welle"; 32:22: "Bist du behindert?")."""
+    m = kern.m
+    p = kern.fuehrer.plan
+    h = p.handlung if p is not None else None
+    zeit = f"Du lebst in {max(1, int(round(m.respawn)))} Sekunden wieder" if m is not None and m.respawn else \
+        "Du lebst gleich wieder"
+    s = satz(h) if h is not None and h.art in ("KAUFEN", "WOHIN", "WOHIN_TP_LANE") else ""
+    if s:
+        return f"{zeit}: {s[:1].lower()}{s[1:]}"
+    k = getattr(m.b, "kauf", None) if m is not None and m.b is not None else None
+    lane = (m.meine_lane if m is not None else None) or "deine Lane"
+    if k is not None and getattr(k, "kaufen", None):
+        return f"{zeit}: kauf {' und '.join(k.kaufen[:2])}, dann zurück auf {lane}."
+    return f"{zeit}, dann zurück auf {lane}."
+
+
 def _jetzt_satz(kern, h: Handlung | None) -> str:
     """Der Satz zum Plan - oder, gibt es keinen sagbaren, der Rueckfall: die eigene Welle."""
+    if kern.m is not None and kern.m.tot:
+        return _respawn_plan(kern)                    # Auftrag 008, A3.1
     s = satz(h)
     if s and not (h is not None and h.art in ("FARMEN", "HALTEN")):
         return s
@@ -266,20 +292,20 @@ def _warum_nicht(kern, option: str) -> str:
         art, _, warum = eintrag.partition(": ")
         if art in arten:
             if warum.startswith("Leben"):
-                return f"Für {'einen Turm' if option == 'turm' else wort} fehlt dir Leben"
+                return f"Für {'einen ihrer Türme' if option == 'turm' else wort} fehlt dir Leben"
             if warum.startswith("p_tod"):
-                return f"{'Ein Turm' if option == 'turm' else wort} ist gerade zu riskant"
+                return f"{'Ihr nächster Turm' if option == 'turm' else wort} ist gerade zu riskant"
             if warum.startswith("klar unterlegen"):
                 return f"Dort sind sie klar stärker: {warum.split(', ', 1)[-1]}"
     if option == "turm":
-        return "Kein Turm in Reichweite, den du jetzt nimmst"
+        return "Keinen ihrer Türme nimmst du jetzt"
     if option == "team":
         return "Bei deinem Team ist gerade kein Kampf"
     if option == "back":
         return "Für Back fehlt der Grund: genug Leben, kein Kauf fällig"
     if option in ("top", "mid", "bot"):
         return f"Auf {wort} wartet gerade keine Welle, die sich lohnt"
-    return f"{wort} lohnt sich gerade nicht"
+    return f"Für {wort} sehe ich gerade kein Ziel"
 
 
 def _korrektur(kern, f: str, zeit: float) -> str | None:
@@ -304,7 +330,7 @@ def _lage(kern, p) -> str:
     tuerme_d = sum(1 for e in p.kills_von("TurretKilled") if e.team == die)
     gold = p.item_gold(wir) - p.item_gold(die)
     fuehrt = "führt" if kw >= kd else "liegt hinten"
-    s = (f"Ihr {fuehrt} {max(kw, kd)} zu {min(kw, kd)}, Türme {tuerme_w} zu {tuerme_d}, "
+    s = (f"Ihr {fuehrt} {max(kw, kd)} zu {min(kw, kd)}, ihr habt {tuerme_w} Türme, sie {tuerme_d}, "
          f"Drachen {len(p.drachen(wir))} zu {len(p.drachen(die))}, {abs(gold)} Gold {'vorn' if gold >= 0 else 'hinten'}.")
     h = _jetzt(kern)
     return s + (f" Jetzt: {satz(h)}" if h is not None else "")
@@ -317,6 +343,8 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
     m = kern.m
     h = _jetzt(kern)
     danach = kern.danach_text
+    if m is not None and m.tot and a in ("JETZT", "SOLL_ICH", "ENTWEDER", "DANACH"):
+        return _respawn_plan(kern), h                  # Auftrag 008, A3.1
     if a == "JETZT":
         korr = _korrektur(kern, f, zeit)
         if korr == "basis" and m is not None:
@@ -368,7 +396,7 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
                       if x.art in ("DRUECKEN", "MIT_GRUPPE", "PLATTEN") and x.art not in weg and x.ziel is not None
                       and (h is None or fuehren.ziel_label(x) != fuehren.ziel_label(h))), None)
             if c is not None:
-                return f"Nach dem Turm: {_mit_vorbehalt(c)}", h
+                return f"Nach ihrem Turm: {_mit_vorbehalt(c)}", h
         for e in kern.zeitleiste or []:
             n = e.in_s(m.zeit)
             if 5 <= n <= 180 and e.art in ("objective", "buff", "inhib"):
@@ -389,25 +417,22 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
             if h is not None and fuehren.ziel_label(h) not in letzte["text"].lower():
                 text += f" Jetzt: {_jetzt_satz(kern, h)}"
             return text, h
-        text = _jetzt_satz(kern, h)
+        # Buch 4, 4 (Auftrag 008): zwei Saetze - die entscheidende Beobachtung, dann die Alternative (die genannte
+        # oder die zweitbeste) mit ihrem konkreten Nachteil
+        if h is None or m is None or m.tot:
+            return _jetzt_satz(kern, h), h
         if genannt is not None:
             wort = OPTION_WORT.get(genannt, genannt)
             wort = wort[:1].upper() + wort[1:]
             c = _fuer_option(kern, genannt)
             if c is None:
-                text += f" {_warum_nicht(kern, genannt)}."
-            elif h is not None and c.ev < h.ev:
-                text += f" {wort} bringt weniger: {c.grund or fuehren.kurz(c)}" + (
-                    ", und mit Kampf - unsicher." if fuehren.stumm(c) else ".")
-            else:
-                text += f" {wort} geht auch: {c.grund or fuehren.kurz(c)}" + (
-                    ", aber mit Kampf - unsicher." if fuehren.stumm(c) else ".")
-        else:
-            alt = next((x for x in _sagbar(kern) if x is not h and h is not None
-                        and fuehren.kurz(x) != fuehren.kurz(h)), None)
-            if alt is not None:
-                text += f" {fuehren.kurz(alt)[:1].upper()}{fuehren.kurz(alt)[1:]} bringt weniger."
-        return text, h
+                return f"{fuehren.warum_satz(h, None, m, kern.cfg)} {_warum_nicht(kern, genannt)}.", h
+            if c.ev >= h.ev:
+                return (f"{wort} geht auch: {c.grund or fuehren.kurz(c)}" + (
+                    ", aber mit Kampf - unsicher." if fuehren.stumm(c) else ".")) + f" Jetzt: {_jetzt_satz(kern, h)}", h
+            return fuehren.warum_satz(h, c, m, kern.cfg) + (" Und mit Kampf - unsicher." if fuehren.stumm(c) else ""), h
+        alt = next((x for x in _sagbar(kern) if x is not h and fuehren.kurz(x) != fuehren.kurz(h)), None)
+        return fuehren.warum_satz(h, alt, m, kern.cfg), h
     if a == "GEWISSHEIT":
         return _gewissheit(kern, f, p, h), h
     if a == "ENTWEDER":
@@ -440,6 +465,12 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
             return f"Ja, geht auch: {_mit_vorbehalt(c)}", c
         return f"Nein, {fuehren.kurz(h)} bringt mehr: {h.grund or satz(h)}", h
     if a == "LAGE":
+        k = getattr(kern, "kartenlage", None)
+        if k is not None and m is not None and (LAGE_KARTE.search(f) or not LAGE.search(f)):
+            from . import kartenlage
+            vor = fuehren.kurz(h) if h is not None and h.art in ("NEHMEN", "BESTREITEN", "MIT_GRUPPE", "DRUECKEN",
+                                                                 "ZUR_GRUPPE", "PLATTEN") else None
+            return kartenlage.satz(k, m, plan_kurz=vor), h    # Auftrag 008, A4: wer wo, Flashs, Tote, Folgerung
         return _lage(kern, p), h
     if a == "TIMER":
         if FLASH.search(f) or wiederholt:
@@ -456,6 +487,8 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
         return (f"Als Nächstes: {als_text(kern.zeitleiste, m.zeit, 3)}." if kern.zeitleiste and m is not None
                 else None), None
     if a == "WO":
+        if (wo := _wo_gegner(kern, f)) is not None:
+            return wo, None                               # Auftrag 008, A4: aus der Kartenlage, ohne Claude
         from ..antworten import sofort
         return sofort(frage, p, lagebild), None
     if a == "KAUF":
@@ -469,6 +502,27 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
             return f"Noch {fehlt} Gold bis {item}: erst farmen, dann back.", h
         return (f"Gerade nichts zu kaufen: {satz(h)}" if h is not None else None), h
     return None, None
+
+
+def _wo_gegner(kern, f: str) -> str | None:
+    """Auftrag 008, A4 (101426 19:24 "Wo's Twitch?" ging an Claude): wo er ist bzw. zuletzt war, wie alt, wie weit - und
+    wann er bei dir sein kann."""
+    m = kern.m
+    if m is None or m.b is None:
+        return None
+    g = next((x for x in m.b.gegner if x.champion.lower().replace("'", "") in f.replace("'", "")
+              or x.champion.lower().split()[0] in f.split()), None)
+    if g is None:
+        return None
+    if g.s.tot:
+        return f"{g.champion} ist tot, noch {int(g.s.respawn or 0)} Sekunden."
+    if g.pos is None or g.seit is None:
+        return f"{g.champion} habe ich noch nicht gesehen."
+    weit = f", {int(round(g.abstand, -2))} von dir" if g.abstand is not None else ""
+    bald = f", kann in {int(g.ankunft)} Sekunden bei dir sein" if g.ankunft is not None and g.ankunft <= 20 else ""
+    if g.sichtbar:
+        return f"{g.champion} ist zu sehen, {g.ort}{weit}{bald}."
+    return f"{g.champion} war vor {int(g.seit)} Sekunden {g.ort}{weit}{bald}."
 
 
 def _kampf_antwort(kern, lagebild, h: Handlung | None) -> str:
@@ -513,6 +567,9 @@ def beantworte(kern, frage: str, p, lagebild=None) -> dict:
         a = letzte[1]
     wiederholt = letzte is not None and letzte[1] == a and zeit - letzte[0] <= cfg["antwort_wiederholung_s"]
     kern._frage_letzte = (zeit, a)
+    vorige = getattr(kern, "_frage_text_merken", None)
+    kern._frage_text_letzte = vorige                       # die Frage davor (Auftrag 008, A3.4)
+    kern._frage_text_merken = (zeit, frage.lower())
     if a == "OFFEN" or m is None:
         return {"text": None, "absicht": a, "ziel": None, "quelle": "claude"}
     if a == "NOTIZ":
@@ -673,10 +730,12 @@ def _korrektur_bei_mir(kern, f: str, zeit: float, p):
     if m is None or m.b is None or p is None or p.ich is None:
         return None
     namen = {g.champion: g for g in m.b.gegner}
-    texte = [e["text"] for e in reversed(getattr(kern, "_ansage_log", None) or [])]
-    if getattr(kern, "_antwort_letzte", None):
-        texte.insert(0, kern._antwort_letzte[1])
-    g = next((namen[n] for t in texte for n in namen if n in t), None)
+    # Auftrag 008, A3.4 (101426 19:38: "Er war ein paar Meter weg von mir" nach "Wo's Twitch?"): wen "er" meint, steht
+    # in dieser Frage, der vorigen Frage, der letzten Antwort oder den Ansagen der letzten 60 s - in dieser Reihenfolge
+    texte = [f] + [x[1] for x in (getattr(kern, "_frage_text_letzte", None), getattr(kern, "_antwort_letzte", None))
+                   if x is not None and zeit - x[0] <= 60.0] \
+        + [e["text"] for e in reversed(getattr(kern, "_ansage_log", None) or [])]
+    g = next((namen[n] for t in texte for n in namen if n.lower() in t.lower()), None)
     if g is None:
         return None
     k = getattr(kern, "korrekturen", None)
@@ -686,10 +745,15 @@ def _korrektur_bei_mir(kern, f: str, zeit: float, p):
     level, gold, _ = gegner_werte(g, m, kern.cfg["kampf"])
     vor_l, vor_g = p.ich.level - level, p.ich.item_gold - gold
     leben = m.leben or 0.0
+    if re.search(r"(^|[^a-zäöüß])(war|waren) ", f) and not re.search(r"(ist|sind) (jetzt )?bei mir", f):
+        # Vergangenheit (101426 19:38: "Er war ein paar Meter weg von mir"): die Lage war falsch - offen sagen, dann jetzt
+        return f"Stimmt, {g.champion} war bei dir, das hat die Karte zu spät gezeigt. Jetzt: {_jetzt_satz(kern, _jetzt(kern))}", None
     if leben >= 0.6 and (vor_l >= 3 or (vor_l >= 2 and vor_g >= 1500)):
         return f"Stimmt, {g.champion} ist bei dir: nimm den Kampf, Level {p.ich.level} gegen {level}.", None
+    from .sprache import unter
+    ort = m.b.sicherer_ort()[0] if m.b is not None else "deiner Basis"
     if vor_l <= -2 or leben < 0.4:
-        return f"Dann raus zum Turm: {g.champion} ist bei dir.", None
+        return f"Dann zurück {unter(ort)}: {g.champion} ist bei dir.", None
     return f"Stimmt, {g.champion} ist bei dir: bleib nah an deinem Turm, dort hilft er dir.", None
 
 

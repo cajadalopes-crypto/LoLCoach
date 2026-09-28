@@ -45,7 +45,7 @@ SPERRE = {
     "_objective_start": frozenset(),
     "_fenster": LANE_SEITE,                      # Lane-Gegner <= 3500: die Regel verlangt schon <= 1800
     "_wiedereinstieg": frozenset(("TOT",)),
-    "_afk": ALLE,
+    "_afk": frozenset(),                         # Auftrag 008, A3.2: ganz aus (101426 23:24, "Kayn ist AFK" war falsch)
 }
 
 # _plan (Entscheider): je Plan-Art - Lane-Plaene nur LANE/SEITE, "wohin" nur ausserhalb LANE
@@ -86,7 +86,7 @@ def entscheide(regel: str, a, modus: str | None, b, kern_spricht: bool = False) 
             respawn = b.ich.respawn if b is not None and b.ich is not None else 0.0
             return "sprechen" if modus == "TOT" and respawn >= TODESRUECKBLICK_AB else "stumm"
         if regel == "_afk":
-            return "stumm" if modus == "KAMPF" else "sprechen"      # Buch 7, 5.4: in KAMPF spricht nichts anderes
+            return "stumm"                       # Auftrag 008, A3.2: ganz aus
         return "stumm"
     s = a.schluessel
     if regel == "_plan":

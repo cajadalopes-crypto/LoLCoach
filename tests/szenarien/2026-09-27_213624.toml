@@ -71,7 +71,7 @@ id = "0111-raus-ohne-beleg"
 fenster = ["1:05", "1:25"]
 quelle = "Auftrag 002, S5.3: 1:11 und 1:17 zweimal 'Raus, zum Turm!' in einem Level-1/2-Kampf, den Riven gewann"
 lage = "Riven gegen Rumble, Level 1 bis 2."
-darf_nicht_sagen = ["Raus, zum Turm"]
+darf_nicht_sagen = ["Raus, zum Turm", "Raus, zu deinem Turm"]  # Auftrag 008, A2: neue Woerter
 warum = "RAUS im Kampf nur mit robustem Beleg (ein Kopf mehr bei ihnen, oder dein Leben unter 30 % und unter seinem), bis die Kampf-Eichung besteht."
 
 [[szenario]]
@@ -87,7 +87,7 @@ id = "towerdive-lass-ihn"
 fenster = [["15:14", "15:24"], ["16:44", "16:52"]]
 quelle = "Auftrag 002, S5.3: 15:25 'Ich habe Ziggs getowerdived und das ist easy' - der Coach sagte 'Lass ihn, Turm!'"
 lage = "Riven verfolgt Ziggs unter seinen Turm."
-darf_nicht_sagen = ["Lass ihn, Turm"]
+darf_nicht_sagen = ["Lass ihn, Turm", "Lass ihn, ihr Turm"]  # Auftrag 008, A2: neue Woerter
 warum = "Auch 'Lass ihn, Turm!' ist ein RAUS - ohne robusten Beleg stumm."
 
 # --- Auftrag 003, Teil A ---
@@ -113,7 +113,7 @@ id = "1621-66-prozent-mit-team"
 fenster = ["16:18", "16:25"]
 quelle = "Auftrag 003, Teil A 1 (Waechter: 'Raus: Caitlyn und Sona kommen' bei 66 %) - umgestellt in Auftrag 004, Teil B; Carlos 16:31: 'Warum sagst du, ich soll zurueckgehen? Gar keinen Sinn.'"
 lage = "Riven L13 mit 66 % Leben und zwei Mitspielern am inneren Mid-Turm, Caitlyn (L8, 32 %) und Sona kommen."
-darf_nicht_sagen = ["Raus zum", "Caitlyn und Sona kommen"]
+darf_nicht_sagen = ["Raus zum", "Zurück unter", "Caitlyn und Sona kommen"]  # Auftrag 008, A2: neue Woerter
 warum = "Auftrag 004, Teil B: Level 13 gegen 8, ihr seid drei - robust klar ueberlegen (Leben >= 60 %), der Plan mit der Gruppe haelt. Die 70-%-Grenze aus 003 gilt fuer dich allein (zwei klar unterlegene), nicht mit Team. Bestaetigt von Carlos (Auftrag 007, A 2)."
 
 # --- Auftrag 003, Buch 11 ---
@@ -123,7 +123,7 @@ id = "0944-turm-ist-down"
 fenster = ["9:44", "9:52"]
 quelle = "Buch 11, 0: 9:44 und 9:55 'Der erste Tower ist down, was jetzt?'"
 lage = "Carlos nimmt den aeusseren Top-Turm, der Drache lebt."
-muss_nennen_eins = ["Turm ist down"]
+muss_nennen_eins = ["Turm ist down", "Turm ist weg"]  # Auftrag 008, A2: neue Woerter
 warum = "Buch 11, 4: nach einem Wendepunkt kommt der naechste Plan sofort, mit dem, was passiert ist, vorn."
 
 [[szenario]]
@@ -170,7 +170,9 @@ id = "2411-rueckzug-episode"
 fenster = ["24:10", "24:22"]
 quelle = "Auftrag 007 (gefunden an der Wendepunkt-Probe): GEFAHR 'Raus zum Mid-Tier-1-Turm: Xin Zhao und Ziggs kommen' wurde nicht gesagt"
 lage = "Riven nach dem Inhibitor, drei Gegner kommen; eine Rueckzugs-Episode von 15:31 galt noch, weil ein stiller Back-Plan sie offen hielt."
-muss_nennen_eins = ["Raus", "raus"]
+# Auftrag 008, A1: um 24:11-24:15 kommen sichtbar Rumble und Ziggs (Xin Zhao 12 s weg) - gegen Riven mit 20+ Kills
+# "klar unterlegen" (Auftrag 003, A1), also keine Gefahr mehr; die Episoden-Regel (nur ZURUECK haelt eine Episode offen)
+# bleibt im Code, dieser Fall prueft sie nicht mehr. Das Szenario ist damit uebersprungen - Frage im Bericht 008.
 warum = "Nur ein Rueckzug haelt die Episode offen (Pruefung D) - eine neue Gefahr Minuten spaeter ist ein neuer Rueckzug."
 
 # --- Auftrag 007, Teil D (Kritik Runde 3) ---

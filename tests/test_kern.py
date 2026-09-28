@@ -200,6 +200,8 @@ def keine_floskeln():
     wurzel = Path(__file__).resolve().parent.parent / "lolcoach"
     verboten = ("bis sich etwas öffnet", "danach rechne ich neu", "ist gerade keine option")
     for datei in [*wurzel.glob("kern/*.py"), *wurzel.glob("kern/modi/*.py"), wurzel / "antworten.py"]:
+        if datei.name == "sprache.py":
+            continue                         # dort steht die Liste der verbotenen Floskeln (Buch 4, 4)
         text = datei.read_text(encoding="utf-8").lower()
         for f in verboten:
             assert f not in text, (datei.name, f)
@@ -218,10 +220,139 @@ def zahlen_wie_spieler():
     assert "/" not in sprechbar("Leben 1200/2000")
 
 
+def konkrete_sprache():
+    """Auftrag 008, A2: jeder Turm mit Besitzer und Lage, ohne "Tier", kein "Raus, zum Turm", kein Satz nur
+    "Dann <Ort>." - die Regel selbst, jeder Turmname in jedem Fall und die Saetze der konstruierten Lagen."""
+    from lolcoach import bewertung
+    from lolcoach.kern.sprache import dativ, nominativ, turm, unter, vage_formen
+    assert vage_formen("Raus zum Mid-Tier-1-Turm: Aurora und Viego kommen.")         # 101426, 36-mal
+    assert vage_formen("Raus, zum Turm!")
+    assert vage_formen("Dann Mid-Welle.") and vage_formen("Dann zu deinem Team.")
+    assert vage_formen("Drück den inneren Top-Turm: 35 Sekunden, bis einer kommt.")
+    assert vage_formen("Turm ist down: weiter auf den Nexus-Turm.")
+    assert not vage_formen("Zurück unter deinen Mid-Turm: Aurora und Viego kommen.")
+    assert not vage_formen("„Zu welchem Bot Tier 2?“ – Zu ihrem inneren Bot-Turm.")    # Carlos darf "Tier" sagen
+    for lane in ("Top", "Mid", "Bot"):
+        for stufe in bewertung.TIER:
+            for poss in ("dein", "euer", "ihr"):
+                for fall in ("nom", "akk", "dat"):
+                    assert not vage_formen(turm(poss, lane, stufe, fall) + "."), (poss, lane, stufe, fall)
+            ihr = bewertung.TURM_DE[stufe].format(lane=lane)
+            assert not vage_formen(f"Drück {ihr}.") and not vage_formen(f"{nominativ(ihr)} jetzt.")
+            assert not vage_formen(f"Mit der Gruppe zu {dativ(ihr)}.")
+            assert not vage_formen(f"Zurück {unter(bewertung.eigener_turm_name(('ORDER', lane, stufe), 'Top'))}.")
+    vage = [(r["id"], r["satz"], vage_formen(r["satz"])) for r in testlage.alle()
+            if not r.get("uebersprungen") and r["satz"] and vage_formen(r["satz"])]
+    assert not vage, vage
+
+
+def keine_verbotenen_gruende():
+    """Buch 4, 4 (Auftrag 008): kein Satzbaustein mit Floskel oder Tautologie, und "dort nimmt sie sonst niemand" nur mit
+    dem, wo dein Team ist - in den Quelltexten und in den Saetzen der konstruierten Lagen."""
+    from pathlib import Path
+    from lolcoach.kern.sprache import FLOSKELN, TAUTOLOGIEN, verbotene_gruende
+    assert verbotene_gruende("Geh zur Top-Welle: dort nimmt sie sonst niemand.")
+    assert not verbotene_gruende("Geh zur Top-Welle: dort nimmt sie sonst niemand, dein Team ist unten.")
+    assert verbotene_gruende("Drück den Turm, weil es sich lohnt.")
+    wurzel = Path(__file__).resolve().parent.parent / "lolcoach"
+    for datei in [*wurzel.glob("kern/*.py"), *wurzel.glob("kern/modi/*.py")]:
+        if datei.name == "sprache.py":
+            continue
+        text = datei.read_text(encoding="utf-8").lower()
+        for f in FLOSKELN + TAUTOLOGIEN:
+            assert f not in text, (datei.name, f)
+    schlecht = [(r["id"], r["satz"]) for r in testlage.alle()
+                if not r.get("uebersprungen") and r["satz"] and verbotene_gruende(r["satz"])]
+    assert not schlecht, schlecht
+
+
+def warum_mit_vergleich():
+    """Buch 4, 4 (Auftrag 008): WARUM in zwei Saetzen - die entscheidende Beobachtung, dann die Alternative mit ihrem
+    konkreten Nachteil; entscheidend ist die Groesse, ohne deren Unterschied die Wahl kippt."""
+    from types import SimpleNamespace as NS
+    from lolcoach.kern import fuehren
+    from lolcoach.kern.handlung import Handlung, Ziel
+    cfg = konfig()
+    rumble = NS(champion="Rumble", ankunft=15.0)
+    m = NS(zeit=1200.0, b=NS(gegner=[rumble]))
+    drache = Handlung("NEHMEN", Ziel("objective", "den Drachen"), "GRUPPE", 30.0, gewinn=900.0,
+                      grund="drei von ihnen sind tot")
+    turm = Handlung("DRUECKEN", Ziel("turm", "ihren inneren Top-Turm"), "SEITE", 30.0, gewinn=2000.0,
+                    grund="30 Sekunden, bis einer kommt")
+    for h, pt in ((drache, 0.05), (turm, 0.45)):
+        h.p_tod, h.verlust = pt, 1500.0
+        h.ev = sum(fuehren.ev_teile(h, m, cfg).values())
+    turm.daten["wer"] = [("Rumble", 0.4)]
+    assert fuehren.entscheidend(drache, turm, m, cfg) == "risiko"
+    s = fuehren.warum_satz(drache, turm, m, cfg)
+    assert s.count(".") == 2 and s.startswith("Zum Drachen: dort ist es sicherer") and "Rumble in 15 Sekunden" in s, s
+
+
+def ihr_jungle_heisst_ihr_jungle():
+    """Auftrag 008 (101426 26:59, Riven im roten Team): "in seinem unteren Jungle" war fuer das rote Team eigen."""
+    from lolcoach.kern.merkmale import bereich_aus
+    assert bereich_aus(0.69, 0.79, "CHAOS", "Mid") == "jungle_fremd_unten"
+    assert bereich_aus(0.69, 0.79, "ORDER", "Mid") == "jungle_eigen_unten"
+    assert bereich_aus(0.31, 0.21, "CHAOS", "Mid") == "jungle_eigen_oben"
+    assert bereich_aus(0.31, 0.21, "ORDER", "Mid") == "jungle_fremd_oben"
+
+
+def viego_bleibt_viego():
+    """101426 5:25: in Urgots Gestalt nennt die API Viego "Urgot" - nur rawSkinName sagt noch Viego ("Raus ...: Aurora
+    und Urgot kommen", Urgot war Carlos' Mitspieler)."""
+    from lolcoach import zustand
+    roh = {"championName": "Urgot", "rawChampionName": "game_character_displayname_Urgot",
+           "rawSkinName": "game_character_skin_displayname_Viego_34", "riotIdGameName": "x", "team": "ORDER",
+           "position": "JUNGLE", "scores": {}, "items": [], "summonerSpells": {}}
+    s = zustand._spieler(roh)
+    assert (s.champion, s.champion_id) == ("Viego", "Viego"), s
+    roh.update(championName="Riven", rawChampionName="game_character_displayname_Riven",
+               rawSkinName="game_character_skin_displayname_Riven_2")
+    assert zustand._spieler(roh).champion == "Riven"
+
+
+def kontrollauge_nur_mit_platz():
+    """Auftrag 008, A3.3 (101426 28:39 "Kauf Tiamat und ein Kontroll-Auge"): fuenf Items, Tiamat fuellt den letzten
+    Platz - kein Kontroll-Auge dazu; ohne Kern-Kauf passt es."""
+    from types import SimpleNamespace as NS
+    from lolcoach.kern.modi.basis import kontrollauge_dazu
+    inv = (3156, 6696, 3173, 1033, 1053, 3340)
+    assert not kontrollauge_dazu(NS(b=NS(ich=NS(items=inv), gold=1746), kauf=NS(kaufen=["Tiamat"], kosten=1200)))
+    assert kontrollauge_dazu(NS(b=NS(ich=NS(items=inv), gold=400), kauf=NS(kaufen=[], kosten=0)))
+
+
+def vorsicht_statt_raus():
+    """Auftrag 008, A1: ungesehene Gefahr ist kein "Raus" - hoechstens ein Vorsicht-Satz je 90 s, nur jenseits des
+    Flusses und wenn >= 2 Gegner seit >= 20 s fehlen."""
+    from types import SimpleNamespace as NS
+    from lolcoach.kern import Kern
+    k = Kern(stellung="neu")
+
+    def g(name, rolle, seit, sichtbar=False, ankunft=0.0):
+        return NS(champion=name, s=NS(tot=False, rolle=rolle), sichtbar=sichtbar, seit=seit, ankunft=ankunft)
+
+    def m(zeit, bereich="jungle_fremd_oben", seit_twitch=28.0, twitch_an=0.0):
+        return NS(zeit=zeit, bereich=bereich, pos=None, p=None, leben=1.0,
+                  b=NS(gegner=[g("Viego", "JUNGLE", 32.0), g("Twitch", "BOTTOM", seit_twitch, ankunft=twitch_an),
+                               g("Aurora", "MIDDLE", 0.0, True)]))
+
+    assert k._vorsicht(m(900.0, seit_twitch=12.0), "SEITE", []) is None     # nur einer fehlt >= 20 s
+    assert k._vorsicht(m(900.0, twitch_an=25.0), "SEITE", []) is None       # Twitch kann noch nicht bei dir sein
+    assert k._vorsicht(m(900.0, "jungle_eigen_oben"), "SEITE", []) is None   # nicht jenseits des Flusses
+    assert k._vorsicht(m(900.0), "KAMPF", []) is None
+    a = k._vorsicht(m(900.0), "SEITE", [])
+    assert a is not None and a.text == "Du stehst tief: Viego und Twitch fehlen seit 30 Sekunden.", a
+    assert k._vorsicht(m(960.0), "SEITE", []) is None                         # hoechstens einer je 90 s
+    assert k._vorsicht(m(995.0), "SEITE", []) is None                         # dieselben Fehlenden: 180 s
+    assert k._vorsicht(m(1085.0), "SEITE", []) is not None
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
                  gold_reicht_fuer_das_genannte_item, info_flash_kurz_und_gebuendelt, zahlen_wie_spieler,
-                 zwei_klar_unterlegene, keine_floskeln):
+                 zwei_klar_unterlegene, keine_floskeln, konkrete_sprache, viego_bleibt_viego, kontrollauge_nur_mit_platz,
+                 ihr_jungle_heisst_ihr_jungle, keine_verbotenen_gruende, warum_mit_vergleich,
+                 vorsicht_statt_raus):
         test()
         print(f"{test.__name__} OK")

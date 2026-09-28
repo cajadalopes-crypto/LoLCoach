@@ -36,7 +36,9 @@ Fiddlesticks noch 3748 entfernt - ANNEHMEN entsteht erst in 2500 (26:28); zeit d
 [[szenario]]
 id = "2631-zu-zweit-rein"
 zeit = "26:31"
-fenster = ["26:29", "26:38"]      # Auftrag 005: der Kampf; der Wendepunkt-Satz zum Turmfall 26:40 ist kein Kampfruf
+fenster = ["26:29", "26:34"]      # Auftrag 005: der Kampf; der Wendepunkt-Satz zum Turmfall 26:40 ist kein Kampfruf
+# Auftrag 008: Fiddlesticks stirbt 26:33 - danach ist der Kampf vorbei; "Drache mit Tryndamere: Level 17 gegen 13, ihr seid
+# vier gegen drei." (26:35) ist ein Plan-Satz nach dem Kampf, kein Kampfruf
 quelle = "Buch 7, 10"
 lage = """Nachgespielt: Riven L17, 100 %, unten; Fiddlesticks sichtbar 338 entfernt, Sett tot (31 s)."""
 soll = ["ANNEHMEN", "REIN"]
