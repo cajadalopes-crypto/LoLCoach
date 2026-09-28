@@ -17,6 +17,17 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 007 (Entscheidungen, Fehlerklassen, Live-Tauglichkeit) umgesetzt** - Zahlen in `buecher/messungen.md`
+("Auftrag 007"), Kritik in `007_kritik_runde3.md`, Bericht und Fragen in `007_bericht.md`.
+
+Offen aus Auftrag 007:
+- **Generalprobe mit eingeschaltetem Bildschirm** wiederholen (`python werkzeuge/generalprobe.py --ohne-gehirn
+  --ohne-review`): der Takt >= 10/s ueber dxcam ist noch nicht nachgewiesen (Bildschirm war aus, GDI: 6/s).
+- **HUD bei 32:9:** Annahme "Minimap am rechten Rand" - die erste echte Partie auf 7680 x 2160 prueft sie.
+- **164326 2,8 falsch je 30 min** (Schwelle 2): Top-Inhibitor gegen den Drachen daneben (Buch 6, 8 Rangfolge) -
+  Entscheidung; "Raus" waehrend des Recalls (Schranke) - Entscheidung.
+- **Flash-Clips** werden live gesammelt; die Erkennung erst ab 20 echten Clips. `bilder_aufraeumen` raeumt sie nicht auf.
+
 **Auftrag 006 (Wahrnehmung: Welle, Quest-Anzeige, Flash) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 006").
 - Welle 173159 jetzt 10 von 12 eindeutigen (hysterese_zu_mitte_s); offen 7:33 (Icon am Zonenrand) und 9:25
   (uebereinanderliegende Vasallen, Wellenleser.punkte).

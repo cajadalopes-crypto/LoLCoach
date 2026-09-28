@@ -4,6 +4,149 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 007 – Entscheidungen, die restlichen Fehlerklassen, Live-Tauglichkeit (28.09.2026)
+
+Grundlage: `buecher/auftraege/007_auftrag.md`. Offline gemessen, der Coach wurde nicht gegen ein Spiel gestartet. Die
+Generalprobe ist der verlangte Probelauf gegen einen nachgebauten Client.
+
+### Teil A – Entscheidungen
+
+1. **Wendepunkt und FARMEN:** Am Wendepunkt kommt jetzt immer ein Satz mit Grund und dem, was als Nächstes kommt
+   (`fuehren.farmen_satz`). Die Reihenfolge:
+   - ein Ereignis der Zeitleiste (≤ 90 s);
+   - „Rumble ist 40 Sekunden weg“;
+   - „bei 1300 Gold back für Eklipse“;
+   - „Spitzhacke ist schon bezahlbar: nach der Welle back“;
+   - danach;
+   - zuletzt „dort nimmt die Welle sonst niemand“.
+   Ein Halte-Plan bekommt „Warte hier: Baron spawnt in 40 Sekunden“ oder „Bleib bei deinem Team“, sonst Stille
+   (`halten_satz`).
+2. **Wächter 16:21:** bestätigt, der Vermerk im Szenario ist angepasst.
+3. **Respawn-Ziel in der Lane-Phase:** der äußere Turm, außer ≥ 2 Gegner standen in den letzten 10 s sichtbar ≤ 2000
+   davon. Dann heißt es: „Bleib am inneren Turm: A und B stehen an deinem äußeren.“ (`basis._sicherer`)
+   - 144655 1:59 jetzt: „Noch 8 Sekunden, zurück nach Top: an deinen äußeren Turm, dort kommt deine Welle.“
+   - Das Gefahr-Modell rechnet dort p_tod 1,00, obwohl nur Gangplank in der Nähe ist. Das alte Szenario
+     `0159-wohin-risiko` (p_tod ≤ 0,3) ist deshalb aufgehoben.
+4. **Belagerung:** neue Regel in Buch 5, Nachtrag 7.1 (`merkmale._belagerung_von`, Modus VERTEIDIGEN aus der Ferne).
+   - Abweichung: „auf einer Lane in eurer Hälfte“ wird als „in eurer Hälfte“ gelesen.
+   - Nexus-Rennen: in ihrer Basis, einer ihrer Inhibitoren weg, und ≥ 2 von euch dort oder ≥ 2 von ihnen tot.
+5. **Lange Objectives:** Baron, Ältester und Objectives mit Tötungszeit > 25 s sind nur klar überlegen, wenn höchstens
+   ein lebender Gegner länger als 20 s ungesehen ist (`ueberlegen.lage(lang=…)`). 164326 21:01 „Baron jetzt“ ist weg.
+6. **Flash-Clips** (Stufe 1, nur sammeln):
+   - Anlässe: jeder erkannte Sprung (Balkenspur, Minimap) und jeder Chat-Ping „Blitz“/„Flash“.
+   - Gespeichert werden 1,0 s vor bis 0,5 s nach dem Anlass, aus einem Ringpuffer der Spurbilder (~12/s).
+   - Format: 800 × 450, JPEG 70, ~0,4–0,7 MB je Clip, nach `aufnahmen/<stamm>_flashclips/<ms>_<anlass>/`.
+   - Geschrieben wird im Hintergrund. Test: `flash_clips_rund_um_den_anlass`.
+   - `bilder_aufraeumen` räumt die Clips nicht mit auf.
+
+### Teil B – Fehlerklassen aus 005_kritik_runde2.md
+
+Jede Klasse hat ein Szenario aus dem echten Fall, zuerst rot auf `e6caa6a`. Nur 1711 war schon grün und bleibt als
+Wächter.
+
+| Klasse | Fix | Szenarien |
+|---|---|---|
+| 6: Antwort und Ansage zählen verschieden | eine Zählung `ueberlegen.koepfe` (schon dort ≤ 2500, kommen in `kampf_fenster_s` = 30 s) für die Ansage (Überlegenheit, Objective-Grund) und die Antwort; der Satz sagt „zwei stehen schon dort, zwei kommen“ | `1054-gleich-gezaehlt` |
+| 9: Back ohne Anlass | kein Back in GEFAHR (dann ZURUECK) und in der Basis; kein neuer Back-Ruf ohne Ereignis; ein Back nur aus Gold löst eine eben gesagte Objective-/Turm-Ansage nicht ohne Ereignis ab | `0639`, `3459`, `3949`, `1711` |
+| 10: Ziel springt | ein Turmziel wechselt nur mit Wendepunkt; im Umwandel-Fenster bleibt es, bis es fällt, und fällt nicht auf einen niedrigeren Rang zurück; danach streng nach Buch 5, 8 (Nexus > Inhibitor > innen > außen); an der Grube mit Team kein Turm woanders | `3514`, `3554`, `4209`, `4233`, `2017` |
+| 11: Farmen statt Back | Gold ≥ nächster Kauf + 500 oder Leben < 40 %: FARMEN fällt weg, Back ist Kandidat (auch ohne Welle); Ausnahme Objective/Fenster ≤ 30 s | `1623`, `2556`, `2837` |
+| Einzelfälle | Flash-Meldung einmal je Verbrauch (`_flash_info`); ein Ziel je Basis-Aufenthalt, auch in der Warteregel | `0418`, `3715` |
+| Teil A | s. oben | `1259`, `0159-aeusserer-turm`, `2101`, `3650` |
+
+**Unterwegs gefunden und behoben:**
+- **Rückzugs-Episode (sicherheitsrelevant):**
+  - Jeder Plan „Back jetzt“ hielt die Episode offen, auch ein stiller. In 213624 blieb sie so von 15:31 bis 24:10
+    offen.
+  - „Raus zum Mid-Tier-1-Turm: Xin Zhao und Ziggs kommen“ (24:11, GEFAHR) galt als derselbe Rückzug und wurde nicht
+    gesagt.
+  - Jetzt hält nur ZURUECK die Episode offen. Szenario `2411-rueckzug-episode`.
+- **Dashboard:** `_zeitleiste_stand` hatte seit Auftrag 003 ein `lru_cache` mit Listen-Parameter. Der Kern-Kasten warf
+  bei jedem Takt TypeError. Gefunden in der Generalprobe.
+- **Wendepunkt-Messung:** Die Probe setzt einen Wendepunkt oft 1–2 s später als der Kern. Sie schob dann den Start
+  hinter genau den Satz, der ihn beantwortet (164326 0:19). Ein Plan-Satz, der ≤ 2 s vorher begann, zählt jetzt als
+  Antwort.
+
+**Angepasste Szenarien (widersprachen den Entscheidungen):**
+- `0944-nach-turmfall-kein-farmen`: „Turm ist down: Farm …“ mit Grund ist nach A 1 erlaubt, verboten bleibt die Floskel.
+- `0517-platte-ohne-flash` und `k-back-40-prozent` (konstruiert): In GEFAHR ist ZURUECK richtig (Klasse 9).
+- `0159-wohin-risiko`: s. A 3.
+
+### Teil C – Live-Tauglichkeit auf 7680 × 2160
+
+**C1, was kopiert wird:**
+- Die Kamera kopiert nie den ganzen Desktop, nur Ausschnitte.
+- Die Minimap (764 × 764) kommt in jedem Takt.
+- Das „ganze Spielfenster“ war bei randlosem League aber der ganze Schirm, 7680 × 2160 (66 MB). Es kam 12-mal je
+  Sekunde für die Balkenspur und 1-mal je Sekunde für HUD und Claude-Bild. Dabei wurde es auf 1600 × 450 gestaucht, mit
+  halb so hohen Lebensbalken wie vermessen: Die Balkenspur wäre blind gewesen.
+- **Fix:** Das Spielbild ist die 16:9-Mitte (3840 × 2160), also der 4K-Maßstab. Q W E R D F und V rechnen von der Mitte
+  aus. Der Chat rechnet in 16:9-Breite.
+- **Kamera:** dxcam baute jede Staging-Textur zuerst in voller Bildschirmgröße (66 MB) und verkleinerte sie erst beim
+  nächsten neuen Bild. Jetzt baut sie gleich in Ausschnittgröße. Der Kamera-Test prüft nur noch Textur = Ausschnitt.
+- **GDI-Rückfall** kopiert nur noch den Ausschnitt: Minimap 8 ms statt 125 ms.
+- **Fensterlage:** `game.cfg` steht auf randlos (WindowMode 2). Randlos nimmt League die Desktopauflösung, also
+  7680 × 2160 bei (0, 0).
+  - **Annahme, die erst die erste echte Partie prüft:** Das HUD sitzt bei 32:9 an den Rändern (Minimap rechts unten
+    außen).
+  - Stimmt das nicht, meldet der Coach eine blinde Minimap („minimap_blind_wird_gesagt“).
+
+**C2, Generalprobe:** 2 × 2,5 min, nachgebautes Fenster 7680 × 2160, Partie 164326, HUD im 32:9-Nachbau.
+
+| Messung | Ergebnis | Soll |
+|---|---|---|
+| Minimap gefunden | 904 / 906 Bilder | ja |
+| HUD gelesen | 137 / 137 mit Leben | ja |
+| Ausnahmen im Beobachter | keine | keine |
+| Takt | **6 / s (über GDI)** | ≥ 10 / s |
+| CPU / Speicher | Coach-Prozess 255 % eines Kerns (28 Kerne), Beobachter 66 %; 292 MB (Spitze 362 MB) | – |
+
+- **Der Takt ist nicht nachgewiesen.** Der Bildschirm war während der Probe aus (Carlos seit Stunden nicht am Rechner),
+  und die Desktop-Duplizierung (dxcam) lieferte kein Bild. Die Probe lief deshalb über GDI, und GDI braucht 83 ms je
+  Spielbild.
+- Zum Vergleich: live 4K in 164326, 173159 und 213624 lieferte im Median 25 Minimap-Bilder/s, im 5-%-Quantil 11–14. Nach
+  dem Fix kopiert 7680 genau dieselben Ausschnitte wie 4K.
+- **Offen:** Die Generalprobe mit eingeschaltetem Bildschirm wiederholen: `python werkzeuge/generalprobe.py
+  --ohne-gehirn --ohne-review`. Sie erkennt einen ausgeschalteten Schirm selbst.
+- **Probe-Umbau:** Die alten Probebilder fehlten. Jetzt nimmt sie Partie 164326 und das 32:9-HUD. Eine pulsierende
+  Ecke erzwingt echte Takte. Sie misst CPU und Speicher mit und beendet den Prozessbaum.
+- **Nebenwirkung:** Beim Start holte der Coach einmal das Review einer alten Probe nach, das ist ein Claude-Aufruf.
+
+**C3:** Der Kamera-Test ist grün, `tests/alle.py` **10 / 10**.
+
+### Teil D – Kritik Runde 3 und Nachzählung
+
+Klassen und Einzelheiten: `buecher/auftraege/007_kritik_runde3.md`. „falsch“ je 30 min:
+
+| Partie | 005 R1 (vorher) | 005 R2 | 007 R3 (`9487b8e`) | 007 Nachzählung (`de4500c`) | Soll |
+|---|---|---|---|---|---|
+| 164326 (echt) | 11,9 | 9,8 | 4,2 | **2,8** | ≤ 2 |
+| 173159 (echt) | 7,0 | 3,9 | 7,0 | **1,6** | ≤ 2 |
+| 144655 (echt) | 6,2 | 3,1 | 3,1 | **0,0** | ≤ 2 |
+| 213624 (Bot) | 19,1 | 15,5 | 12,0 | – | – |
+| 102112 (Bot) | 11,8 | 3,0 | 3,9 | – | – |
+
+- **„Gefährlich“** (ein Ruf nach vorn vor einem Tod): in R3 einer (173159 35:09, behoben), in der Nachzählung keiner.
+- **Nach R3 behoben** (`de4500c`):
+  - Wiederbelebte stehen an ihrem Brunnen.
+  - Kein „Warte hier“ am Wendepunkt.
+  - Kein Farm-Satz gegen ein eben gesagtes Back.
+  - Ein Objective-Ziel hält ohne Wendepunkt.
+  - Ein Turmziel verfällt mit seinem Fenster.
+  - Die Antwort nach dem Kauf nennt das Ziel.
+  - „X ohne Flash“ braucht 1,5 s statt 8 s Ruhe.
+- Die Nachzählung lief nur über die echten Partien, denn nur für sie gilt die Schwelle.
+- Vorsicht beim Vergleich: Jede Spalte hat andere Kritiker, und die Streuung ist groß (173159: 3,9 → 7,0 → 1,6).
+
+### Tests und Szenarien (Endstand `de4500c`)
+
+- `tests/alle.py` **10 / 10**.
+- Szenarien **190 / 194**, 2 übersprungen. Rot sind die Wendepunkt-Probe (3 Dateien) und die Frage 9:44.
+- Konstruierte Lagen **40 / 40**.
+- Die Wendepunkt-Probe hat 29 späte Sätze oder Wendepunkte ohne Satz. Vor den Fixes der Runde 3 waren es 20: Die
+  gestrichenen „Warte hier“-Sätze fehlen ihr jetzt. Vor 007 waren es rund 70.
+
+---
+
 ## Auftrag 006 – Wahrnehmung: Welle, Quest-Anzeige, Flash im Spielbild (28.09.2026)
 
 Grundlage: `buecher/auftraege/006_auftrag.md`. Offline gemessen, der Coach wurde nicht gestartet. Das Entscheiden bleibt
