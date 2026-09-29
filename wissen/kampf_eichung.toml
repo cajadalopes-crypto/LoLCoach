@@ -1,0 +1,49 @@
+# Kampfrechner (lolcoach/kampf_rechner.py) an Riot-Partien geeicht - werkzeuge/kampf_eichung_riot.py, Auftrag 020
+stand = "2026-09-29"
+quelle = "Match-V5 EUW Solo-Queue, Challenger bis Master (werkzeuge/riot_download.py)"
+partien = 1095
+schwelle = 0.5            # |Staerke| ab hier klar_vorn / klar_hinten
+tor = true                # >= 80 % je klares Urteil in jeder Menge, >= 30 % Abdeckung
+
+[alle]
+kaempfe = 35157
+klar_vorn = 11526
+treffer_vorn = 0.9702
+klar_hinten = 12252
+treffer_hinten = 0.966
+knapp = 11379
+knapp_wir_gewinnt = 0.4947
+abdeckung = 0.6763
+
+[je_seite_2]
+kaempfe = 8728
+klar_vorn = 2039
+treffer_vorn = 0.9362
+klar_hinten = 2237
+treffer_hinten = 0.9213
+knapp = 4452
+knapp_wir_gewinnt = 0.4867
+abdeckung = 0.4899
+
+[gleich_viele]
+kaempfe = 9577
+klar_vorn = 678
+treffer_vorn = 0.8009
+klar_hinten = 788
+treffer_hinten = 0.8046
+knapp = 8111
+knapp_wir_gewinnt = 0.4981
+abdeckung = 0.1531
+[aufnahmen]
+# Probe an Carlos' Aufnahmen (183125, 192113, 133448, 101426; Lagebild-Kampf je 20 s, Ausgang = Tote unter den
+# Gezaehlten in 15 s). Anders als in den Riot-Daten zaehlen live nur SICHTBARE Gegner, und "mit dir" erst ab 12 s Weg.
+klar_vorn_richtig = 13
+klar_vorn_falsch = 11
+klar_hinten_richtig = 10
+klar_hinten_falsch = 2
+knapp_wir = 10
+knapp_sie = 20
+# Folgerung: klar_vorn ist live NICHT belegt (54 %) - sprechen nur klar_hinten ("Nicht rein"), klar_vorn hoechstens
+# als Option. Neu messen, sobald mehr Aufnahmen mit Kaempfen da sind.
+klar_vorn_sprechen = false
+klar_hinten_sprechen = true

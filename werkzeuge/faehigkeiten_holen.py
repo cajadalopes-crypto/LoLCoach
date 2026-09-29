@@ -1,4 +1,4 @@
-"""Faehigkeitsformeln aller Champions von CommunityDragon -> wissen/faehigkeiten.json (einmal je Patch).
+"""Faehigkeitsformeln aller Champions von CommunityDragon -> wissen/faehigkeiten/cdragon.json (einmal je Patch).
 
 Je Champion die vier Faehigkeiten (Q W E R) mit Grundwerten je Rang, Effektwerten und den Rechnungen, die der
 Tooltip als Schaden auszeichnet (<physicalDamage>{{ Name }}</physicalDamage>, magicDamage, trueDamage). Nicht
@@ -22,7 +22,7 @@ from lolcoach import ddragon  # noqa: E402
 
 CDRAGON = "https://raw.communitydragon.org/latest/game"
 TEXTE = f"{CDRAGON}/en_us/data/menu/en_us/lol.stringtable.json"
-ZIEL = HIER / "wissen" / "faehigkeiten.json"
+ZIEL = HIER / "wissen" / "faehigkeiten" / "cdragon.json"
 PUFFER = HIER / "daten" / "cdragon" / "bin"
 TAG = re.compile(r"<(physicalDamage|magicDamage|trueDamage)>(.*?)</\1>", re.S | re.I)
 VAR = re.compile(r"@([A-Za-z0-9_.]+)(\*[\d.]+)?@(%?)")

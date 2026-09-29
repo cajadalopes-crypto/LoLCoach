@@ -62,7 +62,43 @@ def kampf_lage(m, p) -> tuple[str, float] | None:
     text = (f"{ort or 'in der Nähe'}: ihr {ihr} gegen {sie}"
             + (f"; tot bei ihnen: {', '.join(tote)}" if tote else "")
             + f"; dein Weg {int(round(weg))} s, dein Leben {pct(m.leben)}; KILL-CHECK: {check}")
+    mit_dir = weg <= KAMPF_MIT_DIR_S
+    global LETZTER_KAMPF
+    ich = getattr(p, "ich", None)
+    LETZTER_KAMPF = ([s.champion for s, _ in wir] + ([ich.champion] if mit_dir and ich else []), [g.champion for g in die])
+    if (u := kampf_urteil(m, p, [s for s, _ in wir], {s.name: le for s, le in wir}, die, mit_dir)) is not None:
+        ohne = len(b.unbekannte()) if hasattr(b, "unbekannte") else 0
+        text += (f"; RECHNER {'mit dir' if mit_dir else 'ohne dich (zu weit)'}: {u.text()}"
+                 + (f" (ohne {ohne} Gegner, die keiner sieht)" if ohne else ""))
     return text, weg
+
+
+KAMPF_MIT_DIR_S = 12.0       # so nah (Laufzeit) zaehlst du im Rechner mit
+LETZTER_KAMPF: tuple = ([], [])   # fuer Auswertungen: wer im letzten Kampf gezaehlt wurde
+
+
+def kampf_urteil(m, p, freunde: list, leben: dict, die: list, mit_dir: bool = True):
+    """Auftrag 020, 4: das Urteil des Kampfrechners fuer diesen Kampf (lolcoach/kampf_rechner.py) - mit dir, wenn
+    du in KAMPF_MIT_DIR_S dort sein kannst."""
+    try:
+        from .combo import _eigene_werte
+        from .kampf_rechner import Kaempfer, rechne
+        b = m.b
+        ich = p.ich
+        wir = [Kaempfer(s.champion_id, "wir", s.level, tuple(s.items), leben.get(s.name),
+                        m.ult_mitspieler.get(s.name), name=s.champion) for s in freunde]
+        werte = getattr(b.partie, "werte", None) if getattr(b, "partie", None) is not None else None
+        if mit_dir:
+            wir.append(Kaempfer(ich.champion_id, "wir", ich.level, tuple(ich.items), m.leben, b.ult,
+                                getattr(b.partie, "raenge", None) or None,
+                                _eigene_werte(ich.champion_id, ich.level, werte) if werte else None,
+                                name=ich.champion, ich=True))
+        sie = [Kaempfer(g.s.champion_id, "sie", g.s.level, tuple(g.s.items), g.leben,
+                        (False if g.ult else None) if getattr(g, "ult", None) is not None else None, name=g.champion)
+               for g in die]
+        return rechne(wir + sie)
+    except Exception:
+        return None
 
 
 def _symbol(o, gruben: dict, zeit: float) -> str:

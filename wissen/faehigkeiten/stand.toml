@@ -1,0 +1,19 @@
+# Faehigkeitswerte aller Champions (Auftrag 020, Buch 14 Schritt B)
+quelle = "CommunityDragon, raw.communitydragon.org/latest/game (Champion-bins: DataValues + mSpellCalculations, Tooltips aus lol.stringtable.json)"
+werkzeug = "werkzeuge/faehigkeiten_holen.py"
+geholt = "2026-09-26"
+patch = "16.19"                 # Data Dragon 16.19.1 zum Zeitpunkt des Holens (unveraendert am 29.09.)
+champions = 173
+
+# Zuerst geprueft (Auftrag 020): Meraki Analytics lolstaticdata
+# (cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions.json) - 171 Champions, juengste Aenderung
+# Patch 25.15 (Mitte 2025), seither nicht gepflegt. Graves Q dort 45-125 + 80 % Bonus-AD, im Spiel (16.19) 50-150 + 55 %.
+# Deshalb CommunityDragon.
+meraki = "veraltet (Stand 25.15)"
+
+# Abgleich mit combo.WIKI (Wiki, 26.09.2026), gerechnet mit faehigkeiten.schaden:
+#   Riven Q 45-165 + 60-80 % Bonus-AD, W 65-185 + 100 %, R2 (min) 100/150/200 + 55 %  - gleich
+#   Camille W 60-160 + 60 %, E 60-180 + 75 %                                         - gleich
+#   Graves Q (erster Treffer) 50-150 + 55 %, R 275/425/575 + 150 %                    - gleich
+# Nicht in den Daten (fehlt, also eher zu wenig Schaden): Rivens drei Q-Casts und Passiv, Camilles Q (% AD auf den
+# Treffer), Graves' Q-Detonation (80-260 + 45-105 %) und Schrotschuss; Graves' W (60-260 magisch) steht nur hier.

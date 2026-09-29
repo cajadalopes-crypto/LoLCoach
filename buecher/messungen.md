@@ -4,6 +4,54 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 020 – Kampfrechner, geeicht an Riot-Partien (Buch 14, Schritt B, 29.09.2026)
+
+**Fähigkeitswerte:** Meraki `lolstaticdata` geprüft. Es ist veraltet (jüngste Änderung Patch 25.15, 171 Champions;
+Graves Q dort 45–125 + 80 %, im Spiel 50–150 + 55 %). Deshalb CommunityDragon (Patch 16.19, 173 Champions), jetzt
+unter `wissen/faehigkeiten/cdragon.json` mit `stand.toml`.
+
+- **Abgleich mit `combo.WIKI`:** Rivens Q, W und R2, Camilles W und E sowie Graves' Q und R stimmen überein.
+- **Fehlt in den Daten** (dort wird also zu wenig Schaden gerechnet): Rivens drei Q und Passiv, Camilles Q und
+  Graves' Q-Detonation.
+
+**Rechner `lolcoach/kampf_rechner.py`:**
+- **Burst:** je Fähigkeit ein Treffer, R nur mit Ult, dazu Angriffe in 3 s, nach Resistenzen und Durchdringung.
+- **Ablauf in 0,25-s-Schritten:** Jeder greift sein schnellstes Ziel an. Die Stärke ist das Restleben wir minus
+  sie, von −1 bis 1.
+- **Ausgabe:** das Urteil, zwei Zahlen und die Annahmen.
+
+**Eichung** (`werkzeuge/kampf_eichung_riot.py`, Datensatz: 1095 Partien bei Stand 22:05, der Download lief noch; 35 157
+Kämpfe):
+- **Stand je Kampf:** Werte aus `championStats` des Minuten-Frames davor, Ränge aus `SKILL_LEVEL_UP`.
+- **Annahmen:** Leben voll, Ult bereit.
+- **Beteiligte:** aus den Kill-Ereignissen samt `victimDamageDealt`/`victimDamageReceived`.
+- **Sieger:** die Seite mit weniger Toten.
+
+| Menge (Schwelle 0,50) | Kämpfe | klar vorn: Treffer | klar hinten: Treffer | Abdeckung |
+|---|---|---|---|---|
+| alle | 35 157 | 97,0 % (11 526) | 96,6 % (12 252) | 67,6 % |
+| je Seite ≥ 2 (Teamkämpfe) | 8 728 | 93,6 % | 92,1 % | 49,0 % |
+| gleich viele Beteiligte | 9 577 | 80,1 % | 80,5 % | 15,3 % |
+
+- **Tor erreicht:** Beide klaren Urteile treffen in jeder Menge mindestens 80 %, bei mindestens 30 % Abdeckung.
+- **Warum die Schwelle so hoch liegt:** Die Beteiligten stammen aus Kill-Ereignissen, also gewinnt fast immer die
+  Seite mit mehr Köpfen. Die Basis „mehr Köpfe gewinnt“ trifft dort 96,0 %. Erst die Menge „gleich viele“ prüft
+  den Rechner selbst; deshalb ist sie Teil des Tors.
+- **Grenzen:** kein Leben zu Kampfbeginn, keine Abklingzeiten, keine Beteiligten ohne Treffer auf ein Opfer.
+
+**Probe an Carlos' Aufnahmen** (Lagebild-Kampf alle 20 s; Ausgang = Tote unter den Gezählten in 15 s):
+
+| Urteil | richtig | falsch |
+|---|---|---|
+| klar vorn | 13 | 11 |
+| klar hinten | 10 | 2 |
+
+- Bei „knapp“ gewannen 20-mal sie und 10-mal wir.
+- Live zählen nur **sichtbare** Gegner. Deshalb ist „klar vorn“ live nicht belegt (54 %).
+- `wissen/kampf_eichung.toml`: `klar_vorn_sprechen = false`, `klar_hinten_sprechen = true`.
+
+---
+
 ## Auftrag 018 – Was Carlos' Graves-Partie zeigt (183125, 29.09.2026)
 
 Stand nach 017/019, geprüft nur an Aufnahmen; Nachspiel über die API (Haiku), Protokoll in

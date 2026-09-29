@@ -4,7 +4,7 @@ Reasoning #1 ("reicht mein Full-Combo-Schaden jetzt fuer den Kill?") hatte Zahle
 (`combo.WIKI`, von Hand aus dem Wiki). Die Formeln stehen aber fuer alle Champions in den Spieldaten: je Faehigkeit
 Grundwerte je Rang (`DataValues`) und Rechnungen (`mSpellCalculations`: Grundwert + Anteil AD/AP/Leben ...). Welche
 Rechnung Schaden ist und welcher Art (normal/magisch/wahr), steht im Tooltip (`<physicalDamage>{{ TotalDamage }}`).
-`werkzeuge/faehigkeiten_holen.py` zieht das einmal in `wissen/faehigkeiten.json`; hier wird nur gerechnet.
+`werkzeuge/faehigkeiten_holen.py` zieht das einmal in `wissen/faehigkeiten/cdragon.json` (Stand: `stand.toml`); hier wird nur gerechnet.
 
 Was NICHT drinsteht und deshalb fehlt - alles zur vorsichtigen Seite (die Zahl ist eher zu niedrig):
   - wie oft eine Faehigkeit trifft (Rivens Q dreimal, Katarinas Dolche): gezaehlt wird ein Treffer,
@@ -18,7 +18,7 @@ import json
 from functools import lru_cache
 from pathlib import Path
 
-DATEI = Path(__file__).resolve().parent.parent / "wissen" / "faehigkeiten.json"
+DATEI = Path(__file__).resolve().parent.parent / "wissen" / "faehigkeiten" / "cdragon.json"
 
 # mStat der Spieldaten -> Schluessel in `werte` (0 fehlt in den Daten = Faehigkeitsstaerke)
 STAT = {0: "ap", 1: "ruestung", 2: "ad", 3: "tempo_angriff", 5: "mr", 6: "lauftempo", 11: "leben_max", 12: "leben"}

@@ -924,6 +924,29 @@ def turm_und_kampf_018():
     assert 3 < weg < 8, weg
 
 
+def kampf_rechner_020():
+    """Auftrag 020, 2: der Kampfrechner an konstruierten Lagen - Ueberzahl, Level/Items, Leben, Spiegel, Annahmen."""
+    from lolcoach.kampf_rechner import Kaempfer as K, rechne
+    s = 0.5
+    u = rechne([K("Graves", "wir", 11, ich=True), K("Udyr", "wir", 11), K("KogMaw", "sie", 11)], s)
+    assert u.urteil == "klar_vorn" and u.staerke > 0.5, u
+    assert u.zahlen[0].startswith("ihr ") and "Burst gegen KogMaws" in u.zahlen[0] and "gegen dein" in u.zahlen[1], u
+    u = rechne([K("Graves", "wir", 9, ich=True), K("Garen", "sie", 9)], s)
+    assert u.urteil == "knapp", u                                       # gleiches Level, keine Items
+    u = rechne([K("Graves", "wir", 13, items=(3031, 3036), ich=True), K("Garen", "sie", 9)], s)
+    assert u.urteil == "klar_vorn", u
+    u = rechne([K("Graves", "wir", 9, leben=0.2, ich=True), K("Garen", "sie", 9)], s)
+    assert u.urteil == "klar_hinten" and u.tote[0][1] == "Graves", u
+    u = rechne([K("Graves", "wir", 11, ich=True), K("Fizz", "sie", 11), K("Nautilus", "sie", 11)], s)
+    assert u.urteil == "klar_hinten" and "Fizz'" in u.zahlen[0], u      # Genitiv
+    assert any("Leben von Fizz unbekannt" in a for a in u.annahmen) and any("Ult von Nautilus" in a for a in u.annahmen)
+    # Spiegel: dieselbe Lage von der anderen Seite ergibt die umgekehrte Staerke
+    a = rechne([K("Riven", "wir", 8), K("Zed", "sie", 10)], s)
+    b = rechne([K("Zed", "wir", 10), K("Riven", "sie", 8)], s)
+    assert abs(a.staerke + b.staerke) < 1e-6, (a.staerke, b.staerke)
+    assert rechne([K("Riven", "wir", 8)], s) is None                   # eine Seite fehlt
+
+
 def kauf_018():
     """Auftrag 018, 4 (183125 34:26-36:47): Schwarzes Beil und Lord Dominiks Grüße teilen die einzigartige Gruppe
     LastWhisper (Spieldaten); Elixier ab Level 9, wenn sonst nichts passt - aber nur mit freiem Platz."""
@@ -966,6 +989,6 @@ if __name__ == "__main__":
                  vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal, anteil_geglaettet,
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
                  stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017, lagebild_019,
-                 objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018):
+                 objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018, kampf_rechner_020):
         test()
         print(f"{test.__name__} OK")

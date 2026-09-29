@@ -17,6 +17,9 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 020 (Kampfrechner, Buch 14 B) umgesetzt** - Riot-Eichung Tor erreicht (Schwelle 0,5), an Carlos'
+Aufnahmen aber klar_vorn nur 13/24 - live nur klar_hinten sprechen. Eichung mit vollem Download wiederholen.
+
 **Auftrag 018 (Graves-Partie 183125) umgesetzt** - Objective-Symbole (oben 99,5 %, unten 97,7 %), Plan in der Basis,
 Turm mit Stufe, einzigartige Item-Gruppen und Elixiere, Kampf in der Naehe mit Kill-Check, Tod kurz. Offen: Elixier
 ohne freien Platz widerspricht Carlos' Annahme im Auftrag (Spieldaten + 36:47 sagen: braucht Platz) - bei Gelegenheit

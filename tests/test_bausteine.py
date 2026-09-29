@@ -530,7 +530,7 @@ def combo_rechnung():
 
 
 def faehigkeiten_aus_spieldaten():
-    """Formeln aller Champions (CommunityDragon, wissen/faehigkeiten.json) gegen die von Hand geprueften Wiki-Werte:
+    """Formeln aller Champions (CommunityDragon, wissen/faehigkeiten/cdragon.json) gegen die von Hand geprueften Wiki-Werte:
     Riven Q/W/R, Graves R, Camille W stimmen auf den Punkt. Gegner-Raenge aus Level + Skill-Reihenfolge; sein Combo
     als Untergrenze gegen dein Leben; Nunus Q (1200 gegen Vasallen) und Maximalwerte sind draussen."""
     from lolcoach import combo, faehigkeiten as fa
