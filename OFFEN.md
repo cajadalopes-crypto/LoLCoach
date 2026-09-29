@@ -17,6 +17,9 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 019 (Buch 14 A: Lagebild, API) umgesetzt** - Haiku ueber die API (1,6 s, ~0,25 $ je 30 min). Offen: Soll-Liste
+~61 % (Ziel 80 % in Schritt C), I4 Lane-Gegner 6/12, Flash 183125 9/13; Riot-Schluessel in Schritt B (laeuft nach 24 h ab).
+
 **Auftrag 017 (Inhalt statt Takt) gebaut, Messung offen** - siehe `buecher/auftraege/017_bericht.md`; die Messung
 (Soll-Liste nachher, Fuellsaetze, Widersprueche, I1-I4, Latenz im Nachspiel) holt 019 nach. Latenz-Soll (<= 3 / <= 5 s)
 verfehlt: Sonnet denkt adaptiv nach, per CLI nicht abschaltbar.

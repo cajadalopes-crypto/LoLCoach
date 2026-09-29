@@ -64,6 +64,16 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
                                if kern_ablage else None)
         kern_.makro_stratege = makro_
         print(f"Makro-Stratege: {'an' if makro_.aktiv else 'aus ([stratege] aktiv = false)'}", flush=True)
+    try:
+        from . import llm_api
+        if llm_api.aktiv():                      # Auftrag 019: Claude ueber die API, Kosten je Partie
+            if kern_ablage:
+                llm_api.KOSTEN.datei = kern_ablage.with_name(kern_ablage.name.replace("_kern.jsonl", "_kosten.json"))
+            print("Claude: ueber die API (Kosten in <partie>_kosten.json)", flush=True)
+        else:
+            print("Claude: ueber das Abo", flush=True)
+    except Exception:
+        pass
     gemeldet: set = set()
 
     def sicher(name: str, f, *a):

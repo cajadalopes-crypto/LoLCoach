@@ -166,7 +166,9 @@ VOR_DANACH = _re.compile(r"(danach|dann)\W*(\w+\W+){0,6}$", _re.I)
 ERHOLUNG = _re.compile(r"back|recall|heil|kauf|respawn|basis|lebst|zurück", _re.I)
 VOR_VERNEINT_DANACH = _re.compile(r"^\W*(\w+\W+){0,4}(nicht|verboten|zu riskant|gestrichen|lass|vergiss)", _re.I)
 INNERE = _re.compile(r"\bR[12]\b|\bEV\b|p_tod|todesrisiko\W+(\w+\W+){0,3}\d|\b\d[.,]\d\d\b|\bkerns?\b|kandidat|"
-                     r"gesperrt|\bmodell\b|hysterese|\bwert [+-]?\d", _re.I)
+                     r"gesperrt|\bmodell\b|hysterese|\bwert [+-]?\d|"
+                     # Auftrag 019: Haiku sagte "Der Entwurf passt nicht" (Nachspiel 101426, fuenfmal)
+                     r"\bentwurf", _re.I)
 ENTWARNUNG = _re.compile(r"kein(e|en)? (gank-?)?(risiko|gefahr|sorge)|keine angst|weit weg|in seiner (basis|base)|"
                          r"in der (basis|base)|ist eh (in|im|weg)|steht (eh |noch |gerade )?(in|im) (seiner|der) (basis|base)|"
                          r"\bsafe\b|\bsicher\b", _re.I)

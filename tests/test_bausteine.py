@@ -1314,6 +1314,8 @@ def antwort_ab_dem_ersten_teilsatz():
 
     alt = llm._starte, llm._programm
     llm._starte, llm._programm = Lauf, (lambda: "claude")
+    import os
+    os.environ["LOLCOACH_LLM_WEG"] = "abo"      # Auftrag 019: dieser Test prueft den Abo-Weg, nie die echte API
     try:
         llm.vorhalten("sonnet", "S", "low")
         assert Lauf.gestartet == 1

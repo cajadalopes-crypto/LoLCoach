@@ -42,6 +42,34 @@ def _json_oder_nichts(zeile: str) -> dict | None:
         return None
 
 
+_API_AUS_BIS = [0.0]
+
+
+def _ueber_api():
+    """Das Modul llm_api, wenn Claude ueber die API laufen soll (und sie nicht eben ausgefallen ist)."""
+    import time
+    if time.monotonic() < _API_AUS_BIS[0]:
+        return None
+    try:
+        from . import llm_api
+        return llm_api if llm_api.aktiv() else None
+    except Exception:
+        return None
+
+
+def _api_ausfall(e: Exception) -> None:
+    """Die API faellt aus: einmal im Log, 120 s lang das Abo (Buch 14, A.3: Ersatz)."""
+    import time
+    if time.monotonic() >= _API_AUS_BIS[0]:
+        print(f"  Claude-API: Ausfall ({type(e).__name__}: {str(e)[:100]}) - 120 s lang ueber das Abo", flush=True)
+    _API_AUS_BIS[0] = time.monotonic() + 120.0
+
+
+def _abo_modell(modell: str) -> str:
+    """Auf dem Abo gibt es nur sonnet (haiku antwortete ueber die Kommandozeile nicht, Auftrag 017)."""
+    return "sonnet" if modell in ("schnell", "stark", "haiku") or modell.startswith("claude-") else modell
+
+
 def frage(prompt: str, system: str | None = None, modell: str = "sonnet", timeout: float = 120,
           aufwand: str | None = None, bilder: list[bytes] | None = None) -> str:
     """Gemessen am 26.09.2026 ueber das Abo: sonnet 4-11 s je Frage, haiku 20-60 s (!).
@@ -49,7 +77,14 @@ def frage(prompt: str, system: str | None = None, modell: str = "sonnet", timeou
     Werkzeuge, keine MCP-Server, keine Projektdateien (Arbeitsordner = Temp),
     Frage ueber stdin (lange Lagen sprengen sonst die Kommandozeile).
     `bilder`: JPEG-Bytes (Spielbildschirm), gehen als Bild-Bloecke mit - dann ueber
-    stream-json (gemessen: Bild + Frage in 4,5 s)."""
+    stream-json (gemessen: Bild + Frage in 4,5 s).
+    Auftrag 019: mit API-Schluessel ([llm] weg = "api") zuerst ueber die API; faellt sie aus, das Abo."""
+    if (api := _ueber_api()) is not None:
+        try:
+            return api.frage(prompt, system=system, modell=modell, timeout=min(timeout, 60), bilder=bilder)
+        except Exception as e:
+            _api_ausfall(e)
+    modell = _abo_modell(modell)
     befehl = [_programm(), "-p", "--model", modell, "--tools", "",
               "--no-session-persistence", "--strict-mcp-config", "--disable-slash-commands"]
     if bilder:
@@ -157,6 +192,8 @@ def vorhalten(modell: str = "sonnet", system: str | None = None, aufwand: str | 
               anzahl: int = 1) -> None:
     """Haelt `anzahl` wartende Prozesse fuer genau diese Einstellung bereit (nichts, wenn schon genug frisch warten)."""
     import time
+    if _ueber_api() is not None:
+        return                       # Auftrag 019: ueber die API braucht es keinen wartenden Abo-Prozess
     schluessel = (modell, system, aufwand)
     weg = []
     with _VORRAT_SCHLOSS:
@@ -208,6 +245,21 @@ def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = 
     vorhalten. Gibt die ganze Antwort zurueck."""
     import threading
     import time as _t
+    if (api := _ueber_api()) is not None:
+        # Auftrag 019: ueber die API (schneller, parallel moeglich); geht nichts raus, bevor sie ausfaellt, das Abo
+        gesagt = [False]
+
+        def weiter(s):
+            gesagt[0] = True
+            bei_satz(s)
+        try:
+            return api.frage_strom(prompt, weiter, system=system, modell=modell, timeout=min(timeout, 30),
+                                   bei_fertig=bei_fertig, messung=messung, bilder=bilder)
+        except Exception as e:
+            _api_ausfall(e)
+            if gesagt[0]:
+                raise LLMFehler(f"API brach mitten in der Antwort ab: {e}")
+    modell = _abo_modell(modell)
     t0 = _t.monotonic()
     schluessel = (modell, system, aufwand)
     lauf = _aus_vorrat(schluessel)

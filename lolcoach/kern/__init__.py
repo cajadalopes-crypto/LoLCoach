@@ -121,7 +121,8 @@ def zeit_jetzt(text: str, alter_s: float, zeichen_pro_s: float) -> str:
     hinauf. Minuten-Angaben (ab 90 s) bleiben: dort machen ein paar Sekunden nichts aus."""
     def neu(m, vor: int) -> str:
         n = int(m.group(2)) + vor * (alter_s + m.start() / zeichen_pro_s)
-        return f"{m.group(1)} {max(1, int(round(n)))} Sekunden"
+        z = max(1, int(round(n)))
+        return f"{m.group(1)} {z} Sekunde{'n' if z != 1 else ''}"        # nicht "in 1 Sekunden" (Auftrag 019)
     text = ZAEHLT_RUNTER.sub(lambda m: neu(m, -1), text)
     return ZAEHLT_HOCH.sub(lambda m: neu(m, 1), text)
 
@@ -234,8 +235,10 @@ class Kern:
         self._ohne_ort_seit: float | None = None  # Auftrag 009: seit wann die Minimap dich verloren hat
         self._vorsatz: tuple[float, str] | None = None  # Auftrag 010, 2: Bestaetigung vor dem naechsten Plan-Satz
         self._gold_verlauf: deque = deque()        # (Zeit, Gold) - dein Einkommen fuer den Back-Bedarf
+        from ..welt import Chronik
+        self.chronik = Chronik()                 # Auftrag 019: Ereignisse fuer das Lagebild (welt.py)
         from .pflicht import Pflicht
-        self.pflicht = Pflicht()                 # Auftrag 016, 1: Jungler, Lane-Gegner weg (Flash: _flash_info)
+        self.pflicht = Pflicht()                # Auftrag 016, 1: Jungler, Lane-Gegner weg (Flash: _flash_info)
         self.auge_nein_bis = -1e9                # Auftrag 016, 5: Carlos sagt Nein zum Kontroll-Auge - 5 min keins
         self._verkauf_gesagt: tuple[float, str] | None = None     # Auftrag 016, 5: Verkaufen einmal, mit Grund
         self._flash_offen: dict = {}
@@ -287,6 +290,7 @@ class Kern:
         self._stumm_takt = None
         if m is not None and self.stellung in ("schatten", "neu"):
             try:
+                self.chronik.takt(p, m.b, lagebild)      # Auftrag 019: "seit dem letzten Aufruf" fuers Lagebild
                 ansagen = self.schritt(m, self.modus.aktuell, p)
                 if ansagen:
                     ansagen = [a for a in ansagen if not self._unsicher(a, m)]

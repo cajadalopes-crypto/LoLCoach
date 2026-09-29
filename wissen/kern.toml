@@ -488,3 +488,12 @@ ereignis_leben_faellt = 0.15
 [kampf.champion]                 # Startwerte; Buecher 8-10 ersetzen sie je Champion
 Riven = { reichweite_rein = 650, flash_zusatz = 400, kern = ["E", "W"], flucht = { E = 250, Q = 260 } }
 standard = { reichweite_rein = 550, flash_zusatz = 400, kern = [], flucht = {} }
+
+[llm]                            # Auftrag 019 (Buch 14, A.3): Claude ueber die API oder das Abo
+weg = "api"                      # "api" (Schluessel in geheim/claude_api_key.txt) | "abo" (Kommandozeile, wie bisher)
+schnell = "claude-haiku-4-5"     # ohne Nachdenken
+stark = "claude-sonnet-5-5"      # Nachdenken aus (thinking between_tools, effort low)
+modell_lane = "schnell"          # Lane-Anlaesse (Welle, Kanone, Sichtungen)
+modell_frage = "schnell"         # Carlos' Fragen
+modell_plan = "schnell"          # Plan-Wechsel an Wendepunkten - Messung 019: Sonnet trifft die Soll-Liste nicht besser
+                                 # (61,3 % wie Haiku), braucht aber 2,6 / 5,5 s statt 1,6 / 2,6 s und kostet das Doppelte

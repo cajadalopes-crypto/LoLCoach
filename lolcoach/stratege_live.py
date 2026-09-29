@@ -117,14 +117,53 @@ def wellen_regeln() -> str:
         return ""
 
 
-def claude_strom(prompt: str, bei_satz, system: str, timeout: float, bei_fertig=None) -> str:
-    """Der echte Weg: Claude ueber das Abo, gestreamt, mit vorgehaltenem Prozess (wie `antworten.mit_claude`)."""
+def claude_strom(prompt: str, bei_satz, system: str, timeout: float, bei_fertig=None, modell: str = "sonnet") -> str:
+    """Der echte Weg: Claude ueber die API (Auftrag 019) oder das Abo, gestreamt, mit vorgehaltenem Prozess."""
     from . import llm
-    return llm.frage_strom(prompt, bei_satz, system=system, modell="sonnet", timeout=timeout, aufwand="low",
+    return llm.frage_strom(prompt, bei_satz, system=system, modell=modell, timeout=timeout, aufwand="low",
                            nachladen=2, bei_fertig=bei_fertig)      # Auftrag 017: zwei vorgehalten
 
 
 claude_strom.mit_fertig = True
+
+
+class Zwischenspeicher:
+    """Auftrag 019, 0.5: im Nachspiel je (Modell, System, Prompt) die Antwort merken - ein Wiederholungslauf mit
+    unveraenderter Lage fragt nicht neu. Die Datei ist eine JSON-Zeilenliste."""
+    mit_fertig = True
+
+    def __init__(self, frage_fn, datei: Path):
+        import hashlib
+        self._h = hashlib.sha256
+        self.frage_fn, self.datei = frage_fn, datei
+        self.treffer = self.neu = 0
+        self._d: dict[str, str] = {}
+        self._schloss = threading.Lock()
+        if datei.exists():
+            for z in datei.read_text(encoding="utf-8").splitlines():
+                try:
+                    e = json.loads(z)
+                    self._d[e["k"]] = e["t"]
+                except (ValueError, KeyError):
+                    pass
+
+    def __call__(self, prompt, bei_satz, system, timeout, bei_fertig=None, modell="sonnet"):
+        k = self._h(f"{modell}\n{system}\n{prompt}".encode("utf-8")).hexdigest()
+        if k in self._d:
+            self.treffer += 1
+            text = self._d[k]
+            for s in stratege._saetze(text):
+                bei_satz(s)
+            if bei_fertig is not None:
+                bei_fertig()
+            return text
+        self.neu += 1
+        text = self.frage_fn(prompt, bei_satz, system, timeout, bei_fertig=bei_fertig, modell=modell)
+        with self._schloss:
+            self._d[k] = text
+            with open(self.datei, "a", encoding="utf-8") as f:
+                f.write(json.dumps({"k": k, "t": text}, ensure_ascii=False) + "\n")
+        return text
 
 
 class AufzeichnungsStub:
@@ -229,7 +268,7 @@ class Schiedsrichter:
             return self._weg(text, zeit, f"Planwechsel {a[0]} -> {z} nach {int(alter)} s ohne Lageänderung")
         if not _re.match(r"^\W*(jetzt|da |nachdem|weil|zwei|drei|vier|ihr|euer|eure|die|der|das|du lebst|"
                          r"[A-ZÄÖÜ][\w'’]+ (ist|sind|hat|war|oben|unten|tot|weg|gesehen|zurück))", text, _re.I):
-            text = f"Jetzt, wo {neu[-1][1]}: {text[:1].lower()}{text[1:]}"
+            text = f"Jetzt, wo {neu[-1][1]}: {text}"       # gross bleibt gross ("Herold", 183125 14:43)
         self.aktiv = (z, zeit, text)
         return True, text, None
 
@@ -261,6 +300,16 @@ class MakroStratege:
         self.kampf_nah_s = float(c.get("kampf_nah_s", 6.0))
         self.kampf_abstand_s = float(c.get("kampf_abstand_s", 30.0))
         self.lane_abstand_s = float(c.get("lane_abstand_s", 20.0))
+        # Auftrag 019: Modell je Zweck ([llm] in wissen/kern.toml: schnell = Haiku, stark = Sonnet)
+        try:
+            from . import wissen
+            lc = dict(wissen.lade("kern").get("llm", {}))
+        except Exception:
+            lc = {}
+        self.modelle = {"lane": lc.get("modell_lane", "schnell"), "frage": lc.get("modell_frage", "schnell"),
+                        "plan": lc.get("modell_plan", "stark")}
+        if os.environ.get("LOLCOACH_MODELL"):          # Messung (Auftrag 019): ein Modell fuer alles
+            self.modelle = {k: os.environ["LOLCOACH_MODELL"] for k in self.modelle}
         self.synchron = synchron
         self.ablage = ablage
         self.verlauf: list[tuple[float, str]] = []      # (Spielzeit, gesprochener Stratege-Satz)
@@ -320,7 +369,9 @@ class MakroStratege:
 
     def _prompt(self, p, anlass: str, ende: str, entwurf: str | None = None) -> str:
         kern = self.kern
-        lage = kern.kontext() or ""
+        from . import welt
+        w = welt.bauen(kern, p)                          # Auftrag 019: das Lagebild statt kern.kontext()
+        lage = welt.text(w) if w is not None else (kern.kontext() or "")
         if self.gehirn is not None:
             inhalt = self.gehirn.kontext(anlass, p, lage)
         else:
@@ -358,7 +409,7 @@ class MakroStratege:
         if stratege.AUGE.search(text) and not stratege.AUGE_NEIN.search(text):
             self._auge_back = self._back_nr
 
-    def _versuch(self, prompt: str, lage: dict, bei_satz=None) -> dict:
+    def _versuch(self, prompt: str, lage: dict, bei_satz=None, modell: str = "stark") -> dict:
         """Ein Aufruf: jeder Satz wird geprueft, sobald er fertig ist; die GANZE gueltige Antwort (hoechstens
         stratege.LAENGE_HOECHSTENS Woerter) geht am Textende EINMAL an `bei_satz` (Auftrag 017, 0.1). Ist der erste
         Satz verworfen, gilt der ganze Versuch als verworfen; "NICHTS" heisst: der Stratege schweigt."""
@@ -410,7 +461,8 @@ class MakroStratege:
                     bei_satz(" ".join(gut))
         try:
             if getattr(self.frage_fn, "mit_fertig", False):
-                self.frage_fn(prompt, satz, stratege.STRATEGE_SYSTEM, self.ausfall_s, bei_fertig=fertig)
+                self.frage_fn(prompt, satz, stratege.STRATEGE_SYSTEM, self.ausfall_s, bei_fertig=fertig,
+                              modell=modell)
             else:
                 self.frage_fn(prompt, satz, stratege.STRATEGE_SYSTEM, self.ausfall_s)
         except Exception as e:                            # Abo-Fehler, Zeitueberschreitung: still weiter mit dem Kern
@@ -423,12 +475,15 @@ class MakroStratege:
             v["gruende"] = ["keine Antwort"]
         return v
 
-    def _frage(self, p, anlass: str, ende: str, bei_satz=None, vorbereitet=None) -> tuple[str | None, list[dict]]:
+    def _frage(self, p, anlass: str, ende: str, bei_satz=None, vorbereitet=None,
+               modell: str = "stark") -> tuple[str | None, list[dict]]:
         """Bis zu zwei Versuche (der zweite mit dem Grund des Verwerfens). (Text oder None, Versuche). `vorbereitet`:
         (Prompt, Pruef-Lage), im Takt gebaut - der Hintergrund-Faden liest den Kern dann nicht mehr."""
         prompt, lage = vorbereitet or (self._prompt(p, anlass, ende), self._lage(p))
-        versuche = [self._versuch(prompt, lage, bei_satz)]
+        versuche = [self._versuch(prompt, lage, bei_satz, modell)]
         a = versuche[0]
+        from . import welt
+        a["prompt_tokens"], a["modell"] = welt.tokens(prompt), modell      # Auftrag 019: Tokens je Aufruf
         if a["fehler"]:
             self._ausfall(a["fehler"])
             return None, versuche
@@ -437,7 +492,8 @@ class MakroStratege:
         if not a["text"] and a["gruende"]:
             weg = a["verworfen"][0]["satz"] if a["verworfen"] else ""
             b = self._versuch(prompt + f"\n\nDein Vorschlag „{weg}“ wurde verworfen: {'; '.join(a['gruende'])}. "
-                              "Sag es neu, ohne das - oder NICHTS, wenn du nichts Neues hast.", lage, bei_satz)
+                              "Sag es neu, ohne das - oder NICHTS, wenn du nichts Neues hast.", lage, bei_satz,
+                              modell)
             versuche.append(b)
             if b["fehler"]:
                 self._ausfall(b["fehler"])
@@ -465,7 +521,8 @@ class MakroStratege:
             danach = getattr(self.kern, "danach_text", None)
             entwurf = a[2] + (f" Danach {danach}." if danach and _re.search(r"und dann|danach|was dann", frage, _re.I)
                               else "")
-        text, versuche = self._frage(p, frage, ende, None, (self._prompt(p, frage, ende, entwurf), self._lage(p)))
+        text, versuche = self._frage(p, frage, ende, None, (self._prompt(p, frage, ende, entwurf), self._lage(p)),
+                                     self.modelle["frage"])
         self._schreibe({"zeit": p.zeit, "art": "frage", "frage": frage, "absicht": absicht,
                         "quelle": "stratege" if text else "kern", "text": text, "versuche": versuche})
         if text:
@@ -797,7 +854,8 @@ class MakroStratege:
         def lauf() -> None:
             try:
                 try:
-                    text, versuche = self._frage(p, "Was jetzt, und warum?", ende, satz, vorbereitet)
+                    text, versuche = self._frage(p, "Was jetzt, und warum?", ende, satz, vorbereitet,
+                                                 self.modelle["lane" if lane else "plan"])
                 except Exception as e:
                     text, versuche = None, [{"fehler": f"{type(e).__name__}: {e}"}]
                 if not uebernommen[0]:

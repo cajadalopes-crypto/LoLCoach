@@ -546,6 +546,21 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
     return ergebnis
 
 
+def _eine_datei(a: tuple) -> tuple[dict, str]:
+    """Ein Prozess je Szenario-Datei (Auftrag 019, 0.1): das Ergebnis und die Ausgabe als Text."""
+    import contextlib
+    import io
+    datei, nur, mit_claude, lage, kern = a
+    puffer = io.StringIO()
+    with contextlib.redirect_stdout(puffer):
+        try:
+            e = pruefe_datei(Path(datei), nur, mit_claude, lage, kern=kern)
+        except Exception as x:
+            print(f"!! {datei}: {type(x).__name__}: {x}")
+            e = {"gruen": 0, "rot": 1, "uebersprungen": 0}
+    return e, puffer.getvalue()
+
+
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser()
@@ -555,15 +570,29 @@ def main() -> None:
     ap.add_argument("--lage", action="store_true", help="nachgespielte Lage je Szenario zeigen")
     ap.add_argument("--kern", choices=("alt", "schatten", "neu"), default="neu")
     ap.add_argument("--konstruiert", action="store_true", help="die konstruierten Lagen (Buch 1, 6.2)")
+    ap.add_argument("--prozesse", type=int, default=0, help="parallel (Vorgabe: Kerne - 2; 1 = seriell)")
     args = ap.parse_args()
     if args.konstruiert:
         sys.exit(0 if konstruiert() else 1)
     dateien = [Path(d) for d in args.dateien] or sorted(SZENARIEN.glob("*.toml"))
     gesamt = {"gruen": 0, "rot": 0, "uebersprungen": 0}
-    for d in dateien:
-        e = pruefe_datei(d, args.nur, args.mit_claude, args.lage, kern=args.kern)
+    # Auftrag 019, 0.1: die Dateien parallel (je ein Prozess, hoechstens --prozesse), Ausgabe in Dateireihenfolge
+    import os
+    import time
+    from concurrent.futures import ProcessPoolExecutor
+    t0 = time.monotonic()
+    n = min(args.prozesse or max(1, (os.cpu_count() or 2) - 2), len(dateien)) if dateien else 1
+    auftraege = [(str(d), args.nur, args.mit_claude, args.lage, args.kern) for d in dateien]
+    if n <= 1:
+        ergebnisse = [_eine_datei(a) for a in auftraege]
+    else:
+        with ProcessPoolExecutor(n) as ex:
+            ergebnisse = list(ex.map(_eine_datei, auftraege))
+    for e, text in ergebnisse:
+        print(text, end="")
         for k in gesamt:
             gesamt[k] += e[k]
+    print(f"\n({len(dateien)} Dateien, {n} Prozesse, {time.monotonic() - t0:.0f} s)")
     gepr = gesamt["gruen"] + gesamt["rot"]
     print(f"\nGesamt: {gesamt['gruen']} gruen / {gepr} geprueft ({gesamt['rot']} rot, {gesamt['uebersprungen']} "
           f"uebersprungen)")

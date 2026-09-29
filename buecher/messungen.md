@@ -4,6 +4,77 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 019 – Lagebild und Claude über die API (29.09.2026)
+
+Grundlage: `buecher/14_bauplan_gehirn.md` (Schritt A) und `buecher/auftraege/019_auftrag.md`. Keine Testpartie, der
+Coach wurde nicht gestartet.
+
+### Gebaut
+- **`lolcoach/welt.py`:** ein Lagebild je Aufruf in fester Reihenfolge:
+  - DU, PLAN, NACH VORN (mit KILL JETZT), KAUF;
+  - SPIELER: alle 9 anderen mit Rolle, Level, Items, Leben, Flash, Ult;
+  - KARTE: stehende Türme, Wellen aller Lanes;
+  - TIMER, STÄRKE;
+  - SEIT DEM LETZTEN AUFRUF (30 s): `Chronik` im Kern.
+
+  Die Ortsformen sind eindeutig: „jetzt sichtbar …“ oder „zuletzt gesehen vor N s …, jetzt unbekannt, vermutlich …“
+  (Jungler aus `jungle.wahrscheinlich`). Der Stratege bekommt es statt `kern.kontext()`. Prompt je Aufruf im Median
+  ~1200 Tokens, höchstens ~1600 (geschätzt, 3,3 Zeichen je Token).
+- **`lolcoach/llm_api.py`:**
+  - Anthropic-SDK, Streaming, System als zwischengespeicherter Block;
+  - schnell = `claude-haiku-4-5` (ohne Nachdenken), stark = `claude-sonnet-5-5` (Nachdenken aus: `between_tools`,
+    effort low, serverseitiger Ersatz bei Ablehnung);
+  - Kostenzähler `<partie>_kosten.json`.
+
+  `llm.frage` und `llm.frage_strom` gehen damit über die API, sobald ein Schlüssel da ist; fällt sie aus, 120 s über
+  das Abo. Schalter: `[llm] weg = "api" | "abo"`. Modell je Zweck in `[llm]`. Gesprochen wird die ganze, geprüfte
+  Antwort am Stück.
+- **Teil 0 – schneller prüfen:**
+  - `szenarien.py` rechnet parallel (ein Prozess je Datei).
+  - `nachspiel_abdeckung.py alle …` spielt alle Partien parallel nach (`--weg`, `--modell`).
+  - `stratege_live.Zwischenspeicher` merkt sich Claude-Antworten je (Modell, System, Prompt).
+- **Kleinigkeiten:**
+  - „Entwurf“ ist ein innerer Begriff (Haiku sagte fünfmal „Der Entwurf passt nicht“).
+  - „in 1 Sekunde“ statt „in 1 Sekunden“.
+  - Nach „Jetzt, wo …:“ bleibt die Großschreibung.
+
+### Messung (Nachspiel, 4 Partien: 133448, 192113, 101426, 183125; Carlos' Fragen zur echten Zeit)
+
+| Größe | Abo, Stand 017 (altes Lagebild) | Abo, neues Lagebild | API schnell (Haiku 4.5) | API stark (Sonnet 5.5) |
+|---|---|---|---|---|
+| ganze gültige Antwort, Median / p90 | 6,24 / 11,36 s | 6,81 / 12,19 s | **1,58 / 2,58 s** | 2,61 / 5,50 s |
+| Kosten je 30 min | – (Abo) | – (Abo) | **0,25 $** | 0,51 $ |
+| Soll-Liste gesagt + teilweise (217 Punkte) | 60,4 % | 63,1 % | 61,3 % | 61,3 % |
+| davon ganz gesagt | 24,9 % | 30,0 % | 25,3 % | 25,8 % |
+| Füllsätze (Kritiker, inkl. 9× „Notiert.“ je Partie) | 7,9 % | 7,8 % | 8,0 % | 11,8 % |
+| Füllsätze (automatisch) | 0,2 % | 0,2 % | 0 % | 0 % |
+| Widersprüche (Planwechsel < 30 s ohne Ereignis) | 4 | 6 | 6 | 7 |
+| Sicherheit (R1 / Kill-Check / innere Begriffe) | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 |
+
+- **Modellwahl:** Haiku für alles (Lane, Fragen, Plan). Sonnet trifft die Soll-Liste nicht besser, ist aber
+  1,6-mal langsamer und doppelt so teuer. Latenz-Soll ≤ 1,5 s: mit 1,58 s knapp verfehlt.
+- **Soll-Liste:** Mit ~61 % liegen alle vier Varianten unter dem Ziel ≥ 80 % aus Buch 14 (Schritt C). Das neue
+  Lagebild allein ändert daran wenig: 60,4 → 63,1 % über das Abo.
+- **Caching:** Bei Haiku greift es nicht, weil der stabile Anfang kürzer als die 4096 Tokens Mindestlänge ist. Bei
+  diesen Kosten lohnt der Umbau erst mit dem Wissensblock aus Schritt C.
+- **Abdeckung I1/I3/I4 (Kern, unabhängig vom Modell), API schnell:**
+  - I1 Jungler 69/72;
+  - I3 Flash 29/34 (183125: 9/13);
+  - I4 Lane-Gegner weit weg 6/12.
+
+  I4 und der Flash in 183125 liegen unter dem Soll ≥ 90 %.
+
+### Rechenzeit
+- **Szenarien:** voll 106 s parallel (26 Prozesse), vorher seriell rund 23 min.
+- **`tests/alle.py`:** 29 s.
+- **Nachspiele, alle 4 Partien parallel:**
+  - API schnell 230 s, API stark 396 s;
+  - Abo 977 s, Abo Stand 017 894 s;
+  - vorher (016/017) nacheinander über das Abo rund 45 min je Einstellung.
+- **Kritik:** eine blinde Soll-Liste (183125) ~2 min, vier Vergleichs-Kritiker parallel ~5 min.
+
+---
+
 ## Auftrag 016 – Pflichtenheft 133448: sagen, was er sieht, Ketten statt Schweigen (29.09.2026)
 
 Grundlage: `buecher/auftraege/016_auftrag.md`. Keine Testpartie, der Coach wurde nicht gestartet. Gemessen wird nur an

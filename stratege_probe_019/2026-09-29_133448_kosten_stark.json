@@ -1,0 +1,13 @@
+{
+ "summe_dollar": 0.316,
+ "je_modell": {
+  "claude-sonnet-5-5": {
+   "aufrufe": 54,
+   "eingabe": 123190,
+   "ausgabe": 5640,
+   "cache_lesen": 53477,
+   "cache_schreiben": 1009,
+   "dollar": 0.316009
+  }
+ }
+}

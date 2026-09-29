@@ -59,6 +59,13 @@ wartest, warum und was du nächstes Mal tust.
     was sich geändert hat („Jetzt, wo Poppy unten gesehen wurde: …“).
   - 60 Sekunden vor Drache, Herold oder Baron kommt die Vorbereitung, 40 Sekunden vorher „jetzt loslaufen“.
   - 12 Sekunden vor dem Respawn: Kauf und Ziel.
+- **Claude über die API (seit 29.09.2026, Auftrag 019):** Liegt ein Schlüssel in `geheim/claude_api_key.txt`,
+  antwortet Claude über die API statt über das Abo: im Mittel nach 1,6 s statt nach 6–7 s. Im Fenster steht dann
+  „Claude: ueber die API“.
+  - **Kosten:** etwa 0,25 $ je 30 Minuten Spiel (Claude Haiku 4.5). Sie stehen nach der Partie in
+    `aufnahmen/<Partie>_kosten.json`.
+  - **Zurück aufs Abo:** in `wissen/kern.toml` unter `[llm]` `weg = "abo"`. Fällt die API aus, nimmt der Coach von
+    selbst 2 Minuten lang das Abo.
 - **Flash-Timer:** Pingt ein Mitspieler im Chat "Urgot Blitz" (oder "urgot ult"), läuft
   ein Timer. Der Coach sieht Flash auch selbst auf der Minimap.
 

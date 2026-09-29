@@ -793,6 +793,52 @@ def inhalt_017():
     assert sr.pruefe("Zurück unter deinen Turm: Lux und Sona kommen.", 649.0, warnung=True)[0]    # Warnung immer
 
 
+def lagebild_019():
+    """Auftrag 019 (Buch 14, A): eindeutige Ortsformen im Lagebild, Kostenzaehler, Zwischenspeicher im Nachspiel."""
+    from types import SimpleNamespace as NS
+    from lolcoach import welt
+    g = NS(s=NS(tot=False, respawn=0, rolle="TOP"), sichtbar=True, ort="oben", seit=0.0, pos=(1, 1))
+    assert welt._ort(g, None, 600.0) == "jetzt sichtbar oben"
+    g = NS(s=NS(tot=False, respawn=0, rolle="JUNGLE"), sichtbar=False, ort="im oberen Fluss", seit=45.0, pos=(1, 1))
+    jt = NS(wahrscheinlich=lambda z: {"oben": 0.3, "unten": 0.7})
+    assert welt._ort(g, NS(jungle=jt), 600.0) == \
+        "zuletzt gesehen vor 45 s im oberen Fluss, jetzt unbekannt, vermutlich unten (70 %)"
+    g = NS(s=NS(tot=False, respawn=0, rolle="MIDDLE"), sichtbar=False, ort="auf der Mid-Lane", seit=120.0, pos=(1, 1))
+    assert welt._ort(g, None, 600.0).endswith("jetzt unbekannt, vermutlich auf seiner Lane in der Mitte")
+    g = NS(s=NS(tot=True, respawn=14.2, rolle="TOP"), sichtbar=False, ort="", seit=None, pos=None)
+    assert welt._ort(g, None, 600.0) == "tot, noch 14 s"
+    w = welt.Welt(zeit=605.0, du="Riven", plan="Farm Top.", vorn="erlaubt", kauf="nichts",
+                  ereignisse=[(590.0, "Poppy taucht auf (unten)")])
+    t = welt.text(w)
+    assert t.startswith("ZEIT 10:05\nDU: Riven") and "SEIT DEM LETZTEN AUFRUF (30 s): 9:50 Poppy taucht auf" in t
+    # Kostenzaehler (Preise je 1 Mio. Tokens)
+    from lolcoach import llm_api
+    k = llm_api.Kosten()
+    d = k.dazu("claude-haiku-4-5", NS(input_tokens=1_000_000, output_tokens=100_000, cache_read_input_tokens=0,
+                                      cache_creation_input_tokens=0))
+    assert abs(d - 1.5) < 1e-9 and k.summe() == 1.5
+    assert llm_api.modell_id("sonnet") == llm_api.modell_id("stark")
+    # Zwischenspeicher: dieselbe Frage einmal ueber Claude, dann aus der Datei
+    import tempfile
+    from pathlib import Path
+    from lolcoach.stratege_live import Zwischenspeicher
+    aufrufe = []
+
+    def fake(prompt, bei_satz, system, timeout, bei_fertig=None, modell="x"):
+        aufrufe.append(prompt)
+        bei_satz("Farm am Turm, weil Teemo oben ist.")
+        return "Farm am Turm, weil Teemo oben ist."
+    with tempfile.TemporaryDirectory() as tmp:
+        zs = Zwischenspeicher(fake, Path(tmp) / "zs.jsonl")
+        s1, s2 = [], []
+        zs("LAGE", s1.append, "SYS", 5)
+        zs2 = Zwischenspeicher(fake, Path(tmp) / "zs.jsonl")
+        zs2("LAGE", s2.append, "SYS", 5)
+        assert len(aufrufe) == 1 and s1 == s2 and zs2.treffer == 1
+    from lolcoach.stratege import pruefe
+    assert any("innerer" in g for g in pruefe("Der Entwurf passt nicht, farm die Welle am Turm.", {}))
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
@@ -801,6 +847,6 @@ if __name__ == "__main__":
                  ihr_jungle_heisst_ihr_jungle, keine_verbotenen_gruende, warum_mit_vergleich,
                  vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal, anteil_geglaettet,
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
-                 stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017):
+                 stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017, lagebild_019):
         test()
         print(f"{test.__name__} OK")

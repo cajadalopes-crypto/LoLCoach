@@ -54,12 +54,24 @@ def _kill_jetzt(b) -> list[str]:
     return aus
 
 
-def laufen(stamm: str, stub: bool = False, aus: Path = AUS) -> Path:
+def laufen(stamm: str, stub: bool = False, aus: Path = AUS, weg: str | None = None, modell: str | None = None) -> Path:
+    """Auftrag 019: `weg` ("api"/"abo") und `modell` ("schnell"/"stark", sonst je Zweck aus [llm]) ueber die Umgebung -
+    so laufen mehrere Partien und Einstellungen parallel in eigenen Prozessen (`alle`)."""
+    import os
+    if weg:
+        os.environ["LOLCOACH_LLM_WEG"] = weg
+    if modell:
+        os.environ["LOLCOACH_MODELL"] = modell
+    aus.mkdir(parents=True, exist_ok=True)
+    from lolcoach import llm_api
+    llm_api.KOSTEN.datei = aus / f"{stamm}_kosten.json"
     import fuehrmass
     from lolcoach import stratege_live
     from lolcoach.zustand import gegenteam
     if not stub:
-        stratege_live.AufzeichnungsStub = lambda *a, **k: stratege_live.claude_strom     # der echte Weg (Abo)
+        # der echte Weg (API oder Abo), mit Zwischenspeicher je (Modell, System, Prompt) - Auftrag 019, 0.5
+        zs = stratege_live.Zwischenspeicher(stratege_live.claude_strom, aus / "zwischenspeicher.jsonl")
+        stratege_live.AufzeichnungsStub = lambda *a, **k: zs
     fragen = [(f["zeit"], f["text"], i) for i, f in enumerate(fuehrmass.fragen_aus_log(stamm))]
     gesprochen, takte, flashes = [], [], {}
     gesehen = [0]
@@ -155,6 +167,8 @@ def laufen(stamm: str, stub: bool = False, aus: Path = AUS) -> Path:
         "ereignisse": ereignisse,
         "schiedsrichter": getattr(getattr(ms, "schiedsrichter", None), "verworfen", []),
         "stamm": stamm, "stub": stub, "info": info, "dauer_s": round(time.monotonic() - t0),
+        "weg": os.environ.get("LOLCOACH_LLM_WEG"), "modell": os.environ.get("LOLCOACH_MODELL"),
+        "kosten_dollar": llm_api.KOSTEN.summe(), "kosten": llm_api.KOSTEN.je_modell,
         "minuten": round(lauf.sekunden_mit_daten / 60, 1), "gesprochen": gesprochen, "takte": takte,
         "flashes": list(flashes.values()), "antworten": lauf.antworten,
         "stratege": ms.protokoll if ms is not None else [],
@@ -524,13 +538,43 @@ def auswerten(stamm: str, aus: Path = AUS, vorher: Path | None = None) -> tuple[
     return ziel, k
 
 
+def _lauf_einer(a: tuple) -> str:
+    stamm, aus, weg, modell = a
+    import contextlib
+    import io
+    puffer = io.StringIO()
+    with contextlib.redirect_stdout(puffer):
+        try:
+            laufen(stamm, aus=Path(aus), weg=weg, modell=modell)
+        except Exception as e:
+            import traceback
+            print(f"!! {stamm}: {type(e).__name__}: {e}")
+            print(traceback.format_exc(limit=5))
+    return f"== {stamm} ({weg}, {modell or 'je Zweck'}):\n" + puffer.getvalue()[-2000:]
+
+
+def alle(staemme: list[str], aus: Path, weg: str, modell: str | None) -> None:
+    """Auftrag 019, 0.2: alle Partien gleichzeitig, jede in ihrem eigenen Prozess."""
+    from concurrent.futures import ProcessPoolExecutor
+    t0 = time.monotonic()
+    with ProcessPoolExecutor(len(staemme)) as ex:
+        for text in ex.map(_lauf_einer, [(s, str(aus), weg, modell) for s in staemme]):
+            print(text, flush=True)
+    print(f"({len(staemme)} Partien parallel, {time.monotonic() - t0:.0f} s)", flush=True)
+
+
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     opt = {a.split("=", 1)[0]: (a.split("=", 1)[1] if "=" in a else True) for a in sys.argv[1:] if a.startswith("--")}
     aus = Path(opt["--aus"]) if "--aus" in opt else AUS
     was, staemme = args[0], args[1:]
+    if was == "alle":
+        alle(staemme, aus, opt.get("--weg", "api"), opt.get("--modell"))
+        return
     for stamm in staemme:
+        if was == "alle":
+            break
         if was == "laufen":
             print(laufen(stamm, stub="--stub" in opt, aus=aus), flush=True)
         elif was == "lage":

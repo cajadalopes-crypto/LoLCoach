@@ -1,0 +1,1578 @@
+{
+ "A": {
+  "minuten": {
+   "1": [
+    {
+     "soll": "Aurora schon Level 2, du Level 1 mit 45 % Leben: nicht traden, nur farmen",
+     "urteil": "gesagt",
+     "grund": "1:30 am Turm bleiben, nur Kanone lasthitten"
+    },
+    {
+     "soll": "Sett oben hat Flash weg (1:35)",
+     "urteil": "gesagt",
+     "grund": "1:38 Sett Flash weg"
+    }
+   ],
+   "2": [
+    {
+     "soll": "14 % Leben gegen Aurora: raus, nicht bleiben, sonst stirbst du",
+     "urteil": "fehlt",
+     "grund": "kein Raus-Ruf, nur Todesmeldung"
+    },
+    {
+     "soll": "Aurora Flash weg (2:41) – bis ca. 7:40 Kill-Fenster mit Kayn",
+     "urteil": "teilweise",
+     "grund": "2:41 Flash weg, kein Kill-Fenster"
+    }
+   ],
+   "3": [
+    {
+     "soll": "Viego seit über 2 Minuten nicht gesehen: nicht zu weit vor, du hast kein Flash",
+     "urteil": "gesagt",
+     "grund": "3:00 hinter Welle, Flash weg, Viego unbekannt"
+    },
+    {
+     "soll": "Drache in 90 s: Welle zu Aurora pushen, dann rechtzeitig Richtung unteren Fluss",
+     "urteil": "teilweise",
+     "grund": "Drache angesagt, aber Welle nicht pushen"
+    }
+   ],
+   "4": [
+    {
+     "soll": "Drache in 30 s: Welle mit der Kanone rein, dann mit Yunara und Xerath zum Pit",
+     "urteil": "fehlt",
+     "grund": "4:00 Welle ziehen statt Drache"
+    },
+    {
+     "soll": "Aurora ist schon in der Flussmitte – sie geht zum Drachen",
+     "urteil": "fehlt",
+     "grund": "Aurora am Fluss nicht angesagt"
+    }
+   ],
+   "5": [
+    {
+     "soll": "Viego oben im Jungle gesehen (5:13): unten ist frei",
+     "urteil": "gesagt",
+     "grund": "5:03 Viego weit weg oben"
+    },
+    {
+     "soll": "Level 6 und 727 Gold: Welle rein, back – Caulfields Kriegshammer",
+     "urteil": "teilweise",
+     "grund": "kein Back-Ruf, 5:47 Kauf in Basis"
+    }
+   ],
+   "6": [
+    {
+     "soll": "Twitch tot (6:25): Drache jetzt mit Kayn, Yunara, Xerath",
+     "urteil": "teilweise",
+     "grund": "6:00 danach Drache, vor Twitch-Tod"
+    },
+    {
+     "soll": "Larven in 89 s",
+     "urteil": "fehlt",
+     "grund": "Larven nicht erwähnt"
+    }
+   ],
+   "7": [
+    {
+     "soll": "Sett und Viego tot (7:43/7:44): Larven jetzt mit Kayn",
+     "urteil": "fehlt",
+     "grund": "keine Larven, keine Tode angesagt"
+    },
+    {
+     "soll": "Aurora hat Flash wieder",
+     "urteil": "fehlt",
+     "grund": "Aurora-Flash zurück nicht angesagt"
+    }
+   ],
+   "8": [
+    {
+     "soll": "32 % Leben, 804 Gold: Welle rein, back",
+     "urteil": "gesagt",
+     "grund": "8:33 back jetzt, 34 Prozent"
+    },
+    {
+     "soll": "Viego im oberen Fluss (8:42) – sie holen die Larven, nicht hin",
+     "urteil": "teilweise",
+     "grund": "8:28 Viego oben, kein Larven-Rat"
+    }
+   ],
+   "9": [
+    {
+     "soll": "Viego unten im Fluss gesehen (9:55): Drachenkampf – mit Bot zum Pit",
+     "urteil": "teilweise",
+     "grund": "Viego unten angesagt, kein Drachen-Ruf"
+    }
+   ],
+   "10": [
+    {
+     "soll": "Drache eures, Viego, Bard, Sett, Twitch tot: Mid-Turm schlagen",
+     "urteil": "fehlt",
+     "grund": "kein Mid-Turm-Ruf"
+    },
+    {
+     "soll": "Aurora Flash weg (10:37)",
+     "urteil": "gesagt",
+     "grund": "10:37 Aurora Flash weg"
+    }
+   ],
+   "11": [
+    {
+     "soll": "Gegner alle in der Basis: Mid-Welle crashen, Turmplatten holen",
+     "urteil": "teilweise",
+     "grund": "11:02 Welle rein, aber back statt Platten"
+    },
+    {
+     "soll": "Viego in eurem oberen Jungle (11:46)",
+     "urteil": "gesagt",
+     "grund": "11:46 Viego oberer Jungle"
+    }
+   ],
+   "12": [
+    {
+     "soll": "Viego tot (12:07): Mid-Welle rein, Turm schlagen",
+     "urteil": "fehlt",
+     "grund": "12:11 Welle ziehen statt Turm schlagen"
+    },
+    {
+     "soll": "Aurora ohne Flash bis ca. 15:30 – Kill-Fenster",
+     "urteil": "fehlt",
+     "grund": "kein Kill-Fenster angesagt"
+    }
+   ],
+   "13": [
+    {
+     "soll": "Viego in eurem oberen Jungle unterwegs – nicht allein vor, Aurora ist Level 11",
+     "urteil": "teilweise",
+     "grund": "erst 14:33 nicht allein nach vorn"
+    },
+    {
+     "soll": "Nach Respawn: Herold in 88 s, Drache in 117 s",
+     "urteil": "fehlt",
+     "grund": "keine Herold-/Drachen-Timer"
+    }
+   ],
+   "14": [
+    {
+     "soll": "Welle ist unter deinem Turm gecrasht: erst farmen, Kanone in 40 s",
+     "urteil": "fehlt",
+     "grund": "Welle/Kanone nicht erwähnt"
+    },
+    {
+     "soll": "Drache in 59 s: danach mit Yunara und Xerath zum Pit",
+     "urteil": "teilweise",
+     "grund": "14:00 Drache als Gruppe, ohne Timer"
+    }
+   ],
+   "15": [
+    {
+     "soll": "Kayn tot (15:09): Drache nicht erzwingen, Mid halten",
+     "urteil": "fehlt",
+     "grund": "15:09 back, kein Mid-halten"
+    },
+    {
+     "soll": "Sett tot (15:23)",
+     "urteil": "fehlt",
+     "grund": "Sett-Tod nicht angesagt"
+    }
+   ],
+   "16": [
+    {
+     "soll": "Team ist Mid, du bot: zum Team",
+     "urteil": "fehlt",
+     "grund": "kein Ruf zum Team"
+    },
+    {
+     "soll": "Gegner am Drachen (16:54): kämpfen, ihr seid vorne",
+     "urteil": "fehlt",
+     "grund": "16:56 Top-Turm statt Drachenkampf"
+    }
+   ],
+   "17": [
+    {
+     "soll": "Viego, Aurora, Bard tot: Bot-Turm holen, dann back mit 1122 Gold",
+     "urteil": "teilweise",
+     "grund": "17:31 Mid-Turm statt Bot-Turm, kein Back"
+    },
+    {
+     "soll": "Nächster Plan: Baron in 151 s – vorher Sicht oben",
+     "urteil": "fehlt",
+     "grund": "Baron/Sicht nicht erwähnt"
+    }
+   ],
+   "18": [
+    {
+     "soll": "Plan: Bot-Welle rein, ab 19:30 mit Team zum Baron",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Plan"
+    },
+    {
+     "soll": "Viego tot (18:51): der Baron ist eurer",
+     "urteil": "fehlt",
+     "grund": "Viego-Tod/Baron nicht erwähnt"
+    }
+   ],
+   "19": [
+    {
+     "soll": "Twitch in seinem unteren Jungle (vor 5 s)",
+     "urteil": "gesagt",
+     "grund": "19:25 Antwort: Twitch unterer Jungle"
+    },
+    {
+     "soll": "Baron in 30 s, Viego, Aurora, Bard tot: Team zum Baron",
+     "urteil": "fehlt",
+     "grund": "19:41 zum Team Mid, kein Baron"
+    }
+   ],
+   "20": [
+    {
+     "soll": "Viego tot (20:33), Kayn holt Bard und Twitch: Team soll Baron machen",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    },
+    {
+     "soll": "Drache in 87 s",
+     "urteil": "gesagt",
+     "grund": "20:07 Drache in 107 s"
+    }
+   ],
+   "21": [
+    {
+     "soll": "Drache in 23 s: zu Kayn, Yunara, Xerath an den Pit",
+     "urteil": "gesagt",
+     "grund": "21:21 Drache 35 s, loslaufen"
+    },
+    {
+     "soll": "Aurora Flash weg (21:34)",
+     "urteil": "gesagt",
+     "grund": "21:34 Aurora Flash weg"
+    }
+   ],
+   "22": [
+    {
+     "soll": "Viego Mid gesehen (22:45)",
+     "urteil": "teilweise",
+     "grund": "nur 21:57 Viego Mid, zu früh"
+    },
+    {
+     "soll": "Drache eures, Aurora tot: Baron mit Team",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    }
+   ],
+   "23": [
+    {
+     "soll": "Viego zuletzt in seinem oberen Jungle (23:24)",
+     "urteil": "gesagt",
+     "grund": "23:23 Viego oberer Jungle"
+    },
+    {
+     "soll": "1383 Gold: back – Malmortius",
+     "urteil": "teilweise",
+     "grund": "23:58 Einkauf ohne Back-Ruf, falsches Item"
+    }
+   ],
+   "24": [
+    {
+     "soll": "Bard tot (24:30): mit Team Mid pushen",
+     "urteil": "fehlt",
+     "grund": "24:42 nicht nach vorn statt pushen"
+    },
+    {
+     "soll": "Twitch killt Xerath (24:59): nicht vorlaufen",
+     "urteil": "teilweise",
+     "grund": "24:42 nicht allein vor, ohne Xerath-Tod"
+    }
+   ],
+   "25": [
+    {
+     "soll": "Viego tot (25:18): Baron jetzt mit Urgot und Yunara",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    }
+   ],
+   "26": [
+    {
+     "soll": "Aurora Flash wieder da seit ca. 26:35; Flash-Stand von Sett, Twitch, Bard unbekannt",
+     "urteil": "fehlt",
+     "grund": "Flash-Stand nicht angesagt"
+    },
+    {
+     "soll": "Viego in eurem unteren Jungle (26:35), Drache in 81 s",
+     "urteil": "teilweise",
+     "grund": "26:39 Viego, kein Drachen-Timer"
+    }
+   ],
+   "27": [
+    {
+     "soll": "Der gegnerische Bot-T2, nicht deiner",
+     "urteil": "gesagt",
+     "grund": "27:05 zu dem der Gegner"
+    },
+    {
+     "soll": "Viego tot (27:15): Drache in 24 s mit Team holen",
+     "urteil": "gesagt",
+     "grund": "27:19 Drache 35 s, loslaufen"
+    }
+   ],
+   "28": [
+    {
+     "soll": "Viego Flash weg (28:20)",
+     "urteil": "gesagt",
+     "grund": "28:20 Viego Flash weg"
+    },
+    {
+     "soll": "40 % Leben, 1730 Gold: back – Gefräßige Hydra",
+     "urteil": "gesagt",
+     "grund": "27:59 back Kriegshammer für Hydra"
+    }
+   ],
+   "29": [
+    {
+     "soll": "Slots voll: Kontrollauge weglassen, erst Hydra fertig",
+     "urteil": "teilweise",
+     "grund": "29:17 kein Platz, kein Back; Kontrollauge fehlt"
+    },
+    {
+     "soll": "Viego, Aurora, Bard tot: Mid-Inhib und Nexus-Türme schlagen",
+     "urteil": "gesagt",
+     "grund": "29:22 drei tot, Nexus-Turm jetzt"
+    }
+   ],
+   "30": [
+    {
+     "soll": "Sett hat Kayn und Yunara getötet: raus, back, du hast 44 %",
+     "urteil": "gesagt",
+     "grund": "29:42 back, 30:09 zurück unter Turm"
+    },
+    {
+     "soll": "Baron in 78 s",
+     "urteil": "fehlt",
+     "grund": "Baron-Timer fehlt"
+    }
+   ],
+   "31": [
+    {
+     "soll": "Mid-Welle: 5 eigene laufen zu ihm – hinterher und Turm schlagen",
+     "urteil": "teilweise",
+     "grund": "30:53 zur Mid-Welle, kein Turm"
+    },
+    {
+     "soll": "Sett tot, Baron in 16 s: mit Kayn und Yunara zum Baron",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    }
+   ],
+   "32": [
+    {
+     "soll": "Baron eures, Viego tot (32:42): nach Respawn mit Team zum Drachen in 51 s",
+     "urteil": "teilweise",
+     "grund": "erst 33:17 Drache als Gruppe"
+    }
+   ],
+   "33": [
+    {
+     "soll": "Drache mit Team holen",
+     "urteil": "gesagt",
+     "grund": "33:17 Drache als Gruppe erzwingen"
+    },
+    {
+     "soll": "Viego tot (33:59): mit Baron-Buff Nexus pushen",
+     "urteil": "teilweise",
+     "grund": "34:11 Inhib-Turm, Nexus erst 34:31"
+    }
+   ],
+   "34": [
+    {
+     "soll": "Alle tot: Nexus schlagen",
+     "urteil": "gesagt",
+     "grund": "34:31 Nexus-Turm jetzt"
+    }
+   ]
+  },
+  "fuellsaetze": 7,
+  "saetze": 153
+ },
+ "B": {
+  "minuten": {
+   "1": [
+    {
+     "soll": "Aurora schon Level 2, du Level 1 mit 45 % Leben: nicht traden, nur farmen",
+     "urteil": "fehlt",
+     "grund": "keine Lane-Ansage in Minute 1"
+    },
+    {
+     "soll": "Sett oben hat Flash weg (1:35)",
+     "urteil": "gesagt",
+     "grund": "1:35 Sett Flash weg"
+    }
+   ],
+   "2": [
+    {
+     "soll": "14 % Leben gegen Aurora: raus, nicht bleiben, sonst stirbst du",
+     "urteil": "fehlt",
+     "grund": "kein Raus-Ruf, nur Todesmeldung"
+    },
+    {
+     "soll": "Aurora Flash weg (2:41) – bis ca. 7:40 Kill-Fenster mit Kayn",
+     "urteil": "teilweise",
+     "grund": "2:41 Flash weg, kein Kill-Fenster"
+    }
+   ],
+   "3": [
+    {
+     "soll": "Viego seit über 2 Minuten nicht gesehen: nicht zu weit vor, du hast kein Flash",
+     "urteil": "gesagt",
+     "grund": "3:00 hinter Welle, Viego unbekannt"
+    },
+    {
+     "soll": "Drache in 90 s: Welle zu Aurora pushen, dann rechtzeitig Richtung unteren Fluss",
+     "urteil": "gesagt",
+     "grund": "3:00 Slow Push, dann Drache 119 s"
+    }
+   ],
+   "4": [
+    {
+     "soll": "Drache in 30 s: Welle mit der Kanone rein, dann mit Yunara und Xerath zum Pit",
+     "urteil": "fehlt",
+     "grund": "4:00 Welle ziehen statt Drache"
+    },
+    {
+     "soll": "Aurora ist schon in der Flussmitte – sie geht zum Drachen",
+     "urteil": "fehlt",
+     "grund": "Aurora am Fluss nicht angesagt"
+    }
+   ],
+   "5": [
+    {
+     "soll": "Viego oben im Jungle gesehen (5:13): unten ist frei",
+     "urteil": "gesagt",
+     "grund": "5:03 Viego oben gesehen"
+    },
+    {
+     "soll": "Level 6 und 727 Gold: Welle rein, back – Caulfields Kriegshammer",
+     "urteil": "teilweise",
+     "grund": "kein Back-Ruf, 5:47 Kauf in Basis"
+    }
+   ],
+   "6": [
+    {
+     "soll": "Twitch tot (6:25): Drache jetzt mit Kayn, Yunara, Xerath",
+     "urteil": "teilweise",
+     "grund": "6:00 Wellen sammeln für Drachen"
+    },
+    {
+     "soll": "Larven in 89 s",
+     "urteil": "fehlt",
+     "grund": "Larven nicht erwähnt"
+    }
+   ],
+   "7": [
+    {
+     "soll": "Sett und Viego tot (7:43/7:44): Larven jetzt mit Kayn",
+     "urteil": "fehlt",
+     "grund": "keine Larven, keine Tode angesagt"
+    },
+    {
+     "soll": "Aurora hat Flash wieder",
+     "urteil": "fehlt",
+     "grund": "Aurora-Flash zurück nicht angesagt"
+    }
+   ],
+   "8": [
+    {
+     "soll": "32 % Leben, 804 Gold: Welle rein, back",
+     "urteil": "gesagt",
+     "grund": "8:33 back jetzt, 34 Prozent"
+    },
+    {
+     "soll": "Viego im oberen Fluss (8:42) – sie holen die Larven, nicht hin",
+     "urteil": "teilweise",
+     "grund": "8:28 Viego oben, kein Larven-Rat"
+    }
+   ],
+   "9": [
+    {
+     "soll": "Viego unten im Fluss gesehen (9:55): Drachenkampf – mit Bot zum Pit",
+     "urteil": "teilweise",
+     "grund": "Viego unten angesagt, kein Drachen-Ruf"
+    }
+   ],
+   "10": [
+    {
+     "soll": "Drache eures, Viego, Bard, Sett, Twitch tot: Mid-Turm schlagen",
+     "urteil": "fehlt",
+     "grund": "10:12 Viego-Kill statt Mid-Turm"
+    },
+    {
+     "soll": "Aurora Flash weg (10:37)",
+     "urteil": "gesagt",
+     "grund": "10:37 Aurora Flash weg"
+    }
+   ],
+   "11": [
+    {
+     "soll": "Gegner alle in der Basis: Mid-Welle crashen, Turmplatten holen",
+     "urteil": "teilweise",
+     "grund": "11:02 Welle rein, dann back"
+    },
+    {
+     "soll": "Viego in eurem oberen Jungle (11:46)",
+     "urteil": "gesagt",
+     "grund": "11:46 Viego oberer Jungle"
+    }
+   ],
+   "12": [
+    {
+     "soll": "Viego tot (12:07): Mid-Welle rein, Turm schlagen",
+     "urteil": "fehlt",
+     "grund": "Minute 12 stumm"
+    },
+    {
+     "soll": "Aurora ohne Flash bis ca. 15:30 – Kill-Fenster",
+     "urteil": "fehlt",
+     "grund": "kein Kill-Fenster angesagt"
+    }
+   ],
+   "13": [
+    {
+     "soll": "Viego in eurem oberen Jungle unterwegs – nicht allein vor, Aurora ist Level 11",
+     "urteil": "teilweise",
+     "grund": "erst 14:33 nicht allein nach vorn"
+    },
+    {
+     "soll": "Nach Respawn: Herold in 88 s, Drache in 117 s",
+     "urteil": "fehlt",
+     "grund": "keine Herold-/Drachen-Timer"
+    }
+   ],
+   "14": [
+    {
+     "soll": "Welle ist unter deinem Turm gecrasht: erst farmen, Kanone in 40 s",
+     "urteil": "fehlt",
+     "grund": "Welle/Kanone nicht erwähnt"
+    },
+    {
+     "soll": "Drache in 59 s: danach mit Yunara und Xerath zum Pit",
+     "urteil": "teilweise",
+     "grund": "14:00 Drache als Gruppe, ohne Timer"
+    }
+   ],
+   "15": [
+    {
+     "soll": "Kayn tot (15:09): Drache nicht erzwingen, Mid halten",
+     "urteil": "fehlt",
+     "grund": "15:09 back, kein Mid-halten"
+    },
+    {
+     "soll": "Sett tot (15:23)",
+     "urteil": "fehlt",
+     "grund": "Sett-Tod nicht angesagt"
+    }
+   ],
+   "16": [
+    {
+     "soll": "Team ist Mid, du bot: zum Team",
+     "urteil": "fehlt",
+     "grund": "kein Ruf zum Team"
+    },
+    {
+     "soll": "Gegner am Drachen (16:54): kämpfen, ihr seid vorne",
+     "urteil": "fehlt",
+     "grund": "16:56 Top-Turm statt Drachenkampf"
+    }
+   ],
+   "17": [
+    {
+     "soll": "Viego, Aurora, Bard tot: Bot-Turm holen, dann back mit 1122 Gold",
+     "urteil": "teilweise",
+     "grund": "17:39 drei tot, innerer Mid-Turm"
+    },
+    {
+     "soll": "Nächster Plan: Baron in 151 s – vorher Sicht oben",
+     "urteil": "fehlt",
+     "grund": "Baron/Sicht nicht erwähnt"
+    }
+   ],
+   "18": [
+    {
+     "soll": "Plan: Bot-Welle rein, ab 19:30 mit Team zum Baron",
+     "urteil": "teilweise",
+     "grund": "18:57 Farm Bot, kein Baron"
+    },
+    {
+     "soll": "Viego tot (18:51): der Baron ist eurer",
+     "urteil": "fehlt",
+     "grund": "Viego-Tod/Baron nicht erwähnt"
+    }
+   ],
+   "19": [
+    {
+     "soll": "Twitch in seinem unteren Jungle (vor 5 s)",
+     "urteil": "gesagt",
+     "grund": "19:25 Antwort: Twitch unterer Jungle"
+    },
+    {
+     "soll": "Baron in 30 s, Viego, Aurora, Bard tot: Team zum Baron",
+     "urteil": "fehlt",
+     "grund": "19:41 zum Team Mid, kein Baron"
+    }
+   ],
+   "20": [
+    {
+     "soll": "Viego tot (20:33), Kayn holt Bard und Twitch: Team soll Baron machen",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    },
+    {
+     "soll": "Drache in 87 s",
+     "urteil": "gesagt",
+     "grund": "20:00 Drache in 114 s"
+    }
+   ],
+   "21": [
+    {
+     "soll": "Drache in 23 s: zu Kayn, Yunara, Xerath an den Pit",
+     "urteil": "gesagt",
+     "grund": "21:21 Drache 35 s, loslaufen"
+    },
+    {
+     "soll": "Aurora Flash weg (21:34)",
+     "urteil": "gesagt",
+     "grund": "21:34 Aurora Flash weg"
+    }
+   ],
+   "22": [
+    {
+     "soll": "Viego Mid gesehen (22:45)",
+     "urteil": "teilweise",
+     "grund": "nur 21:57 Viego Mid, zu früh"
+    },
+    {
+     "soll": "Drache eures, Aurora tot: Baron mit Team",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    }
+   ],
+   "23": [
+    {
+     "soll": "Viego zuletzt in seinem oberen Jungle (23:24)",
+     "urteil": "gesagt",
+     "grund": "23:23 Viego oberer Jungle"
+    },
+    {
+     "soll": "1383 Gold: back – Malmortius",
+     "urteil": "teilweise",
+     "grund": "23:35 back, Spitzhacke statt Malmortius"
+    }
+   ],
+   "24": [
+    {
+     "soll": "Bard tot (24:30): mit Team Mid pushen",
+     "urteil": "fehlt",
+     "grund": "24:42 nicht nach vorn statt pushen"
+    },
+    {
+     "soll": "Twitch killt Xerath (24:59): nicht vorlaufen",
+     "urteil": "teilweise",
+     "grund": "24:42 nicht allein vor, ohne Xerath-Tod"
+    }
+   ],
+   "25": [
+    {
+     "soll": "Viego tot (25:18): Baron jetzt mit Urgot und Yunara",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    }
+   ],
+   "26": [
+    {
+     "soll": "Aurora Flash wieder da seit ca. 26:35; Flash-Stand von Sett, Twitch, Bard unbekannt",
+     "urteil": "fehlt",
+     "grund": "Flash-Stand nicht angesagt"
+    },
+    {
+     "soll": "Viego in eurem unteren Jungle (26:35), Drache in 81 s",
+     "urteil": "teilweise",
+     "grund": "26:39 Viego, kein Drachen-Timer"
+    }
+   ],
+   "27": [
+    {
+     "soll": "Der gegnerische Bot-T2, nicht deiner",
+     "urteil": "fehlt",
+     "grund": "27:05 falsch: zu deinem eigenen"
+    },
+    {
+     "soll": "Viego tot (27:15): Drache in 24 s mit Team holen",
+     "urteil": "gesagt",
+     "grund": "27:19 Drache 35 s, loslaufen"
+    }
+   ],
+   "28": [
+    {
+     "soll": "Viego Flash weg (28:20)",
+     "urteil": "gesagt",
+     "grund": "28:20 Viego Flash weg"
+    },
+    {
+     "soll": "40 % Leben, 1730 Gold: back – Gefräßige Hydra",
+     "urteil": "gesagt",
+     "grund": "27:59 back Kriegshammer für Hydra"
+    }
+   ],
+   "29": [
+    {
+     "soll": "Slots voll: Kontrollauge weglassen, erst Hydra fertig",
+     "urteil": "teilweise",
+     "grund": "29:17 kein Back; Kontrollauge fehlt"
+    },
+    {
+     "soll": "Viego, Aurora, Bard tot: Mid-Inhib und Nexus-Türme schlagen",
+     "urteil": "gesagt",
+     "grund": "29:22 drei tot, Nexus-Turm jetzt"
+    }
+   ],
+   "30": [
+    {
+     "soll": "Sett hat Kayn und Yunara getötet: raus, back, du hast 44 %",
+     "urteil": "gesagt",
+     "grund": "29:42 back, 30:09 zurück unter Turm"
+    },
+    {
+     "soll": "Baron in 78 s",
+     "urteil": "fehlt",
+     "grund": "Baron-Timer fehlt"
+    }
+   ],
+   "31": [
+    {
+     "soll": "Mid-Welle: 5 eigene laufen zu ihm – hinterher und Turm schlagen",
+     "urteil": "teilweise",
+     "grund": "30:53 zur Mid-Welle, kein Turm"
+    },
+    {
+     "soll": "Sett tot, Baron in 16 s: mit Kayn und Yunara zum Baron",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    }
+   ],
+   "32": [
+    {
+     "soll": "Baron eures, Viego tot (32:42): nach Respawn mit Team zum Drachen in 51 s",
+     "urteil": "teilweise",
+     "grund": "erst 33:17 Drache als Gruppe"
+    }
+   ],
+   "33": [
+    {
+     "soll": "Drache mit Team holen",
+     "urteil": "gesagt",
+     "grund": "33:17 Drache als Gruppe erzwingen"
+    },
+    {
+     "soll": "Viego tot (33:59): mit Baron-Buff Nexus pushen",
+     "urteil": "teilweise",
+     "grund": "34:11 Inhib-Turm, Nexus erst 34:31"
+    }
+   ],
+   "34": [
+    {
+     "soll": "Alle tot: Nexus schlagen",
+     "urteil": "gesagt",
+     "grund": "34:31 Nexus-Turm jetzt"
+    }
+   ]
+  },
+  "fuellsaetze": 10,
+  "saetze": 149
+ },
+ "C": {
+  "minuten": {
+   "1": [
+    {
+     "soll": "Aurora schon Level 2, du Level 1 mit 45 % Leben: nicht traden, nur farmen",
+     "urteil": "fehlt",
+     "grund": "1:30 Crash jetzt, Gegenteil"
+    },
+    {
+     "soll": "Sett oben hat Flash weg (1:35)",
+     "urteil": "gesagt",
+     "grund": "1:40 Sett Flash weg"
+    }
+   ],
+   "2": [
+    {
+     "soll": "14 % Leben gegen Aurora: raus, nicht bleiben, sonst stirbst du",
+     "urteil": "fehlt",
+     "grund": "kein Raus-Ruf, nur Todesmeldung"
+    },
+    {
+     "soll": "Aurora Flash weg (2:41) – bis ca. 7:40 Kill-Fenster mit Kayn",
+     "urteil": "teilweise",
+     "grund": "2:41 Flash weg, kein Kill-Fenster"
+    }
+   ],
+   "3": [
+    {
+     "soll": "Viego seit über 2 Minuten nicht gesehen: nicht zu weit vor, du hast kein Flash",
+     "urteil": "teilweise",
+     "grund": "Flash/Viego erwähnt, aber Crash rein"
+    },
+    {
+     "soll": "Drache in 90 s: Welle zu Aurora pushen, dann rechtzeitig Richtung unteren Fluss",
+     "urteil": "teilweise",
+     "grund": "Welle rein, kein Drache"
+    }
+   ],
+   "4": [
+    {
+     "soll": "Drache in 30 s: Welle mit der Kanone rein, dann mit Yunara und Xerath zum Pit",
+     "urteil": "fehlt",
+     "grund": "4:00 Welle ziehen statt Drache"
+    },
+    {
+     "soll": "Aurora ist schon in der Flussmitte – sie geht zum Drachen",
+     "urteil": "fehlt",
+     "grund": "Aurora am Fluss nicht angesagt"
+    }
+   ],
+   "5": [
+    {
+     "soll": "Viego oben im Jungle gesehen (5:13): unten ist frei",
+     "urteil": "teilweise",
+     "grund": "5:08 Viego oben, ohne Folgerung"
+    },
+    {
+     "soll": "Level 6 und 727 Gold: Welle rein, back – Caulfields Kriegshammer",
+     "urteil": "teilweise",
+     "grund": "5:34 Gold für Caulfields, kein Back-Ruf"
+    }
+   ],
+   "6": [
+    {
+     "soll": "Twitch tot (6:25): Drache jetzt mit Kayn, Yunara, Xerath",
+     "urteil": "fehlt",
+     "grund": "6:01 Mid farmen, kein Drache"
+    },
+    {
+     "soll": "Larven in 89 s",
+     "urteil": "fehlt",
+     "grund": "Larven nicht erwähnt"
+    }
+   ],
+   "7": [
+    {
+     "soll": "Sett und Viego tot (7:43/7:44): Larven jetzt mit Kayn",
+     "urteil": "teilweise",
+     "grund": "7:20 Drache mit Team, keine Larven"
+    },
+    {
+     "soll": "Aurora hat Flash wieder",
+     "urteil": "fehlt",
+     "grund": "Aurora-Flash zurück nicht angesagt"
+    }
+   ],
+   "8": [
+    {
+     "soll": "32 % Leben, 804 Gold: Welle rein, back",
+     "urteil": "gesagt",
+     "grund": "8:33 back jetzt, 34 Prozent"
+    },
+    {
+     "soll": "Viego im oberen Fluss (8:42) – sie holen die Larven, nicht hin",
+     "urteil": "teilweise",
+     "grund": "8:28 Viego oben, kein Larven-Rat"
+    }
+   ],
+   "9": [
+    {
+     "soll": "Viego unten im Fluss gesehen (9:55): Drachenkampf – mit Bot zum Pit",
+     "urteil": "teilweise",
+     "grund": "Viego unten angesagt, kein Drachen-Ruf"
+    }
+   ],
+   "10": [
+    {
+     "soll": "Drache eures, Viego, Bard, Sett, Twitch tot: Mid-Turm schlagen",
+     "urteil": "fehlt",
+     "grund": "10:54 crash und back, kein Turm"
+    },
+    {
+     "soll": "Aurora Flash weg (10:37)",
+     "urteil": "gesagt",
+     "grund": "10:37 Aurora Flash weg"
+    }
+   ],
+   "11": [
+    {
+     "soll": "Gegner alle in der Basis: Mid-Welle crashen, Turmplatten holen",
+     "urteil": "teilweise",
+     "grund": "11:09 Welle rein, dann back"
+    },
+    {
+     "soll": "Viego in eurem oberen Jungle (11:46)",
+     "urteil": "gesagt",
+     "grund": "11:46 Viego oberer Jungle"
+    }
+   ],
+   "12": [
+    {
+     "soll": "Viego tot (12:07): Mid-Welle rein, Turm schlagen",
+     "urteil": "fehlt",
+     "grund": "12:11 Welle ziehen statt Turm schlagen"
+    },
+    {
+     "soll": "Aurora ohne Flash bis ca. 15:30 – Kill-Fenster",
+     "urteil": "fehlt",
+     "grund": "kein Kill-Fenster angesagt"
+    }
+   ],
+   "13": [
+    {
+     "soll": "Viego in eurem oberen Jungle unterwegs – nicht allein vor, Aurora ist Level 11",
+     "urteil": "teilweise",
+     "grund": "erst 14:33 nicht allein nach vorn"
+    },
+    {
+     "soll": "Nach Respawn: Herold in 88 s, Drache in 117 s",
+     "urteil": "fehlt",
+     "grund": "keine Herold-/Drachen-Timer"
+    }
+   ],
+   "14": [
+    {
+     "soll": "Welle ist unter deinem Turm gecrasht: erst farmen, Kanone in 40 s",
+     "urteil": "fehlt",
+     "grund": "Welle/Kanone nicht erwähnt"
+    },
+    {
+     "soll": "Drache in 59 s: danach mit Yunara und Xerath zum Pit",
+     "urteil": "teilweise",
+     "grund": "14:00 Drache als Gruppe, ohne Timer"
+    }
+   ],
+   "15": [
+    {
+     "soll": "Kayn tot (15:09): Drache nicht erzwingen, Mid halten",
+     "urteil": "teilweise",
+     "grund": "15:15 zur Mid-Welle, Drache nicht erwähnt"
+    },
+    {
+     "soll": "Sett tot (15:23)",
+     "urteil": "fehlt",
+     "grund": "Sett-Tod nicht angesagt"
+    }
+   ],
+   "16": [
+    {
+     "soll": "Team ist Mid, du bot: zum Team",
+     "urteil": "fehlt",
+     "grund": "kein Ruf zum Team"
+    },
+    {
+     "soll": "Gegner am Drachen (16:54): kämpfen, ihr seid vorne",
+     "urteil": "fehlt",
+     "grund": "16:56 Top-Turm statt Drachenkampf"
+    }
+   ],
+   "17": [
+    {
+     "soll": "Viego, Aurora, Bard tot: Bot-Turm holen, dann back mit 1122 Gold",
+     "urteil": "teilweise",
+     "grund": "17:12 back, dann Mid-Turm"
+    },
+    {
+     "soll": "Nächster Plan: Baron in 151 s – vorher Sicht oben",
+     "urteil": "fehlt",
+     "grund": "Baron/Sicht nicht erwähnt"
+    }
+   ],
+   "18": [
+    {
+     "soll": "Plan: Bot-Welle rein, ab 19:30 mit Team zum Baron",
+     "urteil": "teilweise",
+     "grund": "19:15 Kanone rein, dann back; kein Baron"
+    },
+    {
+     "soll": "Viego tot (18:51): der Baron ist eurer",
+     "urteil": "fehlt",
+     "grund": "Viego-Tod/Baron nicht erwähnt"
+    }
+   ],
+   "19": [
+    {
+     "soll": "Twitch in seinem unteren Jungle (vor 5 s)",
+     "urteil": "gesagt",
+     "grund": "19:25 Antwort: Twitch unterer Jungle"
+    },
+    {
+     "soll": "Baron in 30 s, Viego, Aurora, Bard tot: Team zum Baron",
+     "urteil": "fehlt",
+     "grund": "19:41 Team Mid, kein Baron"
+    }
+   ],
+   "20": [
+    {
+     "soll": "Viego tot (20:33), Kayn holt Bard und Twitch: Team soll Baron machen",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    },
+    {
+     "soll": "Drache in 87 s",
+     "urteil": "fehlt",
+     "grund": "kein Drachen-Timer"
+    }
+   ],
+   "21": [
+    {
+     "soll": "Drache in 23 s: zu Kayn, Yunara, Xerath an den Pit",
+     "urteil": "gesagt",
+     "grund": "21:21 Drache 35 s, loslaufen"
+    },
+    {
+     "soll": "Aurora Flash weg (21:34)",
+     "urteil": "gesagt",
+     "grund": "21:34 Aurora Flash weg"
+    }
+   ],
+   "22": [
+    {
+     "soll": "Viego Mid gesehen (22:45)",
+     "urteil": "teilweise",
+     "grund": "nur 21:57 Viego Mid, zu früh"
+    },
+    {
+     "soll": "Drache eures, Aurora tot: Baron mit Team",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    }
+   ],
+   "23": [
+    {
+     "soll": "Viego zuletzt in seinem oberen Jungle (23:24)",
+     "urteil": "gesagt",
+     "grund": "23:23 Viego oberer Jungle"
+    },
+    {
+     "soll": "1383 Gold: back – Malmortius",
+     "urteil": "teilweise",
+     "grund": "23:58 Einkauf ohne Back-Ruf, falsches Item"
+    }
+   ],
+   "24": [
+    {
+     "soll": "Bard tot (24:30): mit Team Mid pushen",
+     "urteil": "teilweise",
+     "grund": "24:21 mit Team runter, Überzahl"
+    },
+    {
+     "soll": "Twitch killt Xerath (24:59): nicht vorlaufen",
+     "urteil": "teilweise",
+     "grund": "24:53 du stehst tief"
+    }
+   ],
+   "25": [
+    {
+     "soll": "Viego tot (25:18): Baron jetzt mit Urgot und Yunara",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    }
+   ],
+   "26": [
+    {
+     "soll": "Aurora Flash wieder da seit ca. 26:35; Flash-Stand von Sett, Twitch, Bard unbekannt",
+     "urteil": "fehlt",
+     "grund": "Flash-Stand nicht angesagt"
+    },
+    {
+     "soll": "Viego in eurem unteren Jungle (26:35), Drache in 81 s",
+     "urteil": "teilweise",
+     "grund": "26:39 Viego, kein Drachen-Timer"
+    }
+   ],
+   "27": [
+    {
+     "soll": "Der gegnerische Bot-T2, nicht deiner",
+     "urteil": "gesagt",
+     "grund": "27:05 zu ihrem Bot Tier 2"
+    },
+    {
+     "soll": "Viego tot (27:15): Drache in 24 s mit Team holen",
+     "urteil": "gesagt",
+     "grund": "27:39 Drache jetzt mit Urgot"
+    }
+   ],
+   "28": [
+    {
+     "soll": "Viego Flash weg (28:20)",
+     "urteil": "gesagt",
+     "grund": "28:20 Viego Flash weg"
+    },
+    {
+     "soll": "40 % Leben, 1730 Gold: back – Gefräßige Hydra",
+     "urteil": "gesagt",
+     "grund": "27:59 back Kriegshammer für Hydra"
+    }
+   ],
+   "29": [
+    {
+     "soll": "Slots voll: Kontrollauge weglassen, erst Hydra fertig",
+     "urteil": "teilweise",
+     "grund": "29:00 erst farmen, Kontrollauge nicht erwähnt"
+    },
+    {
+     "soll": "Viego, Aurora, Bard tot: Mid-Inhib und Nexus-Türme schlagen",
+     "urteil": "gesagt",
+     "grund": "29:22 mit Urgot, Kayn zum Nexus-Turm"
+    }
+   ],
+   "30": [
+    {
+     "soll": "Sett hat Kayn und Yunara getötet: raus, back, du hast 44 %",
+     "urteil": "gesagt",
+     "grund": "30:00 back jetzt, 32 Prozent"
+    },
+    {
+     "soll": "Baron in 78 s",
+     "urteil": "fehlt",
+     "grund": "Baron-Timer fehlt"
+    }
+   ],
+   "31": [
+    {
+     "soll": "Mid-Welle: 5 eigene laufen zu ihm – hinterher und Turm schlagen",
+     "urteil": "teilweise",
+     "grund": "30:53 zur Mid-Welle, kein Turm"
+    },
+    {
+     "soll": "Sett tot, Baron in 16 s: mit Kayn und Yunara zum Baron",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    }
+   ],
+   "32": [
+    {
+     "soll": "Baron eures, Viego tot (32:42): nach Respawn mit Team zum Drachen in 51 s",
+     "urteil": "teilweise",
+     "grund": "erst 33:17 Drache als Gruppe"
+    }
+   ],
+   "33": [
+    {
+     "soll": "Drache mit Team holen",
+     "urteil": "gesagt",
+     "grund": "33:17 Drache als Gruppe erzwingen"
+    },
+    {
+     "soll": "Viego tot (33:59): mit Baron-Buff Nexus pushen",
+     "urteil": "teilweise",
+     "grund": "34:11 Inhib-Turm, Nexus erst 34:31"
+    }
+   ],
+   "34": [
+    {
+     "soll": "Alle tot: Nexus schlagen",
+     "urteil": "teilweise",
+     "grund": "34:11 Inhib-Turm, Nexus nicht angesagt"
+    }
+   ]
+  },
+  "fuellsaetze": 10,
+  "saetze": 136
+ },
+ "D": {
+  "minuten": {
+   "1": [
+    {
+     "soll": "Aurora schon Level 2, du Level 1 mit 45 % Leben: nicht traden, nur farmen",
+     "urteil": "gesagt",
+     "grund": "1:30 hinter Welle am Turm, nur farmen"
+    },
+    {
+     "soll": "Sett oben hat Flash weg (1:35)",
+     "urteil": "gesagt",
+     "grund": "1:40 Sett Flash weg"
+    }
+   ],
+   "2": [
+    {
+     "soll": "14 % Leben gegen Aurora: raus, nicht bleiben, sonst stirbst du",
+     "urteil": "fehlt",
+     "grund": "kein Raus-Ruf, nur Todesmeldung"
+    },
+    {
+     "soll": "Aurora Flash weg (2:41) – bis ca. 7:40 Kill-Fenster mit Kayn",
+     "urteil": "teilweise",
+     "grund": "2:41 Flash weg, kein Kill-Fenster"
+    }
+   ],
+   "3": [
+    {
+     "soll": "Viego seit über 2 Minuten nicht gesehen: nicht zu weit vor, du hast kein Flash",
+     "urteil": "teilweise",
+     "grund": "3:00 nicht nachdrücken, ohne Viego/Flash"
+    },
+    {
+     "soll": "Drache in 90 s: Welle zu Aurora pushen, dann rechtzeitig Richtung unteren Fluss",
+     "urteil": "fehlt",
+     "grund": "kein Drache, Welle am Turm"
+    }
+   ],
+   "4": [
+    {
+     "soll": "Drache in 30 s: Welle mit der Kanone rein, dann mit Yunara und Xerath zum Pit",
+     "urteil": "fehlt",
+     "grund": "4:00 Welle ziehen statt Drache"
+    },
+    {
+     "soll": "Aurora ist schon in der Flussmitte – sie geht zum Drachen",
+     "urteil": "fehlt",
+     "grund": "Aurora am Fluss nicht angesagt"
+    }
+   ],
+   "5": [
+    {
+     "soll": "Viego oben im Jungle gesehen (5:13): unten ist frei",
+     "urteil": "teilweise",
+     "grund": "5:03 Viego als Gefahr statt unten frei"
+    },
+    {
+     "soll": "Level 6 und 727 Gold: Welle rein, back – Caulfields Kriegshammer",
+     "urteil": "gesagt",
+     "grund": "5:29 back jetzt, Caulfields kaufen"
+    }
+   ],
+   "6": [
+    {
+     "soll": "Twitch tot (6:25): Drache jetzt mit Kayn, Yunara, Xerath",
+     "urteil": "fehlt",
+     "grund": "6:01 Mid farmen, kein Drache"
+    },
+    {
+     "soll": "Larven in 89 s",
+     "urteil": "fehlt",
+     "grund": "Larven nicht erwähnt"
+    }
+   ],
+   "7": [
+    {
+     "soll": "Sett und Viego tot (7:43/7:44): Larven jetzt mit Kayn",
+     "urteil": "fehlt",
+     "grund": "7:20 nur farmen, keine Larven"
+    },
+    {
+     "soll": "Aurora hat Flash wieder",
+     "urteil": "fehlt",
+     "grund": "Aurora-Flash zurück nicht angesagt"
+    }
+   ],
+   "8": [
+    {
+     "soll": "32 % Leben, 804 Gold: Welle rein, back",
+     "urteil": "gesagt",
+     "grund": "8:33 back jetzt, 34 Prozent"
+    },
+    {
+     "soll": "Viego im oberen Fluss (8:42) – sie holen die Larven, nicht hin",
+     "urteil": "teilweise",
+     "grund": "8:28 Viego oben, kein Larven-Rat"
+    }
+   ],
+   "9": [
+    {
+     "soll": "Viego unten im Fluss gesehen (9:55): Drachenkampf – mit Bot zum Pit",
+     "urteil": "teilweise",
+     "grund": "Viego unten angesagt, kein Drachen-Ruf"
+    }
+   ],
+   "10": [
+    {
+     "soll": "Drache eures, Viego, Bard, Sett, Twitch tot: Mid-Turm schlagen",
+     "urteil": "fehlt",
+     "grund": "kein Mid-Turm-Ruf"
+    },
+    {
+     "soll": "Aurora Flash weg (10:37)",
+     "urteil": "gesagt",
+     "grund": "10:37 Aurora Flash weg"
+    }
+   ],
+   "11": [
+    {
+     "soll": "Gegner alle in der Basis: Mid-Welle crashen, Turmplatten holen",
+     "urteil": "teilweise",
+     "grund": "11:04 Welle rein, dann back"
+    },
+    {
+     "soll": "Viego in eurem oberen Jungle (11:46)",
+     "urteil": "gesagt",
+     "grund": "11:46 Viego oberer Jungle"
+    }
+   ],
+   "12": [
+    {
+     "soll": "Viego tot (12:07): Mid-Welle rein, Turm schlagen",
+     "urteil": "fehlt",
+     "grund": "Minute 12 stumm"
+    },
+    {
+     "soll": "Aurora ohne Flash bis ca. 15:30 – Kill-Fenster",
+     "urteil": "fehlt",
+     "grund": "kein Kill-Fenster angesagt"
+    }
+   ],
+   "13": [
+    {
+     "soll": "Viego in eurem oberen Jungle unterwegs – nicht allein vor, Aurora ist Level 11",
+     "urteil": "teilweise",
+     "grund": "erst 14:33 nicht allein nach vorn"
+    },
+    {
+     "soll": "Nach Respawn: Herold in 88 s, Drache in 117 s",
+     "urteil": "fehlt",
+     "grund": "keine Herold-/Drachen-Timer"
+    }
+   ],
+   "14": [
+    {
+     "soll": "Welle ist unter deinem Turm gecrasht: erst farmen, Kanone in 40 s",
+     "urteil": "fehlt",
+     "grund": "Welle/Kanone nicht erwähnt"
+    },
+    {
+     "soll": "Drache in 59 s: danach mit Yunara und Xerath zum Pit",
+     "urteil": "teilweise",
+     "grund": "14:00 Drache als Gruppe, ohne Timer"
+    }
+   ],
+   "15": [
+    {
+     "soll": "Kayn tot (15:09): Drache nicht erzwingen, Mid halten",
+     "urteil": "teilweise",
+     "grund": "15:15 zur Mid-Welle, Drache nicht erwähnt"
+    },
+    {
+     "soll": "Sett tot (15:23)",
+     "urteil": "fehlt",
+     "grund": "Sett-Tod nicht angesagt"
+    }
+   ],
+   "16": [
+    {
+     "soll": "Team ist Mid, du bot: zum Team",
+     "urteil": "fehlt",
+     "grund": "kein Ruf zum Team"
+    },
+    {
+     "soll": "Gegner am Drachen (16:54): kämpfen, ihr seid vorne",
+     "urteil": "fehlt",
+     "grund": "16:56 back und Top-Turm"
+    }
+   ],
+   "17": [
+    {
+     "soll": "Viego, Aurora, Bard tot: Bot-Turm holen, dann back mit 1122 Gold",
+     "urteil": "teilweise",
+     "grund": "17:31 Mid-Turm, dann Drache"
+    },
+    {
+     "soll": "Nächster Plan: Baron in 151 s – vorher Sicht oben",
+     "urteil": "fehlt",
+     "grund": "Baron/Sicht nicht erwähnt"
+    }
+   ],
+   "18": [
+    {
+     "soll": "Plan: Bot-Welle rein, ab 19:30 mit Team zum Baron",
+     "urteil": "teilweise",
+     "grund": "18:59 back, dann Baron"
+    },
+    {
+     "soll": "Viego tot (18:51): der Baron ist eurer",
+     "urteil": "gesagt",
+     "grund": "18:59 zum Baron, weil Viego tot"
+    }
+   ],
+   "19": [
+    {
+     "soll": "Twitch in seinem unteren Jungle (vor 5 s)",
+     "urteil": "gesagt",
+     "grund": "19:25 Antwort: Twitch unterer Jungle"
+    },
+    {
+     "soll": "Baron in 30 s, Viego, Aurora, Bard tot: Team zum Baron",
+     "urteil": "teilweise",
+     "grund": "19:41 Baron in 18 s, aber Mid"
+    }
+   ],
+   "20": [
+    {
+     "soll": "Viego tot (20:33), Kayn holt Bard und Twitch: Team soll Baron machen",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    },
+    {
+     "soll": "Drache in 87 s",
+     "urteil": "fehlt",
+     "grund": "kein Drachen-Timer"
+    }
+   ],
+   "21": [
+    {
+     "soll": "Drache in 23 s: zu Kayn, Yunara, Xerath an den Pit",
+     "urteil": "gesagt",
+     "grund": "21:21 Drache 35 s, loslaufen"
+    },
+    {
+     "soll": "Aurora Flash weg (21:34)",
+     "urteil": "gesagt",
+     "grund": "21:34 Aurora Flash weg"
+    }
+   ],
+   "22": [
+    {
+     "soll": "Viego Mid gesehen (22:45)",
+     "urteil": "teilweise",
+     "grund": "nur 21:57 Viego Mid, zu früh"
+    },
+    {
+     "soll": "Drache eures, Aurora tot: Baron mit Team",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    }
+   ],
+   "23": [
+    {
+     "soll": "Viego zuletzt in seinem oberen Jungle (23:24)",
+     "urteil": "gesagt",
+     "grund": "23:23 Viego oberer Jungle"
+    },
+    {
+     "soll": "1383 Gold: back – Malmortius",
+     "urteil": "teilweise",
+     "grund": "23:58 Einkauf ohne Back-Ruf, falsches Item"
+    }
+   ],
+   "24": [
+    {
+     "soll": "Bard tot (24:30): mit Team Mid pushen",
+     "urteil": "fehlt",
+     "grund": "24:21 nicht hin statt pushen"
+    },
+    {
+     "soll": "Twitch killt Xerath (24:59): nicht vorlaufen",
+     "urteil": "teilweise",
+     "grund": "24:21 nicht hin, 24:53 stehst tief"
+    }
+   ],
+   "25": [
+    {
+     "soll": "Viego tot (25:18): Baron jetzt mit Urgot und Yunara",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    }
+   ],
+   "26": [
+    {
+     "soll": "Aurora Flash wieder da seit ca. 26:35; Flash-Stand von Sett, Twitch, Bard unbekannt",
+     "urteil": "fehlt",
+     "grund": "Flash-Stand nicht angesagt"
+    },
+    {
+     "soll": "Viego in eurem unteren Jungle (26:35), Drache in 81 s",
+     "urteil": "teilweise",
+     "grund": "26:39 Viego, kein Drachen-Timer"
+    }
+   ],
+   "27": [
+    {
+     "soll": "Der gegnerische Bot-T2, nicht deiner",
+     "urteil": "fehlt",
+     "grund": "27:05 falsch: zu deinem eigenen"
+    },
+    {
+     "soll": "Viego tot (27:15): Drache in 24 s mit Team holen",
+     "urteil": "gesagt",
+     "grund": "27:19 Drache 35 s, loslaufen"
+    }
+   ],
+   "28": [
+    {
+     "soll": "Viego Flash weg (28:20)",
+     "urteil": "gesagt",
+     "grund": "28:20 Viego Flash weg"
+    },
+    {
+     "soll": "40 % Leben, 1730 Gold: back – Gefräßige Hydra",
+     "urteil": "gesagt",
+     "grund": "27:59 back, 28:39 Tiamat für Hydra"
+    }
+   ],
+   "29": [
+    {
+     "soll": "Slots voll: Kontrollauge weglassen, erst Hydra fertig",
+     "urteil": "teilweise",
+     "grund": "29:00 erst farmen, Kontrollauge nicht erwähnt"
+    },
+    {
+     "soll": "Viego, Aurora, Bard tot: Mid-Inhib und Nexus-Türme schlagen",
+     "urteil": "gesagt",
+     "grund": "29:22 drei tot, Nexus-Turm jetzt"
+    }
+   ],
+   "30": [
+    {
+     "soll": "Sett hat Kayn und Yunara getötet: raus, back, du hast 44 %",
+     "urteil": "gesagt",
+     "grund": "30:00 back jetzt, 32 Prozent"
+    },
+    {
+     "soll": "Baron in 78 s",
+     "urteil": "fehlt",
+     "grund": "Baron-Timer fehlt"
+    }
+   ],
+   "31": [
+    {
+     "soll": "Mid-Welle: 5 eigene laufen zu ihm – hinterher und Turm schlagen",
+     "urteil": "teilweise",
+     "grund": "30:53 zur Mid-Welle, kein Turm"
+    },
+    {
+     "soll": "Sett tot, Baron in 16 s: mit Kayn und Yunara zum Baron",
+     "urteil": "fehlt",
+     "grund": "kein Baron-Ruf"
+    }
+   ],
+   "32": [
+    {
+     "soll": "Baron eures, Viego tot (32:42): nach Respawn mit Team zum Drachen in 51 s",
+     "urteil": "teilweise",
+     "grund": "erst 33:17 Drache als Gruppe"
+    }
+   ],
+   "33": [
+    {
+     "soll": "Drache mit Team holen",
+     "urteil": "gesagt",
+     "grund": "33:17 Drache als Gruppe erzwingen"
+    },
+    {
+     "soll": "Viego tot (33:59): mit Baron-Buff Nexus pushen",
+     "urteil": "teilweise",
+     "grund": "34:11 Inhib-Turm, Nexus erst 34:31"
+    }
+   ],
+   "34": [
+    {
+     "soll": "Alle tot: Nexus schlagen",
+     "urteil": "gesagt",
+     "grund": "34:31 Nexus-Turm jetzt"
+    }
+   ]
+  },
+  "fuellsaetze": 10,
+  "saetze": 140
+ }
+}
