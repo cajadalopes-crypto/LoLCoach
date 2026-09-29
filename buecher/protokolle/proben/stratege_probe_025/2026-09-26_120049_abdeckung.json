@@ -1,0 +1,278 @@
+{
+ "kennzahlen": {
+  "flash": "– (keine)",
+  "jungler": "17/17 (100 %)",
+  "i4": "1/1 (100 %)",
+  "backs": "1/2 (50 %)",
+  "back_rufe": "12/12 (100 %)",
+  "stille": "60 s",
+  "sicherheit": 0,
+  "widersprueche": 0,
+  "fuellsaetze": "0/88 (0.0 %)",
+  "latenz": "1.58 / 3.91 s (n = 38)",
+  "erster_satz": 1.4087011000374332,
+  "cache": "42/62"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [],
+  "jungler": [
+   {
+    "zeit": 194.5,
+    "name": "Vi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle oben."
+   },
+   {
+    "zeit": 242.3,
+    "name": "Vi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 43,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle oben."
+   },
+   {
+    "zeit": 388.7,
+    "name": "Vi",
+    "ort": "oben",
+    "ohne_s": 125,
+    "tot_ich": false,
+    "gesagt": "Zurück unter deinen äußeren Top-Turm: Vi kommt."
+   },
+   {
+    "zeit": 439.5,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 32,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 482.2,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 25,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 564.6,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 64,
+    "tot_ich": false,
+    "gesagt": "Vi unterer Fluss."
+   },
+   {
+    "zeit": 728.9,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 145,
+    "tot_ich": false,
+    "gesagt": "Vi unterer Fluss."
+   },
+   {
+    "zeit": 797.2,
+    "name": "Vi",
+    "ort": "oben",
+    "ohne_s": 60,
+    "tot_ich": false,
+    "gesagt": "Vi oben."
+   },
+   {
+    "zeit": 895.0,
+    "name": "Vi",
+    "ort": "im oberen Fluss",
+    "ohne_s": 53,
+    "tot_ich": false,
+    "gesagt": "Vi oberer Fluss, 7 Sekunden."
+   },
+   {
+    "zeit": 1108.2,
+    "name": "Vi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 203,
+    "tot_ich": false,
+    "gesagt": "Vi Mid, 4 Sekunden."
+   },
+   {
+    "zeit": 1162.3,
+    "name": "Vi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Vi Mid, 1 Sekunde."
+   },
+   {
+    "zeit": 1218.4,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 47,
+    "tot_ich": true,
+    "gesagt": "Vi unterer Fluss."
+   },
+   {
+    "zeit": 1262.4,
+    "name": "Vi",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": 35,
+    "tot_ich": false,
+    "gesagt": "Vi euer Jungle unten."
+   },
+   {
+    "zeit": 1312.3,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 39,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten, 8 Sekunden."
+   },
+   {
+    "zeit": 1362.2,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 39,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten, 1 Sekunde."
+   },
+   {
+    "zeit": 1411.0,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 1445.7,
+    "name": "Vi",
+    "ort": "in seiner Basis",
+    "ohne_s": 33,
+    "tot_ich": false,
+    "gesagt": "Vi in Basis."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 420.2,
+    "gesagt": null,
+    "saetze": [
+     "Vi oben, 1 Sekunde.",
+     "Zurück unter deinen äußeren Top-Turm: zwei kommen.",
+     "Vi sein Jungle unten."
+    ]
+   },
+   {
+    "zeit": 610.5,
+    "gesagt": "Der Brutalisierer, Stiefel und Kontroll-Auge, dann sofort nach Top – die Kanone kommt in 44 Sekunden und Shen ist gerade aufgetaucht, du brauchst Sicht.",
+    "saetze": [
+     "Vi unterer Fluss.",
+     "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Freeze am Turm, die Welle kommt zu dir",
+     "Der Brutalisierer, Stiefel und Kontroll-Auge, dann sofort nach Top – die Kanone kommt in 44 Sekunden und Shen ist gerade aufgetaucht, du brauchst Sicht."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 242.29940795898438,
+    "text": "Stopp – back jetzt: 1250 Gold für Caulfields Kriegshammer. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 351.9436340332031,
+    "text": "Back jetzt: Brutalisierer kaufen, dann zur Lane zurück, weil Shen gleich kommt und du deine Wave crashen musst bevor er Level 6 hat.",
+    "kette": true
+   },
+   {
+    "zeit": 756.3632202148438,
+    "text": "Back jetzt: Gefräßige Hydra, dann zu deinem Team unten, weil Vi und Brand in 14 Sekunden da sind und dein Leben zu niedrig ist.",
+    "kette": true
+   },
+   {
+    "zeit": 899.0674438476562,
+    "text": "Vi kann in 6 Sekunden bei dir sein: Back jetzt, Brutalisierer kaufen, dann zur Top-Welle mit Quest-TP, weil Shen weg ist und die Kanone in 17 Sekunden kommt.",
+    "kette": true
+   },
+   {
+    "zeit": 978.6528930664062,
+    "text": "Back jetzt: 3200 Gold für Axiombogen. Danach zum Herold.",
+    "kette": true
+   },
+   {
+    "zeit": 1041.0882568359375,
+    "text": "Back jetzt: Axiombogen, dann zu eurem Bot-Turm, weil die Welle drei Minionen hat und Brand in 24 Sekunden zurück ist.",
+    "kette": true
+   },
+   {
+    "zeit": 1054.263427734375,
+    "text": "Jetzt, wo Brand in elf Sekunden respawnt: Mid-Welle crashen mit Lee Sin, dann back für Axiombogen, danach Quest-TP zu Bot und Turm mit Übergewicht nehmen, weil Shen noch 24 Sekunden tot ist.",
+    "kette": true
+   },
+   {
+    "zeit": 1119.448974609375,
+    "text": "Vi ist 2 Sekunden weg, Brand in 23 Sekunden tot: crash die Welle jetzt mit der Kanone, back für Axiombogen, dann Quest-TP zu Bot zum Turm, weil Varus in 17 Sekunden spawnt und Brand euch nicht mehr helfen kann.",
+    "kette": true
+   },
+   {
+    "zeit": 1171.474853515625,
+    "text": "Jetzt, wo Rakan tot ist und Vi bei dir steht: back jetzt für Axiombogen, dann Quest-TP zu Bot zum Inhibitor-Turm, weil Varus in 14 Sekunden spawnt und ihr vier Tote plus Levelvorsprung habt.",
+    "kette": true
+   },
+   {
+    "zeit": 1399.7314453125,
+    "text": "Back jetzt: Axiombogen kaufen, dann zu Lee Sin nach oben zum Baron, weil Vi tot ist und Brand kommt in 20 Sekunden – ihr seid 5v3 im Fenster.",
+    "kette": true
+   },
+   {
+    "zeit": 1414.0899658203125,
+    "text": "Jetzt, wo Brand in fünf Sekunden kommt: Welle rein, sofort back, Axiombogen kaufen, dann zu Lee sin nach oben zum Baron – ihr seid noch 5v4, aber Shen kann TP kommen, also schnell.",
+    "kette": true
+   },
+   {
+    "zeit": 1507.767822265625,
+    "text": "Jetzt, wo Rakan und Varus in 5–6 Sekunden bei dir sein können: Back jetzt, Axiombogen kaufen, dann auf den Nexus-Turm – Lee Sin und Diana halten ihn, du bist schneller dort hin, weil Quest-TP bereit ist.",
+    "kette": true
+   }
+  ],
+  "stille_max": 60,
+  "stille_lang": [
+   [
+    120,
+    180
+   ],
+   [
+    194,
+    242
+   ],
+   [
+    305,
+    352
+   ],
+   [
+    482,
+    540
+   ]
+  ],
+  "sicherheit": [],
+  "widersprueche": [],
+  "fuellsaetze": [],
+  "saetze_n": 88,
+  "i4": [
+   {
+    "zeit": 789.1,
+    "name": "Shen",
+    "ort": "oben",
+    "gesagt": "Shen oben: Welle drücken."
+   }
+  ],
+  "latenz": {
+   "n": 38,
+   "median": 1.58,
+   "p90": 3.91,
+   "erster_satz_median": 1.4087011000374332,
+   "cache_treffer": "42/62"
+  }
+ }
+}

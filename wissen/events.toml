@@ -1,0 +1,9 @@
+# Buch 15, 0.2 (Auftrag 025): Eintrittsquoten der Erahnung, gemessen von werkzeuge/pakete_messen.py
+stand = "30.09.2026 an 8 Aufnahmen: 2026-09-28_101426, 2026-09-28_192113, 2026-09-29_133448, 2026-09-29_183125, 2026-09-26_125902, 2026-09-26_164809, 2026-09-26_120049, 2026-09-29_231200"
+still_unter = 0.6          # darunter bleibt ein Typ still (nie gesagt, nie abgewogen)
+
+[erahnung]
+ERAHNT_GANK = { quote = 0.08, n = 24 }
+ERAHNT_KAMPF = { quote = 0.75, n = 117 }
+ERAHNT_LANE_BACK = { quote = 0.68, n = 37 }
+ERAHNT_RUECKKEHR = { quote = 0.85, n = 99 }

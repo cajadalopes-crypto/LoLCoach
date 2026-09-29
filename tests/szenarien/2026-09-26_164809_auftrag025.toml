@@ -1,0 +1,28 @@
+# Auftrag 025, 3: Momente mit mehreren teilnehmbaren Events (werkzeuge/mehrfach_events.py). Das Soll-Play
+# legte ein blinder Challenger-Kritiker fest (nur die Lage, nie der Coach).
+
+aufnahme = "2026-09-26_164809"
+
+[[szenario]]
+id = "m07-mehrere-events-138"
+zeit = "1:38"
+quelle = "LANE_WEG  Wukong; GOLD_SPIKE  Riven; KANONE_BALD Top"
+lage = "Kritiker: B - Wukong ist gerade gestorben, ich habe 44 % Leben und 523 Gold, also jetzt Stiefel kaufen."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m08-mehrere-events-504"
+zeit = "5:04"
+quelle = "GOLD_SPIKE  Riven; OBJ_DA drache drache"
+lage = "Kritiker: B - Wukong ist zu riskant und 0 s entfernt, mit 327 Gold bekomme ich Stiefel und komme sicher weg."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m09-mehrere-events-808"
+zeit = "8:08"
+quelle = "OBJ_DA larven larven; LANE_WEG  Wukong; GOLD_SPIKE  Riven"
+lage = "Kritiker: D, B - Wukong und Ashe sind tot und ich stehe stark mit Ult, also Larven nehmen; danach mit 447 Gold Back."
+soll = ["ABGEBEN_TAUSCHEN", "ANLAUFEN", "BACK_JETZT", "BESTREITEN", "KAUFEN", "NEHMEN", "TAUSCHEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."

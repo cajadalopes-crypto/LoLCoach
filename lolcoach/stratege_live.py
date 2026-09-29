@@ -230,7 +230,7 @@ class AufzeichnungsStub:
 
 AENDERUNG_S = 30.0          # innerhalb dieser Zeit aendert sich der Plan nur nach einer echten Lageaenderung
 WIEDERHOLUNG_S = 60.0       # derselbe Plan wird fruehestens danach noch einmal gesagt
-NUR_INFO = ("kern:INFO_", "kern:VORSICHT", "kern:technik", "kern:LAGEBILD", "tod", "briefing", "antwort")
+NUR_INFO = ("kern:INFO_", "kern:PAKET_", "kern:VORSICHT", "kern:technik", "kern:LAGEBILD", "tod", "briefing", "antwort")
 ZIELE = (
     ("back", r"\bback\b|\brecall\b|zurück in die basis|\bheilen\b.*\bdann\b"),
     ("zurueck", r"\braus\b|zurück (unter|zu|zum|an|hinter) (deinen?|deinem|den|euren?|die) ?[\w-]*(turm|welle)|"
@@ -481,6 +481,9 @@ class MakroStratege:
         zeile = next((v.get("plan") for v in reversed(versuche) if v.get("plan")), None)
         if text and zeile:
             self.plan_obj = Plan(zeile, zeit, text)
+            pk = getattr(self.kern, "pakete", None)
+            if pk is not None:
+                pk.plan_zeile(zeile)                 # Auftrag 025, 2: das Plan-Objekt geht im Paket auf
 
     def _auge_grund(self) -> str | None:
         """Auftrag 016, 5: hoechstens einmal je Back vorschlagen; sagt Carlos Nein, 5 min lang gar nicht."""

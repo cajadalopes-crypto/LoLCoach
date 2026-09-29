@@ -1,0 +1,100 @@
+{"minuten": {
+"1": [
+{"soll": "Aurora schon Level 2, du Level 1 mit 45 % Leben: nicht traden, nur farmen", "urteil": "fehlt", "grund": "Nur Flash-Meldungen 1:00 und 1:35, kein Rat zum Trade"},
+{"soll": "Sett oben hat Flash weg (1:35)", "urteil": "gesagt", "grund": "1:35 Sett Flash weg"}],
+"2": [
+{"soll": "14 % Leben gegen Aurora: raus, nicht bleiben, sonst stirbst du", "urteil": "teilweise", "grund": "2:29 nennt 14 Prozent, aber Kayn-Kampf statt raus vor Aurora"}],
+"3": [
+{"soll": "Viego seit über 2 Minuten nicht gesehen: nicht zu weit vor, du hast kein Flash", "urteil": "teilweise", "grund": "3:03 bleib hinten wegen Viego, Flash/Dauer fehlt"},
+{"soll": "Drache in 90 s: Welle zu Aurora pushen, dann rechtzeitig Richtung unteren Fluss", "urteil": "teilweise", "grund": "3:03 Welle pushen, aber kein Drache, kein Fluss"}],
+"4": [
+{"soll": "Drache in 30 s: Welle mit der Kanone rein, dann mit Yunara und Xerath zum Pit", "urteil": "teilweise", "grund": "4:27 Drache in 32 s mit Team, aber back statt Welle rein"},
+{"soll": "Aurora ist schon in der Flussmitte – sie geht zum Drachen", "urteil": "fehlt", "grund": "4:27 Aurora 3 s bei dir, nicht Flussmitte/Drache"}],
+"5": [
+{"soll": "Viego oben im Jungle gesehen (5:13): unten ist frei", "urteil": "gesagt", "grund": "5:04 Viego sein Jungle oben"},
+{"soll": "Level 6 und 727 Gold: Welle rein, back – Caulfields Kriegshammer", "urteil": "teilweise", "grund": "5:47 back, aber Langschwert statt Caulfields, keine Welle"}],
+"6": [
+{"soll": "Twitch tot (6:25): Drache jetzt mit Kayn, Yunara, Xerath", "urteil": "fehlt", "grund": "6:00 und 6:01 nichts dazu, danach nur 7:17 Aurora"},
+{"soll": "Larven in 89 s", "urteil": "fehlt", "grund": "Nie genannt"}],
+"7": [
+{"soll": "Sett und Viego tot (7:43/7:44): Larven jetzt mit Kayn", "urteil": "fehlt", "grund": "7:54 nennt beide tot, rät aber back statt Larven"},
+{"soll": "Aurora hat Flash wieder", "urteil": "teilweise", "grund": "7:17 Flash noch 8 s, nicht klar wessen, keine Rueckmeldung"}],
+"8": [
+{"soll": "32 % Leben, 804 Gold: Welle rein, back", "urteil": "gesagt", "grund": "8:33 Back jetzt 34 Prozent Leben, heilen"},
+{"soll": "Viego im oberen Fluss (8:42) – sie holen die Larven, nicht hin", "urteil": "fehlt", "grund": "8:28 Viego Jungle oben vorher, 8:52 nur Urgot nicht hin"}],
+"9": [
+{"soll": "Viego unten im Fluss gesehen (9:55): Drachenkampf – mit Bot zum Pit", "urteil": "fehlt", "grund": "9:45 Viego Jungle unten vorher, kein Drachenrat"}],
+"10": [
+{"soll": "Drache eures, Viego, Bard, Sett, Twitch tot: Mid-Turm schlagen", "urteil": "teilweise", "grund": "11:02 drei tot, Mid-Welle rein, dann back; kein Turm"},
+{"soll": "Aurora Flash weg (10:37)", "urteil": "gesagt", "grund": "10:37 Aurora Flash weg"}],
+"11": [
+{"soll": "Gegner alle in der Basis: Mid-Welle crashen, Turmplatten holen", "urteil": "teilweise", "grund": "11:02 Mid-Welle rein, aber dann back, keine Platten"},
+{"soll": "Viego in eurem oberen Jungle (11:46)", "urteil": "gesagt", "grund": "11:46 Viego euer Jungle oben"}],
+"12": [
+{"soll": "Viego tot (12:07): Mid-Welle rein, Turm schlagen", "urteil": "fehlt", "grund": "Nur 12:20 Urgot kaempft"}],
+"13": [
+{"soll": "Viego in eurem oberen Jungle unterwegs – nicht allein vor, Aurora ist Level 11", "urteil": "teilweise", "grund": "13:36 Viego unterer Fluss, 13:57 pass auf Aurora"},
+{"soll": "Nach Respawn: Herold in 88 s, Drache in 117 s", "urteil": "teilweise", "grund": "13:57 Drache in 92 s, Herold fehlt"}],
+"14": [
+{"soll": "Welle ist unter deinem Turm gecrasht: erst farmen, Kanone in 40 s", "urteil": "teilweise", "grund": "14:27 Welle freezen am Turm, keine 40 s"},
+{"soll": "Drache in 59 s: danach mit Yunara und Xerath zum Pit", "urteil": "fehlt", "grund": "14:27 nur Herold mit Kayn und Urgot"}],
+"15": [
+{"soll": "Kayn tot (15:09): Drache nicht erzwingen, Mid halten", "urteil": "teilweise", "grund": "15:09 back dann Turm, 15:42 nicht tief; Kayn tot fehlt"},
+{"soll": "Sett tot (15:23)", "urteil": "gesagt", "grund": "15:42 Sett tot"}],
+"16": [
+{"soll": "Team ist Mid, du bot: zum Team", "urteil": "fehlt", "grund": "16:56 rät Top-Turm druecken, nicht zum Team"}],
+"17": [
+{"soll": "Viego, Aurora, Bard tot: Bot-Turm holen, dann back mit 1122 Gold", "urteil": "teilweise", "grund": "17:31 back mit Gruppe zum Mid-Turm, nicht Bot-Turm"},
+{"soll": "Nächster Plan: Baron in 151 s – vorher Sicht oben", "urteil": "fehlt", "grund": "Kein Baron, keine Sicht"}],
+"18": [
+{"soll": "Plan: Bot-Welle rein, ab 19:30 mit Team zum Baron", "urteil": "teilweise", "grund": "18:15 Welle crashen, Mid-Turm statt Baron"},
+{"soll": "Viego tot (18:51): der Baron ist eurer", "urteil": "gesagt", "grund": "19:27 Viego und Aurora tot, Baron in 33 s"}],
+"19": [
+{"soll": "Twitch in seinem unteren Jungle (vor 5 s)", "urteil": "gesagt", "grund": "19:25 Twitch unterer Jungle"},
+{"soll": "Baron in 30 s, Viego, Aurora, Bard tot: Team zum Baron", "urteil": "gesagt", "grund": "19:27 Baron in 33 s mit ganzer Gruppe"}],
+"20": [
+{"soll": "Viego tot (20:33), Kayn holt Bard und Twitch: Team soll Baron machen", "urteil": "fehlt", "grund": "20:28 tod, danach nur 21:08 Aurora/Drache"},
+{"soll": "Drache in 87 s", "urteil": "gesagt", "grund": "20:07 Drache in 90 Sekunden"}],
+"21": [
+{"soll": "Drache in 23 s: zu Kayn, Yunara, Xerath an den Pit", "urteil": "teilweise", "grund": "21:21 Drache in 31 s loslaufen, 21:55 Kayn Xerath Pit"},
+{"soll": "Aurora Flash weg (21:34)", "urteil": "gesagt", "grund": "21:34 Aurora Flash weg"}],
+"22": [
+{"soll": "Viego Mid gesehen (22:45)", "urteil": "fehlt", "grund": "Viego Mid nur 21:57, nicht 22:45"},
+{"soll": "Drache eures, Aurora tot: Baron mit Team", "urteil": "fehlt", "grund": "22:43 nur back Spitzhacke"}],
+"23": [
+{"soll": "Viego zuletzt in seinem oberen Jungle (23:24)", "urteil": "gesagt", "grund": "23:23 Viego sein Jungle oben"},
+{"soll": "1383 Gold: back – Malmortius", "urteil": "fehlt", "grund": "23:58 Langschwert/Kontroll-Auge, kein Malmortius"}],
+"24": [
+{"soll": "Bard tot (24:30): mit Team Mid pushen", "urteil": "fehlt", "grund": "24:30 nur Urgot kaempft"},
+{"soll": "Twitch killt Xerath (24:59): nicht vorlaufen", "urteil": "gesagt", "grund": "24:58 Xerath kaempft nicht hin, 25:03 bleib oben"}],
+"25": [
+{"soll": "Viego tot (25:18): Baron jetzt mit Urgot und Yunara", "urteil": "fehlt", "grund": "25:18 nur Sett kommt, bleib oben"}],
+"26": [
+{"soll": "Aurora Flash wieder da seit ca. 26:35; Flash-Stand von Sett, Twitch, Bard unbekannt", "urteil": "fehlt", "grund": "26:57 Nutzer fragt Flashes, Antwort nur Notiert"},
+{"soll": "Viego in eurem unteren Jungle (26:35), Drache in 81 s", "urteil": "teilweise", "grund": "26:35 Viego Jungle unten, Drache-Zeit fehlt"}],
+"27": [
+{"soll": "Der gegnerische Bot-T2, nicht deiner", "urteil": "fehlt", "grund": "27:05 Antwort umgeht die Frage, Drachen-Pit"},
+{"soll": "Viego tot (27:15): Drache in 24 s mit Team holen", "urteil": "gesagt", "grund": "27:19 Drache in 31 s, 27:37 geh zum Pit"}],
+"28": [
+{"soll": "Viego Flash weg (28:20)", "urteil": "gesagt", "grund": "28:22 Viego Flash weg"},
+{"soll": "40 % Leben, 1730 Gold: back – Gefräßige Hydra", "urteil": "teilweise", "grund": "28:39 Tiamat kaufen, Turm; Hydra nicht genannt"}],
+"29": [
+{"soll": "Slots voll: Kontrollauge weglassen, erst Hydra fertig", "urteil": "teilweise", "grund": "29:00 erst farmen dann Hydra, Slots/Auge fehlt"},
+{"soll": "Viego, Aurora, Bard tot: Mid-Inhib und Nexus-Türme schlagen", "urteil": "fehlt", "grund": "29:36 nur Nexus-Turm fällt, kein Rat"}],
+"30": [
+{"soll": "Sett hat Kayn und Yunara getötet: raus, back, du hast 44 %", "urteil": "teilweise", "grund": "30:09 zurück unter Turm, kein Sett/Tod-Bezug"},
+{"soll": "Baron in 78 s", "urteil": "fehlt", "grund": "Nie genannt"}],
+"31": [
+{"soll": "Mid-Welle: 5 eigene laufen zu ihm – hinterher und Turm schlagen", "urteil": "fehlt", "grund": "31:07 nur Erklaerung Mid-Welle, kein Rat"},
+{"soll": "Sett tot, Baron in 16 s: mit Kayn und Yunara zum Baron", "urteil": "fehlt", "grund": "31:40 nur Aurora kommt, 31:43 raus"}],
+"32": [
+{"soll": "Baron eures, Viego tot (32:42): nach Respawn mit Team zum Drachen in 51 s", "urteil": "gesagt", "grund": "32:49 Viego tot, Drache in 27 s mit Team"}],
+"33": [
+{"soll": "Drache mit Team holen", "urteil": "gesagt", "grund": "33:20 Drache jetzt mit vier"},
+{"soll": "Viego tot (33:59): mit Baron-Buff Nexus pushen", "urteil": "teilweise", "grund": "34:12 Bot-Inhibitor-Turm jetzt, Viego/Baron-Buff fehlt"}],
+"34": [
+{"soll": "Alle tot: Nexus schlagen", "urteil": "gesagt", "grund": "34:31 und 34:40 Nexus-Turm jetzt"}]
+},
+"fuellsaetze": {"anzahl": 3, "saetze_gesamt": 154, "zeiten": ["18:08", "20:16", "24:58"]},
+"widersprueche": {"anzahl": 3, "faelle": ["20:07/20:10 lauf zu Yunara vs zurueck unter Turm", "30:39/30:53 nicht allein nach vorn vs zur Mid-Welle", "27:05/26:59 lauf sofort zum Pit vs du stehst tief"]}
+}

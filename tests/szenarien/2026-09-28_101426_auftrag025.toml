@@ -1,0 +1,29 @@
+# Auftrag 025, 3: Momente mit mehreren teilnehmbaren Events (werkzeuge/mehrfach_events.py). Das Soll-Play
+# legte ein blinder Challenger-Kritiker fest (nur die Lage, nie der Coach).
+
+aufnahme = "2026-09-28_101426"
+spielmodus = "CLASSIC"
+
+[[szenario]]
+id = "m10-mehrere-events-230"
+zeit = "2:30"
+quelle = "GOLD_SPIKE  Riven; KAMPF in eurem oberen Jungle Urgot Sett; KAMPF in eurem oberen Jungle Kayn Riven Aurora"
+lage = "Kritiker: B, F - Mit 14 % Leben ist nichts nach vorn erlaubt und Aurora ist 2 s entfernt, also sofort zurueck und kaufen."
+soll = ["BACK_JETZT", "HALTEN", "HALTEN_UNTER_TURM", "KAUFEN", "RAUS", "WELLE_HALTEN", "WELLE_REIN_UND_BACK", "ZURUECK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m11-mehrere-events-427"
+zeit = "4:27"
+quelle = "GOLD_SPIKE  Riven; ERAHNT_KAMPF drache drache"
+lage = "Kritiker: B - Aurora, Bard und Twitch sind nah, mit 352 Gold kaufe ich Stiefel und komme rechtzeitig zum Drachen zurueck."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m12-mehrere-events-608"
+zeit = "6:08"
+quelle = "KANONE_BALD Mid; KAMPF in eurem unteren Jungle Yunara Xerath Twitch Bard"
+lage = "Kritiker: A - Der Kampf unten ist 25 s weit weg, die Kanone kommt in 11 s in meine Welle und die Welle liegt bei mir."
+soll = ["FARMEN", "STAPELN", "UNTER_TURM_FARMEN", "WELLE_DRUECKEN", "WELLE_HALTEN", "WELLE_KLAEREN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."

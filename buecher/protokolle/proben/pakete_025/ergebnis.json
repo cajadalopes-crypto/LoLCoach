@@ -1,0 +1,447 @@
+{
+ "gesamt": {
+  "abdeckung": "24721/26412 (94 %)",
+  "abdeckung_gesagt": "14446/26412 (55 %)",
+  "abbruch": "32/39 (82 %)",
+  "budget": "4/31 Fehler, 0 gefährlich",
+  "back": "14/24 (58 %)",
+  "chancen": "34/61 (56 %)",
+  "events": "417/772 (54 %)",
+  "erahnt": {
+   "ERAHNT_LANE_BACK": "25/37 (68 %)",
+   "ERAHNT_RUECKKEHR": "84/99 (85 %)",
+   "ERAHNT_GANK": "2/24 (8 %)",
+   "ERAHNT_KAMPF": "88/117 (75 %)"
+  }
+ },
+ "je_partie": [
+  {
+   "stamm": "2026-09-28_101426",
+   "abdeckung": "5508/6076 (91 %)",
+   "abdeckung_gesagt": "3058/6076 (50 %)",
+   "abbruch": "3/4 (75 %)",
+   "budget": "0/4 Fehler, 0 gefährlich",
+   "back": "2/3 (67 %)",
+   "chancen": "5/14 (36 %)",
+   "events": "71/114 (62 %)",
+   "erahnt": {
+    "ERAHNT_LANE_BACK": [
+     5,
+     4
+    ],
+    "ERAHNT_RUECKKEHR": [
+     9,
+     9
+    ],
+    "ERAHNT_GANK": [
+     5,
+     0
+    ],
+    "ERAHNT_KAMPF": [
+     11,
+     11
+    ]
+   },
+   "roh": {
+    "frei": 6076,
+    "mit": 5508,
+    "gesagt": 3058,
+    "abbruch": [
+     3,
+     4
+    ],
+    "budget": [
+     0,
+     4,
+     0
+    ],
+    "back": [
+     2,
+     3
+    ],
+    "chancen": [
+     5,
+     14
+    ],
+    "events": [
+     71,
+     114
+    ]
+   },
+   "pakete_n": 190
+  },
+  {
+   "stamm": "2026-09-28_192113",
+   "abdeckung": "4382/4611 (95 %)",
+   "abdeckung_gesagt": "2740/4611 (59 %)",
+   "abbruch": "6/7 (86 %)",
+   "budget": "1/7 Fehler, 0 gefährlich",
+   "back": "3/4 (75 %)",
+   "chancen": "0/3 (0 %)",
+   "events": "39/81 (48 %)",
+   "erahnt": {
+    "ERAHNT_LANE_BACK": [
+     8,
+     6
+    ],
+    "ERAHNT_RUECKKEHR": [
+     16,
+     13
+    ],
+    "ERAHNT_KAMPF": [
+     15,
+     10
+    ],
+    "ERAHNT_GANK": [
+     3,
+     0
+    ]
+   },
+   "roh": {
+    "frei": 4611,
+    "mit": 4382,
+    "gesagt": 2740,
+    "abbruch": [
+     6,
+     7
+    ],
+    "budget": [
+     1,
+     7,
+     0
+    ],
+    "back": [
+     3,
+     4
+    ],
+    "chancen": [
+     0,
+     3
+    ],
+    "events": [
+     39,
+     81
+    ]
+   },
+   "pakete_n": 182
+  },
+  {
+   "stamm": "2026-09-29_133448",
+   "abdeckung": "2563/2850 (90 %)",
+   "abdeckung_gesagt": "1552/2850 (54 %)",
+   "abbruch": "2/3 (67 %)",
+   "budget": "0/0 Fehler, 0 gefährlich",
+   "back": "2/3 (67 %)",
+   "chancen": "1/3 (33 %)",
+   "events": "33/59 (56 %)",
+   "erahnt": {
+    "ERAHNT_LANE_BACK": [
+     4,
+     2
+    ],
+    "ERAHNT_RUECKKEHR": [
+     5,
+     5
+    ],
+    "ERAHNT_KAMPF": [
+     5,
+     4
+    ],
+    "ERAHNT_GANK": [
+     3,
+     1
+    ]
+   },
+   "roh": {
+    "frei": 2850,
+    "mit": 2563,
+    "gesagt": 1552,
+    "abbruch": [
+     2,
+     3
+    ],
+    "budget": [
+     0,
+     0,
+     0
+    ],
+    "back": [
+     2,
+     3
+    ],
+    "chancen": [
+     1,
+     3
+    ],
+    "events": [
+     33,
+     59
+    ]
+   },
+   "pakete_n": 74
+  },
+  {
+   "stamm": "2026-09-29_183125",
+   "abdeckung": "4176/4417 (95 %)",
+   "abdeckung_gesagt": "2224/4417 (50 %)",
+   "abbruch": "10/12 (83 %)",
+   "budget": "0/4 Fehler, 0 gefährlich",
+   "back": "1/3 (33 %)",
+   "chancen": "8/10 (80 %)",
+   "events": "71/137 (52 %)",
+   "erahnt": {
+    "ERAHNT_LANE_BACK": [
+     10,
+     6
+    ],
+    "ERAHNT_RUECKKEHR": [
+     16,
+     11
+    ],
+    "ERAHNT_KAMPF": [
+     19,
+     15
+    ],
+    "ERAHNT_GANK": [
+     4,
+     0
+    ]
+   },
+   "roh": {
+    "frei": 4417,
+    "mit": 4176,
+    "gesagt": 2224,
+    "abbruch": [
+     10,
+     12
+    ],
+    "budget": [
+     0,
+     4,
+     0
+    ],
+    "back": [
+     1,
+     3
+    ],
+    "chancen": [
+     8,
+     10
+    ],
+    "events": [
+     71,
+     137
+    ]
+   },
+   "pakete_n": 202
+  },
+  {
+   "stamm": "2026-09-26_125902",
+   "abdeckung": "1581/1636 (97 %)",
+   "abdeckung_gesagt": "972/1636 (59 %)",
+   "abbruch": "3/3 (100 %)",
+   "budget": "0/3 Fehler, 0 gefährlich",
+   "back": "1/2 (50 %)",
+   "chancen": "5/7 (71 %)",
+   "events": "47/96 (49 %)",
+   "erahnt": {
+    "ERAHNT_RUECKKEHR": [
+     17,
+     15
+    ],
+    "ERAHNT_KAMPF": [
+     26,
+     14
+    ],
+    "ERAHNT_GANK": [
+     3,
+     0
+    ]
+   },
+   "roh": {
+    "frei": 1636,
+    "mit": 1581,
+    "gesagt": 972,
+    "abbruch": [
+     3,
+     3
+    ],
+    "budget": [
+     0,
+     3,
+     0
+    ],
+    "back": [
+     1,
+     2
+    ],
+    "chancen": [
+     5,
+     7
+    ],
+    "events": [
+     47,
+     96
+    ]
+   },
+   "pakete_n": 185
+  },
+  {
+   "stamm": "2026-09-26_164809",
+   "abdeckung": "1167/1213 (96 %)",
+   "abdeckung_gesagt": "681/1213 (56 %)",
+   "abbruch": "2/2 (100 %)",
+   "budget": "2/4 Fehler, 0 gefährlich",
+   "back": "2/4 (50 %)",
+   "chancen": "3/5 (60 %)",
+   "events": "41/74 (55 %)",
+   "erahnt": {
+    "ERAHNT_RUECKKEHR": [
+     12,
+     10
+    ],
+    "ERAHNT_KAMPF": [
+     12,
+     7
+    ],
+    "ERAHNT_GANK": [
+     2,
+     0
+    ]
+   },
+   "roh": {
+    "frei": 1213,
+    "mit": 1167,
+    "gesagt": 681,
+    "abbruch": [
+     2,
+     2
+    ],
+    "budget": [
+     2,
+     4,
+     0
+    ],
+    "back": [
+     2,
+     4
+    ],
+    "chancen": [
+     3,
+     5
+    ],
+    "events": [
+     41,
+     74
+    ]
+   },
+   "pakete_n": 151
+  },
+  {
+   "stamm": "2026-09-26_120049",
+   "abdeckung": "1126/1226 (92 %)",
+   "abdeckung_gesagt": "699/1226 (57 %)",
+   "abbruch": "1/1 (100 %)",
+   "budget": "0/1 Fehler, 0 gefährlich",
+   "back": "1/1 (100 %)",
+   "chancen": "3/6 (50 %)",
+   "events": "37/71 (52 %)",
+   "erahnt": {
+    "ERAHNT_RUECKKEHR": [
+     12,
+     9
+    ],
+    "ERAHNT_GANK": [
+     3,
+     1
+    ],
+    "ERAHNT_KAMPF": [
+     19,
+     17
+    ]
+   },
+   "roh": {
+    "frei": 1226,
+    "mit": 1126,
+    "gesagt": 699,
+    "abbruch": [
+     1,
+     1
+    ],
+    "budget": [
+     0,
+     1,
+     0
+    ],
+    "back": [
+     1,
+     1
+    ],
+    "chancen": [
+     3,
+     6
+    ],
+    "events": [
+     37,
+     71
+    ]
+   },
+   "pakete_n": 156
+  },
+  {
+   "stamm": "2026-09-29_231200",
+   "abdeckung": "4218/4383 (96 %)",
+   "abdeckung_gesagt": "2520/4383 (57 %)",
+   "abbruch": "5/7 (71 %)",
+   "budget": "1/8 Fehler, 0 gefährlich",
+   "back": "2/4 (50 %)",
+   "chancen": "9/13 (69 %)",
+   "events": "78/140 (56 %)",
+   "erahnt": {
+    "ERAHNT_RUECKKEHR": [
+     12,
+     12
+    ],
+    "ERAHNT_LANE_BACK": [
+     10,
+     7
+    ],
+    "ERAHNT_KAMPF": [
+     10,
+     10
+    ],
+    "ERAHNT_GANK": [
+     1,
+     0
+    ]
+   },
+   "roh": {
+    "frei": 4383,
+    "mit": 4218,
+    "gesagt": 2520,
+    "abbruch": [
+     5,
+     7
+    ],
+    "budget": [
+     1,
+     8,
+     0
+    ],
+    "back": [
+     2,
+     4
+    ],
+    "chancen": [
+     9,
+     13
+    ],
+    "events": [
+     78,
+     140
+    ]
+   },
+   "pakete_n": 203
+  }
+ ]
+}

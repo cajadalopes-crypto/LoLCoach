@@ -1,0 +1,28 @@
+# Auftrag 025, 3: Momente mit mehreren teilnehmbaren Events (werkzeuge/mehrfach_events.py). Das Soll-Play
+# legte ein blinder Challenger-Kritiker fest (nur die Lage, nie der Coach).
+
+aufnahme = "2026-09-26_125902"
+
+[[szenario]]
+id = "m04-mehrere-events-225"
+zeit = "2:25"
+quelle = "LANE_WEG  Urgot; GOLD_SPIKE  Riven"
+lage = "Kritiker: B - Urgot ist tot, ich habe 639 Gold bei 52 % Leben und nur die Doran's Klinge, das ist der richtige Back-Zeitpunkt."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m05-mehrere-events-445"
+zeit = "4:45"
+quelle = "LANE_WEG  Urgot; KANONE_BALD Top; GOLD_SPIKE  Riven"
+lage = "Kritiker: B - Mit 33 % Leben ist nichts nach vorn erlaubt, Urgot und Vex sind tot, und 551 Gold liegen bereit."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m06-mehrere-events-643"
+zeit = "6:43"
+quelle = "LANE_WEG  Urgot; GOLD_SPIKE  Riven"
+lage = "Kritiker: G, B - Urgot ist tot, wir liegen 900 Gold vorn und der Drache lebt, also zur Gruppe rotieren; alternativ Back fuer die Stiefel."
+soll = ["BACK_JETZT", "KAUFEN", "SEITENWELLE", "TP_SPIEL", "WELLE_REIN_UND_BACK", "WOHIN", "WOHIN_TP_LANE", "ZUR_GRUPPE"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."

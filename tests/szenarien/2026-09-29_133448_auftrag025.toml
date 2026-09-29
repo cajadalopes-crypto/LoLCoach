@@ -1,0 +1,28 @@
+# Auftrag 025, 3: Momente mit mehreren teilnehmbaren Events (werkzeuge/mehrfach_events.py). Das Soll-Play
+# legte ein blinder Challenger-Kritiker fest (nur die Lage, nie der Coach).
+
+aufnahme = "2026-09-29_133448"
+
+[[szenario]]
+id = "m16-mehrere-events-202"
+zeit = "2:02"
+quelle = "LANE_WEG oben Poppy; GOLD_SPIKE  Riven"
+lage = "Kritiker: B - Meine Welle ist bei ihm gecrasht, ich habe 347 Gold fuer die Stiefel, und Poppy steht bei 96 % Leben nah."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m17-mehrere-events-403"
+zeit = "4:03"
+quelle = "LANE_WEG  Poppy; GOLD_SPIKE  Riven; OBJ_BALD drache drache"
+lage = "Kritiker: B - Poppy ist tot, ich habe 1301 Gold bei 49 % Leben, und der Kampf im Fluss ist mit 20 s zu weit."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m18-mehrere-events-708"
+zeit = "7:08"
+quelle = "OBJ_BALD larven larven; LANE_WEG in seiner Basis Poppy; GOLD_SPIKE  Riven"
+lage = "Kritiker: B - Die Welle ist bei ihm gecrasht, Poppy ist weg, ich habe 1379 Gold bei 44 % Leben, und die Larven kommen erst in 51 s."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."

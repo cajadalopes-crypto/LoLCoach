@@ -72,7 +72,7 @@ PFLICHT_INFOS = ("kern:INFO_FLASH", "kern:INFO_JUNGLER", "kern:INFO_LANE", "kern
 
 
 def pflicht_info(a: Ansage) -> bool:
-    return a.schluessel in PFLICHT_INFOS
+    return a.schluessel in PFLICHT_INFOS or a.schluessel.startswith("kern:PAKET_")   # Auftrag 025
 
 
 def gefahr(a: Ansage) -> bool:

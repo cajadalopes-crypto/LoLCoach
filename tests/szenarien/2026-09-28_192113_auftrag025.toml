@@ -1,0 +1,30 @@
+# Auftrag 025, 3: Momente mit mehreren teilnehmbaren Events (werkzeuge/mehrfach_events.py). Das Soll-Play
+# legte ein blinder Challenger-Kritiker fest (nur die Lage, nie der Coach).
+
+aufnahme = "2026-09-28_192113"
+spielmodus = "CLASSIC"
+bots = true
+
+[[szenario]]
+id = "m13-mehrere-events-301"
+zeit = "3:01"
+quelle = "LANE_WEG  Teemo; GOLD_SPIKE  Riven"
+lage = "Kritiker: A - Teemo ist tot, also die Welle sicher farmen und den Vorteil ausbauen; es gibt nichts Sinnvolles zu kaufen."
+soll = ["FARMEN", "STAPELN", "UNTER_TURM_FARMEN", "WELLE_DRUECKEN", "WELLE_HALTEN", "WELLE_KLAEREN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m14-mehrere-events-457"
+zeit = "4:57"
+quelle = "GOLD_SPIKE  Riven; LANE_WEG im oberen Fluss Teemo"
+lage = "Kritiker: D, G - Teemo ist weg, meine Welle drueckt allein, und der Drache spawnt in 2 s bei einem Kills-Vorsprung von 3 zu 0, also zur Gruppe."
+soll = ["ABGEBEN_TAUSCHEN", "ANLAUFEN", "BESTREITEN", "NEHMEN", "SEITENWELLE", "TAUSCHEN", "TP_SPIEL", "WOHIN", "WOHIN_TP_LANE", "ZUR_GRUPPE"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m15-mehrere-events-637"
+zeit = "6:37"
+quelle = "LANE_WEG  Teemo; GOLD_SPIKE  Riven"
+lage = "Kritiker: B - Teemo ist tot, der Plan sagt Welle rein und dann Back, mit 1453 Gold bei 50 % Leben kaufe ich den Brutalisierer."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."

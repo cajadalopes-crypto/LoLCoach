@@ -1,0 +1,459 @@
+{
+ "kennzahlen": {
+  "flash": "14/14 (100 %)",
+  "jungler": "20/21 (95 %)",
+  "i4": "2/2 (100 %)",
+  "backs": "11/11 (100 %)",
+  "back_rufe": "8/8 (100 %)",
+  "stille": "31 s",
+  "sicherheit": 0,
+  "widersprueche": 1,
+  "fuellsaetze": "1/206 (0.5 %)",
+  "latenz": "1.68 / 3.95 s (n = 83)",
+  "erster_satz": 1.4014519000193104,
+  "cache": "100/130"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 49.53437423706055,
+    "champion": "Udyr",
+    "gesagt": "Udyr Flash weg.",
+    "nach_s": 12.1
+   },
+   {
+    "zeit": 91.96891784667969,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 206.74647521972656,
+    "champion": "Xerath",
+    "gesagt": "Xerath Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 514.0969848632812,
+    "champion": "Udyr",
+    "gesagt": "Udyr und Xerath Flash weg.",
+    "nach_s": 3.2
+   },
+   {
+    "zeit": 514.6717529296875,
+    "champion": "Xerath",
+    "gesagt": "Udyr und Xerath Flash weg.",
+    "nach_s": 2.7
+   },
+   {
+    "zeit": 700.3350219726562,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 3.5
+   },
+   {
+    "zeit": 893.67431640625,
+    "champion": "Udyr",
+    "gesagt": "Udyr Flash weg.",
+    "nach_s": 6.1
+   },
+   {
+    "zeit": 1054.2369384765625,
+    "champion": "Xerath",
+    "gesagt": "Xerath Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1199.9490966796875,
+    "champion": "Udyr",
+    "gesagt": "Udyr Flash weg.",
+    "nach_s": 6.4
+   },
+   {
+    "zeit": 1608.810302734375,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1693.0291748046875,
+    "champion": "Udyr",
+    "gesagt": "Udyr Flash weg.",
+    "nach_s": 0.1
+   },
+   {
+    "zeit": 1803.34912109375,
+    "champion": "Xerath",
+    "gesagt": "Xerath Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 2020.9556884765625,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 6.0
+   },
+   {
+    "zeit": 2032.4300537109375,
+    "champion": "Udyr",
+    "gesagt": "Udyr Flash weg.",
+    "nach_s": 0.0
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 249.1,
+    "name": "Gragas",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Gragas oberer Fluss."
+   },
+   {
+    "zeit": 412.7,
+    "name": "Gragas",
+    "ort": "im unteren Fluss",
+    "ohne_s": 67,
+    "tot_ich": false,
+    "gesagt": "Gragas unterer Fluss."
+   },
+   {
+    "zeit": 558.1,
+    "name": "Gragas",
+    "ort": "im oberen Fluss",
+    "ohne_s": 109,
+    "tot_ich": false,
+    "gesagt": "Gragas oberer Fluss."
+   },
+   {
+    "zeit": 632.1,
+    "name": "Gragas",
+    "ort": "im oberen Fluss",
+    "ohne_s": 39,
+    "tot_ich": false,
+    "gesagt": "Gragas oberer Fluss."
+   },
+   {
+    "zeit": 710.0,
+    "name": "Gragas",
+    "ort": "unten",
+    "ohne_s": 54,
+    "tot_ich": false,
+    "gesagt": "Gragas unten."
+   },
+   {
+    "zeit": 741.9,
+    "name": "Gragas",
+    "ort": "im unteren Fluss",
+    "ohne_s": 30,
+    "tot_ich": false,
+    "gesagt": "Gragas unterer Fluss."
+   },
+   {
+    "zeit": 793.7,
+    "name": "Gragas",
+    "ort": "im unteren Fluss",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Gragas unterer Fluss."
+   },
+   {
+    "zeit": 849.7,
+    "name": "Gragas",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Gragas Mid."
+   },
+   {
+    "zeit": 920.1,
+    "name": "Gragas",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Gragas sein Jungle unten."
+   },
+   {
+    "zeit": 1058.1,
+    "name": "Gragas",
+    "ort": "im oberen Fluss",
+    "ohne_s": 60,
+    "tot_ich": false,
+    "gesagt": "Gragas oberer Fluss."
+   },
+   {
+    "zeit": 1124.1,
+    "name": "Gragas",
+    "ort": "im oberen Fluss",
+    "ohne_s": 59,
+    "tot_ich": false,
+    "gesagt": "Gragas oberer Fluss."
+   },
+   {
+    "zeit": 1306.0,
+    "name": "Gragas",
+    "ort": "im oberen Fluss",
+    "ohne_s": 65,
+    "tot_ich": false,
+    "gesagt": "Gragas oberer Fluss."
+   },
+   {
+    "zeit": 1465.6,
+    "name": "Gragas",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 71,
+    "tot_ich": false,
+    "gesagt": "Gragas sein Jungle unten, 5 Sekunden."
+   },
+   {
+    "zeit": 1532.7,
+    "name": "Gragas",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 62,
+    "tot_ich": true,
+    "gesagt": "Gragas sein Jungle unten."
+   },
+   {
+    "zeit": 1605.5,
+    "name": "Gragas",
+    "ort": "im unteren Fluss",
+    "ohne_s": 31,
+    "tot_ich": false,
+    "gesagt": "Gragas unterer Fluss."
+   },
+   {
+    "zeit": 1660.0,
+    "name": "Gragas",
+    "ort": "in seiner Basis",
+    "ohne_s": 42,
+    "tot_ich": false,
+    "gesagt": "Gragas in Basis."
+   },
+   {
+    "zeit": 1701.1,
+    "name": "Gragas",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 36,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 1762.1,
+    "name": "Gragas",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 59,
+    "tot_ich": true,
+    "gesagt": "Gragas sein Jungle unten."
+   },
+   {
+    "zeit": 1828.2,
+    "name": "Gragas",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 32,
+    "tot_ich": false,
+    "gesagt": "Gragas sein Jungle unten."
+   },
+   {
+    "zeit": 1912.4,
+    "name": "Gragas",
+    "ort": "in seiner Basis",
+    "ohne_s": 45,
+    "tot_ich": false,
+    "gesagt": "Gragas in Basis."
+   },
+   {
+    "zeit": 1967.1,
+    "name": "Gragas",
+    "ort": "in seiner Basis",
+    "ohne_s": 47,
+    "tot_ich": true,
+    "gesagt": "Gragas in Basis."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 187.7,
+    "gesagt": "Back jetzt: Axiombogen, dann zu deinem äußeren Top-Turm zum Freezen, weil Udyr gebackt hat und die Kanonenwelle in 30 Sekunden kommt – du bist danach wieder gefährlich.",
+    "saetze": [
+     "Jetzt, wo Gut raus aufgetaucht ist: Warte auf die Kanonenwelle in 9 Sekunden, crash sie dann sofort rein – Udyr sitzt oben fest und du brauchst den sauberen Reset vor dem Back für Axiombogen.",
+     "Heimerdinger kämpft: nicht hin, 14 Sekunden weg.",
+     "Xerath Flash weg."
+    ]
+   },
+   {
+    "zeit": 328.8,
+    "gesagt": "Jetzt, wo Plan: Back jetzt: 14 Prozent Leben, Udyr ist gebackt. Kauf Caulfields Kriegshammer für den Axiombogen, dann Top.",
+    "saetze": [
+     "Xerath TP weg.",
+     "Jetzt, wo Plan: Back jetzt: 14 Prozent Leben, Udyr ist gebackt. Kauf Caulfields Kriegshammer für den Axiombogen, dann Top.",
+     "Heimerdinger kämpft: nicht hin, 14 Sekunden weg."
+    ]
+   },
+   {
+    "zeit": 481.1,
+    "gesagt": "Jetzt, wo du 1500 Gold hast: Crash die Kanone, back Brutalisierer für 1337, dann zum Drachen – ihr seid 850 Gold vorn und Larven in 30 Sekunden, Udyr kann in null Sekunden bei dir sein, also schnell weg.",
+    "saetze": [
+     "Raus, zu deinem Turm!",
+     "Zurück unter deinen äußeren Top-Turm: zwei kommen.",
+     "Heimerdinger kämpft: nicht hin, 14 Sekunden weg."
+    ]
+   },
+   {
+    "zeit": 586.0,
+    "gesagt": "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Freeze am Turm, weil die Welle zu dir läuft und Lissandra in 7 Sekunden da sein kann danach Back mit Langschwert zu Bot, wenn die Lage klar ist.",
+    "saetze": [
+     "Jetzt, wo du zurück bist und Udyr oben sichtbar ist: bleib am Top-Turm, Lissandra und Gragas können immer noch roamen, und dein Schild hält den Gank auf.",
+     "Udyr euer Jungle oben: Büsche meiden.",
+     "Lux euer Jungle oben: Büsche meiden."
+    ]
+   },
+   {
+    "zeit": 656.5,
+    "gesagt": "Jetzt, wo Gragas unten ist: crash die Kanone rein, back mit 950 Gold zur Spitzhacke, dann Top – Udyr kommt in 28 Sekunden und du brauchst das Item zum halten.",
+    "saetze": [
+     "Nicht hin: Lissandra Leben unbekannt, Gragas unsichtbar seit 39 Sekunden, dein Weg 12 Sekunden – zu unsicher.",
+     "Lissandra TP weg.",
+     "Lissandra kann zu dir kommen"
+    ]
+   },
+   {
+    "zeit": 769.0,
+    "gesagt": "Jetzt, wo Udyr oben ist und Lissandra in 18 Sekunden kommt: bleib bei deiner Welle, crashe die Kanone in 11 Sekunden rein, dann sofort back für Langschwert – du hast Zeit vor dem Herold.",
+    "saetze": [
+     "Platte an ihrem äußeren Top-Turm: Udyr ist gebackt.",
+     "Gragas unterer Fluss.",
+     "Jetzt, wo du in der Basis bist: Eklipse kaufen, dann nach Top zur Welle"
+    ]
+   },
+   {
+    "zeit": 849.7,
+    "gesagt": "Jetzt, wo Gragas in 0 s bei dir ist und dein Team vier gegen drei unten kämpft: crash sofort die Top-Welle mit der Kanone in 30 s, back, dann zum Drachen – mit Vampirischem Zepter gewinnt ihr den Kampf, bevor Xerath lebt.",
+    "saetze": [
+     "Gragas Mid.",
+     "Jetzt, wo Gragas Mid aufgetaucht ist: Kauf Tiamat, dann zur Top-Welle crashen dort kommt keiner hin, dein Team hält unten die Lux fest.",
+     "Herold in 32 Sekunden, aber Udyr und Gragas kommen dir in 21 beziehungsweise 24 Sekunden – kauf Tiamat jetzt, crash die Top-Welle mit der Kanone in 49 Sekunden, dann direkt zum Team unten, Lux ist tot und ihr nehmt den Drachen statt Herold, weil ihr 5v3 seid."
+    ]
+   },
+   {
+    "zeit": 1028.9,
+    "gesagt": "Jetzt, wo Udyr Swain gerade gekillt hat: Welle crashen, back für Caulfields Kriegshammer allein – dann sofort zum Herold, weil Lissandra in 12 Sekunden kommt und euer Fenster kippt.",
+    "saetze": [
+     "Jetzt, wo Udyr Swain gerade gekillt hat: Welle crashen, back für Caulfields Kriegshammer allein – dann sofort zum Herold, weil Lissandra in 12 Sekunden kommt und euer Fenster kippt.",
+     "Jetzt, wo du in der Basis bist: Verkauf Dorans Klinge, kauf Caulfields Kriegshammer, dann nach Top zur Welle – Kanone in 36 Sekunden und crashen, bevor Lissandra kommt.",
+     "Euer äußerer Bot-Turm ist weg. Verkauf Dorans Klinge, dann kauf Caulfields Kriegshammer für die Gefräßige Hydra, dann zu deinem Team."
+    ]
+   },
+   {
+    "zeit": 1253.2,
+    "gesagt": "Jetzt, wo Drache drin aufgetaucht ist: Gefräßige Hydra kaufen, dann sofort nach Top: die Kanonenwelle kommt in 12 Sekunden und du brauchst die Hydra für den Split-Schaden, während der Drache lädt – dein Team ist 3800 Gold vorn und hält die gegnerischen Lanes, Udyr allein hält dich dort nicht.",
+    "saetze": [
+     "Zurück unter euren äußeren Mid-Turm: zwei kommen.",
+     "Raus, zu eurem Mid-Turm!",
+     "Jetzt, wo Drache drin aufgetaucht ist: Gefräßige Hydra kaufen, dann sofort nach Top: die Kanonenwelle kommt in 12 Sekunden und du brauchst die Hydra für den Split-Schaden, während der Drache lädt – dein Team ist 3800 Gold vorn und hält die gegnerischen Lanes, Udyr allein hält dich dort nicht."
+    ]
+   },
+   {
+    "zeit": 1379.5,
+    "gesagt": "Gefräßige Hydra kaufen, dann sofort zu deinem Team auf Mid Lux ist tot, Heimerdinger und Nasus sind kritisch, ihr nehmt den Drachen in 172 Sekunden mit fünf gegen vier.",
+    "saetze": [
+     "Gragas kommt in 17 Sekunden bei dir",
+     "Gragas ist in 7 Sekunden bei dir",
+     "Gefräßige Hydra kaufen, dann sofort zu deinem Team auf Mid Lux ist tot, Heimerdinger und Nasus sind kritisch, ihr nehmt den Drachen in 172 Sekunden mit fünf gegen vier."
+    ]
+   },
+   {
+    "zeit": 1605.5,
+    "gesagt": "Back jetzt: 37 Prozent Leben. Heilen, dann zu deinem inneren Top-Turm.",
+    "saetze": [
+     "Lux Flash weg.",
+     "Jetzt, wo drei tot sind: Heimerdinger und Nasus nehmen den inneren Bot-Turm, du gehst zur Top-Welle mit der Kanone in fünf Sekunden.",
+     "Jetzt, wo Xerath und Lissandra respawnen: geh zur Top-Welle, nimm die Kanone in 18 Sekunden, dann mit Kanonengold zum Bot-Inhibitor—dort sind vier von euch in 40 Sekunden und ihre Gegner noch nicht bereit."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 317.33319091796875,
+    "text": "Jetzt, wo Plan: Back jetzt: 14 Prozent Leben, Udyr ist gebackt. Kauf Caulfields Kriegshammer für den Axiombogen, dann Top.",
+    "kette": true
+   },
+   {
+    "zeit": 533.8896484375,
+    "text": "Jetzt, wo Udyr tot ist: Lissandra kann in 7 Sekunden bei dir sein Back jetzt, Langschwert kaufen, dann zur Bot-Welle schieben, weil unten vier gegen eins steht.",
+    "kette": true
+   },
+   {
+    "zeit": 548.9224853515625,
+    "text": "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Freeze am Turm, weil die Welle zu dir läuft und Lissandra in 7 Sekunden da sein kann danach Back mit Langschwert zu Bot, wenn die Lage klar ist.",
+    "kette": true
+   },
+   {
+    "zeit": 1001.1685180664062,
+    "text": "Jetzt, wo Udyr Swain gerade gekillt hat: Welle crashen, back für Caulfields Kriegshammer allein – dann sofort zum Herold, weil Lissandra in 12 Sekunden kommt und euer Fenster kippt.",
+    "kette": true
+   },
+   {
+    "zeit": 1134.772216796875,
+    "text": "Jetzt, wo Nasus neben dir kämpft: Nicht hin, ihr seid 350 gegen 1280 Burst und Nasus fällt Back, Gefräßige Hydra kaufen, dann Herold.",
+    "kette": true
+   },
+   {
+    "zeit": 1485.01513671875,
+    "text": "Jetzt, wo Gragas in 24 Sekunden zurückkommt: Back jetzt, Schutzengel kaufen, dann sofort zum Baron mit dem Team, weil drei Gegner noch tot sind und der Buff euch die Inhibitoren räumt.",
+    "kette": true
+   },
+   {
+    "zeit": 1536.0330810546875,
+    "text": "Back jetzt, Schutzengel kaufen, dann sofort zum inneren Top-Turm, weil Udyr weg ist und die Kanone in 5 Sekunden kommt – danach mit dem Team zum Drachen in 17 Sekunden.",
+    "kette": true
+   },
+   {
+    "zeit": 1590.2261962890625,
+    "text": "Back jetzt: 37 Prozent Leben. Heilen, dann zu deinem inneren Top-Turm.",
+    "kette": true
+   }
+  ],
+  "stille_max": 31,
+  "stille_lang": [],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 1792.2406005859375,
+    "von": "baron",
+    "nach": "zurueck",
+    "vorher": "Baron jetzt: ihr seid fünf gegen eins.",
+    "text": "Raus jetzt: Udyr in 5 Sekunden."
+   }
+  ],
+  "fuellsaetze": [
+   {
+    "zeit": 145.26181030273438,
+    "text": "Farm deine Top-Welle.",
+    "schluessel": "antwort"
+   }
+  ],
+  "saetze_n": 206,
+  "i4": [
+   {
+    "zeit": 1000.4,
+    "name": "Udyr",
+    "ort": "unten",
+    "gesagt": "Udyr unten: Welle drücken."
+   },
+   {
+    "zeit": 1655.5,
+    "name": "Udyr",
+    "ort": "in seiner Basis",
+    "gesagt": "Jetzt, wo du schon oben bist und Udyr in 3 Sekunden kommt: geh sofort zur Top-Welle, nimm die Kanone in 25 Sekunden, dann mit dem Gold zum Bot-Inhibitor mit der Gruppe – vier gegen fünf gewinnt ihr mit Kanonengold, und Udyr kann euch dort nicht allein stoppen."
+   }
+  ],
+  "latenz": {
+   "n": 83,
+   "median": 1.68,
+   "p90": 3.95,
+   "erster_satz_median": 1.4014519000193104,
+   "cache_treffer": "100/130"
+  }
+ }
+}

@@ -1,0 +1,9 @@
+# Die vier Uhren (Buch 15, Teil 2; Auftrag 025, 1) - lolcoach/kern/uhren.py
+stand = "30.09.2026 - Startwerte aus Buch 15; Budget-Treue misst werkzeuge/pakete_messen.py"
+marge_s = 2.0               # Sicheres Fenster = T_gefahr - T_flucht - marge (Buch 15, 2.1)
+unbekannt_s = 45.0          # ein Gegner, den so lange keiner sah, zaehlt fuer die Gefahr-Uhr nicht mehr als "nah"
+# Back-Frist: Recall-Kanal und Einkauf aus kern.toml [recall] (kanal_s, einkauf_s), der Weg aus wissen/wege.toml
+hysterese_ge = 150.0        # Chancen-Scanner: so viel mehr wert muss ein neues Paket sein (Buch 15, 5)
+countdown_bei_s = 5.0       # "Noch 5 Sekunden." - hoechstens zweimal je Paket (Buch 15, 1)
+countdown_max = 2
+hilfe_weg_s = 8.0           # HILFE nur, wenn du in so vielen s dort bist (Buch 15, 3)

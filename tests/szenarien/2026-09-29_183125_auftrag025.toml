@@ -1,0 +1,30 @@
+# Auftrag 025, 3: Momente mit mehreren teilnehmbaren Events (werkzeuge/mehrfach_events.py). Das Soll-Play
+# legte ein blinder Challenger-Kritiker fest (nur die Lage, nie der Coach).
+
+aufnahme = "2026-09-29_183125"
+spielmodus = "PRACTICETOOL"
+bots = true
+
+[[szenario]]
+id = "m19-mehrere-events-441"
+zeit = "4:41"
+quelle = "KAMPF in eurem oberen Jungle Pantheon Fizz; GOLD_SPIKE  Graves; KANONE_BALD Top"
+lage = "Kritiker: B - Tryndamere ist tot und meine Welle drueckt, Garen steht nah bei 100 % Leben, also mit 445 Gold den Kriegshammer holen."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m20-mehrere-events-701"
+zeit = "7:01"
+quelle = "LANE_WEG  Garen; OBJ_BALD larven larven; GOLD_SPIKE  Graves"
+lage = "Kritiker: B - Garen ist tot, meine Welle mit 6 Vorteil drueckt, ich habe 1066 Gold fuer den Kriegshammer, und der Kampf ist 22 s entfernt."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m21-mehrere-events-910"
+zeit = "9:10"
+quelle = "LANE_WEG  Garen; KANONE_BALD Top"
+lage = "Kritiker: B - Mein Weg zum Kampf ist 12 s und damit zu lang, Tryndamere und Fizz stehen nah in ihrem Jungle, ich habe 1137 Gold bei 56 % Leben."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."

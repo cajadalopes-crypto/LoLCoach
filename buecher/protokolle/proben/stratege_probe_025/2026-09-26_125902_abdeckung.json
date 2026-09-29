@@ -1,0 +1,384 @@
+{
+ "kennzahlen": {
+  "flash": "– (keine)",
+  "jungler": "24/24 (100 %)",
+  "i4": "1/1 (100 %)",
+  "backs": "4/5 (80 %)",
+  "back_rufe": "12/12 (100 %)",
+  "stille": "71 s",
+  "sicherheit": 0,
+  "widersprueche": 3,
+  "fuellsaetze": "2/124 (1.6 %)",
+  "latenz": "1.6 / 3.35 s (n = 52)",
+  "erster_satz": 1.4505765999783762,
+  "cache": "72/100"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [],
+  "jungler": [
+   {
+    "zeit": 211.8,
+    "name": "Warwick",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Warwick oberer Fluss."
+   },
+   {
+    "zeit": 348.7,
+    "name": "Warwick",
+    "ort": "in eurem oberen Jungle",
+    "ohne_s": 100,
+    "tot_ich": false,
+    "gesagt": "Warwick euer Jungle oben."
+   },
+   {
+    "zeit": 412.9,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 31,
+    "tot_ich": false,
+    "gesagt": "Warwick sein Jungle oben."
+   },
+   {
+    "zeit": 437.4,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 22,
+    "tot_ich": false,
+    "gesagt": "Warwick sein Jungle oben."
+   },
+   {
+    "zeit": 461.8,
+    "name": "Warwick",
+    "ort": "in eurem oberen Jungle",
+    "ohne_s": 21,
+    "tot_ich": false,
+    "gesagt": "Warwick euer Jungle oben, 2 Sekunden."
+   },
+   {
+    "zeit": 527.2,
+    "name": "Warwick",
+    "ort": "im oberen Fluss",
+    "ohne_s": 51,
+    "tot_ich": false,
+    "gesagt": "Warwick oberer Fluss."
+   },
+   {
+    "zeit": 660.6,
+    "name": "Warwick",
+    "ort": "in der Flussmitte",
+    "ohne_s": 122,
+    "tot_ich": false,
+    "gesagt": "Warwick Flussmitte."
+   },
+   {
+    "zeit": 770.5,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 107,
+    "tot_ich": false,
+    "gesagt": "Warwick unterer Fluss."
+   },
+   {
+    "zeit": 826.7,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 53,
+    "tot_ich": false,
+    "gesagt": "Warwick unterer Fluss."
+   },
+   {
+    "zeit": 860.5,
+    "name": "Warwick",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 30,
+    "tot_ich": false,
+    "gesagt": "Warwick Mid."
+   },
+   {
+    "zeit": 939.2,
+    "name": "Warwick",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Warwick Mid."
+   },
+   {
+    "zeit": 976.8,
+    "name": "Warwick",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": 32,
+    "tot_ich": false,
+    "gesagt": "Warwick euer Jungle unten."
+   },
+   {
+    "zeit": 1144.9,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 166,
+    "tot_ich": false,
+    "gesagt": "Warwick unterer Fluss."
+   },
+   {
+    "zeit": 1202.9,
+    "name": "Warwick",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Warwick Mid."
+   },
+   {
+    "zeit": 1400.1,
+    "name": "Warwick",
+    "ort": "oben",
+    "ohne_s": 170,
+    "tot_ich": false,
+    "gesagt": "Warwick oben."
+   },
+   {
+    "zeit": 1457.6,
+    "name": "Warwick",
+    "ort": "oben",
+    "ohne_s": 50,
+    "tot_ich": true,
+    "gesagt": "Warwick oben."
+   },
+   {
+    "zeit": 1508.5,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 49,
+    "tot_ich": false,
+    "gesagt": "Warwick unterer Fluss, 5 Sekunden."
+   },
+   {
+    "zeit": 1624.4,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 66,
+    "tot_ich": false,
+    "gesagt": "Warwick unterer Fluss."
+   },
+   {
+    "zeit": 1765.9,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 133,
+    "tot_ich": false,
+    "gesagt": "Warwick sein Jungle oben."
+   },
+   {
+    "zeit": 1846.5,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 26,
+    "tot_ich": false,
+    "gesagt": "Warwick sein Jungle oben."
+   },
+   {
+    "zeit": 1876.2,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 22,
+    "tot_ich": false,
+    "gesagt": "Warwick unterer Fluss."
+   },
+   {
+    "zeit": 1936.5,
+    "name": "Warwick",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Warwick sein Jungle unten, 6 Sekunden."
+   },
+   {
+    "zeit": 1978.2,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 37,
+    "tot_ich": true,
+    "gesagt": "Warwick unterer Fluss."
+   },
+   {
+    "zeit": 2040.9,
+    "name": "Warwick",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 34,
+    "tot_ich": false,
+    "gesagt": "Warwick sein Jungle unten."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 238.5,
+    "gesagt": "Jetzt, wo du in der Basis bist: Kauf Caulfields Kriegshammer und Kontroll-Auge, dann zum äußeren Top-Turm – Warwick kommt in 27 Sekunden, du musst vor dem Drache-Check (59 s) dort sein.",
+    "saetze": [
+     "Warwick oberer Fluss.",
+     "Jetzt, wo du in der Basis bist: Kauf Caulfields Kriegshammer und Kontroll-Auge, dann zum äußeren Top-Turm – Warwick kommt in 27 Sekunden, du musst vor dem Drache-Check (59 s) dort sein."
+    ]
+   },
+   {
+    "zeit": 350.7,
+    "gesagt": "Crash die Welle jetzt mit der Kanone in 38 Sekunden, dann sofort back für den Brutalisierer – Warwick ist oben sichtbar und dein Flash ist bereit, aber ein unbekannter Jungler nach dem Back ist zu riskant.",
+    "saetze": [
+     "Warwick euer Jungle oben.",
+     "Crash die Welle jetzt mit der Kanone in 38 Sekunden, dann sofort back für den Brutalisierer – Warwick ist oben sichtbar und dein Flash ist bereit, aber ein unbekannter Jungler nach dem Back ist zu riskant."
+    ]
+   },
+   {
+    "zeit": 623.1,
+    "gesagt": "Jetzt, wo Vex oben im Fluss ist und in 21 Sekunden bei dir sein kann: Eklipse und Stiefel kaufen, dann sofort zurück zur Lane – du brauchst die Items gegen Warwicks Rückkehr, und die Kanone kommt in 31 Sekunden.",
+    "saetze": [
+     "Jetzt, wo Vex oben im Fluss ist und in 21 Sekunden bei dir sein kann: Eklipse und Stiefel kaufen, dann sofort zurück zur Lane – du brauchst die Items gegen Warwicks Rückkehr, und die Kanone kommt in 31 Sekunden.",
+     "Xerath kämpft: nicht hin, 14 Sekunden weg.",
+     "Crash die Welle jetzt, denn Urgot ist im Fluss weg, die Kanone gibt dir 40+ Sekunden Fenster, und danach backst du mit Gold für den nächsten Spike."
+    ]
+   },
+   {
+    "zeit": 939.2,
+    "gesagt": "Kauf Tanz des Todes, dann sofort nach Top: deine Welle kommt in 25 Sekunden zur Kanone, Warwick und Vex sind noch 24 und 26 Sekunden weg.",
+    "saetze": [
+     "Warwick Mid.",
+     "Xerath kämpft: nicht hin, 16 Sekunden weg.",
+     "Kauf Tanz des Todes, dann sofort nach Top: deine Welle kommt in 25 Sekunden zur Kanone, Warwick und Vex sind noch 24 und 26 Sekunden weg."
+    ]
+   },
+   {
+    "zeit": 1643.9,
+    "gesagt": null,
+    "saetze": [
+     "Ihr nehmt Bot-Inhibitor mit Team bis 27:41, Warwick ist vermutlich oben, danach sofort Mid halten wegen der feindlichen Welle.",
+     "Warwick unterer Fluss.",
+     "Ihr Top-Inhibitor fällt."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 22.76913070678711,
+    "text": "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer, dann zurück Top – Rüstung stoppt Urgots Beine und gibt dir Handelsfenster.",
+    "kette": true
+   },
+   {
+    "zeit": 277.51776123046875,
+    "text": "Back jetzt: Stiefel, dann zur Lane zurück Urgot kommt in 11 Sekunden wieder und Vex kann in 13 Sekunden bei dir sein.",
+    "kette": true
+   },
+   {
+    "zeit": 351.7525939941406,
+    "text": "Crash die Welle jetzt mit der Kanone in 38 Sekunden, dann sofort back für den Brutalisierer – Warwick ist oben sichtbar und dein Flash ist bereit, aber ein unbekannter Jungler nach dem Back ist zu riskant.",
+    "kette": true
+   },
+   {
+    "zeit": 517.0567626953125,
+    "text": "Jetzt, wo die Welle zu ihm läuft und Urgot weg ist: Crash die Welle jetzt mit der Kanone in 49 Sekunden, danach sofort Back für Eklipse und Stiefel, weil du dann mit Spike wieder kontrollieren kannst und der Jungler zu lange weg ist, um dich zu treffen.",
+    "kette": true
+   },
+   {
+    "zeit": 568.191650390625,
+    "text": "Jetzt, wo Urgot tot ist und die Welle crasht: Back sofort für Eklipse und Stiefel, dann zurück zur Lane – dein Spike schlägt Warwicks Rückkehr.",
+    "kette": true
+   },
+   {
+    "zeit": 867.6411743164062,
+    "text": "Jetzt, wo euer äußerer Bot-Turm weg ist: Welle rein, Back jetzt: Tanz des Todes kaufen, dann zu deiner Top-Lane zurück, weil Warwick in 8 Sekunden bei dir ist und Urgot gleich respawnt.",
+    "kette": true
+   },
+   {
+    "zeit": 1082.013671875,
+    "text": "Jetzt, wo Urgot und Vex beide in ~7 Sekunden bei dir sind: back nicht jetzt, sondern crash die Top-Welle in 34 Sekunden mit der Kanone, dann back für Riesenschwert, dann zum Drachen – du hast keine Zeit für den Jungle und Alistar kommt in 10 s zurück.",
+    "kette": true
+   },
+   {
+    "zeit": 1151.9820556640625,
+    "text": "Back jetzt: Schutzengel, dann zu deiner Top-Welle mit sechs Minions zur Kanone in 15 Sekunden, weil Urgot tot ist und du die Welle sichern musst, bevor Warwick kommt.",
+    "kette": true
+   },
+   {
+    "zeit": 1233.2509765625,
+    "text": "Xerath lebst du in 27 Sekunden back jetzt, Brutalisierer kaufen, dann Quest-TP zur Bot-Lane zum Drachen, weil Urgot auch weg ist und ihr vier seid.",
+    "kette": true
+   },
+   {
+    "zeit": 1497.291259765625,
+    "text": "Jetzt, wo Alistar tot ist: Back sofort, verkauf Dorans Klinge, kauf Caulfields Kriegshammer, dann Quest-TP zur Top-Welle für die Kanone in 19 Sekunden, weil Alistar dich 37 Sekunden lang nicht stoppen kann.",
+    "kette": true
+   },
+   {
+    "zeit": 1885.3350830078125,
+    "text": "Ihr innerer Bot-Turm ist weg. Bot-Welle rein, dann back, 3700 Gold im Beutel, Urgot ist tot. Danach auf ihren Nexus-Turm. Dort heilen.",
+    "kette": true
+   },
+   {
+    "zeit": 2056.239501953125,
+    "text": "Jetzt, wo euer Bot-Inhibitor weg ist: Kanone crashen, dann back: Gefräßige Hydra, danach Quest-TP zu Mid zum Turm, weil ihr hinten seid und Türme mehr wert als Kämpfe.",
+    "kette": true
+   }
+  ],
+  "stille_max": 71,
+  "stille_lang": [
+   [
+    128,
+    191
+   ],
+   [
+    278,
+    349
+   ]
+  ],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 109.77999877929688,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Deine Top-Welle läuft zu ihm und Urgot kann in 23 Sekunden bei dir sein",
+    "text": "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Welle läuft zu dir, Urgot sichtbar: freezen nah am Turm, nur lasthitten, Sicht auf Urgot halten – er kann jeden Moment kommen."
+   },
+   {
+    "zeit": 814.56494140625,
+    "von": "turm",
+    "nach": "zurueck",
+    "vorher": "Jetzt, wo zwei Kills in 10 s: Drück ihren inneren Top-Turm: Level 12 gegen 8.",
+    "text": "Raus jetzt: Warwick in 11 Sekunden."
+   },
+   {
+    "zeit": 1082.013671875,
+    "von": "zurueck",
+    "nach": "back",
+    "vorher": "Raus jetzt: Vex in 9 Sekunden.",
+    "text": "Jetzt, wo Urgot und Vex beide in ~7 Sekunden bei dir sind: back nicht jetzt, sondern crash die Top-Welle in 34 Sekunden mit der Kanone, dann back für Riesenschwert, dann zum Drachen – du hast keine Zeit für den Jungle und Alistar kommt in 10 s zurück."
+   }
+  ],
+  "fuellsaetze": [
+   {
+    "zeit": 702.6951904296875,
+    "text": "Ihr äußerer Top-Turm ist weg. Weiter deine Top-Welle.",
+    "schluessel": "kern:FARMEN"
+   },
+   {
+    "zeit": 710.9124145507812,
+    "text": "Jetzt, wo Wendepunkt: Sie haben die Larven. Weiter deine Top-Welle.",
+    "schluessel": "kern:FARMEN"
+   }
+  ],
+  "saetze_n": 124,
+  "i4": [
+   {
+    "zeit": 1470.9,
+    "name": "Urgot",
+    "ort": "oben",
+    "gesagt": "Urgot oben: Welle drücken."
+   }
+  ],
+  "latenz": {
+   "n": 52,
+   "median": 1.6,
+   "p90": 3.35,
+   "erster_satz_median": 1.4505765999783762,
+   "cache_treffer": "72/100"
+  }
+ }
+}

@@ -1,0 +1,30 @@
+# Auftrag 025, 3: Momente mit mehreren teilnehmbaren Events (werkzeuge/mehrfach_events.py). Das Soll-Play
+# legte ein blinder Challenger-Kritiker fest (nur die Lage, nie der Coach).
+
+aufnahme = "2026-09-29_231200"
+spielmodus = "PRACTICETOOL"
+bots = true
+
+[[szenario]]
+id = "m22-mehrere-events-408"
+zeit = "4:08"
+quelle = "OBJ_BALD drache drache; GOLD_SPIKE  Riven"
+lage = "Kritiker: B - Mein Weg zum Kampf ist 24 s, mit 380 Gold hole ich den Kriegshammer, und der Drache kommt erst in 51 s."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m23-mehrere-events-655"
+zeit = "6:55"
+quelle = "GOLD_SPIKE  Riven; LANE_WEG in seiner Basis Udyr"
+lage = "Kritiker: B - Udyr ist gebackt, der Plan sagt Welle rein und dann Back, mit 1394 Gold und 59 % Leben kaufe ich den Brutalisierer."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m24-mehrere-events-854"
+zeit = "8:54"
+quelle = "GOLD_SPIKE  Riven; LANE_WEG  Udyr"
+lage = "Kritiker: B - Mit 32 % Leben ist nichts nach vorn erlaubt und Lissandra kann sofort da sein, also Back mit 528 Gold."
+soll = ["BACK_JETZT", "KAUFEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."

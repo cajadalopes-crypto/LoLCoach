@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 
 # Kehrtwenden (Kapitel 9.4 Punkt 5): vor / zurueck; alles andere (FARMEN, STAPELN, UNTER_TURM_FARMEN, WELLE_HALTEN,
 # WELLE_REIN_UND_BACK, KAUFEN, WOHIN ...) ist neutral (Buch 1, Kapitel 3)
-VOR = frozenset(("TRADE", "ALL_IN", "PLATTEN", "DRUECKEN", "MIT_GRUPPE", "ANLAUFEN", "NEHMEN", "BESTREITEN", "REIN",
+VOR = frozenset(("TRADE", "ALL_IN", "PLATTEN", "DRUECKEN", "MIT_GRUPPE", "ANLAUFEN", "NEHMEN", "BESTREITEN", "REIN", "HILFE",
                  "ANNEHMEN", "DREHEN", "WELLE_DRUECKEN"))   # Buch 7, 4: ANNEHMEN und DREHEN sind "vor" (9.4 Punkt 5)
 ZURUECK = frozenset(("ZURUECK", "RAUS", "BACK_JETZT", "WELLE_UND_RAUS", "HALTEN_UNTER_TURM", "ABGEBEN_TAUSCHEN"))
 # Grundplaene: werden gehalten, aber nicht angesagt (Kapitel 3.1 Buch 1, "Schweigen ist ein Rat")

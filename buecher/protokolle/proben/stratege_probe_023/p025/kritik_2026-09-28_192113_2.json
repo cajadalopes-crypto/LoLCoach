@@ -1,0 +1,129 @@
+{
+ "minuten": {
+  "2": [
+   {"soll": "Teemo ist Level 3, du Level 2: erst traden, wenn du Level 3 bist", "urteil": "fehlt", "grund": "2:01-2:49 nur Kontroll-Auge und Welle, kein Levelhinweis"}
+  ],
+  "3": [
+   {"soll": "Ja, durchpushen: Yi wurde unten gesehen (3:34), Welle in den Turm, Plates holen", "urteil": "fehlt", "grund": "3:54 auf 'durchpushen?' Back jetzt, Yi nur gemeldet (3:38)"},
+   {"soll": "Danach back mit 900 Gold: Caulfields", "urteil": "gesagt", "grund": "3:54 Back jetzt: Caulfields Kriegshammer"}
+  ],
+  "4": [
+   {"soll": "Durchpushen ist okay: Yi ist unten beim Drachen (in 30 s), oben bist du sicher", "urteil": "fehlt", "grund": "4:03/4:11 weiter Back jetzt, kein Durchpushen"},
+   {"soll": "Die Wincon bist du (3:0): Top-Turm und Plates, dann mit Druck zu Mid und Objectives", "urteil": "fehlt", "grund": "4:30 nur Farm Top, Drache in 25 s; kein Wincon-Plan"}
+  ],
+  "5": [
+   {"soll": "Timer: der Drache ist schon da, ich sage ab jetzt die echte Spielzeit an (Larven 7:30)", "urteil": "fehlt", "grund": "5:16 nur 'Notiert.', keine Timer-Korrektur, keine Larven"}
+  ],
+  "6": [
+   {"soll": "Teemo tot: Welle in den Turm, Plates, dann back mit 1400 Gold", "urteil": "teilweise", "grund": "6:28 Welle rein, dann back; Plates fehlen"}
+  ],
+  "7": [
+   {"soll": "Larven in 30 s oben: Welle nehmen, Teemo allein, Brand dazuholen", "urteil": "fehlt", "grund": "7:07-7:46 bleib unter Turm, keine Larven, kein Brand"},
+   {"soll": "Bot läuft: Kai'Sa hat Cassiopeia getötet, dein ADC liegt vorne", "urteil": "teilweise", "grund": "7:33 Kai'Sa stärker; Kill an Cassiopeia nicht genannt"}
+  ],
+  "8": [
+   {"soll": "Gegner an den Larven (8:37), Yi ist nah und dein Flash ist weg: Plates erst, wenn er gesehen weg ist", "urteil": "fehlt", "grund": "8:36 Back, 8:42 Grund Teemo gebackt; Larven/Yi/Flash nicht"}
+  ],
+  "9": [
+   {"soll": "Turm down, 1900 Gold: back, Stiefel und Caulfields", "urteil": "gesagt", "grund": "9:30 Back für Caulfields (und Spitzhacke) bei 1936 Gold"},
+   {"soll": "2. Turm nur mit Ward im Fluss: Yi ist seit 4 Minuten unsichtbar, gerade Mid (9:59)", "urteil": "teilweise", "grund": "9:42 Büsche nicht blind, 9:59 Yi Mid; kein Ward"}
+  ],
+  "10": [
+   {"soll": "Nicht zum Drachen: sie sind zu viert unten, Brand ist tot, dein Flash weg", "urteil": "fehlt", "grund": "10:24-10:34 rät das Gegenteil: geh zum Drachen"},
+   {"soll": "Dafür Top-Welle (5 gegen 0) nehmen und den 2. Turm drücken, 'Farm' heißt Welle, nicht Fountain", "urteil": "teilweise", "grund": "10:01/10:18 Welle, innerer Turm erklärt; dann 10:24 Drache"}
+  ],
+  "11": [
+   {"soll": "Teemo tot (11:12): Welle in den 2. Turm, Yi zuletzt unten", "urteil": "fehlt", "grund": "11:33 tief stehen, 11:36 back und Quest-TP zum Drachen"}
+  ],
+  "12": [
+   {"soll": "9 % Leben, Pantheon oben: sofort back", "urteil": "teilweise", "grund": "12:31 unter Turm zurück, aber kein Back bei 9 %"},
+   {"soll": "Herold ab 14:30: nach dem Back mit Brand dorthin", "urteil": "fehlt", "grund": "12:55 nur Top-Welle holen, kein Herold"}
+  ],
+  "13": [
+   {"soll": "Ja, Mid-Turm mit Brand: Yi ist unten, Herold in 90 s gleich daneben", "urteil": "teilweise", "grund": "13:28 Herold in 91 s per TP; kein Mid-Turm mit Brand"},
+   {"soll": "Teemo Flash weg (13:58)", "urteil": "gesagt", "grund": "13:55 Flash wieder, 14:01 Teemo Flash weg"}
+  ],
+  "14": [
+   {"soll": "Herold um 15:00: mit Brand holen, Yi ist unten", "urteil": "teilweise", "grund": "14:10/14:24 Herold in 45/31 s loslaufen; Brand, Yi fehlen"},
+   {"soll": "Nach dem Turm: Herold nehmen und in Mid werfen; Flash weg bei Teemo und Cassiopeia", "urteil": "gesagt", "grund": "14:01/14:07 beide Flash; 14:35 Turm down, Herald nehmen, Lanes drücken"}
+  ],
+  "15": [
+   {"soll": "Eklipse kaufen, dann direkt zum Herold: Brand und Kai'Sa sind schon im oberen Jungle", "urteil": "teilweise", "grund": "15:22 Eklipse kaufen, aber Ziel Mid-Turm statt Herold"},
+   {"soll": "Nicht Top-Welle: erst Herold, Drache um 17:20", "urteil": "fehlt", "grund": "15:37/15:49 rät Top-Welle, 15:59 Top-Welle crashen"}
+  ],
+  "16": [
+   {"soll": "Drache in 60 s, Cassiopeia tot: bot bleiben, nicht nach Top, dort stehen Yi, Teemo und Alistar", "urteil": "teilweise", "grund": "16:17 Drache in 68 s, Cassiopeia allein; kein Top-Warnhinweis"}
+  ],
+  "17": [
+   {"soll": "29 % Leben, Yi in eurem unteren Jungle (17:48): back, kein Solo-Drache", "urteil": "teilweise", "grund": "18:00 back sofort; Yi 'oberer Fluss' 17:47, Drache mit Team"},
+   {"soll": "Baron ab 19:40: danach mit Team zur Top-Seite", "urteil": "fehlt", "grund": "in 17:00-18:00 kein Baron-Timer, erst 18:29"}
+  ],
+  "18": [
+   {"soll": "Nach dem Back: Gegner zu viert oben, nicht rein; Drache holen oder Bot-Welle nehmen", "urteil": "teilweise", "grund": "18:13-18:17 Drache holen; kein 'nicht rein', keine Bot-Welle"}
+  ],
+  "19": [
+   {"soll": "Baron ab 20:00: Mid-Welle nehmen, bei Baron-Start mit dem Team hin", "urteil": "teilweise", "grund": "19:06 mit vier zum Baron in 48 s; Mid-Welle fehlt"},
+   {"soll": "Teemo Flash weg (19:11)", "urteil": "gesagt", "grund": "19:15 Teemo Flash weg"}
+  ],
+  "20": [
+   {"soll": "Ja, Mid: Top nehmen Kai'Sa und Sona, du nimmst Mid-Welle", "urteil": "fehlt", "grund": "20:39 'Mid-Welle bringt dir nichts', rät Drache"},
+   {"soll": "Gegner holen Drache (20:38): nicht reinlaufen, dafür Mid-Turm", "urteil": "fehlt", "grund": "20:39 rät Drache jetzt zu dritt, kein Mid-Turm"}
+  ],
+  "21": [
+   {"soll": "Ja, bot deffen: Pantheon tot, unten nur Cassiopeia und Alistar", "urteil": "fehlt", "grund": "21:47 Bot-Defense verworfen, Mid-Welle, back, Drache"},
+   {"soll": "Yi oben hat zwei Kills (21:12, 21:21): nicht nach Top", "urteil": "teilweise", "grund": "21:21 'auf Top keine Welle, bleib beim Team'; Kills nicht genannt"}
+  ],
+  "22": [
+   {"soll": "Yi und Pantheon tot (22:12): sofort Baron, das Team steht im oberen Fluss", "urteil": "fehlt", "grund": "22:04/22:48 back, Drache in 3 Minuten; kein Baron"},
+   {"soll": "Cassiopeia und Alistar Mid: nicht allein vorne stehen", "urteil": "gesagt", "grund": "22:05 zurück unter Mid-Turm, zwei kommen"}
+  ],
+  "23": [
+   {"soll": "Nach dem Kauf: Top nicht, Welle ist am Nexus; Bot-Welle nehmen und Drache um 25:40 vorbereiten", "urteil": "teilweise", "grund": "23:37 Drache in 120 s; 23:54 rät Top-Welle, keine Bot-Welle"}
+  ],
+  "24": [
+   {"soll": "Drache in 66 s: Bot-Welle, dann Pit, Kai'Sa aus der Basis dazu", "urteil": "gesagt", "grund": "24:11/24:39 Kai'Sa wartet, Welle crashen, Team zum Drachen"},
+   {"soll": "Nicht sicher: Yi seit 85 s weg, Pantheon unten, nur bis zur Flussmitte drücken", "urteil": "gesagt", "grund": "24:38/24:44 nicht sicher, Yi unsichtbar; Rückzug statt Flussmitte"}
+  ],
+  "25": [
+   {"soll": "Pantheon und Alistar unten bei dir, Yi unsichtbar: raus aus der Lane", "urteil": "gesagt", "grund": "25:14 Alistar in 1 s, Yi überall: back; 25:30 zurück"},
+   {"soll": "Cassiopeia tot (25:38), Teemo Flash weg: Drache nur mit Team", "urteil": "teilweise", "grund": "25:45 Teemo Flash weg; Cassiopeia tot, Drache mit Team fehlen"}
+  ],
+  "26": [
+   {"soll": "Pantheon und Yi tot (26:33): Mid-Turm nehmen, dann back, 20 % Leben und 4000 Gold", "urteil": "fehlt", "grund": "26:19 'nicht back' bei 4043 Gold; Tode nicht gemeldet"}
+  ],
+  "27": [
+   {"soll": "Tot mit 5900 Gold: Schutzengel und Seryldas kaufen, Trinket auf Linse", "urteil": "fehlt", "grund": "27:22 nur 'Gank von Master Yi'; Kaufrat erst 28:24, anders"}
+  ],
+  "28": [
+   {"soll": "Nicht nur Schutzengel: Seryldas dazu, Trinket auf Linse wechseln", "urteil": "teilweise", "grund": "28:24 mehr als Schutzengel (Tanz des Todes); kein Seryldas/Linse"},
+   {"soll": "Inhib down: Mid mit Team, Baron als Nächstes", "urteil": "teilweise", "grund": "28:07 Inhib weg, 28:21 als Gruppe erzwingen; kein Baron"}
+  ],
+  "29": [
+   {"soll": "Teemo, Pantheon, Cassiopeia tot: Mid rein, Inhib und Türme", "urteil": "teilweise", "grund": "29:00 Teemo tot, Bot-Welle gegen Inhibitor; Rest Baron 29:52"}
+  ],
+  "30": [
+   {"soll": "Alle tot außer Pantheon: Nexus-Türme und Nexus schlagen", "urteil": "fehlt", "grund": "30:08 zu Kai'Sa, 30:32 Drache; kein Nexus"}
+  ],
+  "31": [
+   {"soll": "Nur Cassiopeia lebt: Nexus jetzt", "urteil": "fehlt", "grund": "Protokoll endet 30:45 'Nimm den Kampf'; kein Nexus"}
+  ]
+ },
+ "fuellsaetze": {
+  "anzahl": 5,
+  "saetze_gesamt": 183,
+  "zeiten": ["13:57", "15:22", "24:05", "25:35", "28:47"]
+ },
+ "widersprueche": {
+  "anzahl": 8,
+  "faelle": [
+   "10:18/10:24 innerer Top-Turm drücken vs. Drache, nicht oben",
+   "15:22/15:37 Mid-Inner-Turm vs. Top-Welle",
+   "20:03/20:11 zu Fuß nach Top vs. auf Top keine Welle",
+   "21:21/21:23 Drache spawnt erst in 256 s vs. Drache jetzt",
+   "24:38/24:39 zurück zur Basis vs. Welle crashen, mit Team zum Drachen",
+   "25:03/25:08 back, Quest-TP vs. Welle rein, zum Drachen",
+   "25:08/25:14 Welle rein, Drachen vs. back sofort",
+   "30:00/30:08 Kai'Sa kämpft nicht hin vs. lauf sofort zu Kai'Sa"
+  ]
+ }
+}

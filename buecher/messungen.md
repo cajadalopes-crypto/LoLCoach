@@ -4,6 +4,67 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 025 – Events und lebendige Arbeitspakete, Stufe 1 (Buch 15, 30.09.2026)
+
+**Gebaut:**
+- `kern/events.py`: Erkennung für die Gruppen aus 0.1 (Tod/Respawn, Zauber, Kampf, Objective, Struktur, Welle,
+  Position, Ressourcen, Team, Zeit) und vier Erahnungen.
+- `kern/uhren.py`: die vier Uhren.
+- `kern/pakete.py`: Paket-Rahmen, Übergänge, Chancen-Scanner HILFE und „warum nicht“.
+- Werkzeuge: `werkzeuge/pakete_messen.py` (automatische Maße), `werkzeuge/mehrfach_events.py` (Szenarien mit
+  mehreren Events).
+- Wissen: `wissen/wellen.toml`, `uhren.toml`, `events.toml` (geeicht) und `wege.toml` (gemessen, lückenhaft).
+
+**Automatische Maße** (Stub-Nachspiel, 8 Testpartien, Endstand; Probe `proben/pakete_025/`):
+
+| Maß | Soll | erste Messung | nach Runde 1 |
+|---|---|---|---|
+| Paket-Abdeckung (angesagt) | ≥ 90 % | 73 % (23 %) | **94 % (55 %)** |
+| Abbruch-Reaktion ≤ 2 s | ≥ 95 % | – (Maß falsch definiert) | **82 %** (32/39) |
+| Budget-Treue: Fehler / gefährlich | ≤ 5 % / 0 | 3/36 / 0 | **4/31 (13 %) / 0** |
+| Back-Pünktlichkeit | ≥ 80 % | – (Flackern) | **58 %** (14/24) |
+| Chancen genutzt | ≥ 70 % | 49 % | **56 %** |
+| Event-Abdeckung nur Kern / mit Claude (API) | ≥ 85 % | 76 % (aufgebläht durch Geschwätz) | **54 % / 59 %** |
+| Erahnung Kampf / Rückkehr / Lane-Back / Gank | ≥ 60 % | 74 / 85 / 58 / 8 % | **75 / 85 / 68 / 8 %** – Gank bleibt still |
+
+Runde 1 hat an den automatischen Maßen nachgebessert:
+- **Laning:** Laning ist kein Kampf. Vorher kamen rund 100 „X kämpft: nicht hin“ je Partie.
+- **„Raus jetzt“:** nur noch für Turm, Objective und Hilfe. Vorher kamen 60–76 je Partie.
+- **Back-Abbruch:** „Zu spät für Back“ ist gestrichen, das waren 220 Fälle.
+- **Paket-Flackern:** abgestellt.
+- **Budget:** Paket-Sätze kosten kein Sprech-Budget mehr. Das hatte vier Szenarien gebrochen.
+
+Runde 2 folgt dem Kritiker:
+- **Befund:** In 15 von 24 Momenten sagte er „Back“, der Kern farmte.
+- **Änderung:** `back_vor_farmen_gold` von 500 auf 0 – mit Gold für ein Item ist Back die Voreinstellung (Carlos, 024 5.5).
+
+**Abwägung** (24 Momente mit ≥ 2 teilnehmbaren Events, das Soll setzte ein blinder Kritiker):
+
+| Stand | Kern wählt das Soll-Play |
+|---|---|
+| vorher | 8 von 23 (35 %) |
+| nach Runde 2 | **14 von 23 (61 %)**, Soll ≥ 75 % |
+
+Einer der 24 Momente wurde übersprungen.
+
+**Soll-Liste** (API-Nachspiel aller 8 Partien, 2,77 $; drei Kritiker, Mehrheit, der vierte für 3 strittige Punkte).
+Gemessen auf dem Stand **vor** Runde 2:
+
+| Menge | gesagt + teilweise | 023 | Kritiker einig | Widersprüche je Partie | Füllsätze |
+|---|---|---|---|---|---|
+| bekannt | **55,4 %** | 59,4 % | 81 % | 3 / 6 / 2 / 7 | 2,8 % |
+| neu | **59,1 %** | 72,5 % | 82 % | 3 / 2 / 1 | 3,1 % |
+| 231200 (neue Soll-Liste) | **61,1 %** | – | 71 % | 4 | 1,9 % |
+
+Weitere Werte:
+- **Sicherheit:** 0 in allen 8 Partien.
+- **Latenz:** ganze Antwort 1,52–1,68 s, erster Satz 1,30–1,46 s.
+- **Pflicht-Infos:** Flash 55/57, Jungler 152/155.
+- **Kosten:** 0,35 $ je Partie.
+
+Die Kritiker zählten „Noch 5 Sekunden.“, „dein Plan bringt mehr“ und „Kampf vorbei.“ mehrfach als Füllsätze. Der
+Widerspruch 120049 24:08/24:26 entstand so: Claude sagte „geh zu Lee Sin“, der Kern gleich danach „Lee Sin kämpft: nicht hin“.
+
 ## Auftrag 024 – Grundlagen aus der Udyr-Partie 231200 (30.09.2026)
 
 Ein API-Nachspiel von 231200 mit dem Endstand (`proben/stratege_probe_024/`), 0,44 $. Keine Kritiker und kein Tor:

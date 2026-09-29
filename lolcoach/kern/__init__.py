@@ -240,6 +240,14 @@ class Kern:
         self.chronik = Chronik()                 # Auftrag 019: Ereignisse fuer das Lagebild (welt.py)
         from .pflicht import Pflicht
         self.pflicht = Pflicht()                # Auftrag 016, 1: Jungler, Lane-Gegner weg (Flash: _flash_info)
+        # Auftrag 025 (Buch 15): Events, die vier Uhren und die lebendigen Arbeitspakete
+        from .events import EventErkenner
+        from .pakete import PaketFuehrer
+        self.events = EventErkenner()
+        self.pakete = PaketFuehrer()
+        self.uhren = None
+        self.events_takt: list = []
+        self._paket_saetze: list = []
         self.auge_nein_bis = -1e9                # Auftrag 016, 5: Carlos sagt Nein zum Kontroll-Auge - 5 min keins
         self._verkauf_gesagt: tuple[float, str] | None = None     # Auftrag 016, 5: Verkaufen einmal, mit Grund
         self._flash_offen: dict = {}
@@ -343,6 +351,7 @@ class Kern:
         self._schutz_episode(m)
         if m.b is not None and m.daten_frisch:
             self.pflicht.takt(self, m, modus)          # Auftrag 016, 1: auch in KAMPF erkannt, gesagt danach
+        self._pakete_vorher(m, modus, p)               # Auftrag 025: Events, Uhren, Paket-Uebergaenge
         if m.b is not None and not m.tot:
             self.proben.takt(m, self.cfg)
         if modus == "KAMPF":
@@ -435,8 +444,37 @@ class Kern:
         if not aus:
             if (a := self._lagebild_ungefragt(m, modus, gesagt)) is not None:
                 aus.append(a)
+        # Auftrag 025: Paket-Uebergaenge (Countdown, Abbruch, Erledigt, "warum nicht") - ohne Sprechsperre, NEBEN allem
+        # anderen (sie verdraengen nichts); der Plan-Satz selbst ist START oder ERSETZT
+        for art, text in self._paket_saetze:
+            if (a := self.sprecher.ansage("PAKET", f"PAKET_{art}", text, m.zeit, None, gesagt)) is not None:
+                aus.append(a)
+        self._paket_saetze = []
         self._modus_vorher = modus
         return aus
+
+    def _pakete_vorher(self, m: Merkmale, modus: str | None, p) -> None:
+        """Auftrag 025: Events dieses Takts, die vier Uhren, dann das Paket (erledigt? abbrechen? Countdown?). Die
+        Saetze kommen in `_paket_saetze` und werden nach dem Plan-Satz gesprochen - in KAMPF und TOT nie."""
+        from . import uhren
+        from .pakete import warum_nicht
+        import os
+        if os.environ.get("LOLCOACH_OHNE_PAKETE"):     # Gegenprobe: der Kern wie vor 025
+            self._paket_saetze = []
+            return
+        try:
+            self.uhren = uhren.rechnen(m, self.cfg)
+            self.events_takt = self.events.takt(m, p if p is not None else m.p, self._lagebild)
+            saetze = self.pakete.takt(self, m, self.uhren, self.events_takt, modus)
+            if modus not in ("KAMPF", "TOT") and (w := warum_nicht(self, m, modus, self.pakete)) is not None:
+                saetze.append(("WARUM_NICHT", w))
+            self._paket_saetze = saetze if modus not in ("KAMPF", "TOT") else []
+        except Exception as e:                    # die Pakete duerfen den Kern nie mitreissen
+            self._paket_saetze = []
+            if not getattr(self, "_paket_fehler", False):
+                self._paket_fehler = True
+                import traceback
+                print(f"!! Pakete: {type(e).__name__}: {e}\n{traceback.format_exc(limit=4)}", flush=True)
 
     def _makro_info(self, m: Merkmale, modus: str | None, gesagt: list):
         """Buch 4, 5 (Auftrag 008): Teamplan, Jungler-Sichtung, Gruppierung, Spike - Budget und Doppelung in makro.py."""
@@ -970,6 +1008,17 @@ class Kern:
         kand = [h for h in kand if not (h.daten.get("klein") and h.p_tod >= cfg["gefahr"]["p_min"])]
         if not gefahr and modus in MAKRO_MODI:
             kand += self._makro_ziele(m, modus, kand, tk)          # Auftrag 010, 1
+        # Auftrag 025, 3 (Buch 15, 5): der Chancen-Scanner - ein Mitspieler-Kampf in Reichweite wird Kandidat HILFE;
+        # nicht in Gefahr und nicht kurz nach einer Gefahr-Ansage (Pruefung E4 wie oben)
+        import os
+        if not gefahr and not (self._gefahr_gesagt is not None and m.zeit - self._gefahr_gesagt[0] < NACH_GEFAHR_S) \
+                and not os.environ.get("LOLCOACH_OHNE_PAKETE"):
+            from .pakete import hilfe_kandidat
+            try:
+                if (h := hilfe_kandidat(self, m, modus, tk)) is not None:
+                    kand.append(h)
+            except Exception:
+                pass
         return kand, gefahr
 
     def _makro_ziele(self, m: Merkmale, modus: str, kand: list, tk: float) -> list:
@@ -2214,6 +2263,18 @@ class Kern:
                 zeile["ruf_vor_tod"] = self._ruf_vor_tod[1]
             if self._letzte is not None:
                 zeile["wuerde_sagen" if self.stellung == "schatten" else "sagt"] = list(self._letzte)
+            # Auftrag 025: Paket, Uhren und Events des Takts - die automatischen Masse (werkzeuge/pakete_messen.py)
+            if (pk := self.pakete.stand(p.zeit)) is not None:
+                zeile["paket"] = pk
+            u = self.uhren
+            if u is not None:
+                zeile["uhren"] = {"t_gefahr": None if u.t_gefahr is None else round(u.t_gefahr, 1), "wer": u.wer,
+                                  "fenster": None if u.fenster is None else round(u.fenster, 1),
+                                  "back_bis": None if u.back_spaetestens is None else round(u.back_spaetestens, 1)}
+            if self.events_takt:
+                zeile["events"] = [[e.typ, e.ort, list(e.beteiligte), round(e.zeit, 1),
+                                    {k: v for k, v in e.daten if isinstance(v, (int, float, str, bool)) or v is None}]
+                                   for e in self.events_takt]
         try:
             self._datei.write(json.dumps(zeile, ensure_ascii=False) + "\n")
         except (OSError, ValueError):

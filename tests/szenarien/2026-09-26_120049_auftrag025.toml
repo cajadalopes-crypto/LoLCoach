@@ -1,0 +1,28 @@
+# Auftrag 025, 3: Momente mit mehreren teilnehmbaren Events (werkzeuge/mehrfach_events.py). Das Soll-Play
+# legte ein blinder Challenger-Kritiker fest (nur die Lage, nie der Coach).
+
+aufnahme = "2026-09-26_120049"
+
+[[szenario]]
+id = "m01-mehrere-events-259"
+zeit = "2:59"
+quelle = "KAMPF in eurem oberen Jungle Diana Brand; LANE_WEG  Shen"
+lage = "Kritiker: A, C - Shen ist tot und die Welle liegt bei mir, also sicher farmen; Brand ist im Jungle allein, mit Lee Sin und Diana lohnt Hilfe nur bei kurzem Weg."
+soll = ["ANNEHMEN", "FARMEN", "HILFE", "MIT_GRUPPE", "REIN", "STAPELN", "UNTER_TURM_FARMEN", "WELLE_DRUECKEN", "WELLE_HALTEN", "WELLE_KLAEREN", "WELLE_REIN_UND_BACK", "ZUR_GRUPPE"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m02-mehrere-events-508"
+zeit = "5:08"
+quelle = "KAMPF in der Flussmitte Diana Brand; OBJ_DA drache drache"
+lage = "Kritiker: A, G - Mit 144 Gold kein Back, Shen ist nur 2 s entfernt und unsichtbar, also Welle sichern und danach zur Gruppe am Drachen rotieren."
+soll = ["FARMEN", "SEITENWELLE", "STAPELN", "TP_SPIEL", "UNTER_TURM_FARMEN", "WELLE_DRUECKEN", "WELLE_HALTEN", "WELLE_KLAEREN", "WELLE_REIN_UND_BACK", "WOHIN", "WOHIN_TP_LANE", "ZUR_GRUPPE"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."
+
+[[szenario]]
+id = "m03-mehrere-events-728"
+zeit = "7:28"
+quelle = "ERAHNT_KAMPF larven larven; GOLD_SPIKE  Riven"
+lage = "Kritiker: B, D - 308 Gold reichen fuer die Stiefel, und die Larven kommen erst in 31 s, also erst Back und dann zur Gruppe."
+soll = ["ABGEBEN_TAUSCHEN", "ANLAUFEN", "BACK_JETZT", "BESTREITEN", "KAUFEN", "NEHMEN", "TAUSCHEN", "WELLE_REIN_UND_BACK"]
+warum = "Buch 15, 0.3: das beste der gleichzeitigen Plays (blinder Kritiker)."

@@ -17,6 +17,11 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 025 (Buch 15, Events und lebendige Arbeitspakete, Stufe 1) gebaut - TOR NICHT ERREICHT** -
+kern/events.py, kern/uhren.py, kern/pakete.py; Paket-Abdeckung 94 %, Sicherheit 0, Latenz 1,5-1,7 s, 0,35 $/Partie;
+offen: Soll-Liste 55/59 %, Abwaegung 61 %, Back-Puenktlichkeit 58 %, Widersprueche 1-7 (warum-nicht gegen Claude).
+Automatische Masse: python werkzeuge/pakete_messen.py (45 s). Tor nach Runde 2 noch nicht per API gemessen.
+
 **Auftrag 024 (Udyr-Partie 231200) umgesetzt** - tot/lebendig nur aus der API, Lane-Gegner nur mit Beleg weg, "X TP
 weg.", Quest-TP im Wissensblock, Notiz mit Frage, Kontroll-Auge vor dem Item, Event-Quellen fuer 025
 (`kern/ereignisquellen.py`). Nachspiel: ganze Antwort 1,57 s, 0,38 $ je 30 min.

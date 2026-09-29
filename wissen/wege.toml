@@ -1,0 +1,13 @@
+# Wege auf der Karte statt Luftlinie (Auftrag 025, Buch 15 Teil 2). Laufzeiten des EIGENEN Champions in Sekunden.
+stand = "Messung 30.09.2026 an 8 Aufnahmen (2026-09-28_101426, 2026-09-28_192113, 2026-09-29_133448, 2026-09-29_183125, 2026-09-26_125902, 2026-09-26_164809, 2026-09-26_120049, 2026-09-29_231200): 7x blau (ORDER) Top, 1x rot (CHAOS) Mid"
+quelle = "werkzeuge/nachspielen.py (Kern-Takt, m.pos in Spiel-Einheiten, m.bereich, m.mein_tempo). brunnen_lane: Zeit vom letzten Takt mit bereich=basis_eigen bis Abstand <= 900 zum eigenen AEUSSEREN Turm (bewertung.TUERME); ohne Teleport (Sprung > 3500 in 5 s), Dauer 8..60 s, Tote ausgenommen; jeder Verlassen der Basis zaehlt (Spielstart, Respawn, Recall). Die Zeit beginnt am Rand des Bereichs basis_eigen, nicht am Brunnenmittelpunkt. Wert = Median. tempo_median: Median von m.mein_tempo (aktuelle Laufgeschwindigkeit inkl. Buffs) ueber alle Takte ausserhalb der Basis und lebend, n = 30086 Takte."
+tempo_median = 365.0    # Einheiten/s, n = 30086 Takte
+
+[brunnen_lane]      # s vom Basisrand bis zum eigenen aeusseren Turm
+blau_top = 13.3     # n = 38 (7 Aufnahmen; Streuung 10.3 .. 54)
+rot_mid = 9.1       # n = 5 (nur EINE Aufnahme, 2026-09-28_101426)
+
+# lane_objective: NICHT gemessen. Direkte Laeufe Lane -> Grube (<= 60 s, ohne TP, kaum Umweg) gab es in den 8 Aufnahmen
+# nur je: blau top -> herold n = 2 (8.6 und 16.3 s), rot mid -> drache n = 1 (6.6 s). Alle anderen (top_drache, mid_herold,
+# mid_drache blau, bot_*) n = 0. n < 3, deshalb kein Wert. Fehlt: Aufnahmen mit Bot-/Mid-Lauf, blaue Top-Laeufe zur Grube.
+# top blau: brunnen_lane fuer bot und mid blau fehlen ebenfalls (n = 0).

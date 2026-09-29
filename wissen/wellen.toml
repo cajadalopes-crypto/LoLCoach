@@ -1,0 +1,10 @@
+# Wellen-Uhr (Buch 15, 2.2; Auftrag 025, 1) - lolcoach/kern/uhren.py
+stand = "30.09.2026"
+quelle = "Buch 15, Teil 2.2 und Quellen dort: League of Legends Wiki, Minion (https://wiki.leagueoflegends.com/en-us/Minion). An den Aufnahmen nicht einzeln nachgeprueft; die beobachtete Welle (kern/merkmale.py, m.kanone_in) hat Vorrang."
+
+erste_welle_s = 30          # ab 0:30
+takt = [[0, 30], [840, 25], [1800, 20]]     # ab Spielzeit s: alle so viele s eine Welle (14:00: 25 s, 30:00: 20 s)
+# Kanonen: erste in Welle 3 (1:30); vor 14:00 jede dritte, 14:00-25:00 jede zweite, ab 25:00 jede Welle
+kanone_ab_welle = 3
+kanone_jede = [[0, 3], [840, 2], [1500, 1]]
+platten_ende_s = 840        # 14:00

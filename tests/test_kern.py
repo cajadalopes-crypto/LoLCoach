@@ -1175,7 +1175,8 @@ def udyr_024():
     assert eq.anwesenheit(lane(5.0, (7000.0, 7000.0), (1300.0, 7300.0), "im oberen Fluss")) == "weg"
     q = eq.LaneQuelle()
     assert not q.takt(lane(5.0, (1300.0, 13500.0), (1300.0, 7300.0)), 100.0)
-    assert [e.typ for e in q.takt(lane(25.0, (1300.0, 13500.0), (1300.0, 12700.0)), 120.0)] == ["LANE_WEG"]
+    assert not q.takt(lane(25.0, (1300.0, 13500.0), (1300.0, 12700.0)), 120.0)       # 025: erst nach 3 s "weg"
+    assert [e.typ for e in q.takt(lane(28.0, (1300.0, 13500.0), (1300.0, 12700.0)), 123.0)] == ["LANE_WEG"]
     # Tod und Respawn als Events
     tq = eq.TodQuelle()
     sp = lambda tot: NS(zeit=1.0, spieler=[NS(name="x", champion="Xerath", tot=tot, respawn=10.0, team="CHAOS")])
@@ -1217,6 +1218,59 @@ def udyr_024():
     assert "QUEST-TP" not in partie_wissen._block("Riven", ("Riven",), ("Udyr",), False)
 
 
+def pakete_025():
+    """Auftrag 025 (Buch 15): Uhren, Events, lebendige Pakete - konstruierte Lagen, ohne Aufnahme."""
+    from types import SimpleNamespace as NS
+    from lolcoach.kern import events as ev, uhren
+    from lolcoach.kern.ereignisquellen import Event
+    from lolcoach.kern.handlung import Handlung, Ziel
+    from lolcoach.kern.pakete import PaketFuehrer
+    from lolcoach.kern.plan import Plan
+    # Wellen-Uhr (wissen/wellen.toml): Welle alle 30 s ab 0:30, Kanone in Welle 3; ab 14:00 alle 25 s
+    assert uhren.naechste_welle(85.0) == (90.0, True) and uhren.naechste_welle(95.0) == (120.0, False)
+    assert uhren.naechste_welle(850.0)[0] == 865.0
+    assert 25.0 < uhren.brunnen_lane("Top", "ORDER") < 40.0          # Brunnen -> Top-Aussenturm, Karte x Tempo
+    # Paket: PLATTEN -> TURM mit Budget aus dem sicheren Fenster, Countdown bei 5 s, Turm faellt -> ERLEDIGT
+    def lage(zeit, fenster, gold=500.0):
+        return NS(zeit=zeit, tot=False, bereich="lane_eigen", pos=(4300.0, 13000.0), objectives=[], p=None,
+                  b=NS(gold=gold, gegner=[], mitspieler=[]))
+    u = lambda f: NS(fenster=f, wer="Udyr", t_gefahr=f + 5.0, back_spaetestens=None)
+    h = Handlung("PLATTEN", Ziel("turm", "ihren Top-Turm", (4318.0, 13875.0), 3.0), "LANE", 12.0, satz="Drück den Turm.")
+    kern = NS(fuehrer=NS(plan=Plan(h, 100.0, gesagt=100.0)))
+    pf = PaketFuehrer({"countdown_bei_s": 5.0, "countdown_max": 2})
+    assert pf.takt(kern, lage(100.0, 12.0), u(12.0), [], "LANE") == []
+    assert pf.aktiv.typ == "TURM" and pf.aktiv.frist == 112.0 and pf.aktiv.gesagt
+    assert pf.takt(kern, lage(106.5, 5.0), u(5.0), [], "LANE") == [("COUNTDOWN", "Noch 5 Sekunden.")]
+    fall = Event("TURM_FAELLT", "Turret_T2_L_03_A", (), 108.0, 1.0, (("wir", True),))
+    assert pf.takt(kern, lage(108.0, 4.0), u(4.0), [fall], "LANE") == [("ERLEDIGT", "Ihr Top-Turm fällt.")]
+    assert kern.fuehrer.plan is None and pf.aktiv is None and pf.fertig[-1].verlauf[0][1] == "START"
+    # Budget abgelaufen: "Raus jetzt" (nur, wenn das Paket mit Budget begann und >= 2 s lief)
+    kern.fuehrer.plan = Plan(h, 200.0)
+    pf.takt(kern, lage(200.0, 8.0), u(8.0), [], "LANE")
+    assert pf.takt(kern, lage(203.0, -1.0), u(-1.0), [], "LANE") == [("BUDGET_AB", "Raus jetzt: Udyr in 4 Sekunden.")]
+    # OBJECTIVE: der Gegner nimmt den Drachen -> abgebrochen, der naechste Plan kommt sofort
+    ho = Handlung("NEHMEN", Ziel("objective", "den Drachen", (9866.0, 4414.0), 20.0), "OBJECTIVE", 30.0,
+                  daten={"objective": "drache"})
+    kern.fuehrer.plan = Plan(ho, 300.0)
+    pf.takt(kern, lage(300.0, None), NS(fenster=None, wer=None, t_gefahr=None, back_spaetestens=None), [], "OBJECTIVE")
+    weg = Event("OBJ_GENOMMEN", "drache", ("drache",), 305.0, 1.0, (("wir", False),))
+    assert pf.takt(kern, lage(305.0, None), NS(fenster=None, wer=None, t_gefahr=None, back_spaetestens=None), [weg],
+                   "OBJECTIVE") == [("ABGEBROCHEN", "Drache weg: nicht hin.")]
+    # Kampf und Tod beenden ein Paket still
+    kern.fuehrer.plan = Plan(h, 400.0)
+    pf.takt(kern, lage(400.0, 9.0), u(9.0), [], "LANE")
+    assert pf.takt(kern, lage(401.0, 9.0), u(9.0), [], "KAMPF") == [] and pf.fertig[-1].ende == "ABGEBROCHEN"
+    # Events: Objective bald (60 s vorher) und da
+    er = ev.EventErkenner()
+    o = lambda lebt, s: NS(schl="drache", lebt=lebt, spawn_in=s, weg=20.0)
+    m = lambda zeit, obj: NS(zeit=zeit, objectives=[obj])
+    assert not er._objective(m(230.0, o(False, 70.0)), None, None)
+    assert [e.typ for e in er._objective(m(241.0, o(False, 59.0)), None, None)] == ["OBJ_BALD"]
+    assert [e.typ for e in er._objective(m(300.0, o(True, 0.0)), None, None)] == ["OBJ_DA"]
+    # Erahnung: ein Typ unter 60 % Eintritt bleibt still (wissen/events.toml)
+    assert ev.still("ERAHNT_GANK") and not ev.still("ERAHNT_RUECKKEHR")
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
@@ -1227,6 +1281,6 @@ if __name__ == "__main__":
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
                  stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017, lagebild_019,
                  objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018, kampf_rechner_020, gehirn_021,
-                 aufraeumen_022, stimme_023, udyr_024):
+                 aufraeumen_022, stimme_023, udyr_024, pakete_025):
         test()
         print(f"{test.__name__} OK")

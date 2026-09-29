@@ -331,7 +331,7 @@ hysterese_zu_mitte_s = 1        # AN (gemessen: 173159 7 -> 10 von 12, 144655 9 
 [recall]
 stand = "Buch 3, 27.09.2026 - Startwerte (Schaetzung), an Szenarien kalibrieren"
 leben_back = 0.4
-back_vor_farmen_gold = 500      # Auftrag 007 (Klasse 11): Gold >= naechster Kauf + so viel: Back ist Kandidat vor Farmen
+back_vor_farmen_gold = 0        # Auftrag 025 (blinder Kritiker, 15 von 24 Momenten "Back"; Carlos 024, 5.5: mit Gold fuer ein Item ist Back die Voreinstellung) - vorher 500 (Auftrag 007, Klasse 11)
 horten_ab = 1500
 horten_zuschlag = 100           # GE je 500 Gold ueber horten_ab
 spike_bonus = 300               # GE, wenn ein Kern-Item fertig wird

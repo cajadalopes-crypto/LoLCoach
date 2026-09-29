@@ -1,0 +1,247 @@
+{
+ "kennzahlen": {
+  "flash": "8/8 (100 %)",
+  "jungler": "10/10 (100 %)",
+  "i4": "2/2 (100 %)",
+  "backs": "4/4 (100 %)",
+  "back_rufe": "5/5 (100 %)",
+  "stille": "45 s",
+  "sicherheit": 0,
+  "widersprueche": 0,
+  "fuellsaetze": "0/98 (0.0 %)",
+  "latenz": "1.52 / 4.34 s (n = 43)",
+  "erster_satz": 1.366629500000272,
+  "cache": "54/70"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 106.92284393310547,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 311.25311279296875,
+    "champion": "Sona",
+    "gesagt": "Sona Flash weg.",
+    "nach_s": 0.2
+   },
+   {
+    "zeit": 351.8541259765625,
+    "champion": "Twitch",
+    "gesagt": "Twitch Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 471.34893798828125,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.6
+   },
+   {
+    "zeit": 620.31982421875,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 824.5009765625,
+    "champion": "Sona",
+    "gesagt": "Sona Flash weg.",
+    "nach_s": 0.9
+   },
+   {
+    "zeit": 878.6018676757812,
+    "champion": "Twitch",
+    "gesagt": "Twitch Flash weg.",
+    "nach_s": 0.2
+   },
+   {
+    "zeit": 1035.1312255859375,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.0
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 236.2,
+    "name": "Teemo",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Teemo oberer Fluss."
+   },
+   {
+    "zeit": 298.5,
+    "name": "Teemo",
+    "ort": "unten",
+    "ohne_s": 29,
+    "tot_ich": false,
+    "gesagt": "Teemo unten."
+   },
+   {
+    "zeit": 362.7,
+    "name": "Teemo",
+    "ort": "oben",
+    "ohne_s": 59,
+    "tot_ich": false,
+    "gesagt": "Teemo oben, 4 Sekunden."
+   },
+   {
+    "zeit": 483.8,
+    "name": "Teemo",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 86,
+    "tot_ich": false,
+    "gesagt": "Teemo Mid."
+   },
+   {
+    "zeit": 588.0,
+    "name": "Teemo",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 63,
+    "tot_ich": false,
+    "gesagt": "Teemo Mid."
+   },
+   {
+    "zeit": 704.8,
+    "name": "Teemo",
+    "ort": "oben",
+    "ohne_s": 74,
+    "tot_ich": false,
+    "gesagt": "Teemo oben, 1 Sekunde."
+   },
+   {
+    "zeit": 750.1,
+    "name": "Teemo",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle oben."
+   },
+   {
+    "zeit": 803.9,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 52,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle unten."
+   },
+   {
+    "zeit": 895.3,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 66,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle unten."
+   },
+   {
+    "zeit": 953.2,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle unten."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 256.5,
+    "gesagt": "Top-Welle rein, dann back: 1250 Gold für Caulfields Kriegshammer, Poppy ist tot. Danach Top.",
+    "saetze": [
+     "Teemo oberer Fluss.",
+     "Top-Welle rein, dann back: 1250 Gold für Caulfields Kriegshammer, Poppy ist tot. Danach Top.",
+     "Volibear kämpft: nicht hin, 20 Sekunden weg."
+    ]
+   },
+   {
+    "zeit": 433.4,
+    "gesagt": "Der Brutalisierer, dann sofort nach Top: Kanone in 41 Sekunden und die Welle läuft zu dir, Lux kann in 22 Sekunden kommen – du musst weg, bevor sie roamt.",
+    "saetze": [
+     "Zurück unter deinen äußeren Top-Turm: zwei kommen.",
+     "Der Brutalisierer, dann sofort nach Top: Kanone in 41 Sekunden und die Welle läuft zu dir, Lux kann in 22 Sekunden kommen – du musst weg, bevor sie roamt."
+    ]
+   },
+   {
+    "zeit": 769.9,
+    "gesagt": "Jetzt, wo Drache drin aufgetaucht ist: Axiombogen und Kontroll-Auge kaufen, dann zu deinem äußeren Top-Turm: Drache in 5 Minuten, Sona und Lux kommen zu dir – warte auf dein Team und haltet den Turm.",
+    "saetze": [
+     "Blitzcrank kämpft: nicht hin, 18 Sekunden weg.",
+     "Jetzt, wo Drache drin aufgetaucht ist: Axiombogen und Kontroll-Auge kaufen, dann zu deinem äußeren Top-Turm: Drache in 5 Minuten, Sona und Lux kommen zu dir – warte auf dein Team und haltet den Turm.",
+     "Sona euer Jungle oben: Büsche meiden."
+    ]
+   },
+   {
+    "zeit": 967.9,
+    "gesagt": "Jetzt, wo Lux oben ist und Poppy in 9 Sekunden bei dir: Back jetzt, Caulfields kaufen, dann direkt zu Yorick nach Mid – Lux und Poppy kommen beide hoch, ihr haltet nur zusammen.",
+    "saetze": [
+     "Blitzcrank kämpft: nicht hin, 14 Sekunden weg.",
+     "Teemo sein Jungle unten.",
+     "Jetzt, wo Wendepunkt: Aus der Basis: Farm Top, Twitch lebt in 6 Sekunden wieder."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 238.6343994140625,
+    "text": "Top-Welle rein, dann back: 1250 Gold für Caulfields Kriegshammer, Poppy ist tot. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 474.3738098144531,
+    "text": "Jetzt, wo ein gegnerischer Flash weg ist: Crash die Welle jetzt, weil die Kanone in 5 Sekunden kommt und dir 40+ Sekunden Fenster gibt, bevor Poppy oben ist – dann sofort Back, Serylda's kaufen, zu Bot roamen, weil dort deine Welle 5:0 läuft und Lux weg ist.",
+    "kette": true
+   },
+   {
+    "zeit": 516.83349609375,
+    "text": "Jetzt, wo Volibear und Blitzcrank tot sind und sie die Larven nehmen: Top-Welle crashen, sofort back Axiombogen, dann zu Bot, weil Twitch Flash noch weg ist und eure Welle 5:0 dort läuft – das ist der Kill-Fenster jetzt.",
+    "kette": true
+   },
+   {
+    "zeit": 622.8446044921875,
+    "text": "Jetzt, wo Yorick unten mit 19 % Leben ist: back Axiombogen sofort, dann zu Bot zum Kill-Fenster – Twitch Flash weg in 69 s, bevor Lux zurückkommt.",
+    "kette": true
+   },
+   {
+    "zeit": 635.7530517578125,
+    "text": "Jetzt, wo Teemo und Twitch in 14 und 21 Sekunden respawnen: crash die Welle sofort, back Axiombogen, dann zu Bot mit Volibear zum Drachen – ihr seid 4v2 mit Lux noch weg und gewinnt das Fenster vor ihrem Zurückspulen.",
+    "kette": true
+   }
+  ],
+  "stille_max": 45,
+  "stille_lang": [
+   [
+    148,
+    193
+   ]
+  ],
+  "sicherheit": [],
+  "widersprueche": [],
+  "fuellsaetze": [],
+  "saetze_n": 98,
+  "i4": [
+   {
+    "zeit": 341.3,
+    "name": "Poppy",
+    "ort": "im unteren Fluss",
+    "gesagt": "Poppy unten: Welle drücken."
+   },
+   {
+    "zeit": 651.1,
+    "name": "Poppy",
+    "ort": "unten",
+    "gesagt": "Poppy unten: Welle drücken."
+   }
+  ],
+  "latenz": {
+   "n": 43,
+   "median": 1.52,
+   "p90": 4.34,
+   "erster_satz_median": 1.366629500000272,
+   "cache_treffer": "54/70"
+  }
+ }
+}

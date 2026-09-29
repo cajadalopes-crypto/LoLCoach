@@ -16,6 +16,7 @@ from ..bewertung import abstand
 
 WEG_S = 20.0        # so lange ungesehen, bevor "weg" ueberhaupt in Frage kommt
 SICHT = 1200.0      # so nah siehst du einen Gegner selbst (Champion-Sicht)
+LANE_HALTEN_S = 3.0     # so lange muss "weg" gelten, bis LANE_WEG kommt
 VERDECKT = 400.0    # so nah verdeckt dein Icon seins auf der Minimap - dann ist "ungesehen" kein Beleg
 LANE_ORT = {"TOP": ("oben",), "MIDDLE": ("auf der Mid-Lane", "in der Flussmitte"), "BOTTOM": ("unten",),
             "UTILITY": ("unten",)}
@@ -73,11 +74,11 @@ def anwesenheit(b) -> str | None:
         return "tot"
     auf_lane = g.ort in LANE_ORT.get(g.s.rolle or "", ())
     if g.sichtbar:
-        return "da" if auf_lane or not g.ort else "weg"
+        return "da"                  # zu sehen ist nicht weg - auch im Fluss neben der Lane (Messung 025)
     if g.seit is None or g.pos is None:
         return "vermutlich da"
     if not auf_lane:
-        return "weg"
+        return "weg" if g.seit >= 5.0 else "da"
     if g.seit < WEG_S:
         return "da"
     d = abstand(b.pos, g.pos) if getattr(b, "pos", None) is not None else None
@@ -87,11 +88,21 @@ def anwesenheit(b) -> str | None:
 
 
 class LaneQuelle:
+    """LANE_WEG erst, wenn "weg" LANE_HALTEN_S lang gilt (Minimap-Flackern ist kein Roam)."""
+
     def __init__(self):
         self._war: str | None = None
+        self._kand: tuple[str, float] | None = None
 
     def takt(self, b, zeit: float) -> list[Event]:
-        jetzt = anwesenheit(b)
+        roh = anwesenheit(b)
+        if roh != self._war and roh in ("weg", "tot") and self._war not in ("weg", "tot") and roh != "tot":
+            if self._kand is None or self._kand[0] != roh:
+                self._kand = (roh, zeit)
+            if zeit - self._kand[1] < LANE_HALTEN_S:
+                return []
+        self._kand = None
+        jetzt = roh
         aus = []
         if jetzt is not None and self._war is not None:
             name = (b.lane.champion,)
