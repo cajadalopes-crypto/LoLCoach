@@ -259,7 +259,11 @@ def _start_item(items) -> int | None:
     it = ddragon.items()
     kand = [i for i in items if i in it and not it[i].get("from") and not it[i].get("into")
             and it[i]["gold"]["total"] <= 500 and not {"Trinket", "Consumable", "Boots"} & _tags(i)]
-    return min(kand, key=lambda i: it[i]["gold"]["total"], default=None)
+    # Auftrag 017, 0.5 (192113 28:24: "Gerade nichts zu kaufen" bei 4130 Gold und sechs Plaetzen mit Nachfuellbarem
+    # Trank): ein Trank, der einen Platz belegt und nicht verbraucht wird, geht zuerst
+    trank = [i for i in items if i in it and "Consumable" in _tags(i) and not it[i].get("consumed")
+             and i != 2055 and "Trinket" not in _tags(i)]
+    return min(trank or kand, key=lambda i: it[i]["gold"]["total"], default=None)
 
 
 def _verbraucht(item: int, inventar) -> int:

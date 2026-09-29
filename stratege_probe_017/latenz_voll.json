@@ -1,0 +1,188 @@
+{
+ "zusammen": {
+  "start_s": [
+   0.0,
+   0.0
+  ],
+  "erstes_token_s": [
+   4.66,
+   6.23
+  ],
+  "erster_satz_s": [
+   5.17,
+   6.72
+  ],
+  "ende_s": [
+   6.4,
+   8.16
+  ],
+  "prompt_zeichen": [
+   2377.5,
+   2720
+  ],
+  "eingabe_token": [
+   3039.0,
+   3192
+  ],
+  "warm": 12,
+  "n": 12
+ },
+ "aufrufe": [
+  {
+   "warm": true,
+   "prompt_zeichen": 2049,
+   "start_s": 1.3300043065100908e-05,
+   "erstes_token_s": 4.473723200033419,
+   "ende_s": 6.166606400045566,
+   "api_ms": 4908,
+   "eingabe_token": 2866,
+   "cache_token": 1037,
+   "erster_satz_s": 4.910373299964704,
+   "ganz_s": 6.689906099985819,
+   "woerter": 25
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2100,
+   "start_s": 1.1899974197149277e-05,
+   "erstes_token_s": 6.228155100019649,
+   "ende_s": 7.13026850001188,
+   "api_ms": 6236,
+   "eingabe_token": 2887,
+   "cache_token": 1037,
+   "erster_satz_s": 7.653707799967378,
+   "ganz_s": 7.653808499977458,
+   "woerter": 21
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2319,
+   "start_s": 1.079996582120657e-05,
+   "erstes_token_s": 0.8199215999920852,
+   "ende_s": 3.242769899952691,
+   "api_ms": 1932,
+   "eingabe_token": 3016,
+   "cache_token": 1037,
+   "erster_satz_s": 1.2063233000226319,
+   "ganz_s": 3.7671543000033125,
+   "woerter": 35
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2077,
+   "start_s": 9.399955160915852e-06,
+   "erstes_token_s": 4.8432874999707565,
+   "ende_s": 6.642989699961618,
+   "api_ms": 5428,
+   "eingabe_token": 2881,
+   "cache_token": 1037,
+   "erster_satz_s": 5.438784700003453,
+   "ganz_s": 7.170594199968036,
+   "woerter": 25
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2869,
+   "start_s": 1.0400020983070135e-05,
+   "erstes_token_s": 0.9566231000353582,
+   "ende_s": 2.975640500022564,
+   "api_ms": 1533,
+   "eingabe_token": 3323,
+   "cache_token": 1037,
+   "erster_satz_s": 1.172172499995213,
+   "ganz_s": 3.5000623000087216,
+   "woerter": 31
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2856,
+   "start_s": 9.400013368576765e-06,
+   "erstes_token_s": 0.6182037999969907,
+   "ende_s": 2.4707962999818847,
+   "api_ms": 1631,
+   "eingabe_token": 3310,
+   "cache_token": 1037,
+   "erster_satz_s": 0.974347300012596,
+   "ganz_s": 2.995473100047093,
+   "woerter": 33
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2104,
+   "start_s": 9.600014891475439e-06,
+   "erstes_token_s": 6.504121600009967,
+   "ende_s": 8.159270900010597,
+   "api_ms": 6841,
+   "eingabe_token": 2874,
+   "cache_token": 1037,
+   "erster_satz_s": 8.68506189994514,
+   "ganz_s": 8.685122999944724,
+   "woerter": 19
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2436,
+   "start_s": 1.0300020221620798e-05,
+   "erstes_token_s": 5.871049600013066,
+   "ende_s": 8.760219599993434,
+   "api_ms": 6297,
+   "eingabe_token": 3072,
+   "cache_token": 1037,
+   "erster_satz_s": 6.002406399988104,
+   "ganz_s": 9.284654700022656,
+   "woerter": 25
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2481,
+   "start_s": 9.899958968162537e-06,
+   "erstes_token_s": 0.6515309999813326,
+   "ende_s": 3.4271425000042655,
+   "api_ms": 1632,
+   "eingabe_token": 3062,
+   "cache_token": 1037,
+   "erster_satz_s": 1.6361680999980308,
+   "ganz_s": 3.9508557000081055,
+   "woerter": 34
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2720,
+   "start_s": 9.700015652924776e-06,
+   "erstes_token_s": 5.2648461000062525,
+   "ende_s": 7.169721200014465,
+   "api_ms": 5703,
+   "eingabe_token": 3179,
+   "cache_token": 1037,
+   "erster_satz_s": 5.528692000021692,
+   "ganz_s": 7.6926254000281915,
+   "woerter": 29
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2111,
+   "start_s": 9.299954399466515e-06,
+   "erstes_token_s": 6.723411799990572,
+   "ende_s": 8.838697600003798,
+   "api_ms": 6718,
+   "eingabe_token": 2872,
+   "cache_token": 1037,
+   "erster_satz_s": 6.723970399994869,
+   "ganz_s": 9.363969700003508,
+   "woerter": 25
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2648,
+   "start_s": 9.90001717582345e-06,
+   "erstes_token_s": 0.5477026000153273,
+   "ende_s": 4.197271500015631,
+   "api_ms": 1622,
+   "eingabe_token": 3192,
+   "cache_token": 1037,
+   "erster_satz_s": 1.6209372999728657,
+   "ganz_s": 4.720671799965203,
+   "woerter": 34
+  }
+ ]
+}

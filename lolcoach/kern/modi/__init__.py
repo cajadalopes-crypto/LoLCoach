@@ -50,6 +50,22 @@ def lane_von(m) -> str:
     return m.meine_lane or "Top"
 
 
+def lanes_besetzt(m) -> dict[str, list[str]]:
+    """Auftrag 017, 0.6 (192113 19:25 "Geh nach Top: dort kommt ihre naechste Welle", ADC und Support farmten sie):
+    Lane -> lebende Mitspieler, die gerade (frisch gesehen) auf dieser Lane stehen."""
+    from ...bewertung import BREITE, HOEHE
+    from ..merkmale import bereich_aus
+    aus: dict[str, list[str]] = {}
+    ich = m.p.ich if getattr(m, "p", None) is not None else None
+    for s, wo in getattr(m, "mitspieler", None) or []:
+        if wo is None or s.tot or (ich is not None and s.name == ich.name):
+            continue
+        be = bereich_aus(wo[0] / BREITE, 1.0 - wo[1] / HOEHE, m.p.mein_team if m.p is not None else "ORDER", None)
+        if be and be.startswith("lane:"):
+            aus.setdefault(be.split(":", 1)[1], []).append(s.champion)
+    return aus
+
+
 def welle_name(m, lane: str) -> str:
     """"deine Top-Welle" nur auf deiner eigenen Lane - auf einer anderen "die Bot-Welle" (Buch 5, 3.2)."""
     return f"deine {lane}-Welle" if lane == lane_von(m) else f"die {lane}-Welle"

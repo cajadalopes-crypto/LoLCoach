@@ -200,6 +200,16 @@ def _seite(ort: str | None) -> str | None:
     return None
 
 
+def _besetzt(m) -> dict:
+    if m is None:
+        return {}
+    try:
+        from .kern.modi import lanes_besetzt
+        return lanes_besetzt(m)
+    except Exception:
+        return {}
+
+
 def pruef_lage(kern, p) -> dict:
     """Was `pruefe` ueber die Lage wissen muss - nur Daten (JSON-faehig, fuer Protokoll und Nachspielen)."""
     from .bewertung import WEGFAKTOR, abstand
@@ -232,6 +242,8 @@ def pruef_lage(kern, p) -> dict:
                        for o in (m.objectives or [] if m is not None else [])],
         # Auftrag 016, 4.2: der Combo-Check des Kerns und das Leben der sichtbaren Gegner (Balken im Bild)
         "kill": kill_jetzt(b) if b is not None else [],
+        # Auftrag 017, 0.6: Wellen, an denen Mitspieler stehen (nach der Lane-Phase nicht dein Ziel)
+        "besetzt": _besetzt(m), "lane_phase": bool(m is not None and m.lane_phase),
         "gegner_leben": {g.champion: round(g.leben, 2) for g in (b.gegner if b is not None else [])
                          if g.sichtbar and g.leben is not None},
     }
@@ -429,6 +441,65 @@ AUGE_BACK = _re.compile(r"\b(back|recall|zurück)\b\W+(\w+\W+){0,6}?(nur )?(für
 AUGE_NEIN = _re.compile(r"\b(nein|kein\w*|ohne|scheiß|verfickt\w*)\b[^.?!]{0,40}(kontroll-?)?auge|"
                         r"(kontroll-?)?auge[^.?!]{0,20}\b(nein|brauch ich nicht|will ich nicht)\b", _re.I)
 _ITEM_RE: _re.Pattern | None = None
+# --- Auftrag 017, Teil 0 -------------------------------------------------------------------------------------------
+WELLE_ZIEL = _re.compile(r"\b(zur|nach|auf die|an die|zu deiner|farm (die|deine)|hol (die|deine)|zurück zur)\s+"
+                         r"(?P<lane>top|mid|bot)(-welle|-lane| welle| lane)?\b", _re.I)
+KAUF_JETZT = _re.compile(r"^\W*(kauf|kaufe|hol dir)\b|\bkauf (jetzt|sofort|gleich)\b|\bjetzt (den|die|das|ein|eine|einen) "
+                         r"[\w-]+ kaufen\b", _re.I)
+KAUF_SPAETER_017 = _re.compile(r"\b(beim|nach dem|im|vor dem) (nächsten )?(back|recall)|\bspäter\b|\bdanach\b|\bdann\b|"
+                               r"\bin der basis\b|\bsobald\b", _re.I)
+ABWAHL = _re.compile(r"\b(vergiss|lass|spar dir|kein(en)?|statt)\b", _re.I)
+SCHWACH_FOLGE = _re.compile(r"\b(geh|greif|drück|zieh|nutz|trade|rein|farm|bleib|zwing|push|crash|halt|freeze|nimm|"
+                            r"spiel|such|warte|back|zurück|lauf)\w*\b|:\s*\w", _re.I)
+_FUELL: list | None = None
+
+
+def fuellsaetze() -> list[_re.Pattern]:
+    """Die Fuellsatz-Muster aus wissen/fuellsaetze.toml (erweiterbar) - ein Satz, der ganz auf eins passt, hat keine
+    neue Info und keine Entscheidung (Auftrag 017, 0.3; Buch 13, Teil 3)."""
+    global _FUELL
+    if _FUELL is None:
+        try:
+            import tomllib
+            from pathlib import Path
+            d = tomllib.loads((Path(__file__).resolve().parent.parent / "wissen" / "fuellsaetze.toml")
+                              .read_text(encoding="utf-8"))
+            _FUELL = [_re.compile(x, _re.I) for x in d.get("muster", [])]
+        except Exception:
+            _FUELL = []
+    return _FUELL
+
+
+def fuellsatz(s: str) -> str | None:
+    t = s.strip()
+    for m in fuellsaetze():
+        if m.search(t):
+            return m.pattern
+    return None
+
+
+def pruefe_017(s: str, lage: dict) -> list[str]:
+    """Auftrag 017, Teil 0: Fuellsaetze (3), "Kauf jetzt" nur in der Basis oder im Back-Ruf, nichts ueber schon
+    Gekauftes (5), "schwach" nur mit Folge (7)."""
+    gruende = []
+    if fuellsatz(s):
+        gruende.append("Füllsatz (keine neue Info, keine Entscheidung)")
+    if KAUF_JETZT.search(s) and not lage.get("ich_basis") and not back_ruf(s) and not KAUF_SPAETER_017.search(s):
+        gruende.append("Kauf jetzt nur in der Basis oder im Back-Ruf")
+    besitz = [i for i in lage.get("items") or []]
+    if besitz and (KAUF_WORT.search(s) or ABWAHL.search(s)):
+        alle = _items().get("_id", {})
+        fertig = {alle[i]["name"] for i in besitz if i in alle and not alle[i].get("into")
+                  and alle[i].get("gold", {}).get("total", 0) >= 900}
+        for n in fertig:
+            kurz = n.split()[-1]
+            if _re.search(rf"(?<!\w){_re.escape(n)}(?!\w)", s) or (len(kurz) >= 6 and _re.search(
+                    rf"(?<!\w){_re.escape(kurz)}(?!\w)", s)):
+                gruende.append(f"{n} hast du schon")
+                break
+    if SCHWACH.search(s) and not SCHWACH_FOLGE.search(s):
+        gruende.append("„schwach“ ohne Folge")
+    return gruende
 
 
 def _item_re() -> _re.Pattern:
@@ -542,6 +613,13 @@ def pruefe(satz: str, lage: dict) -> list[str]:
             gruende.append("Back ohne Kette (Kauf und Ziel im selben Satz)")        # Auftrag 016, 2
         if back_ruf(s) and lage.get("ich_basis") and not _re.search(r"nächst|später|danach|dann back", s, _re.I):
             gruende.append("Back, obwohl du in der Basis bist")                     # Kritik 016 (133448 7:15)
+        if not lage.get("lane_phase") and lage.get("besetzt"):
+            for m_ in WELLE_ZIEL.finditer(s):
+                lane = m_.group("lane").capitalize()
+                if lane in lage["besetzt"] and not _re.search(r"\bnicht\b", s[:m_.start()][-20:], _re.I):
+                    gruende.append(f"an der {lane}-Welle stehen schon {', '.join(lage['besetzt'][lane])}")
+                    break
+        gruende += pruefe_017(s, lage)
         if AUGE_BACK.search(s):
             gruende.append("Back nur für ein Kontroll-Auge")                         # Auftrag 016, 5
         elif lage.get("auge") and AUGE.search(s) and _re.search(r"kauf|hol|nimm|mit|plus|dazu|und", s, _re.I) \
@@ -558,7 +636,10 @@ def pruefe(satz: str, lage: dict) -> list[str]:
         tp = lage.get("tp")
         if TP_WORT.search(s) and not TP_OK.search(s) and (tp is None or tp > 0):
             gruende.append("TP nicht bereit" if tp is not None else "kein TP bekannt")
-        if FLASH_EIGEN.search(s) and lage.get("flash") is not None and lage["flash"] > 0:
+        # "Dein Flash ist weg" ist eine Tatsache, kein Rat, ihn zu benutzen (Nachspiel 133448, Auftrag 017: 5 Fehlalarme)
+        if FLASH_EIGEN.search(s) and lage.get("flash") is not None and lage["flash"] > 0 \
+                and not _re.search(r"dein(en)? flash (ist )?(noch )?(weg|nicht|down|fehlt|in \d+|kommt|erst)|"
+                                   r"ohne (deinen )?flash|flash (ist )?weg", s, _re.I):
             gruende.append("dein Flash ist nicht bereit")
         if ULT_EIGEN.search(s) and lage.get("ult") is False:
             gruende.append("deine Ult ist nicht bereit")

@@ -17,6 +17,10 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 017 (Inhalt statt Takt) gebaut, Messung offen** - siehe `buecher/auftraege/017_bericht.md`; die Messung
+(Soll-Liste nachher, Fuellsaetze, Widersprueche, I1-I4, Latenz im Nachspiel) holt 019 nach. Latenz-Soll (<= 3 / <= 5 s)
+verfehlt: Sonnet denkt adaptiv nach, per CLI nicht abschaltbar.
+
 **Auftrag 016 (Pflichtenheft 133448: sagen, was er sieht, Ketten statt Schweigen) umgesetzt** - Zahlen in
 `buecher/messungen.md` ("Auftrag 016"), Nachspiele in `buecher/protokolle/NACHSPIEL_*.md`. Offen aus der Kritik:
 - Top-Wellen-Reflex ohne Blick auf die Karte (ADC und Support farmen dort; Welle schon am gegnerischen Nexus).

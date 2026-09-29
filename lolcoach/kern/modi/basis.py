@@ -157,6 +157,14 @@ def _optionen(m, cfg: dict, modus: str) -> list[Handlung]:
         aus.append(sw)
     if gruppe is not None and len(gruppe[0]) < 3:
         aus.append(gruppe[1])
+    # Auftrag 017, 0.6: eine Welle, an der Mitspieler stehen, ist nicht dein Ziel - dann das naechste mit Grund
+    from . import lanes_besetzt
+    besetzt = lanes_besetzt(m)
+    if besetzt:
+        import re as _re
+        frei = [h for h in aus if not (h.ziel is not None and h.ziel.art == "lane" and any(
+            _re.search(rf"\b{l}\b", f"{h.ziel.name} {h.daten.get('kurz') or ''}") for l in besetzt))]
+        aus = frei or aus
     return aus
 
 
@@ -317,7 +325,9 @@ def wohin(m, cfg: dict, modus: str, merker: dict | None = None, lage=None) -> Ha
         break
     if wahl is None:
         wahl = _sicherer(m, cfg, modus, erstes, p_am, grenze)
-    if merker is not None:
+    if merker is not None and wahl.satz:
+        # nur ein echtes Ziel wird gemerkt (Auftrag 017, 1.4: 12 s vor dem Respawn war in 133930 12:26 noch keins
+        # sicher - gemerkt blieb der ganze Tod stumm)
         merker["ziel_schl"] = (wahl.art, wahl.ziel.name if wahl.ziel else "")
         merker["lage"] = lage
         from copy import copy

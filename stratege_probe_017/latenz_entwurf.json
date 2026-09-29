@@ -1,0 +1,162 @@
+{
+ "zusammen": {
+  "start_s": [
+   0.0,
+   0.0
+  ],
+  "erstes_token_s": [
+   1.22,
+   6.04
+  ],
+  "erster_satz_s": [
+   4.55,
+   7.14
+  ],
+  "ende_s": [
+   4.01,
+   7.22
+  ],
+  "prompt_zeichen": [
+   2029.5,
+   2300
+  ],
+  "eingabe_token": [
+   2788.0,
+   2928
+  ],
+  "warm": 10,
+  "n": 10
+ },
+ "aufrufe": [
+  {
+   "warm": true,
+   "prompt_zeichen": 1814,
+   "start_s": 1.379998866468668e-05,
+   "erstes_token_s": 5.335105600010138,
+   "ende_s": 7.036636799981352,
+   "api_ms": 5662,
+   "eingabe_token": 2679,
+   "cache_token": 1037,
+   "erster_satz_s": 5.463007100042887,
+   "ganz_s": 7.571809600049164,
+   "woerter": 22
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 1815,
+   "start_s": 1.5300000086426735e-05,
+   "erstes_token_s": 7.579147099982947,
+   "ende_s": 8.921573899977375,
+   "api_ms": 7821,
+   "eingabe_token": 2700,
+   "cache_token": 1037,
+   "erster_satz_s": 7.809349299990572,
+   "ganz_s": 9.455909799959045,
+   "woerter": 26
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2300,
+   "start_s": 9.800016414374113e-06,
+   "erstes_token_s": 0.9501981000066735,
+   "ende_s": 4.09029720001854,
+   "api_ms": 1537,
+   "eingabe_token": 2928,
+   "cache_token": 1037,
+   "erster_satz_s": 4.623286199988797,
+   "ganz_s": 4.623396100010723,
+   "woerter": 30
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2265,
+   "start_s": 1.0400020983070135e-05,
+   "erstes_token_s": 3.6904547000303864,
+   "ende_s": 6.589752400002908,
+   "api_ms": 3887,
+   "eingabe_token": 2916,
+   "cache_token": 1037,
+   "erster_satz_s": 7.135476099967491,
+   "ganz_s": 7.135578999994323,
+   "woerter": 22
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 1989,
+   "start_s": 1.009996049106121e-05,
+   "erstes_token_s": 0.9804078000015579,
+   "ende_s": 3.2647528999950737,
+   "api_ms": 1736,
+   "eingabe_token": 2775,
+   "cache_token": 1037,
+   "erster_satz_s": 1.7688376000151038,
+   "ganz_s": 3.802515899995342,
+   "woerter": 38
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2272,
+   "start_s": 1.1699972674250603e-05,
+   "erstes_token_s": 6.040633799973875,
+   "ende_s": 7.2196176999714226,
+   "api_ms": 6006,
+   "eingabe_token": 2886,
+   "cache_token": 1037,
+   "erster_satz_s": 6.041272700007539,
+   "ganz_s": 7.761837400030345,
+   "woerter": 20
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2345,
+   "start_s": 9.199953638017178e-06,
+   "erstes_token_s": 0.9068725999677554,
+   "ende_s": 2.4678254000027664,
+   "api_ms": 1240,
+   "eingabe_token": 2929,
+   "cache_token": 1037,
+   "erster_satz_s": 3.0017144000157714,
+   "ganz_s": 3.0018102999893017,
+   "woerter": 25
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 1729,
+   "start_s": 1.9600032828748226e-05,
+   "erstes_token_s": 0.8693601000122726,
+   "ende_s": 3.034848300041631,
+   "api_ms": 1758,
+   "eingabe_token": 2613,
+   "cache_token": 1037,
+   "erster_satz_s": 1.8019240999710746,
+   "ganz_s": 3.5737318999599665,
+   "woerter": 33
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 1730,
+   "start_s": 1.0700023267418146e-05,
+   "erstes_token_s": 0.6922619999968447,
+   "ende_s": 2.504415000032168,
+   "api_ms": 1411,
+   "eingabe_token": 2636,
+   "cache_token": 1037,
+   "erster_satz_s": 1.0097600999870338,
+   "ganz_s": 3.0372172000352293,
+   "woerter": 28
+  },
+  {
+   "warm": true,
+   "prompt_zeichen": 2070,
+   "start_s": 8.100003469735384e-06,
+   "erstes_token_s": 1.4655920999939553,
+   "ende_s": 3.9338003000011668,
+   "api_ms": 2430,
+   "eingabe_token": 2801,
+   "cache_token": 1037,
+   "erster_satz_s": 4.469770500028972,
+   "ganz_s": 4.46989340003347,
+   "woerter": 30
+  }
+ ]
+}

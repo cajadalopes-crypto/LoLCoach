@@ -120,7 +120,7 @@ def frage_stellen(text: str, p, lb, plan, fid=None, stratege=None) -> dict:
         r = antworten.frage_kern(text, p, lb) or {}
     if stratege is not None and r:
         # Auftrag 015, B1 (mit dem Aufzeichnungs-Stub, ohne Abo)
-        s = stratege.antworte(text, r.get("absicht"), p)
+        s = stratege.antworte(text, r.get("absicht"), p, entwurf=r.get("text"))
         if s:
             r = dict(r, text=s, quelle="stratege")
     if not r.get("text"):

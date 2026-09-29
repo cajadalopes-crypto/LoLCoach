@@ -1,0 +1,22 @@
+# Fuellsaetze (Auftrag 017, 0.3; Buch 13, Teil 3): Saetze ohne neue Info und ohne Entscheidung. Passt ein Satz des
+# Strategen auf eins dieser Muster, verwirft ihn stratege.pruefe ("lieber still als Fuellsatz"). Erweiterbar: ein Muster
+# je Zeile, Python-Regex, Gross/klein egal. Ein Muster beschreibt den GANZEN Satz (^...$) oder eine Floskel, die nie
+# etwas traegt.
+stand = "29.09.2026, aus dem Nachspiel 133448 (Auftrag 016) und den Kritiken"
+muster = [
+    # "Farm deine Welle weiter." / "Farm die Top-Welle fertig." - ohne Grund
+    '^\W*(farm|nimm|hol) (weiter )?(deine|die) ((top|mid|bot)-)?welle( weiter| fertig| sauber| ab)?\W*$',
+    '^\W*weiter (deine|die) ((top|mid|bot)-)?welle\W*$',
+    '^\W*farm (weiter|sauber|ruhig|in ruhe)\W*$',
+    # "Nimm die Kanone mit, weil sie extra Gold bringt."
+    'kanone[^.]{0,30}(weil|denn|da) sie (extra |mehr |viel )?gold (bringt|gibt)',
+    'nimm (die|jede) kanone mit\W*$',
+    # Warten, Aufpassen, Sicher spielen - ohne Wovor und Wozu
+    'warte auf den nächsten plan',
+    '^\W*bleib (nah )?(an|bei) (deinem|eurem) team\W*$',
+    '^\W*(spiel|bleib) (sicher|vorsichtig|konzentriert|wachsam|aufmerksam)\W*$',
+    '^\W*pass (gut )?auf\W*$',
+    '^\W*(gut|okay|alles klar|verstanden|sehr gut|weiter so)\W*$',
+    'konzentrier dich',
+    '^\W*mach weiter( so)?\W*$',
+]

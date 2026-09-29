@@ -166,6 +166,12 @@ lane_weit_s = 30                # Lane-Gegner so weit weg (Laufzeit zu dir), and
 lane_nah_s = 20                 # wieder scharf, sobald er so nah war (oder tot) ...
 lane_wieder_s = 120             # ... oder so lange nach dem letzten Satz
 gilt_s = 6                      # so lange wartet ein Satz (KAMPF, ein Plan-Satz im selben Takt), dann faellt er weg
+vorlauf_s = 60                  # Auftrag 017, 1.3: so lange vor dem Spawn die Vorbereitungskette ...
+loslaufen_s = 40                # ... und so lange vorher "jetzt loslaufen"
+vorhersage = false              # Auftrag 017, 1.1 (I2): aus - an allen 32 Aufnahmen traf keine Vorhersage >= 65 %
+                                # (andere Seite 53 %, gleiche 47 %, n = 51; stratege_probe_017/jungler.json)
+vorhersage_ohne_s = 45
+vorhersage_bis_s = 600
 
 [sprechen]
 stand = "Buch 0 Kapitel 7.7, Schritt 2/3"
@@ -405,13 +411,14 @@ gruppe_turm_faktor = 0.6
 
 [stratege]                       # Auftrag 015: Claude als Makro-Stratege (lolcoach/stratege_live.py)
 aktiv = true                     # Schalter; live auch: python -m lolcoach live --ohne-stratege
-erster_satz_max_s = 4.0          # B2: kommt der erste gueltige Satz spaeter, spricht der Kern
+erster_satz_max_s = 5.0          # B2: kommt die ganze Antwort spaeter, spricht der Kern (Auftrag 017: ganze Antwort,
+                                 # vorher 4 s fuer den ersten Satz)
 leerlauf_erster_satz_max_s = 8.0 # Auftrag 016: im Leerlauf (kein Kern-Satz wartet) so lange
 ausfall_s = 30.0                 # so lange ohne Antwort (oder ein Fehler) = Ausfall: still weiter mit dem Kern
 pause_nach_ausfall_s = 120.0     # ... und so lange danach nur der Kern
-leerlauf_ab_s = 90               # B3: ab 1:30 (Auftrag 016, 3; vorher 14:00) ...
-leerlauf_s = 35                  # ... nach so vielen Sekunden ohne Plan-Satz und Warnung, hoechstens einmal je so viele
-                                 # (vorher 45); in der Lane-Phase als Wellen- und Lane-Tipp
+leerlauf_ab_s = 840              # B3: nach der Lane-Phase (Auftrag 017: in der Lane Anlaesse mit Inhalt statt Takt) ...
+leerlauf_s = 45                  # ... nach so vielen Sekunden ohne Plan-Satz und Warnung; NICHTS erlaubt
+lane_abstand_s = 20              # Auftrag 017, 1.2: hoechstens ein Lane-Anlass je so viele Sekunden
 kampf_nah_s = 6                  # Auftrag 016, 1.4: ein Mitspieler kaempft so viele s Weg von dir -> Anlass
 kampf_abstand_s = 30             # ... hoechstens einmal je so viele s
 

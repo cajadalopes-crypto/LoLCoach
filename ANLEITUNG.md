@@ -50,6 +50,15 @@ wartest, warum und was du nächstes Mal tust.
   - in der Lane nach gut einer halben Minute Stille einen Wellen- oder Lane-Tipp vom Strategen, und wenn neben dir
     ein Mitspieler kämpft, ob du helfen sollst.
   - Sagst du „kein Kontroll-Auge“, schlägt er 5 Minuten lang keins vor.
+- **Seit Auftrag 017 (29.09.2026):**
+  - Claudes Antwort kommt am Stück, nicht mehr in Satzfetzen mit Pausen.
+  - Es gibt keine Füllsätze mehr („Farm deine Welle weiter“); hat Claude nichts Neues, sagt er nichts.
+  - In der Lane meldet sich Claude bei echten Anlässen (Welle kippt, Kanone kommt, Lane-Gegner weg oder zurück,
+    Jungler gesehen, Flash weg, Spike kaufbar) mit Freeze, Slow Push oder Crash und dem Grund.
+  - Es gilt immer ein Plan. Der Coach wechselt ihn nicht hin und her; ändert er ihn kurz danach, sagt er zuerst,
+    was sich geändert hat („Jetzt, wo Poppy unten gesehen wurde: …“).
+  - 60 Sekunden vor Drache, Herold oder Baron kommt die Vorbereitung, 40 Sekunden vorher „jetzt loslaufen“.
+  - 12 Sekunden vor dem Respawn: Kauf und Ziel.
 - **Flash-Timer:** Pingt ein Mitspieler im Chat "Urgot Blitz" (oder "urgot ult"), läuft
   ein Timer. Der Coach sieht Flash auch selbst auf der Minimap.
 

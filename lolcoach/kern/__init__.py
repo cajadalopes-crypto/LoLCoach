@@ -865,6 +865,15 @@ class Kern:
         # Turm je Art (164326 42:08: der innere Bot-Turm verdraengte den Mid-Inhibitor-Turm schon vorher)
         kand = self._turmziel_halten(m, kand)          # Klasse 10
         kand = self._schranken(m, kand, modus)
+        if not m.lane_phase:
+            # Auftrag 017, 0.6: eine Welle, an der Mitspieler stehen, ist nicht dein Ziel (192113 19:25, 21:57)
+            from .modi import lanes_besetzt
+            besetzt = lanes_besetzt(m)
+            if besetzt:
+                # FARMEN bleibt: an ihm haengt die Gefahr-Rechnung (213624 22:09 blieb sonst stumm)
+                frei = [h for h in kand if not (h.art in ("SEITENWELLE", "WELLE_KLAEREN") and h.ziel is not None
+                                                and any(re.search(rf"\b{l}\b", h.ziel.name) for l in besetzt))]
+                kand = frei or kand
         from .modi.karte import zuerst_filtern
         kand = zuerst_filtern(kand)                    # Auftrag 009, 2.3: Drache neben euch vor den Tuermen
         bleiben = next((h for h in kand if h.art in ("FARMEN", "HALTEN") or h.daten.get("verloren")), None)
@@ -1431,7 +1440,7 @@ class Kern:
         from .fragen import liste
         art = a.schluessel.split(":", 1)[-1]
         b = getattr(m, "b", None)            # konstruierte Lagen in den Tests haben kein b
-        if b is None or kategorie in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "BESTAETIGUNG"):
+        if b is None or kategorie in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "INFO_VORLAUF", "BESTAETIGUNG"):
             return None
         if art in ("RAUS", "ZURUECK", "WELLE_UND_RAUS") or (kategorie == "GEFAHR" and art not in ("REIN", "DREHEN")):
             ort = b.sicherer_ort()[0]
@@ -1445,7 +1454,7 @@ class Kern:
             elif m.leben is not None:
                 s += f", weil du nur {int(round(m.leben * 100))} Prozent Leben hattest"
             return s + "."
-        if plan is None or kategorie in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "VORSICHT", "LAGEBILD", "MAKRO",
+        if plan is None or kategorie in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "INFO_VORLAUF", "VORSICHT", "LAGEBILD", "MAKRO",
                                          "BESTAETIGUNG"):
             return None
         h = plan.handlung
@@ -2297,9 +2306,13 @@ class Kern:
         if m.lane_phase and w is not None:
             richtung = None if w.trend is None else ("laeuft zu ihm" if w.trend > 0.05 else "laeuft zu dir"
                                                      if w.trend < -0.05 else "steht")
+            # Auftrag 017: ohne Dezimalzahlen - Claude sprach sie nach ("0.19", innerer Begriff)
+            wo = "?" if w.front is None else ("an deinem Turm" if w.front <= w.turm_dein + 0.03 else
+                                              "an seinem Turm" if w.front >= w.turm_ihr - 0.03 else
+                                              "näher bei dir" if w.front < 0.47 else
+                                              "näher bei ihm" if w.front > 0.53 else "in der Mitte")
             z.append(f"EIGENE WELLE ({w.lane}): {w.unsere if w.unsere is not None else '?'} eigene gegen "
-                     f"{w.ihre if w.ihre is not None else '?'} Vasallen, Front {'?' if w.front is None else round(w.front, 2)}"
-                     f" (0 = deine Basis, 1 = seine; dein Turm {w.turm_dein:.2f}, seiner {w.turm_ihr:.2f})"
+                     f"{w.ihre if w.ihre is not None else '?'} Vasallen, Front {wo}"
                      + (f", {richtung}" if richtung else "") + f", Zustand {w.zustand}.")
         g = b.lane
         if m.lane_phase and g is not None:

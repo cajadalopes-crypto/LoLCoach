@@ -606,14 +606,17 @@ def makro_stratege_wege():
         wp = Ansage("Ihr äußerer Top-Turm ist weg. Farm Top.", WICHTIG, "kern:FARMEN", zeit=900.0)
         wp._kategorie = "WENDEPUNKT"
         ms.frage_fn = antwort("Back jetzt und heilen, danach mit deinem Team zum Mid-Turm.")
-        rest = ms.bearbeite([welle, wp], p)
-        assert rest == [] and len(gesagt) == 1 and gesagt[0].schluessel.startswith("stratege:")
+        p2 = NS(zeit=1000.0, ich=NS(tot=False), kills_von=lambda k: [])     # 017: > 60 s nach dem Plan der Antwort
+        wp.zeit = welle.zeit = 1000.0
+        rest = ms.bearbeite([welle, wp], p2)
+        assert rest == [] and len(gesagt) == 1 and gesagt[0].schluessel.startswith("stratege:"), (rest, gesagt)
         gesagt.clear()
         ms.frage_fn = antwort("Push den Turm.", "Push den Turm.")
-        wp2 = Ansage("Ihr innerer Top-Turm ist weg. Farm Top.", WICHTIG, "kern:FARMEN", zeit=905.0)
+        wp2 = Ansage("Ihr innerer Top-Turm ist weg. Farm Top.", WICHTIG, "kern:FARMEN", zeit=1005.0)
         wp2._kategorie = "WENDEPUNKT"
-        assert ms.bearbeite([wp2], NS(zeit=905.0, ich=NS(tot=False), kills_von=lambda k: [])) == []
-        assert gesagt == [wp2]                                                        # Fallback: der Kern-Satz
+        assert ms.bearbeite([wp2], NS(zeit=1005.0, ich=NS(tot=False), kills_von=lambda k: [])) == []
+        # Fallback: der Kern-Satz - ein anderer Plan 5 s spaeter, erlaubt, weil der Turm fiel (Ereignis)
+        assert gesagt == [wp2] and gesagt[0].text.endswith("Farm Top."), [a.text for a in gesagt]
     finally:
         stratege.pruef_lage = alt
 
@@ -715,6 +718,81 @@ def pflichtenheft_016():
     assert not k._r1_vorn("Vier von ihnen tot, noch 12 Sekunden: auf ihren Nexus-Turm jetzt.", NS(leben=0.8, tot=False))
 
 
+def inhalt_017():
+    """Auftrag 017, Teil 0 und 1.5 (Nachspiel 133448): Fuellsaetze, Kauf, "schwach", Top-Welle, ganze Antwort, NICHTS,
+    ein aktiver Plan."""
+    from types import SimpleNamespace as NS
+    from lolcoach import stratege
+    from lolcoach.stratege import pruefe
+    champs = ["Riven", "Poppy", "Teemo", "Lux", "Sona", "Twitch", "Yorick", "Volibear", "Veigar", "Blitzcrank"]
+    lane = {"champions": champs, "gegner": [{"name": "Poppy", "sichtbar": True, "seit": 0.0, "tot": False,
+                                             "seite": "oben"}], "mitspieler": [], "jungler": "Teemo", "flash": 0.0,
+            "tp": None, "ult": True, "gold": 1300, "items": [1055, 1001], "objectives": [], "kill": [],
+            "gegner_leben": {"Poppy": 0.24}, "ich_basis": False, "lane_phase": True, "besetzt": {},
+            "vorn": {"verboten": False, "leben": 90, "gesperrt": [], "ziele": [], "erlaubt": []}}
+    # 0.3 Fuellsaetze (133448 1:32, 1:40; 16:56 "Weiter deine Top-Welle")
+    for s in ("Farm deine Welle weiter.", "Danach nimm die Kanone mit, weil sie extra Gold bringt.",
+              "Weiter deine Top-Welle.", "Bleib nah an deinem Team und warte auf den nächsten Plan."):
+        assert any("Füllsatz" in g for g in pruefe(s, lane)), s
+    assert not pruefe("Farm die Welle am Turm, weil Teemo oben ist und sie zu dir läuft.", lane)
+    # 0.5 Kauf: "Kauf jetzt" nur in der Basis oder im Back-Ruf (4:17 mitten auf der Lane)
+    assert any("Basis" in g for g in pruefe("Kauf jetzt den Brutalisierer für den Axiombogen.", lane))
+    assert not pruefe("Kauf jetzt den Brutalisierer für den Axiombogen, dann Top.", dict(lane, ich_basis=True, gold=1500))
+    assert any("hast du schon" in g for g in pruefe("Vergiss den Axiombogen, spar für die Eklipse.",
+                                                     dict(lane, items=[6696, 1001])))              # 13:12
+    # 0.7 "schwach" nur mit Folge (1:35 "Poppy ist mit 24 Prozent schwach")
+    assert any("Folge" in g for g in pruefe("Poppy ist mit 24 Prozent schwach.", lane))
+    # 0.6 Top-Wellen-Reflex (192113 19:25, ADC und Support farmten sie)
+    mid = dict(lane, lane_phase=False, besetzt={"Top": ["Twitch", "Sona"]})
+    assert any("stehen schon" in g for g in pruefe("Geh zur Top-Welle: dort kommt ihre nächste Welle.", mid))
+    # 0.5 Kaufplan: volles Inventar mit Trank - der Trank geht (192113 28:24 "nichts zu kaufen" bei 4130 Gold)
+    from lolcoach import kaufplan
+    n = kaufplan._nach_name()
+    inv = tuple(n[x] for x in ("Axiombogen", "Nachfüllbarer Trank", "Eklipse", "Ionische Stiefel der Deutlichkeit",
+                               "Schutzengel", "Gefräßige Hydra"))
+    k = kaufplan.plan("Riven", inv, 4130)
+    assert k is not None and k.kaufen and k.verkaufen == "Nachfüllbarer Trank", k
+    # 0.1 die ganze Antwort am Stueck, auch wenn sie am Komma gestreamt kommt; NICHTS heisst schweigen
+    from lolcoach.stratege_live import MakroStratege, Schiedsrichter, plan_ziel
+    kern = NS(m=NS(tot=False, bereich="lane_eigen", b=None, lane_phase=True), modus=NS(aktuell="LANE"), gefahr=False,
+              kontext=lambda: "", kopfzeile=lambda: None, kandidaten=[], kandidaten_roh=[])
+
+    def strom(*teile):
+        def f(prompt, bei_satz, system, timeout):
+            for t in teile:
+                bei_satz(t)
+            return " ".join(teile)
+        return f
+    alt = stratege.pruef_lage
+    stratege.pruef_lage = lambda k_, p_: lane
+    try:
+        ms = MakroStratege(kern, NS(einwerfen=lambda a: None, gesagt=[]),
+                           frage_fn=strom("Farm die Welle am Turm,", "weil Teemo oben ist.",
+                                          "Danach crash sie vor der Kanone."), synchron=True, aktiv=True)
+        stuecke = []
+        v = ms._versuch("x", lane, stuecke.append)
+        assert stuecke == ["Farm die Welle am Turm, weil Teemo oben ist. Danach crash sie vor der Kanone."], stuecke
+        ms.frage_fn = strom("NICHTS")
+        p = NS(zeit=300.0, ich=NS(tot=False), kills_von=lambda k: [])
+        assert ms.antworte("Was jetzt?", "JETZT", p) is None
+        assert len(ms.protokoll[-1]["versuche"]) == 1 and ms.protokoll[-1]["versuche"][0]["nichts"]
+    finally:
+        stratege.pruef_lage = alt
+    # 1.5 ein aktiver Plan: 133448 10:17 "Back jetzt" -> 10:35 "Schieb rein, dann back" -> 10:47 "Drück ihren inneren
+    # Top-Turm" -> 10:52 "drück deine Welle" -> 10:59 "Back jetzt" - ohne Lageaenderung bleibt es beim ersten Plan
+    assert plan_ziel("Back jetzt: Axiombogen, dann Top.") == "back"
+    assert plan_ziel("Ihr äußerer Mid-Turm ist weg. Weiter deine Top-Welle.") == "welle:top"
+    assert plan_ziel("Drei von ihnen tot: Drück ihren inneren Top-Turm, Level 13 gegen 8.") == "turm"
+    sr = Schiedsrichter()
+    assert sr.pruefe("Back jetzt: 1966 Gold für den Axiombogen. Danach Top.", 617.0)[0]
+    assert not sr.pruefe("Drück ihren inneren Top-Turm, Level 12 gegen 8.", 635.0)[0]
+    assert not sr.pruefe("Back jetzt: Axiombogen, dann Top.", 639.0)[0]                 # derselbe Plan, 22 s
+    sr.ereignis(641.0, "Poppy unten gesehen wurde")
+    ok, text, _ = sr.pruefe("Drück die Top-Welle in ihren Turm, dann back.", 642.0)
+    assert ok and text.startswith("Jetzt, wo Poppy unten gesehen wurde:"), text
+    assert sr.pruefe("Zurück unter deinen Turm: Lux und Sona kommen.", 649.0, warnung=True)[0]    # Warnung immer
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
@@ -723,6 +801,6 @@ if __name__ == "__main__":
                  ihr_jungle_heisst_ihr_jungle, keine_verbotenen_gruende, warum_mit_vergleich,
                  vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal, anteil_geglaettet,
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
-                 stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016):
+                 stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017):
         test()
         print(f"{test.__name__} OK")

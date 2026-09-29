@@ -916,7 +916,7 @@ def _klaeren(kern, frage: str, zeit: float) -> str | None:
         if wort is not None:
             return wort
     log = [e for e in (getattr(kern, "_ansage_log", None) or [])
-           if zeit - e["zeit"] <= 60.0 and e["kategorie"] not in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "BESTAETIGUNG")]
+           if zeit - e["zeit"] <= 60.0 and e["kategorie"] not in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "INFO_VORLAUF", "BESTAETIGUNG")]
     if not log:
         return None
     themen = [re_ for w, re_ in KLAEREN_BEZUG.items() if re_.search(f)]
@@ -963,7 +963,7 @@ def _letzte_ansage(kern, zeit: float, arten: tuple = ()) -> dict | None:
     for e in reversed(getattr(kern, "_ansage_log", None) or []):
         if zeit - e["zeit"] > 60.0:
             break
-        if e["kategorie"] in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "BESTAETIGUNG"):
+        if e["kategorie"] in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "INFO_VORLAUF", "BESTAETIGUNG"):
             continue
         if not arten or e["art"] in arten:
             return e

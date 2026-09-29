@@ -24,6 +24,62 @@ class Pflicht:
         self.lane_gesagt = -1e9
         self.lane_bereit = True                       # wieder scharf, sobald er nah war, tot war oder lange fehlte
         self.offen: dict[str, tuple[float, str]] = {}  # Art -> (seit, Text)
+        self.vorlauf_gesagt: set = set()              # (Objective, Spawn, Stufe)
+        self.vorhersage_zuletzt = -1e9
+
+    def _vorlauf(self, kern, m) -> None:
+        """Auftrag 017, 1.3 (Buch 13, 4): 60 s vor dem Spawn die Vorbereitungskette, 40 s vorher loslaufen; ohne Prio
+        (der Kern tauscht: ABGEBEN_TAUSCHEN) der Tausch-Satz. Nur fuer Objectives, die dich ziehen (Buch 6, 4.1)."""
+        from . import objective as obj
+        from .modi import OBJ_NAME
+        c = kern.cfg["pflicht"]
+        zum = {"drache": "zum Drachen", "baron": "zum Baron", "herold": "zum Herold", "larven": "zu den Larven",
+               "aeltester": "zum Ältesten"}
+        pl = getattr(getattr(kern, "fuehrer", None), "plan", None)
+        for o in getattr(m, "objectives", None) or []:
+            if o.lebt or o.spawn_in is None or o.schl not in zum:
+                continue
+            stufe = "vor" if c["vorlauf_s"] - 8 < o.spawn_in <= c["vorlauf_s"] + 2 else \
+                "los" if c["loslaufen_s"] - 8 < o.spawn_in <= c["loslaufen_s"] + 2 else None
+            schl = (o.schl, round(m.zeit + o.spawn_in), stufe)
+            if stufe is None or schl in self.vorlauf_gesagt:
+                continue
+            try:
+                if not obj.zieht(m, o, kern.cfg):
+                    continue
+            except Exception:
+                continue
+            self.vorlauf_gesagt.add(schl)
+            name, n = OBJ_NAME.get(o.schl, o.schl), int(round(o.spawn_in / 5) * 5)
+            if pl is not None and pl.art == "ABGEBEN_TAUSCHEN" and pl.handlung.satz:
+                text = f"{name} in {n} Sekunden, ihr habt keine Prio: {pl.handlung.satz}"
+            elif hasattr(kern, "_back_sperre") and kern._back_sperre(m, "back") is not None:
+                # R4 (Back-Rufe je 10 min, ignoriert): die Vorbereitung ohne Back
+                welle = "rein" if stufe == "los" else "crashen"
+                text = f"{name} in {n} Sekunden: Welle {welle}, dann mit Team {zum[o.schl]}."
+            elif m.leben is not None and m.leben < kern.cfg["schranken"]["vor_leben_min"]:
+                text = f"{name} in {n} Sekunden: jetzt back, dann mit Team {zum[o.schl]}."     # R1: nicht crashen
+            elif stufe == "vor":
+                text = f"{name} in {n} Sekunden: Welle crashen, back, dann mit Team {zum[o.schl]}."
+            else:
+                text = f"{name} in {n} Sekunden: Welle rein und jetzt loslaufen, {zum[o.schl]}."
+            self.offen["INFO_VORLAUF"] = (m.zeit, text)
+
+    def _vorhersage(self, kern, m, j) -> None:
+        """Auftrag 017, 1.1 (Buch 13, I2): ihr Jungler >= 45 s ungesehen, frueh im Spiel - "vermutlich" aus
+        jungle.wahrscheinlich. Nur mit [pflicht] vorhersage = true: die Nachpruefung an allen Aufnahmen
+        (werkzeuge/jungler_vorhersage.py) lag unter 65 %, dann bleibt sie stumm."""
+        c = kern.cfg["pflicht"]
+        jt = getattr(getattr(kern, "_lagebild", None), "jungle", None)
+        if not c.get("vorhersage", False) or jt is None or j.sichtbar or j.seit is None \
+                or j.seit < c["vorhersage_ohne_s"] or m.zeit > c["vorhersage_bis_s"] \
+                or m.zeit - self.vorhersage_zuletzt < 60.0:
+            return
+        s, pw = max(jt.wahrscheinlich(m.zeit).items(), key=lambda x: x[1])
+        if pw < 0.65:
+            return
+        self.vorhersage_zuletzt = m.zeit
+        self.offen["INFO_JUNGLER"] = (m.zeit, f"{j.champion} vermutlich {s}.")
 
     def takt(self, kern, m, modus: str | None) -> None:
         """Erkennt die Anlaesse dieses Takts (jeder Takt, auch in KAMPF - dann wartet der Satz)."""
@@ -31,6 +87,9 @@ class Pflicht:
         if b is None:
             return
         c = kern.cfg["pflicht"]
+        self._vorlauf(kern, m)
+        if b.jungler is not None and not b.jungler.s.tot:
+            self._vorhersage(kern, m, b.jungler)
         j = b.jungler
         if j is not None and not j.s.tot and j.sichtbar:
             ohne = None if self.jungler_zuletzt is None else m.zeit - self.jungler_zuletzt

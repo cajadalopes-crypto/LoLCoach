@@ -129,7 +129,10 @@ def erster_teil(text: str) -> tuple[str | None, str]:
 # rausgeht. Ein Prozess mit --input-format stream-json wartet auf stdin - er wird beim Druck auf die Sprechtaste
 # (oder nach der letzten Antwort) gestartet und bekommt dann nur noch die Frage. Stirbt der Coach, schliesst sich
 # die Leitung, und der wartende Prozess beendet sich selbst (gemessen: 0,7 s).
-_VORRAT: dict[tuple, tuple[subprocess.Popen, float]] = {}
+# Auftrag 017, 0.2: ein gerade gestarteter Prozess ist noch nicht bereit (die CLI braucht ~2 s bis zur ersten
+# Antwort-Bereitschaft) - kommen zwei Anfragen kurz hintereinander, bekam die zweite einen halb gestarteten. Der
+# Stratege haelt deshalb zwei vor; genommen wird immer der aelteste.
+_VORRAT: dict[tuple, list[tuple[subprocess.Popen, float]]] = {}
 _VORRAT_SCHLOSS = __import__("threading").Lock()
 VORRAT_HOECHSTENS = 15 * 60      # Sekunden: aelter wird er ersetzt, nicht benutzt
 
@@ -150,21 +153,24 @@ def _starte(befehl: list[str]) -> subprocess.Popen:
                             text=True, encoding="utf-8", cwd=tempfile.gettempdir())
 
 
-def vorhalten(modell: str = "sonnet", system: str | None = None, aufwand: str | None = None) -> None:
-    """Haelt einen wartenden Prozess fuer genau diese Einstellung bereit (nichts, wenn schon einer frisch wartet)."""
+def vorhalten(modell: str = "sonnet", system: str | None = None, aufwand: str | None = None,
+              anzahl: int = 1) -> None:
+    """Haelt `anzahl` wartende Prozesse fuer genau diese Einstellung bereit (nichts, wenn schon genug frisch warten)."""
     import time
     schluessel = (modell, system, aufwand)
+    weg = []
     with _VORRAT_SCHLOSS:
-        alt = _VORRAT.get(schluessel)
-        if alt is not None and alt[0].poll() is None and time.monotonic() - alt[1] < VORRAT_HOECHSTENS:
-            return
-        try:
-            _VORRAT[schluessel] = (_starte(_strom_befehl(modell, system, aufwand)), time.monotonic())
-        except (LLMFehler, OSError):
-            _VORRAT.pop(schluessel, None)
-            return
-    if alt is not None:
-        _schliessen(alt[0])
+        liste = _VORRAT.setdefault(schluessel, [])
+        frisch = [e for e in liste if e[0].poll() is None and time.monotonic() - e[1] < VORRAT_HOECHSTENS]
+        weg = [e for e in liste if e not in frisch]
+        liste[:] = frisch
+        while len(liste) < anzahl:
+            try:
+                liste.append((_starte(_strom_befehl(modell, system, aufwand)), time.monotonic()))
+            except (LLMFehler, OSError):
+                break
+    for e in weg:
+        _schliessen(e[0])
 
 
 def _schliessen(lauf: subprocess.Popen) -> None:
@@ -181,7 +187,8 @@ def _schliessen(lauf: subprocess.Popen) -> None:
 def _aus_vorrat(schluessel: tuple) -> subprocess.Popen | None:
     import time
     with _VORRAT_SCHLOSS:
-        eintrag = _VORRAT.pop(schluessel, None)
+        liste = _VORRAT.get(schluessel) or []
+        eintrag = liste.pop(0) if liste else None       # der aelteste - er ist am ehesten bereit
     if eintrag is None:
         return None
     lauf, seit = eintrag
@@ -192,15 +199,22 @@ def _aus_vorrat(schluessel: tuple) -> subprocess.Popen | None:
 
 
 def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = "sonnet", timeout: float = 60,
-                aufwand: str | None = None, bilder: list[bytes] | None = None, nachladen: bool = False) -> str:
+                aufwand: str | None = None, bilder: list[bytes] | None = None, nachladen: bool | int = False,
+                messung: dict | None = None, bei_fertig=None) -> str:
     """Wie `frage`, aber gestreamt: jeder fertige Satz geht sofort an `bei_satz(satz)` - der Coach kann den
     ersten Satz sprechen, waehrend der Rest noch entsteht (gemessen 26.09.: erster Satz nach 2,7-3,1 s,
     ganze Antwort nach 5,1-5,2 s). Der erste Teilsatz geht schon vor dem Satzende raus (`erster_teil`), und
     ein vorgehaltener Prozess spart den Start (`vorhalten`). `nachladen`: danach gleich wieder einen
     vorhalten. Gibt die ganze Antwort zurueck."""
     import threading
+    import time as _t
+    t0 = _t.monotonic()
     schluessel = (modell, system, aufwand)
-    lauf = _aus_vorrat(schluessel) or _starte(_strom_befehl(modell, system, aufwand))
+    lauf = _aus_vorrat(schluessel)
+    warm = lauf is not None
+    lauf = lauf or _starte(_strom_befehl(modell, system, aufwand))
+    if messung is not None:            # Auftrag 017, 0.2: wo die Zeit hingeht
+        messung.update(warm=warm, prompt_zeichen=len(prompt), start_s=_t.monotonic() - t0)
     inhalt: list[dict] = []
     if bilder:
         import base64
@@ -213,7 +227,7 @@ def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = 
     try:
         lauf.stdin.write(eingabe)
         lauf.stdin.close()
-        puffer, ergebnis, gesendet = "", None, False
+        puffer, ergebnis, gesendet, fertig_gemeldet = "", None, False, False
         for zeile in lauf.stdout:
             e = _json_oder_nichts(zeile)
             if not e:
@@ -221,6 +235,8 @@ def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = 
             if e.get("type") == "stream_event":
                 ev = e.get("event", {})
                 if ev.get("type") == "content_block_delta" and ev.get("delta", {}).get("type") == "text_delta":
+                    if messung is not None and "erstes_token_s" not in messung:
+                        messung["erstes_token_s"] = _t.monotonic() - t0
                     puffer += ev["delta"]["text"]
                     fertige, puffer = saetze(puffer)
                     if not gesendet and not fertige:
@@ -229,13 +245,29 @@ def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = 
                     for satz in fertige:
                         gesendet = True
                         bei_satz(satz)
+                elif ev.get("type") == "message_stop" and bei_fertig is not None and not fertig_gemeldet:
+                    # Auftrag 017, 0.2: der Text ist fertig - das "result" kommt erst ~1 s spaeter (post_turn_summary)
+                    fertig_gemeldet = True
+                    if messung is not None:
+                        messung["text_fertig_s"] = _t.monotonic() - t0
+                    if puffer.strip():
+                        bei_satz(puffer.strip())
+                    puffer = ""
+                    bei_fertig()
             elif e.get("type") == "result":
                 ergebnis = e
+                if messung is not None:
+                    messung["ende_s"] = _t.monotonic() - t0
+                    messung["api_ms"] = e.get("duration_api_ms")
+                    u = e.get("usage") or {}
+                    messung["eingabe_token"] = sum(u.get(k) or 0 for k in (
+                        "input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
+                    messung["cache_token"] = u.get("cache_read_input_tokens")
         lauf.wait(timeout=5)
     finally:
         uhr.cancel()
         if nachladen:
-            threading.Thread(target=vorhalten, args=schluessel, daemon=True).start()
+            threading.Thread(target=vorhalten, args=(*schluessel, int(nachladen)), daemon=True).start()
     if ergebnis is None:
         raise LLMFehler(f"keine Antwort (Rueckgabe {lauf.returncode})")
     if ergebnis.get("is_error"):

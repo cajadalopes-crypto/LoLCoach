@@ -345,26 +345,13 @@ class Gespraech:
             self.gesagt.append(Ansage(f"„{text}“ – {antwort}", WICHTIG, "antwort", zeit=p.zeit, gesprochen=p.zeit))
 
     def _stratege_antwort(self, makro, text: str, r: dict, p, erkannt: float, start: float) -> bool:
-        """Auftrag 015, B1: die Antwort des Strategen, Satz fuer Satz an die Stimme. False: der Kern antwortet."""
-        strom = hasattr(self.sprecher, "antworte_teil")
-        gesprochen: list[str] = []
-
-        def satz(s: str) -> None:
-            if not gesprochen:
-                self._zeiten(p, erkannt, time.monotonic() - start, "Stratege", text)
-            gesprochen.append(s)
-            if strom:
-                self.sprecher.antworte_teil(s)
-        antwort = makro.antworte(text, r.get("absicht"), p, bei_satz=satz)
+        """Auftrag 015, B1: die Antwort des Strategen. Seit Auftrag 017, 0.1 GANZ geprueft und am Stueck gesprochen
+        (vorher Satz fuer Satz mit Pausen dazwischen). False: der Kern antwortet."""
+        antwort = makro.antworte(text, r.get("absicht"), p, entwurf=r.get("text"))
         if not antwort:
-            if gesprochen and strom:          # schon angefangen, dann doch verworfen: nichts mehr nachschieben
-                self.sprecher.antworte_ende()
-                return True
             return False
-        if strom:
-            self.sprecher.antworte_ende()
-        else:
-            self.sprecher.antworte(antwort)
+        self._zeiten(p, erkannt, time.monotonic() - start, "Stratege", text)
+        self.sprecher.antworte(antwort)
         print(f"  Coach (Stratege): {antwort}", flush=True)
         if self.gesagt is not None:
             from .regeln import WICHTIG, Ansage
