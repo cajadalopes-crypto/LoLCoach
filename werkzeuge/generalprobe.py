@@ -364,6 +364,9 @@ def main():
                   tuple(zustand["mess"]) if len(zustand["mess"]) == 2 else None)
     else:
         print("Keine neue Aufnahme - der Coach hat die Partie nicht erkannt.")
+    # Auftrag 022: die Generalprobe raeumt ihre Ausgabe selbst auf - nur das letzte Log bleibt
+    from lolcoach import aufraeumen
+    print(f"Generalprobe aufgeraeumt: {aufraeumen.probe_aufraeumen():.0f} MB frei")
 
 
 if __name__ == "__main__":

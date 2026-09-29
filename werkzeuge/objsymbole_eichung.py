@@ -19,7 +19,7 @@ from pathlib import Path
 HIER = Path(__file__).resolve().parent
 sys.path.insert(0, str(HIER))
 sys.path.insert(0, str(HIER.parent))
-AUS = HIER.parent / "stratege_probe_018"
+AUS = HIER.parent / "buecher" / "protokolle" / "proben" / "stratege_probe_018"
 OBEN = ("larven", "herold", "baron")
 UNTEN = ("drache", "aeltester")
 

@@ -17,6 +17,9 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 022 (Speicher) umgesetzt** - 5,54 -> 4,35 GB; werkzeuge/aufraeumen.py laeuft nach jeder Partie. Offen:
+je Partie bleiben ~46 MB (Ziel 10 MB) - xz statt gzip fuer die Aufnahme braechte 34 -> 0,5 MB (Entscheidung Carlos).
+
 **Auftrag 021 (Gehirn mit Plan, Buch 14 C) gebaut - TOR NICHT ERREICHT** - Soll-Liste bekannt 56 %, neu 70 %; Latenz
 2,3-2,5 s; Widersprueche 1-7 je Partie; Lane-Gegner-weg 43-58 %. Carlos noch nicht live. Budget 5,46 $ von 6 $ verbraucht.
 

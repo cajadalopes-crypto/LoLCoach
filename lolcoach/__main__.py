@@ -505,8 +505,10 @@ def _bericht_im_hintergrund(pfad, ich, sprecher=None, basis: str = liveapi.BASIS
     except Exception as e:
         print(f"Review fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
     try:
-        if (frei := lage.bilder_aufraeumen(behalte=3)) > 0:
-            print(f"Alte Minimap-Bilder aufgeraeumt: {frei:.0f} MB frei (Sichtungen bleiben)", flush=True)
+        # Auftrag 022: Testpartien und die letzten drei Partien behalten ihre Bilder, der Rest geht (lolcoach/aufraeumen)
+        from . import aufraeumen
+        if (frei := aufraeumen.aufraeumen(ja=True, ausgabe=lambda *_: None)) > 0:
+            print(f"Aufgeraeumt: {frei:.0f} MB frei (Bilder ohne Testpartie, alte Flash-Clips, Generalprobe)", flush=True)
     except Exception as e:
         print(f"Aufraeumen fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
 

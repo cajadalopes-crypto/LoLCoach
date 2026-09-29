@@ -1013,6 +1013,18 @@ def gehirn_021():
     assert ms._neue_anlaesse(p, m) == "Fenster: Fizz tot (der erste lebt in 20 Sekunden wieder)"
 
 
+def aufraeumen_022():
+    """Auftrag 022: das Aufraeumen fasst Testpartien und die letzten drei Partien nie an, und die kleinen Daten zum
+    Nachspielen (Sichtungen, Ereignisse, gruben.json) bleiben immer."""
+    from lolcoach import aufraeumen
+    schutz = set(aufraeumen.testpartien()) | aufraeumen._letzte()
+    assert "2026-09-29_183125" in schutz and "2026-09-27_213624" in schutz
+    for pfad, _, _ in aufraeumen.plan():
+        teil = next((t for t in pfad.parts if aufraeumen.STAMM.match(t)), "")
+        assert aufraeumen.STAMM.match(teil) is None or teil[:17] not in schutz or "_flashclips" in teil, pfad
+        assert not aufraeumen.KLEIN.match(pfad.name), pfad
+
+
 def kauf_018():
     """Auftrag 018, 4 (183125 34:26-36:47): Schwarzes Beil und Lord Dominiks Grüße teilen die einzigartige Gruppe
     LastWhisper (Spieldaten); Elixier ab Level 9, wenn sonst nichts passt - aber nur mit freiem Platz."""
@@ -1055,6 +1067,7 @@ if __name__ == "__main__":
                  vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal, anteil_geglaettet,
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
                  stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017, lagebild_019,
-                 objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018, kampf_rechner_020, gehirn_021):
+                 objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018, kampf_rechner_020, gehirn_021,
+                 aufraeumen_022):
         test()
         print(f"{test.__name__} OK")

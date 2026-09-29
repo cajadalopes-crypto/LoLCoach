@@ -25,7 +25,7 @@ HIER = Path(__file__).resolve().parent
 WURZEL = HIER.parent
 sys.path.insert(0, str(WURZEL))
 RIOT = WURZEL / "daten" / "riot"
-AUS = WURZEL / "stratege_probe_020"
+AUS = WURZEL / "buecher" / "protokolle" / "proben" / "stratege_probe_020"
 ZIEL = WURZEL / "wissen" / "kampf_eichung.toml"
 LUECKE_S, ABSTAND = 15.0, 2000.0
 TOR_TREFFER, TOR_ABDECKUNG = 0.80, 0.30

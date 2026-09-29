@@ -24,7 +24,7 @@ sys.path.insert(0, str(HIER))
 sys.path.insert(0, str(HIER.parent))
 import nachspielen as ns  # noqa: E402
 
-AUS = HIER.parent / "stratege_probe_016"
+AUS = HIER.parent / "buecher" / "protokolle" / "proben" / "stratege_probe_016"
 PROTOKOLLE = HIER.parent / "buecher" / "protokolle"
 FLASH_FENSTER_S = 60.0       # ein gesehener Flash gilt als angesagt, wenn ihn ein Satz so lange danach nennt
 JUNGLER_OHNE_S = 20.0        # Wiedersichtung: so lange ohne Sicht

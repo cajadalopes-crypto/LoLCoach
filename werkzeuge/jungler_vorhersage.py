@@ -79,7 +79,7 @@ def main() -> None:
         n = [x for r in alle for x in r["vorhersagen"] if x.get(k)]
         quote[k] = {"n": len(n), "treffer": sum(1 for x in n if x[k] == x["wahr"])}
         quote[k]["quote"] = round(quote[k]["treffer"] / len(n), 3) if n else None
-    ziel = HIER.parent / "stratege_probe_017" / "jungler.json"
+    ziel = HIER.parent / "buecher" / "protokolle" / "proben" / "stratege_probe_017" / "jungler.json"
     ziel.parent.mkdir(exist_ok=True)
     ziel.write_text(json.dumps({"quote": quote, "aufnahmen": alle}, ensure_ascii=False, indent=1), encoding="utf-8")
     print("QUOTE", json.dumps(quote), flush=True)

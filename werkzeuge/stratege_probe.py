@@ -420,7 +420,7 @@ def kritik(lauf_nr: int) -> str:
 #     python werkzeuge/stratege_probe.py kritik14         # Urteile zaehlen, Tor pruefen
 #     python werkzeuge/stratege_probe.py bericht14        # buecher/protokolle/STRATEGE_PROBE_014.md
 
-AUS14 = AUS.parent / "stratege_probe_014"
+AUS14 = AUS.parent / "buecher" / "protokolle" / "proben" / "stratege_probe_014"
 BERICHT14 = BERICHT.parent / "STRATEGE_PROBE_014.md"
 ALT = ("2026-09-28_192113", "2026-09-28_101426")
 NEU = ("2026-09-27_164326", "2026-09-27_173159")
@@ -777,7 +777,7 @@ if __name__ == "__main__":
         print(kritik(nr))
     elif arg and arg[0] in ("sammeln15", "fragen15", "bericht15"):
         # Auftrag 015: dieselben 100 Momente mit der erweiterten Pruefung, ohne neue Kritik
-        AUS14 = AUS.parent / "stratege_probe_015"
+        AUS14 = AUS.parent / "buecher" / "protokolle" / "proben" / "stratege_probe_015"
         BERICHT14 = BERICHT.parent / "STRATEGE_PROBE_015.md"
         {"sammeln15": sammeln14, "fragen15": fragen14, "bericht15": bericht14}[arg[0]]()
     elif arg and arg[0] in ("sammeln14", "fragen14", "blind14", "bericht14"):
