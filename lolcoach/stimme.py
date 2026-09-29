@@ -664,6 +664,19 @@ class Stimme:
         """Keine Antwort (nur angetippt, Rauschen): gleich normal weiter."""
         self._antwort_ende = True
 
+    def abbrechen(self) -> None:
+        """Auftrag 018, 6: du bist gestorben - der laufende Satz bricht ab, was in der Schlange wartet, faellt weg.
+        Nie eine Frage oder ihre Antwort."""
+        while True:
+            try:
+                eintrag = self._schlange.get_nowait()
+            except queue.Empty:
+                break
+            if eintrag[1] is not None:
+                eintrag[1].set()
+        if self._frei.is_set() and self._antworten.empty():
+            self._stopp.set()
+
     # alter Name, wird noch von aussen benutzt
     def verstumme(self) -> None:
         self.pausiere()
@@ -700,6 +713,9 @@ class Stumm:
     def verstumme(self) -> None:
         pass
 
+    def abbrechen(self) -> None:
+        pass
+
 
 def _gilt(noch_wahr) -> bool:
     try:
@@ -734,6 +750,15 @@ class Nachgespielt(Stumm):
         else:
             self._schlange.append(eintrag)
         self._weiter()
+
+    def abbrechen(self) -> None:
+        """Wie Stimme.abbrechen: beim Tod ab, die Schlange leer."""
+        if self._laeuft is not None:
+            self._ende(False, "tot")
+        for _, melde, _ in self._schlange:
+            if melde:
+                melde("verworfen", time.monotonic())
+        self._schlange.clear()
 
     def takt(self, zeit: float) -> None:
         self.zeit = zeit

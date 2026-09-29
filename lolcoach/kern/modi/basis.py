@@ -387,7 +387,7 @@ def _sicherer(m, cfg: dict, modus: str, erstes, p_am, grenze: float) -> Handlung
             continue
         if p_am(h)[0] < grenze:
             return h
-    # die Seite mit den wenigsten Gegnern (zuletzt gesehen), dort der innere Turm
+    # die Seite mit den wenigsten Gegnern (zuletzt gesehen), dort der vorderste stehende sichere Turm
     je = {"Top": 0, "Mid": 0, "Bot": 0}
     wo = {"oben": "Top", "in der Mitte": "Mid", "unten": "Bot"}
     for g in m.b.gegner:
@@ -399,7 +399,9 @@ def _sicherer(m, cfg: dict, modus: str, erstes, p_am, grenze: float) -> Handlung
     wort = {"Top": "oben", "Mid": "in der Mitte", "Bot": "unten"}[meiste]
     grund = (f"{ZAHL.get(n, str(n))} von ihnen {'ist' if n == 1 else 'sind'} {wort}" if n
              else "keiner von ihnen ist zu sehen")                    # Pruefung c, R6: Einzahl und Mehrzahl
-    for stufe in ("innen", "Inhib", "aussen"):
+    # Auftrag 018, 3 (183125 19:48: "Mid-Inhibitor-Turm", obwohl alle Tuerme davor standen): der vorderste stehende
+    # zuerst, nur wenn er zu gefaehrlich ist, der naechste dahinter
+    for stufe in ("aussen", "innen", "Inhib"):
         # Pruefung c, R6: "Top-Inhibitor-Turm", nie "Inhibitor-Top-Turm"
         name = {"innen": f"inneren {seite}-Turm", "Inhib": f"{seite}-Inhibitor-Turm", "aussen": f"äußeren {seite}-Turm"}[stufe]
         dein = "deinem" if seite == lane_von(m) else "eurem"
@@ -464,6 +466,19 @@ def _fokus_kontrollauge(m) -> bool:
     return "kontroll" in f.lower()
 
 
+def _vorderster_turm(m) -> str:
+    """"deinem äußeren Top-Turm": der vorderste stehende eigene Turm deiner Lane (Dativ), sonst "deinem Turm"."""
+    from ... import bewertung
+    from ..sprache import turm
+    lane = lane_von(m)
+    p = getattr(m, "p", None)
+    if p is None or not p.mein_team or lane not in ("Top", "Mid", "Bot"):
+        return "deinem Turm"
+    st = bewertung.stehende_tuerme(p)
+    stufe = next((s for s in ("aussen", "innen", "Inhib") if (p.mein_team, lane, s) in st), None)
+    return turm("dein", lane, stufe, "dat") if stufe else "deinem Turm"
+
+
 def kaufen(m, cfg: dict, modus: str, ziel: Handlung) -> Handlung | None:
     """KAUFEN mit Namen und dem Ziel in einem Satz (9.3 BASIS)."""
     k = m.kauf
@@ -485,8 +500,10 @@ def kaufen(m, cfg: dict, modus: str, ziel: Handlung) -> Handlung | None:
     was = liste(teile)
     verkauf = f"Verkauf {k.verkaufen}, dann k" if k.verkaufen else "K"
     # Pruefung c, R6: kein sicheres Ziel - Auftrag 016, 2 (die Kette immer): dann der sichere Platz, dein Turm
+    # Auftrag 018, 3 (183125 18:36: "dann warte an deinem Turm auf dein Team" - welcher?): der vorderste stehende
+    # deiner Lane, mit Stufe
     satz = (f"{verkauf}auf {was}, dann {ziel.daten['kurz']}: {ziel.grund}." if ziel.daten.get("kurz")
-            else f"{verkauf}auf {was}, dann warte an deinem Turm auf dein Team.")
+            else f"{verkauf}auf {was}, dann warte an {_vorderster_turm(m)} auf dein Team.")
     h = Handlung("KAUFEN", Ziel("basis", was), modus, 5.0, gewinn=k.kosten * cfg["kauf"]["kauf_faktor"] + 1000.0,
                  grund=ziel.grund, satz=satz, schritte=["kaufen", ziel.art])
     if ziel.daten.get("gefahr_am") is not None:

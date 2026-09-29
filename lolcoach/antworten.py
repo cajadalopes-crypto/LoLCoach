@@ -287,7 +287,7 @@ def _kauf(w: list[str], roh: str, p: Partie, lagebild) -> str | None:
         return None
     gold = int(p.gold or 0)
     try:
-        k = kaufplan.plan(p.ich.champion_id, p.ich.items, gold)
+        k = kaufplan.plan(p.ich.champion_id, p.ich.items, gold, p.ich.level)
     except Exception:
         return None
     if k is None:
@@ -491,7 +491,7 @@ def lage_text(p: Partie, lagebild=None) -> str:
                      if schmuck else "") + ".")
     try:
         from . import kaufplan
-        if (k := kaufplan.plan(p.ich.champion_id, p.ich.items, float(p.gold or 0))) is not None:
+        if (k := kaufplan.plan(p.ich.champion_id, p.ich.items, float(p.gold or 0), p.ich.level)) is not None:
             zeilen.append(f"Kaufplan des Coachs (Ziel {k.item}): " + (
                 "jetzt " + ", ".join(k.kaufen) if k.kaufen else
                 f"noch {k.naechstes[1]} Gold bis {k.naechstes[0]}" if k.naechstes else "nichts") + " - dem nicht widersprechen.")

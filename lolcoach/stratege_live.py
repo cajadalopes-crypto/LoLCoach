@@ -724,9 +724,12 @@ class MakroStratege:
             bei = [g for g in feinde if abstand(g.pos, wo) <= 1200]
             if faellt and bei and weg <= self.kampf_nah_s and jetzt - self._kampf_zuletzt >= self.kampf_abstand_s:
                 self._kampf_zuletzt = jetzt
-                self._kampf_text = (f"{s.champion} kämpft {int(round(weg))} s von dir gegen "
-                                    + " und ".join(g.champion for g in bei[:3])
-                                    + f", sein Leben {int(round((leben or 0) * 100))} %")
+                # Auftrag 018, 5: mit den Zahlen des Kerns und dem Kill-Check (welt.kampf_lage)
+                from .welt import kampf_lage
+                k = kampf_lage(m, p)
+                self._kampf_text = (f"{s.champion} kämpft {int(round(weg))} s von dir, " + k[0]) if k else \
+                    (f"{s.champion} kämpft {int(round(weg))} s von dir gegen "
+                     + " und ".join(g.champion for g in bei[:3]) + f", sein Leben {int(round((leben or 0) * 100))} %")
                 self.schiedsrichter.ereignis(jetzt, f"{s.champion} neben dir kämpft")
                 return "Kampf in der Nähe"
         return None
@@ -805,8 +808,10 @@ class MakroStratege:
             ende = (f"ANLASS: Ankunft in der Basis um {uhr}. Sag die ganze Kette in EINEM Satz: was du jetzt kaufst "
                     "(passend zu Gold und freien Plaetzen, siehe KAUF), dann wohin, und warum.")
         elif art == "Kampf in der Nähe":
-            ende = (f"ANLASS: Kampf in der Naehe um {uhr}: {self._kampf_text}. Hin und helfen oder nicht? Mit Grund "
-                    "(dein Leben, wer dort ist, wer fehlt) - und was danach kommt.")
+            ende = (f"ANLASS: Kampf in der Naehe um {uhr}: {self._kampf_text}. Sag zuerst 'Hilf' oder 'Nicht "
+                    "hin', dann den Grund aus diesen Zahlen (Leben, Level, Flash, Tote, dein Weg) - und was danach "
+                    "kommt. Angreifen nur, wo der KILL-CHECK es traegt; sonst helfen heisst: dazustellen, Schaden "
+                    "vom Mitspieler nehmen.")
         else:
             ende = (f"ANLASS: Wendepunkt ({art}) um {uhr}. Nenn den naechsten Schritt und den danach, mit Grund"
                     + (" - bei einem Back im selben Satz Kauf und Ziel." if kette else "."))

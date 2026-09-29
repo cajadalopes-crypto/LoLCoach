@@ -168,6 +168,8 @@ lane_wieder_s = 120             # ... oder so lange nach dem letzten Satz
 gilt_s = 6                      # so lange wartet ein Satz (KAMPF, ein Plan-Satz im selben Takt), dann faellt er weg
 vorlauf_s = 60                  # Auftrag 017, 1.3: so lange vor dem Spawn die Vorbereitungskette ...
 loslaufen_s = 40                # ... und so lange vorher "jetzt loslaufen"
+basis_steht_s = 20             # Auftrag 018, 2: so lange lebend und ohne Bewegung in der Basis -> Plan noch einmal
+basis_bewegt = 400              # ... mehr als so viele Einheiten gelaufen: er geht los
 vorhersage = false              # Auftrag 017, 1.1 (I2): aus - an allen 32 Aufnahmen traf keine Vorhersage >= 65 %
                                 # (andere Seite 53 %, gleiche 47 %, n = 51; stratege_probe_017/jungler.json)
 vorhersage_ohne_s = 45
@@ -419,7 +421,7 @@ pause_nach_ausfall_s = 120.0     # ... und so lange danach nur der Kern
 leerlauf_ab_s = 840              # B3: nach der Lane-Phase (Auftrag 017: in der Lane Anlaesse mit Inhalt statt Takt) ...
 leerlauf_s = 45                  # ... nach so vielen Sekunden ohne Plan-Satz und Warnung; NICHTS erlaubt
 lane_abstand_s = 20              # Auftrag 017, 1.2: hoechstens ein Lane-Anlass je so viele Sekunden
-kampf_nah_s = 6                  # Auftrag 016, 1.4: ein Mitspieler kaempft so viele s Weg von dir -> Anlass
+kampf_nah_s = 15                 # Auftrag 016, 1.4: ein Mitspieler kaempft so viele s Weg von dir -> Anlass (018, 5: 6 s fing 183125 26:15 nicht)
 kampf_abstand_s = 30             # ... hoechstens einmal je so viele s
 
 [quest_tp]

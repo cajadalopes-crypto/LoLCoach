@@ -19,7 +19,10 @@ def kandidaten(m, cfg: dict, merker: dict | None = None, lage=None) -> list[Hand
     if k is None and z.daten.get("kurz"):
         h.satz = f"Nichts zu kaufen, dann {z.daten['kurz']}: {z.grund}." if z.grund else \
             f"Nichts zu kaufen, dann {z.daten['kurz']}."
-    h.satz = f"Du lebst in {int(round(m.respawn))} Sekunden: " + h.satz[0].lower() + h.satz[1:]
     from . import kuerze
-    h.satz = kuerze(h.satz, cfg["sprechen"]["max_woerter"] + 6)     # Auftrag 002, S2.3; 017: die Kette hat Platz
+    vorn = f"Du lebst in {int(round(m.respawn))} Sekunden: "
+    # Auftrag 002, S2.3; 017: die Kette hat Platz. 018, 2 (183125 18:34): erst die Kette kuerzen, dann die Zeit davor -
+    # sonst fiel die ganze Kette hinter "Du lebst in 11 Sekunden:" weg
+    kette = kuerze(h.satz, cfg["sprechen"]["max_woerter"] + 6 - len(vorn.split()))
+    h.satz = vorn + kette[0].lower() + kette[1:]
     return [h]

@@ -17,6 +17,11 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 018 (Graves-Partie 183125) umgesetzt** - Objective-Symbole (oben 99,5 %, unten 97,7 %), Plan in der Basis,
+Turm mit Stufe, einzigartige Item-Gruppen und Elixiere, Kampf in der Naehe mit Kill-Check, Tod kurz. Offen: Elixier
+ohne freien Platz widerspricht Carlos' Annahme im Auftrag (Spieldaten + 36:47 sagen: braucht Platz) - bei Gelegenheit
+live pruefen; "Danach nach Top" ohne Grund (Kette gekuerzt) kommt noch vor.
+
 **Auftrag 019 (Buch 14 A: Lagebild, API) umgesetzt** - Haiku ueber die API (1,6 s, ~0,25 $ je 30 min). Offen: Soll-Liste
 ~61 % (Ziel 80 % in Schritt C), I4 Lane-Gegner 6/12, Flash 183125 9/13; Riot-Schluessel in Schritt B (laeuft nach 24 h ab).
 

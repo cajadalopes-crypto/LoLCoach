@@ -1,0 +1,104 @@
+# Auftrag 018: Carlos' Graves-Partie 183125 (Graves Top gegen Garen, Botpartie, 39 min).
+# Gegner: Garen, Tryndamere, Fizz, Kog'Maw, Nautilus. Zeiten wie im Nachspiel (Fragen dort ~2-12 s spaeter als live).
+# Jedes Szenario war auf 4b3f1f0 (Stand nach Auftrag 019) rot, ausser den Waechtern (steht dabei).
+
+aufnahme = "2026-09-29_183125"
+spielmodus = "PRACTICETOOL"
+bots = true
+
+# --- 2. Nach dem Respawn sofort ein Plan -----------------------------------------------------------------------------
+
+[[szenario]]
+id = "1836-was-wenn-ich-lebe"
+zeit = "18:36"
+frage = "Okay, was mache ich sobald ich lebe?"
+quelle = "Kern: 'Du lebst in 10 Sekunden wieder: du lebst in 10 Sekunden.'"
+lage = "Graves tot, 1613 Gold, Inventar voll (Dorans Klinge darin)."
+kern_frage = true
+ohne_claude = true
+darf_nicht_sagen = ["wieder: du lebst"]
+muss_ziel = true
+warum = "Die Respawn-Kette nennt Kauf und Ziel; die Zeit steht einmal davor (fragen._respawn_plan, modi/tot.py)."
+
+[[szenario]]
+id = "1912-plan-nach-respawn"
+fenster = ["18:45", "19:15"]
+quelle = "Carlos 19:12: 'Ich lebe schon lange wieder und warte nur auf irgendeine Anweisung von dir.'"
+lage = "Graves lebt wieder, steht im Brunnen."
+muss_ziel = true
+warum = "Waechter (auf 4b3f1f0 gruen: 18:54 'Jetzt, wo du wieder lebst: ... dann nach Top')."
+
+[[szenario]]
+id = "1935-steht-in-der-basis"
+fenster = ["19:05", "19:50"]
+quelle = "Carlos 19:35: 'Notiz, ich warte jetzt so lange in der Base auf dem Fountain ... bis du mir sagst, was ich als naechstes zu tun habe.'"
+lage = "Graves steht ueber eine Minute lebend im Brunnen."
+kategorie_min = { INFO_BASIS = 1 }
+warum = "Steht er lebend 20 s still in der Basis, kommt der Plan noch einmal (kern/pflicht.py, _basis_steht)."
+
+# --- 3. Sicherer Turm mit Stufe --------------------------------------------------------------------------------------
+
+[[szenario]]
+id = "1948-turm-mit-stufe"
+fenster = ["19:40", "20:10"]
+quelle = "19:48 'Bleib unter eurem Mid-Inhibitor-Turm', fast alle Tuerme davor standen; im Nachspiel 'unter eurem Mid-Turm'"
+lage = "Graves auf dem Weg aus der Basis, Kog'Maw und Fizz kommen."
+gesprochen_ohne = ["(eurem|euren|deinem|deinen) (Top|Mid|Bot)-Turm", "(eurem|euren|deinem|deinen) (Top|Mid)-Inhibitor-Turm"]
+warum = """Jeder eigene Turm mit Stufe; gewartet wird am vordersten stehenden (sprache.unter/an, basis._sicherer).
+Waechter (auf 4b3f1f0 gruen: im Fenster sprach der Kern keinen eigenen Turm)."""
+
+[[szenario]]
+id = "1953-welcher-turm"
+zeit = "19:53"
+frage = "An welchem Turm soll ich auf mein Team warten?"
+quelle = "Nachspiel 4b3f1f0: 'Ja, geht auch: Bleib unter eurem Mid-Turm: Kog'Maw und Fizz kommen.'"
+lage = "Graves auf dem Weg aus der Basis, alle Mid-Tuerme stehen."
+kern_frage = true
+darf_nicht_sagen = ["eurem Mid-Turm", "euren Mid-Turm", "deinem Top-Turm", "deinen Top-Turm", "Mid-Inhibitor-Turm"]
+warum = "Die Antwort nennt den Turm mit Stufe (sprache.an: 'unter eurem äußeren Mid-Turm')."
+
+# --- 4. Kaufen: einzigartige Gruppen, Elixiere -----------------------------------------------------------------------
+
+[[szenario]]
+id = "3426-kein-schwarzes-beil"
+fenster = ["34:00", "35:35"]
+quelle = "34:26 'Kauf Schwarzes Beil' - geht nicht mit Lord Dominiks Grüße (Gruppe LastWhisper, Spieldaten)"
+lage = "Graves in der Basis, 4000 Gold, Lord Dominiks Grüße im Inventar."
+darf_nicht_sagen = ["Schwarzes Beil"]
+warum = "Einzigartige Gruppen aus wissen/item_gruppen.json (kaufplan.konflikt)."
+
+[[szenario]]
+id = "3543-trank-bei-vollem-inventar"
+zeit = "35:43"
+frage = "Ich habe noch 1000 Gold übrig. Soll ich mir eventuell einen Trank kaufen für 500?"
+quelle = "Kern dreimal 'Gerade nichts zu kaufen: Geh nach Top' (35:43, 35:50, 36:27)"
+lage = "Sechs Items, 1205 Gold."
+kern_frage = true
+ohne_claude = true
+muss_nennen_eins = ["Plätze sind voll"]
+warum = "Nichts zu kaufen mit dem Grund: auch Elixier und Trank brauchen einen Platz (Spieldaten, Carlos 36:47)."
+
+# --- 5. Kampf in der Naehe (I6) --------------------------------------------------------------------------------------
+
+[[szenario]]
+id = "2615-kampf-am-drachen"
+fenster = ["25:55", "26:55"]
+quelle = "26:28 Carlos: 'Ich koennte Kog'Maw hier wegholen' - Coach: 'Zurueck unter euren inneren Bot-Turm: drei kommen.'"
+lage = "Graves 41-46 % Leben auf dem Weg zurueck, am Drachen kaempfen Udyr, Urgot, Zyra gegen Kog'Maw, Tryndamere, Fizz."
+soll = """Challenger-Kritiker (stratege_probe_018/api/kritik_183125.json): 'Fizz ist tot, Kog'Maw hat Flash verbraucht und
+Tryndamere faellt gleich: Kampf am Drachen ist gewinnbar, komm mit Ult und Flash rein, geh auf Kog'Maw und back danach.'"""
+warum = """Nur der Stratege antwortet (Anlass 'Kampf in der Naehe'), deshalb hier ohne Pruefteil (uebersprungen); gemessen im
+Nachspiel: 25:58 'Nicht hin, du brauchst 7 Sekunden und hast 41 Prozent Leben', 26:52 'Geh sofort zum unteren Fluss
+zu deinen vier, nehmt den Drachen'. Den Rein-Ruf auf Kog'Maw verbietet die Regel 'kein Angriff ohne Kill-Check': sein
+Leben war nicht im Bild."""
+
+# --- 6. Tod: kurz, nichts fuer Lebende -------------------------------------------------------------------------------
+
+[[szenario]]
+id = "3821-tod-kurz"
+fenster = ["38:15", "38:55"]
+quelle = "38:21 'Fizz und Nautilus kamen zusammen. Bei zwei Gegnern: hinter den Turm oder zu deinem Team, bevor sie in Reichweite sind.'"
+lage = "Graves stirbt an Fizz und Nautilus, lebt ~30 s spaeter wieder."
+darf_nicht_sagen = ["hinter den Turm", "eh zurück", "bevor sie in Reichweite"]
+warum = """Tod-Satz hoechstens 12 Woerter, keiner schickt einen Toten zurueck (regeln.tod_kurz, Sprechplan).
+Waechter: der Todesrueckblick laeuft hier nicht mit (auf 4b3f1f0 gruen) - rot-zuerst ist tests/test_kern.py tod_018."""

@@ -17,6 +17,7 @@ kein Kauf (164326 38:33 sagte bei sechs fertigen Items "Kauf Langschwert und Sti
 """
 from __future__ import annotations
 
+import json
 import re
 import tomllib
 from dataclasses import dataclass
@@ -224,6 +225,38 @@ def gruppe(item: int) -> str | None:
     return next((g for teil, g in GRUPPEN.items() if teil in _baum(item)), None)
 
 
+GRUPPEN_DATEI = Path(__file__).resolve().parent.parent / "wissen" / "item_gruppen.json"
+
+
+@lru_cache(maxsize=1)
+def _spielgruppen() -> dict[int, tuple[tuple[str, int], ...]]:
+    """Item -> (Gruppe, hoechstens so viele) aus den Spieldaten (werkzeuge/item_gruppen.py)."""
+    try:
+        gruppen = json.loads(GRUPPEN_DATEI.read_text(encoding="utf-8"))["gruppen"]
+    except (OSError, ValueError, KeyError):
+        return {}
+    aus: dict[int, list] = {}
+    for g, v in gruppen.items():
+        for i in v["items"]:
+            aus.setdefault(int(i), []).append((g, int(v["max"])))
+    return {i: tuple(x) for i, x in aus.items()}
+
+
+def konflikt(item: int, inventar) -> int | None:
+    """Auftrag 018, 4 (183125 35:04: "Kauf Schwarzes Beil" zu Lord Dominiks Grüße): das Inventar-Item, mit dem
+    `item` eine einzigartige Gruppe teilt und das beim Kauf nicht verbraucht wird - sonst None. Stiefel regelt
+    kaufbar() selbst."""
+    sg = _spielgruppen()
+    baum = _baum(item)
+    for g, hoechstens in sg.get(item, ()):
+        if g.startswith("Boots"):
+            continue
+        drin = [j for j in inventar if j != item and j not in baum and any(h == g for h, _ in sg.get(j, ()))]
+        if len(drin) + 1 > hoechstens:
+            return drin[0]
+    return None
+
+
 @lru_cache(maxsize=64)
 def carlos_build(champion_id: str) -> tuple[tuple[int, ...], ...]:
     """Carlos' eigener Build: Schritte, je Schritt die gleichwertigen Items (haeufigstes zuerst). Leer ohne Eintrag."""
@@ -294,7 +327,7 @@ def plaetze_nach(inventar, namen: list[str]) -> int:
         i = _nach_name().get(name)
         if i is None:
             continue
-        if "Consumable" in _tags(i) and (ddragon.items()[i].get("consumed") or i in inv):
+        if "Consumable" in _tags(i) and i in inv:        # stapelt; sonst braucht auch ein Elixier einen Platz (018)
             continue
         vorher = len(inv)
         for f in ddragon.items().get(i, {}).get("from") or []:
@@ -308,7 +341,7 @@ def kaufbar(name: str, inventar, ziel: str | None = None) -> tuple[bool, str]:
     """(kaufbar, Grund wenn nicht) fuer ein genanntes Item - Pruefung 27.09.c, R3, Soll 3:
     passt ins Inventar (Platz frei, oder es verbraucht eigene Bauteile, oder ein Start-Item wird dafuer verkauft),
     liegt nicht schon im Inventar (ausser das Ziel braucht noch eins), baut ins Ziel-Item ein oder ist es.
-    Kontroll-Auge und Elixiere: immer (das Auge stapelt, das Elixier wird getrunken). Stiefel: ohne Ziel-Pruefung.
+    Kontroll-Auge und Elixiere: mit freiem Platz oder (Auge) auf den Stapel. Stiefel: ohne Ziel-Pruefung.
     Bei True ist der Grund leer oder nennt den noetigen Verkauf ("nach Verkauf von Dorans Klinge")."""
     it = ddragon.items()
     inventar = [int(i) for i in inventar]
@@ -318,7 +351,7 @@ def kaufbar(name: str, inventar, ziel: str | None = None) -> tuple[bool, str]:
     z = _nach_name().get(ziel) if ziel else None
     frei = PLAETZE - _belegt(inventar)
     if "Consumable" in _tags(i):
-        if it[i].get("consumed") or i in inventar or frei >= 1:
+        if i in inventar or frei >= 1:                 # Auftrag 018, 4: auch Elixiere brauchen einen Platz
             return True, ""
         return False, "Inventar voll"
     stiefel = "Boots" in _tags(i)
@@ -329,6 +362,8 @@ def kaufbar(name: str, inventar, ziel: str | None = None) -> tuple[bool, str]:
     g = gruppe(i)
     if g is not None and any(j != i and gruppe(j) == g and not it.get(j, {}).get("into") for j in inventar):
         return False, f"schon eine {g} im Inventar"
+    if (j := konflikt(i, inventar)) is not None:
+        return False, f"{name} geht nicht zusammen mit {it[j]['name']} (einzigartig)"
     if z is not None and not stiefel and i != z:
         if i not in _baum(z):
             return False, f"{name} baut nicht in {ziel} ein"
@@ -351,7 +386,7 @@ def _reihe(champion_id: str, items: tuple[int, ...]) -> list[int]:
         if any(i in items for i in schritt):
             continue
         for m, i in enumerate(schritt):
-            if i in it and gruppe(i) not in gruppen:
+            if i in it and gruppe(i) not in gruppen and konflikt(i, items) is None:
                 gedeckt = it[i]["gold"]["total"] - _baum_kosten(i, list(items))[0]
                 offen.append((-gedeckt, n, m, i))
     return [i for *_, i in sorted(offen)]
@@ -403,9 +438,37 @@ def _erster(reihe: list[int], items: tuple[int, ...], gold: float, frei: int, st
     return None
 
 
-def plan(champion_id: str, items: tuple[int, ...], gold: float) -> Kauf | None:
+ELIXIER_AB_LEVEL = 9
+ELIXIER = {"Zorn": 2140, "Zauberei": 2139, "Metall": 2138}
+
+
+def elixier(champion_id: str) -> int:
+    """Das passende Elixier: magischer Schaden Zauberei, Tanks Metall, sonst Zorn (Angriffsschaden)."""
+    c = ddragon.champions().get(champion_id) or {}
+    info, tags = c.get("info") or {}, c.get("tags") or []
+    if info.get("magic", 0) > info.get("attack", 0):
+        return ELIXIER["Zauberei"]
+    if tags[:1] == ["Tank"]:
+        return ELIXIER["Metall"]
+    return ELIXIER["Zorn"]
+
+
+def plan(champion_id: str, items: tuple[int, ...], gold: float, level: int | None = None) -> Kauf | None:
     """Was dein Gold jetzt kauft (Reihenfolge der Ziele: _reihe). None: nichts zu kaufen - auch bei vollem Inventar,
-    wenn kein Ziel eigene Bauteile verbraucht und kein Start-Item zu verkaufen ist (kein "Gold fuer ..." mehr)."""
+    wenn kein Ziel eigene Bauteile verbraucht und kein Start-Item zu verkaufen ist (kein "Gold fuer ..." mehr).
+    Auftrag 018, 4 (183125 35:43, 1205 Gold: "Gerade nichts zu kaufen"): mit `level` ab 9 dann ein Elixier. Es
+    braucht einen freien Platz, bis man es trinkt: die Spieldaten fuehren es als "consumed" (verbraucht beim BENUTZEN,
+    wie das Kontroll-Auge), und 183125 36:47 konnte Carlos es mit sechs Items nicht kaufen."""
+    k = _plan(champion_id, items, gold)
+    frei = PLAETZE - _belegt(tuple(int(i) for i in items))
+    if k is None and level is not None and level >= ELIXIER_AB_LEVEL and frei >= 1:
+        e = ddragon.items().get(elixier(champion_id))
+        if e is not None and gold >= e["gold"]["total"]:
+            return Kauf(e["name"], [e["name"]], e["gold"]["total"], None)
+    return k
+
+
+def _plan(champion_id: str, items: tuple[int, ...], gold: float) -> Kauf | None:
     it = ddragon.items()
     items = tuple(int(i) for i in items)
     frei = PLAETZE - _belegt(items)

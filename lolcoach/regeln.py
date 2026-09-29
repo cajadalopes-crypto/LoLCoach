@@ -18,6 +18,28 @@ from .zustand import Partie, Spieler, gegenteam, struktur
 
 BACK = re.compile(r"\bback\b|\brecall\b", re.I)   # eine Ansage rät zum Recall (komponist.back_eben)
 RUECKZUG = re.compile(r"geh (sofort |jetzt |lieber |erst )?zurück|raus da", re.I)   # eine Ansage rät zum Rueckzug
+# Auftrag 018, 6 (183125 38:21 an den Toten: "Bei zwei Gegnern: hinter den Turm oder zu deinem Team, bevor sie in
+# Reichweite sind" - Carlos hoerte "geh zurueck"): was einen Lebenden wegschickt, sagt man keinem Toten
+AN_LEBENDE = re.compile(r"geh\w* (\w+ )?zurück|zurück (unter|zu)|hinter (den|deinen|euren) Turm|\braus (da|zu)\b|"
+                        r"bevor sie (in Reichweite|da) sind", re.I)
+TOD_WOERTER = 12
+
+
+def tod_kurz(text: str, woerter: int = TOD_WOERTER) -> str:
+    """Auftrag 018, 6: der Tod-Satz hoechstens `woerter` Woerter, ohne Satz, der einen Lebenden wegschickt - was
+    entschied, steht vorn; der Rest gehoert ins Review."""
+    saetze = [s for s in re.split(r"(?<=[.!?])\s+", text.strip()) if s]
+    aus: list[str] = []
+    for s in saetze:
+        if AN_LEBENDE.search(s):
+            continue
+        if len(" ".join(aus + [s]).split()) > woerter:
+            break
+        aus.append(s)
+    if not aus and saetze:
+        kopf = re.split(r"[:;,]", saetze[0])[0].strip()
+        aus = [" ".join(kopf.split()[:woerter]).rstrip(".") + "."]
+    return " ".join(aus)
 
 SOFORT, WICHTIG, HINWEIS = 3, 2, 1
 
@@ -1424,4 +1446,5 @@ class Regelwerk:
             self.lage.letzter_tod = (p.zeit, kontext)   # fuer Fragen danach ("warum bin ich gestorben?")
         # nicht mehr "situativ" (der Stratege formulierte frei und lang): bis Schritt 6 gilt der Satz, wie er ist -
         # der Kontext bleibt fuer die Frage "warum bin ich gestorben?" (lage.letzter_tod)
-        yield Ansage(text, WICHTIG, "tod", gueltig=max(15.0, p.ich.respawn), sperre=5)
+        # 018, 6: gleich beim Tod oder gar nicht - nicht erst, wenn er fast wieder lebt (183125 38:36)
+        yield Ansage(tod_kurz(text), WICHTIG, "tod", gueltig=8.0, sperre=5)

@@ -839,6 +839,124 @@ def lagebild_019():
     assert any("innerer" in g for g in pruefe("Der Entwurf passt nicht, farm die Welle am Turm.", {}))
 
 
+def objsymbole_018():
+    """Auftrag 018, 1 (183125 17:21 "Ob der Herold noch steht, weiß ich nicht"): das Symbol der Grube lesen und ins
+    Lagebild geben. Kuenstliche Karte: Fluss, oben ein lila Symbol, unten eine graue Uhr; dann unten ein Drachen-Symbol."""
+    import numpy as np
+    from types import SimpleNamespace as NS
+    from lolcoach import objsymbole, welt
+    karte = np.zeros((570, 570, 3), np.uint8)
+    karte[...] = (25, 125, 165)                                   # Fluss (RGB)
+    (ox, oy), (ux, uy) = [(int(fx * 570), int(fy * 570)) for fx, fy in objsymbole.GRUBEN.values()]
+    karte[oy - 8:oy + 8, ox - 8:ox + 8] = (200, 80, 220)          # lila
+    karte[uy - 6:uy + 6, ux - 12:ux + 12] = (225, 225, 225)       # Ziffern der Uhr
+    assert objsymbole.lies(karte) == {"oben": "symbol", "unten": "timer"}
+    karte[uy - 6:uy + 6, ux - 12:ux + 12] = (25, 125, 165)
+    assert objsymbole.lies(karte)["unten"] == "leer"
+    karte[uy - 8:uy + 8, ux - 8:ux + 8] = (190, 145, 110)         # Berg-Drache (tan)
+    assert objsymbole.lies(karte)["unten"] == "symbol"
+    # geglaettet: ein Wechsel gilt erst beim zweiten Bild, BGR wie live
+    leser = objsymbole.Grubenleser()
+    assert leser.lies_bgr(karte[..., ::-1]) is None and leser.lies_bgr(karte[..., ::-1]) == \
+        {"oben": "symbol", "unten": "symbol"}
+    herold = NS(schl="herold", lebt=True)
+    assert welt._symbol(herold, {"oben": ("symbol", 1000.0)}, 1041.0) == " (Symbol auf der Karte zu sehen)"
+    assert welt._symbol(herold, {"oben": ("timer", 1030.0)}, 1041.0) == ""     # im Kampf liest es oft Uhr
+    assert welt._symbol(NS(schl="drache", lebt=False), {"unten": ("timer", 1000.0)}, 1041.0) == ""
+
+
+def respawn_018():
+    """Auftrag 018, 2 (183125 18:36): "Verkauf Dorans Klinge, kauf Sonnenköcher" wurde als "kein Platz" verworfen - der
+    Verkauf ist kein Kauf, er macht einen Platz frei."""
+    from lolcoach import stratege
+    it = stratege._items()
+    inv = [it[x][3] for x in ("Kontroll-Auge", "Überheblichkeit", "Stiefel", "Dorans Klinge", "Der Sammler",
+                              "Letzter Atemzug")]
+    g = stratege.pruefe("Verkauf Dorans Klinge, kauf Sonnenköcher, dann zur Top-Welle.", {"gold": 1649, "items": inv})
+    assert not any("Platz" in x or "Gold" in x for x in g), g
+    g = stratege.pruefe("Kauf Sonnenköcher, dann zur Top-Welle.", {"gold": 1649, "items": inv})
+    assert any("kein Platz" in x for x in g), g
+
+
+def tod_018():
+    """Auftrag 018, 6 (183125 38:10-38:36): beim Tod bricht der laufende Satz ab; der Tod-Satz hat hoechstens 12
+    Woerter und schickt keinen Toten zurueck; ein wartendes "geh zurueck" faellt weg."""
+    from lolcoach import regeln, sprechplan, stimme
+    t = regeln.tod_kurz("Fizz und Nautilus kamen zusammen. Bei zwei Gegnern: hinter den Turm oder zu deinem Team, "
+                        "bevor sie in Reichweite sind.")
+    assert t == "Fizz und Nautilus kamen zusammen.", t
+    lang = regeln.tod_kurz("Du bist mit vollem Leben an deinem Turm geblieben, obwohl Garen, Fizz und Nautilus "
+                           "dich zu dritt angelaufen haben.")
+    assert len(lang.split()) <= 12, lang
+    st = stimme.Nachgespielt()
+    plan = sprechplan.Sprechplan(st)
+    satz = regeln.Ansage("Stoß mit der Bot-Welle direkt in ihren Nexus-Turm, weil Nautilus noch 19 Sekunden "
+                         "braucht und du mit Level-Vorteil sofort gewinnen kannst.", regeln.WICHTIG, "stratege:x",
+                         zeit=2290.0)
+    plan.neu([satz])
+    st.takt(2290.0)
+    assert plan.takt(2290.0) is satz and st.beschaeftigt
+    zurueck = regeln.Ansage("Geh zurück, bevor sie auf dich engagen.", regeln.WICHTIG, "kern:ZURUECK", zeit=2291.0)
+    plan.neu([zurueck])
+    st.takt(2291.0)
+    plan.takt(2291.0, ich_tot=True)
+    assert st.abbrueche and st.abbrueche[-1][2] == "tot", st.abbrueche
+    assert zurueck not in plan.warte
+
+
+def turm_und_kampf_018():
+    """Auftrag 018, 3 und 5: der sichere Turm mit Stufe; der Kampf daneben mit den Zahlen des Kerns und Kill-Check."""
+    from types import SimpleNamespace as NS
+    from lolcoach import welt
+    from lolcoach.kern.sprache import an, unter
+    assert unter("eurem äußeren Mid-Turm") == "unter euren äußeren Mid-Turm"
+    assert an("deinem äußeren Top-Turm") == "unter deinem äußeren Top-Turm"
+    udyr = NS(champion="Udyr", name="u", level=11, tot=False)
+    kog = NS(champion="Kog'Maw", sichtbar=True, pos=(9000.0, 4000.0), leben=0.35, flash=250.0,
+             s=NS(tot=False, level=11))
+    b = NS(pos=(8000.0, 3000.0), gegner=[kog], mitspieler=[(udyr, (9100.0, 4100.0), 0.4, "am Drachen")], ich=None,
+           partie=None)
+    m = NS(b=b, mein_tempo=380.0, ult_mitspieler={"u": True}, leben=1.0)
+    p = NS(gegner=lambda: [NS(champion="Tryndamere", tot=True)])
+    text, weg = welt.kampf_lage(m, p)
+    assert text.startswith("am Drachen: ihr Udyr 40 % L11 Ult bereit gegen Kog'Maw 35 % L11 Flash weg noch 250 s"), text
+    assert "tot bei ihnen: Tryndamere" in text and "KILL-CHECK: dein Combo reicht für keinen dort" in text, text
+    assert 3 < weg < 8, weg
+
+
+def kauf_018():
+    """Auftrag 018, 4 (183125 34:26-36:47): Schwarzes Beil und Lord Dominiks Grüße teilen die einzigartige Gruppe
+    LastWhisper (Spieldaten); Elixier ab Level 9, wenn sonst nichts passt - aber nur mit freiem Platz."""
+    from lolcoach import kaufplan, stratege
+    it = stratege._items()
+    ids = lambda *n: tuple(it[x][3] for x in n)
+    inv = ids("Beschichtete Stahlkappen", "Überheblichkeit", "Lord Dominiks Grüße", "Der Sammler",
+              "Klinge der Unendlichkeit")
+    assert kaufplan.konflikt(it["Schwarzes Beil"][3], inv) == it["Lord Dominiks Grüße"][3]
+    assert kaufplan.konflikt(it["Lord Dominiks Grüße"][3], ids("Letzter Atemzug")) is None   # baut daraus
+    assert not kaufplan.kaufbar("Schwarzes Beil", inv)[0]
+    k = kaufplan.plan("Graves", inv, 4124, 18)
+    assert k is not None and "Schwarzes Beil" not in k.kaufen and k.item != "Schwarzes Beil", k
+    g = stratege.pruefe("Kauf Schwarzes Beil, dann nach Top.", {"gold": 4124, "items": list(inv)})
+    assert any("einzigartig" in x for x in g), g
+    # 26:02: "Klinge der Unendlichkeit" las sich als "Dorans Klinge der Unendlichkeit" (Kurzform "Klinge")
+    ie = ids("Kontroll-Auge", "Überheblichkeit", "Stiefel", "Lord Dominiks Grüße", "Der Sammler", "Riesenschwert")
+    g = stratege.pruefe("Kauf Klinge der Unendlichkeit, dann nach Top.", {"gold": 2412, "items": list(ie)})
+    assert not g, g
+    # 35:43, 1205 Gold: sechs Items - nichts, auch kein Elixier; mit freiem Platz das Elixier des Zorns
+    voll = inv + ids("Schildbogen der Unsterblichkeit")
+    assert kaufplan.plan("Graves", voll, 1205, 18) is None
+    alt = kaufplan._plan
+    try:
+        kaufplan._plan = lambda *a: None                   # Build fertig, ein Platz frei
+        assert kaufplan.plan("Graves", inv, 1205, 18).kaufen == ["Elixier des Zorns"]
+        assert kaufplan.plan("Graves", inv, 1205, 8) is None                     # erst ab Level 9
+        assert kaufplan.plan("Graves", inv, 400, 18) is None
+        assert kaufplan.plan("Lux", inv, 1205, 18).kaufen == ["Elixier der Zauberei"]
+    finally:
+        kaufplan._plan = alt
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
@@ -847,6 +965,7 @@ if __name__ == "__main__":
                  ihr_jungle_heisst_ihr_jungle, keine_verbotenen_gruende, warum_mit_vergleich,
                  vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal, anteil_geglaettet,
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
-                 stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017, lagebild_019):
+                 stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017, lagebild_019,
+                 objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018):
         test()
         print(f"{test.__name__} OK")

@@ -1,0 +1,783 @@
+{
+ "quelle": "https://raw.communitydragon.org/latest/game/items.cdtb.bin.json",
+ "stand": "2026-09-29",
+ "ddragon": "16.19.1",
+ "gruppen": {
+  "Boots": {
+   "max": 1,
+   "items": [
+    1001,
+    2422,
+    3006,
+    3008,
+    3009,
+    3010,
+    3013,
+    3020,
+    3047,
+    3111,
+    3117,
+    3158,
+    3168,
+    3170,
+    3171,
+    3172,
+    3173,
+    3174,
+    3175,
+    3176
+   ],
+   "namen": [
+    "Stiefel",
+    "Leicht magisches Schuhwerk",
+    "Beinschienen des Berserkers",
+    "Unersättliche Beinschienen",
+    "Stiefel der Wendigkeit",
+    "Symbiotische Sohlen",
+    "Synchronisierte Seelen",
+    "Zaubererschuhe",
+    "Beschichtete Stahlkappen",
+    "Merkurs Schuhe",
+    "Stiefel der Beweglichkeit",
+    "Ionische Stiefel der Deutlichkeit",
+    "Unsterblicher Pfad",
+    "Schnellmarsch",
+    "Blutrote Erkenntnis",
+    "Waffenmetall-Beinschienen",
+    "Kettenbrecher",
+    "Gepanzerter Vormarsch",
+    "Schuhe des Zauberkünstlers",
+    "Ewig weiter voran"
+   ]
+  },
+  "BootsWithoutActives": {
+   "max": 1,
+   "items": [
+    1001,
+    2422,
+    3006,
+    3008,
+    3009,
+    3010,
+    3013,
+    3020,
+    3047,
+    3111,
+    3117,
+    3158,
+    3168,
+    3176
+   ],
+   "namen": [
+    "Stiefel",
+    "Leicht magisches Schuhwerk",
+    "Beinschienen des Berserkers",
+    "Unersättliche Beinschienen",
+    "Stiefel der Wendigkeit",
+    "Symbiotische Sohlen",
+    "Synchronisierte Seelen",
+    "Zaubererschuhe",
+    "Beschichtete Stahlkappen",
+    "Merkurs Schuhe",
+    "Stiefel der Beweglichkeit",
+    "Ionische Stiefel der Deutlichkeit",
+    "Unsterblicher Pfad",
+    "Ewig weiter voran"
+   ]
+  },
+  "DoransItems": {
+   "max": 1,
+   "items": [
+    1054,
+    1055,
+    1056,
+    1086,
+    1101,
+    1102,
+    1103,
+    1105,
+    1106,
+    1107,
+    1120,
+    3865,
+    3866,
+    3867,
+    3869,
+    3870,
+    3871,
+    3876,
+    3877
+   ],
+   "namen": [
+    "Dorans Schild",
+    "Dorans Klinge",
+    "Dorans Ring",
+    "Dorans Bogen",
+    "Brandklauenwelpe",
+    "Windläuferschlüpfling",
+    "Mooshüpfersetzling",
+    "Mooshüpfersetzling",
+    "Windläuferschlüpfling",
+    "Brandklauenwelpe",
+    "Dorans Helm",
+    "Weltatlas",
+    "Runenkompass",
+    "Schatz der Welten",
+    "Himmlischer Widerstand",
+    "Traumweber",
+    "Zaz'Zaks Weltenstachel",
+    "Sonnwendschlitten",
+    "Blutgesang"
+   ]
+  },
+  "EternityItems": {
+   "max": 1,
+   "items": [
+    3803,
+    6657,
+    326657
+   ],
+   "namen": [
+    "Katalysator der Äonen",
+    "Stab der Zeitalter",
+    "Stab der Zeitalter"
+   ]
+  },
+  "Glory": {
+   "max": 1,
+   "items": [
+    1082,
+    3041
+   ],
+   "namen": [
+    "Dunkles Siegel",
+    "Mejais Seelenstehler"
+   ]
+  },
+  "GoldItems": {
+   "max": 1,
+   "items": [
+    1101,
+    1102,
+    1103,
+    1105,
+    1106,
+    1107,
+    3865,
+    3866,
+    3867,
+    3869,
+    3870,
+    3871,
+    3876,
+    3877
+   ],
+   "namen": [
+    "Brandklauenwelpe",
+    "Windläuferschlüpfling",
+    "Mooshüpfersetzling",
+    "Mooshüpfersetzling",
+    "Windläuferschlüpfling",
+    "Brandklauenwelpe",
+    "Weltatlas",
+    "Runenkompass",
+    "Schatz der Welten",
+    "Himmlischer Widerstand",
+    "Traumweber",
+    "Zaz'Zaks Weltenstachel",
+    "Sonnwendschlitten",
+    "Blutgesang"
+   ]
+  },
+  "GuardianItems": {
+   "max": 1,
+   "items": [
+    2051,
+    3112,
+    3177,
+    3184
+   ],
+   "namen": [
+    "Horn des Beschützers",
+    "Kugel des Beschützers",
+    "Klinge des Beschützers",
+    "Hammer des Beschützers"
+   ]
+  },
+  "ImmolateItems": {
+   "max": 1,
+   "items": [
+    3068,
+    6660,
+    6664
+   ],
+   "namen": [
+    "Sonnenfeuer-Ägide",
+    "Bamis Glutstein",
+    "Hohler Glanz"
+   ]
+  },
+  "LastWhisper": {
+   "max": 1,
+   "items": [
+    3033,
+    3035,
+    3036,
+    3071,
+    3302,
+    6694
+   ],
+   "namen": [
+    "Sterbliche Mahnung",
+    "Letzter Atemzug",
+    "Lord Dominiks Grüße",
+    "Schwarzes Beil",
+    "Terminus",
+    "Seryldas Bitterkeit"
+   ]
+  },
+  "LifelineItems": {
+   "max": 1,
+   "items": [
+    2525,
+    3003,
+    3040,
+    3053,
+    3155,
+    3156,
+    6673,
+    323003,
+    323040
+   ],
+   "namen": [
+    "Protoplasma-Gurt",
+    "Stab des Erzengels",
+    "Umarmung des Seraphen",
+    "Steraks Pegel",
+    "Hextrinker",
+    "Schlund von Malmortius",
+    "Schildbogen der Unsterblichkeit",
+    "Stab des Erzengels",
+    "Umarmung des Seraphen"
+   ]
+  },
+  "MythicItems": {
+   "max": 1,
+   "items": [
+    3802,
+    4635,
+    4636
+   ],
+   "namen": [
+    "Verlorenes Kapitel",
+    "Todesblick",
+    "Nachternte"
+   ]
+  },
+  "Potion": {
+   "max": 1,
+   "items": [
+    2003,
+    2031,
+    2033
+   ],
+   "namen": [
+    "Heiltrank",
+    "Nachfüllbarer Trank",
+    "Verderbender Trank"
+   ]
+  },
+  "Quicksilver": {
+   "max": 1,
+   "items": [
+    3139,
+    3140
+   ],
+   "namen": [
+    "Flinker Krummsäbel",
+    "Quecksilberschärpe"
+   ]
+  },
+  "StopwatchGroup": {
+   "max": 1,
+   "items": [
+    2420,
+    2421
+   ],
+   "namen": [
+    "Armschutz des Suchenden",
+    "Zerbrochener Armschutz"
+   ]
+  },
+  "TearItems": {
+   "max": 1,
+   "items": [
+    2526,
+    3003,
+    3004,
+    3070,
+    3119,
+    322526,
+    323003,
+    323004,
+    323070,
+    323119
+   ],
+   "namen": [
+    "Flüsterreif",
+    "Stab des Erzengels",
+    "Manamune",
+    "Träne der Göttin",
+    "Nahender Winter",
+    "Flüsterreif",
+    "Stab des Erzengels",
+    "Manamune",
+    "Träne der Göttin",
+    "Nahender Winter"
+   ]
+  },
+  "TheBlackSpear": {
+   "max": 1,
+   "items": [
+    3599,
+    3600
+   ],
+   "namen": [
+    "Kalistas Schwarzer Speer",
+    "Kalistas Schwarzer Speer"
+   ]
+  },
+  "VoidPen": {
+   "max": 1,
+   "items": [
+    3135,
+    3137,
+    3302,
+    4630,
+    8010
+   ],
+   "namen": [
+    "Leerenstab",
+    "Kryptablume",
+    "Terminus",
+    "Pestjuwel",
+    "Fluch des Aderlassers"
+   ]
+  },
+  "{0b3d7230}": {
+   "max": 1,
+   "items": [
+    3107,
+    323107
+   ],
+   "namen": [
+    "Befreiungsschlag",
+    "Befreiungsschlag"
+   ]
+  },
+  "{0c3b352c}": {
+   "max": 1,
+   "items": [
+    3110,
+    323110
+   ],
+   "namen": [
+    "Gefrorenes Herz",
+    "Gefrorenes Herz"
+   ]
+  },
+  "{153b4357}": {
+   "max": 1,
+   "items": [
+    3119,
+    323119
+   ],
+   "namen": [
+    "Nahender Winter",
+    "Nahender Winter"
+   ]
+  },
+  "{193d883a}": {
+   "max": 1,
+   "items": [
+    3109,
+    323109
+   ],
+   "namen": [
+    "Ritterschwur",
+    "Ritterschwur"
+   ]
+  },
+  "{1b1c30d5}": {
+   "max": 1,
+   "items": [
+    3002,
+    3742,
+    323002
+   ],
+   "namen": [
+    "Pionier",
+    "Panzer des toten Mannes",
+    "Pionier"
+   ]
+  },
+  "{20adb0c6}": {
+   "max": 1,
+   "items": [
+    3075,
+    323075
+   ],
+   "namen": [
+    "Dornenpanzer",
+    "Dornenpanzer"
+   ]
+  },
+  "{29affd88}": {
+   "max": 1,
+   "items": [
+    3004,
+    3042,
+    323004,
+    323042
+   ],
+   "namen": [
+    "Manamune",
+    "Muramana",
+    "Manamune",
+    "Muramana"
+   ]
+  },
+  "{2bb000ae}": {
+   "max": 1,
+   "items": [
+    3003,
+    3040,
+    323003,
+    323040
+   ],
+   "namen": [
+    "Stab des Erzengels",
+    "Umarmung des Seraphen",
+    "Stab des Erzengels",
+    "Umarmung des Seraphen"
+   ]
+  },
+  "{3179bd6e}": {
+   "max": 1,
+   "items": [
+    2065,
+    322065
+   ],
+   "namen": [
+    "Shurelyas Kampfhymne",
+    "Shurelyas Kampfhymne"
+   ]
+  },
+  "{31b248b7}": {
+   "max": 1,
+   "items": [
+    3050,
+    323050
+   ],
+   "namen": [
+    "Zekes Konvergenz",
+    "Zekes Konvergenz"
+   ]
+  },
+  "{3432bd77}": {
+   "max": 1,
+   "items": [
+    6621,
+    326621
+   ],
+   "namen": [
+    "Dämmerkern",
+    "Dämmerkern"
+   ]
+  },
+  "{3541a6d4}": {
+   "max": 3,
+   "items": [
+    3074,
+    3748,
+    6698
+   ],
+   "namen": [
+    "Gefräßige Hydra",
+    "Titanische Hydra",
+    "Gottlose Hydra"
+   ]
+  },
+  "{395dbfbb}": {
+   "max": 1,
+   "items": [
+    6620,
+    326620
+   ],
+   "namen": [
+    "Echos von Helia",
+    "Echos von Helia"
+   ]
+  },
+  "{3aa8b165}": {
+   "max": 1,
+   "items": [
+    1101,
+    1102,
+    1103,
+    1105,
+    1106,
+    1107
+   ],
+   "namen": [
+    "Brandklauenwelpe",
+    "Windläuferschlüpfling",
+    "Mooshüpfersetzling",
+    "Mooshüpfersetzling",
+    "Windläuferschlüpfling",
+    "Brandklauenwelpe"
+   ]
+  },
+  "{3e600631}": {
+   "max": 1,
+   "items": [
+    6657,
+    326657
+   ],
+   "namen": [
+    "Stab der Zeitalter",
+    "Stab der Zeitalter"
+   ]
+  },
+  "{3fcdbdac}": {
+   "max": 1,
+   "items": [
+    3102,
+    3814,
+    4632
+   ],
+   "namen": [
+    "Schleier der Todesfee",
+    "Saum der Nacht",
+    "Tiefgrüne Barriere"
+   ]
+  },
+  "{4b6ce430}": {
+   "max": 99,
+   "items": [
+    663039,
+    663146,
+    663172,
+    664011
+   ],
+   "namen": [
+    "Atmas Abrechnung",
+    "Hextech-Gunblade",
+    "Zephir",
+    "Schwert des aufblühenden Morgens"
+   ]
+  },
+  "{5aa31b15}": {
+   "max": 1,
+   "items": [
+    3504,
+    323504
+   ],
+   "namen": [
+    "Thymiaterion",
+    "Thymiaterion"
+   ]
+  },
+  "{5f2a99fe}": {
+   "max": 1,
+   "items": [
+    4005,
+    324005
+   ],
+   "namen": [
+    "Imperiale Verfügung",
+    "Imperiale Verfügung"
+   ]
+  },
+  "{87f1e822}": {
+   "max": 1,
+   "items": [
+    3075,
+    3076,
+    323075
+   ],
+   "namen": [
+    "Dornenpanzer",
+    "Dornenweste",
+    "Dornenpanzer"
+   ]
+  },
+  "{8b55a7b3}": {
+   "max": 1,
+   "items": [
+    2510,
+    3057,
+    3078,
+    3100,
+    3508,
+    3877,
+    6662
+   ],
+   "namen": [
+    "Tag und Nacht",
+    "Glanz",
+    "Stärke der Dreieinigkeit",
+    "Fluch des Lichs",
+    "Essenzräuber",
+    "Blutgesang",
+    "Eisgeborenen-Handschuh"
+   ]
+  },
+  "{9c26fd24}": {
+   "max": 1,
+   "items": [
+    3190,
+    323190
+   ],
+   "namen": [
+    "Amulett der eisernen Solari",
+    "Amulett der eisernen Solari"
+   ]
+  },
+  "{9d42d534}": {
+   "max": 1,
+   "items": [
+    3119,
+    3121,
+    323119,
+    323121
+   ],
+   "namen": [
+    "Nahender Winter",
+    "Fimbulwinter",
+    "Nahender Winter",
+    "Fimbulwinter"
+   ]
+  },
+  "{ad562792}": {
+   "max": 1,
+   "items": [
+    6616,
+    326616
+   ],
+   "namen": [
+    "Stab des fließenden Wassers",
+    "Stab des fließenden Wassers"
+   ]
+  },
+  "{ad65321c}": {
+   "max": 1,
+   "items": [
+    6676,
+    667666
+   ],
+   "namen": [
+    "Der Sammler",
+    "Der Sammler"
+   ]
+  },
+  "{ae562925}": {
+   "max": 1,
+   "items": [
+    6617,
+    326617
+   ],
+   "namen": [
+    "Mondstein-Erneuerer",
+    "Mondstein-Erneuerer"
+   ]
+  },
+  "{b1a64644}": {
+   "max": 1,
+   "items": [
+    3002,
+    323002
+   ],
+   "namen": [
+    "Pionier",
+    "Pionier"
+   ]
+  },
+  "{bf3ed580}": {
+   "max": 1,
+   "items": [
+    3222,
+    323222
+   ],
+   "namen": [
+    "Mikaels Segen",
+    "Mikaels Segen"
+   ]
+  },
+  "{cf1a44c0}": {
+   "max": 1,
+   "items": [
+    3074,
+    3077,
+    3748,
+    6631,
+    6698
+   ],
+   "namen": [
+    "Gefräßige Hydra",
+    "Tiamat",
+    "Titanische Hydra",
+    "Schikane",
+    "Gottlose Hydra"
+   ]
+  },
+  "{d4211923}": {
+   "max": 1,
+   "items": [
+    8020,
+    328020
+   ],
+   "namen": [
+    "Höllenmaske",
+    "Höllenmaske"
+   ]
+  },
+  "{e7278ce8}": {
+   "max": 1,
+   "items": [
+    663064,
+    664403
+   ],
+   "namen": [
+    "Veigars Amulett des Aufstiegs",
+    "Der Goldene Pfannenwender"
+   ]
+  },
+  "{f4405fb4}": {
+   "max": 1,
+   "items": [
+    2526,
+    322526
+   ],
+   "namen": [
+    "Flüsterreif",
+    "Flüsterreif"
+   ]
+  },
+  "{f842a497}": {
+   "max": 1,
+   "items": [
+    2526,
+    2530,
+    322526,
+    322530
+   ],
+   "namen": [
+    "Flüsterreif",
+    "Diadem der Lieder",
+    "Flüsterreif",
+    "Diadem der Lieder"
+   ]
+  }
+ }
+}

@@ -66,6 +66,19 @@ wartest, warum und was du nächstes Mal tust.
     `aufnahmen/<Partie>_kosten.json`.
   - **Zurück aufs Abo:** in `wissen/kern.toml` unter `[llm]` `weg = "abo"`. Fällt die API aus, nimmt der Coach von
     selbst 2 Minuten lang das Abo.
+- **Seit Auftrag 018 (29.09.2026, aus deiner Graves-Partie):**
+  - Der Coach liest die Objective-Symbole auf der Minimap (lila oben, Drache unten). Claude sieht dann „Herold lebt
+    (Symbol auf der Karte zu sehen)“ und sagt nicht mehr „weiß ich nicht“.
+  - Stehst du nach dem Respawn oder einem Kauf 20 Sekunden still in der Basis, kommt der Plan noch einmal („Los: …“),
+    höchstens zweimal.
+  - Türme immer mit Stufe („unter eurem äußeren Mid-Turm“); gewartet wird am vordersten stehenden.
+  - Kauf: keine Items mehr, die mit deinem Inventar kollidieren (einzigartige Gruppen aus den Spieldaten, z. B.
+    Schwarzes Beil und Lord Dominiks Grüße). Ab Level 9 schlägt er ein Elixier vor, wenn sonst nichts passt – aber
+    nur mit freiem Platz: laut Spieldaten liegt das Elixier bis zum Trinken im Inventar (deine Beobachtung 36:47).
+    Bei vollem Inventar sagt er es dazu.
+  - Kämpft ein Mitspieler in bis zu 15 s Weg, sagt Claude „Hilf“ oder „Nicht hin“ mit Grund und Kill-Check.
+  - Beim Tod bricht der laufende Satz sofort ab; der Tod-Satz hat höchstens 12 Wörter und sagt keinem Toten „geh
+    zurück“.
 - **Flash-Timer:** Pingt ein Mitspieler im Chat "Urgot Blitz" (oder "urgot ult"), läuft
   ein Timer. Der Coach sieht Flash auch selbst auf der Minimap.
 

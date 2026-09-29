@@ -656,7 +656,7 @@ def bewerte(p: Partie, lagebild=None, objective: tuple[str, float] | None = None
         pass
     try:
         from . import kaufplan
-        b.kauf = kaufplan.plan(p.ich.champion_id, p.ich.items, b.gold)
+        b.kauf = kaufplan.plan(p.ich.champion_id, p.ich.items, b.gold, p.ich.level)
     except Exception:
         b.kauf = None
     feind, mein = gegenteam(p.mein_team), p.mein_team

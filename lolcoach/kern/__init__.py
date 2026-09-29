@@ -1444,7 +1444,7 @@ class Kern:
         from .fragen import liste
         art = a.schluessel.split(":", 1)[-1]
         b = getattr(m, "b", None)            # konstruierte Lagen in den Tests haben kein b
-        if b is None or kategorie in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "INFO_VORLAUF", "BESTAETIGUNG"):
+        if b is None or kategorie in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "INFO_VORLAUF", "INFO_BASIS", "BESTAETIGUNG"):
             return None
         if art in ("RAUS", "ZURUECK", "WELLE_UND_RAUS") or (kategorie == "GEFAHR" and art not in ("REIN", "DREHEN")):
             ort = b.sicherer_ort()[0]
@@ -1458,7 +1458,7 @@ class Kern:
             elif m.leben is not None:
                 s += f", weil du nur {int(round(m.leben * 100))} Prozent Leben hattest"
             return s + "."
-        if plan is None or kategorie in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "INFO_VORLAUF", "VORSICHT", "LAGEBILD", "MAKRO",
+        if plan is None or kategorie in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "INFO_VORLAUF", "INFO_BASIS", "VORSICHT", "LAGEBILD", "MAKRO",
                                          "BESTAETIGUNG"):
             return None
         h = plan.handlung

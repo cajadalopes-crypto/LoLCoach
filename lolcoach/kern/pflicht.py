@@ -26,6 +26,41 @@ class Pflicht:
         self.offen: dict[str, tuple[float, str]] = {}  # Art -> (seit, Text)
         self.vorlauf_gesagt: set = set()              # (Objective, Spawn, Stufe)
         self.vorhersage_zuletzt = -1e9
+        self.basis_seit: float | None = None          # lebend in der Basis seit
+        self.basis_pos = None                         # (Zeit, Ort) beim letzten Stand
+        self.basis_gesagt: list[float] = []
+
+    def _basis_steht(self, kern, m, modus: str | None) -> None:
+        """Auftrag 018, 2 (183125 18:46-19:48: nach dem Respawn eine Minute im Brunnen, keine Anweisung - "ich bleibe
+        stehen, bis du mir sagst, was ich tun soll"): stehst du lebend basis_steht_s in der Basis, ohne dich zu
+        bewegen, kommt der Plan noch einmal - hoechstens zweimal je Aufenthalt."""
+        c = kern.cfg["pflicht"]
+        if getattr(m, "tot", False) or modus != "BASIS" or getattr(m, "pos", None) is None:
+            self.basis_seit, self.basis_pos, self.basis_gesagt = None, None, []
+            return
+        if self.basis_seit is None:
+            self.basis_seit, self.basis_pos = m.zeit, (m.zeit, m.pos)
+            return
+        from ..bewertung import abstand
+        if abstand(m.pos, self.basis_pos[1]) > c["basis_bewegt"]:
+            self.basis_pos = (m.zeit, m.pos)                 # er geht los - die Uhr beginnt neu
+            return
+        steht = m.zeit - self.basis_pos[0]
+        zuletzt = self.basis_gesagt[-1] if self.basis_gesagt else self.basis_pos[0]
+        if steht < c["basis_steht_s"] or m.zeit - zuletzt < c["basis_steht_s"] or len(self.basis_gesagt) >= 2:
+            return
+        # derselbe Satz wie zuletzt in diesem Aufenthalt - kein neues Ziel (102112 3715: ein Ziel je Basis-Aufenthalt)
+        gesagt = [e for e in getattr(kern, "_ansage_log", None) or []
+                  if e["zeit"] >= self.basis_seit and not str(e["kategorie"]).startswith("INFO_")]
+        pl = getattr(getattr(kern, "fuehrer", None), "plan", None)
+        satz = gesagt[-1]["text"] if gesagt else (pl.handlung.satz if pl is not None and not pl.handlung.stumm else "")
+        if not satz:
+            return
+        self.basis_gesagt.append(m.zeit)
+        from .modi import kuerze
+        from .sprache import gross
+        satz = satz.removeprefix("Jetzt, wo du in der Basis bist: ").removeprefix("Jetzt, wo du wieder lebst: ")
+        self.offen["INFO_BASIS"] = (m.zeit, kuerze(f"Los: {gross(satz)}", kern.cfg["sprechen"]["max_woerter"]))
 
     def _vorlauf(self, kern, m) -> None:
         """Auftrag 017, 1.3 (Buch 13, 4): 60 s vor dem Spawn die Vorbereitungskette, 40 s vorher loslaufen; ohne Prio
@@ -88,6 +123,7 @@ class Pflicht:
             return
         c = kern.cfg["pflicht"]
         self._vorlauf(kern, m)
+        self._basis_steht(kern, m, modus)
         if b.jungler is not None and not b.jungler.s.tot:
             self._vorhersage(kern, m, b.jungler)
         j = b.jungler

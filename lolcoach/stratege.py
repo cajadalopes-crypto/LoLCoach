@@ -289,6 +289,9 @@ def kuerzen(text: str, woerter: int = LAENGE_HOECHSTENS) -> str:
     return " ".join(aus)
 
 
+VERKAUF = _re.compile(r"\bverkauf\w*\s+([^,.;:]+?)(?=\s*(?:[,.;:]|\bund\b|\bdann\b|$))", _re.I)
+
+
 def _items() -> dict:
     """Name -> (Preis gesamt, Grundpreis, Bauteile) der kaufbaren Items auf der Kluft."""
     global _ITEMS
@@ -383,15 +386,27 @@ def pruefe_015(s: str, lage: dict) -> list[str]:
     gold = lage.get("gold")
     if gold is not None and KAUF_WORT.search(s) and not KAUF_SPAETER.search(s):
         items = _items()
+        # Auftrag 018, 2 (183125 18:36): "Verkauf Dorans Klinge, kauf Sonnenköcher" - der Verkauf ist kein Kauf, er
+        # macht einen Platz frei und bringt Gold
+        besitz_ids = [int(i) for i in lage.get("items") or []]
+        for v in VERKAUF.finditer(s):
+            n = next((n for n in sorted(items, key=len, reverse=True) if n != "_id" and n in v.group(1)), None)
+            if n is not None and items[n][3] in besitz_ids:
+                besitz_ids.remove(items[n][3])
+                gold += int(items["_id"].get(items[n][3], {}).get("gold", {}).get("sell", 0))
+        s = VERKAUF.sub(" ", s)
         rest = _re.sub(r"für ((die|den|das|deine|deinen|dein|eine|einen) )?[\wÄÖÜäöüß' -]+", " ", s)
         # auch kurz gesagt (Kritik 016, 192113 9:42: "Kriegshammer + Spitzhacke" bei 1060 Gold)
         kurz = {n.split()[-1]: n for n in items if n != "_id" and " " in n and len(n.split()[-1]) >= 6}
         for k, n in kurz.items():
-            if n not in rest and _re.search(rf"(?<!\w){_re.escape(k)}(?!\w)", rest):
+            # Auftrag 018 (183125 26:02): "Klinge der Unendlichkeit" ist keine Kurzform von "Dorans Klinge" - nur
+            # ersetzen, wenn kein voller Name mit diesem Wort dasteht
+            if n not in rest and _re.search(rf"(?<!\w){_re.escape(k)}(?!\w)", rest) and not any(
+                    v != "_id" and v in rest and _re.search(rf"(?<!\w){_re.escape(k)}(?!\w)", v) for v in items):
                 rest = _re.sub(rf"(?<!\w){_re.escape(k)}(?!\w)", n, rest)
         namen = sorted((n for n in items if n != "_id" and _re.search(rf"(?<!\w){_re.escape(n)}(?!\w)", rest)),
                        key=len, reverse=True)
-        genannt, preis, besitz = [], 0, list(lage.get("items") or [])
+        genannt, preis, besitz = [], 0, list(besitz_ids)
         for n in namen:
             if any(n in g for g in genannt):
                 continue
@@ -399,11 +414,19 @@ def pruefe_015(s: str, lage: dict) -> list[str]:
             preis += _restpreis(items[n][3], besitz)
         if genannt and preis > gold:
             gruende.append(f"Gold reicht nicht ({' + '.join(genannt)} = {preis}, du hast {gold})")
+        try:                                               # Auftrag 018, 4: einzigartige Gruppen (Spieldaten)
+            from .kaufplan import konflikt
+            for n in genannt:
+                if (j := konflikt(items[n][3], besitz_ids)) is not None:
+                    alt = items["_id"].get(j, {}).get("name", str(j))
+                    gruende.append(f"{n} geht nicht zusammen mit {alt} (einzigartig)")
+        except Exception:
+            pass
         if genannt:
             # Auftrag 016, 5 (133448 13:27: "kauf Auge, Hammer und Spitzhacke" - dann war fuer das Langschwert kein Platz)
             try:
                 from . import kaufplan
-                frei = kaufplan.plaetze_nach(list(lage.get("items") or []), genannt)
+                frei = kaufplan.plaetze_nach(besitz_ids, genannt)
             except Exception:
                 frei = 0
             if frei < 0:

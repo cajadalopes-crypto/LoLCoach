@@ -4,6 +4,71 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 018 – Was Carlos' Graves-Partie zeigt (183125, 29.09.2026)
+
+Stand nach 017/019, geprüft nur an Aufnahmen; Nachspiel über die API (Haiku), Protokoll in
+`buecher/protokolle/NACHSPIEL_2026-09-29_183125.md`, Rohdaten in `stratege_probe_018/`.
+
+**1. Objective-Symbole der Minimap** (`lolcoach/objsymbole.py`, geeicht mit `werkzeuge/objsymbole_eichung.py`):
+8 Aufnahmen mit Minimap-Bildern (1 Hz), je Bild die zwei Gruben gegen den Objective-Stand aus den API-Ereignissen
+(Spawn-Regeln + DragonKill/HeraldKill/BaronKill) zur Spielzeit des Bildes.
+
+| Grube | Bilder | Treffer | Symbol, obwohl nichts lebt | lebt, kein Symbol | verdeckt (Portrait) |
+|---|---|---|---|---|---|
+| oben (Larven, Herold, Baron) | 13 391 | **99,5 %** | 9 | 52 | 344 |
+| unten (Drache, Ältester) | 12 245 | **97,7 %** | 202 | 76 | 1 490 |
+
+- Merkmale: lila (oben), getönte helle Pixel (Drachen-Symbol, alle Kanäle ≥ 80, Tönung ≥ 30), grau-weiße Uhr,
+  roter/blauer Portrait-Rand. Erste Fassung unten 77 %: der beleuchtete Fluss und die Ränder der Ziffern zählten
+  als Symbol; die Uhr wird deshalb vor dem Symbol geprüft.
+- Live und im Nachspiel geglättet (ein Wechsel gilt ab der zweiten gleichen Lesung). Ins Lagebild geht nur die
+  Bestätigung („Herold lebt (Symbol auf der Karte zu sehen)“). „Symbol fehlt, vermutlich genommen“ ist verworfen:
+  183125 13:50–14:21 las der Kampf an der Grube als Uhr (8 Fehlmeldungen in 4 Partien, Stichprobe alle 5 s), und genommen meldet die API
+  sofort.
+
+**2.–6. Szenarien** (`tests/szenarien/2026-09-29_183125_auftrag018.toml`): 8/8 grün; auf 4b3f1f0 rot: 1836
+(„Du lebst in 10 Sekunden wieder: du lebst in 10 Sekunden.“), 1935 (kein Satz in 60 s Basis), 1953 („unter eurem
+Mid-Turm“), 3426 („Kauf Schwarzes Beil“), 3543 („Gerade nichts zu kaufen“ ohne Grund). Wächter: 1912, 1948, 3821.
+Unit-Tests `objsymbole_018`, `respawn_018`, `kauf_018`, `tod_018`, `turm_und_kampf_018` (rot auf 4b3f1f0).
+
+- **Elixier:** Die Spieldaten führen es als `consumed` (verbraucht beim Benutzen, wie das Kontroll-Auge), ohne
+  „beim Kauf verbraucht“; 36:47 konnte Carlos es mit sechs Items nicht kaufen. Der Auftrag nahm an, es belege keinen
+  Platz. Umgesetzt nach Daten und Beobachtung: Elixier ab Level 9, wenn sonst nichts passt, nur mit freiem Platz;
+  bei vollem Inventar sagt der Coach den Grund.
+- **Einzigartige Gruppen:** `wissen/item_gruppen.json` aus CommunityDragon (`items.cdtb.bin.json`, Feld
+  `mItemGroups` + `mMaxGroupOwnable`), 50 Gruppen mit ≥ 2 Items; Schwarzes Beil, Lord Dominiks, Seryldas, Sterbliche
+  Mahnung, Terminus und Letzter Atemzug teilen `LastWhisper` (höchstens 1).
+- Nebenfund: die Prüfung las „Klinge der Unendlichkeit“ als „Dorans Klinge“ (Kurzform „Klinge“) und verwarf 26:02
+  zwei richtige Kauf-Sätze; der Verkauf in „Verkauf Dorans Klinge, kauf Sonnenköcher“ zählte als Kauf (18:36).
+
+**7. Top-Welle als Ziel** (Plan-Sätze ab 20:00, Nachspiel): 019 17 von 37, 018 11 von 35. Ohne Grund noch 3
+(„Kauf Riesenschwert …, dann zur Top-Welle.“ – der Grund fiel der Wortgrenze zum Opfer; zweimal „Danach nach Top.“).
+
+**Nachspiel 183125** (API, Haiku):
+
+| Größe | 019 (API) | 018 |
+|---|---|---|
+| Soll-Liste gesagt + teilweise (blinder Kritiker, 69 Punkte) | 37 (54 %) | **38 (55 %)** |
+| gegnerische Flashes angesagt | 9/13 | 10/13 |
+| I1 Jungler-Wiedersichtungen | 27/29 | 25/29 |
+| I4 Lane-Gegner weit weg | 1/4 | 1/4 |
+| Backs / Back-Rufe mit Kette | 8/10 · 17/17 | 9/10 · 15/15 |
+| längste Stille in der Lane-Phase | 104 s | 73 s |
+| Sicherheit (R1, Kill-Check, innere Begriffe) | 2 | **0** |
+| Widersprüche automatisch / Kritiker | 2 / – | 2 / 5 |
+| Füllsätze automatisch / Kritiker | 0/156 / – | 1/165 / 17 |
+| Stratege bis zur ganzen Antwort, Median / p90 | 1,6 / 2,8 s | 1,3 / 2,5 s |
+| Kosten der Partie (39 min) | 0,34 $ | 0,26 $ |
+
+- Die Soll-Liste bewegt sich kaum; die Fixes treffen Einzelmomente (18:36, 19:07/19:28, 19:53, 34:26, 35:43, 38:09),
+  die Liste misst vor allem den Plan über die ganze Partie (Buch 14, Schritt C).
+- Der Kritiker zählt 17 Füllsätze, darunter Jungler-Orte ohne Folge und die Wiederholung „Los: …“ (19:28).
+- **Kampf 26:15 (I6):** Der Coach sagte 25:58 „Nicht hin, du brauchst 7 Sekunden und hast 41 Prozent Leben“ und
+  26:52 „Geh sofort zum unteren Fluss zu deinen vier, nehmt den Drachen …“. Der Challenger-Kritiker sagt dagegen: „rein, mit Ult
+  und Flash auf Kog'Maw“. Das verbietet „kein Angriff ohne Kill-Check“, denn Kog'Maws Leben war nicht im Bild.
+
+---
+
 ## Auftrag 019 – Lagebild und Claude über die API (29.09.2026)
 
 Grundlage: `buecher/14_bauplan_gehirn.md` (Schritt A) und `buecher/auftraege/019_auftrag.md`. Keine Testpartie, der

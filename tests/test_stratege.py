@@ -63,7 +63,8 @@ def todesanalyse():
     assert not kurz.situativ and not kurz.kontext            # 1:40, kurze Todeszeit: Standardsatz sofort
     # Pruefung E1 (Qualitaetsrunde 1): auch nach langer Todeszeit zwei Saetze, hoechstens 25 Woerter, nicht mehr
     # vom Strategen frei formuliert (bis Schritt 6). Die Fakten liegen fuer "warum bin ich gestorben?" bereit.
-    assert not lang.situativ and len(lang.text.split()) <= 25 and lang.text.count(".") == 2, lang
+    # Auftrag 018, 6 (183125 38:21): hoechstens 12 Woerter und nichts, was einen Lebenden wegschickt
+    assert not lang.situativ and len(lang.text.split()) <= 12 and not regeln.AN_LEBENDE.search(lang.text), lang
     kontext = lb.letzter_tod[1]
     assert "TOD um 19:55" in kontext and "Wiedereinstieg in 49 s" in kontext, kontext
     assert "15 s vorher: dein Leben 96 %" in kontext, kontext

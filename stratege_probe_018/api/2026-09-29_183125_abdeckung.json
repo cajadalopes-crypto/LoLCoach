@@ -1,0 +1,568 @@
+{
+ "kennzahlen": {
+  "flash": "10/13 (77 %)",
+  "jungler": "25/29 (86 %)",
+  "i4": "1/4 (25 %)",
+  "backs": "9/10 (90 %)",
+  "back_rufe": "15/15 (100 %)",
+  "stille": "73 s",
+  "sicherheit": 0,
+  "widersprueche": 2,
+  "fuellsaetze": "1/165 (0.6 %)",
+  "latenz": "1.34 / 2.52 s (n = 73)"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 72.21558380126953,
+    "champion": "Garen",
+    "gesagt": "Garen Flash weg.",
+    "nach_s": 7.8
+   },
+   {
+    "zeit": 405.5424499511719,
+    "champion": "Garen",
+    "gesagt": "Garen Flash weg.",
+    "nach_s": 6.1
+   },
+   {
+    "zeit": 590.973388671875,
+    "champion": "Tryndamere",
+    "gesagt": null,
+    "nach_s": null
+   },
+   {
+    "zeit": 590.973388671875,
+    "champion": "Fizz",
+    "gesagt": null,
+    "nach_s": null
+   },
+   {
+    "zeit": 593.172607421875,
+    "champion": "Nautilus",
+    "gesagt": "Nautilus Flash weg.",
+    "nach_s": 10.2
+   },
+   {
+    "zeit": 738.95263671875,
+    "champion": "Kog'Maw",
+    "gesagt": "Kog'Maw Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 751.2443237304688,
+    "champion": "Garen",
+    "gesagt": "Garen Flash weg.",
+    "nach_s": 7.4
+   },
+   {
+    "zeit": 1053.1627197265625,
+    "champion": "Garen",
+    "gesagt": "Garen Flash weg.",
+    "nach_s": 2.7
+   },
+   {
+    "zeit": 1063.9036865234375,
+    "champion": "Kog'Maw",
+    "gesagt": "Kog'Maw Flash weg.",
+    "nach_s": 8.2
+   },
+   {
+    "zeit": 1434.1397705078125,
+    "champion": "Garen",
+    "gesagt": null,
+    "nach_s": null
+   },
+   {
+    "zeit": 1609.7701416015625,
+    "champion": "Kog'Maw",
+    "gesagt": "Kog'Maw Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1871.3287353515625,
+    "champion": "Garen",
+    "gesagt": "Garen Flash weg.",
+    "nach_s": 6.9
+   },
+   {
+    "zeit": 2222.97265625,
+    "champion": "Garen",
+    "gesagt": "Dein Inventar ist voll, deswegen kannst du es gar nicht kaufen – jetzt: Garen hat 21 Prozent Leben, Flash weg, du bist daneben, greif jetzt an.",
+    "nach_s": 11.6
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 246.6,
+    "name": "Tryndamere",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Tryndamere oben gesehen: zurück hinter die Welle."
+   },
+   {
+    "zeit": 378.5,
+    "name": "Tryndamere",
+    "ort": "im unteren Fluss",
+    "ohne_s": 102,
+    "tot_ich": false,
+    "gesagt": "Tryndamere im unteren Fluss."
+   },
+   {
+    "zeit": 435.5,
+    "name": "Tryndamere",
+    "ort": "im unteren Fluss",
+    "ohne_s": 28,
+    "tot_ich": false,
+    "gesagt": "Jetzt, wo Tryndamere gesehen wurde: Crash die Welle jetzt rein an seinen Turm, weil Garen tot ist, Tryndamere 25 Sekunden braucht und du die Kanone in 41 Sekunden mit reinbringst – dann backst du mit 1050 Gold für Caulfields und bist vor seinem Respawn oben."
+   },
+   {
+    "zeit": 534.4,
+    "name": "Tryndamere",
+    "ort": "im oberen Fluss",
+    "ohne_s": 71,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 595.1,
+    "name": "Tryndamere",
+    "ort": "im oberen Fluss",
+    "ohne_s": 40,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 620.0,
+    "name": "Tryndamere",
+    "ort": "im oberen Fluss",
+    "ohne_s": 22,
+    "tot_ich": false,
+    "gesagt": "Tryndamere oben gesehen: zurück hinter die Welle."
+   },
+   {
+    "zeit": 650.3,
+    "name": "Tryndamere",
+    "ort": "im unteren Fluss",
+    "ohne_s": 22,
+    "tot_ich": false,
+    "gesagt": "Jetzt, wo ihr äußerer Top-Turm weg ist: Welle crashen in ihren inneren Turm, dann sofort Back: Gezackter Langdolch kaufen und zu deiner Lane zurück, weil dein Level-Vorsprung und die fünf Minions den Turm brechen, bevor Tryndamere in 21 Sekunden oben ist."
+   },
+   {
+    "zeit": 723.0,
+    "name": "Tryndamere",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 59,
+    "tot_ich": false,
+    "gesagt": "Tryndamere in seinem unteren Jungle."
+   },
+   {
+    "zeit": 778.5,
+    "name": "Tryndamere",
+    "ort": "im unteren Fluss",
+    "ohne_s": 48,
+    "tot_ich": false,
+    "gesagt": "Tryndamere im unteren Fluss."
+   },
+   {
+    "zeit": 840.8,
+    "name": "Tryndamere",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Tryndamere in seinem unteren Jungle, bei dir in 1 Sekunde."
+   },
+   {
+    "zeit": 903.6,
+    "name": "Tryndamere",
+    "ort": "oben",
+    "ohne_s": 44,
+    "tot_ich": false,
+    "gesagt": "Tryndamere oben, bei dir in 1 Sekunde."
+   },
+   {
+    "zeit": 968.0,
+    "name": "Tryndamere",
+    "ort": "oben",
+    "ohne_s": 40,
+    "tot_ich": true,
+    "gesagt": "Tryndamere oben."
+   },
+   {
+    "zeit": 1066.3,
+    "name": "Tryndamere",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 60,
+    "tot_ich": false,
+    "gesagt": "Tryndamere in seinem oberen Jungle, bei dir in 1 Sekunde."
+   },
+   {
+    "zeit": 1103.1,
+    "name": "Tryndamere",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 20,
+    "tot_ich": true,
+    "gesagt": null
+   },
+   {
+    "zeit": 1150.7,
+    "name": "Tryndamere",
+    "ort": "in eurem oberen Jungle",
+    "ohne_s": 46,
+    "tot_ich": false,
+    "gesagt": "Tryndamere in eurem oberen Jungle."
+   },
+   {
+    "zeit": 1250.6,
+    "name": "Tryndamere",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 44,
+    "tot_ich": false,
+    "gesagt": "Tryndamere auf der Mid-Lane, bei dir in 1 Sekunde."
+   },
+   {
+    "zeit": 1307.6,
+    "name": "Tryndamere",
+    "ort": "in der Flussmitte",
+    "ohne_s": 52,
+    "tot_ich": false,
+    "gesagt": "Tryndamere in der Flussmitte."
+   },
+   {
+    "zeit": 1428.5,
+    "name": "Tryndamere",
+    "ort": "im oberen Fluss",
+    "ohne_s": 98,
+    "tot_ich": false,
+    "gesagt": "Tryndamere im oberen Fluss."
+   },
+   {
+    "zeit": 1518.6,
+    "name": "Tryndamere",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 32,
+    "tot_ich": false,
+    "gesagt": "Tryndamere in seinem oberen Jungle."
+   },
+   {
+    "zeit": 1606.5,
+    "name": "Tryndamere",
+    "ort": "im unteren Fluss",
+    "ohne_s": 36,
+    "tot_ich": false,
+    "gesagt": "Tryndamere im unteren Fluss."
+   },
+   {
+    "zeit": 1667.7,
+    "name": "Tryndamere",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 60,
+    "tot_ich": false,
+    "gesagt": "Tryndamere in seinem unteren Jungle."
+   },
+   {
+    "zeit": 1697.3,
+    "name": "Tryndamere",
+    "ort": "im unteren Fluss",
+    "ohne_s": 25,
+    "tot_ich": false,
+    "gesagt": "Tryndamere im unteren Fluss."
+   },
+   {
+    "zeit": 1848.9,
+    "name": "Tryndamere",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 116,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 1982.0,
+    "name": "Tryndamere",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 63,
+    "tot_ich": true,
+    "gesagt": "Tryndamere auf der Mid-Lane."
+   },
+   {
+    "zeit": 2043.7,
+    "name": "Tryndamere",
+    "ort": "in seiner Basis",
+    "ohne_s": 52,
+    "tot_ich": false,
+    "gesagt": "Tryndamere in seiner Basis."
+   },
+   {
+    "zeit": 2126.4,
+    "name": "Tryndamere",
+    "ort": "in seiner Basis",
+    "ohne_s": 34,
+    "tot_ich": false,
+    "gesagt": "Tryndamere in seiner Basis."
+   },
+   {
+    "zeit": 2161.6,
+    "name": "Tryndamere",
+    "ort": "im unteren Fluss",
+    "ohne_s": 34,
+    "tot_ich": false,
+    "gesagt": "Tryndamere im unteren Fluss."
+   },
+   {
+    "zeit": 2248.3,
+    "name": "Tryndamere",
+    "ort": "oben",
+    "ohne_s": 60,
+    "tot_ich": false,
+    "gesagt": "Tryndamere in seiner Basis."
+   },
+   {
+    "zeit": 2322.5,
+    "name": "Tryndamere",
+    "ort": "in seiner Basis",
+    "ohne_s": 72,
+    "tot_ich": true,
+    "gesagt": "Tryndamere in seiner Basis."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 142.5,
+    "gesagt": "Back jetzt: 39 Prozent Leben. Kauf Stiefel, dann Top.",
+    "saetze": [
+     "Back jetzt: 39 Prozent Leben. Kauf Stiefel, dann Top.",
+     "Jetzt, wo du in der Basis bist: Longschwert und Heiltrank, dann direkt Top zur Welle, weil Fizz in 24 Sekunden kommt und du Level 3 gegen Level 2 brauchst.",
+     "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Crash die Welle in den Turm jetzt, dann Back für Longschwert und Heiltrank, dann direkt zurück zur Lane—Kanone gibt dir 53 Sekunden Fenster und du brauchst den Spike vor Fizz in 19 Sekunden."
+    ]
+   },
+   {
+    "zeit": 246.6,
+    "gesagt": "Back jetzt: 29 Prozent Leben. Heilen, dann zu deinem äußeren Top-Turm.",
+    "saetze": [
+     "Zurück unter deinen äußeren Top-Turm: zwei kommen.",
+     "Tryndamere oben gesehen: zurück hinter die Welle.",
+     "Dann nach Top: 3 Vasallen laufen auf deinen Turm."
+    ]
+   },
+   {
+    "zeit": 349.1,
+    "gesagt": null,
+    "saetze": [
+     "Dann nach Top: du bist pünktlich zur Welle da."
+    ]
+   },
+   {
+    "zeit": 438.3,
+    "gesagt": "Top-Welle rein, dann back: 1050 Gold für Caulfields Kriegshammer, Garen ist tot. Danach Top.",
+    "saetze": [
+     "Top-Welle rein, dann back: 1050 Gold für Caulfields Kriegshammer, Garen ist tot. Danach Top.",
+     "Jetzt, wo Tryndamere gesehen wurde: Crash die Welle jetzt rein an seinen Turm, weil Garen tot ist, Tryndamere 25 Sekunden braucht und du die Kanone in 41 Sekunden mit reinbringst – dann backst du mit 1050 Gold für Caulfields und bist vor seinem Respawn oben.",
+     "Nicht hin, Fizz ist in 7 Sekunden da und du brauchst 14"
+    ]
+   },
+   {
+    "zeit": 563.5,
+    "gesagt": "Jetzt, wo Tryndamere und Fizz tot sind: Back sofort, kauf Überheblichkeit, dann direkt zu deinem Top-Turm, weil die Kanone in 9 Sekunden kommt und du mit Item die Welle halten musst bevor sie crasht.",
+    "saetze": [
+     "Nicht hin, dein Weg 14 Sekunden und dein Leben 64 Prozent",
+     "Jetzt, wo Tryndamere und Fizz tot sind: Back sofort, kauf Überheblichkeit, dann direkt zu deinem Top-Turm, weil die Kanone in 9 Sekunden kommt und du mit Item die Welle halten musst bevor sie crasht.",
+     "Jetzt, wo Drei von ihnen tot aufgetaucht ist: Überheblichkeit kaufen, dann sofort nach Top, weil die Kanone in acht Sekunden kommt und du die Welle halten musst bevor sie crasht."
+    ]
+   },
+   {
+    "zeit": 677.8,
+    "gesagt": "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Crash jetzt in den Turm, weil die Kanone in 19 Sekunden kommt und du danach mit Spitzhacke zurück zu deiner Lane musst, bevor Tryndamere und Garen wieder drücken.",
+    "saetze": [
+     "Drei von ihnen unten: oben ist frei, deine Top-Welle.",
+     "Jetzt, wo ihr äußerer Top-Turm weg ist: Welle crashen in ihren inneren Turm, dann sofort Back: Gezackter Langdolch kaufen und zu deiner Lane zurück, weil dein Level-Vorsprung und die fünf Minions den Turm brechen, bevor Tryndamere in 21 Sekunden oben ist.",
+     "Jetzt, wo du in der Basis bist: Gezackter Langdolch kaufen, dann sofort Top zurück, weil Tryndamere in acht Sekunden bei dir ist und du mit Level-Vorteil die Welle halten musst, bevor er ankommt."
+    ]
+   },
+   {
+    "zeit": 811.5,
+    "gesagt": "Welle ist drin - jetzt back: 1450 Gold für den Sammler. Danach zur Top-Welle.",
+    "saetze": [
+     "Welle ist drin - jetzt back: 1450 Gold für den Sammler. Danach zur Top-Welle.",
+     "Geh nach Top: dort kommt ihre nächste Welle.",
+     "Jetzt, wo ein Kill gefallen ist: Drache bestreiten: Level 12 gegen 6, ihr seid vier gegen eins."
+    ]
+   },
+   {
+    "zeit": 1356.1,
+    "gesagt": "Back jetzt: Riesenschwert, dann zur Top-Welle mit Udyr, weil Kog'Maw und Fizz in 20 Sekunden zurück sind und ihr das Gold vor ihrem Fenster mitnehmen müsst.",
+    "saetze": [
+     "Tryndamere in der Flussmitte.",
+     "Rein auf Garen!",
+     "Jetzt, wo du in der Basis bist: Riesenschwert kaufen, dann sofort zum oberen Fluss zu Udyr und Urgot, weil Kog'Maw und Fizz in wenigen Sekunden respawnen und ihr jetzt mit Überzahl den Kampf gewinnt."
+    ]
+   },
+   {
+    "zeit": 1594.9,
+    "gesagt": "Back jetzt: 2400 Gold für Klinge der Unendlichkeit. Danach nach Top.",
+    "saetze": [
+     "Tryndamere im unteren Fluss.",
+     "Kog'Maw Flash weg.",
+     "Jetzt, wo ihr Inhibitor unten gefallen ist: Geh sofort zum unteren Fluss zu deinen vier, nehmt den Drachen jetzt zusammen, weil ihr in fünf Sekunden komplett seid und Nautilus erst in 17 Sekunden ankommt – das Gold sichert euch vor ihrem Late-Game Skalieren."
+    ]
+   },
+   {
+    "zeit": 1817.3,
+    "gesagt": "Jetzt, wo Drache drin aufgetaucht ist: Back jetzt: Kontroll-Auge raus, danach sofort zum Baron, weil Tryndamere in 3 Sekunden lebt und ihr vier gegen fünf nicht halten könnt – Baron sichert das Spiel, bevor ihre Skalierung kippt.",
+    "saetze": [
+     "Jetzt, wo Drache drin aufgetaucht ist: Back jetzt: Kontroll-Auge raus, danach sofort zum Baron, weil Tryndamere in 3 Sekunden lebt und ihr vier gegen fünf nicht halten könnt – Baron sichert das Spiel, bevor ihre Skalierung kippt.",
+     "Jetzt, wo du in der Basis bist: Geh zur Top-Welle: 2 Vasallen laufen auf deinen Turm."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 97.00883483886719,
+    "text": "Crash die Kanonenwelle in den Turm, dann Back für Longschwert und Heiltrank, danach zurück zur Lane—Garen Flash ist weg, du kommst sauber raus und hast danach einen Item-Spike vor der nächsten Welle.",
+    "kette": true
+   },
+   {
+    "zeit": 133.09255981445312,
+    "text": "Back jetzt: 39 Prozent Leben. Kauf Stiefel, dann Top.",
+    "kette": true
+   },
+   {
+    "zeit": 156.7516326904297,
+    "text": "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Crash die Welle in den Turm jetzt, dann Back für Longschwert und Heiltrank, dann direkt zurück zur Lane—Kanone gibt dir 53 Sekunden Fenster und du brauchst den Spike vor Fizz in 19 Sekunden.",
+    "kette": true
+   },
+   {
+    "zeit": 207.12811279296875,
+    "text": "Back jetzt: 29 Prozent Leben. Heilen, dann zu deinem äußeren Top-Turm.",
+    "kette": true
+   },
+   {
+    "zeit": 423.8104248046875,
+    "text": "Top-Welle rein, dann back: 1050 Gold für Caulfields Kriegshammer, Garen ist tot. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 557.3367309570312,
+    "text": "Jetzt, wo Tryndamere und Fizz tot sind: Back sofort, kauf Überheblichkeit, dann direkt zu deinem Top-Turm, weil die Kanone in 9 Sekunden kommt und du mit Item die Welle halten musst bevor sie crasht.",
+    "kette": true
+   },
+   {
+    "zeit": 657.3248901367188,
+    "text": "Jetzt, wo ihr äußerer Top-Turm weg ist: Welle crashen in ihren inneren Turm, dann sofort Back: Gezackter Langdolch kaufen und zu deiner Lane zurück, weil dein Level-Vorsprung und die fünf Minions den Turm brechen, bevor Tryndamere in 21 Sekunden oben ist.",
+    "kette": true
+   },
+   {
+    "zeit": 766.0032348632812,
+    "text": "Schieb die Top-Welle jetzt schnell zum Turm, dann sofort Back für Spitzhacke und zurück zur Lane – deine vier Minions sind unterwegs zu ihnen, Garen ist unbekannt und kann kommen, also musst du das Gold jetzt sichern bevor unten zusammengezogen wird.",
+    "kette": true
+   },
+   {
+    "zeit": 799.2875366210938,
+    "text": "Welle ist drin - jetzt back: 1450 Gold für den Sammler. Danach zur Top-Welle.",
+    "kette": true
+   },
+   {
+    "zeit": 929.8748779296875,
+    "text": "Back jetzt: 23 Prozent Leben. Kauf Letzter Atemzug für Lord Dominiks Grüße, dann zum Herold.",
+    "kette": true
+   },
+   {
+    "zeit": 1047.7032470703125,
+    "text": "Euer äußerer Bot-Turm ist weg. Farm Top, bei 1850 Gold back für Lord Dominiks Grüße. Danach zum Herold.",
+    "kette": true
+   },
+   {
+    "zeit": 1572.0438232421875,
+    "text": "Back jetzt: 2400 Gold für Klinge der Unendlichkeit. Danach nach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 1777.991943359375,
+    "text": "Jetzt, wo Drache drin aufgetaucht ist: Back jetzt: Kontroll-Auge raus, danach sofort zum Baron, weil Tryndamere in 3 Sekunden lebt und ihr vier gegen fünf nicht halten könnt – Baron sichert das Spiel, bevor ihre Skalierung kippt.",
+    "kette": true
+   },
+   {
+    "zeit": 1905.137939453125,
+    "text": "Jetzt, wo ein Kill gefallen ist: Top-Welle rein, dann back: 2700 Gold im Beutel, Garen ist tot. Heilen, dann nach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 2229.13916015625,
+    "text": "Jetzt, wo Drache drin aufgetaucht ist: Drache drin: Kanone kommt 37 22, die noch rein, dann back. 1500 Gold im Beutel. Danach zur Top-Welle. Dort heilen.",
+    "kette": true
+   }
+  ],
+  "stille_max": 73,
+  "stille_lang": [
+   [
+    157,
+    207
+   ],
+   [
+    277,
+    350
+   ],
+   [
+    455,
+    524
+   ]
+  ],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 156.7516326904297,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Jetzt, wo du in der Basis bist: Longschwert und Heiltrank, dann direkt Top zur Welle, weil Fizz in 24 Sekunden kommt und du Level 3 gegen Level 2 brauchst.",
+    "text": "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Crash die Welle in den Turm jetzt, dann Back für Longschwert und Heiltrank, dann direkt zurück zur Lane—Kanone gibt dir 53 Sekunden Fenster und du brauchst den Spike vor Fizz in 19 Sekunden."
+   },
+   {
+    "zeit": 1411.005859375,
+    "von": "welle:top",
+    "nach": "turm",
+    "vorher": "Jetzt, wo Los aufgetaucht ist: Dann nach Top: dort kommt ihre nächste Welle.",
+    "text": "Jetzt, wo Aus der Basis aufgetaucht ist: Geh jetzt zum oberen Fluss zu Udyr, Zyra und Urgot, weil Fizz gleich respawnt und ihr mit vier gegen zwei oder drei den Inhibitor-Turm bricht, danach sichert ihr Baron ab, bevor Kog'Maw und Nautilus zurück sind."
+   }
+  ],
+  "fuellsaetze": [
+   {
+    "zeit": 2207.955078125,
+    "text": "Nichts zu kaufen: alle sechs Plätze sind voll, auch Elixier und Trank brauchen einen. Farm deine Top-Welle.",
+    "schluessel": "antwort"
+   }
+  ],
+  "saetze_n": 165,
+  "i4": [
+   {
+    "zeit": 866.3,
+    "name": "Garen",
+    "ort": "oben",
+    "gesagt": null
+   },
+   {
+    "zeit": 1444.8,
+    "name": "Garen",
+    "ort": "in seiner Basis",
+    "gesagt": "Garen in seiner Basis gesehen: drück deine Welle."
+   },
+   {
+    "zeit": 1476.1,
+    "name": "Garen",
+    "ort": "in seiner Basis",
+    "gesagt": null
+   },
+   {
+    "zeit": 1729.5,
+    "name": "Garen",
+    "ort": "oben",
+    "gesagt": null
+   }
+  ],
+  "latenz": {
+   "n": 73,
+   "median": 1.34,
+   "p90": 2.52
+  }
+ }
+}

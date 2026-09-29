@@ -86,6 +86,8 @@ class Lagebild:
         self.quest: tuple[str, float, float] | None = None   # Auftrag 006, W2: (Zustand, seit, zuletzt gelesen) von V
         self._quest_kandidat: tuple[str, float] | None = None
         self.platten: dict[tuple[str, str, str], int] = {}   # (Team, Lane, Stufe) -> verbleibende Platten (Minimap)
+        # Auftrag 018, 1: Objective-Symbole der Minimap, Grube ("oben"/"unten") -> (symbol/timer/leer, seit Spielzeit)
+        self.gruben: dict[str, tuple[str, float]] = {}
         self.gegner_leben: dict[str, tuple[float, float]] = {}   # Spielername -> (Zeit, Leben 0..1) aus dem Spielbild
         self.gegner_mana: dict[str, tuple[float, float]] = {}    # ... (Zeit, Mana 0..1) aus dem Balken darunter
         self._tp_kandidat: dict[str, tuple] = {}     # Spielername -> (Zeit, x, y, zuletzt gesehen) eines Fernsprungs
@@ -146,6 +148,10 @@ class Lagebild:
                 self.wellen_zeit = zeit_von_wand(e[1])
             elif e[0] == "platten":
                 self.platten.update(e[2])
+            elif e[0] == "gruben":
+                for g, z in e[2].items():
+                    if self.gruben.get(g, ("",))[0] != z:
+                        self.gruben[g] = (z, zeit_von_wand(e[1]))
             elif e[0] == "schirm_sprung":
                 # Flash auf dem Spielbild (lebensbalken.Balkenspur): nur mit gelesenem Namen, und sind beide Namen
                 # (Absprung, Landung) lesbar, muessen sie derselbe Spieler sein
@@ -764,6 +770,8 @@ class Beobachter(threading.Thread):
         wellenleser = Wellenleser()
         from .platten import Plattenleser
         plattenleser, platten_bei, platten_gemeldet = Plattenleser(), 0.0, {}
+        from .objsymbole import Grubenleser
+        grubenleser, gruben_bei = Grubenleser(), 0.0
         letzte_sichtungen: list = []
         leser = None
         try:
@@ -882,6 +890,11 @@ class Beobachter(threading.Thread):
                                     platten_gemeldet = stand
                                     with self._schloss:
                                         self._ereignisse.append(("platten", start, stand))
+                            if karte is not None and start - gruben_bei >= 1.0:
+                                gruben_bei = start
+                                if (stand := grubenleser.lies_bgr(karte)) is not None:
+                                    with self._schloss:
+                                        self._ereignisse.append(("gruben", start, stand))
                             if karte is not None:
                                 punkte = wellenleser.punkte(karte, [(s.x, s.y) for s in letzte_sichtungen])
                                 if wellenleser.bereit:
@@ -1108,6 +1121,8 @@ class SichtAusProtokoll:
                     pass
         if not any(e[0] == "platten" for e in self._e):
             self._e += _platten_aus_bildern(ordner)
+        if not any(e[0] == "gruben" for e in self._e):
+            self._e += _gruben_aus_bildern(ordner)      # Auftrag 018, 1: Aufnahmen vor den Objective-Symbolen
         if not any(e[0] == "quest" for e in self._e):
             self._e += _quest_aus_bildern(ordner)       # Auftrag 006, W2: aeltere Aufnahmen
         self._e.sort(key=lambda e: e[1].zeit if e[0] == "sprung" else e[1])
@@ -1160,6 +1175,30 @@ def _platten_aus_bildern(ordner: Path, jedes: int = 3) -> list[tuple]:
         if stand != gemeldet:
             gemeldet = stand
             aus.append(("platten", int(pfad.stem) / 1000, stand))
+    return aus
+
+
+def _gruben_aus_bildern(ordner: Path) -> list[tuple]:
+    """Auftrag 018, 1: die Objective-Symbole aus den gespeicherten Minimap-Bildern (1 Hz, Wanduhr = Dateiname in
+    ms). Einmal gerechnet, liegt das Ergebnis als gruben.json neben den Bildern (sonst kostet jedes Nachspiel ~6 s)."""
+    from .objsymbole import Grubenleser
+    zwischen = ordner / "gruben.json"
+    if zwischen.exists():
+        try:
+            return [("gruben", w, s) for w, s in json.loads(zwischen.read_text(encoding="utf-8"))]
+        except (OSError, ValueError, TypeError):
+            pass
+    leser, aus = Grubenleser(), []
+    for pfad in sorted(ordner.glob("[0-9]*.jpg")):
+        if not pfad.stem.isdigit() or (karte := cv2.imread(str(pfad))) is None:
+            continue
+        if (stand := leser.lies_bgr(karte)) is not None:
+            aus.append(("gruben", int(pfad.stem) / 1000, stand))
+    if aus:
+        try:
+            zwischen.write_text(json.dumps([[w, s] for _, w, s in aus]), encoding="utf-8")
+        except OSError:
+            pass
     return aus
 
 

@@ -270,6 +270,8 @@ def _respawn_plan(kern) -> str:
     zeit = f"Du lebst in {max(1, int(round(m.respawn)))} Sekunden wieder" if m is not None and m.respawn else \
         "Du lebst gleich wieder"
     s = satz(h) if h is not None and h.art in ("KAUFEN", "WOHIN", "WOHIN_TP_LANE") else ""
+    if s.startswith("Du lebst in"):
+        return s             # Auftrag 018, 2 (183125 18:34: "Du lebst in 11 Sekunden wieder: du lebst in 11 Sekunden.")
     if s:
         return f"{zeit}: {s[:1].lower()}{s[1:]}"
     k = getattr(m.b, "kauf", None) if m is not None and m.b is not None else None
@@ -658,7 +660,15 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
         if k is not None and getattr(k, "naechstes", None):
             item, fehlt = k.naechstes
             return f"Noch {fehlt} Gold bis {item}: erst farmen, dann back.", h
-        return (f"Gerade nichts zu kaufen: {satz(h)}" if h is not None else None), h
+        # Auftrag 018, 4 (183125 35:43-36:27: dreimal "Gerade nichts zu kaufen" auf "Und Elixiere?"): der Grund dazu
+        voll = False
+        if m is not None and m.b is not None and getattr(m.b, "ich", None) is not None:
+            from ..kaufplan import PLAETZE, _belegt
+            voll = PLAETZE - _belegt(tuple(int(i) for i in m.b.ich.items)) <= 0
+        vorn = ("Nichts zu kaufen: alle sechs Plätze sind voll, auch Elixier und Trank brauchen einen" if voll
+                else "Gerade nichts zu kaufen")
+        return (f"{vorn}. {satz(h)}" if voll and h is not None else f"{vorn}: {satz(h)}" if h is not None
+                else f"{vorn}." if voll else None), h
     return None, None
 
 

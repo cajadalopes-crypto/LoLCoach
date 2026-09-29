@@ -13,7 +13,7 @@ import re
 import threading
 import time
 
-from .regeln import HINWEIS, RUECKZUG, SOFORT, WICHTIG, Ansage
+from .regeln import AN_LEBENDE, HINWEIS, RUECKZUG, SOFORT, WICHTIG, Ansage
 
 def _zeichen_pro_s() -> float:
     try:
@@ -182,6 +182,19 @@ class Sprechplan:
             except Exception:
                 pass
 
+    def _gestorben(self, zeit: float) -> None:
+        """Auftrag 018, 6 (183125 38:10-38:36: ein langer Satz lief weiter, als Carlos schon tot war): beim Tod bricht
+        der laufende Satz sofort ab, was in der Stimme wartet, faellt weg - der Tod-Satz kommt gleich danach."""
+        la = self._laeuft
+        if la is not None and zeit < self.frei_ab and not la.schluessel.startswith("tod"):
+            if hasattr(self.sprecher, "abbrechen"):
+                self.sprecher.abbrechen()
+            if self._reden:
+                t0, _ = self._reden[-1]
+                self._reden[-1] = (t0, max(0.0, zeit - t0))
+            self.frei_ab = zeit
+            self._laeuft = None
+
     def _noch_wahr(self, a: Ansage):
         return lambda: _stimmt(a) and not (self._ich_tot and a.schluessel.startswith(NUR_LEBEND))
 
@@ -234,9 +247,13 @@ class Sprechplan:
                                    and zeit - self.thema_zuletzt.get(WIDERSPRUCH[a.thema][0], -1e9) < WIDERSPRUCH[a.thema][1])
                           and not (a.prio < SOFORT and 0 <= zeit - self._rueckzug_gehoert < RUECKZUG_SPERRE
                                    and RUECKZUG.search(a.text))))]
+        if ich_tot and not getattr(self, "_ich_tot", False):
+            self._gestorben(zeit)
         self._ich_tot = ich_tot
         if ich_tot:
-            self.warte = [a for a in self.warte if not a.schluessel.startswith(NUR_LEBEND)]
+            # Auftrag 018, 6: nichts, was einen Lebenden wegschickt ("geh zurueck", "hinter den Turm")
+            self.warte = [a for a in self.warte if not a.schluessel.startswith(NUR_LEBEND)
+                          and not AN_LEBENDE.search(a.text)]
         self.warte = [a for a in self.warte if _stimmt(a)]     # was nicht mehr stimmt, faellt weg
         if not self.warte:
             return None

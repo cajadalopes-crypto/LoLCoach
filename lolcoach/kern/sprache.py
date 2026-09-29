@@ -5,7 +5,7 @@ Carlos in 101426: "Zu welchem Bot Tier 2 - zu meinem oder zu dem des Gegners?", 
 
   - jeder Turm mit Besitzer und Lage, ohne "Tier": "dein aeusserer Mid-Turm", "euer innerer Bot-Turm",
     "ihr Inhibitor-Turm unten"; dein = deine Lane, euer = die anderen Lanes deines Teams, ihr = die Gegner
-  - Rueckzug: "Zurueck unter deinen Mid-Turm"; im Kampf "Raus, zu deinem Turm!" / "Raus, zu Kayn!"
+  - Rueckzug: "Zurueck unter deinen aeusseren Mid-Turm" (mit Stufe, Auftrag 018, 3); im Kampf "Raus, zu deinem Turm!" / "Raus, zu Kayn!"
   - eine Welle nie allein: "Dann auf Mid, deine Welle ist gleich an deinem Turm." - nie "Dann Mid-Welle."
 """
 from __future__ import annotations
@@ -115,11 +115,11 @@ def gross(s: str) -> str:
 
 
 def unter(ort: str) -> str:
-    """Der Rueckzug zu einem sicheren Ort (Dativ aus bewertung.sicherer_ort) als Ziel: "unter deinen Mid-Turm" (der
-    aeussere ist immer dein vorderster - das Wort faellt weg), "in deine Basis", "zu Kayn und Yunara"."""
+    """Der Rueckzug zu einem sicheren Ort (Dativ aus bewertung.sicherer_ort) als Ziel: "unter deinen äußeren
+    Mid-Turm", "in deine Basis", "zu Kayn und Yunara". Auftrag 018, 3 (183125 19:48): immer mit Stufe - "euren
+    Mid-Turm" liess offen, welcher."""
     erstes, _, rest = ort.partition(" ")
     if erstes in ("deinem", "eurem") and rest.endswith("Turm"):
-        rest = rest.removeprefix("äußeren ")
         return f"unter {'deinen' if erstes == 'deinem' else 'euren'} {rest}"
     if ort == "deiner Basis":
         return "in deine Basis"
@@ -151,10 +151,10 @@ def team_grund(m, lane: str) -> str | None:
 
 
 def an(ort: str) -> str:
-    """Stehen am sicheren Ort: "unter deinem Mid-Turm", "in deiner Basis", "bei Kayn und Yunara"."""
+    """Stehen am sicheren Ort: "unter deinem äußeren Mid-Turm", "in deiner Basis", "bei Kayn und Yunara"."""
     erstes, _, rest = ort.partition(" ")
     if erstes in ("deinem", "eurem") and rest.endswith("Turm"):
-        return f"unter {erstes} {rest.removeprefix('äußeren ')}"
+        return f"unter {erstes} {rest}"
     if ort == "deiner Basis":
         return "in deiner Basis"
     return f"bei {ort}"

@@ -24,6 +24,58 @@ def _uhr(t: float) -> str:
     return f"{int(t // 60)}:{int(t % 60):02d}"
 
 
+GRUBE_VON = {"herold": "oben", "baron": "oben", "larven": "oben", "drache": "unten", "aeltester": "unten"}
+
+
+KAMPF_BEI = 1200.0           # ein Gegner so nah an einem Mitspieler: dort wird gekaempft
+KAMPF_RUND = 1500.0          # wer so nah an der Mitte steht, gehoert zum Kampf
+
+
+def kampf_lage(m, p) -> tuple[str, float] | None:
+    """Auftrag 018, 5 (183125 26:15, Anlass I6): der Kampf eines Mitspielers mit den Zahlen, die der Kern exakt hat -
+    wer dort lebt, Leben und Level, Flash, Tote, dein Weg und Leben, der Kill-Check deines Combos auf die Gegner dort.
+    (Text, dein Weg in s) oder None."""
+    from .bewertung import WEGFAKTOR, abstand
+    b = m.b if m is not None else None
+    if b is None or b.pos is None or p is None:
+        return None
+    feinde = [g for g in b.gegner if g.sichtbar and not g.s.tot and g.pos is not None]
+    freunde = [(s, wo, le, ort) for s, wo, le, ort in (b.mitspieler or []) if not s.tot and wo is not None]
+    mitte = next(((wo, ort) for s, wo, le, ort in freunde if any(abstand(g.pos, wo) <= KAMPF_BEI for g in feinde)), None)
+    if mitte is None:
+        return None
+    wo0, ort = mitte
+    wir = [(s, le) for s, wo, le, _ in freunde if abstand(wo, wo0) <= KAMPF_RUND]
+    die = [g for g in feinde if abstand(g.pos, wo0) <= KAMPF_RUND]
+    weg = abstand(b.pos, wo0) * WEGFAKTOR / (m.mein_tempo or 340.0)
+    pct = lambda x: "?" if x is None else f"{int(round(x * 100))} %"
+    ihr = ", ".join(f"{s.champion} {pct(le)} L{s.level}"
+                    + (" Ult bereit" if m.ult_mitspieler.get(s.name) else "") for s, le in wir)
+    sie = ", ".join(f"{g.champion} {pct(g.leben)} L{g.s.level}"
+                    + (f" Flash weg noch {int(g.flash)} s" if g.flash else "") for g in die)
+    tote = [s.champion for s in p.gegner() if s.tot]
+    from .stratege import kill_jetzt
+    kill = [c for c in kill_jetzt(b) if c in {g.champion for g in die}]
+    offen = [g.champion for g in die if g.leben is None]
+    check = (f"dein Combo reicht für {', '.join(kill)}" if kill else "dein Combo reicht für keinen dort") \
+        + (f" (Leben von {', '.join(offen)} unbekannt)" if offen else "")
+    text = (f"{ort or 'in der Nähe'}: ihr {ihr} gegen {sie}"
+            + (f"; tot bei ihnen: {', '.join(tote)}" if tote else "")
+            + f"; dein Weg {int(round(weg))} s, dein Leben {pct(m.leben)}; KILL-CHECK: {check}")
+    return text, weg
+
+
+def _symbol(o, gruben: dict, zeit: float) -> str:
+    """Auftrag 018, 1: was das Objective-Symbol der Minimap dazu sagt (eigene Sicht). 183125 17:21 sagte Claude "Ob
+    der Herold noch steht, weiß ich nicht" - das lila Symbol war zu sehen."""
+    g = gruben.get(GRUBE_VON.get(o.schl, ""))
+    if g is None or not o.lebt:
+        return ""
+    # Nur die Bestaetigung. "Symbol fehlt, vermutlich genommen" war falsch: im Kampf an der Grube (183125 13:50-14:21)
+    # lesen Effekte und Portraets als Uhr, und genommen meldet die API ohnehin sofort (DragonKill, HeraldKill ...).
+    return " (Symbol auf der Karte zu sehen)" if g[0] == "symbol" else ""
+
+
 @dataclass
 class Spieler:
     name: str
@@ -213,13 +265,17 @@ def bauen(kern, p, lagebild=None) -> Welt | None:
                   and ((k[0] == p.mein_team) == (team is not None))]
             teile.append(f"{lane}: {', '.join(st) if st else 'keiner'}")
         w.karte.append(f"Stehende Türme {wer}: " + "; ".join(teile))
+    if (k := kampf_lage(m, p)) is not None and k[1] <= 30:
+        w.karte.insert(0, f"KAMPF JETZT {k[0]}")
     for lane, st in sorted((m.wellen or {}).items()):
         if st is not None and st.unsere is not None:
             w.karte.append(f"Welle {lane}: {st.unsere} eure gegen {st.ihre if st.ihre is not None else '?'} ihre, "
                            f"{st.zustand}")
     # Timer
+    gruben = getattr(lb, "gruben", None) or {}
     for o in sorted(m.objectives or [], key=lambda o: o.spawn_in):
-        w.timer.append(f"{OBJ_DE.get(o.schl, o.schl)} " + ("lebt" if o.lebt else f"in {int(o.spawn_in)} s"))
+        w.timer.append(f"{OBJ_DE.get(o.schl, o.schl)} " + ("lebt" if o.lebt else f"in {int(o.spawn_in)} s")
+                       + _symbol(o, gruben, m.zeit))
     if m.kanone_in is not None and m.kanone_in <= 60:
         w.timer.append(f"Kanone in deiner Welle in {int(m.kanone_in)} s")
     tote = [f"{s.champion} {int(s.respawn or 0)} s" for s in p.spieler if s.tot]
