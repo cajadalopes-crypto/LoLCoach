@@ -76,6 +76,10 @@ class Makro:
             kandidaten.append(("MAKRO", "TEAMPLAN", self.tp.satz, ("teamplan",), self.tp.plan))
         meine = kartenseite(m.pos) if m.pos is not None else None
         # Jungler-Sichtung (Kapitel 5)
+        # Auftrag 016, 1.2: hat die Informationspflicht den Jungler eben gesagt, keine zweite Sichtung
+        pflicht = getattr(kern, "pflicht", None)
+        if pflicht is not None and m.zeit - pflicht.jungler_gesagt <= 20.0:
+            frisch_j = False
         if frisch_j and j.pos is not None and meine is not None:
             seine = kartenseite(j.pos)
             wort = {"oben": "oben", "unten": "unten", "in der Mitte": "in der Mitte"}

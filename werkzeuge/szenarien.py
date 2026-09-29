@@ -177,6 +177,9 @@ def neue_pruefungen(sz: dict, ansagen: list, stehend: tuple | None = None) -> li
             grenze = sz["woerter_max"] if getattr(a, "_kategorie", "") not in ("WENDEPUNKT", "VORSCHAU", "FENSTER",
                                                                               "LAGEBILD") \
                 else sz.get("woerter_max_lang", 20)
+            from lolcoach.stratege import back_ruf, kette
+            if back_ruf(a.text) and kette(a.text):
+                grenze += 6          # Auftrag 016, 2: ein Back-Ruf traegt seine Kette (Kauf und Ziel) - 6 Woerter mehr
             if n > grenze:
                 aus.append(f"woerter_max {grenze} - {n} Woerter: \"{a.text[:80]}\"")
     if sz.get("gold_reicht"):

@@ -45,8 +45,8 @@ VOR_SCHRANKE = frozenset(("DRUECKEN", "MIT_GRUPPE", "NEHMEN", "BESTREITEN", "ZUR
 # Auftrag 009, 1 (101426 2:35: "Trade Aurora: dein Combo macht etwa 400" bei 15 % Leben, 2:43 tot): TRADE und ALL_IN
 # haengen am Lane-Duell (Buch 2, zurueckgestellt) - berechnet, protokolliert, stumm
 BUCH2_STUMM = frozenset(("TRADE", "ALL_IN"))
-# Auftrag 009, 1: Wellen-Handlungen nach vorn (Buch 1, 3: neutral) - mit p_tod >= vor_p_tod_max kein Kandidat; unter
-# 40 % Leben bleiben sie (erst die Welle rein, dann back ist dort der Rat)
+# Auftrag 009, 1: Wellen-Handlungen nach vorn (Buch 1, 3: neutral) - mit p_tod >= vor_p_tod_max kein Kandidat. Seit
+# Auftrag 016, 4.1 auch nicht unter vor_leben_min (vorher blieben sie: "erst die Welle rein, dann back")
 WELLE_VOR = frozenset(("WELLE_REIN_UND_BACK", "STAPELN"))
 # R2: haengen am ungeeichten p_gewinn - berechnet, protokolliert, stumm (bis die Kampf-Eichung besteht)
 MODELL_STUMM = frozenset(("BESTREITEN", "TP_SPIEL"))
@@ -234,6 +234,10 @@ class Kern:
         self._ohne_ort_seit: float | None = None  # Auftrag 009: seit wann die Minimap dich verloren hat
         self._vorsatz: tuple[float, str] | None = None  # Auftrag 010, 2: Bestaetigung vor dem naechsten Plan-Satz
         self._gold_verlauf: deque = deque()        # (Zeit, Gold) - dein Einkommen fuer den Back-Bedarf
+        from .pflicht import Pflicht
+        self.pflicht = Pflicht()                 # Auftrag 016, 1: Jungler, Lane-Gegner weg (Flash: _flash_info)
+        self.auge_nein_bis = -1e9                # Auftrag 016, 5: Carlos sagt Nein zum Kontroll-Auge - 5 min keins
+        self._verkauf_gesagt: tuple[float, str] | None = None     # Auftrag 016, 5: Verkaufen einmal, mit Grund
         self._flash_offen: dict = {}
         self._flash_gemeldet: set = set()
         self._flash_zuletzt = -1e9
@@ -262,6 +266,7 @@ class Kern:
         self.m = self.bau.neu(p, b, lagebild)
         if self.m is not None:
             self.m.fokus = self.fokus
+            self.m.auge_aus = self.m.zeit < self.auge_nein_bis      # Auftrag 016, 5 (basis.kontrollauge_dazu)
         return self.modus.neu(self.m)
 
     def spricht_in(self, modus: str | None) -> bool:
@@ -283,6 +288,8 @@ class Kern:
         if m is not None and self.stellung in ("schatten", "neu"):
             try:
                 ansagen = self.schritt(m, self.modus.aktuell, p)
+                if ansagen:
+                    ansagen = [a for a in ansagen if not self._unsicher(a, m)]
             except Exception as e:     # der Kern darf die Partie nie mitreissen
                 if not self._fehler:
                     self._fehler = True
@@ -329,6 +336,8 @@ class Kern:
         from . import kartenlage
         self.kartenlage = kartenlage.bauen(m, self._lagebild, self.cfg["makro"])     # Buch 4, 2
         self._schutz_episode(m)
+        if m.b is not None and m.daten_frisch:
+            self.pflicht.takt(self, m, modus)          # Auftrag 016, 1: auch in KAMPF erkannt, gesagt danach
         if m.b is not None and not m.tot:
             self.proben.takt(m, self.cfg)
         if modus == "KAMPF":
@@ -384,6 +393,12 @@ class Kern:
         if not aus and modus == "BASIS" and not start:
             if (a := self._basis_warten(m, gesagt)) is not None:
                 aus.append(a)
+        if not aus:
+            if (a := self._pflicht_info(m, modus, gesagt)) is not None:
+                aus.append(a)
+        if not aus:
+            if (a := self._flash_info(m, modus, gesagt)) is not None:
+                aus.append(a)
         plan = self.fuehrer.plan
         # Auftrag 007: nur ein Rueckzug haelt die Episode offen - ein stiller Back-Plan hielt sie in 213624 von 15:31 bis
         # 24:10 offen, und "Raus zum Mid-Tier-1-Turm: Xin Zhao und Ziggs kommen" (24:11, GEFAHR) galt als derselbe Rueckzug
@@ -401,9 +416,6 @@ class Kern:
             if (a := self.sprecher.nachholen(m.zeit, gesagt)) is not None:
                 a.text = _leben_jetzt(a.text, m)          # nachgeholt: die Zahl von jetzt (173159 22:17)
                 self._gesprochen(a, "PLAN", m)
-                aus.append(a)
-        if not aus:
-            if (a := self._flash_info(m, modus, gesagt)) is not None:
                 aus.append(a)
         if not aus:
             if (a := self._vorsicht(m, modus, gesagt)) is not None:
@@ -426,11 +438,37 @@ class Kern:
         if info is None:
             return None
         kategorie, art, text = info[:3]
+        if self._r1_vorn(text, m):
+            return None      # Auftrag 016, 6.4 (192113 17:51 "Drache und ihre Tuerme als Gruppe erzwingen" bei R1)
         a = self.sprecher.ansage(kategorie, art, text, m.zeit, None, gesagt)
         if a is not None:
             self.makro.gesagt(info, m)
             self._gesprochen(a, kategorie, m)
         return a
+
+    def _unsicher(self, a, m: Merkmale) -> bool:
+        """Auftrag 016, 6.4, hart fuer jeden Kern-Satz (Kritik 016: "Rein auf Poppy!" ohne Kill, 133448 9:47): nach vorn
+        unter R1, Angriff ohne Kill-Check, "schwach" ohne Beleg - dann nicht gesagt, nur als stumm protokolliert."""
+        from .. import stratege
+        b = m.b
+        if b is None:
+            return False                 # (auch GEFAHR: "Rein auf Poppy!" kommt als Kampf-Ruf in dieser Kategorie)
+        lage = {"vorn": {"verboten": m.leben is not None and not m.tot
+                         and m.leben < self.cfg["schranken"]["vor_leben_min"]},
+                "kill": stratege.kill_jetzt(b),
+                "gegner_leben": {g.champion: g.leben for g in b.gegner if g.sichtbar and g.leben is not None},
+                "gegner": [{"name": g.champion} for g in b.gegner]}
+        gruende = stratege.sicherheit(a.text, lage)
+        if gruende:
+            self._stumm(m, a.schluessel.split(":", 1)[-1], a.text, self.modus.aktuell, grund="; ".join(gruende))
+        return bool(gruende)
+
+    def _r1_vorn(self, text: str, m: Merkmale) -> bool:
+        """Auftrag 016, 6.4: unter R1 (Leben unter vor_leben_min) kein Satz, der nach vorn ruft - auch nicht aus den
+        Makro-Infos, der Vorschau oder dem Lagebild (die Kandidaten-Schranke sieht sie nicht)."""
+        from ..stratege import _nach_vorn
+        return m.leben is not None and not m.tot and m.leben < self.cfg["schranken"]["vor_leben_min"] \
+            and _nach_vorn(text, r1=True) is not None
 
     def _lagebild_ungefragt(self, m: Merkmale, modus: str | None, gesagt: list):
         """Auftrag 008, A4 (ergaenzt Buch 4, 5): ab lagebild_ab_s hoechstens einmal je lagebild_abstand_s, nur wenn
@@ -449,7 +487,7 @@ class Kern:
         pl = self.fuehrer.plan
         vor = plan_kurz(pl.handlung) if pl is not None and pl.art in VOR_ARTEN else None
         text = kartenlage.satz(k, m, kurz=True, plan_kurz=vor, streng=True)
-        if text is None:
+        if text is None or self._r1_vorn(text, m):
             return None                  # Auftrag 009, 2.2: die Folgerung beschreibt nur - kein Lagebild
         a = self.sprecher.ansage("LAGEBILD", "LAGEBILD", text, m.zeit, None, gesagt)
         if a is not None:
@@ -562,7 +600,7 @@ class Kern:
         if m.zeit - letzte < c["vorschau_ruhe_s"]:
             return None
         text = fuehren.vorschau_satz(self, m, self.zeitleiste, self.danach)
-        if not text or len(text.split()) > c["max_woerter_wendepunkt"]:
+        if not text or len(text.split()) > c["max_woerter_wendepunkt"] or self._r1_vorn(text, m):
             return None
         if BACK_RUF.search(text) and self._back_sperre(m, text) is not None:
             return None                                # Pruefung c, R4 gilt auch fuer "danach back"
@@ -596,14 +634,14 @@ class Kern:
         if not self._flash_offen or m.zeit - self._kampf_zuletzt < c["nach_kampf_s"] \
                 or m.zeit - self._flash_zuletzt < c["abstand_s"]:
             return None
-        # Auftrag 010, 2 (Kritik 009: "Aurora ohne Flash." ohne Ort ist Info ohne Folgen): ungefragt nur fuer einen
-        # Gegner, der nah ist und eben gesehen wurde - die anderen warten (bis sie nah sind) und stehen im Lagebild
-        nah = {k: t for k, t in self._flash_offen.items() if self._flash_nah(m, t.name, c)}
+        # Auftrag 010, 2 schraenkte auf nahe Gegner ein ("Aurora ohne Flash." ohne Ort sei Info ohne Folgen). Auftrag
+        # 016, 1.1 (Carlos, 133448: "er sagt nicht, wessen Flash weg ist"): jeder gesehene Flash, egal wie weit
+        nah = {k: t for k, t in self._flash_offen.items() if not c.get("nur_nah") or self._flash_nah(m, t.name, c)}
         if not nah:
             return None
         from .modi import liste
         namen = list(dict.fromkeys(t.champion for t in sorted(nah.values(), key=lambda t: t.seit)))
-        text = f"{liste(namen)} ohne Flash."
+        text = f"{liste(namen)} Flash weg."
         a = self.sprecher.ansage("INFO_FLASH", "INFO_FLASH", text, m.zeit, None, gesagt)
         if a is not None:
             self._flash_gemeldet |= set(nah)
@@ -615,6 +653,32 @@ class Kern:
             self._flash_offen = {k: t for k, t in self._flash_offen.items() if k not in nah}
             self._flash_zuletzt = m.zeit
             self._gesprochen(a, "INFO_FLASH", m)
+        return a
+
+    def _pflicht_info(self, m: Merkmale, modus: str | None, gesagt: list):
+        """Auftrag 016, 1.2 und 1.3: Jungler wieder gesehen, Lane-Gegner weit weg - ungefragt, kurz, immer."""
+        f = self.pflicht.faellig(m, modus, self.cfg)
+        if f is None:
+            return None
+        art, text = f
+        info = None
+        if art == "INFO_JUNGLER":
+            # hat die Makro-Sichtung (Buch 4, 5) dazu eine Folge ("Naafiri unten gesehen: oben 20 Sekunden frei,
+            # Platten jetzt"), wird es dieser Satz - mit Folge statt nur dem Ort
+            try:
+                info = self.makro.info(self, m, modus)
+            except Exception:
+                info = None
+            if info is not None and info[1].startswith("JUNGLER"):
+                text = info[2]
+            else:
+                info = None
+        a = self.sprecher.ansage(art, art, text, m.zeit, None, gesagt)
+        if a is not None:
+            self.pflicht.gesagt(art, m)
+            if info is not None:
+                self.makro.gesagt(info, m)
+            self._gesprochen(a, art, m)
         return a
 
     @staticmethod
@@ -1367,7 +1431,7 @@ class Kern:
         from .fragen import liste
         art = a.schluessel.split(":", 1)[-1]
         b = getattr(m, "b", None)            # konstruierte Lagen in den Tests haben kein b
-        if b is None or kategorie in ("INFO_FLASH", "BESTAETIGUNG"):
+        if b is None or kategorie in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "BESTAETIGUNG"):
             return None
         if art in ("RAUS", "ZURUECK", "WELLE_UND_RAUS") or (kategorie == "GEFAHR" and art not in ("REIN", "DREHEN")):
             ort = b.sicherer_ort()[0]
@@ -1381,7 +1445,8 @@ class Kern:
             elif m.leben is not None:
                 s += f", weil du nur {int(round(m.leben * 100))} Prozent Leben hattest"
             return s + "."
-        if plan is None or kategorie in ("INFO_FLASH", "VORSICHT", "LAGEBILD", "MAKRO", "BESTAETIGUNG"):
+        if plan is None or kategorie in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "VORSICHT", "LAGEBILD", "MAKRO",
+                                         "BESTAETIGUNG"):
             return None
         h = plan.handlung
         from .fuehren import kurz
@@ -1401,14 +1466,57 @@ class Kern:
             s += f" Grund: {gross(h.grund.rstrip('.'))}."
         return s
 
+    def _mit_kette(self, text: str, m: Merkmale) -> str:
+        """Auftrag 016, 2 (133448 7:32: "geh jetzt zurueck mit deinem 1200 Gold und kauf dies und mach dann dies"):
+        ein Back-Ruf ohne Kette bekommt Kauf und Ziel danach - "Kauf den Brutalisierer, dann Top."."""
+        from .. import stratege
+        if m.b is None or stratege.kette(text):
+            return text
+        from .modi import _akk, liste
+        from .modi.basis import wohin
+        k = m.kauf
+        kauf = list(k.kaufen[:2]) if k is not None and k.kaufen else []
+        try:
+            kurz = wohin(m, self.cfg, "BASIS").daten.get("kurz")
+        except Exception:
+            kurz = None
+        wohin = kurz or "zurück zu deinem Turm"
+        hat_kauf = stratege.KETTE_KAUF.search(text) or stratege._item_re().search(text)
+        if hat_kauf:
+            return f"{text.rstrip()} Danach {wohin}."           # der Kauf steht schon drin: nur das Ziel
+        if " Oder " in text and kauf:
+            # zwei Wege (Buch 11, 4): die Kette knapp in den Back-Weg - "Oder back fuer Tiamat, dann zu deinem Team."
+            neu = re.sub(r"\b(Oder back)\b\.?", rf"\1 für {kauf[0]}, dann {wohin}.", text, count=1)
+            if neu != text:
+                return neu
+        if stratege.KETTE_ZIEL.search(text):                    # das Ziel steht schon drin: nur der Kauf
+            return f"{text.rstrip()} " + (f"Kauf {liste([_akk(x) for x in kauf])}." if kauf else "Dort heilen.")
+        from ..kaufplan import mit_ziel
+        namen = [_akk(x) for x in kauf]
+        if kauf and getattr(k, "item", None):              # Auftrag 009, 4: das Bauteil mit seinem Ziel
+            namen[-1] = mit_ziel(kauf[-1], k.item) if len(kauf) == 1 else namen[-1]
+            if len(kauf) > 1 and any(mit_ziel(x, k.item) != x for x in kauf):
+                from ..kaufplan import akk_artikel
+                namen[-1] = f"{namen[-1]} für {akk_artikel(k.item)}"
+        was = f"Kauf {liste(namen)}" if kauf else "Heilen"
+        return f"{text.rstrip()} {was}, dann {wohin}."
+
     def _gesprochen(self, a, kategorie: str, m: Merkmale) -> None:
+        from .. import stratege
+        if stratege.back_ruf(a.text):
+            a.text = self._mit_kette(a.text, m)          # Auftrag 016, 2: jeder Back-Ruf mit Kauf und Ziel
+        elif kategorie == "WENDEPUNKT" and self.danach_text and not re.search(r"\b(dann|danach|oder)\b", a.text, re.I) \
+                and not stratege.back_ruf(self.danach_text):
+            # Auftrag 016, 2: und der Schritt danach - nicht, wenn der Satz schon zwei Wege nennt, und kein zusaetzlicher
+            # Back-Ruf an R4 vorbei (164326 back-dauerton)
+            a.text = f"{a.text.rstrip()} Danach {self.danach_text}."
         a._kategorie = kategorie          # fuer Szenarien (kategorie_max) und Kennzahlen
         # Kritik 008: die Leben-Zahl beim Sprechen (Sprechplan); Auftrag 012, 3: Timer zur Zeit, zu der man sie hoert
         a.auffrischen = lambda t, a=a: zeit_jetzt(_leben_jetzt(t, self.m), (self.m.zeit if self.m is not None else a.zeit) - a.zeit,
                                                    _zeichen_pro_s())
         # Auftrag 004, Teil C 1: jede Ansage merkt sich 60 s lang ihren Grund und ihre Lage - "warum?" meint sie
         plan = self.fuehrer.plan
-        grund = (plan.handlung.grund if plan is not None and kategorie not in ("INFO_FLASH", "VORSICHT", "LAGEBILD")
+        grund = (plan.handlung.grund if plan is not None and not kategorie.startswith("INFO_") and kategorie not in ("VORSICHT", "LAGEBILD")
                  and plan.handlung.grund
                  else (a.text.split(": ", 1)[1].rstrip(".!") if ": " in a.text else ""))
         log = getattr(self, "_ansage_log", None)
@@ -1417,7 +1525,7 @@ class Kern:
         from . import fuehren as _f
         log.append({"zeit": m.zeit, "text": a.text, "art": a.schluessel.split(":", 1)[-1], "kategorie": kategorie,
                     "grund": grund, "leben": m.leben, "erkl": self._erklaerung(a, kategorie, m, plan),
-                    "ziel": _f.ziel_label(plan.handlung) if plan is not None and kategorie != "INFO_FLASH" else None})
+                    "ziel": _f.ziel_label(plan.handlung) if plan is not None and not kategorie.startswith("INFO_") else None})
         while log and log[0]["zeit"] < m.zeit - 60.0:
             log.popleft()
         if plan is not None and kategorie in ("PLAN", "WENDEPUNKT", "FENSTER") and plan.handlung.ziel is not None:
@@ -1614,6 +1722,11 @@ class Kern:
                     continue
             if h.art in WELLE_VOR and h.p_tod >= cs["vor_p_tod_max"]:
                 weg.append(f"{h.art}: p_tod {h.p_tod:.2f}")
+                continue
+            if h.art in WELLE_VOR and le is not None and le < cs["vor_leben_min"]:
+                # Auftrag 016, 4.1 (aendert Auftrag 009, 1): unter R1 ist auch die Welle, die man zum Gegner schiebt,
+                # nach vorn - "Top-Welle rein, dann back" bei 37 % (133448 7:02) wird BACK_JETZT
+                weg.append(f"{h.art}: Leben {le:.2f}")
                 continue
             if h.art in UEBERLEGEN_ARTEN or h.art in MODELL_STUMM or h.daten.get("modell_stumm"):
                 u, grund = self._ueberlegen(m, h)
@@ -2132,6 +2245,7 @@ class Kern:
             z.append(f"NACH VORN VERBOTEN (Leben {v['leben']} %). Erlaubt: {', '.join(v['erlaubt']) or 'zurück, back'}.")
         elif v["gesperrt"]:
             z.append(f"ZU RISKANT, NICHT VORSCHLAGEN: {', '.join(v['gesperrt'])}.")
+        z += self._kontext_016(m)
         if self.zeitleiste:
             z.append("ZEITLEISTE (naechste 3 Minuten): " + zeitleiste.als_text(self.zeitleiste, m.zeit, 6))
         try:
@@ -2159,7 +2273,42 @@ class Kern:
             z.append(f"- Gegner {gegner_zeile(g)}")         # Auftrag 014, A1: "zuletzt gesehen vor 288 s", nie "vor 288 s"
         for s, wo, le, *rest in (b.mitspieler or [])[:4]:
             z.append(f"- Mitspieler {s.champion}: {'tot' if s.tot else (rest[0] if rest and rest[0] else 'unterwegs')}")
-        return "\n".join(z[:30])
+        return "\n".join(z[:36])          # Auftrag 016: vier Zeilen mehr (Kauf, Kill, Welle, Lane-Gegner)
+
+    def _kontext_016(self, m: Merkmale) -> list[str]:
+        """Auftrag 016, 3 und 4: Kauf mit freien Plaetzen, der Kill-Check des Kerns, in der Lane-Phase die eigene Welle
+        (Vasallen beider Seiten, Richtung) und der Lane-Gegner mit Leben."""
+        from .. import kaufplan, stratege
+        b, z = m.b, []
+        k = m.kauf
+        items = list(b.ich.items) if b.ich is not None else []
+        frei = kaufplan.PLAETZE - kaufplan._belegt(items)
+        if k is not None and k.kaufen:
+            nach = kaufplan.plaetze_nach(items, list(k.kaufen))
+            z.append(f"KAUF (Gold {int(b.gold or 0)}, freie Plaetze {frei}): {', '.join(k.kaufen)} fuer {k.kosten} Gold"
+                     + (f" (Ziel {k.item})" if getattr(k, "item", None) else "") + f", danach {max(0, nach)} Plaetze frei"
+                     + (f"; dafuer zuerst {k.verkaufen} verkaufen" if k.verkaufen else "") + ".")
+        else:
+            z.append(f"KAUF (Gold {int(b.gold or 0)}, freie Plaetze {frei}): nichts Sinnvolles kaufbar.")
+        kill = stratege.kill_jetzt(b)
+        z.append(f"KILL JETZT: {', '.join(kill)} (dein Combo reicht)." if kill else
+                 "KILL JETZT: keiner - dein Combo toetet gerade keinen sichtbaren Gegner.")
+        w = m.welle
+        if m.lane_phase and w is not None:
+            richtung = None if w.trend is None else ("laeuft zu ihm" if w.trend > 0.05 else "laeuft zu dir"
+                                                     if w.trend < -0.05 else "steht")
+            z.append(f"EIGENE WELLE ({w.lane}): {w.unsere if w.unsere is not None else '?'} eigene gegen "
+                     f"{w.ihre if w.ihre is not None else '?'} Vasallen, Front {'?' if w.front is None else round(w.front, 2)}"
+                     f" (0 = deine Basis, 1 = seine; dein Turm {w.turm_dein:.2f}, seiner {w.turm_ihr:.2f})"
+                     + (f", {richtung}" if richtung else "") + f", Zustand {w.zustand}.")
+        g = b.lane
+        if m.lane_phase and g is not None:
+            z.append(f"LANE-GEGNER {g.champion}: " + ("tot" if g.s.tot else
+                     f"Leben {'unbekannt' if g.leben is None else str(int(round(g.leben * 100))) + ' %'}, "
+                     + ("jetzt sichtbar " + (g.ort or "") if g.sichtbar else
+                        f"zuletzt gesehen vor {int(g.seit)} s {g.ort}" if g.seit is not None else "noch nicht gesehen"))
+                     + ".")
+        return z
 
     def _eigene_zauber(self) -> str:
         """Auftrag 014, A1: "Flash bereit; TP in 56 s; Ult bereit" - nur, was der Coach weiss."""

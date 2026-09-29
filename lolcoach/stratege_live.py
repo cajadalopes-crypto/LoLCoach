@@ -15,6 +15,11 @@ Warnungen des Kerns gehen immer vor: der Sprechplan wirft in KAMPF und <= 10 s n
 Stratege-Saetze sind WICHTIG, nie SOFORT. Jeder Satz geht durch `stratege.pruefe`; verworfen wird einmal neu gefragt,
 mit dem Grund, danach gilt der Kern.
 
+Auftrag 016 (Carlos' Pflichtenheft aus 133448): Leerlauf ab 1:30 nach 35 s, in der Lane-Phase als Wellen- und
+Lane-Tipp ("Lane"); neuer Anlass "Kampf in der Naehe" (ein Mitspieler kaempft <= 6 s von dir, sofort gefragt); nach
+der Basis-Ankunft und bei jedem Back die Kette im ersten Satz (Kauf und Ziel, sonst verworfen); ein Kontroll-Auge
+hoechstens einmal je Back, nach Carlos' Nein 5 min gar nicht.
+
 Ausfall: kommt vom Abo `ausfall_s` lang nichts oder ein Fehler, macht der Coach still mit dem Kern weiter (einmal im
 Protokoll), `pause_nach_ausfall_s` lang ohne Stratege. Schalter: [stratege] aktiv in wissen/kern.toml oder
 `python -m lolcoach live --ohne-stratege`.
@@ -22,6 +27,7 @@ Protokoll), `pause_nach_ausfall_s` lang ohne Stratege. Schalter: [stratege] akti
 from __future__ import annotations
 
 import json
+import re as _re
 import threading
 import time
 from pathlib import Path
@@ -92,10 +98,14 @@ class MakroStratege:
             self.frage_fn = ausfall
         self.aktiv = bool(c.get("aktiv", True)) if aktiv is None else aktiv
         self.erster_max = float(c.get("erster_satz_max_s", 4.0))
+        # Auftrag 016: im Leerlauf wartet kein Kern-Satz auf seinen Platz - der Stratege darf laenger brauchen
+        self.leerlauf_erster_max = float(c.get("leerlauf_erster_satz_max_s", 8.0))
         self.ausfall_s = float(c.get("ausfall_s", 30.0))
         self.pause_ausfall = float(c.get("pause_nach_ausfall_s", 120.0))
-        self.leerlauf_ab = float(c.get("leerlauf_ab_s", 840.0))
-        self.leerlauf_s = float(c.get("leerlauf_s", 45.0))
+        self.leerlauf_ab = float(c.get("leerlauf_ab_s", 90.0))
+        self.leerlauf_s = float(c.get("leerlauf_s", 35.0))
+        self.kampf_nah_s = float(c.get("kampf_nah_s", 6.0))
+        self.kampf_abstand_s = float(c.get("kampf_abstand_s", 30.0))
         self.synchron = synchron
         self.ablage = ablage
         self.verlauf: list[tuple[float, str]] = []      # (Spielzeit, gesprochener Stratege-Satz)
@@ -111,6 +121,12 @@ class MakroStratege:
         self._kills_n = None
         self._offen: tuple[str, float] | None = None    # ein Anlass wartet auf den Plan-Satz des Kerns
         self._n = 0
+        # Auftrag 016: Kampf in der Naehe (1.4), Kontroll-Auge hoechstens einmal je Back (5)
+        self._mit_leben: dict[str, list] = {}           # Mitspieler -> [(Zeit, Leben)] der letzten Sekunden
+        self._kampf_zuletzt = -1e9
+        self._kampf_text: str | None = None
+        self._back_nr = 0
+        self._auge_back = -1
 
     # --- Zustand -------------------------------------------------------------------------------------------------
 
@@ -149,7 +165,28 @@ class MakroStratege:
         if eigene:
             inhalt += "\n\nDEINE LETZTEN SAETZE (hoechstens 60 s alt): " + " | ".join(
                 f"{int(t // 60)}:{int(t % 60):02d} „{s}“" for t, s in eigene)
+        if (auge := self._auge_grund()):
+            inhalt += f"\n\nKONTROLL-AUGE: nicht vorschlagen ({auge})."
         return f"{inhalt}\n\n{ende}"
+
+    def _auge_grund(self) -> str | None:
+        """Auftrag 016, 5: hoechstens einmal je Back vorschlagen; sagt Carlos Nein, 5 min lang gar nicht."""
+        if self._zeit < getattr(self.kern, "auge_nein_bis", -1e9):
+            return "der Spieler will gerade keins"
+        if self._auge_back == self._back_nr:
+            return "schon vorgeschlagen seit dem letzten Back"
+        return None
+
+    def _lage(self, p, kette: bool = False) -> dict:
+        lage = stratege.pruef_lage(self.kern, p)
+        lage["auge"] = self._auge_grund()
+        lage["kette_pflicht"] = kette
+        return lage
+
+    def _gesprochen(self, zeit: float, text: str) -> None:
+        self.verlauf.append((zeit, text))
+        if stratege.AUGE.search(text) and not stratege.AUGE_NEIN.search(text):
+            self._auge_back = self._back_nr
 
     def _versuch(self, prompt: str, lage: dict, bei_satz=None) -> dict:
         """Ein Aufruf: jeder Satz wird geprueft, sobald er fertig ist; gueltige gehen an `bei_satz` (hoechstens
@@ -159,12 +196,22 @@ class MakroStratege:
         gut: list[str] = []
         woerter = [0]
         erster_verworfen = [False]
+        halb = [""]
 
-        def satz(s: str) -> None:
-            s = " ".join(s.split())
+        def satz(s: str, ende: bool = False) -> None:
+            s = " ".join(f"{halb[0]} {s}".split())
+            halb[0] = ""
             if not s or erster_verworfen[0]:
                 return
+            # llm.frage_strom schickt den ersten Teilsatz schon am Komma: eine Kette ("Back jetzt: Axiombogen, dann zu
+            # Yorick") wird erst am Satzende geprueft (Nachspiel 133448, Auftrag 016: 14 Ketten am Komma verworfen)
+            if not ende and s.endswith((",", ";", ":", "–", "-")) and (
+                    stratege.back_ruf(s) or (not gut and lage.get("kette_pflicht"))):
+                halb[0] = s
+                return
             gruende = stratege.pruefe(s, lage)
+            if not gut and lage.get("kette_pflicht") and not stratege.kette(s):
+                gruende = gruende + ["Kette fehlt (Kauf und Ziel danach im ersten Satz)"]     # Auftrag 016, 2
             if gruende:
                 v["verworfen"].append({"satz": s, "gruende": gruende})
                 if not gut:
@@ -184,6 +231,8 @@ class MakroStratege:
             self.frage_fn(prompt, satz, stratege.STRATEGE_SYSTEM, self.ausfall_s)
         except Exception as e:                            # Abo-Fehler, Zeitueberschreitung: still weiter mit dem Kern
             v["fehler"] = f"{type(e).__name__}: {e}"
+        if halb[0] and not v["fehler"]:
+            satz("", ende=True)                          # ein gehaltener Teilsatz ohne Fortsetzung
         v["ende_s"] = time.monotonic() - t0
         v["text"] = " ".join(gut)
         if not gut and not v["gruende"] and not v["fehler"]:
@@ -193,7 +242,7 @@ class MakroStratege:
     def _frage(self, p, anlass: str, ende: str, bei_satz=None, vorbereitet=None) -> tuple[str | None, list[dict]]:
         """Bis zu zwei Versuche (der zweite mit dem Grund des Verwerfens). (Text oder None, Versuche). `vorbereitet`:
         (Prompt, Pruef-Lage), im Takt gebaut - der Hintergrund-Faden liest den Kern dann nicht mehr."""
-        prompt, lage = vorbereitet or (self._prompt(p, anlass, ende), stratege.pruef_lage(self.kern, p))
+        prompt, lage = vorbereitet or (self._prompt(p, anlass, ende), self._lage(p))
         versuche = [self._versuch(prompt, lage, bei_satz)]
         a = versuche[0]
         if a["fehler"]:
@@ -219,11 +268,16 @@ class MakroStratege:
         if not self.bereit() or (absicht or "OFFEN") not in STRATEGE_ABSICHTEN or p is None:
             return None
         self._zeit = p.zeit
-        text, versuche = self._frage(p, frage, f"Frage des Spielers: {frage}", bei_satz)
+        kette = bool(stratege.BACK_WORT.search(frage) or _re.search(r"kauf|was (mach|tu)|und dann|danach|plan", frage,
+                                                                     _re.I))
+        ende = f"Frage des Spielers: {frage}" + (
+            "\nSag die Kette: den naechsten Schritt und den danach (bei Back oder Kauf: was, dann wohin, warum)."
+            if kette else "")
+        text, versuche = self._frage(p, frage, ende, bei_satz, (self._prompt(p, frage, ende), self._lage(p)))
         self._schreibe({"zeit": p.zeit, "art": "frage", "frage": frage, "absicht": absicht,
                         "quelle": "stratege" if text else "kern", "text": text, "versuche": versuche})
         if text:
-            self.verlauf.append((p.zeit, text))
+            self._gesprochen(p.zeit, text)
         return text
 
     # --- B2/B3/B4: im Takt ---------------------------------------------------------------------------------------------
@@ -242,6 +296,9 @@ class MakroStratege:
         modus = getattr(getattr(self.kern, "modus", None), "aktuell", None)
         if self._laeuft or modus in ("KAMPF", "TOT", None) or getattr(self.kern, "gefahr", False) \
                 or (m is not None and m.tot):
+            return ansagen
+        if anlass == "Kampf in der Nähe":
+            self._starte(p, anlass, None)                   # Auftrag 016, 1.4: sofort, ohne auf den Kern zu warten
             return ansagen
         if anlass:
             self._offen = (anlass, p.zeit)
@@ -266,7 +323,7 @@ class MakroStratege:
         elif p.zeit >= self.leerlauf_ab and not plan_satz and p.zeit - self._letzter_leerlauf >= self.leerlauf_s \
                 and p.zeit - self._zuletzt_plan() >= self.leerlauf_s:
             self._letzter_leerlauf = p.zeit
-            self._starte(p, "Leerlauf", None)
+            self._starte(p, "Lane" if m is not None and m.lane_phase and modus == "LANE" else "Leerlauf", None)
         return ansagen
 
     def _anlass(self, p) -> str | None:
@@ -285,10 +342,44 @@ class MakroStratege:
             anlass = "Respawn"
         elif self._war_basis is False and basis and not tot and p.zeit >= 90.0:
             anlass = "Ankunft in der Basis"
+        if basis and self._war_basis is False:
+            self._back_nr += 1                              # Auftrag 016, 5: ein neuer Back
+        if anlass is None and not tot and (k := self._kampf_nah(p)) is not None:
+            anlass = k
         self._war_tot, self._kills_n = tot, n
         if m is not None and m.bereich is not None:        # ohne Ort (Spielbeginn, Minimap weg) zaehlt nichts
             self._war_basis = basis
         return anlass
+
+    def _kampf_nah(self, p) -> str | None:
+        """Auftrag 016, 1.4 (133448 6:23: "hilf Volibear, der ist neben dir, du bist volles Leben"): ein Mitspieler
+        kaempft in <= kampf_nah_s Weg von dir - sein Leben faellt (>= 10 % in 3 s) und ein Gegner ist sichtbar bei ihm
+        (<= 1200). Hoechstens einmal je kampf_abstand_s."""
+        from .bewertung import WEGFAKTOR, abstand
+        m = self.kern.m
+        b = m.b if m is not None else None
+        if b is None or b.pos is None or m.bereich == "basis_eigen":
+            return None
+        jetzt = p.zeit
+        feinde = [g for g in b.gegner if g.sichtbar and not g.s.tot and g.pos is not None]
+        for s, wo, leben, *_ in b.mitspieler or []:
+            if s.tot or wo is None:
+                continue
+            verlauf = self._mit_leben.setdefault(s.champion, [])
+            if leben is not None:
+                verlauf.append((jetzt, leben))
+            while verlauf and verlauf[0][0] < jetzt - 3.0:
+                verlauf.pop(0)
+            faellt = len(verlauf) >= 2 and verlauf[0][1] - verlauf[-1][1] >= 0.10
+            weg = abstand(wo, b.pos) * WEGFAKTOR / (m.mein_tempo or 340.0)
+            bei = [g for g in feinde if abstand(g.pos, wo) <= 1200]
+            if faellt and bei and weg <= self.kampf_nah_s and jetzt - self._kampf_zuletzt >= self.kampf_abstand_s:
+                self._kampf_zuletzt = jetzt
+                self._kampf_text = (f"{s.champion} kämpft {int(round(weg))} s von dir gegen "
+                                    + " und ".join(g.champion for g in bei[:3])
+                                    + f", sein Leben {int(round((leben or 0) * 100))} %")
+                return "Kampf in der Nähe"
+        return None
 
     def _zuletzt_plan(self) -> float:
         """Spielzeit des letzten gesprochenen Plan-Satzes, einer Warnung oder Antwort."""
@@ -296,11 +387,49 @@ class MakroStratege:
         for a in reversed(getattr(self.plan, "gesagt", []) or []):
             if a.gesprochen is None:
                 continue
-            if (a.schluessel.startswith(("kern:", "stratege:", "antwort")) and a.schluessel != "kern:INFO_FLASH") \
+            if (a.schluessel.startswith(("kern:", "stratege:", "antwort")) and not a.schluessel.startswith("kern:INFO_")) \
                     or a.thema == "gefahr":
                 t = a.gesprochen
                 break
         return t
+
+    def _kern_ersatz(self, p):
+        """Der Kern-Satz fuer einen Leerlauf, falls der Stratege zu spaet kommt oder verworfen wird: sein Plan mit
+        Grund (bei einem Back mit Kette)."""
+        try:
+            from .kern.fragen import satz
+            pl = self.kern.fuehrer.plan
+            m = self.kern.m
+            if m is None:
+                return None
+            text = satz(pl.handlung) if pl is not None and not pl.handlung.stumm else ""
+            if not text:
+                text = self._welle_satz(m)               # ohne Plan: der Wellenstand mit seiner Folge
+            if not text:
+                return None
+            if stratege.back_ruf(text):
+                text = self.kern._mit_kette(text, m)
+        except Exception:
+            return None
+        a = Ansage(text, WICHTIG, f"kern:{pl.art if pl is not None else 'WELLE'}", zeit=p.zeit, gueltig=8.0, sperre=0.0)
+        a._kategorie = "PLAN"
+        return a
+
+    def _welle_satz(self, m) -> str | None:
+        """Auftrag 016, 3: ein Wellen-Satz aus dem Kern, wenn sonst nichts da ist ("Deine Top-Welle: 3 gegen 6, sie
+        laeuft zu dir - farm sie am Turm.") - nach vorn nur ohne R1."""
+        w = m.welle
+        if w is None or w.unsere is None:
+            return None
+        vorn = not self.kern.vorn()["verboten"] and not getattr(self.kern, "gefahr", False)
+        zahl = f"{w.unsere} gegen {w.ihre}" if w.ihre is not None else f"{w.unsere} eigene Vasallen"
+        folge = {"ZU_DIR": "sie läuft zu dir, farm sie am Turm", "GROSS_ZU_DIR": "sie läuft zu dir, farm sie am Turm",
+                 "GECRASHT_BEI_DIR": "sie liegt an deinem Turm, farm sie dort",
+                 "ZU_IHM": "sie läuft zu ihm" + (", drück nach" if vorn else ", bleib hinter ihr"),
+                 "GROSS_ZU_IHM": "sie läuft zu ihm" + (", drück sie in seinen Turm" if vorn else ", bleib hinter ihr"),
+                 "GECRASHT_BEI_IHM": "sie ist an seinem Turm, jetzt ist Zeit für einen Back oder einen Ausflug",
+                 "MITTE": "sie steht in der Mitte, farm sie dort"}.get(w.zustand)
+        return f"Deine {w.lane}-Welle: {zahl}, {folge}." if folge else None
 
     def _starte(self, p, art: str, kern_satz) -> None:
         """B2/B3: fragt den Strategen; sein erster gueltiger Satz muss in erster_max da sein, sonst spricht der Kern-Satz
@@ -311,15 +440,34 @@ class MakroStratege:
         zeit0 = p.zeit
         entschieden = threading.Event()
         uebernommen = [False]
-        was = {"Leerlauf": "Leerlauf: seit einer Weile kein Plan-Satz"}.get(art, f"Wendepunkt ({art})")
-        ende = f"ANLASS: {was} um {int(p.zeit // 60)}:{int(p.zeit % 60):02d}. Was jetzt, und warum?"
+        frist = self.leerlauf_erster_max if art in ("Leerlauf", "Lane") else self.erster_max
+        if kern_satz is None and art != "Kampf in der Nähe":
+            kern_satz = self._kern_ersatz(p)            # Auftrag 016, 6.3: nie laenger still, auch wenn Claude ausfaellt
+        uhr = f"{int(p.zeit // 60)}:{int(p.zeit % 60):02d}"
+        kette = art == "Ankunft in der Basis" or (kern_satz is not None and stratege.back_ruf(kern_satz.text))
+        # Auftrag 016, 2 und 3: je Anlass die Aufgabe - Ketten statt Einzelbefehle, in der Lane ein Wellen-Tipp
+        if art == "Lane":
+            ende = (f"ANLASS: Lane-Phase um {uhr}, seit einer Weile still. Gib einen Wellen- und Lane-Tipp mit Grund aus "
+                    "der Lage (EIGENE WELLE, LANE-GEGNER, Jungler) - z. B. Welle rausdruecken, weil der Gegner fehlt; ein "
+                    "1 gegen 1 suchen; Welle freezen; 'die Welle laeuft zu dir, weil ...' - und was danach kommt.")
+        elif art == "Leerlauf":
+            ende = f"ANLASS: seit einer Weile kein Plan-Satz ({uhr}). Was jetzt, und was danach, und warum?"
+        elif art == "Ankunft in der Basis":
+            ende = (f"ANLASS: Ankunft in der Basis um {uhr}. Sag die ganze Kette in EINEM Satz: was du jetzt kaufst "
+                    "(passend zu Gold und freien Plaetzen, siehe KAUF), dann wohin, und warum.")
+        elif art == "Kampf in der Nähe":
+            ende = (f"ANLASS: Kampf in der Naehe um {uhr}: {self._kampf_text}. Hin und helfen oder nicht? Mit Grund "
+                    "(dein Leben, wer dort ist, wer fehlt) - und was danach kommt.")
+        else:
+            ende = (f"ANLASS: Wendepunkt ({art}) um {uhr}. Nenn den naechsten Schritt und den danach, mit Grund"
+                    + (" - bei einem Back im selben Satz Kauf und Ziel." if kette else "."))
         teile = [0]
         t0 = time.monotonic()
 
         def satz(s: str) -> None:
             with self._schloss:
                 if not uebernommen[0]:
-                    if entschieden.is_set() or time.monotonic() - t0 > self.erster_max:
+                    if entschieden.is_set() or time.monotonic() - t0 > frist:
                         return                               # zu spaet: der Kern-Satz spricht
                     uebernommen[0] = True
                     entschieden.set()
@@ -341,7 +489,7 @@ class MakroStratege:
                 self.plan.einwerfen(kern_satz)
 
         try:
-            vorbereitet = (self._prompt(p, "Was jetzt, und warum?", ende), stratege.pruef_lage(self.kern, p))
+            vorbereitet = (self._prompt(p, "Was jetzt, und warum?", ende), self._lage(p, kette))
         except Exception as e:                              # die Lage laesst sich nicht bauen: der Kern spricht
             print(f"  Stratege: Lage nicht gebaut ({type(e).__name__}: {e})", flush=True)
             self._laeuft = False
@@ -359,7 +507,7 @@ class MakroStratege:
                     fallback()
                 quelle = "stratege" if uebernommen[0] else ("kern" if kern_satz is not None else "still")
                 if uebernommen[0] and text:
-                    self.verlauf.append((zeit0, text))
+                    self._gesprochen(zeit0, text)
                 self._schreibe({"zeit": zeit0, "art": art, "quelle": quelle, "text": text if uebernommen[0] else
                                 (kern_satz.text if kern_satz is not None else None),
                                 "kern_satz": kern_satz.text if kern_satz is not None else None, "versuche": versuche})
@@ -369,5 +517,5 @@ class MakroStratege:
         if self.synchron:
             lauf()
             return
-        threading.Timer(self.erster_max, fallback).start()
+        threading.Timer(frist, fallback).start()
         threading.Thread(target=lauf, daemon=True).start()

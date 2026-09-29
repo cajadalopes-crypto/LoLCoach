@@ -82,10 +82,12 @@ id = "1037-flash-ohne-ort"
 zeit = "10:37"
 # Bis 10:38,8 kennt der Kern weder Rivens noch Auroras Ort (die Minimap verliert Riven); ab 10:38,9 steht Aurora
 # sichtbar 1190 vor Riven - dann ist der Flash-Satz richtig (Aurora ist nah, Riven kann draufgehen).
-fenster = [["10:33", "10:38.8"]]
+# Auftrag 016, 1.1 dreht Auftrag 010, 2 um (vorher darf_nicht_sagen "Aurora ohne Flash" bis 10:38,8): jeder gesehene
+# Flash wird gesagt, egal wie weit weg - Carlos, 133448: "er sagt nicht, wessen Flash weg ist"
+fenster = ["10:20", "10:45"]
 lage = "Kritik 009: 'Aurora ohne Flash.' um 10:37 - ohne bekannten Ort, keine Folge."
-darf_nicht_sagen = ["Aurora ohne Flash"]
-warum = "Auftrag 010, 2: ein Flash ungefragt nur, wenn der Gegner nah ist (sonst Lagebild und Dashboard)."
+muss_nennen_eins = ["Aurora Flash weg"]
+warum = "Auftrag 016, 1.1: ein gesehener Flash wird immer gesagt."
 
 # --- 3. Rueckzug auf eine andere Lane -----------------------------------------------------------------------------
 

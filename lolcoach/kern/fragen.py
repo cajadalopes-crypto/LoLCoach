@@ -653,20 +653,54 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
         return sofort(frage, p, lagebild), None
     if a == "KAUF":
         k = getattr(m.b, "kauf", None) if m is not None and m.b is not None else None
-        if k is not None and getattr(k, "verkaufen", None) and k.kaufen:
-            return f"Kein Platz: verkauf {k.verkaufen}, dann kauf {', '.join(k.kaufen)}.", h
         if k is not None and k.kaufen:
-            from ..kaufplan import mit_ziel
-            # Auftrag 012 (192113 28:35: "Kauf Tanz des Todes, dann kaufen, dann ..."): beim Kauf-Plan sein Ziel danach
-            dann = h.daten.get("wohin") if h is not None and h.art == "KAUFEN" else h
-            dann = fuehren.kurz(dann) if dann is not None else ""
-            return f"Kauf {', '.join(mit_ziel(x, getattr(k, 'item', None)) for x in k.kaufen)}" + \
-                (f", dann {dann}." if dann else "."), h
+            return _kauf_antwort(kern, m, k, h, zeit), h
         if k is not None and getattr(k, "naechstes", None):
             item, fehlt = k.naechstes
             return f"Noch {fehlt} Gold bis {item}: erst farmen, dann back.", h
         return (f"Gerade nichts zu kaufen: {satz(h)}" if h is not None else None), h
     return None, None
+
+
+def _kauf_antwort(kern, m, k, h, zeit: float) -> str:
+    """Auftrag 016, 5 (133448 13:19-13:48: "Kauf Caulfields ... fuer die Eklipse, Spitzhacke fuer die Eklipse,
+    Langschwert fuer die Eklipse", dann zweimal "verkauf Dorans Klinge"): die Kette mit Plaetzen - was, wie viele Plaetze
+    danach frei, dann wohin. Verkaufen nur, wenn es ohne nicht geht: ein Kontroll-Auge im Inventar wird erst gestellt;
+    der Verkauf kommt einmal, mit Grund - fragt Carlos nach, sagt der Kern, was er statt dessen tun kann."""
+    from .. import kaufplan
+    from .modi import KONTROLLAUGE, liste
+    items = list(m.b.ich.items) if m.b.ich is not None else []
+    dann = h.daten.get("wohin") if h is not None and h.art == "KAUFEN" else None
+    if dann is None:
+        try:
+            from .modi.basis import wohin
+            dann = wohin(m, kern.cfg, "BASIS")
+        except Exception:
+            dann = h
+    ziel = (dann.daten.get("kurz") or fuehren.kurz(dann)) if dann is not None else ""
+    wohin = f" Danach {ziel}." if ziel else ""
+    ziel = f", dann {ziel}." if ziel else "."
+    item = getattr(k, "item", None)
+    namen = [kaufplan._akk(x) for x in k.kaufen]
+    bauteile = item is not None and any(kaufplan.mit_ziel(x, item) != x for x in k.kaufen)
+    was = liste(namen) + (f" für {kaufplan.akk_artikel(item)}" if bauteile else "")
+    if k.verkaufen:
+        auge = getattr(kern, "_platz_auge", -1e9)
+        if KONTROLLAUGE in items and zeit - auge > 120.0:
+            kern._platz_auge = zeit                        # einmal - fragt Carlos nach, ist Verkaufen der Weg
+            return f"Kein Platz: stell zuerst dein Kontroll-Auge, dann passt {was}.{wohin}"
+        alt = kern._verkauf_gesagt
+        if alt is not None and alt[1] == k.verkaufen and zeit - alt[0] < 300.0:
+            fehlt = kaufplan.plan_rest(item, items, m.b.gold)
+            return (f"Ohne Verkauf passt {was} nicht" + (f" - oder farm noch {fehlt} Gold, dann kaufst du "
+                                                        f"{kaufplan.akk_artikel(item)} ganz und brauchst keinen Platz."
+                                                        if fehlt else "."))
+        kern._verkauf_gesagt = (zeit, k.verkaufen)
+        return (f"Verkauf {k.verkaufen}, sonst passt {was} nicht - {k.verkaufen} bringt dir jetzt kaum noch etwas. "
+                f"Dann kauf {was}{ziel}")
+    frei = kaufplan.plaetze_nach(items, list(k.kaufen))
+    voll = ", damit sind deine Plätze voll" if frei <= 0 else ""
+    return f"Kauf {was}{voll}{ziel}"
 
 
 def _wo_gegner(kern, f: str) -> str | None:
@@ -815,6 +849,9 @@ def beantworte(kern, frage: str, p, lagebild=None) -> dict:
     """{"text": Antwort oder None (OFFEN - Claude), "absicht", "ziel" (vergleichbar, Buch 11, 7), "quelle": "kern"}."""
     m = kern.m
     zeit = m.zeit if m is not None else (p.zeit if p is not None else 0.0)
+    from ..stratege import AUGE_NEIN
+    if AUGE_NEIN.search(frage):
+        kern.auge_nein_bis = zeit + 300.0          # Auftrag 016, 5 (133448 14:29): 5 min kein Kontroll-Auge
     a = absicht(frage)
     cfg = kern.cfg["fuehren"]
     letzte = getattr(kern, "_frage_letzte", None)
@@ -879,7 +916,7 @@ def _klaeren(kern, frage: str, zeit: float) -> str | None:
         if wort is not None:
             return wort
     log = [e for e in (getattr(kern, "_ansage_log", None) or [])
-           if zeit - e["zeit"] <= 60.0 and e["kategorie"] not in ("INFO_FLASH", "BESTAETIGUNG")]
+           if zeit - e["zeit"] <= 60.0 and e["kategorie"] not in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "BESTAETIGUNG")]
     if not log:
         return None
     themen = [re_ for w, re_ in KLAEREN_BEZUG.items() if re_.search(f)]
@@ -926,7 +963,7 @@ def _letzte_ansage(kern, zeit: float, arten: tuple = ()) -> dict | None:
     for e in reversed(getattr(kern, "_ansage_log", None) or []):
         if zeit - e["zeit"] > 60.0:
             break
-        if e["kategorie"] in ("INFO_FLASH", "BESTAETIGUNG"):
+        if e["kategorie"] in ("INFO_FLASH", "INFO_JUNGLER", "INFO_LANE", "BESTAETIGUNG"):
             continue
         if not arten or e["art"] in arten:
             return e

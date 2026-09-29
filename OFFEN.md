@@ -17,6 +17,16 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 016 (Pflichtenheft 133448: sagen, was er sieht, Ketten statt Schweigen) umgesetzt** - Zahlen in
+`buecher/messungen.md` ("Auftrag 016"), Nachspiele in `buecher/protokolle/NACHSPIEL_*.md`. Offen aus der Kritik:
+- Top-Wellen-Reflex ohne Blick auf die Karte (ADC und Support farmen dort; Welle schon am gegnerischen Nexus).
+- Kauf: "Noch 225 Gold bis Axiombogen" direkt nach dem Kauf, "nichts zu kaufen" bei 4130 Gold (192113 28:24).
+- Hin und her zwischen Kern-Satz und Antwort in < 10 s; gleiche Saetze mehrfach in kurzer Zeit.
+- Carlos' Notizen bekommen nur "Notiert." - Forderungen wie "hilf Volibear", Freeze, 1 gegen 1 kommen selten.
+- Latenz des ersten gueltigen Stratege-Satzes im Nachspiel 6-7 s (Median; die Kette wird bis zum Satzende gehalten) -
+  an Wendepunkten spricht oft der Kern (4-s-Grenze).
+- Sprechmenge 87-111 ungefragte Saetze je 30 min (vorher 54-80) - das alte Ziel ~75 ist kein Hauptmass mehr.
+
 **Auftrag 015 (Stratege live, Pruefung erweitert) umgesetzt** - Zahlen in `buecher/messungen.md` ("Auftrag 015").
 Offen bis zur naechsten echten Partie:
 - Ob der Stratege live besser ankommt als der Kern (Carlos entscheidet mit der Partie; Schalter `--ohne-stratege`).

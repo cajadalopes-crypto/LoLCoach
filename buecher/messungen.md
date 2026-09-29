@@ -4,6 +4,142 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 016 – Pflichtenheft 133448: sagen, was er sieht, Ketten statt Schweigen (29.09.2026)
+
+Grundlage: `buecher/auftraege/016_auftrag.md`. Keine Testpartie, der Coach wurde nicht gestartet. Gemessen wird nur an
+Aufnahmen: `werkzeuge/nachspiel_abdeckung.py` spielt 133448, 192113 und 101426 durch den Live-Weg nach (Kern,
+Sprechplan, Makro-Stratege über das Abo), mit Carlos' Fragen zur echten Zeit aus `_sprechtaste.log`. „Vorher“ ist
+derselbe Lauf auf dem Stand `edcf583` (Git-Worktree), ebenfalls mit echtem Strategen. Rohdaten in `stratege_probe_016/`.
+
+### Umgesetzt
+- **1.1 Flash:** jeder gesehene Flash, egal wie weit weg, als „Poppy Flash weg.“ (`[info_flash] nur_nah = false`,
+  Abstand 8 s). Flash-Fragen bleiben beim Kern: `antworten.flash_satz` nennt die Restzeit je Gegner.
+- **1.2 Jungler, 1.3 Lane-Gegner weg** (`lolcoach/kern/pflicht.py`, `[pflicht]`):
+  - Sätze wie „Teemo im oberen Fluss, bei dir in 6 Sekunden.“ und „Poppy unten gesehen: drück deine Welle.“
+  - Unter R1 heißt die Folge „farm unter deinem Turm“, bei Gefahr gibt es keinen Satz.
+  - Die Sätze zählen nicht zum Budget. Die Sperre aus 009 gilt nicht.
+  - Hat die Makro-Sichtung eine Folge, wird es ihr Satz.
+- **1.4 / 3 Stratege:**
+  - Leerlauf ab 1:30 nach 35 s, in der Lane-Phase als Wellen- und Lane-Tipp. Im Leerlauf darf der erste Satz 8 s
+    brauchen.
+  - Neuer Anlass „Kampf in der Nähe“: Ein Mitspieler kämpft höchstens 6 s entfernt, sein Leben fällt, ein Gegner ist
+    bei ihm.
+  - Die Lage kennt jetzt KAUF (Gold, freie Plätze), KILL JETZT, die eigene Welle und den Lane-Gegner mit Leben.
+  - Kommt Claude nicht rechtzeitig, spricht immer ein Kern-Satz (Plan oder Wellenstand).
+- **2 Ketten:**
+  - Kern: Jeder Back-Ruf bekommt Kauf und Ziel (`Kern._mit_kette`). Der Wendepunkt-Satz bekommt „Danach …“.
+  - Der Basis-Kaufsatz ohne sicheres Ziel endet mit „dann warte an deinem Turm auf dein Team“.
+  - Stratege: Ein Back-Ruf ohne Kette im selben Satz wird verworfen, nach der Basis-Ankunft auch ein erster Satz ohne
+    Kette. Teilsätze, die am Komma kommen, werden dafür bis zum Satzende gehalten; das hatte im ersten Lauf 14 gute
+    Ketten verworfen.
+- **4 Sicherheit (`stratege.sicherheit`, für Stratege und Kern):**
+  - Unter R1 ist jede Welle zum Gegner nach vorn. Beim Kern ist WELLE_REIN_UND_BACK unter R1 kein Kandidat mehr, dann
+    kommt BACK_JETZT. Das ändert Auftrag 009, 1.
+  - Angriffsrufe gibt es nur mit Kill-Check; auch die Kampfrufe des Kerns („Rein auf …“, „Nimm den Kampf“, „Dreh um“)
+    werden sonst stumm protokolliert.
+  - „Schwach“ nur unter 50 % Leben.
+  - Makro, Vorschau und Lagebild rufen unter R1 nicht nach vorn.
+- **5 Kaufen:**
+  - Die Kauf-Antwort nennt, ob die Plätze danach voll sind, und die Kette.
+  - Liegt ein Kontroll-Auge im Inventar, heißt es zuerst „stell es“. Verkaufen kommt einmal mit Grund. Fragt Carlos
+    nach, kommt „ohne Verkauf passt es nicht – oder farm N Gold, dann die Eklipse ganz“.
+  - Stratege: Ein Kauf mit zu wenig Plätzen wird verworfen, ebenso mit zu wenig Gold, auch bei Kurznamen wie
+    „Kriegshammer“.
+  - Kontroll-Auge höchstens einmal je Back, nie als Grund für einen Back. Nach Carlos' „Nein“ 5 min lang keins, auch im
+    Kern-Kaufsatz.
+
+### Abdeckung (neues Hauptmaß), vorher → nachher
+
+| Partie | Flash angesagt | Jungler ≥ 20 s | Backs mit Kette | Back-Rufe mit Kette | längste Stille Lane | Sicherheit |
+|---|---|---|---|---|---|---|
+| 133448 | 2/8 → **8/8** | 2/10 → **10/10** | 3/4 → **4/4** | 0/5 → **6/6** | 67 → **43 s** | 2 → **0** |
+| 192113 | 5/7 → **7/7** | 0/14 → **14/14** | 5/10 → **9/10** | 0/5 → **7/7** | 52 → **36 s** | 5 → **0** |
+| 101426 | 5/6 → **6/6** | 2/19 → **18/19** | 4/10 → **8/10** | 1/8 → **13/13** | 137 → **35 s** | 1 → **0** |
+
+**Sicherheit vorher:**
+- 133448: „Top-Welle rein, dann back“ bei 37 %, „Rein auf Poppy!“ ohne Kill.
+- 192113: TEAMPLAN „erzwingen“ unter R1, dreimal „Rein“ oder „Dreh um“ und einmal „Nimm den Kampf“, jeweils ohne Kill.
+- 101426: Welle rein bei 30 %.
+
+**Die Messung erkannte die Kampfrufe des Kerns erst nach der Kritik:** Das Muster kannte „Rein auf …“ nicht, und die
+Kill-Sperre ließ GEFAHR-Sätze durch. Beides ist behoben, der Lauf wurde wiederholt.
+
+**Noch nicht abgedeckt:**
+- 3 Backs:
+  - 192113 2:00: „Lauf direkt nach Top …, nimm ein Kontroll-Auge mit“, das Ziel steht vor dem Kauf.
+  - 101426 17:44: Kontroll-Auge, dann Mid-Welle.
+  - 101426 30:51: nur das Ziel.
+- 1 Jungler-Sichtung (101426 19:41).
+
+**Sprechmenge ungefragt je 30 min:** 87 / 95 / 111, vorher 54 / 68 / 80. Das alte Ziel ~75 gilt nicht mehr als
+Hauptmaß.
+
+**Stratege:**
+
+| | 133448 | 192113 | 101426 |
+|---|---|---|---|
+| Aufrufe | 39 | 91 | 60 |
+| Kern-Ersatz | 7 | 14 | 20 |
+| still | 0 | 2 | 3 |
+| verworfene Sätze | 5 | 14 | 21 |
+
+- **Erster gültiger Satz:** Median 6,4–7,2 s, p90 8,3–9,7 s. Vorher waren es 1,9–5,6 s.
+- **Ursache:**
+  - Die Kette wird bis zum Satzende gehalten.
+  - Der Prompt ist länger.
+- **Folge:** An Wendepunkten (4-s-Grenze) spricht oft der Kern-Ersatz.
+
+### Szenarien und Tests
+Neue Unit-Tests (`pflichtenheft_016`, neues `info_flash_kurz_und_gebuendelt`):
+- **Rot auf `edcf583`:** Die fünf Sätze aus 133448 ließ die alte Prüfung alle durch (12:10 Welle bei 5 %, 9:29
+  „schwach … geh sie an“, Back ohne Ziel, „zurück nur für ein Auge“, Langschwert ohne Platz).
+- **Rot auf `edcf583`:** „Ziggs ohne Flash.“ statt „Flash weg“, ein ferner Flash wurde verschwiegen.
+
+Angepasste alte Szenarien und Tests, mit Grund:
+- `0455-sona-ohne-flash` und `1037-flash-ohne-ort`: Beide verlangten Stille (010, „Info ohne Folgen“). Jetzt muss der
+  Flash gesagt werden (016, 1.1).
+- `0841-rumble-ohne-flash`: nimmt auch die neue Form „Rumble Flash weg“.
+- `1012-kein-platz-langschwert`: nimmt „Kontroll-Auge“ (erst stellen, dann verkaufen). Nur die Rückfragen 1017 und
+  1024 verlangen den Verkauf.
+- Wortgrenze (`woerter_max`, Unit-Test der konstruierten Lagen): +6 Wörter für einen Back-Ruf mit Kette (016, 2).
+- Unit-Tests:
+  - 014/015: „Mid-Welle rein, dann back“ unter R1 ist jetzt verworfen.
+  - Back-Sätze ohne Kauf oder Ziel in den alten Beispielen haben ein Ziel bekommen.
+
+**Ergebnis:**
+- Szenarien **305 / 309**, 3 übersprungen. Rot sind nur die alten Fälle: 3× Wendepunkt-Probe und 0944.
+- `tests/alle.py` 10 / 10, konstruierte Lagen 40 / 40.
+
+### Kritik
+Zwei frische Agenten beurteilten den Lauf **vor** der letzten Kill-Sperre für Kern-Kampfrufe; die von ihnen gefundenen
+Kampfrufe ohne Kill sind danach behoben.
+
+**Carlos-Kritiker (Maßstab: Carlos' Notizen):**
+
+| Partie | ja | teils | nein |
+|---|---|---|---|
+| 133448, Minuten | 4 | 12 | 1 |
+| 192113, Minuten | 9 | 16 | 5 |
+| 101426, Minuten | 14 | 20 | 1 |
+| Notizen aus 133448 und 192113 (26) | 5 | 14 | 7 |
+
+- Urteil: „Takt stimmt, Inhalt noch nicht“.
+- Stille, Flash, Jungler und Back-Ketten sind erfüllt.
+- **Offen:**
+  - Top-Wellen-Reflex, obwohl ADC und Support dort farmen.
+  - Kauf- und Inventarfehler.
+  - Widersprüche innerhalb von Sekunden.
+  - Forderungen wie „hilf Volibear“, Freeze oder 1 gegen 1 bekommen nur „Notiert.“.
+  - Wiederholungen.
+
+**Challenger-Kritiker („stimmt es?“):**
+- Je Partie 2–3 gefährliche Fälle, fast alle Kampfrufe ohne Kill; die sind jetzt gesperrt.
+- Je Partie 5–8 falsche Fälle: Kauf, Drache zu früh, veraltete Tote.
+- Je Partie 4–5 nervige Fälle: „Back jetzt“ in der Basis, jetzt beim Strategen verworfen; fünfmal derselbe
+  Lane-Gegner-Satz, jetzt 30 s gesperrt.
+
+---
+
 ## Auftrag 015 – Stratege live, Prüfung erweitert (29.09.2026)
 
 Grundlage: `buecher/auftraege/015_auftrag.md`. Der Coach (`python -m lolcoach`) wurde nicht gestartet. Die

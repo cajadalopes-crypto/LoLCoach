@@ -443,7 +443,7 @@ def kontrollauge_dazu(m) -> bool:
     jedes Item allein gegen das Inventar vor dem Kauf)."""
     from ... import kaufplan
     b, k = m.b, m.kauf
-    if KONTROLLAUGE in b.ich.items:
+    if KONTROLLAUGE in b.ich.items or getattr(m, "auge_aus", False):     # Auftrag 016, 5: Carlos sagte Nein
         return False
     rest = b.gold - (k.kosten if k is not None and k.kaufen else 0)
     return kaufplan.plaetze_nach(b.ich.items, k.kaufen if k is not None and k.kaufen else []) >= 1 and rest >= 75
@@ -474,8 +474,9 @@ def kaufen(m, cfg: dict, modus: str, ziel: Handlung) -> Handlung | None:
     teile = teile[:3]
     was = liste(teile)
     verkauf = f"Verkauf {k.verkaufen}, dann k" if k.verkaufen else "K"
+    # Pruefung c, R6: kein sicheres Ziel - Auftrag 016, 2 (die Kette immer): dann der sichere Platz, dein Turm
     satz = (f"{verkauf}auf {was}, dann {ziel.daten['kurz']}: {ziel.grund}." if ziel.daten.get("kurz")
-            else f"{verkauf}auf {was}.")           # Pruefung c, R6: kein sicheres Ziel - der Kauf-Satz ohne Ziel
+            else f"{verkauf}auf {was}, dann warte an deinem Turm auf dein Team.")
     h = Handlung("KAUFEN", Ziel("basis", was), modus, 5.0, gewinn=k.kosten * cfg["kauf"]["kauf_faktor"] + 1000.0,
                  grund=ziel.grund, satz=satz, schritte=["kaufen", ziel.art])
     if ziel.daten.get("gefahr_am") is not None:

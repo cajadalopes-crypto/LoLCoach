@@ -183,6 +183,17 @@ def _baum_kosten(item: int, inventar: list[int]) -> tuple[int, list[int]]:
     return rest, fehlend
 
 
+def plan_rest(name: str | None, inventar, gold: float | None) -> int | None:
+    """Auftrag 016, 5: so viel Gold fehlt noch, um `name` GANZ zu kaufen (die Bauteile im Inventar verschmelzen, kein
+    neuer Platz) - None, wenn es schon reicht oder unbekannt ist."""
+    i = _nach_name().get(name) if name else None
+    if i is None or gold is None:
+        return None
+    rest, _ = _baum_kosten(i, [int(x) for x in inventar])
+    fehlt = int(rest - gold)
+    return fehlt if fehlt > 0 else None
+
+
 @lru_cache(maxsize=256)
 def folge(champion_id: str) -> tuple[int, ...]:
     """Die Items nach dem Kern (Lexikon, Zeile "Item 4-6"), ohne Stiefel und ohne die schon im Kern - sonst hatte ein

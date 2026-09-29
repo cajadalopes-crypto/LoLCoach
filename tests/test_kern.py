@@ -19,8 +19,11 @@ def konstruierte_lagen():
     rot = [r for r in ergebnisse if r["verstoesse"]]
     assert not rot, "\n".join(f"{r['datei']}: {r['id']} -> {r['plan']}: {r['verstoesse']}  Top: {r['top'][:4]}"
                               for r in rot)
+    from lolcoach.stratege import back_ruf
     for r in ergebnisse:
         grenze = c["max_woerter_gefahr"] if r["gefahr"] and r["plan"] in SICHER else c["max_woerter"]
+        if back_ruf(r["satz"]):
+            grenze += 6              # Auftrag 016, 2: ein Back-Ruf traegt die Kette (Kauf und Ziel) - hoechstens 6 Woerter
         assert len(r["satz"].split()) <= grenze, (r["id"], r["satz"])
     assert len(ergebnisse) >= 25, len(ergebnisse)
 
@@ -142,8 +145,9 @@ def gold_reicht_fuer_das_genannte_item():
 
 
 def info_flash_kurz_und_gebuendelt():
-    """Auftrag 002, S3.1: ein bestaetigter Flash eines Gegners kurz ("Ziggs ohne Flash."), nicht in KAMPF, danach 3 s
-    warten, hoechstens einer je 20 s, mehrere in einem Satz."""
+    """Auftrag 002, S3.1 und Auftrag 016, 1.1: jeder gesehene Flash eines Gegners kurz ("Ziggs Flash weg."), egal wie
+    weit weg (die Einschraenkung auf nahe Gegner aus Auftrag 010 faellt weg), nicht in KAMPF, danach 3 s warten,
+    hoechstens einer je 8 s, mehrere in einem Satz."""
     from types import SimpleNamespace as NS
     from lolcoach.kern import Kern
     from lolcoach.zauber import Timer
@@ -152,8 +156,6 @@ def info_flash_kurz_und_gebuendelt():
     p = NS(gegner=lambda: gegner)
     timer: dict = {}
     k._lagebild = NS(zauber=NS(timer=timer))
-
-    # Auftrag 010, 2: ungefragt nur fuer nahe, eben gesehene Gegner - Caitlyn steht erst weit weg
     ort = {"z": 1200.0, "s": 2500.0, "c": 9000.0}
 
     def m(t):
@@ -165,21 +167,19 @@ def info_flash_kurz_und_gebuendelt():
     k._kampf_zuletzt = 101.0
     assert k._flash_info(m(102), "LANE", []) is None                        # 3 s nach dem Kampf
     a = k._flash_info(m(104.5), "LANE", [])
-    assert a is not None and a.text == "Ziggs ohne Flash.", a
+    assert a is not None and a.text == "Ziggs Flash weg.", a
     assert len(a.text.split()) <= 4
     timer[("s", "SummonerFlash")] = Timer("s", "Sona", "SummonerFlash", 410.0, "Chat", 110.0)
     timer[("c", "SummonerFlash")] = Timer("c", "Caitlyn", "SummonerFlash", 420.0, "Chat", 112.0)
-    assert k._flash_info(m(115), "LANE", []) is None                        # hoechstens einer je 20 s
-    a = k._flash_info(m(125), "LANE", [])
-    assert a is not None and a.text == "Sona ohne Flash.", a                # Caitlyn ist weit weg: sie wartet
-    ort["c"] = 3000.0
-    a = k._flash_info(m(150), "LANE", [])
-    assert a is not None and a.text == "Caitlyn ohne Flash.", a             # jetzt nah, Ziggs nicht noch einmal
+    assert k._flash_info(m(110), "LANE", []) is None                        # hoechstens einer je 8 s
+    a = k._flash_info(m(113), "LANE", [])
+    assert a is not None and a.text == "Sona und Caitlyn Flash weg.", a     # Caitlyn weit weg: trotzdem (Auftrag 016)
+    assert k._flash_info(m(125), "LANE", []) is None                        # keiner doppelt
     k2 = Kern(stellung="neu")
     k2._lagebild = NS(zauber=NS(timer={("c", "SummonerFlash"): Timer("c", "Caitlyn", "SummonerFlash", 420.0, "Chat",
                                                                      112.0)}))
-    ort["c"] = 9000.0
-    assert k2._flash_info(m(125), "LANE", []) is None                       # weit weg: nicht ungefragt
+    a = k2._flash_info(m(125), "LANE", [])
+    assert a is not None and a.text == "Caitlyn Flash weg.", a              # 133448: Lux, Sona, Twitch weit weg
 
 
 def zwei_klar_unterlegene():
@@ -505,8 +505,9 @@ def stratege_pruefung():
     assert pruefe("Geh mit Sona und Kai'Sa Richtung Baron.", baron)                                # 013 20:24
     r1 = dict(lage, vorn={"verboten": True, "leben": 36, "gesperrt": [], "ziele": [], "erlaubt": ["back jetzt"]})
     assert pruefe("Push jetzt den inneren Bot-Turm, Level 14 gegen 8.", r1)
-    assert not pruefe("Back jetzt, danach mit der Gruppe zum Drachen.", r1)
-    assert not pruefe("Mid-Welle rein, dann back.", r1)
+    # Auftrag 016: ein Back-Ruf nennt den Kauf (2); unter R1 ist auch "Welle rein" nach vorn (4.1, vorher erlaubt)
+    assert not pruefe("Back jetzt und heilen, danach mit der Gruppe zum Drachen.", r1)
+    assert pruefe("Mid-Welle rein, dann back.", r1)
     assert not pruefe("Nicht drücken, zurück unter deinen Turm.", r1)
 
 
@@ -530,7 +531,9 @@ def stratege_pruefung_015():
     assert not pruefe("Geh zu Sett in die Basis, dann mit Sett zum Mid-Turm.", lage)
     # 2. Gold (164326 18:17: "Kontroll-Auge zuerst kaufen, dann Gefraessige Hydra fertig", 1475 Gold)
     assert pruefe("Back jetzt, Kontroll-Auge zuerst kaufen, dann Gefräßige Hydra fertig.", lage)
-    assert not pruefe("Back jetzt und kauf Caulfields Kriegshammer für die Gefräßige Hydra.", lage)
+    # Auftrag 016, 2: ein Back-Ruf nennt auch das Ziel danach
+    assert not pruefe("Back jetzt und kauf Caulfields Kriegshammer für die Gefräßige Hydra, dann zurück zur Top-Welle.",
+                      lage)
     # 3. Sichtbarkeit (192113 14:37: "Yi und Pantheon seh ich grad nicht", Pantheon war sichtbar)
     assert pruefe("Yi und Pantheon seh ich grad nicht, bleib hinter der Welle.", lage)
     assert pruefe("Master Yi steht unten bei Sona, geh nicht hin.", lage)
@@ -551,7 +554,7 @@ def stratege_pruefung_015():
     assert not pruefe("Geh nicht Richtung Drache, solange Master Yi unbekannt ist.", lage)
     assert not pruefe("Geh danach mit TP in 37s nach oben.", fern)
     assert not pruefe("Unten steht es zwei gegen zwei mit Sona und Cassiopeia.", fern)
-    assert not pruefe("Zurück zum Turm, dann back für den Kriegshammer.", r1)
+    assert not pruefe("Zurück zum Turm, dann back für den Kriegshammer, danach zur Top-Welle.", r1)   # 016: mit Ziel
     assert pruefe("Cassio, Yi und Pantheon sind unsichtbar, bleib hinten.", lage)          # 192113 24:38
     # 6. Laenge: ueber 30 Woerter auf ganze Saetze
     lang = ("Geh zurück zu deinem Turm, weil drei Gegner kommen und du allein bist. " * 3).strip()
@@ -590,8 +593,8 @@ def makro_stratege_wege():
                            aktiv=True)
         assert ms.antworte("Was jetzt?", "JETZT", p) is None                       # zweimal verworfen: der Kern
         assert len(ms.protokoll[-1]["versuche"]) == 2 and ms.protokoll[-1]["quelle"] == "kern"
-        ms.frage_fn = antwort("Push den Turm jetzt.", "Back jetzt, dein Leben ist zu niedrig.")
-        assert ms.antworte("Was jetzt?", "JETZT", p) == "Back jetzt, dein Leben ist zu niedrig."
+        ms.frage_fn = antwort("Push den Turm jetzt.", "Back jetzt: heilen, dann zurück zur Top-Welle.")
+        assert ms.antworte("Was jetzt?", "JETZT", p) == "Back jetzt: heilen, dann zurück zur Top-Welle."
         assert ms.antworte("Wann kommt der Drache?", "TIMER", p) is None             # Faktfrage: beim Kern
 
         def kaputt(*a):
@@ -602,7 +605,7 @@ def makro_stratege_wege():
         welle = Ansage("Drück die Top-Welle: 4 gegen 1 Vasallen.", WICHTIG, "kern:WELLE_DRUECKEN", zeit=900.0)
         wp = Ansage("Ihr äußerer Top-Turm ist weg. Farm Top.", WICHTIG, "kern:FARMEN", zeit=900.0)
         wp._kategorie = "WENDEPUNKT"
-        ms.frage_fn = antwort("Back jetzt, danach mit deinem Team zum Mid-Turm.")
+        ms.frage_fn = antwort("Back jetzt und heilen, danach mit deinem Team zum Mid-Turm.")
         rest = ms.bearbeite([welle, wp], p)
         assert rest == [] and len(gesagt) == 1 and gesagt[0].schluessel.startswith("stratege:")
         gesagt.clear()
@@ -615,6 +618,103 @@ def makro_stratege_wege():
         stratege.pruef_lage = alt
 
 
+def pflichtenheft_016():
+    """Auftrag 016 (Carlos' Pflichtenheft aus 133448): Sicherheit (4), Ketten (2), Kaufen (5), Informationspflicht (1)."""
+    from types import SimpleNamespace as NS
+    from lolcoach import stratege
+    from lolcoach.kern import konfig
+    from lolcoach.kern.fragen import absicht
+    from lolcoach.kern.pflicht import Pflicht
+    from lolcoach.stratege import back_ruf, kette, pruefe
+    from lolcoach.stratege_live import STRATEGE_ABSICHTEN
+    champs = ["Riven", "Poppy", "Teemo", "Lux", "Sona", "Twitch", "Yorick", "Volibear", "Veigar", "Blitzcrank"]
+    gegner = [{"name": n, "sichtbar": True, "seit": 0.0, "tot": False, "seite": "oben"} for n in ("Poppy", "Lux", "Sona")]
+    r1 = {"champions": champs, "gegner": gegner, "mitspieler": [], "jungler": "Teemo", "flash": 0.0, "tp": None,
+          "ult": True, "gold": 3083, "items": [1055, 6696, 1001], "objectives": [], "kill": [],
+          "gegner_leben": {"Poppy": 1.0, "Lux": 1.0, "Sona": 1.0},
+          "vorn": {"verboten": True, "leben": 5, "gesperrt": [], "ziele": [], "erlaubt": ["back jetzt"]}}
+    voll = dict(r1, vorn={"verboten": False, "leben": 100, "gesperrt": [], "ziele": [], "erlaubt": []})
+    # 4.1 (12:10, 5 % Leben, Lux und Sona voll daneben)
+    satz = ('Die Frage ist nur eine Null, ich nehme sie als "was jetzt?": Schieb kurz die Top-Welle rein und geh back, '
+            'du hast 3083 Gold für den Axiombogen.')
+    assert any("R1" in g for g in pruefe(satz, r1)), pruefe(satz, r1)
+    assert not pruefe("Farm die Top-Welle unter deinem Turm.", r1)                 # holen/farmen: erlaubt
+    assert pruefe("Drück die Welle noch in ihren Turm.", r1)
+    # 4.2 (9:29: "Poppy ist sichtbar und schwach ... geh sie jetzt an" bei vollem Leben, ohne Kill)
+    satz = "Poppy ist sichtbar und schwach, 1180 Leben gegen deine 1550 Combo – geh sie jetzt an, bevor sie reagiert."
+    gr = pruefe(satz, voll)
+    assert any("Kill-Check" in g for g in gr) and any("schwach" in g for g in gr), gr
+    kill = dict(voll, kill=["Poppy"], gegner_leben={"Poppy": 0.3, "Lux": 1.0, "Sona": 1.0})
+    assert not pruefe("Poppy ist schwach, geh sie jetzt an.", kill)
+    assert pruefe("Poppy ist schwach, geh sie jetzt an.", dict(kill, vorn=r1["vorn"]))    # Kill, aber R1
+    assert not pruefe("Greif erst an, wenn ihr W weg ist, sonst farm die Welle.", voll)
+    # 2. Ketten: jeder Back-Ruf nennt Kauf und Ziel im selben Satz
+    assert pruefe("Geh jetzt back und kauf den Axiombogen, du hast 2486 Gold.", voll)
+    assert not pruefe("Back jetzt: Axiombogen, dann zu Yorick nach Mid, weil Teemo unten ist.", voll)
+    assert back_ruf("Ihr äußerer Mid-Turm ist weg. Back.") and not back_ruf("Nach dem Back zur Top-Welle.")
+    assert kette("Kauf Axiombogen und Kontroll-Auge, dann zum unteren Fluss zu Volibear.")
+    # 5. Kaufen: Plaetze, Kontroll-Auge
+    inv = dict(voll, gold=924, items=[1055, 6696, 1001, 2055, 3133, 1037])
+    assert any("Platz" in g for g in pruefe("Kauf das Langschwert für die Eklipse, dann Top.", inv))
+    assert pruefe("Geh zurück nur für ein Kontroll-Auge.", voll)                   # 15:05
+    assert pruefe("Kauf ein Kontroll-Auge, dann zum Mid-Turm.", dict(voll, auge="der Spieler will gerade keins"))
+    assert not pruefe("Gut, ohne Auge: zurück zum äußeren Mid-Turm zu Yorick.", dict(voll, auge="nein"))
+    assert stratege.AUGE_NEIN.search("Nein! Ich glaub's kein verficktes Kontrollauge, du ...!")
+    assert not stratege.AUGE_NEIN.search("Ich hab das Auge nicht.")
+    # 1.1: eine Flash-Frage beantwortet der Kern (Restzeit je Gegner, antworten.flash_satz)
+    for f in ("Wer hat Flash?", "Wie sieht's mit den Flashes aus?", "Hat Poppy Flash?"):
+        assert absicht(f) not in STRATEGE_ABSICHTEN, (f, absicht(f))
+    # 1.2 und 1.3: Informationspflicht
+    cfg = konfig()
+    kern = NS(cfg=cfg, gefahr=False, vorn=lambda: {"verboten": False})
+    pf = Pflicht()
+    j = NS(champion="Teemo", s=NS(tot=False), sichtbar=False, ort="im oberen Fluss", ankunft=6.0)
+    ln = NS(champion="Poppy", s=NS(tot=False), sichtbar=False, ort="unten", ankunft=45.0, pos=(12000.0, 1500.0))
+
+    def m(t):
+        return NS(zeit=t, pos=(1500.0, 12000.0), b=NS(jungler=j, lane=ln))
+    j.sichtbar = True
+    pf.takt(kern, m(100.0), "LANE")                                 # zum ersten Mal ab 1:30
+    assert pf.faellig(m(100.0), "LANE", cfg) == ("INFO_JUNGLER", "Teemo im oberen Fluss, bei dir in 6 Sekunden.")
+    pf.gesagt("INFO_JUNGLER", m(100.0))
+    j.sichtbar = False
+    pf.takt(kern, m(110.0), "LANE")
+    j.sichtbar, j.ort, j.ankunft = True, "in seinem unteren Jungle", 30.0
+    pf.takt(kern, m(115.0), "LANE")                                 # nur 15 s ohne Sicht: nichts
+    assert pf.faellig(m(115.0), "LANE", cfg) is None
+    j.sichtbar = False
+    pf.takt(kern, m(116.0), "LANE")
+    j.sichtbar = True
+    pf.takt(kern, m(140.0), "LANE")                                 # 25 s ohne Sicht: sein Ort, ohne "bei dir"
+    assert pf.faellig(m(140.0), "KAMPF", cfg) is None               # in KAMPF wartet er ...
+    assert pf.faellig(m(141.0), "LANE", cfg) == ("INFO_JUNGLER", "Teemo in seinem unteren Jungle.")
+    pf.gesagt("INFO_JUNGLER", m(141.0))
+    j.sichtbar = False
+    ln.sichtbar = True                                               # 11:35: "Poppy unten gesehen" - drueckbar
+    pf.takt(kern, m(695.0), "LANE")
+    assert pf.faellig(m(695.0), "LANE", cfg) == ("INFO_LANE", "Poppy unten gesehen: drück deine Welle.")
+    pf2 = Pflicht()
+    pf2.takt(NS(cfg=cfg, gefahr=False, vorn=lambda: {"verboten": True}), m(695.0), "LANE")
+    assert pf2.offen["INFO_LANE"][1] == "Poppy unten gesehen: farm unter deinem Turm."   # unter R1 nicht nach vorn
+    # Kritik 016: Angriffs-Rufe des Kerns ohne Kill-Check und "Back" in der Basis
+    from lolcoach.stratege import sicherheit
+    assert sicherheit("Rein auf Poppy!", {"vorn": {"verboten": False}, "kill": [], "gegner": [{"name": "Poppy"}]})
+    assert not sicherheit("Rein auf Poppy!", {"vorn": {"verboten": False}, "kill": ["Poppy"], "gegner": [{"name": "Poppy"}]})
+    assert pruefe("Back jetzt: Axiombogen, dann zu Yorick nach Mid.", dict(voll, ich_basis=True))
+    assert any("Gold" in g for g in pruefe("Kauf Kriegshammer und Spitzhacke, dann Top.", dict(voll, gold=1060, items=[])))
+    # 2. der Kern-Ersatz: ein Back-Ruf bekommt Kauf und Ziel
+    from lolcoach.kern import Kern
+    k = Kern(stellung="neu")
+    mm = NS(b=NS(), kauf=NS(kaufen=["Axiombogen"]), zeit=700.0)
+    txt = k._mit_kette("Top-Welle rein, dann back: 37 Prozent Leben.", mm)
+    assert kette(txt) and txt.startswith("Top-Welle rein"), txt
+    # 6.4: auch Makro-Infos des Kerns nicht nach vorn unter R1 (Nachspiel 192113 17:51, 101426 34:44)
+    assert k._r1_vorn("1800 Gold vorn und jetzt stärker: Drache und ihre Türme als Gruppe erzwingen.",
+                      NS(leben=0.3, tot=False))
+    assert k._r1_vorn("Vier von ihnen tot, noch 12 Sekunden: auf ihren Nexus-Turm jetzt.", NS(leben=0.2, tot=False))
+    assert not k._r1_vorn("Vier von ihnen tot, noch 12 Sekunden: auf ihren Nexus-Turm jetzt.", NS(leben=0.8, tot=False))
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
@@ -623,6 +723,6 @@ if __name__ == "__main__":
                  ihr_jungle_heisst_ihr_jungle, keine_verbotenen_gruende, warum_mit_vergleich,
                  vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal, anteil_geglaettet,
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
-                 stratege_pruefung, stratege_pruefung_015, makro_stratege_wege):
+                 stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016):
         test()
         print(f"{test.__name__} OK")

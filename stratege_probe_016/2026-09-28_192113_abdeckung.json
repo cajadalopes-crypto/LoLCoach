@@ -1,0 +1,309 @@
+{
+ "kennzahlen": {
+  "flash": "7/7 (100 %)",
+  "jungler": "14/14 (100 %)",
+  "backs": "9/10 (90 %)",
+  "back_rufe": "7/7 (100 %)",
+  "stille": "36 s",
+  "sicherheit": 0
+ },
+ "vorher": {
+  "flash": "5/7 (71 %)",
+  "jungler": "0/14 (0 %)",
+  "backs": "5/10 (50 %)",
+  "back_rufe": "0/5 (0 %)",
+  "stille": "52 s",
+  "sicherheit": 5
+ },
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 69.02359008789062,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 5.3
+   },
+   {
+    "zeit": 388.9655456542969,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 838.0535278320312,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 6.4
+   },
+   {
+    "zeit": 847.7702026367188,
+    "champion": "Cassiopeia",
+    "gesagt": "Cassiopeia Flash weg.",
+    "nach_s": 7.6
+   },
+   {
+    "zeit": 1151.1043701171875,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1536.1158447265625,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 12.2
+   },
+   {
+    "zeit": 1679.8330078125,
+    "champion": "Cassiopeia",
+    "gesagt": "Cassiopeia Flash weg.",
+    "nach_s": 0.0
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 214.7,
+    "name": "Master Yi",
+    "ort": "im unteren Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Master Yi im unteren Fluss."
+   },
+   {
+    "zeit": 287.3,
+    "name": "Master Yi",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": 72,
+    "tot_ich": false,
+    "gesagt": "Master Yi in eurem unteren Jungle."
+   },
+   {
+    "zeit": 599.0,
+    "name": "Master Yi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 304,
+    "tot_ich": false,
+    "gesagt": "Master Yi auf der Mid-Lane."
+   },
+   {
+    "zeit": 760.0,
+    "name": "Master Yi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 145,
+    "tot_ich": false,
+    "gesagt": "Master Yi im unteren Fluss."
+   },
+   {
+    "zeit": 890.6,
+    "name": "Master Yi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 88,
+    "tot_ich": false,
+    "gesagt": "Master Yi in seinem oberen Jungle, bei dir in 1 Sekunden."
+   },
+   {
+    "zeit": 961.3,
+    "name": "Master Yi",
+    "ort": "oben",
+    "ohne_s": 54,
+    "tot_ich": false,
+    "gesagt": "Master Yi oben."
+   },
+   {
+    "zeit": 1063.3,
+    "name": "Master Yi",
+    "ort": "im oberen Fluss",
+    "ohne_s": 71,
+    "tot_ich": false,
+    "gesagt": "Master Yi im oberen Fluss."
+   },
+   {
+    "zeit": 1170.9,
+    "name": "Master Yi",
+    "ort": "in der Flussmitte",
+    "ohne_s": 42,
+    "tot_ich": false,
+    "gesagt": "Master Yi in der Flussmitte."
+   },
+   {
+    "zeit": 1257.8,
+    "name": "Master Yi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 72,
+    "tot_ich": false,
+    "gesagt": "Master Yi in seinem oberen Jungle."
+   },
+   {
+    "zeit": 1324.8,
+    "name": "Master Yi",
+    "ort": "in seiner Basis",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Master Yi in seiner Basis."
+   },
+   {
+    "zeit": 1381.4,
+    "name": "Master Yi",
+    "ort": "oben",
+    "ohne_s": 49,
+    "tot_ich": true,
+    "gesagt": "Master Yi oben."
+   },
+   {
+    "zeit": 1549.4,
+    "name": "Master Yi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 162,
+    "tot_ich": false,
+    "gesagt": "Master Yi in seinem oberen Jungle."
+   },
+   {
+    "zeit": 1708.3,
+    "name": "Master Yi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 115,
+    "tot_ich": false,
+    "gesagt": "Master Yi auf der Mid-Lane."
+   },
+   {
+    "zeit": 1774.9,
+    "name": "Master Yi",
+    "ort": "in seiner Basis",
+    "ohne_s": 29,
+    "tot_ich": false,
+    "gesagt": "Master Yi in seiner Basis."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 120.3,
+    "gesagt": null,
+    "saetze": [
+     "Farm die Top-Welle unter deinem Turm weiter,",
+     "denn Teemo ist seit 19 s unsichtbar und kann überall sein.",
+     "Lauf direkt nach Top, sonst verpasst du die Welle, nimm ein Kontroll-Auge mit."
+    ]
+   },
+   {
+    "zeit": 259.3,
+    "gesagt": "Nein, nicht pushen, dafür hast du zu wenig Leben. Back jetzt: Caulfields Kriegshammer kaufen, dann zurück nach Top zur Kanone um 4:57, weil Yi unbekannt ist.",
+    "saetze": [
+     "Zurück unter deinen Top-Turm: Teemo kommt.",
+     "Farm die Top-Welle weiter und nimm die Kanone um 4:57,",
+     "denn sie steht nah an deinem Turm und Yi ist unbekannt."
+    ]
+   },
+   {
+    "zeit": 410.3,
+    "gesagt": "Top-Welle rein, dann back: 1400 Gold für den Brutalisierer, Teemo ist tot. Danach Top.",
+    "saetze": [
+     "Top-Welle rein, dann back: 1400 Gold für den Brutalisierer, Teemo ist tot. Danach Top.",
+     "Kauf jetzt den Brutalisierer für den Axiombogen, dann geh Top, weil du pünktlich zur gecrashten Welle kommst.",
+     "Teemo ist gerade nicht zu sehen, also bleib wachsam."
+    ]
+   },
+   {
+    "zeit": 581.4,
+    "gesagt": "Stimmt, dann eben 87 Prozent. Back jetzt: Caulfields Kriegshammer, dann zurück Top zur Welle, weil die Kanone in 21 Sekunden kommt.",
+    "saetze": [
+     "Ihr äußerer Top-Turm ist weg. Drück ihren inneren Top-Turm, Level 10 gegen 5.",
+     "Kauf jetzt Caulfields Kriegshammer und die Spitzhacke für die Eklipse, dann porte nach Top, weil dort die nächste Welle kommt.",
+     "Master Yi auf der Mid-Lane."
+    ]
+   },
+   {
+    "zeit": 624.3,
+    "gesagt": "Kauf jetzt Caulfields Kriegshammer und die Spitzhacke für die Eklipse, dann porte nach Top, weil dort die nächste Welle kommt.",
+    "saetze": [
+     "Kauf jetzt Caulfields Kriegshammer und die Spitzhacke für die Eklipse, dann porte nach Top, weil dort die nächste Welle kommt.",
+     "Master Yi auf der Mid-Lane.",
+     "Teemo oben gesehen: drück deine Welle."
+    ]
+   },
+   {
+    "zeit": 775.2,
+    "gesagt": "Back jetzt: Spitzhacke kaufen, dann per TP zurück zur Gruppe für den Drachen, weil du nur 9 Prozent Leben hast.",
+    "saetze": [
+     "Teemo unten gesehen: farm unter deinem Turm.",
+     "Master Yi im unteren Fluss.",
+     "Hol deine Top-Welle: 6 Vasallen laufen in deinen Turm."
+    ]
+   },
+   {
+    "zeit": 926.8,
+    "gesagt": "Kauf im Fountain die Eklipse für 975 Gold, dann per TP nach Top, weil die Kanone in 45 Sekunden in deiner Welle ankommt.",
+    "saetze": [
+     "Raus, zu eurem Mid-Turm!",
+     "Master Yi in seinem oberen Jungle, bei dir in 1 Sekunden.",
+     "Von der Top-Lane zurück zu eurem äußeren Mid-Turm: drei kommen."
+    ]
+   },
+   {
+    "zeit": 1093.5,
+    "gesagt": "Back jetzt: Tiamat kaufen, dann Caulfields Kriegshammer, danach zu Brand, Kai'Sa und Sona oben, weil du nur 29 Prozent Leben hast.",
+    "saetze": [
+     "Master Yi im oberen Fluss.",
+     "Ihr liegt vorn und seid stärker: Drache und ihre Türme als Gruppe erzwingen.",
+     "Aus der Basis: Farm Top, bei 1050 Gold back für Gefräßige Hydra. Danach zur Top-Welle."
+    ]
+   },
+   {
+    "zeit": 1160.6,
+    "gesagt": "Kaufen geht mit 974 Gold nichts, also heil in der Basis auf. Danach nach Top zur Welle, aber nicht tief, weil Yi und Cassiopeia unbekannt sind.",
+    "saetze": [
+     "Teemo Flash weg.",
+     "Kaufen geht mit 996 Gold nichts, also nichts kaufen, dann nach Top zur Welle, weil dort ihre nächste kommt.",
+     "Master Yi in der Flussmitte."
+    ]
+   },
+   {
+    "zeit": 1236.2,
+    "gesagt": "Dann brauchst du Top nicht mehr: Kauf jetzt Gefräßige Hydra, dann mit Sett und Kai'Sa zusammen raus, weil ihr 2200 Gold vorn seid.",
+    "saetze": [
+     "Du stehst tief: Master Yi, Teemo und Pantheon fehlen seit 23 Sekunden.",
+     "Du kaufst nichts, 94 Gold reichen für nichts Sinnvolles, geh dann zu deinem äußeren Top-Turm, weil dort in 29 Sekunden die Kanone kommt."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 391.4905090332031,
+    "text": "Top-Welle rein, dann back: 1400 Gold für den Brutalisierer, Teemo ist tot. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 516.6110229492188,
+    "text": "Back jetzt: 850 Gold für Spitzhacke. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 748.4757080078125,
+    "text": "Back jetzt: Spitzhacke kaufen, dann per TP zurück zur Gruppe für den Drachen, weil du nur 9 Prozent Leben hast.",
+    "kette": true
+   },
+   {
+    "zeit": 1047.410400390625,
+    "text": "Teemo ist 32 Sekunden weg: Back jetzt, 31 Prozent Leben. Kauf Tiamat und Vampirisches Zepter für die Gefräßige Hydra, dann zu deinem Team.",
+    "kette": true
+   },
+   {
+    "zeit": 1109.3863525390625,
+    "text": "Aus der Basis: Farm Top, bei 1050 Gold back für Gefräßige Hydra. Danach zur Top-Welle.",
+    "kette": true
+   },
+   {
+    "zeit": 1298.9671630859375,
+    "text": "Ihr innerer Mid-Turm ist weg. Mid-Welle rein, dann back, 1400 Gold für Riesenschwert. Danach nach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 1406.5870361328125,
+    "text": "Back jetzt: Stahlsiegel für den Schutzengel, dann per TP nach Top zu Kai'Sa, weil dort ihre nächste Welle kommt.",
+    "kette": true
+   }
+  ],
+  "stille_max": 36,
+  "stille_lang": [],
+  "sicherheit": []
+ }
+}

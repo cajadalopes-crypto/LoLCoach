@@ -143,7 +143,13 @@ STRATEGE_SYSTEM = (
     "und keine Todesrisiko-Zahlen. Innerhalb von 30 Sekunden drehst du deine letzte Empfehlung nicht um, ausser die "
     "Lage hat sich geaendert - dann sag zuerst, was sich geaendert hat ('Jetzt, wo Yi unten aufgetaucht ist: ...'). "
     "Eine Beobachtung des Spielers ist eine Tatsache - glaub ihm und plane neu. Nie von oben herab. Laenge: "
-    "hoechstens 25 Woerter insgesamt, zwei kurze Saetze, kein Absatz - er hoert zu, waehrend er spielt.")
+    "hoechstens 25 Woerter insgesamt, zwei kurze Saetze, kein Absatz - er hoert zu, waehrend er spielt. "
+    # Auftrag 016, 2 und 4 (Carlos' Notizen in 133448: Ketten statt Einzelbefehle; 9:29 "schwach" bei vollem Leben)
+    "Sag immer die Kette, damit er sofort handeln kann: jeder Back-Rat nennt IM SELBEN SATZ, was er kauft (passend zu "
+    "Gold und freien Plaetzen unter KAUF) und wohin danach, mit Grund - 'Back jetzt: Axiombogen, dann zu Yorick nach "
+    "Mid, weil ...'. Angreifen (geh an, greif an, trade, all-in) nur, wenn KILL JETZT einen Gegner nennt; 'schwach' "
+    "nur fuer einen Gegner unter 50 Prozent Leben. Bei NACH VORN VERBOTEN ist auch jede Welle, die du zum Gegner "
+    "schiebst, nach vorn. Ein Kontroll-Auge hoechstens einmal je Back vorschlagen und nie als Grund fuer einen Back.")
 
 VORWAERTS = _re.compile(
     r"\b(drück|drücke|drückt|push|pusht|pushen|erzwing\w*|nimm (den|ihren|das|die)(?! (welle|kanone|vasallen|cs)\b)|"
@@ -224,6 +230,10 @@ def pruef_lage(kern, p) -> dict:
         "ich_basis": bool(m is not None and m.bereich == "basis_eigen"),
         "objectives": [{"schl": o.schl, "lebt": bool(o.lebt), "spawn_in": o.spawn_in}
                        for o in (m.objectives or [] if m is not None else [])],
+        # Auftrag 016, 4.2: der Combo-Check des Kerns und das Leben der sichtbaren Gegner (Balken im Bild)
+        "kill": kill_jetzt(b) if b is not None else [],
+        "gegner_leben": {g.champion: round(g.leben, 2) for g in (b.gegner if b is not None else [])
+                         if g.sichtbar and g.leben is not None},
     }
 
 
@@ -360,6 +370,11 @@ def pruefe_015(s: str, lage: dict) -> list[str]:
     if gold is not None and KAUF_WORT.search(s) and not KAUF_SPAETER.search(s):
         items = _items()
         rest = _re.sub(r"für ((die|den|das|deine|deinen|dein|eine|einen) )?[\wÄÖÜäöüß' -]+", " ", s)
+        # auch kurz gesagt (Kritik 016, 192113 9:42: "Kriegshammer + Spitzhacke" bei 1060 Gold)
+        kurz = {n.split()[-1]: n for n in items if n != "_id" and " " in n and len(n.split()[-1]) >= 6}
+        for k, n in kurz.items():
+            if n not in rest and _re.search(rf"(?<!\w){_re.escape(k)}(?!\w)", rest):
+                rest = _re.sub(rf"(?<!\w){_re.escape(k)}(?!\w)", n, rest)
         namen = sorted((n for n in items if n != "_id" and _re.search(rf"(?<!\w){_re.escape(n)}(?!\w)", rest)),
                        key=len, reverse=True)
         genannt, preis, besitz = [], 0, list(lage.get("items") or [])
@@ -370,6 +385,120 @@ def pruefe_015(s: str, lage: dict) -> list[str]:
             preis += _restpreis(items[n][3], besitz)
         if genannt and preis > gold:
             gruende.append(f"Gold reicht nicht ({' + '.join(genannt)} = {preis}, du hast {gold})")
+        if genannt:
+            # Auftrag 016, 5 (133448 13:27: "kauf Auge, Hammer und Spitzhacke" - dann war fuer das Langschwert kein Platz)
+            try:
+                from . import kaufplan
+                frei = kaufplan.plaetze_nach(list(lage.get("items") or []), genannt)
+            except Exception:
+                frei = 0
+            if frei < 0:
+                gruende.append(f"kein Platz ({' + '.join(genannt)}: {-frei} Platz zu wenig)")
+    return gruende
+
+
+# --- Auftrag 016: Sicherheit, die in 133448 durchrutschte, und Ketten ----------------------------------------------------
+
+# 4.1 (12:10, 5 % Leben, Lux und Sona voll daneben: "Schieb kurz die Top-Welle rein"): unter R1 ist jede Welle nach
+# vorn, die man zum Gegner schiebt; erlaubt bleibt nur, sie auf der eigenen Seite zu holen oder zu farmen
+WELLE_VOR = _re.compile(
+    r"\b(schieb\w*|drück\w*|push\w*|crash\w*|stapel\w*|shove\w*)\b[^.;:]{0,30}?\bwellen?\b[^.;:]{0,15}|"
+    r"\bwellen?\b[^.;:]{0,25}?\b(rein|reinschieben|reindrücken|rüber\w*|crashen|pushen|drücken|stapeln|schieben)\b|"
+    r"\b(slow|fast) ?push\w*|such (dir )?(ein(en)? |das |den )?(1 ?(gegen|v|vs) ?1|duell)", _re.I)
+# 4.2 (9:29: "Poppy ist sichtbar und schwach ... geh sie jetzt an" bei vollem Leben)
+ANGRIFF = _re.compile(
+    r"\bgeh\w* (?!zurück|zum|zur|nach|mit|in|auf|unter|an\b)(\w+ ){1,2}an\b(?! (den|die|das|dein\w*|ihr\w*|der|euren?)\b)|"
+    r"\bgreif\w* (\w+ ){0,2}an\b|\bangreif\w*|\banzugreifen|\btrad(e|en|est|et)\b|\ball[- ]?in\b|hol dir den kill|"
+    r"\bkill (ihn|sie)\b|\btöte\w*|\bfight\b|\bspiel (\w+ ){0,2}aggressiv|"
+    # Kritik 016 (Nachspiel 133448 9:47 "Rein auf Poppy!", 192113 25:21 "Nimm den Kampf"): die Kampf-Rufe des Kerns
+    r"\brein auf\b|\bnimm den kampf\b|\bkampf (an)?nehmen\b|\bdreh (dich )?um\b", _re.I)
+BEDINGT = _re.compile(r"\b(nicht|kein\w*|nie|erst|wenn|sobald|falls|statt|ohne|vergiss|lass)\b", _re.I)
+SCHWACH = _re.compile(r"\b(schwach|low|angeschlagen|fast tot|halb tot|wenig leben)\b", _re.I)
+# 2: ein Back-Ruf nennt im selben Satz Kauf und Ziel
+BACK_WORT = _re.compile(r"\b(back|recall|zurück in die basis|zurück in deine basis|heim)\b", _re.I)
+BACK_NICHT = _re.compile(r"\b(nach dem|beim|vor dem|nächsten|letzten|ohne|kein\w*|nicht|zum|vom|erst nach)\W+(\w+\W+)?$",
+                         _re.I)
+KETTE_KAUF = _re.compile(r"\bkauf\w*|\bhol dir\b|\bnimm (\w+ ){0,3}mit\b|nichts zu kaufen|\bheil\w*", _re.I)
+KETTE_ZIEL = _re.compile(r"\b(dann|danach|anschließend|und zurück)\b[^.]{0,70}?\b(zu|zur|zum|nach|in die|auf die|an die|"
+                         r"an den|richtung|top|mid|bot|oben|unten|mitte|welle|lane|turm|drache\w*|herold|baron|larven|"
+                         r"gruppe|fluss|jungle|team)\b", _re.I)
+# 5: Kontroll-Auge
+AUGE = _re.compile(r"kontroll-?auge|\bauge\b", _re.I)
+AUGE_BACK = _re.compile(r"\b(back|recall|zurück)\b\W+(\w+\W+){0,6}?(nur )?(für|wegen|um) (das |ein |dein |ein paar )?"
+                        r"(kontroll-?)?auge", _re.I)
+AUGE_NEIN = _re.compile(r"\b(nein|kein\w*|ohne|scheiß|verfickt\w*)\b[^.?!]{0,40}(kontroll-?)?auge|"
+                        r"(kontroll-?)?auge[^.?!]{0,20}\b(nein|brauch ich nicht|will ich nicht)\b", _re.I)
+_ITEM_RE: _re.Pattern | None = None
+
+
+def _item_re() -> _re.Pattern:
+    global _ITEM_RE
+    if _ITEM_RE is None:
+        namen = {n for n in _items() if n != "_id" and len(n) >= 4}
+        # auch kurz gesagt: "Kriegshammer" fuer Caulfields Kriegshammer, "Hydra" fuer die Gefraessige Hydra
+        namen |= {n.split()[-1] for n in list(namen) if " " in n and len(n.split()[-1]) >= 5}
+        namen = sorted(namen, key=len, reverse=True)
+        _ITEM_RE = _re.compile("|".join(rf"(?<!\w){_re.escape(n)}(?!\w)" for n in namen) or r"(?!x)x")
+    return _ITEM_RE
+
+
+def back_ruf(s: str) -> bool:
+    """Ruft der Satz jetzt zum Back ("Back jetzt", "geh back", "Recall") - nicht "nach dem Back", "beim naechsten"."""
+    return any(not BACK_NICHT.search(s[:m.start()]) for m in BACK_WORT.finditer(s))
+
+
+def kette(s: str) -> bool:
+    """Auftrag 016, 2: der Satz nennt einen Kauf (Item oder "kauf") und ein Ziel danach ("dann zu Yorick nach Mid")."""
+    return bool((KETTE_KAUF.search(s) or _item_re().search(s)) and KETTE_ZIEL.search(s))
+
+
+def kill_jetzt(b) -> list[str]:
+    """Der Combo-Check des Kerns fuer den Strategen: die sichtbaren Gegner, die dein voller Combo JETZT toetet (wie
+    denker._combo, mit 10 % Reserve)."""
+    from . import combo, rechnung
+    aus = []
+    if b is None or getattr(b, "partie", None) is None or b.ich is None or not combo.kann(b.ich.champion_id):
+        return aus
+    for g in b.gegner:
+        if g.s.tot or not g.sichtbar or g.leben is None:
+            continue
+        try:
+            dmg = combo.schaden(b.ich, b.partie.werte, b.partie.raenge, b.bereit, g.s, g.leben)
+        except Exception:
+            dmg = None
+        if dmg and dmg >= 1.1 * g.leben * rechnung.max_leben(g.s):
+            aus.append(g.champion)
+    return aus
+
+
+def sicherheit(s: str, lage: dict) -> list[str]:
+    """Die harten Gruende (Auftrag 016, 6.4) fuer einen Satz - fuer Stratege UND Kern gemessen: nach vorn unter R1
+    (auch eine Welle zum Gegner), Angriff ohne Kill-Check, "schwach" ohne Beleg, innere Begriffe."""
+    gruende = []
+    verboten = bool((lage.get("vorn") or {}).get("verboten"))
+    if verboten and (w := _nach_vorn(s, r1=True)):
+        gruende.append(f"nach vorn trotz R1 ({w})")
+    kill = lage.get("kill") or []
+    gleben = lage.get("gegner_leben") or {}
+    feinde = list(gleben) + [g["name"] for g in lage.get("gegner") or [] if g["name"] not in gleben]
+    for m in ANGRIFF.finditer(s):
+        umfeld = s[max(0, m.start() - 25):m.end() + 30]
+        if BEDINGT.search(umfeld):
+            continue
+        genannt = _namen_in(s, feinde)
+        if verboten or not kill or (genannt and not set(genannt) & set(kill)):
+            gruende.append(f"Angriff ohne Kill-Check ({m.group(0).strip()})")
+        break
+    for m in SCHWACH.finditer(s):
+        if _re.search(r"\bnicht\s*$", s[:m.start()], _re.I):
+            continue
+        for n in _namen_in(s[max(0, m.start() - 40):m.start()], feinde):
+            le = gleben.get(n)
+            if le is None or le >= 0.5:
+                gruende.append(f"„schwach“ ohne Beleg ({n}: " + ("Leben unbekannt" if le is None else
+                                                                   f"{int(round(le * 100))} %") + ")")
+    if (m := INNERE.search(s)):
+        gruende.append(f"innerer Begriff ({m.group(0)})")
     return gruende
 
 
@@ -377,11 +506,19 @@ def _saetze(text: str) -> list[str]:
     return [s for s in _re.split(r"(?<=[.!?])\s+", text.strip()) if s]
 
 
-def _nach_vorn(satz: str) -> str | None:
-    """Die erste Vorwaerts-Handlung im Satz, die weder verneint noch auf spaeter verschoben ist."""
+def _nach_vorn(satz: str, r1: bool = False) -> str | None:
+    """Die erste Vorwaerts-Handlung im Satz, die weder verneint noch auf spaeter verschoben ist. `r1`: unter R1 ist
+    auch jede Welle nach vorn, die man zum Gegner schiebt (Auftrag 016, 4.1) - "Welle rein" gilt dann nicht mehr."""
+    if r1:
+        for m in WELLE_VOR.finditer(satz):
+            vor = satz[:m.start()]
+            if _re.search(r"\b(nicht|kein\w*|nie|vergiss|statt)\b", m.group(0), _re.I) \
+                    or VOR_AUFGESCHOBEN.search(vor) or (VOR_DANACH.search(vor) and ERHOLUNG.search(vor)):
+                continue
+            return m.group(0)
     for m in VORWAERTS.finditer(satz):
         vor, nach = satz[:m.start()], satz[m.end():]
-        welle_rein = m.group(0).lower().startswith("rein") and _re.search(r"welle\W*$", vor, _re.I)   # "Welle rein"
+        welle_rein = not r1 and m.group(0).lower().startswith("rein") and _re.search(r"welle\W*$", vor, _re.I)
         spaeter = VOR_DANACH.search(vor) and ERHOLUNG.search(vor)
         if welle_rein or spaeter or VOR_AUFGESCHOBEN.search(vor) or VOR_VERNEINT_DANACH.search(nach):
             continue
@@ -396,14 +533,20 @@ def pruefe(satz: str, lage: dict) -> list[str]:
     gruende = []
     vorn = lage.get("vorn") or {}
     for s in _saetze(satz):
-        if vorn.get("verboten") and (w := _nach_vorn(s)):
-            gruende.append(f"nach vorn trotz R1 ({w})")
+        gruende += sicherheit(s, lage)
         for o in vorn.get("ziele") or []:
             muster = OBJ_WORT.get(o)
             if muster and _re.search(muster, s, _re.I) and (w := _nach_vorn(s)) is not None:
                 gruende.append(f"zu riskantes Ziel ({o}: {w})")
-        if (m := INNERE.search(s)):
-            gruende.append(f"innerer Begriff ({m.group(0)})")
+        if back_ruf(s) and not kette(s):
+            gruende.append("Back ohne Kette (Kauf und Ziel im selben Satz)")        # Auftrag 016, 2
+        if back_ruf(s) and lage.get("ich_basis") and not _re.search(r"nächst|später|danach|dann back", s, _re.I):
+            gruende.append("Back, obwohl du in der Basis bist")                     # Kritik 016 (133448 7:15)
+        if AUGE_BACK.search(s):
+            gruende.append("Back nur für ein Kontroll-Auge")                         # Auftrag 016, 5
+        elif lage.get("auge") and AUGE.search(s) and _re.search(r"kauf|hol|nimm|mit|plus|dazu|und", s, _re.I) \
+                and not _re.search(r"ohne (\w+ )?auge|kein(e|en)? (\w+ )?auge", s, _re.I):
+            gruende.append(f"Kontroll-Auge ({lage['auge']})")
         if ENTWARNUNG.search(s):
             blind = [g["name"] for g in lage.get("gegner") or [] if not g["sichtbar"] and not g["tot"]
                      and (g["seit"] is None or g["seit"] > 20)]

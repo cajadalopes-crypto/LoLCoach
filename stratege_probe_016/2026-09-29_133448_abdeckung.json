@@ -1,0 +1,224 @@
+{
+ "kennzahlen": {
+  "flash": "8/8 (100 %)",
+  "jungler": "10/10 (100 %)",
+  "backs": "4/4 (100 %)",
+  "back_rufe": "6/6 (100 %)",
+  "stille": "43 s",
+  "sicherheit": 0
+ },
+ "vorher": {
+  "flash": "2/8 (25 %)",
+  "jungler": "2/10 (20 %)",
+  "backs": "3/4 (75 %)",
+  "back_rufe": "0/5 (0 %)",
+  "stille": "67 s",
+  "sicherheit": 2
+ },
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 106.92284393310547,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 311.25311279296875,
+    "champion": "Sona",
+    "gesagt": "Sona Flash weg.",
+    "nach_s": 4.1
+   },
+   {
+    "zeit": 351.8541259765625,
+    "champion": "Twitch",
+    "gesagt": "Twitch Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 471.34893798828125,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 620.31982421875,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 6.9
+   },
+   {
+    "zeit": 824.5009765625,
+    "champion": "Sona",
+    "gesagt": "Sona Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 878.6018676757812,
+    "champion": "Twitch",
+    "gesagt": "Twitch Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1035.1312255859375,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.0
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 236.2,
+    "name": "Teemo",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Teemo im oberen Fluss."
+   },
+   {
+    "zeit": 298.5,
+    "name": "Teemo",
+    "ort": "unten",
+    "ohne_s": 29,
+    "tot_ich": false,
+    "gesagt": "Teemo unten."
+   },
+   {
+    "zeit": 362.7,
+    "name": "Teemo",
+    "ort": "oben",
+    "ohne_s": 59,
+    "tot_ich": false,
+    "gesagt": "Teemo oben gesehen: zurück hinter die Welle."
+   },
+   {
+    "zeit": 483.8,
+    "name": "Teemo",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 86,
+    "tot_ich": false,
+    "gesagt": "Teemo auf der Mid-Lane."
+   },
+   {
+    "zeit": 588.0,
+    "name": "Teemo",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 63,
+    "tot_ich": false,
+    "gesagt": "Teemo auf der Mid-Lane."
+   },
+   {
+    "zeit": 704.8,
+    "name": "Teemo",
+    "ort": "oben",
+    "ohne_s": 74,
+    "tot_ich": false,
+    "gesagt": "Teemo oben, bei dir in 1 Sekunde."
+   },
+   {
+    "zeit": 750.1,
+    "name": "Teemo",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Teemo in seinem oberen Jungle."
+   },
+   {
+    "zeit": 803.9,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 52,
+    "tot_ich": false,
+    "gesagt": "Teemo in seinem unteren Jungle."
+   },
+   {
+    "zeit": 895.3,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 66,
+    "tot_ich": false,
+    "gesagt": "Teemo in seinem unteren Jungle."
+   },
+   {
+    "zeit": 953.2,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Teemo in seinem unteren Jungle."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 256.5,
+    "gesagt": "Top-Welle rein, dann back: 1250 Gold für Caulfields Kriegshammer, Poppy ist tot. Danach Top.",
+    "saetze": [
+     "Teemo im oberen Fluss.",
+     "Top-Welle rein, dann back: 1250 Gold für Caulfields Kriegshammer, Poppy ist tot. Danach Top.",
+     "Kauf Stiefel, dann Top: du bist pünktlich zur Welle da."
+    ]
+   },
+   {
+    "zeit": 433.4,
+    "gesagt": "Back jetzt: 36 Prozent Leben, Poppy ist tot. Heilen, dann Top.",
+    "saetze": [
+     "Zurück unter deinen Top-Turm: Poppy und Teemo kommen.",
+     "Back jetzt: 36 Prozent Leben, Poppy ist tot. Heilen, dann Top.",
+     "Kauf Der Brutalisierer für den Axiombogen, dann nach Top."
+    ]
+   },
+   {
+    "zeit": 769.9,
+    "gesagt": "Keine Welle, Sona und Lux lauern, das wäre dein Tod. Back jetzt: Axiombogen, dann TP zu Volibear und Yorick im unteren Fluss, dort ist dein Team.",
+    "saetze": [
+     "Teemo in seinem oberen Jungle.",
+     "Drache drin: Kauf Axiombogen und ein Kontroll-Auge, dann warte an deinem Turm auf dein Team."
+    ]
+   },
+   {
+    "zeit": 967.9,
+    "gesagt": "Jetzt, wo Volibear und Yorick oben sind: Herold zu dritt, Lux war gerade nah. Danach Back: Kriegshammer, dann zum Drachen, der bald spawnt.",
+    "saetze": [
+     "Teemo in seinem unteren Jungle.",
+     "Farm jetzt deine Top-Welle,",
+     "die Kanone kommt in 35 Sekunden und Twitch ist noch tot."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 238.9178466796875,
+    "text": "Top-Welle rein, dann back: 1250 Gold für Caulfields Kriegshammer, Poppy ist tot. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 416.3726501464844,
+    "text": "Back jetzt: 36 Prozent Leben, Poppy ist tot. Heilen, dann Top.",
+    "kette": true
+   },
+   {
+    "zeit": 516.83349609375,
+    "text": "Sie haben die Larven. Farm Top, Axiombogen ist schon bezahlbar, nach der Welle back. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 617.0279541015625,
+    "text": "Back jetzt: Axiombogen für 363 Gold, dann zurück zur Top-Welle, weil die Kanone in 40 Sekunden kommt und ihr den Drachen erzwingen wollt.",
+    "kette": true
+   },
+   {
+    "zeit": 635.7530517578125,
+    "text": "Schieb die Top-Welle rein, dann back: Axiombogen für 363 Gold, danach per TP zurück nach Top, weil die Kanone in 21 Sekunden kommt.",
+    "kette": true
+   },
+   {
+    "zeit": 908.1275024414062,
+    "text": "Ihr äußerer Mid-Turm ist weg. Back. Kauf Vampirisches Zepter für die Gefräßige Hydra, dann zur Top-Welle.",
+    "kette": true
+   }
+  ],
+  "stille_max": 43,
+  "stille_lang": [],
+  "sicherheit": []
+ }
+}

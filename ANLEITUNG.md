@@ -41,6 +41,15 @@ wartest, warum und was du nächstes Mal tust.
     `[stratege]` die Zeile `aktiv = true` auf `aktiv = false` setzen.
   - Was der Stratege gesagt und was die Prüfung verworfen hat, steht nach der Partie in
     `aufnahmen/<Partie>_stratege.jsonl`.
+- **Was der Coach jetzt immer von sich aus sagt (seit 29.09.2026, Auftrag 016):**
+  - jeden gegnerischen Flash, den er sieht, egal wie weit weg: „Poppy Flash weg.“
+  - wo der gegnerische Jungler ist, sobald er nach 20 Sekunden ohne Sicht wieder auftaucht: „Teemo im oberen
+    Fluss, bei dir in 6 Sekunden.“
+  - wenn dein Lane-Gegner weit weg gesehen wird, mit Folge: „Poppy unten gesehen: drück deine Welle.“
+  - bei jedem Back die Kette: was du kaufst und wohin danach.
+  - in der Lane nach gut einer halben Minute Stille einen Wellen- oder Lane-Tipp vom Strategen, und wenn neben dir
+    ein Mitspieler kämpft, ob du helfen sollst.
+  - Sagst du „kein Kontroll-Auge“, schlägt er 5 Minuten lang keins vor.
 - **Flash-Timer:** Pingt ein Mitspieler im Chat "Urgot Blitz" (oder "urgot ult"), läuft
   ein Timer. Der Coach sieht Flash auch selbst auf der Minimap.
 

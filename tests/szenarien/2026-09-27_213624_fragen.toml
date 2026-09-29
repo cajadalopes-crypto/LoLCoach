@@ -303,7 +303,8 @@ kern_frage = true
 absicht = "KAUF"
 ohne_claude = true
 mit_handlung = true
-muss_nennen_eins = ["verkauf"]
+# Auftrag 016, 5: verkaufen nur, wenn es ohne nicht geht - liegt ein Kontroll-Auge im Inventar, zuerst das stellen
+muss_nennen_eins = ["verkauf", "Kontroll-Auge"]
 warum = "Buch 11, 5: bei vollem Inventar 'Kein Platz: verkauf Dorans Klinge, dann Spitzhacke.' - sofort, ohne Claude."
 
 # Wiederholung von 10:12 (Regel 5). Die alte Antwort stimmte, kam aber erst nach 3 s ueber Claude.
@@ -317,6 +318,7 @@ kern_frage = true
 absicht = "KAUF"
 ohne_claude = true
 mit_handlung = true
+# Auftrag 016, 5: nachgefragt - jetzt der Verkauf, einmal, mit Grund
 muss_nennen_eins = ["verkauf"]
 warum = "Buch 11, 5 nennt 'kein Platz im Inventar' als KAUF: verkaufen, dann kaufen."
 
@@ -331,6 +333,7 @@ kern_frage = true
 absicht = "KAUF"
 ohne_claude = true
 mit_handlung = true
+# Auftrag 016, 5: nachgefragt - jetzt der Verkauf, einmal, mit Grund
 muss_nennen_eins = ["verkauf"]
 warum = "Buch 11, 5 nennt 'kein Platz im Inventar' als KAUF: verkaufen, dann kaufen."
 

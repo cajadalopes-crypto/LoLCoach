@@ -45,17 +45,17 @@ id = "0455-sona-ohne-flash"
 fenster = ["4:40", "5:20"]
 quelle = "Auftrag 002, S3: 19:41 'du sagst nicht, wenn jemand geflasht hat'"
 lage = "Sona flasht in der Bot-Lane (bestaetigter Timer)."
-# Auftrag 010, 2 (Kritik 009: ein Flash ohne Ort ist Info ohne Folgen): ungefragt nur, wenn der Gegner nah ist -
-# Sona flasht unten, Riven steht oben; der Timer steht im Lagebild und im Dashboard (vorher muss_nennen_eins)
-darf_nicht_sagen = ["Sona ohne Flash"]
-warum = "Ein bestaetigter Flash eines nahen Gegners wird kurz gesagt; Sona ist weit weg."
+# Auftrag 010, 2 hatte daraus darf_nicht_sagen gemacht (ein Flash ohne Ort sei Info ohne Folgen). Auftrag 016, 1.1
+# (Carlos, 133448: "er sagt nicht, wessen Flash weg ist"): jeder gesehene Flash wird gesagt, egal wie weit weg
+muss_nennen_eins = ["Sona Flash weg", "Sona ohne Flash"]
+warum = "Jeder bestaetigte Flash eines Gegners wird kurz gesagt, auch weit weg (Auftrag 016)."
 
 [[szenario]]
 id = "0841-rumble-ohne-flash"
 fenster = ["8:30", "9:10"]
 quelle = "Auftrag 002, S3: um 9:13 wusste der Coach 'Rumble hat keinen Flash mehr, noch 267 Sekunden' - gesagt hatte er es nicht"
 lage = "Rumble flasht auf der Top-Lane."
-muss_nennen_eins = ["Rumble ohne Flash"]
+muss_nennen_eins = ["Rumble ohne Flash", "Rumble Flash weg"]      # Auftrag 016, 1.1: "Poppy Flash weg."
 warum = "Carlos entscheidet damit, auf wen er als Riven geht."
 
 [[szenario]]

@@ -110,7 +110,9 @@ def _kandidaten(m, cfg: dict, lane: str, modus: str, schutz=None, plan=None) -> 
     if gruende and nie is None:
         leben = any(x.art == "LEBEN" for x in gruende)
         kritisch = b.leben is not None and b.leben < cr["leben_kritisch"]
-        timing = z in ("GECRASHT_BEI_IHM", "LEER") or (z == "UNBEKANNT" and leben) or kritisch
+        # Auftrag 016, 4.1: unter R1 ist "erst die Welle rein" nach vorn (kein Kandidat mehr) - dann gleich back
+        r1 = b.leben is not None and b.leben < cfg["schranken"]["vor_leben_min"]
+        timing = z in ("GECRASHT_BEI_IHM", "LEER") or (z == "UNBEKANNT" and leben) or kritisch or r1
         h = Handlung("BACK_JETZT", Ziel("basis", "Basis"), modus, kanal + einkauf, gewinn=back_g,
                      kosten=abwesenheit(m, cfg, z), gefahr_t=kanal, grund=grund_text,
                      satz=f"Back jetzt: {back_grund_text(gruende, vorn='Back jetzt:', woerter=cfg['sprechen']['max_woerter_gefahr'])}.",

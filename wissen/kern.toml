@@ -149,12 +149,23 @@ halten_s = 5                    # ein Urteil "ueberlegen" haelt so lange, wenn e
                                 # "unterlegen"
 
 [info_flash]
-stand = "Auftrag 002, S3 (27.09.2026)"
-abstand_s = 20                  # hoechstens eine Flash-Ansage je so viele Sekunden, mehrere in einem Satz
+stand = "Auftrag 002, S3 (27.09.2026); Auftrag 016, 1.1 (29.09.2026): jeder gesehene Flash, egal wie weit"
+abstand_s = 8                   # hoechstens eine Flash-Ansage je so viele Sekunden, mehrere in einem Satz (vorher 20)
 nach_kampf_s = 3                # nicht in KAMPF; danach so viele Sekunden warten
 rest_min_s = 10                 # kommt der Flash in weniger als so vielen Sekunden zurueck, lohnt der Satz nicht mehr
-nah_abstand = 5000              # Auftrag 010, 2: ungefragt nur fuer einen Gegner so nah bei dir ...
-nah_seit_s = 20                 # ... und vor hoechstens so vielen Sekunden gesehen (sonst Lagebild und Dashboard)
+nur_nah = false                 # Auftrag 016, 1.1: die Einschraenkung aus Auftrag 010, 2 faellt weg (true = wie vorher)
+nah_abstand = 5000              # nur mit nur_nah: ungefragt nur fuer einen Gegner so nah bei dir ...
+nah_seit_s = 20                 # ... und vor hoechstens so vielen Sekunden gesehen
+
+[pflicht]
+stand = "Auftrag 016, 1 (29.09.2026): Informationspflicht - ungefragt, kurz, immer (lolcoach/kern/pflicht.py)"
+ab_s = 90                       # ab 1:30
+jungler_ohne_s = 20             # Jungler: nach so vielen s ohne Sicht wieder gesehen -> sein Ort
+jungler_nah_s = 8               # ... kann er in so vielen s bei dir sein: "bei dir in N Sekunden"
+lane_weit_s = 30                # Lane-Gegner so weit weg (Laufzeit zu dir), andere Seite oder seine Basis -> mit Folge
+lane_nah_s = 20                 # wieder scharf, sobald er so nah war (oder tot) ...
+lane_wieder_s = 120             # ... oder so lange nach dem letzten Satz
+gilt_s = 6                      # so lange wartet ein Satz (KAMPF, ein Plan-Satz im selben Takt), dann faellt er weg
 
 [sprechen]
 stand = "Buch 0 Kapitel 7.7, Schritt 2/3"
@@ -395,10 +406,14 @@ gruppe_turm_faktor = 0.6
 [stratege]                       # Auftrag 015: Claude als Makro-Stratege (lolcoach/stratege_live.py)
 aktiv = true                     # Schalter; live auch: python -m lolcoach live --ohne-stratege
 erster_satz_max_s = 4.0          # B2: kommt der erste gueltige Satz spaeter, spricht der Kern
+leerlauf_erster_satz_max_s = 8.0 # Auftrag 016: im Leerlauf (kein Kern-Satz wartet) so lange
 ausfall_s = 30.0                 # so lange ohne Antwort (oder ein Fehler) = Ausfall: still weiter mit dem Kern
 pause_nach_ausfall_s = 120.0     # ... und so lange danach nur der Kern
-leerlauf_ab_s = 840              # B3: ab 14:00 ...
-leerlauf_s = 45                  # ... nach so vielen Sekunden ohne Plan-Satz und Warnung, hoechstens einmal je so viele
+leerlauf_ab_s = 90               # B3: ab 1:30 (Auftrag 016, 3; vorher 14:00) ...
+leerlauf_s = 35                  # ... nach so vielen Sekunden ohne Plan-Satz und Warnung, hoechstens einmal je so viele
+                                 # (vorher 45); in der Lane-Phase als Wellen- und Lane-Tipp
+kampf_nah_s = 6                  # Auftrag 016, 1.4: ein Mitspieler kaempft so viele s Weg von dir -> Anlass
+kampf_abstand_s = 30             # ... hoechstens einmal je so viele s
 
 [quest_tp]
 # Quest-TP der Toplane ohne Teleport (saison2026.md, Rollenquests; kern/quest_tp.py) -> m.tp_in
