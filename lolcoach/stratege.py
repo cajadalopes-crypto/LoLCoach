@@ -248,7 +248,58 @@ def pruef_lage(kern, p) -> dict:
         "besetzt": _besetzt(m), "lane_phase": bool(m is not None and m.lane_phase),
         "gegner_leben": {g.champion: round(g.leben, 2) for g in (b.gegner if b is not None else [])
                          if g.sichtbar and g.leben is not None},
+        # Auftrag 024, 3: ist der Lane-Gegner wirklich weg? (kern/ereignisquellen.anwesenheit)
+        "lane_gegner": _lane_gegner(b),
+        # Auftrag 024, 5.5: reicht das Gold fuer ein Item (dann ist Back die Voreinstellung)?
+        "kauf_bereit": bool(b is not None and getattr(b, "kauf", None) is not None and b.kauf.kaufen),
     }
+
+
+# Auftrag 024, 5.5 (231200 7:10 "Ja, Freeze am Turm statt Reset", 7:23 "Udyr steht oben im Fluss" auf "Wieso? Ich habe
+# 1500 Gold"): "kein Back" nur mit Grund - reicht das Gold fuer ein Item, ist Back die Voreinstellung
+KEIN_BACK = _re.compile(r"\b(kein(en)? (back|reset|recall)|nicht (back|resetten|recallen)|noch nicht back|"
+                        r"statt (back|reset|recall|zu resetten)|back später|später back)\b", _re.I)
+GRUND = _re.compile(r"\b(weil|denn|sonst|da |bis|damit|solange)\b|:", _re.I)
+
+
+def _lane_gegner(b) -> dict | None:
+    if b is None or getattr(b, "lane", None) is None:
+        return None
+    from .kern.ereignisquellen import anwesenheit
+    return {"name": b.lane.champion, "anwesend": anwesenheit(b)}
+
+
+# Auftrag 024, 2 (231200 2:57 "Jetzt, wo Xerath tot ist", 7:56 "Gragas tot": beide lebten laut API)
+TOT_WORT = r"(?:tot|gestorben|down)\b"
+NICHT_TOT = ("fast", "beinahe", "halb", "gleich", "bald", "nicht", "kaum")      # "Zyra fast tot" heisst: wenig Leben
+LEBT_WORT = r"(?:lebt(?! in\b)|ist wieder da|ist zurück)\b"
+# Auftrag 024, 3 (231200 5:56 "Udyr ist weg": er stand ungesehen auf seiner Lane)
+WEG_WORT = r"(?:ist |bleibt )?(?:weg|fehlt|verschwunden|nicht auf (?:seiner|der) Lane)\b"
+
+
+def fakten(s: str, lage: dict) -> list[str]:
+    """Auftrag 024, 2-3: nennt der Satz einen Lebenden tot, einen Toten lebend oder den Lane-Gegner weg, obwohl er da
+    ist? Gemessen an der Lage zur Pruefzeit (vor dem Sprechen noch einmal: `stratege_live._noch_sicher`)."""
+    gruende = []
+    alle = [(g["name"], bool(g.get("tot"))) for g in (lage.get("gegner") or [])] + \
+        [(g["name"], bool(g.get("tot"))) for g in (lage.get("mitspieler") or [])]
+    for name, ist_tot in alle:
+        for m in _re.finditer(rf"\b{_re.escape(name)}\b", s):
+            if _re.search(r"\b(wenn|falls|sobald|bevor|bis)\b[^.,:;]*$", s[max(0, m.start() - 25):m.start()], _re.I):
+                continue                                 # "wenn Udyr stirbt", "bis Xerath tot ist": Bedingung
+            rest = s[m.end():m.end() + 30]
+            t = _re.match(rf"\s+(?:(?:ist|sind|war)\s+)?(?:(\w+)\s+)?{TOT_WORT}", rest, _re.I)
+            if t and not ist_tot and (t.group(1) or "").lower() not in NICHT_TOT:
+                gruende.append(f"{name} lebt (API), der Satz nennt ihn tot")
+                break
+            if ist_tot and _re.match(rf"\s+{LEBT_WORT}", rest, _re.I):
+                gruende.append(f"{name} ist tot (API), der Satz nennt ihn lebend")
+                break
+    lg = lage.get("lane_gegner") or {}
+    if lg.get("anwesend") in ("da", "vermutlich da") and \
+            _re.search(rf"\b{_re.escape(lg['name'])}\b\s+{WEG_WORT}", s, _re.I):
+        gruende.append(f"{lg['name']} ist nicht weg ({lg['anwesend']})")
+    return gruende
 
 
 # --- Auftrag 015: Pruefungen aus den Sachfehlern der Probe 014 ---------------------------------------------------------
@@ -651,6 +702,10 @@ def pruefe(satz: str, lage: dict) -> list[str]:
                     gruende.append(f"an der {lane}-Welle stehen schon {', '.join(lage['besetzt'][lane])}")
                     break
         gruende += pruefe_017(s, lage)
+        gruende += fakten(s, lage)                                                  # Auftrag 024, 2-3
+        if lage.get("kauf_bereit") and (m_ := KEIN_BACK.search(s)) and not GRUND.search(s[m_.end():]) \
+                and not GRUND.search(s[:m_.start()]):
+            gruende.append("kein Back ohne Grund - mit Gold für ein Item ist Back richtig")   # Auftrag 024, 5.5
         if lage.get("anlass") and NUR_NEIN.match(s):
             gruende.append("nur ein Nein - sag, was stattdessen")                    # Auftrag 023, 3
         if AUGE_BACK.search(s):

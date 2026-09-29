@@ -488,4 +488,18 @@ def _plan(champion_id: str, items: tuple[int, ...], gold: float) -> Kauf | None:
             return mit
         if ohne is None:
             return mit
+    if frei <= 0 and (ohne is None or not ohne.kaufen):
+        # Auftrag 024, 5.2 (231200 32:20, 4488 Gold, fuenf fertige Items und ein Kontroll-Auge: "Nichts zu kaufen: alle
+        # sechs Plaetze voll"): das Kontroll-Auge im Inventar wird gestellt, dann ist der Platz frei. Ein fertiges
+        # Item verkauft der Coach nicht (test_kaufplan.volles_inventar_kauft_nichts, Szenario 3715)
+        if KONTROLLAUGE in items:
+            rest = list(items)
+            rest.remove(KONTROLLAUGE)
+            mit = _erster(reihe, tuple(rest), gold, frei + 1, stiefel_fehlt)
+            if mit is not None and mit.kaufen == [mit.item]:      # nur fuer ein fertiges Item, nie fuer Bauteile
+                mit.verkaufen = it[KONTROLLAUGE]["name"]
+                return mit
     return ohne
+
+
+KONTROLLAUGE = 2055

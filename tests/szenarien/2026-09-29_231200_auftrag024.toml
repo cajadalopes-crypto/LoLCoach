@@ -1,0 +1,85 @@
+# Auftrag 024: Carlos' Riven-Partie 231200 (Riven Top gegen Udyr, Botpartie, 34 min, Practice Tool).
+# Gegner: Udyr, Gragas, Lissandra, Xerath, Lux. Pflichtenheft sind seine Notizen (aufnahmen/..._notizen.md).
+# Die Arbeitspakete (18:37, 29:39) und die Stille (30:59) gehoeren zu Auftrag 025 (Buch 15).
+# Stratege-Saetze (Claude) prueft das Nachspiel; diese Szenarien pruefen den Kern und seine Antworten.
+
+aufnahme = "2026-09-29_231200"
+spielmodus = "PRACTICETOOL"
+bots = true
+
+# --- 2. Tot oder lebendig aus der API --------------------------------------------------------------------------------
+
+[[szenario]]
+id = "0257-xerath-lebt"
+fenster = ["2:53", "3:15"]
+quelle = "Live 2:58 'Jetzt, wo Xerath tot ist: Back jetzt' - Carlos 3:05: 'Xerath ist gar nicht tot'"
+lage = "Xerath starb 2:41 und lebt laut API seit 2:52 wieder."
+darf_nicht_sagen = ["Xerath tot", "Xerath ist tot", "Xerath fehlt"]
+warum = "Tot nur aus isDead/respawnTimer (kern/ereignisquellen.TodQuelle, stratege.fakten). Waechter fuer den Kern."
+
+[[szenario]]
+id = "0756-gragas-lebt"
+fenster = ["7:45", "8:15"]
+quelle = "Live 7:56 'Back jetzt ... Gragas tot' - Carlos 8:11: 'Gragas ist nicht tot'"
+lage = "Gragas starb 7:29 und lebt laut API seit 7:41 wieder."
+darf_nicht_sagen = ["Gragas tot", "Gragas ist tot"]
+warum = "Wie 0257. Waechter fuer den Kern."
+
+# --- 3. Lane-Gegner nicht weg ----------------------------------------------------------------------------------------
+
+[[szenario]]
+id = "0556-udyr-nicht-weg"
+fenster = ["5:50", "6:20"]
+quelle = "Live 5:56 '... Udyr ist weg ...' - Carlos 6:16: 'Udyr ist nicht weg, ich bin mitten auf der Lane mit ihm'"
+lage = "Udyr 25 s ungesehen, zuletzt auf seiner Lane; Riven lief erst die Lane hoch (6700 Einheiten weg)."
+darf_nicht_sagen = ["Udyr ist weg", "Udyr weg", "Udyr fehlt", "Udyr in Basis"]
+warum = "Weg nur mit Beleg (ereignisquellen.anwesenheit): nicht, solange du die Lane gar nicht siehst."
+
+# --- 4. Gegnerischer TP ----------------------------------------------------------------------------------------------
+
+[[szenario]]
+id = "0519-tp-weg"
+fenster = ["5:07", "5:40"]
+quelle = "Carlos 5:19: 'Es kommt ein TP ... dass du mir dann auch sagst, wer seinen TP verloren hat.'"
+lage = "Xerath teleportiert 5:07 von unten nach oben (Minimap-Fernsprung)."
+muss_nennen_eins = ["Xerath TP weg"]
+warum = "Pflicht-Info wie beim Flash, <= 5 Woerter (kern._flash_info mit INFO_ZAUBER)."
+
+# --- 5. Kaufen, Notizen, Satzbau -------------------------------------------------------------------------------------
+
+[[szenario]]
+id = "0322-kein-kauf-auf-der-lane"
+fenster = ["3:15", "3:40"]
+quelle = "Live 3:23 'Aus der Basis: Farm Top, Caulfields Kriegshammer in 43 Sekunden kaufbar' - Carlos 3:33: 'Unsinn'"
+lage = "Riven farmt auf der Lane, 700 Gold."
+darf_nicht_sagen = ["kaufbar", "Kauf "]
+warum = "Kaufen nur in der Basis oder im Back-Ruf (fuehren.farmen_mit_vorschau ohne Kauf-Vorschau)."
+
+[[szenario]]
+id = "0814-kein-kaputter-satz"
+fenster = ["8:05", "8:30"]
+quelle = "Live 8:15 'Jetzt, wo Aus der Basis aufgetaucht ist: Aus der Basis: Farm Top, Langschwert in 59 Sekunden kaufbar.'"
+lage = "Riven verlaesst die Basis."
+darf_nicht_sagen = ["Jetzt, wo Aus der Basis", "aufgetaucht ist: Aus", "kaufbar"]
+warum = "Nur echte Ereignisse nach 'Jetzt, wo' (stratege_live._als_ereignis); kein Kauf beim Farmen."
+
+[[szenario]]
+id = "1103-notiz-mit-frage"
+zeit = "11:03"
+frage = "Notiz, okay, also ich bin jetzt gerade im Shop, was kaufe ich, was mache ich?"
+quelle = "Live 11:04: 'Notiert.'"
+lage = "Riven in der Basis mit Gold."
+kern_frage = true
+darf_nicht_sagen = ["Notiert."]
+warum = "Eine Notiz mit Frage wird beantwortet UND notiert (fragen.frage_in_notiz, sprache.py)."
+
+[[szenario]]
+id = "3220-voll-mit-gold"
+zeit = "32:20"
+frage = "Okay, ich habe fast 5000 Gold. Findest du immer noch, dass das Kontrollauge wichtiger ist, als ein volles Item zu kaufen?"
+quelle = "Live 32:20: 'Nichts zu kaufen: alle sechs Plätze voll' - Carlos 32:27: 'super großer Bug'"
+lage = "Fuenf fertige Items und ein Kontroll-Auge, 4488 Gold."
+kern_frage = true
+darf_nicht_sagen = ["Nichts zu kaufen"]
+muss_nennen_eins = ["Tanz des Todes"]
+warum = "Das Kontroll-Auge wird gestellt, dann passt das fertige Item (kaufplan._plan, HORTEN_AB)."

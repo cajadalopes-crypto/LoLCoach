@@ -114,11 +114,20 @@ def frage_stellen(text: str, p, lb, plan, fid=None, stratege=None) -> dict:
     die alte Sofort-Antwort; was Claude braucht, wird offline nicht gefragt ("quelle": "claude"). Die Antwort geht wie
     live in `gesagt` ("antwort")."""
     from lolcoach import antworten
+    from lolcoach.kern.fragen import frage_in_notiz
+    from lolcoach.sprache import NOTIZ_WORTE
     t0 = time.perf_counter()
     r = {}
-    if hasattr(antworten, "frage_kern"):
+    frage = text
+    kopf = (text.lower().replace(",", " ").replace(".", " ").split() or [""])[0].strip(":")
+    if kopf in NOTIZ_WORTE:                              # wie live (sprache.py): Notiz, mit Frage beantwortet
+        if (innen := frage_in_notiz(text)) is None:
+            r = {"text": "Notiert.", "absicht": "NOTIZ", "quelle": "notiz"}
+        else:
+            text = innen
+    if not r and hasattr(antworten, "frage_kern"):
         r = antworten.frage_kern(text, p, lb) or {}
-    if stratege is not None and r:
+    if stratege is not None and r and r.get("quelle") != "notiz":
         # Auftrag 015, B1 (mit dem Aufzeichnungs-Stub, ohne Abo)
         s = stratege.antworte(text, r.get("absicht"), p, entwurf=r.get("text"))
         if s:
@@ -127,12 +136,12 @@ def frage_stellen(text: str, p, lb, plan, fid=None, stratege=None) -> dict:
         s = antworten.sofort(text, p, lb)
         r = dict(r, text=s, quelle="sofort" if s else "claude")
     dauer = time.perf_counter() - t0
-    aus = {"id": fid, "zeit": p.zeit, "frage": text, "text": r.get("text"), "absicht": r.get("absicht"),
+    aus = {"id": fid, "zeit": p.zeit, "frage": frage, "text": r.get("text"), "absicht": r.get("absicht"),
            "quelle": r.get("quelle", "kern"), "ziel": r.get("ziel"), "dauer": dauer}
     if aus["text"] and stratege is not None and aus["quelle"] != "stratege":
         stratege.antwort_gesprochen(aus["text"], p.zeit)       # Auftrag 023, 3: auch die Kern-Antwort setzt den Plan
     if aus["text"] and plan is not None:
-        a = regeln.Ansage(f"„{text}“ – {aus['text']}", regeln.WICHTIG, "antwort", zeit=p.zeit, gesprochen=p.zeit)
+        a = regeln.Ansage(f"„{frage}“ – {aus['text']}", regeln.WICHTIG, "antwort", zeit=p.zeit, gesprochen=p.zeit)
         a._ziel = aus["ziel"]
         plan.gesagt.append(a)
     return aus

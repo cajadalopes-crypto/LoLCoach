@@ -269,8 +269,14 @@ class Gespraech:
             print("  (Bruchstueck ohne Frage - keine Antwort)", flush=True)
             self.sprecher.freigeben()
             return
-        if woerter[0].strip(":") in NOTIZ_WORTE:
+        notiz = woerter[0].strip(":") in NOTIZ_WORTE
+        if notiz:
             self._notiere(text, p)
+            from .kern.fragen import frage_in_notiz
+            if (innen := frage_in_notiz(text)) is not None:
+                text = innen                   # Auftrag 024, 5.1: beantwortet UND notiert (231200 11:03)
+                notiz = False
+        if notiz:
             antwort = "Notiert."
         else:
             # Schritt 6 (Buch 11, 5): zuerst der Kern - dieselbe Wahrheit wie die Ansagen, ohne Claude

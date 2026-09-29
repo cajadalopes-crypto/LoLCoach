@@ -17,6 +17,10 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 024 (Udyr-Partie 231200) umgesetzt** - tot/lebendig nur aus der API, Lane-Gegner nur mit Beleg weg, "X TP
+weg.", Quest-TP im Wissensblock, Notiz mit Frage, Kontroll-Auge vor dem Item, Event-Quellen fuer 025
+(`kern/ereignisquellen.py`). Nachspiel: ganze Antwort 1,57 s, 0,38 $ je 30 min.
+
 **Auftrag 023 (stabile Messung, eine Stimme, Pflicht-Infos, Tempo) abgekuerzt** - Soll-Listen eingefroren
 (`soll_023/`), drei Kritiker mit Mehrheit (`werkzeuge/kritik_mehrheit.py`). Runde 1: bekannt 59 %, neu 72,5 %;
 Widersprueche 2-8 je Partie; Flash/Jungler/Lane 98-100 %. Das Tor misst 025 am Ende. Aufnahmen ausser den letzten

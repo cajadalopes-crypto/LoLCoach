@@ -54,7 +54,7 @@ ERSETZT = ("PLAN", "WENDEPUNKT", "VORSCHAU", "FENSTER", "MAKRO")    # Auftrag 02
 KURZ_ANLASS = ("Lane:", "Fenster:", "Roam:", "Kampf in der Nähe")   # Auftrag 023, 4: ohne Wissensblock
 ZUSAMMEN_S = 10.0          # Auftrag 023, 3: Anlaesse so kurz nacheinander fragen nur einmal
 STOPP_S = 8.0              # Auftrag 023, 3: eine Warnung so kurz nach einem anderen Plan beginnt mit "Stopp –"
-STOPP_KLEIN = ("zurück", "raus", "weg", "geh", "lauf", "nicht", "bleib", "back")
+STOPP_KLEIN = ("zurück", "raus", "weg", "nicht", "bleib", "back")
 NOCHMAL = ("Wendepunkt", "Respawn", "Ankunft in der Basis", "Kampf in der Nähe", "zwei Kills in 10 s")
 NICHTS = _re.compile(r"^\W*nichts\W*$", _re.I)
 PLAN_ZEILE = _re.compile(r"^\W*PLAN\s*:", _re.I)
@@ -277,8 +277,11 @@ class Schiedsrichter:
         self.aktiv: tuple[str, float, str] | None = None      # (Ziel, Spielzeit, Text)
         self.ereignisse: list[tuple[float, str]] = []           # (Spielzeit, "Poppy weg ist")
         self.verworfen: list[dict] = []
+        self.gilt = None          # Auftrag 024, 2: (Ereignistext) -> bool, "Xerath tot ist" nur, solange er tot ist
 
-    def ereignis(self, zeit: float, was: str) -> None:
+    def ereignis(self, zeit: float, was: str | None) -> None:
+        if not was:
+            return                # Auftrag 024, 5.4: kein Ereignis ("Aus der Basis aufgetaucht ist")
         if self.ereignisse and self.ereignisse[-1][1] == was and zeit - self.ereignisse[-1][0] < 5.0:
             return
         self.ereignisse.append((zeit, was))
@@ -307,7 +310,7 @@ class Schiedsrichter:
         if alter >= AENDERUNG_S:
             self.aktiv = (z, zeit, text)
             return True, text, None
-        neu = [e for e in self.ereignisse if e[0] > a[1] - 0.5]
+        neu = [e for e in self.ereignisse if e[0] > a[1] - 0.5 and (self.gilt is None or self.gilt(e[1]))]
         if not neu:
             return self._weg(text, zeit, f"Planwechsel {a[0]} -> {z} nach {int(alter)} s ohne Lageänderung")
         if not _re.match(r"^\W*(jetzt|da |nachdem|weil|zwei|drei|vier|ihr|euer|eure|die|der|das|du lebst|"
@@ -378,6 +381,7 @@ class MakroStratege:
         self._auge_back = -1
         # Auftrag 017: Schiedsrichter, Lane-Anlaesse
         self.schiedsrichter = Schiedsrichter()
+        self.schiedsrichter.gilt = self._ereignis_gilt
         self._lane_zuletzt = -1e9
         self._welle_kat: str | None = None
         self._welle_kand: tuple[str, float] | None = None
@@ -453,12 +457,22 @@ class MakroStratege:
         except Exception:
             return None
 
+    def _ereignis_gilt(self, was: str) -> bool:
+        """Auftrag 024, 2 (231200 2:57): "Jetzt, wo Xerath tot ist" nur, solange die API ihn tot meldet."""
+        p = getattr(self, "_p", None)
+        if p is None or not _re.search(r"\btot\b", was):
+            return True
+        genannt = [s for s in p.spieler if _re.search(rf"\b{_re.escape(s.champion)}\b", was)]
+        return all(s.tot for s in genannt)
+
     def _noch_sicher(self, a):
         """Auftrag 021 (Nachspiel 125902 9:15: "Crash die Welle" - beim Fragen war nach vorn erlaubt, beim Sprechen
         stand das Leben unter R1): der Sprechplan prueft den Satz vor dem Sprechen noch einmal gegen die Lage JETZT."""
         def pruefe() -> bool:
             try:
-                return not stratege.sicherheit(a.text, stratege.pruef_lage(self.kern, self._p))
+                lage = stratege.pruef_lage(self.kern, self._p)
+                # Auftrag 024, 2: tot oder lebendig zur SPRECHzeit (231200 2:57: gefragt 2:47, Xerath lebte 2:52)
+                return not stratege.sicherheit(a.text, lage) and not stratege.fakten(a.text, lage)
             except Exception:
                 return True
         return pruefe
@@ -722,7 +736,10 @@ class MakroStratege:
                     continue
             vorher = self.schiedsrichter.aktiv
             ok, text, _ = self.schiedsrichter.pruefe(a.text, p.zeit, warnung=warnung)
-            if ok and warnung and vorher is not None and p.zeit - vorher[1] <= STOPP_S \
+            erstes_wort = (text.split(" ", 1)[0] if text else "").lower().strip(",:!")
+            rueckzug = plan_ziel(text) in ("zurueck", "back") or erstes_wort in STOPP_KLEIN
+            # nur ein Rueckzug ersetzt den Plan - "Rein, Gragas fast tot!" (Kill-Ruf im Kampf) nicht (024, 231200 13:30)
+            if ok and warnung and rueckzug and vorher is not None and p.zeit - vorher[1] <= STOPP_S \
                     and vorher[0] not in ("back", "zurueck") and plan_ziel(text) != vorher[0]:
                 # Auftrag 023, 3 (120049 14:08/14:09): die Warnung kurz nach einem anderen Plan sagt, dass sie ihn
                 # ersetzt - eine Stimme, die sich korrigiert, statt zwei, die sich widersprechen
@@ -1170,7 +1187,7 @@ def ohne_fuellsatz(text: str) -> str:
     return " ".join(aus)
 
 
-def _als_ereignis(text: str) -> str:
+def _als_ereignis(text: str) -> str | None:
     """Ein Info- oder Wendepunkt-Satz als Nebensatz fuer "Jetzt, wo ...": "Teemo im oberen Fluss." -> "Teemo im oberen
     Fluss aufgetaucht ist"; "Ihr aeusserer Mid-Turm ist weg." -> "ihr aeusserer Mid-Turm weg ist"."""
     s = stratege._saetze(text)[0] if stratege._saetze(text) else text
@@ -1178,8 +1195,17 @@ def _als_ereignis(text: str) -> str:
     m = _re.match(r"^(.*?) (ist|sind) (.*)$", s)
     if m:
         return f"{m.group(1)[:1].lower()}{m.group(1)[1:]} {m.group(3)} {m.group(2)}"
-    if s.endswith("Flash weg"):
-        return s.replace("Flash weg", "Flash weg ist")
+    if s.endswith(("Flash weg", "TP weg")):
+        return s + " ist"
     if s.endswith("gesehen"):
         return f"{s} wurde"
+    # Auftrag 024, 5.4 (231200 8:14 "Jetzt, wo Aus der Basis aufgetaucht ist: Aus der Basis: Farm Top"): nur eine
+    # Sichtung ("Teemo im oberen Fluss") taucht auf - ein Satzkopf mit Praeposition oder Befehl ist kein Ereignis
+    if not s or s.split()[0].lower() in KEIN_EREIGNIS_KOPF:
+        return None
     return f"{s} aufgetaucht ist"
+
+
+KEIN_EREIGNIS_KOPF = frozenset(("aus", "in", "im", "nach", "vor", "bei", "zur", "zum", "zu", "auf", "mit", "jetzt",
+                                "los", "back", "geh", "farm", "kauf", "crash", "bleib", "halte", "warte", "zurück",
+                                "raus", "du", "dein", "deine", "noch", "danach", "dann", "erst"))

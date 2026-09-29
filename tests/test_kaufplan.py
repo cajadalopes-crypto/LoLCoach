@@ -58,6 +58,10 @@ def volles_inventar_kauft_nichts():
                      "Gottlose Hydra", "Kontroll-Auge")):
         for gold in (0, 350, 1200, 3300, 6000):
             k = kaufplan.plan("Riven", lage, gold)
+            if k is not None and k.verkaufen == "Kontroll-Auge":
+                # Auftrag 024, 5.2 (231200 32:20): Auge stellen, dann ein FERTIGES Item - nie Bauteile dafuer
+                assert k.kaufen == [k.item] and gold >= k.kosten, (lage, gold, k)
+                continue
             erlaubt = {"Kontroll-Auge"} | {n for n in N if n.startswith("Elixier")}
             assert k is None or set(k.kaufen) <= erlaubt and (k.naechstes is None or k.naechstes[0] in erlaubt), (lage, gold, k)
             b = SimpleNamespace(kauf=k, gold=gold, ich=SimpleNamespace(champion_id="Riven", items=lage))

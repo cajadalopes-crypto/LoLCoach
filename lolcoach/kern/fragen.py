@@ -594,6 +594,13 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
     if a == "RISIKO":
         return _risiko(kern, h), h
     if a == "AUGE":
+        # Auftrag 024, 5.2 (231200 32:20 "... wichtiger, als ein volles Item zu kaufen?" mit 4488 Gold und vollem
+        # Inventar): das Auge im Inventar blockiert den Platz - erst stellen, dann das fertige Item
+        k = getattr(m.b, "kauf", None) if m is not None and m.b is not None else None
+        from .. import ddragon
+        from .modi import KONTROLLAUGE
+        if k is not None and k.kaufen and k.verkaufen == (ddragon.items().get(KONTROLLAUGE) or {}).get("name"):
+            return f"{_auge(kern)} Dann ist der Platz frei: kauf {k.kaufen[0]}.", h
         return _auge(kern), None
     if a == "COACH":
         return _coach(kern, p), None
@@ -696,7 +703,9 @@ def _kauf_antwort(kern, m, k, h, zeit: float) -> str:
     was = liste(namen) + (f" für {kaufplan.akk_artikel(item)}" if bauteile else "")
     if k.verkaufen:
         auge = getattr(kern, "_platz_auge", -1e9)
-        if KONTROLLAUGE in items and zeit - auge > 120.0:
+        from .. import ddragon
+        stellen = k.verkaufen == (ddragon.items().get(KONTROLLAUGE) or {}).get("name")   # Auftrag 024, 5.2
+        if KONTROLLAUGE in items and (zeit - auge > 120.0 or stellen):
             kern._platz_auge = zeit                        # einmal - fragt Carlos nach, ist Verkaufen der Weg
             return f"Kein Platz: stell zuerst dein Kontroll-Auge, dann passt {was}.{wohin}"
         alt = kern._verkauf_gesagt
@@ -853,6 +862,20 @@ def _innere_frage(frage: str) -> str | None:
                 and (t.endswith("?") or (vorn and a in ("WARUM", "SOLL_ICH", "JETZT", "DANACH", "RISIKO", "KAUF"))):
             return t
     return None
+
+
+def frage_in_notiz(text: str) -> str | None:
+    """Auftrag 024, 5.1 (231200 11:03 "Notiz, okay, also ich bin jetzt gerade im Shop, was kaufe ich, was mache ich?"
+    bekam nur "Notiert."): die Frage in einer Notiz - sie wird beantwortet UND notiert. Das Notizwort vorn zaehlt
+    nicht (sonst haelt `_innere_frage` den ganzen Satz fuer die Notier-Bitte)."""
+    rest = re.sub(r"^\W*(notiz\w*|notiere|merk\w*|feedback)\b[\s,:.!]*", "", text, flags=re.I)
+    if (f := _innere_frage(rest)) is not None:
+        return f
+    satz = re.split(r"(?<=[.!])\s+", rest.strip())[-1] if rest.strip() else ""
+    if not satz.endswith("?") or NOTIER.search(satz.lower()):
+        return None
+    m = re.search(r"\b(was|wo|wohin|welche\w*|wann|wie|warum|wieso|soll|sollte|kann|darf|muss)\b", satz, re.I)
+    return satz[m.start():] if m else None
 
 
 def beantworte(kern, frage: str, p, lagebild=None) -> dict:

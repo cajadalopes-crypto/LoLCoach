@@ -85,9 +85,20 @@ REDEN = ("SO REDEST DU: ein Satz Beobachtung - Folge - Handlung, dann der Schrit
          "(dort kommt eine grosse Welle, niemand sonst ist dort) und zieh Objectives mit dem Team vor.")
 
 
+# Auftrag 024, 4 (Carlos 29:39: "die unbegrenzte Teleportation ... dass du die nie mit einkalkulierst"). Werte aus
+# wissen/lexikon/saison2026.md (Rollenquests, Patch 26.19) und wissen/kern.toml [quest_tp] (gemessen 27.09.2026).
+QUEST_TP = ("QUEST-TP (Saison 2026, Patch 26.19): Du spielst Top ohne Teleport. Die Top-Quest (1200 Punkte, "
+            "spaetestens 13:35) gibt dir ein Quest-TP im Quest-Slot, Abklingzeit 390 s, beliebig oft. In der LAGE "
+            "steht 'Quest-TP bereit' oder 'Quest-TP in N s'. Plane damit: Top-Welle crashen, dann per Quest-TP zum "
+            "Drachen, zum Herold oder zur Gruppe; nach dem Back per Quest-TP zurueck auf die Lane statt zu laufen; "
+            "ein Kampf an einem Objective ist fuer dich nur 'weit weg', wenn das Quest-TP nicht bereit ist.")
+
+
 @lru_cache(maxsize=8)
-def _block(mein: str, wir: tuple[str, ...], sie: tuple[str, ...]) -> str:
+def _block(mein: str, wir: tuple[str, ...], sie: tuple[str, ...], quest: bool = False) -> str:
     teile = [REDEN, OBJECTIVES, "WELLEN-REGELN:\n" + _wellen(), "MAKRO-REGELN (Buch 13):\n" + _buch13()]
+    if quest:
+        teile.insert(1, QUEST_TP)
     if (b := _build(mein)):
         teile.append(b)
     zeichen = 700
@@ -107,4 +118,5 @@ def block(p) -> str | None:
         return None
     wir = tuple(s.champion_id for s in p.team(p.mein_team))
     sie = tuple(s.champion_id for s in p.gegner())
-    return _block(p.ich.champion_id, wir, sie)
+    quest = p.ich.rolle == "TOP" and not any("Teleport" in z for z in (p.ich.zauber or ()))
+    return _block(p.ich.champion_id, wir, sie, quest)

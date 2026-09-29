@@ -443,7 +443,7 @@ def farmen_mit_vorschau(h: Handlung, zeitleiste: list, jetzt: float, danach_text
         elif e.art == "respawn":
             was = f"{e.schl} lebt in {n} Sekunden wieder"
         elif e.art == "kauf":
-            was = f"{e.schl} in {n} Sekunden kaufbar"
+            continue   # Auftrag 024, 5.3 (231200 3:22/3:33): Kaufen nur in der Basis oder im Back-Ruf, nie beim Farmen
         elif e.art == "tp":
             was = f"dein TP in {n} Sekunden"
         elif e.art in ("buff", "inhib"):

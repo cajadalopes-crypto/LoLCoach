@@ -4,6 +4,40 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 024 – Grundlagen aus der Udyr-Partie 231200 (30.09.2026)
+
+Ein API-Nachspiel von 231200 mit dem Endstand (`proben/stratege_probe_024/`), 0,44 $. Keine Kritiker und kein Tor:
+das misst 025.
+
+| Größe | live (Stand 022) | Nachspiel 024 |
+|---|---|---|
+| Latenz ganze Antwort, Median | 2,4 s | **1,57 s** (p90 3,3 s) |
+| bis zum ersten Satz, Median | – | **1,44 s** |
+| Kosten je 30 min (Stratege) | 0,66 $ Haiku + 0,16 $ Sonnet | **0,38 $** (nur Haiku) |
+| Flash / TP / Jungler / Lane-Gegner weg | – | 14/14 · „Xerath TP weg.“ 5:14 · 20/21 · 2/2 |
+| Sicherheit / Füllsätze | – | 0 / 0,6 % |
+
+Die vier Sonnet-Aufrufe live liefen außerhalb des Coachings: vor der Partie die Spielakte, danach Bericht und Review
+(`bericht.py`, `review.py` fragen Sonnet). Der Stratege fragt nur Haiku.
+
+**Die Notizen, Satz für Satz im Nachspiel:**
+
+| Notiz | Ursache | Nachspiel 024 |
+|---|---|---|
+| 2:57 „Jetzt, wo Xerath tot ist“ | Satz 2:47 gebaut, 2:58 gesprochen – Xerath lebte seit 2:52; „Jetzt, wo …“ nahm ein altes Ereignis | kein „Xerath tot“ 2:50–3:15; 7:13 wurde „weil Xerath tot ist“ verworfen (API: lebt) |
+| 7:56 „Gragas tot“ | Gragas starb 7:29, lebte 7:41 wieder; Claude übernahm „tot“ aus seinem Satz 7:39 | kein „Gragas tot“ 7:45–8:15 |
+| 5:56 „Udyr ist weg“ | 25 s ungesehen, zuletzt auf seiner Lane; Riven lief die Lane erst hoch (6700 Einheiten weg). Kein Minimap-Überdecken | kein „Udyr weg“ gesprochen (4:27 einmal verworfen) |
+| 5:19 TP | Xerath-TP 5:07 war erkannt (Minimap-Fernsprung), wurde aber nie gesagt | 5:14 „Xerath TP weg.“ |
+| 3:22/3:33 Kauf auf der Lane | Kern-FARMEN mit Kauf-Vorschau („… in 43 Sekunden kaufbar“) | Kauf-Vorschau beim Farmen entfernt |
+| 7:51 Reset ohne Grund | Claude: „Freeze am Turm statt Reset“ ohne Grund bei 1455 Gold | 7:25 „… back mit Brutalisierer, dann zum Team zum Drachen“ |
+| 8:14 „Jetzt, wo Aus der Basis aufgetaucht ist“ | `_als_ereignis` machte aus jedem Satzkopf eine Sichtung | nur echte Ereignisse |
+| 11:03 Notiz mit Frage | „Notiz …“ bekam immer nur „Notiert.“ | 11:07 „Kauf Spitzhacke für die Eklipse …, dann Top.“ |
+| 32:20 volles Inventar, 4488 Gold | fünf Items + Kontroll-Auge: der Kaufplan sah keinen Platz | 32:25 „stell zuerst dein Kontroll-Auge, dann passt Tanz des Todes“ |
+
+**Event-Quellen für 025:** `kern/ereignisquellen.py` – `TodQuelle` (TOD/RESPAWN aus `isDead`/`respawnTimer`),
+`LaneQuelle` (LANE_WEG/LANE_ZURUECK, `anwesenheit`), `ZauberQuelle` (FLASH/TP weg und bereit, QUEST_TP weg und
+bereit). Noch nicht in den Kern-Takt gehängt.
+
 ## Auftrag 023 – Stabile Messung, eine Stimme, Pflicht-Infos, Tempo (30.09.2026, auf Carlos' Wunsch abgekürzt)
 
 Protokolle, Kritiken und Mehrheiten: `buecher/protokolle/proben/stratege_probe_023/` (`vorher_bekannt`, `vorher_neu`

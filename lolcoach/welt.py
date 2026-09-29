@@ -211,6 +211,20 @@ def _ort(g, lb, zeit: float) -> str:
                                                                               if vermutlich else "")
 
 
+def _lane_anwesend(b, g) -> str:
+    """Auftrag 024, 3 (231200 5:56 "Udyr ist weg" - er stand ungesehen auf seiner Lane): beim Lane-Gegner steht, ob
+    er belegt weg ist, damit Claude "ungesehen" nicht als "weg" liest."""
+    if getattr(b, "lane", None) is not g or g.sichtbar or g.s.tot:
+        return ""
+    from .kern.ereignisquellen import anwesenheit
+    a = anwesenheit(b)
+    if a == "weg":
+        return "; LANE-GEGNER WEG (belegt)"
+    if a in ("da", "vermutlich da"):
+        return "; Lane-Gegner NICHT weg: vermutlich auf seiner Lane, du siehst sie nur nicht - sag nicht 'weg'"
+    return ""
+
+
 def _zauber(p, lb, s, zeit: float, zauber: str) -> str:
     z = getattr(lb, "zauber", None)
     if zauber not in getattr(s, "zauber", ()):
@@ -237,7 +251,9 @@ def bauen(kern, p, lagebild=None) -> Welt | None:
     if b.flash is not None:
         zauber.append("Flash bereit" if b.flash <= 0 else f"Flash in {int(b.flash)} s")
     if m.tp_in is not None:
-        zauber.append("TP bereit" if m.tp_in <= 0 else f"TP in {int(m.tp_in)} s")
+        # Auftrag 024, 4: das Quest-TP (Top ohne Teleport) heisst so - Claude plant damit (Wissensblock QUEST-TP)
+        tp = "TP" if any("Teleport" in z for z in (ich.zauber or ())) else "Quest-TP"
+        zauber.append(f"{tp} bereit" if m.tp_in <= 0 else f"{tp} in {int(m.tp_in)} s")
     if b.ult is not None:
         zauber.append("Ult bereit" if b.ult else "Ult nicht bereit")
     from .kern.modus import bereich_worte
@@ -289,7 +305,8 @@ def bauen(kern, p, lagebild=None) -> Welt | None:
         w.spieler.append(Spieler(s.champion, ROLLE_DE.get(s.rolle, s.rolle), "sie", s.level, iname(s.items), s.tot,
                                  s.respawn if s.tot else None,
                                  None if g.leben is None or not g.sichtbar else int(round(g.leben * 100)),
-                                 _ort(g, lb, m.zeit), _zauber(p, lb, s, m.zeit, "SummonerFlash"),
+                                 _ort(g, lb, m.zeit) + _lane_anwesend(b, g),
+                                 _zauber(p, lb, s, m.zeit, "SummonerFlash"),
                                  "?" if getattr(g, "ult", None) is None else ("bereit" if not g.ult else
                                                                               f"weg noch {int(g.ult)} s"), bei))
     # Karte

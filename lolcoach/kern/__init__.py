@@ -67,6 +67,7 @@ KERN_MODI_4 = KERN_MODI_3 + ("SEITE", "GRUPPE", "UNTERWEGS", "VERTEIDIGEN")     
 # den Stand von Schritt 3 - fuer Gegenproben beim Nachspielen.
 KERN_MODI_5 = KERN_MODI_4 + ("KAMPF", "OBJECTIVE")     # Schritt 5 (Buch 7 und Buch 6): der Kern spricht ueberall
 KERN_MODI = KERN_MODI_5
+INFO_ZAUBER = {"SummonerFlash": "Flash", "SummonerTeleport": "TP"}   # Auftrag 024, 4: Pflicht-Info je Zauber
 SPIELSTART_S = 60.0      # davor schweigt der Kern in der Basis (nicht im Buch, Schritt 3: messungen.md)
 STELLUNGEN = ("alt", "schatten", "neu")
 # Kehrtwende-Richtung einer Ansage des alten Systems (nur Text, Kapitel 9.4 Punkt 5)
@@ -630,9 +631,10 @@ class Kern:
         c = self.cfg["info_flash"]
         feinde = {s.name for s in m.p.gegner()}
         for t in list(z.timer.values()):
-            schl = (t.name, round(t.seit))
-            bis = getattr(self, "_flash_bis", {}).get(t.name)
-            if t.zauber == "SummonerFlash" and t.name in feinde and t.zurueck > m.zeit \
+            # Auftrag 024, 4 (231200 5:19): auch ein Teleport - "Xerath TP weg." - mit eigenem Timer je Zauber
+            schl = (t.name, round(t.seit)) if t.zauber == "SummonerFlash" else (t.name, round(t.seit), t.zauber)
+            bis = getattr(self, "_flash_bis", {}).get((t.name, t.zauber))
+            if t.zauber in INFO_ZAUBER and t.name in feinde and t.zurueck > m.zeit \
                     and schl not in self._flash_gemeldet and not (bis is not None and t.seit < bis - 5.0):
                 self._flash_offen[schl] = t        # Auftrag 007: einmal je Verbrauch (164326 3:13 und 4:18)
         self._flash_offen = {k: t for k, t in self._flash_offen.items() if t.zurueck > m.zeit + c["rest_min_s"]}
@@ -645,8 +647,13 @@ class Kern:
         if not nah:
             return None
         from .modi import liste
-        namen = list(dict.fromkeys(t.champion for t in sorted(nah.values(), key=lambda t: t.seit)))
-        text = f"{liste(namen)} Flash weg."
+        teile = []
+        for zauber, wort in INFO_ZAUBER.items():
+            namen = list(dict.fromkeys(t.champion for t in sorted(nah.values(), key=lambda t: t.seit)
+                                       if t.zauber == zauber))
+            if namen:
+                teile.append(f"{liste(namen)} {wort} weg.")
+        text = " ".join(teile)
         a = self.sprecher.ansage("INFO_FLASH", "INFO_FLASH", text, m.zeit, None, gesagt)
         if a is not None:
             self._flash_gemeldet |= set(nah)
@@ -654,7 +661,7 @@ class Kern:
             if fb is None:
                 self._flash_bis = fb = {}
             for t in nah.values():
-                fb[t.name] = max(fb.get(t.name, 0.0), t.zurueck)
+                fb[(t.name, t.zauber)] = max(fb.get((t.name, t.zauber), 0.0), t.zurueck)
             self._flash_offen = {k: t for k, t in self._flash_offen.items() if k not in nah}
             self._flash_zuletzt = m.zeit
             self._gesprochen(a, "INFO_FLASH", m)

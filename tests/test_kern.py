@@ -1148,6 +1148,75 @@ def kauf_018():
         kaufplan._plan = alt
 
 
+def udyr_024():
+    """Auftrag 024 (Udyr-Partie 231200): tot/lebendig aus der API, Lane-Gegner nur mit Beleg weg, keine kaputten
+    "Jetzt, wo"-Saetze, kein Kaufrat beim Farmen, Notiz mit Frage, volles Inventar mit Gold, kein Back ohne Grund,
+    Quest-TP im Wissensblock, Event-Quellen."""
+    from types import SimpleNamespace as NS
+    from lolcoach import kaufplan, stratege, stratege_live as sl
+    from lolcoach.kern import ereignisquellen as eq, fuehren
+    from lolcoach.kern.fragen import frage_in_notiz
+    # 2: tot oder lebendig laut API - zur Pruef- und zur Sprechzeit
+    lage = {"champions": ["Riven", "Xerath", "Gragas", "Udyr"], "gegner": [
+        {"name": "Xerath", "tot": False}, {"name": "Gragas", "tot": True}, {"name": "Udyr", "tot": False}],
+        "mitspieler": [], "lane_gegner": {"name": "Udyr", "anwesend": "vermutlich da"}}
+    assert stratege.fakten("Jetzt, wo Xerath tot ist: Back jetzt.", lage)
+    assert stratege.fakten("Gragas lebt, pass auf.", lage)
+    assert not stratege.fakten("Gragas lebt in 5 Sekunden wieder.", lage)
+    assert not stratege.fakten("Xerath fast tot, aber Udyr kommt.", lage)
+    assert not stratege.fakten("Wenn Xerath tot ist, geh rein.", lage)
+    # 3: "Udyr ist weg", obwohl er ungesehen auf seiner Lane steht
+    assert stratege.fakten("Udyr ist weg, drück die Welle.", lage)
+    lane = lambda seit, pos, ich, ort="oben": NS(lane=NS(s=NS(tot=False, rolle="TOP"), sichtbar=False, seit=seit,
+                                                        pos=pos, ort=ort, champion="Udyr"), pos=ich)
+    assert eq.anwesenheit(lane(25.0, (1300.0, 13500.0), (1300.0, 7300.0))) == "vermutlich da"   # 5:56: 6700 weg
+    assert eq.anwesenheit(lane(25.0, (1300.0, 13500.0), (1300.0, 12700.0))) == "weg"            # du siehst hin
+    assert eq.anwesenheit(lane(25.0, (1300.0, 13500.0), (1300.0, 13300.0))) == "vermutlich da"  # Icon verdeckt
+    assert eq.anwesenheit(lane(5.0, (7000.0, 7000.0), (1300.0, 7300.0), "im oberen Fluss")) == "weg"
+    q = eq.LaneQuelle()
+    assert not q.takt(lane(5.0, (1300.0, 13500.0), (1300.0, 7300.0)), 100.0)
+    assert [e.typ for e in q.takt(lane(25.0, (1300.0, 13500.0), (1300.0, 12700.0)), 120.0)] == ["LANE_WEG"]
+    # Tod und Respawn als Events
+    tq = eq.TodQuelle()
+    sp = lambda tot: NS(zeit=1.0, spieler=[NS(name="x", champion="Xerath", tot=tot, respawn=10.0, team="CHAOS")])
+    assert not tq.takt(sp(False)) and [e.typ for e in tq.takt(sp(True))] == ["TOD"]
+    assert [e.typ for e in tq.takt(sp(False))] == ["RESPAWN"]
+    # "Jetzt, wo Xerath tot ist" nur, solange er tot ist
+    sr = sl.Schiedsrichter()
+    sr.gilt = lambda was: "Xerath" not in was
+    sr.setze("Geh zur Top-Welle.", 100.0)
+    sr.ereignis(105.0, "Xerath tot ist")
+    assert not sr.pruefe("Geh zum Drachen.", 110.0)[0]
+    # "Stopp –" nur vor einem Rueckzug, nicht vor einem Kill-Ruf (Nachspiel 231200 13:30 "Stopp – Rein, Gragas fast tot!")
+    from lolcoach import regeln
+    ms = sl.MakroStratege.__new__(sl.MakroStratege)
+    ms.schiedsrichter, ms.plan_obj = sl.Schiedsrichter(), None
+    ms.schiedsrichter.setze("Geh zur Top-Welle und crash sie.", 800.0)
+    rein = regeln.Ansage("Rein, Gragas fast tot!", regeln.WICHTIG, "kern:REIN", zeit=804.0, thema="gefahr")
+    assert ms._richte([rein], NS(zeit=804.0))[0].text == "Rein, Gragas fast tot!"
+    # 5.4: kein Ereignis aus einem Satzkopf ("Jetzt, wo Aus der Basis aufgetaucht ist")
+    assert sl._als_ereignis("Aus der Basis: Farm Top, Langschwert in 64 Sekunden kaufbar.") is None
+    assert sl._als_ereignis("Teemo im oberen Fluss.") == "Teemo im oberen Fluss aufgetaucht ist"
+    assert sl._als_ereignis("Xerath TP weg.") == "Xerath TP weg ist"
+    # 5.3: FARMEN ohne Kauf-Vorschau
+    h = NS(ziel=NS(name="Top-Welle"))
+    leiste = [NS(art="kauf", schl="Caulfields Kriegshammer", in_s=lambda j: 43, text="")]
+    assert fuehren.farmen_mit_vorschau(h, leiste, 200.0, None, {"fuehren": {"vorschau_horizont_s": 90}}) == ""
+    # 5.1: Notiz mit Frage
+    assert frage_in_notiz("Notiz, okay, also ich bin jetzt gerade im Shop, was kaufe ich, was mache ich?")
+    assert frage_in_notiz("Notiz: Xerath ist gar nicht tot, notier mal bitte, dass du Mist erzählst.") is None
+    # 5.2: volles Inventar mit Kontroll-Auge und 4488 Gold -> Auge stellen, Tanz des Todes
+    k = kaufplan.plan("Riven", (3026, 6696, 3158, 2055, 6692, 3074, 3340), 4488, 17)
+    assert k is not None and k.kaufen == ["Tanz des Todes"] and k.verkaufen == "Kontroll-Auge", k
+    # 5.5: "kein Back" nur mit Grund, wenn das Gold fuer ein Item reicht
+    assert stratege.pruefe("Ja, Freeze am Turm statt Reset.", {"kauf_bereit": True})
+    assert not stratege.pruefe("Ja, Freeze am Turm statt Reset.", {"kauf_bereit": False})
+    # 4: Quest-TP im Wissensblock
+    from lolcoach import partie_wissen
+    assert "QUEST-TP" in partie_wissen._block("Riven", ("Riven",), ("Udyr",), True)
+    assert "QUEST-TP" not in partie_wissen._block("Riven", ("Riven",), ("Udyr",), False)
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
@@ -1158,6 +1227,6 @@ if __name__ == "__main__":
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
                  stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017, lagebild_019,
                  objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018, kampf_rechner_020, gehirn_021,
-                 aufraeumen_022, stimme_023):
+                 aufraeumen_022, stimme_023, udyr_024):
         test()
         print(f"{test.__name__} OK")
