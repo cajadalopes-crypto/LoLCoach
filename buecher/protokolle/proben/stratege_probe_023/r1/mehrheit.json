@@ -1,0 +1,78 @@
+{
+ "_gesamt_": {
+  "punkte": 0,
+  "gesagt": 0,
+  "teilweise": 0,
+  "fehlt": 0,
+  "einig_3": 0,
+  "mehrheit_2": 0,
+  "strittig": 0,
+  "quote": 0.0
+ },
+ "2026-09-28_101426": {
+  "punkte": 61,
+  "gesagt": 19,
+  "teilweise": 14,
+  "fehlt": 28,
+  "quote": 0.541,
+  "einig_3": 51,
+  "mehrheit_2": 10,
+  "strittig": 0,
+  "fuellsaetze": 1,
+  "saetze": 131,
+  "widersprueche": 4,
+  "kritiker": 3
+ },
+ "2026-09-28_192113": {
+  "punkte": 47,
+  "gesagt": 10,
+  "teilweise": 22,
+  "fehlt": 15,
+  "quote": 0.6809,
+  "einig_3": 36,
+  "mehrheit_2": 11,
+  "strittig": 0,
+  "fuellsaetze": 6,
+  "saetze": 168,
+  "widersprueche": 8,
+  "kritiker": 3
+ },
+ "2026-09-29_133448": {
+  "punkte": 29,
+  "gesagt": 5,
+  "teilweise": 15,
+  "fehlt": 9,
+  "quote": 0.6897,
+  "einig_3": 26,
+  "mehrheit_2": 3,
+  "strittig": 0,
+  "fuellsaetze": 2,
+  "saetze": 91,
+  "widersprueche": 2,
+  "kritiker": 3
+ },
+ "2026-09-29_183125": {
+  "punkte": 65,
+  "gesagt": 10,
+  "teilweise": 25,
+  "fehlt": 30,
+  "quote": 0.5385,
+  "einig_3": 54,
+  "mehrheit_2": 9,
+  "strittig": 2,
+  "fuellsaetze": 4,
+  "saetze": 196,
+  "widersprueche": 8,
+  "kritiker": 3
+ },
+ "_gesamt_101426_133448_183125_192113": {
+  "punkte": 202,
+  "gesagt": 44,
+  "teilweise": 76,
+  "fehlt": 82,
+  "einig_3": 167,
+  "mehrheit_2": 33,
+  "strittig": 2,
+  "quote": 0.5941
+ }
+}

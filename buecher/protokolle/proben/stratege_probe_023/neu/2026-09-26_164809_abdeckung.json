@@ -1,0 +1,410 @@
+{
+ "kennzahlen": {
+  "flash": "8/9 (89 %)",
+  "jungler": "20/21 (95 %)",
+  "i4": "– (keine)",
+  "backs": "6/6 (100 %)",
+  "back_rufe": "16/16 (100 %)",
+  "stille": "76 s",
+  "sicherheit": 0,
+  "widersprueche": 0,
+  "fuellsaetze": "0/86 (0.0 %)",
+  "latenz": "2.39 / 3.54 s (n = 47)",
+  "erster_satz": 1.3239478999748826,
+  "cache": "43/71"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 159.56100463867188,
+    "champion": "Wukong",
+    "gesagt": "Wukong Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 228.58799743652344,
+    "champion": "Ahri",
+    "gesagt": "Ahri Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 246.90513610839844,
+    "champion": "Vi",
+    "gesagt": "Vi Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 379.7018127441406,
+    "champion": "Wukong",
+    "gesagt": null,
+    "nach_s": null
+   },
+   {
+    "zeit": 393.935546875,
+    "champion": "Ashe",
+    "gesagt": "Ashe Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1011.9953002929688,
+    "champion": "Ashe",
+    "gesagt": "Ashe Flash weg.",
+    "nach_s": 6.1
+   },
+   {
+    "zeit": 1187.05908203125,
+    "champion": "Xerath",
+    "gesagt": "Xerath Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1630.1812744140625,
+    "champion": "Xerath",
+    "gesagt": "Xerath Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1680.1160888671875,
+    "champion": "Ashe",
+    "gesagt": "Ashe Flash weg.",
+    "nach_s": 0.0
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 231.6,
+    "name": "Vi",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Vi oberer Fluss."
+   },
+   {
+    "zeit": 407.1,
+    "name": "Vi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 144,
+    "tot_ich": false,
+    "gesagt": "Vi Mid."
+   },
+   {
+    "zeit": 522.1,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 111,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 566.9,
+    "name": "Vi",
+    "ort": "im oberen Fluss",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Vi oberer Fluss."
+   },
+   {
+    "zeit": 596.4,
+    "name": "Vi",
+    "ort": "in der Flussmitte",
+    "ohne_s": 26,
+    "tot_ich": false,
+    "gesagt": "Vi Flussmitte."
+   },
+   {
+    "zeit": 665.6,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 51,
+    "tot_ich": false,
+    "gesagt": "Vi unterer Fluss."
+   },
+   {
+    "zeit": 709.4,
+    "name": "Vi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle oben, 1 Sekunde."
+   },
+   {
+    "zeit": 787.8,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 76,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 919.1,
+    "name": "Vi",
+    "ort": "in seiner Basis",
+    "ohne_s": 63,
+    "tot_ich": false,
+    "gesagt": "Vi in Basis."
+   },
+   {
+    "zeit": 970.2,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 34,
+    "tot_ich": false,
+    "gesagt": "Vi unterer Fluss."
+   },
+   {
+    "zeit": 1008.9,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 30,
+    "tot_ich": false,
+    "gesagt": "Vi unterer Fluss, 6 Sekunden."
+   },
+   {
+    "zeit": 1103.6,
+    "name": "Vi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 45,
+    "tot_ich": false,
+    "gesagt": "Vi Mid, 3 Sekunden."
+   },
+   {
+    "zeit": 1146.4,
+    "name": "Vi",
+    "ort": "in seiner Basis",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Vi in Basis."
+   },
+   {
+    "zeit": 1208.4,
+    "name": "Vi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 53,
+    "tot_ich": true,
+    "gesagt": "Vi Mid."
+   },
+   {
+    "zeit": 1284.1,
+    "name": "Vi",
+    "ort": "oben",
+    "ohne_s": 46,
+    "tot_ich": false,
+    "gesagt": "Vi oben."
+   },
+   {
+    "zeit": 1345.3,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 22,
+    "tot_ich": true,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 1401.4,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 32,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 1480.9,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Vi unterer Fluss."
+   },
+   {
+    "zeit": 1524.9,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 36,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten, 7 Sekunden."
+   },
+   {
+    "zeit": 1585.3,
+    "name": "Vi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 42,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 1659.7,
+    "name": "Vi",
+    "ort": "in seiner Basis",
+    "ohne_s": 39,
+    "tot_ich": false,
+    "gesagt": "Vi in Basis."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 237.8,
+    "gesagt": "Der Brutalisierer und Kontroll-Auge, dann sofort Top – Vi ist in 27 Sekunden bei dir und deine Welle läuft zu ihm, du musst davor da sein.",
+    "saetze": [
+     "Vi oberer Fluss.",
+     "Der Brutalisierer und Kontroll-Auge, dann sofort Top – Vi ist in 27 Sekunden bei dir und deine Welle läuft zu ihm, du musst davor da sein.",
+     "Vi Flash weg."
+    ]
+   },
+   {
+    "zeit": 427.5,
+    "gesagt": "Kauf Caulfields Kriegshammer und Stiefel, dann sofort zu deinem Top-Turm, weil Wukong unbekannt ist und Vi in 11 Sekunden bei dir sein kann – bleib am Turm und warte, bis dein Team kommt.",
+    "saetze": [
+     "Vi Mid.",
+     "Kauf Caulfields Kriegshammer und Stiefel, dann sofort zu deinem Top-Turm, weil Wukong unbekannt ist und Vi in 11 Sekunden bei dir sein kann – bleib am Turm und warte, bis dein Team kommt.",
+     "Jetzt, wo du in der Basis bist: Axiombogen kaufen, dann sofort nach Top zur Kanonenwelle, weil Vi in 27 Sekunden bei dir sein kann und der Turm dich schützt – warte dort auf dein Team zum Drachen."
+    ]
+   },
+   {
+    "zeit": 439.7,
+    "gesagt": "Kauf Caulfields Kriegshammer und Stiefel, dann sofort zu deinem Top-Turm, weil Wukong unbekannt ist und Vi in 11 Sekunden bei dir sein kann – bleib am Turm und warte, bis dein Team kommt.",
+    "saetze": [
+     "Vi Mid.",
+     "Kauf Caulfields Kriegshammer und Stiefel, dann sofort zu deinem Top-Turm, weil Wukong unbekannt ist und Vi in 11 Sekunden bei dir sein kann – bleib am Turm und warte, bis dein Team kommt.",
+     "Jetzt, wo du in der Basis bist: Axiombogen kaufen, dann sofort nach Top zur Kanonenwelle, weil Vi in 27 Sekunden bei dir sein kann und der Turm dich schützt – warte dort auf dein Team zum Drachen."
+    ]
+   },
+   {
+    "zeit": 612.7,
+    "gesagt": "Kauf Caulfields Kriegshammer für die Eklipse, Langschwert und ein Kontroll-Auge, dann zur Top-Welle.",
+    "saetze": [
+     "Vi oberer Fluss.",
+     "Vi Flussmitte.",
+     "Kauf Caulfields Kriegshammer für die Eklipse, Langschwert und ein Kontroll-Auge, dann zur Top-Welle."
+    ]
+   },
+   {
+    "zeit": 815.3,
+    "gesagt": "Eklipse und Kontroll-Auge kaufen, dann zur Top-Welle – Kanone in 19 Sekunden, dein Team braucht dich zum Schieben.",
+    "saetze": [
+     "Wukong in Basis: Welle drücken.",
+     "Vi sein Jungle unten.",
+     "Eklipse und Kontroll-Auge kaufen, dann zur Top-Welle – Kanone in 19 Sekunden, dein Team braucht dich zum Schieben."
+    ]
+   },
+   {
+    "zeit": 1616.9,
+    "gesagt": "Moment – Sion kämpft gerade gegen Xerath oben im Jungle, und dein Team ist in Überzahl: kauf Eklipse schnell, dann lauf zur Brücke und komm von hinten rein, damit Xerath zwischen euch eingeklemmt ist und Sion den Kill kriegt.",
+    "saetze": [
+     "Moment – Sion kämpft gerade gegen Xerath oben im Jungle, und dein Team ist in Überzahl: kauf Eklipse schnell, dann lauf zur Brücke und komm von hinten rein, damit Xerath zwischen euch eingeklemmt ist und Sion den Kill kriegt.",
+     "Xerath Flash weg.",
+     "Nicht hin – Sion fällt gegen Xeraths Leben, du brauchst 14 Sekunden und hilfst dann zu spät."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 133.2266387939453,
+    "text": "Ashe vermutlich zu dir oben, Back jetzt Stiefel, dann Mid zu Sion, weil Wukong kommt in 2 Sekunden.",
+    "kette": true
+   },
+   {
+    "zeit": 145.38543701171875,
+    "text": "Wukong ist nah bei dir und Sion sitzt Mid mit 34 Prozent Leben: Back jetzt, Stiefel kaufen, dann sofort Mid rein, weil Ahri in 10 Sekunden wiederkommt und Sion sonst allein stirbt.",
+    "kette": true
+   },
+   {
+    "zeit": 300.9165954589844,
+    "text": "Drache in fünf Minuten, Sion tot drunten – crash jetzt deine Welle, back für Stiefel, dann mit Zaahen zum Drachen, weil ihr drei Wellen Gold vorn habt.",
+    "kette": true
+   },
+   {
+    "zeit": 318.1667175292969,
+    "text": "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Welle crashen jetzt, back für Stiefel, dann Drache mit Zaahen – ihr habt drei Wellen Gold vorn und müsst es erzwingen, bevor Vi kommt.",
+    "kette": true
+   },
+   {
+    "zeit": 547.6148681640625,
+    "text": "Deine Welle läuft zu ihm, aber crash sie jetzt mit der Kanone in 19 Sekunden, dann back direkt danach mit der Spitzhacke zu deinem Turm, weil Wukong weg ist, Vi unbekannt bleibt und du das längste Fenster nutzt.",
+    "kette": true
+   },
+   {
+    "zeit": 660.5595703125,
+    "text": "Vi ist oben vermutlich schon bei der Welle back sofort, kauf Langschwert, dann crash die Top-Welle und rück nicht alleine nach, weil Vi dich dort abholt.",
+    "kette": true
+   },
+   {
+    "zeit": 700.23583984375,
+    "text": "Back jetzt, Caulfields kaufen, dann Top-Welle crashen mit deinen vier Minions, weil Ahri 19 Sekunden tot ist und ihr danach fünf gegen vier habt.",
+    "kette": true
+   },
+   {
+    "zeit": 766.3973388671875,
+    "text": "Back jetzt, Eklipse kaufen, dann zu Top zurück – Wukong tot 14 Sekunden, Xerath kommt rein, du brauchst das Item zum Duel.",
+    "kette": true
+   },
+   {
+    "zeit": 863.1990966796875,
+    "text": "Jetzt, wo Cassiopeia tot ist und Vi unten war: Back jetzt, Langschwert kaufen, dann zur Top-Kanonenwelle – in 3 Sekunden kommt sie, dein Team braucht die Welle.",
+    "kette": true
+   },
+   {
+    "zeit": 1011.9953002929688,
+    "text": "Back jetzt: 1100 Gold für Caulfields Kriegshammer. Danach zur Top-Welle.",
+    "kette": true
+   },
+   {
+    "zeit": 1085.314453125,
+    "text": "Back jetzt, Tanz des Todes kaufen, dann TP zu deiner Top-Welle—Wukong kommt in 24 Sekunden und deine Kanone braucht dich dort.",
+    "kette": true
+   },
+   {
+    "zeit": 1167.7333984375,
+    "text": "Jetzt, wo ein Turm oder Objective gefallen ist: Back jetzt: Tanz des Todes, dann mit Team zum Baron in 32 Sekunden – vier Gegner respawnen in unter 21 Sekunden, ihr habt das Fenster nur mit voller Gruppe.",
+    "kette": true
+   },
+   {
+    "zeit": 1286.0870361328125,
+    "text": "Jetzt, wo Wukong tot ist: Back jetzt, Tanz des Todes kaufen, dann mit Ult und Flash zur Mid-Welle zu Sion, weil Ahri in 24 Sekunden da ist und Xerath unbekannt.",
+    "kette": true
+   },
+   {
+    "zeit": 1404.4169921875,
+    "text": "Mid-Welle rein, dann back: 5600 Gold für Tanz des Todes. Danach zur Top-Welle.",
+    "kette": true
+   },
+   {
+    "zeit": 1493.203369140625,
+    "text": "Jetzt, wo Wukong und Ahri tot sind und ihr zwei Kills habt: back sofort in der Basis, kaufe Tanz des Todes, dann TP zur Top-Welle und crash sie, weil die Kanone in 23 Sekunden kommt und dein Team in 17–29 Sekunden lebt – danach Mid zur Gruppe für den Drachen in 298 Sekunden, während Vi in 11 Sekunden bei dir sein kann.",
+    "kette": true
+   },
+   {
+    "zeit": 1558.6956787109375,
+    "text": "Jetzt, wo Ahri und Xerath tot sind: Back sofort, Tanz des Todes kaufen, dann TP zu Sion Mid für den inneren Turm, weil ihr fünf gegen drei seid bis 26:16.",
+    "kette": true
+   }
+  ],
+  "stille_max": 76,
+  "stille_lang": [
+   [
+    318,
+    394
+   ],
+   [
+    615,
+    661
+   ],
+   [
+    711,
+    766
+   ]
+  ],
+  "sicherheit": [],
+  "widersprueche": [],
+  "fuellsaetze": [],
+  "saetze_n": 86,
+  "i4": [],
+  "latenz": {
+   "n": 47,
+   "median": 2.39,
+   "p90": 3.54,
+   "erster_satz_median": 1.3239478999748826,
+   "cache_treffer": "43/71"
+  }
+ }
+}

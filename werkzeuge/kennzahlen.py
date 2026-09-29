@@ -51,7 +51,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import nachspielen as ns  # noqa: E402
-from lolcoach import bewertung  # noqa: E402
+from lolcoach import aufzeichnung, bewertung  # noqa: E402
 
 LANE_WORT = re.compile(r"\b(Top|Mid|Bot)\b|\boben\b|\bunten\b", re.I)
 OHNE_ZIEL = re.compile(r"\bdie Welle\b|\bdie Türme\b|\bseinen Turm\b", re.I)
@@ -376,7 +376,7 @@ def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     nur_kern = "--nur-kern" in sys.argv
-    pfade = [ns.pfad_zu(x) for x in args] or sorted(ns.AUFNAHMEN.glob("*.jsonl.gz"))[-5:]
+    pfade = [ns.pfad_zu(x) for x in args] or aufzeichnung.alle(ns.AUFNAHMEN)[-5:]
     for p in pfade:
         for kern in (("neu",) if nur_kern else ("alt", "neu")):
             ausgeben(kennzahlen(p, kern, fragen="--fragen" in sys.argv))

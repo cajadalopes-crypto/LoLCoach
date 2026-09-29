@@ -460,9 +460,13 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                             verstoesse.append(f"gesprochen_ohne '{muster}' - {ns.uhr(treffer[0])} \"{treffer[1][:100]}\"")
                 if "ansagen_max" in sz:
                     geprueft += 1
-                    if len(texte) > sz["ansagen_max"]:
-                        verstoesse.append(f"ansagen_max {sz['ansagen_max']} - {len(texte)}: "
-                                          + " / ".join(f"{ns.uhr(t)} {s[:40]}" for t, s in texte))
+                    # Auftrag 023, 2: Pflicht-Infos (Flash, Jungler, Lane-Gegner weg) werden nie geschluckt und
+                    # zaehlen nicht gegen das Geschwaetz-Limit - hoechstens fuenf Woerter, eine Tatsache.
+                    from lolcoach.sprechplan import pflicht_info
+                    zaehlt = [(ns.gesprochen_um(a), a.text) for a in ansagen if not pflicht_info(a)]
+                    if len(zaehlt) > sz["ansagen_max"]:
+                        verstoesse.append(f"ansagen_max {sz['ansagen_max']} - {len(zaehlt)}: "
+                                          + " / ".join(f"{ns.uhr(t)} {s[:40]}" for t, s in zaehlt))
                 if any(k in sz for k in ("ziele_max", "satz_mit", "fassung_einmal", "woerter_max", "gold_reicht",
                                          "text_max", "planwechsel_max", "max_woerter", "alte_regeln_max",
                                          "je_10min_max", "kategorie_max", "kategorie_min", "sprache_konkret")):

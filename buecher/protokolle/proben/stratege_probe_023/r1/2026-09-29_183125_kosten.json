@@ -1,0 +1,13 @@
+{
+ "summe_dollar": 0.4644,
+ "je_modell": {
+  "claude-haiku-4-5": {
+   "aufrufe": 140,
+   "eingabe": 269807,
+   "ausgabe": 19891,
+   "cache_lesen": 856240,
+   "cache_schreiben": 7645,
+   "dollar": 0.46444
+  }
+ }
+}

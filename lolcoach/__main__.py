@@ -453,7 +453,7 @@ def _reviews_nachholen(hoechstens: int = 3) -> None:
         offen = [k for k in profil.partien(aufzeichnung.ORDNER) if k.dauer >= profil.KURZ
                  and not review.pfade(aufzeichnung.ORDNER / f"{k.stamm}.jsonl.gz")["review"].exists()
                  # nicht, was vor Kurzem noch lief: die Partie kann gleich fortgesetzt werden (Neustart)
-                 and jetzt - (aufzeichnung.ORDNER / f"{k.stamm}.jsonl.gz").stat().st_mtime > 900][:hoechstens]
+                 and jetzt - aufzeichnung.echt(aufzeichnung.ORDNER / f"{k.stamm}.jsonl.gz").stat().st_mtime > 900][:hoechstens]
         for k in reversed(offen):   # aelteste zuerst: jedes Review sieht die frueheren
             print(f"Review wird nachgeholt: {k.stamm} ({k.champion} gegen {k.gegner}) ...", flush=True)
             review.erstelle(aufzeichnung.ORDNER / f"{k.stamm}.jsonl.gz")

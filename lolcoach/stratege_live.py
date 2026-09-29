@@ -51,6 +51,10 @@ ANLASS_RUHE_S = 10.0       # ... kommt keiner, fragt er allein - nur, wenn so la
 PLAN_KATEGORIEN = ("PLAN", "WENDEPUNKT", "VORSCHAU", "FENSTER", "GEFAHR", "VORSICHT", "LAGEBILD", "TEAMPLAN")
 ERSETZT = ("PLAN", "WENDEPUNKT", "VORSCHAU", "FENSTER", "MAKRO")    # Auftrag 021: Plan-Saetze fuehrt Claude
 # ... und nur diese Anlaesse fragen nach einem verworfenen Vorschlag ein zweites Mal (Kosten, Runde 1: 218 Aufrufe)
+KURZ_ANLASS = ("Lane:", "Fenster:", "Roam:", "Kampf in der Nähe")   # Auftrag 023, 4: ohne Wissensblock
+ZUSAMMEN_S = 10.0          # Auftrag 023, 3: Anlaesse so kurz nacheinander fragen nur einmal
+STOPP_S = 8.0              # Auftrag 023, 3: eine Warnung so kurz nach einem anderen Plan beginnt mit "Stopp –"
+STOPP_KLEIN = ("zurück", "raus", "weg", "geh", "lauf", "nicht", "bleib", "back")
 NOCHMAL = ("Wendepunkt", "Respawn", "Ankunft in der Basis", "Kampf in der Nähe", "zwei Kills in 10 s")
 NICHTS = _re.compile(r"^\W*nichts\W*$", _re.I)
 PLAN_ZEILE = _re.compile(r"^\W*PLAN\s*:", _re.I)
@@ -151,12 +155,12 @@ def wellen_regeln() -> str:
 
 
 def claude_strom(prompt: str, bei_satz, system: str, timeout: float, bei_fertig=None, modell: str = "sonnet",
-                 wissen: str | None = None) -> str:
+                 wissen: str | None = None, messung: dict | None = None) -> str:
     """Der echte Weg: Claude ueber die API (Auftrag 019) oder das Abo, gestreamt, mit vorgehaltenem Prozess.
     `wissen`: der Wissensblock der Partie (Auftrag 021), bei der API zwischengespeichert."""
     from . import llm
     return llm.frage_strom(prompt, bei_satz, system=system, modell=modell, timeout=timeout, aufwand="low",
-                           nachladen=2, bei_fertig=bei_fertig, wissen=wissen)      # Auftrag 017: zwei vorgehalten
+                           nachladen=2, bei_fertig=bei_fertig, wissen=wissen, messung=messung)      # Auftrag 017: zwei vorgehalten
 
 
 claude_strom.mit_fertig = True
@@ -184,18 +188,20 @@ class Zwischenspeicher:
                 except (ValueError, KeyError):
                     pass
 
-    def __call__(self, prompt, bei_satz, system, timeout, bei_fertig=None, modell="sonnet", wissen=None):
+    def __call__(self, prompt, bei_satz, system, timeout, bei_fertig=None, modell="sonnet", wissen=None, messung=None):
         k = self._h(f"{modell}\n{system}\n{wissen or ''}\n{prompt}".encode("utf-8")).hexdigest()
         if k in self._d:
             self.treffer += 1
             text = self._d[k]
+            if messung is not None:
+                messung["zwischenspeicher"] = True
             for s in stratege._saetze(text):
                 bei_satz(s)
             if bei_fertig is not None:
                 bei_fertig()
             return text
         self.neu += 1
-        extra = {"wissen": wissen} if getattr(self.frage_fn, "mit_wissen", False) else {}
+        extra = {"wissen": wissen, "messung": messung} if getattr(self.frage_fn, "mit_wissen", False) else {}
         text = self.frage_fn(prompt, bei_satz, system, timeout, bei_fertig=bei_fertig, modell=modell, **extra)
         with self._schloss:
             self._d[k] = text
@@ -389,6 +395,7 @@ class MakroStratege:
         self._fenster_zuletzt = -1e9
         self._roam_gesagt: dict[str, float] = {}
         self._starke: dict[str, float] = {}
+        self._letzter_start = -1e9
 
     # --- Zustand -------------------------------------------------------------------------------------------------
 
@@ -413,11 +420,11 @@ class MakroStratege:
 
     # --- Anfrage ---------------------------------------------------------------------------------------------------
 
-    def _prompt(self, p, anlass: str, ende: str, entwurf: str | None = None) -> str:
+    def _prompt(self, p, anlass: str, ende: str, entwurf: str | None = None, kurz: bool = False) -> str:
         kern = self.kern
         from . import welt
         w = welt.bauen(kern, p)                          # Auftrag 019: das Lagebild statt kern.kontext()
-        lage = welt.text(w) if w is not None else (kern.kontext() or "")
+        lage = welt.text(w, kurz=kurz) if w is not None else (kern.kontext() or "")
         if self.gehirn is not None:
             inhalt = self.gehirn.kontext(anlass, p, lage)
         else:
@@ -480,7 +487,7 @@ class MakroStratege:
         if stratege.AUGE.search(text) and not stratege.AUGE_NEIN.search(text):
             self._auge_back = self._back_nr
 
-    def _versuch(self, prompt: str, lage: dict, bei_satz=None, modell: str = "stark") -> dict:
+    def _versuch(self, prompt: str, lage: dict, bei_satz=None, modell: str = "stark", kurz: bool = False) -> dict:
         """Ein Aufruf: jeder Satz wird geprueft, sobald er fertig ist; die GANZE gueltige Antwort (hoechstens
         stratege.LAENGE_HOECHSTENS Woerter) geht am Textende EINMAL an `bei_satz` (Auftrag 017, 0.1). Ist der erste
         Satz verworfen, gilt der ganze Versuch als verworfen; "NICHTS" heisst: der Stratege schweigt."""
@@ -507,7 +514,7 @@ class MakroStratege:
                 if gut:
                     fertig()
                 return
-            s = " ".join(f"{halb[0]} {s}".split())
+            s = " ".join(f"{halb[0]} {s}".replace("**", "").split())    # Auftrag 023: kein Markdown ("**Nein**")
             halb[0] = ""
             if not s or erster_verworfen[0] or v["nichts"]:
                 return
@@ -528,6 +535,8 @@ class MakroStratege:
                     v["gruende"] = gruende
                 return
             n = len(s.split())
+            if not gut:
+                v["erster_satz_s"] = time.monotonic() - t0     # Auftrag 023, 4: bis zum ersten gueltigen Satz
             if gut and woerter[0] + n > stratege.LAENGE_HOECHSTENS:
                 return                                   # Auftrag 015, 6: ganze Saetze, hoechstens 30 Woerter
             gut.append(s)
@@ -545,7 +554,8 @@ class MakroStratege:
                     bei_satz(" ".join(gut))
         try:
             if getattr(self.frage_fn, "mit_fertig", False):
-                extra = {"wissen": self._wissen()} if getattr(self.frage_fn, "mit_wissen", False) else {}
+                extra = {"wissen": None if kurz else self._wissen(), "messung": v["messung"]} \
+                    if getattr(self.frage_fn, "mit_wissen", False) else {}
                 self.frage_fn(prompt, satz, stratege.STRATEGE_SYSTEM + PLAN_FORMAT, self.ausfall_s, bei_fertig=fertig,
                               modell=modell, **extra)
             else:
@@ -561,11 +571,11 @@ class MakroStratege:
         return v
 
     def _frage(self, p, anlass: str, ende: str, bei_satz=None, vorbereitet=None,
-               modell: str = "stark", nochmal: bool = True) -> tuple[str | None, list[dict]]:
+               modell: str = "stark", nochmal: bool = True, kurz: bool = False) -> tuple[str | None, list[dict]]:
         """Bis zu zwei Versuche (der zweite mit dem Grund des Verwerfens). (Text oder None, Versuche). `vorbereitet`:
         (Prompt, Pruef-Lage), im Takt gebaut - der Hintergrund-Faden liest den Kern dann nicht mehr."""
         prompt, lage = vorbereitet or (self._prompt(p, anlass, ende), self._lage(p))
-        versuche = [self._versuch(prompt, lage, bei_satz, modell)]
+        versuche = [self._versuch(prompt, lage, bei_satz, modell, kurz)]
         a = versuche[0]
         from . import welt
         a["prompt_tokens"], a["modell"] = welt.tokens(prompt), modell      # Auftrag 019: Tokens je Aufruf
@@ -580,7 +590,7 @@ class MakroStratege:
             weg = a["verworfen"][0]["satz"] if a["verworfen"] else ""
             b = self._versuch(prompt + f"\n\nDein Vorschlag „{weg}“ wurde verworfen: {'; '.join(a['gruende'])}. "
                               "Sag es neu, ohne das - oder NICHTS, wenn du nichts Neues hast.", lage, bei_satz,
-                              modell)
+                              modell, kurz)
             versuche.append(b)
             if b["fehler"]:
                 self._ausfall(b["fehler"])
@@ -607,7 +617,10 @@ class MakroStratege:
             entwurf = f"{pl.schritt[:1].upper()}{pl.schritt[1:]}, danach {pl.danach}: {pl.grund}."   # Auftrag 021, 1
         ende = f"Frage des Spielers: {frage}" + (
             "\nSag die Kette: den naechsten Schritt und den danach (bei Back oder Kauf: was, dann wohin, warum)."
-            if kette else "")
+            if kette else "") + (
+            # Auftrag 023, 3: 30 von 52 Widerspruechen in 021 betrafen Antworten
+            "\nDeine Antwort bestaetigt den AKTIVEN PLAN - oder aendert ihn ausdruecklich mit dem Grund zuerst "
+            "('Jetzt, wo ...: ...'). Keine zweite Empfehlung daneben.")
         a = self.schiedsrichter.aktiv
         if entwurf is None and a is not None and p.zeit - a[1] <= WIEDERHOLUNG_S:
             danach = getattr(self.kern, "danach_text", None)
@@ -625,6 +638,18 @@ class MakroStratege:
             if bei_satz is not None:
                 bei_satz(text)
         return text
+
+    def antwort_gesprochen(self, text: str | None, zeit: float) -> None:
+        """Auftrag 023, 3 (eine Stimme): auch eine Antwort des Kerns laeuft ueber den EINEN Plan - nennt sie ein Ziel,
+        ist sie ab jetzt der Plan (die Frage ist das Ereignis); ein Claude-Plan mit anderem Ziel gilt nicht mehr."""
+        if not text:
+            return
+        self.schiedsrichter.ereignis(zeit, "du gefragt hast")
+        z = plan_ziel(text)
+        if z is not None:
+            self.schiedsrichter.setze(text, zeit)
+            if self.plan_obj is not None and plan_ziel(self.plan_obj.satz) != z:
+                self.plan_obj = None
 
     # --- B2/B3/B4 und Auftrag 017: im Takt -------------------------------------------------------------------------
 
@@ -680,9 +705,14 @@ class MakroStratege:
 
     def _richte(self, ansagen: list, p) -> list:
         """Auftrag 017, 1.5: nur Plan-Saetze, die den Plan setzen oder aendern; Warnungen und Infos immer."""
+        from .sprechplan import pflicht_info
         aus = []
         for a in ansagen:
-            if a.schluessel.startswith(NUR_INFO) or not a.schluessel.startswith("kern:"):
+            # Auftrag 023, 3 (164809 21:16): eine Info, die einen Plan sagt ("INFO_BASIS: ... Drache erzwingen"), ist
+            # ein Plan-Satz - sie geht ueber den Schiedsrichter; die Pflicht-Infos nie
+            info_mit_plan = a.schluessel.startswith("kern:INFO_") and not pflicht_info(a) \
+                and plan_ziel(a.text) is not None
+            if (a.schluessel.startswith(NUR_INFO) and not info_mit_plan) or not a.schluessel.startswith("kern:"):
                 aus.append(a)
                 continue
             warnung = a.thema == "gefahr" or getattr(a, "_kategorie", None) in ("GEFAHR", "VORSICHT")
@@ -690,10 +720,20 @@ class MakroStratege:
                 a.text = ohne_fuellsatz(a.text)          # Auftrag 017, 0.3: "Weiter deine Top-Welle." faellt weg
                 if not a.text:
                     continue
+            vorher = self.schiedsrichter.aktiv
             ok, text, _ = self.schiedsrichter.pruefe(a.text, p.zeit, warnung=warnung)
+            if ok and warnung and vorher is not None and p.zeit - vorher[1] <= STOPP_S \
+                    and vorher[0] not in ("back", "zurueck") and plan_ziel(text) != vorher[0]:
+                # Auftrag 023, 3 (120049 14:08/14:09): die Warnung kurz nach einem anderen Plan sagt, dass sie ihn
+                # ersetzt - eine Stimme, die sich korrigiert, statt zwei, die sich widersprechen
+                erstes = text.split(" ", 1)[0]
+                text = "Stopp – " + (text[0].lower() + text[1:] if erstes.lower().strip(",:") in STOPP_KLEIN
+                                     else text)
             if ok:
                 a.text = text
                 aus.append(a)
+                if warnung and plan_ziel(text) is not None:
+                    self.plan_obj = None             # Auftrag 023, 3: die Warnung ERSETZT den Plan, keine zweite Stimme
         return aus
 
     def _anlass(self, p, ansagen: list | None = None) -> str | None:
@@ -945,6 +985,18 @@ class MakroStratege:
         """B2/B3 und Lane-Anlaesse: fragt den Strategen; seine ganze Antwort muss in der Frist da sein, sonst spricht
         der Kern-Satz (falls es einen gibt). Die Antwort geht als EINE Ansage in den Sprechplan - wenn der
         Schiedsrichter sie laesst."""
+        # Auftrag 023, 3: doppelte Anlaesse binnen ZUSAMMEN_S werden zusammengefasst - der zweite fragt nicht neu
+        # (192113 10:24/10:26: "geh zum Drachen" und zwei Sekunden spaeter "Drache zu riskant"); sein Ereignis steht
+        # beim naechsten Aufruf unter SEIT DEM LETZTEN AUFRUF
+        if art not in ("Respawn", "Ankunft in der Basis") and p.zeit - self._letzter_start < ZUSAMMEN_S:
+            self.schiedsrichter.ereignis(p.zeit, art.split(": ", 1)[-1])
+            if kern_satz is not None:                  # der Satz des Kerns selbst geht wie immer ueber den Schiedsrichter
+                ok, text, _ = self.schiedsrichter.pruefe(kern_satz.text, p.zeit)
+                if ok:
+                    kern_satz.text = text
+                    self.plan.einwerfen(kern_satz)
+            return
+        self._letzter_start = p.zeit
         self._laeuft = True
         self._n += 1
         nr = self._n
@@ -1032,7 +1084,11 @@ class MakroStratege:
                 einwerfen(kern_satz)
 
         try:
-            vorbereitet = (self._prompt(p, "Was jetzt, und warum?", ende, entwurf), self._lage(p, kette))
+            kurz_ = art.startswith(KURZ_ANLASS)            # Auftrag 023, 4: kurzer Prompt, kein Wissensblock
+            if kurz_:
+                ende += " Ein Satz, hoechstens 18 Woerter."
+            vorbereitet = (self._prompt(p, "Was jetzt, und warum?", ende, entwurf, kurz=kurz_),
+                           {**self._lage(p, kette), "anlass": True})     # Auftrag 023, 3: kein nacktes Nein
         except Exception as e:                              # die Lage laesst sich nicht bauen: der Kern spricht
             print(f"  Stratege: Lage nicht gebaut ({type(e).__name__}: {e})", flush=True)
             self._laeuft = False
@@ -1045,12 +1101,18 @@ class MakroStratege:
                 try:
                     text, versuche = self._frage(p, "Was jetzt, und warum?", ende, satz, vorbereitet,
                                                  self.modelle["lane" if lane else "plan"],
-                                                 nochmal=art in NOCHMAL)
+                                                 nochmal=art in NOCHMAL, kurz=kurz_)
                 except Exception as e:
                     text, versuche = None, [{"fehler": f"{type(e).__name__}: {e}"}]
                 nichts_ = any(v.get("nichts") for v in versuche)
                 if nichts_ and art == "Plan":
                     entschieden.set()                    # Auftrag 021: Claude haelt den Plan - der Kern-Satz schweigt
+                # Auftrag 023, 3: hat Claude geantwortet, aber nichts Gueltiges (verworfen, NICHTS), spricht der Kern
+                # seinen eigenen Plan nicht daneben - nur bei einem echten Ausfall, und bei Respawn/Basis (die Kette
+                # ist Pflicht). 18 von 52 Widerspruechen in 021 waren Kern-Plan gegen Claude.
+                fehler_ = any(v.get("fehler") for v in versuche)
+                if not fehler_ and art not in ("Respawn", "Ankunft in der Basis"):
+                    entschieden.set()
                 if not uebernommen[0]:
                     fallback()
                 quelle = "stratege" if uebernommen[0] else "wiederholt" if wiederholt[0] else (

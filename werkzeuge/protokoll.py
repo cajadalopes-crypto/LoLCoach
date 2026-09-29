@@ -173,7 +173,7 @@ def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     kern = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--kern=")), "neu")
-    staemme = args or [sorted(aufzeichnung.ORDNER.glob("*.jsonl.gz"))[-1].name.removesuffix(".jsonl.gz")]
+    staemme = args or [aufzeichnung.alle()[-1].name.removesuffix(".jsonl.gz")]
     for stamm in staemme:
         print(protokoll(stamm, kern, fragen="--fragen" in sys.argv,
                         stratege="stub" if "--stratege-stub" in sys.argv else None))

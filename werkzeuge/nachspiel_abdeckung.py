@@ -327,18 +327,27 @@ def auftrag_017(d: dict, ges: list) -> dict:
              and any(stratege.fuellsatz(s) for s in stratege._saetze(g["text"]))]
     n_saetze = sum(1 for g in ges if not g["schluessel"].startswith(("tod", "briefing")))
     # I4: Lane-Gegner weit weg (>= 30 s Laufzeit oder in seiner Basis), du lebst an einer Lane
-    i4, war = [], False
+    # Auftrag 023, 2 (Definition an den Aufnahmen geprueft): ein Fall je Abwesenheit - erst wieder, wenn er zurueck an
+    # der Lane war (Ankunft < 20 s), tot war oder 120 s vergangen sind. Vorher zaehlte z. B. 183125 24:36 "Garen in
+    # seiner Basis" als neuer Fall, obwohl 24:07 dasselbe gesagt war und Garen nie zurueckkam.
+    i4, war, scharf = [], False, True
     for x in d["takte"]:
         ln = x.get("lane")
+        if ln and (ln["tot"] or (ln["sichtbar"] and (ln.get("ankunft") or 99) < 20)) or \
+                (i4 and x["zeit"] - i4[-1]["zeit"] >= 120.0):
+            scharf = True
         weit = bool(ln and ln["sichtbar"] and not ln["tot"] and not x["tot"]
                     and str(x["bereich"] or "").startswith("lane") and x["zeit"] >= LANE_AB_S
-                    and ((ln.get("ankunft") or 0) >= 30 or "Basis" in (ln.get("ort") or "")))
-        if weit and not war:
-            treffer = next((g for g in ges if x["zeit"] - 1.0 <= g["zeit"] <= x["zeit"] + JUNGLER_FENSTER_S
+                    and ((ln.get("ankunft") or 0) >= 30
+                         # "in seiner Basis" nur, wenn er nicht neben dir steht (192113 29:58: du bist in SEINER Basis)
+                         or ("Basis" in (ln.get("ort") or "") and (ln.get("ankunft") or 99) >= 20)))
+        if weit and not war and scharf:
+            # ... und gesagt ist er auch, wenn der Coach es in den 30 s davor schon sagte (183125 28:37 / 28:49)
+            treffer = next((g for g in ges if x["zeit"] - 30.0 <= g["zeit"] <= x["zeit"] + JUNGLER_FENSTER_S
                             and _nennt(g["text"], ln["name"])), None)
-            if not i4 or x["zeit"] - i4[-1]["zeit"] >= 30.0:
-                i4.append({"zeit": x["zeit"], "name": ln["name"], "ort": ln["ort"],
-                           "gesagt": treffer["text"] if treffer else None})
+            i4.append({"zeit": x["zeit"], "name": ln["name"], "ort": ln["ort"],
+                       "gesagt": treffer["text"] if treffer else None})
+            scharf = False
         war = weit
     # Latenz: bis zum ersten gueltigen ganzen Satz (bei Wiederholung: erster Versuch + zweiter)
     lat = []
@@ -351,11 +360,19 @@ def auftrag_017(d: dict, ges: list) -> dict:
                 break
             summe += v.get("ende_s") or 0.0
     lat.sort()
+    # Auftrag 023, 4: bis zum ersten gueltigen Satz, und wie oft der Zwischenspeicher (Wissensblock) traf
+    erst = sorted(v["erster_satz_s"] for e in d.get("stratege", []) for v in (e.get("versuche") or [])[:1]
+                  if v.get("erster_satz_s") is not None)
+    mess = [v.get("messung") or {} for e in d.get("stratege", []) for v in (e.get("versuche") or [])
+            if (v.get("messung") or {}).get("eingabe_token") is not None]
+    mit_cache = sum(1 for x in mess if (x.get("cache_token") or 0) > 0)
     return {"widersprueche": wid, "fuellsaetze": [{"zeit": g["zeit"], "text": g["text"], "schluessel": g["schluessel"]}
                                                   for g in fuell],
             "saetze_n": n_saetze, "i4": i4,
             "latenz": {"n": len(lat), "median": lat[len(lat) // 2] if lat else None,
-                       "p90": lat[min(len(lat) - 1, int(len(lat) * 0.9))] if lat else None}}
+                       "p90": lat[min(len(lat) - 1, int(len(lat) * 0.9))] if lat else None,
+                       "erster_satz_median": erst[len(erst) // 2] if erst else None,
+                       "cache_treffer": f"{mit_cache}/{len(mess)}"}}
 
 
 def lage_je_minute(d: dict) -> str:
@@ -443,7 +460,8 @@ def kennzahlen(a: dict) -> dict:
             "sicherheit": len(a["sicherheit"]), "widersprueche": len(a["widersprueche"]),
             "fuellsaetze": f"{len(a['fuellsaetze'])}/{a['saetze_n']} "
                            f"({100 * len(a['fuellsaetze']) / max(1, a['saetze_n']):.1f} %)",
-            "latenz": f"{a['latenz']['median']} / {a['latenz']['p90']} s (n = {a['latenz']['n']})"}
+            "latenz": f"{a['latenz']['median']} / {a['latenz']['p90']} s (n = {a['latenz']['n']})",
+            "erster_satz": a["latenz"].get("erster_satz_median"), "cache": a["latenz"].get("cache_treffer")}
 
 
 def auswerten(stamm: str, aus: Path = AUS, vorher: Path | None = None) -> tuple[Path, dict]:

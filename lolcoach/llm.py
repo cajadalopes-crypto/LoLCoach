@@ -149,6 +149,15 @@ _TEIL = __import__("re").compile(r"[,;]\s|\s[–-]\s")
 TEIL_AB_WOERTERN = 4
 
 
+_STILLE_ZEILE = __import__("re").compile(r"^\W*PLAN\s*:")
+
+
+def stille_zeile(puffer: str) -> bool:
+    """Auftrag 023, 4: die stille PLAN-Zeile hat begonnen - der gesprochene Teil ist fertig. Vorher wartete das
+    Textende auf die ganze PLAN-Zeile und das Stromende (gemessen 023 r1: erster Satz 1,4 s, ganze Antwort 2,4 s)."""
+    return bool(_STILLE_ZEILE.match(puffer))
+
+
 def erster_teil(text: str) -> tuple[str | None, str]:
     """Der erste Teilsatz, sobald er fertig ist: bis zum ersten Komma (oder Gedankenstrich) nach mindestens
     `TEIL_AB_WOERTERN` Woertern - die Stimme kann ihn sprechen, waehrend der Satz noch entsteht (gemessen
@@ -299,15 +308,22 @@ def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = 
                     for satz in fertige:
                         gesendet = True
                         bei_satz(satz)
-                elif ev.get("type") == "message_stop" and bei_fertig is not None and not fertig_gemeldet:
+                    if bei_fertig is not None and not fertig_gemeldet and stille_zeile(puffer):
+                        fertig_gemeldet = True               # Auftrag 023, 4: nicht auf die PLAN-Zeile warten
+                        if messung is not None:
+                            messung["text_fertig_s"] = _t.monotonic() - t0
+                        bei_fertig()
+                elif ev.get("type") == "message_stop" and bei_fertig is not None and (puffer.strip()
+                                                                                    or not fertig_gemeldet):
                     # Auftrag 017, 0.2: der Text ist fertig - das "result" kommt erst ~1 s spaeter (post_turn_summary)
-                    fertig_gemeldet = True
-                    if messung is not None:
-                        messung["text_fertig_s"] = _t.monotonic() - t0
                     if puffer.strip():
                         bei_satz(puffer.strip())
                     puffer = ""
-                    bei_fertig()
+                    if not fertig_gemeldet:
+                        fertig_gemeldet = True
+                        if messung is not None:
+                            messung["text_fertig_s"] = _t.monotonic() - t0
+                        bei_fertig()
             elif e.get("type") == "result":
                 ergebnis = e
                 if messung is not None:

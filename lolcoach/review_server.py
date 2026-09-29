@@ -39,7 +39,7 @@ def partien() -> list[dict]:
         kennzahlen = {k.stamm: k for k in profil.partien(aufzeichnung.ORDNER)}
     except Exception:
         kennzahlen = {}
-    for pfad in sorted(aufzeichnung.ORDNER.glob("*.jsonl.gz"), reverse=True):
+    for pfad in sorted(aufzeichnung.alle(), reverse=True):
         stamm = pfad.name.removesuffix(".jsonl.gz")
         eintrag = {"stamm": stamm, "datum": stamm[:10], "uhr": stamm[11:13] + ":" + stamm[13:15]}
         if k := kennzahlen.get(stamm):     # schnell und ohne Minimap - der Verlauf ergaenzt, wenn es ihn gibt

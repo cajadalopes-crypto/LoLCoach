@@ -262,6 +262,7 @@ class Gespraech:
             self.sprecher.freigeben()  # Rauschen, Raeuspern, "B."
             return
         print(f"  Du: {text}", flush=True)
+        makro = None
         if _bruchstueck(text, woerter, [s.champion for s in p.spieler]):
             # Live 26.09. (Practice Tool): "Und man", "Da hoere ich", "Der Thomas Dau" - Nebengeraeusche oder
             # Gespraeche nebenbei; "Und man" bekam einen langen Rat ("Kauf jetzt Caulfields Kriegshammer ...")
@@ -339,6 +340,8 @@ class Gespraech:
                     self._notiere(text, p)  # Claude hat es als Rueckmeldung erkannt
         print(f"  Coach: {antwort}", flush=True)
         self._zeiten(p, erkannt, time.monotonic() - start, "ganz", text)
+        if makro is not None and p is not None:
+            makro.antwort_gesprochen(antwort, p.zeit)        # Auftrag 023, 3: eine Stimme - die Antwort ist der Plan
         self.sprecher.antworte(antwort)
         if self.gesagt is not None:
             from .regeln import WICHTIG, Ansage

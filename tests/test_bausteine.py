@@ -517,7 +517,7 @@ def combo_rechnung():
     from lolcoach import combo, rechnung
     p = next(q for q in map(zustand.partie, aufzeichnung.lies(HIER.parent / "aufnahmen" / "2026-09-26_212105.jsonl.gz"))
              if q.zeit > 330 and q.ich and q.ich.level >= 6) \
-        if (HIER.parent / "aufnahmen" / "2026-09-26_212105.jsonl.gz").exists() else None
+        if aufzeichnung.gibt(HIER.parent / "aufnahmen" / "2026-09-26_212105.jsonl.gz") else None
     if p is None:
         return      # Aufnahme nicht da (frischer Checkout): die Rechnung laeuft trotzdem im Kampf-Urteil
     g = p.gegenueber()

@@ -463,6 +463,9 @@ KETTE_ZIEL = _re.compile(r"\b(dann|danach|anschließend|und zurück)\b[^.]{0,70}
 AUGE = _re.compile(r"kontroll-?auge|\bauge\b", _re.I)
 AUGE_BACK = _re.compile(r"\b(back|recall|zurück)\b\W+(\w+\W+){0,6}?(nur )?(für|wegen|um) (das |ein |dein |ein paar )?"
                         r"(kontroll-?)?auge", _re.I)
+# Auftrag 023, 3 (164809 23:09 "Nein, nicht Top jetzt"): ein nacktes Nein auf einen Anlass ist kein Plan - der Kern
+# sprach 15 s spaeter "Danach zur Top-Welle", weil kein Ziel gesetzt war. Als Antwort auf eine Frage bleibt es erlaubt.
+NUR_NEIN = _re.compile(r"^\W*nein\b\W+(\w+\W*){0,5}$", _re.I)
 AUGE_NEIN = _re.compile(r"\b(nein|kein\w*|ohne|scheiß|verfickt\w*)\b[^.?!]{0,40}(kontroll-?)?auge|"
                         r"(kontroll-?)?auge[^.?!]{0,20}\b(nein|brauch ich nicht|will ich nicht)\b", _re.I)
 _ITEM_RE: _re.Pattern | None = None
@@ -648,6 +651,8 @@ def pruefe(satz: str, lage: dict) -> list[str]:
                     gruende.append(f"an der {lane}-Welle stehen schon {', '.join(lage['besetzt'][lane])}")
                     break
         gruende += pruefe_017(s, lage)
+        if lage.get("anlass") and NUR_NEIN.match(s):
+            gruende.append("nur ein Nein - sag, was stattdessen")                    # Auftrag 023, 3
         if AUGE_BACK.search(s):
             gruende.append("Back nur für ein Kontroll-Auge")                         # Auftrag 016, 5
         elif lage.get("auge") and AUGE.search(s) and _re.search(r"kauf|hol|nimm|mit|plus|dazu|und", s, _re.I) \

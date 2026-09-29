@@ -150,8 +150,8 @@ halten_s = 5                    # ein Urteil "ueberlegen" haelt so lange, wenn e
 
 [info_flash]
 stand = "Auftrag 002, S3 (27.09.2026); Auftrag 016, 1.1 (29.09.2026): jeder gesehene Flash, egal wie weit"
-abstand_s = 8                   # hoechstens eine Flash-Ansage je so viele Sekunden, mehrere in einem Satz (vorher 20)
-nach_kampf_s = 3                # nicht in KAMPF; danach so viele Sekunden warten
+abstand_s = 0                   # Auftrag 023, 2: kein Abstand mehr (vorher 8) - hoechstens eine Flash-Ansage je so viele Sekunden, mehrere in einem Satz (vorher 20)
+nach_kampf_s = 0                # Auftrag 023, 2: auch in und direkt nach KAMPF (vorher 3)
 rest_min_s = 10                 # kommt der Flash in weniger als so vielen Sekunden zurueck, lohnt der Satz nicht mehr
 nur_nah = false                 # Auftrag 016, 1.1: die Einschraenkung aus Auftrag 010, 2 faellt weg (true = wie vorher)
 nah_abstand = 5000              # nur mit nur_nah: ungefragt nur fuer einen Gegner so nah bei dir ...
@@ -165,7 +165,7 @@ jungler_nah_s = 8               # ... kann er in so vielen s bei dir sein: "bei 
 lane_weit_s = 30                # Lane-Gegner so weit weg (Laufzeit zu dir), andere Seite oder seine Basis -> mit Folge
 lane_nah_s = 20                 # wieder scharf, sobald er so nah war (oder tot) ...
 lane_wieder_s = 120             # ... oder so lange nach dem letzten Satz
-gilt_s = 6                      # so lange wartet ein Satz (KAMPF, ein Plan-Satz im selben Takt), dann faellt er weg
+gilt_s = 12                     # Auftrag 023, 2 (vorher 6): so lange wartet ein Satz (KAMPF, ein Plan-Satz im selben Takt), dann faellt er weg
 vorlauf_s = 60                  # Auftrag 017, 1.3: so lange vor dem Spawn die Vorbereitungskette ...
 loslaufen_s = 40                # ... und so lange vorher "jetzt loslaufen"
 basis_steht_s = 20             # Auftrag 018, 2: so lange lebend und ohne Bewegung in der Basis -> Plan noch einmal

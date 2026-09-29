@@ -1,0 +1,255 @@
+{
+ "kennzahlen": {
+  "flash": "8/8 (100 %)",
+  "jungler": "10/10 (100 %)",
+  "i4": "2/2 (100 %)",
+  "backs": "3/4 (75 %)",
+  "back_rufe": "5/5 (100 %)",
+  "stille": "45 s",
+  "sicherheit": 0,
+  "widersprueche": 1,
+  "fuellsaetze": "0/91 (0.0 %)",
+  "latenz": "2.45 / 4.75 s (n = 43)",
+  "erster_satz": 1.3447320999694057,
+  "cache": "53/68"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 106.92284393310547,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 311.25311279296875,
+    "champion": "Sona",
+    "gesagt": "Sona Flash weg.",
+    "nach_s": 0.2
+   },
+   {
+    "zeit": 351.8541259765625,
+    "champion": "Twitch",
+    "gesagt": "Twitch Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 471.34893798828125,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 620.31982421875,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 824.5009765625,
+    "champion": "Sona",
+    "gesagt": "Sona Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 878.6018676757812,
+    "champion": "Twitch",
+    "gesagt": "Twitch Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1035.1312255859375,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.0
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 236.2,
+    "name": "Teemo",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Teemo oberer Fluss."
+   },
+   {
+    "zeit": 298.5,
+    "name": "Teemo",
+    "ort": "unten",
+    "ohne_s": 29,
+    "tot_ich": false,
+    "gesagt": "Teemo unten."
+   },
+   {
+    "zeit": 362.7,
+    "name": "Teemo",
+    "ort": "oben",
+    "ohne_s": 59,
+    "tot_ich": false,
+    "gesagt": "Teemo oben, 4 Sekunden."
+   },
+   {
+    "zeit": 483.8,
+    "name": "Teemo",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 86,
+    "tot_ich": false,
+    "gesagt": "Teemo Mid."
+   },
+   {
+    "zeit": 588.0,
+    "name": "Teemo",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 63,
+    "tot_ich": false,
+    "gesagt": "Teemo Mid."
+   },
+   {
+    "zeit": 704.8,
+    "name": "Teemo",
+    "ort": "oben",
+    "ohne_s": 74,
+    "tot_ich": false,
+    "gesagt": "Teemo oben, 1 Sekunde."
+   },
+   {
+    "zeit": 750.1,
+    "name": "Teemo",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle oben."
+   },
+   {
+    "zeit": 803.9,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 52,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle unten."
+   },
+   {
+    "zeit": 895.3,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 66,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle unten."
+   },
+   {
+    "zeit": 953.2,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle unten."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 256.5,
+    "gesagt": "Top-Welle rein, dann back: 1250 Gold für Caulfields Kriegshammer, Poppy ist tot. Danach Top.",
+    "saetze": [
+     "Teemo oberer Fluss.",
+     "Top-Welle rein, dann back: 1250 Gold für Caulfields Kriegshammer, Poppy ist tot. Danach Top."
+    ]
+   },
+   {
+    "zeit": 433.4,
+    "gesagt": "Back jetzt: Brutalisierer, dann Top-Welle crashen Poppy tot, du hast 49 Sekunden bis zur Kanone und viel Tempo-Vorteil.",
+    "saetze": [
+     "Zurück unter deinen äußeren Top-Turm: zwei kommen.",
+     "Back jetzt: Brutalisierer, dann Top-Welle crashen Poppy tot, du hast 49 Sekunden bis zur Kanone und viel Tempo-Vorteil.",
+     "Der Brutalisierer jetzt, dann sofort Top zur Kanone Poppy ist noch tot, Teemo unbekannt, aber du brauchst die Welle vor der Kanone für Tempo."
+    ]
+   },
+   {
+    "zeit": 769.9,
+    "gesagt": null,
+    "saetze": [
+     "TP jetzt unter äußeren Top-Turm, Volibear deckt dich – dann Drache mit Gruppe in 60 Sekunden.",
+     "Teemo sein Jungle oben.",
+     "Sona euer Jungle oben: Büsche meiden."
+    ]
+   },
+   {
+    "zeit": 967.9,
+    "gesagt": "Jetzt, wo Lux und Sona beide oben sind und Poppy in 11 s bei dir: Back sofort mit TP-Ready, kaufe Caulfields, dann zu Volibear in den Herold-Pit, weil ihr ohne dich nur zu dritt kämpft und Poppy gleich da ist.",
+    "saetze": [
+     "Lux euer Jungle oben: Büsche meiden.",
+     "Teemo sein Jungle unten.",
+     "Jetzt, wo Wendepunkt: Aus der Basis: Farm Top, Twitch lebt in 6 Sekunden wieder."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 238.6343994140625,
+    "text": "Top-Welle rein, dann back: 1250 Gold für Caulfields Kriegshammer, Poppy ist tot. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 427.20599365234375,
+    "text": "Back jetzt: Brutalisierer, dann Top-Welle crashen Poppy tot, du hast 49 Sekunden bis zur Kanone und viel Tempo-Vorteil.",
+    "kette": true
+   },
+   {
+    "zeit": 516.83349609375,
+    "text": "Jetzt, wo Sie haben die Larven aufgetaucht ist: Sie haben die Larven. Farm Top, Axiombogen ist schon bezahlbar, nach der Welle back. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 914.936279296875,
+    "text": "Ihr äußerer Mid-Turm ist weg. Back. Kauf Vampirisches Zepter für die Gefräßige Hydra, dann zur Top-Welle.",
+    "kette": true
+   },
+   {
+    "zeit": 1012.0386962890625,
+    "text": "Drache in 60 Sekunden: Welle crashen, back, dann mit Team zum Drachen. Dort heilen.",
+    "kette": true
+   }
+  ],
+  "stille_max": 45,
+  "stille_lang": [
+   [
+    148,
+    193
+   ]
+  ],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 507.849853515625,
+    "von": "welle",
+    "nach": "zurueck",
+    "vorher": "Teemo oben aufgetaucht vor 15 s: Welle crashen jetzt, dann zurück kaufen und warten – er kann jeden Moment bei dir sein.",
+    "text": "Teemo oben gesehen: zurück hinter die Welle."
+   }
+  ],
+  "fuellsaetze": [],
+  "saetze_n": 91,
+  "i4": [
+   {
+    "zeit": 341.3,
+    "name": "Poppy",
+    "ort": "im unteren Fluss",
+    "gesagt": "Jetzt, wo Lux tot ist: Poppy kann in 3 Sekunden bei dir sein bleib hinter der Welle, lass sie pushen, bis du Sicht auf Teemo hast oder Poppy verschwindet."
+   },
+   {
+    "zeit": 651.1,
+    "name": "Poppy",
+    "ort": "unten",
+    "gesagt": "Poppy unten: Welle drücken."
+   }
+  ],
+  "latenz": {
+   "n": 43,
+   "median": 2.45,
+   "p90": 4.75,
+   "erster_satz_median": 1.3447320999694057,
+   "cache_treffer": "53/68"
+  }
+ }
+}

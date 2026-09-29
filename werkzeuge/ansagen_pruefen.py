@@ -94,7 +94,7 @@ def uhr(t):
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    pfade = [Path(a) for a in sys.argv[1:]] or sorted(AUFNAHMEN.glob("*.jsonl.gz"))
+    pfade = [Path(a) for a in sys.argv[1:]] or aufzeichnung.alle(AUFNAHMEN)
     for pfad in pfade:
         try:
             b = pruefe(pfad)

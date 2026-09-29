@@ -67,6 +67,14 @@ def kern(a: Ansage) -> bool:
 _RAUS = re.compile(r"\bjetzt zurück|\braus zu\b", re.I)
 
 
+INFO_WARTEN_S = 3.0          # Auftrag 023, 2: so lange darf ein Plan-Satz eine Pflicht-Info hoechstens aufhalten
+PFLICHT_INFOS = ("kern:INFO_FLASH", "kern:INFO_JUNGLER", "kern:INFO_LANE", "kern:INFO_EINDRINGLING")
+
+
+def pflicht_info(a: Ansage) -> bool:
+    return a.schluessel in PFLICHT_INFOS
+
+
 def gefahr(a: Ansage) -> bool:
     """Nur eine Gefahr darf einen laufenden Satz abbrechen (Partie 144655: Saetze brachen nach ein, zwei Woertern ab -
     "Satzfetzen"): Thema Gefahr (Kern-GEFAHR, Unterzahl, Jungler), ein Gegner, der auf dich zulaeuft, oder ein Rat zum
@@ -268,7 +276,9 @@ class Sprechplan:
         # bei gleichem Vorrang geht eine Gefahr vor (Pruefpartie 2, 19:39: "Du hast 5900 Gold ... recall" verdraengte
         # "Du stehst tief, Varus und Rakan seit 32 s weg" - 16 s vor dem Tod)
         # Auftrag 004, Teil A 2: ein Wendepunkt stellt sich vor alle wartenden PLAN-Saetze (er unterbricht nicht)
-        a = max(kandidaten, key=lambda a: (a.prio, a.thema == "gefahr", a.thema == "wendepunkt", a.zeit))
+        # Auftrag 023, 2: Pflicht-Infos (Flash, Jungler, Lane-Gegner weg) gleich nach der Gefahr, vor jedem Plan-Satz
+        a = max(kandidaten, key=lambda a: (a.prio, a.thema == "gefahr", pflicht_info(a), a.thema == "wendepunkt",
+                                           a.zeit))
         frei = self.frei_ab + ((RUHE_VOR_FLASH if a.schluessel == "kern:INFO_FLASH" else RUHE_VOR_HINWEIS)
                                if a.prio == HINWEIS else 0.0)
         # Live 26.09. 21:21: das Briefing (~50 s) hielt "Gragas hat Flash benutzt" 9 s und Vaynes Flash 16 s auf.
@@ -282,6 +292,11 @@ class Sprechplan:
                      and (unterbrechbar(laeuft)
                           or (laeuft.gesprochen is not None and zeit - laeuft.gesprochen >= GESAGT_NACH
                               and a.prio >= laeuft.prio)))
+        # Auftrag 023, 2: eine Pflicht-Info wartet hoechstens INFO_WARTEN_S - laeuft ein Plan-Satz laenger, bricht
+        # sie ihn ab (nie eine Gefahr, nie eine andere Info)
+        if not abbrechen and pflicht_info(a) and laeuft is not None and not gefahr(laeuft) \
+                and not pflicht_info(laeuft) and self.frei_ab - zeit > INFO_WARTEN_S:
+            abbrechen = True
         if zeit < frei and a.prio < SOFORT and not abbrechen:
             self._vorbereiten(a)
             return None
@@ -338,7 +353,7 @@ class Sprechplan:
         if m := RUECKZUG.search(a.text):
             self._rueckzug_gehoert = zeit + m.start() / ZEICHEN_PRO_SEKUNDE
         self._reden.append((zeit, len(a.text) / ZEICHEN_PRO_SEKUNDE))
-        self.sprecher.sage(a.text, dringend=gefahr(a) and (a.prio == SOFORT or abbrechen),
+        self.sprecher.sage(a.text, dringend=(gefahr(a) and (a.prio == SOFORT or abbrechen)) or (abbrechen and pflicht_info(a)),
                            melde=self._melder(a, time.monotonic()),
                            noch_wahr=self._noch_wahr(a))
         self._laeuft = a

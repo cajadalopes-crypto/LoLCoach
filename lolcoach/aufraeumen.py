@@ -21,6 +21,8 @@ import re
 import shutil
 from pathlib import Path
 
+from . import aufzeichnung
+
 WURZEL = Path(__file__).resolve().parent.parent
 AUFNAHMEN = WURZEL / "aufnahmen"
 PROBE = WURZEL / "aufnahmen_probe"
@@ -33,7 +35,7 @@ KURZ_STAMM = re.compile(r"(?<![\d_-])(\d{6})(?!\d)")
 
 
 def _staemme() -> list[str]:
-    return sorted(p.name.removesuffix(".jsonl.gz") for p in AUFNAHMEN.glob("*.jsonl.gz"))
+    return sorted(p.name.removesuffix(".jsonl.gz") for p in aufzeichnung.alle(AUFNAHMEN))
 
 
 def testpartien() -> dict[str, list[str]]:
@@ -68,7 +70,7 @@ def schreibe_liste(tp: dict[str, list[str]]) -> None:
 
 def _letzte() -> set[str]:
     """Die letzten drei echten Partien (Aufnahme > 1 MB - Bruchstuecke von Neustarts zaehlen nicht)."""
-    echte = [s for s in _staemme() if (AUFNAHMEN / f"{s}.jsonl.gz").stat().st_size > 1_000_000]
+    echte = [s for s in _staemme() if aufzeichnung.echt(AUFNAHMEN / f"{s}.jsonl.gz").stat().st_size > (1_000_000 if aufzeichnung.echt(AUFNAHMEN / f"{s}.jsonl.gz").name.endswith(".gz") else 30_000)]
     return set(echte[-LETZTE:])
 
 
@@ -126,6 +128,12 @@ def aufraeumen(ja: bool = False, ausgabe=print) -> float:
         ausgabe(f"  {n / 1e6:8.1f} MB  {grund}")
     summe = sum(n for _, n, _ in p) / 1e6
     ausgabe(f"  {summe:8.1f} MB  {'geloescht' if ja else 'wuerden geloescht (Trockenlauf; --ja loescht)'}")
+    # Auftrag 023, 6: fertige Aufnahmen ausser den letzten drei als .jsonl.xz (gzip 34 MB -> xz 0,5 MB; live bleibt gzip)
+    letzte = _letzte_alle()
+    xz = [q for q in AUFNAHMEN.glob("*.jsonl.gz") if q.name.removesuffix(".jsonl.gz") not in letzte]
+    gz_mb = sum(q.stat().st_size for q in xz) / 1e6
+    ausgabe(f"  {gz_mb:8.1f} MB  {len(xz)} Aufnahmen als xz ({'umgewandelt' if ja else 'wuerden umgewandelt'}, "
+            "danach je ~1-2 %)")
     if ja:
         for f, _, _ in p:
             try:
@@ -135,4 +143,14 @@ def aufraeumen(ja: bool = False, ausgabe=print) -> float:
         for o in AUFNAHMEN.glob("*_flashclips"):
             if o.is_dir() and not any(o.iterdir()):
                 o.rmdir()
+        for q in xz:
+            try:
+                summe += aufzeichnung.nach_xz(q) / 1e6
+            except (OSError, ValueError):
+                pass
     return summe
+
+
+def _letzte_alle() -> set[str]:
+    """Die letzten drei Aufnahmen ueberhaupt (auch Bruchstuecke): die juengste koennte noch geschrieben werden."""
+    return {aufzeichnung.stamm(q) for q in aufzeichnung.alle(AUFNAHMEN)[-LETZTE:]}

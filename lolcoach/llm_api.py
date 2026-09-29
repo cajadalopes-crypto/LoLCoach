@@ -151,12 +151,12 @@ def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = 
                 max_tokens: int = 400) -> str:
     """Gestreamt wie `llm.frage_strom`: fertige Saetze an `bei_satz`, am Textende `bei_fertig()`. Wirft APIFehler."""
     import anthropic
-    from .llm import erster_teil, saetze
+    from .llm import erster_teil, saetze, stille_zeile
     t0 = time.monotonic()
     k = _anfrage(prompt, system, modell, wissen, bilder, max_tokens)
     beta = "betas" in k
     c = _client().with_options(timeout=timeout)
-    puffer, gesendet, text = "", False, ""
+    puffer, gesendet, text, frueh = "", False, "", False
     try:
         strom = c.beta.messages.stream(**k) if beta else c.messages.stream(**k)
         with strom as s:
@@ -172,11 +172,16 @@ def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = 
                 for satz in fertige:
                     gesendet = True
                     bei_satz(satz)
+                if bei_fertig is not None and not frueh and stille_zeile(puffer):
+                    frueh = True                         # Auftrag 023, 4: nicht auf die PLAN-Zeile warten
+                    if messung is not None:
+                        messung["text_fertig_s"] = time.monotonic() - t0
+                    bei_fertig()
             if puffer.strip():
                 bei_satz(puffer.strip())
-            if messung is not None:
+            if messung is not None and not frueh:
                 messung["text_fertig_s"] = time.monotonic() - t0
-            if bei_fertig is not None:
+            if bei_fertig is not None and not frueh:
                 bei_fertig()
             m = s.get_final_message()
     except anthropic.APIError as e:

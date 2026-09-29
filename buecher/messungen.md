@@ -4,6 +4,102 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 023 – Stabile Messung, eine Stimme, Pflicht-Infos, Tempo (30.09.2026, auf Carlos' Wunsch abgekürzt)
+
+Protokolle, Kritiken und Mehrheiten: `buecher/protokolle/proben/stratege_probe_023/` (`vorher_bekannt`, `vorher_neu`
+= Stand 021 im neuen Verfahren; `r1` = bekannte Menge nach Runde 1; `neu` = neue Menge, fast Endstand).
+Soll-Listen eingefroren: `buecher/protokolle/proben/soll_023/`.
+
+### Streichungen aus den Soll-Listen (17)
+
+Grund a = Trade/All-in ohne Kill-Check oder Level-Vergleich mit All-in (harte Regel); b = Ward an einem bestimmten
+Busch (der Coach sieht keine Büsche); c = kein Coach-Punkt (Begriffserklärung). Wortlaut je Streichung:
+`soll_023/streichungen.json`.
+
+| Partie | Min. | Soll | Grund |
+|---|---|---|---|
+| 101426 | 2 | Aurora Flash weg – Kill-Fenster mit Kayn | a |
+| 101426 | 12 | Aurora ohne Flash bis ~15:30 – Kill-Fenster | a |
+| 101426 | 16 | Gegner am Drachen: kämpfen, ihr seid vorne | a |
+| 192113 | 1 | Teemo Flash weg: Level 2 hart traden | a |
+| 192113 | 2 | Kontrollauge in den Flussbusch oben | b |
+| 192113 | 5 | Level 6: all-in mit R auf Teemo (79 %) | a |
+| 192113 | 8 | 'Gebackt' heißt: Rückruf | c |
+| 133448 | 1 | Poppy 23 %: jetzt reingehen und traden | a |
+| 133448 | 5 | L6 gegen Poppy L4: all-in mit R | a |
+| 133448 | 9 | Poppy L6 gegen dein L9: all-in | a |
+| 133448 | 16 | Kontroll-Auge in den Fluss-Busch vor dem Drachen | b |
+| 183125 | 1 | Garen Flash weg – hart traden | a |
+| 183125 | 12 | Garen 49 % und Flash weg: nachsetzen | a |
+| 183125 | 26 | Kampf am Drachen – direkt rein | a |
+| 183125 | 31 | Kanone = Kanonenvasall | c |
+| 164809 | 6 | Wukong ohne Flash: Druck auf ihn | a |
+| 120049 | 22 | Rakan allein, jagen | a |
+
+Danach: bekannt 202 Punkte, neu 171.
+
+### Kritiker-Übereinstimmung (drei frische Kritiker je Partie, Mehrheit; ein vierter nur für strittige Punkte)
+
+| Runde | Punkte | einig 3/3 | Mehrheit 2/3 | strittig → vierter |
+|---|---|---|---|---|
+| 021 bekannt | 202 | 168 (83 %) | 34 | 0 |
+| 021 neu | 171 | 123 (72 %) | 48 | 0 |
+| 023 r1 bekannt | 202 | 167 (83 %) | 33 | 2 |
+| 023 neu | 171 | 134 (78 %) | 36 | 1 |
+
+### Drei Werte je Größe (021 altes Verfahren / 021 neues Verfahren / 023)
+
+| Größe | bekannt | neu |
+|---|---|---|
+| Soll gesagt + teilweise | 56 / 57,4 / **59,4 %** | 70 / 69,0 / **72,5 %** |
+| Flash | 88 / – / **34/34** | 89 / – / **8/9** |
+| Jungler | 89 / – / **71/72** | 84 / – / **61/62** |
+| Lane-Gegner weg (neue Def.) | 58 / – / **8/8** | 43 / – / **2/2** |
+| Widersprüche je Partie (Mehrheit) | 2/7/4/7 / 4/9/3/11 / **4/8/2/8** | 4/2/1 / 3/2/1 / **3/2/4** |
+| Füllsätze | 4,0 / 2,8 / **2,2 %** | 3,2 / 2,5 / **2,9 %** |
+| Latenz ganze Antwort, Median | 2,3–2,5 / – / **2,40–2,45 s** | 2,3–2,5 / – / **2,26–2,39 s** |
+| bis zum ersten Satz, Median | – / – / **1,34–1,49 s** | – / – / **1,28–1,42 s** |
+| Zwischenspeicher-Treffer | – / – / **364/451** | – / – / **152/228** |
+| Sicherheit | 0 / 0 / **0** | 0 / 0 / **0** |
+| Kosten je Partie | – / – / 0,23–0,46 $ | – / – / 0,20–0,29 $ |
+
+„–“: im alten Verfahren nicht gleich gemessen. Die Flash/Jungler/Lane-Werte im alten Verfahren sind Prozent, 023
+sind Fälle. 023 r1 lief **vor** den letzten Fixes (Kern-Ersatz nur bei Ausfall, Antwortregel, Info mit Plan,
+„Stopp –“, nacktes Nein, Textende an der PLAN-Zeile), `neu` vor den letzten vier. Die Endmessung macht 025.
+
+### Widersprüche 021 nach Quelle (52, Vereinigung der drei Kritiker)
+
+Antwort–Stratege 11, Stratege–Stratege 8, Antwort–Antwort 8, Antwort–Kern-Plan 7, Kern-Plan–Stratege 6,
+Antwort–Kern-Warnung 4, Kern-Plan–Kern-Plan 3, Kern-Warnung–Stratege 3, Kern-Plan–Kern-Warnung 2.
+
+In `neu` (023) gefunden und gebaut:
+- 164809 21:16: `kern:INFO_BASIS` sagte einen Plan („Drache erzwingen“) an allen vorbei. Infos mit Plan-Ziel gehen
+  jetzt über den Schiedsrichter; die Pflicht-Infos nie.
+- 120049 14:08/14:09 und 164809 19:27/19:28: Stratege-Plan, eine Sekunde später Kern-Warnung. Die Warnung beginnt
+  jetzt mit „Stopp –“, wenn sie binnen 8 s einen anderen Plan ersetzt.
+- 164809 23:09 „**Nein, nicht Top jetzt**“: ein nacktes Nein auf einen Anlass setzte kein Ziel, der Kern schickte
+  15 s später nach Top. Verworfen (zweiter Versuch mit Grund). Markdown fällt weg.
+
+### Tempo
+
+Die ganze Antwort wartete auf die stille PLAN-Zeile und das Stromende: erster gültiger Satz 1,4 s, gemeldet erst
+2,4 s. `llm.stille_zeile`: das Textende kommt, sobald „PLAN:“ beginnt (API und Abo). Der Gewinn ist nicht gemessen;
+er kommt aus der Lücke von ~0,9 s zwischen erstem Satz und ganzer Antwort.
+
+### Pflicht-Infos
+
+Verpasst in 023: 164809 6:19 Flash Wukong, 26:25 Jungler Vi, 183125 ein Jungler. Nicht mehr einzeln angesehen
+(abgekürzt).
+
+### Aufnahmen als xz
+
+29 Aufnahmen umgewandelt. Projektordner 4466 → 4334 MB, `aufnahmen` 2691 → 2558 MB. Eine Aufnahme wird z. B.
+aus 12,8 MB gzip 0,27 MB xz, aus 21,1 MB 0,39 MB. Je Partie bleiben ~12 MB statt ~46 MB: 0,5 MB Aufnahme,
+5,6 MB Verlauf, 3,8 MB Kern-Log, ~2 MB Rest. Nachspiel und Szenarien sind an 213624 und 101426 Satz für Satz gleich
+(107/107, 94/94; Szenarien 116/118 beide).
+
+Kosten 023: 1,49 $ (r1) + 0,72 $ (neu) + 0,11 $ (abgebrochene Runde 2) = **2,32 $** von 5 $.
+
 ## Auftrag 021 – Gehirn mit Plan und Freigabe-Tor (Buch 14, Schritt C, 29.09.2026)
 
 **Gebaut:**

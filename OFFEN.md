@@ -17,8 +17,12 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
-**Auftrag 022 (Speicher) umgesetzt** - 5,54 -> 4,35 GB; werkzeuge/aufraeumen.py laeuft nach jeder Partie. Offen:
-je Partie bleiben ~46 MB (Ziel 10 MB) - xz statt gzip fuer die Aufnahme braechte 34 -> 0,5 MB (Entscheidung Carlos).
+**Auftrag 023 (stabile Messung, eine Stimme, Pflicht-Infos, Tempo) abgekuerzt** - Soll-Listen eingefroren
+(`soll_023/`), drei Kritiker mit Mehrheit (`werkzeuge/kritik_mehrheit.py`). Runde 1: bekannt 59 %, neu 72,5 %;
+Widersprueche 2-8 je Partie; Flash/Jungler/Lane 98-100 %. Das Tor misst 025 am Ende. Aufnahmen ausser den letzten
+drei als `.jsonl.xz` (~12 MB je Partie statt ~46).
+
+**Auftrag 022 (Speicher) umgesetzt** - 5,54 -> 4,35 GB; werkzeuge/aufraeumen.py laeuft nach jeder Partie.
 
 **Auftrag 021 (Gehirn mit Plan, Buch 14 C) gebaut - TOR NICHT ERREICHT** - Soll-Liste bekannt 56 %, neu 70 %; Latenz
 2,3-2,5 s; Widersprueche 1-7 je Partie; Lane-Gegner-weg 43-58 %. Carlos noch nicht live. Budget 5,46 $ von 6 $ verbraucht.

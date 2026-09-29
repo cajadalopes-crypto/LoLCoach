@@ -157,7 +157,7 @@ def toml_text(aus: dict[str, dict]) -> str:
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    ergebnis = ableiten(sorted((WURZEL / "aufnahmen").glob("*.jsonl.gz")))
+    ergebnis = ableiten(aufzeichnung.alle(WURZEL / "aufnahmen"))
     text = toml_text(ergebnis)
     print(text)
     if "--zeigen" not in sys.argv:

@@ -117,7 +117,7 @@ def partien(ordner: Path | None = None, vor: str | None = None) -> list[Kennzahl
     if cache.get("_fassung") != FASSUNG:
         cache = {"_fassung": FASSUNG}
     aus, geaendert = [], False
-    for datei in sorted(ordner.glob("*.jsonl.gz"), reverse=True):
+    for datei in sorted(aufzeichnung.alle(ordner), reverse=True):
         stamm = datei.name.removesuffix(".jsonl.gz")
         if vor and stamm >= vor:
             continue

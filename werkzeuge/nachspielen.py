@@ -42,7 +42,7 @@ def sekunden(text: str) -> float:
 
 def pfad_zu(name: str) -> Path:
     p = Path(name)
-    return p if p.exists() else AUFNAHMEN / f"{name.removesuffix('.jsonl.gz')}.jsonl.gz"
+    return p if aufzeichnung.gibt(p) else AUFNAHMEN / f"{name.removesuffix('.jsonl.gz')}.jsonl.gz"
 
 
 @dataclass
@@ -129,6 +129,8 @@ def frage_stellen(text: str, p, lb, plan, fid=None, stratege=None) -> dict:
     dauer = time.perf_counter() - t0
     aus = {"id": fid, "zeit": p.zeit, "frage": text, "text": r.get("text"), "absicht": r.get("absicht"),
            "quelle": r.get("quelle", "kern"), "ziel": r.get("ziel"), "dauer": dauer}
+    if aus["text"] and stratege is not None and aus["quelle"] != "stratege":
+        stratege.antwort_gesprochen(aus["text"], p.zeit)       # Auftrag 023, 3: auch die Kern-Antwort setzt den Plan
     if aus["text"] and plan is not None:
         a = regeln.Ansage(f"„{text}“ – {aus['text']}", regeln.WICHTIG, "antwort", zeit=p.zeit, gesprochen=p.zeit)
         a._ziel = aus["ziel"]

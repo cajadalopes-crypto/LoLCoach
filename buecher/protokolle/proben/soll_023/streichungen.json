@@ -1,0 +1,104 @@
+[
+ {
+  "stamm": "2026-09-28_101426",
+  "minute": "2",
+  "soll": "Aurora Flash weg (2:41) – bis ca. 7:40 Kill-Fenster mit Kayn",
+  "grund": "a: Kill-Fenster nur mit Flash weg, ohne Gegnerleben"
+ },
+ {
+  "stamm": "2026-09-28_101426",
+  "minute": "12",
+  "soll": "Aurora ohne Flash bis ca. 15:30 – Kill-Fenster",
+  "grund": "a: Kill-Fenster nur mit Flash weg, ohne Gegnerleben"
+ },
+ {
+  "stamm": "2026-09-28_101426",
+  "minute": "16",
+  "soll": "Gegner am Drachen (16:54): kämpfen, ihr seid vorne",
+  "grund": "a: Kampfaufforderung ohne Kill-Fenster"
+ },
+ {
+  "stamm": "2026-09-28_192113",
+  "minute": "1",
+  "soll": "Teemo hat Flash weg (1:09): auf Level 2 hart traden",
+  "grund": "a: hart traden ohne Gegnerleben niedrig"
+ },
+ {
+  "stamm": "2026-09-28_192113",
+  "minute": "2",
+  "soll": "Kontrollauge in den Flussbusch oben vor deiner Lane, Schutz gegen Master Yi",
+  "grund": "b: Ward-Platzierung an bestimmtem Busch"
+ },
+ {
+  "stamm": "2026-09-28_192113",
+  "minute": "5",
+  "soll": "Level 6, Yi in seiner Basis: all-in mit R auf Teemo (79 %)",
+  "grund": "a: All-in bei Gegner 79 %"
+ },
+ {
+  "stamm": "2026-09-28_192113",
+  "minute": "8",
+  "soll": "'Gebackt' heißt: Rückruf in die Basis",
+  "grund": "c: Begriffserklaerung ohne Spielbezug"
+ },
+ {
+  "stamm": "2026-09-29_133448",
+  "minute": "5",
+  "soll": "Level 6 gegen Poppy L4, Teemo unten: all-in mit R",
+  "grund": "a: All-in mit Level-Vergleich als Grund"
+ },
+ {
+  "stamm": "2026-09-29_133448",
+  "minute": "9",
+  "soll": "Poppy L6 gegen dein L9 mit Flash: du bist drei Level vorne, all-in",
+  "grund": "a: All-in mit Level-Vergleich als Grund"
+ },
+ {
+  "stamm": "2026-09-29_133448",
+  "minute": "16",
+  "soll": "Kontroll-Auge hast du: in den Fluss-Busch vor dem Drachen setzen",
+  "grund": "b: Ward-Platzierung an bestimmtem Busch"
+ },
+ {
+  "stamm": "2026-09-29_183125",
+  "minute": "1",
+  "soll": "Garen Flash weg (1:12) – bis etwa 6:10 hart traden",
+  "grund": "a: hart traden ohne Gegnerleben niedrig"
+ },
+ {
+  "stamm": "2026-09-29_183125",
+  "minute": "12",
+  "soll": "Garen 49 % und Flash weg (12:31): nachsetzen",
+  "grund": "a: nachsetzen bei Gegner 49 %, nur Flash weg"
+ },
+ {
+  "stamm": "2026-09-29_183125",
+  "minute": "26",
+  "soll": "Kampf am Drachen: Tryndamere tot (26:48), Kog'Maw Flash weg – direkt rein",
+  "grund": "a: direkt rein ohne Kill-Fenster"
+ },
+ {
+  "stamm": "2026-09-29_183125",
+  "minute": "31",
+  "soll": "Kanone = Kanonenvasall der nächsten Welle, kommt in 12 s",
+  "grund": "c: Begriffserklaerung Kanone"
+ },
+ {
+  "stamm": "2026-09-26_164809",
+  "minute": "6",
+  "soll": "Wukong ohne Flash seit 6:19: Druck auf ihn, aber Vi im Blick behalten.",
+  "grund": "a: Druck auf ihn ohne Gegnerleben, nur Flash weg"
+ },
+ {
+  "stamm": "2026-09-26_120049",
+  "minute": "22",
+  "soll": "Kills 43:18, 2240 Gold: Rakan L10 unten allein, jagen, Inhibitor nehmen.",
+  "grund": "a: jagen ohne Gegnerleben niedrig"
+ },
+ {
+  "stamm": "2026-09-29_133448",
+  "minute": "1",
+  "soll": "Poppy nur 23 % Leben: jetzt reingehen und traden",
+  "grund": "a: Trade ohne Kill-Check (nur Gegnerleben, kein Kill-Fenster des Coachs) - nachgetragen"
+ }
+]

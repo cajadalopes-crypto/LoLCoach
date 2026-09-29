@@ -163,15 +163,12 @@ def info_flash_kurz_und_gebuendelt():
         return NS(zeit=t, p=p, leben=1.0, b=NS(gegner=lagen))
 
     timer[("z", "SummonerFlash")] = Timer("z", "Ziggs", "SummonerFlash", 400.0, "Minimap", 100.0)
-    assert k._flash_info(m(101), "KAMPF", []) is None                       # nicht in KAMPF
-    k._kampf_zuletzt = 101.0
-    assert k._flash_info(m(102), "LANE", []) is None                        # 3 s nach dem Kampf
-    a = k._flash_info(m(104.5), "LANE", [])
+    # Auftrag 023, 2: auch in KAMPF und ohne Abstand - Pflicht-Infos werden nie verschluckt
+    a = k._flash_info(m(101), "KAMPF", [])
     assert a is not None and a.text == "Ziggs Flash weg.", a
     assert len(a.text.split()) <= 4
     timer[("s", "SummonerFlash")] = Timer("s", "Sona", "SummonerFlash", 410.0, "Chat", 110.0)
     timer[("c", "SummonerFlash")] = Timer("c", "Caitlyn", "SummonerFlash", 420.0, "Chat", 112.0)
-    assert k._flash_info(m(110), "LANE", []) is None                        # hoechstens einer je 8 s
     a = k._flash_info(m(113), "LANE", [])
     assert a is not None and a.text == "Sona und Caitlyn Flash weg.", a     # Caitlyn weit weg: trotzdem (Auftrag 016)
     assert k._flash_info(m(125), "LANE", []) is None                        # keiner doppelt
@@ -678,7 +675,7 @@ def pflichtenheft_016():
         return NS(zeit=t, pos=(1500.0, 12000.0), b=NS(jungler=j, lane=ln))
     j.sichtbar = True
     pf.takt(kern, m(100.0), "LANE")                                 # zum ersten Mal ab 1:30
-    assert pf.faellig(m(100.0), "LANE", cfg) == ("INFO_JUNGLER", "Teemo im oberen Fluss, bei dir in 6 Sekunden.")
+    assert pf.faellig(m(100.0), "LANE", cfg) == ("INFO_JUNGLER", "Teemo oberer Fluss, 6 Sekunden.")
     pf.gesagt("INFO_JUNGLER", m(100.0))
     j.sichtbar = False
     pf.takt(kern, m(110.0), "LANE")
@@ -689,16 +686,16 @@ def pflichtenheft_016():
     pf.takt(kern, m(116.0), "LANE")
     j.sichtbar = True
     pf.takt(kern, m(140.0), "LANE")                                 # 25 s ohne Sicht: sein Ort, ohne "bei dir"
-    assert pf.faellig(m(140.0), "KAMPF", cfg) is None               # in KAMPF wartet er ...
-    assert pf.faellig(m(141.0), "LANE", cfg) == ("INFO_JUNGLER", "Teemo in seinem unteren Jungle.")
+    # Auftrag 023, 2: auch in KAMPF, kurz
+    assert pf.faellig(m(140.0), "KAMPF", cfg) == ("INFO_JUNGLER", "Teemo sein Jungle unten.")
     pf.gesagt("INFO_JUNGLER", m(141.0))
     j.sichtbar = False
     ln.sichtbar = True                                               # 11:35: "Poppy unten gesehen" - drueckbar
     pf.takt(kern, m(695.0), "LANE")
-    assert pf.faellig(m(695.0), "LANE", cfg) == ("INFO_LANE", "Poppy unten gesehen: drück deine Welle.")
+    assert pf.faellig(m(695.0), "LANE", cfg) == ("INFO_LANE", "Poppy unten: Welle drücken.")
     pf2 = Pflicht()
     pf2.takt(NS(cfg=cfg, gefahr=False, vorn=lambda: {"verboten": True}), m(695.0), "LANE")
-    assert pf2.offen["INFO_LANE"][1] == "Poppy unten gesehen: farm unter deinem Turm."   # unter R1 nicht nach vorn
+    assert pf2.offen["INFO_LANE"][1] == "Poppy unten: unterm Turm farmen."   # unter R1 nicht nach vorn
     # Kritik 016: Angriffs-Rufe des Kerns ohne Kill-Check und "Back" in der Basis
     from lolcoach.stratege import sicherheit
     assert sicherheit("Rein auf Poppy!", {"vorn": {"verboten": False}, "kill": [], "gegner": [{"name": "Poppy"}]})
@@ -1025,6 +1022,99 @@ def aufraeumen_022():
         assert not aufraeumen.KLEIN.match(pfad.name), pfad
 
 
+def stimme_023():
+    """Auftrag 023: Pflicht-Infos kurz und mit Vorrang (unterbrechen einen langen Plan-Satz), Anlaesse binnen 10 s
+    zusammengefasst, Kern-Antworten setzen den einen Plan, Aufnahmen als xz gleich gelesen wie gz."""
+    import gzip
+    import json
+    import tempfile
+    from pathlib import Path
+    from types import SimpleNamespace as NS
+    from lolcoach import aufzeichnung, regeln, sprechplan, stimme, stratege_live as sl
+    from lolcoach.kern.pflicht import ort_kurz
+    assert ort_kurz("im oberen Fluss") == "oberer Fluss" and ort_kurz("in seinem unteren Jungle") == "sein Jungle unten"
+    # Vorrang: ein langer Plan-Satz laeuft, die Info unterbricht ihn (sie wartet hoechstens INFO_WARTEN_S)
+    st = stimme.Nachgespielt()
+    plan = sprechplan.Sprechplan(st)
+    lang = regeln.Ansage("Crash die Welle, dann back fuer Caulfields Kriegshammer und danach mit Udyr zum Drachen, "
+                         "weil ihr Prio habt und Tryndamere noch tot ist.", regeln.WICHTIG, "stratege:x", zeit=100.0)
+    plan.neu([lang])
+    st.takt(100.0)
+    plan.takt(100.0)
+    info = regeln.Ansage("Teemo oberer Fluss.", regeln.WICHTIG, "kern:INFO_JUNGLER", zeit=100.5)
+    plan.neu([info])
+    st.takt(100.5)
+    assert plan.takt(100.5) is info and st.abbrueche, st.abbrueche
+    # zusammengefasst: ein zweiter Anlass 5 s spaeter fragt Claude nicht noch einmal
+    fragen = []
+    ms = sl.MakroStratege.__new__(sl.MakroStratege)
+    ms._letzter_start, ms.schiedsrichter, ms.plan = 100.0, sl.Schiedsrichter(), NS(einwerfen=fragen.append)
+    ms._starte(NS(zeit=105.0), "Lane: die Welle kippt", None)
+    assert not fragen and ms.schiedsrichter.ereignisse[-1][1] == "die Welle kippt"
+    # eine Kern-Antwort setzt den Plan
+    ms.plan_obj = sl.Plan("PLAN: Drache | a | b | c | gilt bis 9:00 | -", 400.0, "Geh zum Drachen.")
+    ms.antwort_gesprochen("Geh nach Top zur Welle.", 410.0)
+    assert ms.schiedsrichter.aktiv[0] == "welle:top" and ms.plan_obj is None
+    # Runde 2 (164809 21:16): eine Info mit Plan ("INFO_BASIS: ... Drache erzwingen") geht ueber den Schiedsrichter
+    ms.schiedsrichter = sl.Schiedsrichter()
+    ms.schiedsrichter.setze("Kauf jetzt, dann zur Mid-Welle zu Sion, nicht zum Drachen.", 1263.0)
+    basis = regeln.Ansage("Los: 5200 Gold vorn und jetzt stärker: Drache und ihre Türme als Gruppe erzwingen.",
+                          regeln.WICHTIG, "kern:INFO_BASIS", zeit=1276.0)
+    flash = regeln.Ansage("Ahri Flash weg.", regeln.WICHTIG, "kern:INFO_FLASH", zeit=1276.0)
+    assert ms._richte([basis, flash], NS(zeit=1276.0)) == [flash]
+    # eine Warnung kurz nach einem anderen Plan sagt ausdruecklich, dass sie ihn ersetzt (120049 14:08/14:09)
+    ms.schiedsrichter.setze("Lauf jetzt zur Top-Welle und crash sie.", 848.0)
+    warn = regeln.Ansage("Zurück unter euren äußeren Mid-Turm: drei kommen.", regeln.WICHTIG, "kern:ZURUECK",
+                         zeit=849.0, thema="gefahr")
+    ms.plan_obj = None
+    assert ms._richte([warn], NS(zeit=849.0))[0].text.startswith("Stopp – zurück unter")
+    # ein nacktes Nein ist kein Plan-Satz (164809 23:09 "**Nein, nicht Top jetzt**")
+    from lolcoach import stratege
+    assert stratege.pruefe("Nein, nicht Top jetzt.", {"anlass": True})
+    assert not stratege.pruefe("Nein, nicht Top jetzt.", {})            # als Antwort auf eine Frage erlaubt
+    # xz liest dasselbe wie gz
+    with tempfile.TemporaryDirectory() as d:
+        pfad = Path(d) / "2026-01-01_120000.jsonl.gz"
+        with gzip.open(pfad, "wt", encoding="utf-8") as f:
+            for i in range(50):
+                f.write(json.dumps({"w": 1000.0 + i, "d": {"gameData": {"gameTime": float(i)}}}) + "\n")
+        vorher = list(aufzeichnung.lies_mit_zeit(pfad))
+        assert aufzeichnung.nach_xz(pfad) > 0 and not pfad.exists() and aufzeichnung.gibt(pfad)
+        assert list(aufzeichnung.lies_mit_zeit(pfad)) == vorher and aufzeichnung.alle(d) == [pfad]
+    # Tempo: das Textende kommt, sobald die stille PLAN-Zeile beginnt - nicht erst nach ihr (API ohne Netz)
+    from lolcoach import llm_api
+    folge: list[str] = []
+
+    class _Strom:
+        text_stream = iter(["Geh zum Drachen. ", "Er kommt in 30 Sekunden.", "\nPLAN", ": Drache | Sicht | ",
+                            "Drache | vorne | gilt bis 9:00 | Gegner da"])
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def get_final_message(self):
+            class _U:
+                input_tokens = output_tokens = cache_read_input_tokens = cache_creation_input_tokens = 0
+            m = type("M", (), {"model": "x", "usage": _U(), "stop_reason": "end_turn"})()
+            return m
+
+    class _Client:
+        def with_options(self, **k):
+            return self
+        messages = type("Msg", (), {"stream": staticmethod(lambda **k: _Strom())})()
+    alt_c, alt_k = llm_api._client, llm_api.KOSTEN.dazu
+    llm_api._client, llm_api.KOSTEN.dazu = (lambda: _Client()), (lambda *a: 0.0)
+    try:
+        llm_api.frage_strom("?", lambda s: folge.append(s), bei_fertig=lambda: folge.append("FERTIG"))
+    finally:
+        llm_api._client, llm_api.KOSTEN.dazu = alt_c, alt_k
+    assert folge.index("FERTIG") < next(i for i, s in enumerate(folge) if s.startswith("PLAN")), folge
+    assert folge.count("FERTIG") == 1 and folge[0] == "Geh zum Drachen.", folge
+
+
 def kauf_018():
     """Auftrag 018, 4 (183125 34:26-36:47): Schwarzes Beil und Lord Dominiks Grüße teilen die einzigartige Gruppe
     LastWhisper (Spieldaten); Elixier ab Level 9, wenn sonst nichts passt - aber nur mit freiem Platz."""
@@ -1068,6 +1158,6 @@ if __name__ == "__main__":
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
                  stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017, lagebild_019,
                  objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018, kampf_rechner_020, gehirn_021,
-                 aufraeumen_022):
+                 aufraeumen_022, stimme_023):
         test()
         print(f"{test.__name__} OK")

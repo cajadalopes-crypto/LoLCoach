@@ -17,6 +17,19 @@ from __future__ import annotations
 from .sprache import kartenseite
 
 
+ORT_KURZ = {"im oberen Fluss": "oberer Fluss", "im unteren Fluss": "unterer Fluss", "in der Flussmitte": "Flussmitte",
+            "in seinem oberen Jungle": "sein Jungle oben", "in seinem unteren Jungle": "sein Jungle unten",
+            "in eurem oberen Jungle": "euer Jungle oben", "in eurem unteren Jungle": "euer Jungle unten",
+            "in deinem oberen Jungle": "euer Jungle oben", "in deinem unteren Jungle": "euer Jungle unten",
+            "auf der Top-Lane": "Top", "auf der Mid-Lane": "Mid", "auf der Bot-Lane": "Bot",
+            "in seiner Basis": "in Basis", "in eurer Basis": "in eurer Basis"}
+
+
+def ort_kurz(ort: str | None) -> str:
+    """Auftrag 023, 2: der Ort in zwei, drei Woertern ("im oberen Fluss" -> "oberer Fluss")."""
+    return ORT_KURZ.get(ort or "", ort or "")
+
+
 class Pflicht:
     def __init__(self):
         self.jungler_zuletzt: float | None = None     # zuletzt sichtbar
@@ -50,7 +63,7 @@ class Pflicht:
                 continue
             gesagt[g.champion] = m.zeit
             ort = g.ort.replace("eurem", "deinem")
-            self.offen["INFO_EINDRINGLING"] = (m.zeit, f"{g.champion} {ort}: Büsche nicht blind betreten.")
+            self.offen["INFO_EINDRINGLING"] = (m.zeit, f"{g.champion} {ort_kurz(g.ort)}: Büsche meiden.")
             return
 
     def _basis_steht(self, kern, m, modus: str | None) -> None:
@@ -155,9 +168,10 @@ class Pflicht:
             ohne = None if self.jungler_zuletzt is None else m.zeit - self.jungler_zuletzt
             if m.zeit >= c["ab_s"] and (ohne is None or ohne >= c["jungler_ohne_s"]) and j.ort:
                 n = max(1, int(round(j.ankunft or 0)))
-                nah = f", bei dir in {n} Sekunde{'n' if n != 1 else ''}" \
+                # Auftrag 023, 2: Pflicht-Infos kurz (<= 5 Woerter): "Teemo oberer Fluss, 6 Sekunden."
+                nah = f", {n} Sekunde{'n' if n != 1 else ''}" \
                     if j.ankunft is not None and j.ankunft <= c["jungler_nah_s"] and "Basis" not in j.ort else ""
-                self.offen["INFO_JUNGLER"] = (m.zeit, f"{j.champion} {j.ort}{nah}.")
+                self.offen["INFO_JUNGLER"] = (m.zeit, f"{j.champion} {ort_kurz(j.ort)}{nah}.")
             self.jungler_zuletzt = m.zeit
         g = b.lane
         if g is None or g.s.tot:
@@ -166,32 +180,36 @@ class Pflicht:
         # Kritik 016 (192113 24:32-24:48: fuenfmal "Teemo oben gesehen" in 16 s): wieder scharf erst, wenn er nah war
         # UND der letzte Satz >= 30 s her ist - oder nach lane_wieder_s
         seit = m.zeit - self.lane_gesagt
-        if (g.sichtbar and g.ankunft is not None and g.ankunft < c["lane_nah_s"] and seit >= 30.0) \
-                or seit >= c["lane_wieder_s"]:
+        # Auftrag 023, 2 (125902 24:30): war er nah, bevor die 30 s um waren, zaehlt das trotzdem - vorher verfiel es
+        if g.sichtbar and g.ankunft is not None and g.ankunft < c["lane_nah_s"]:
+            self.lane_war_nah = True
+        if (getattr(self, "lane_war_nah", False) and seit >= 30.0) or seit >= c["lane_wieder_s"]:
             self.lane_bereit = True
+            self.lane_war_nah = False
         an_lane = str(getattr(m, "bereich", None) or "lane").startswith("lane")      # du stehst an einer Lane
         if not (g.sichtbar and g.pos is not None and m.pos is not None and self.lane_bereit and an_lane
-                and modus in ("LANE", "SEITE", "OBJECTIVE", "UNTERWEGS", "GRUPPE") and m.zeit >= c["ab_s"]):
+                and modus in ("LANE", "SEITE", "OBJECTIVE", "UNTERWEGS", "GRUPPE", "BASIS") and m.zeit >= c["ab_s"]):
             return
         basis = "Basis" in (g.ort or "")
         meine, seine = kartenseite(m.pos), kartenseite(g.pos)
         andere = seine != meine and "Mitte" not in seine + meine
         if not (basis or andere or (g.ankunft is not None and g.ankunft >= c["lane_weit_s"])):
             return
-        wo = "in seiner Basis" if basis else seine
+        wo = "in Basis" if basis else seine
         if kern.gefahr:
             return                      # Kritik 016 (192113 12:36: "in Ruhe farmen" bei 10 %, drei kamen): Gefahr geht vor
         v = kern.vorn()
-        folge = "farm unter deinem Turm" if v["verboten"] else "drück deine Welle"
-        self.offen["INFO_LANE"] = (m.zeit, f"{g.champion} {wo} gesehen: {folge}.")
+        folge = "unterm Turm farmen" if v["verboten"] else "Welle drücken"
+        self.offen["INFO_LANE"] = (m.zeit, f"{g.champion} {wo}: {folge}.")        # Auftrag 023, 2: kurz
         self.lane_bereit = False
 
     def faellig(self, m, modus: str | None, cfg: dict) -> tuple[str, str] | None:
-        """(Art, Text) des naechsten offenen Satzes - nicht in KAMPF; zu alte fallen weg."""
+        """(Art, Text) des naechsten offenen Satzes; zu alte fallen weg. Auftrag 023, 2: auch in KAMPF - die Infos
+        sind kurz, und verschluckt werden duerfen sie nie (192113 19:11 Teemos Flash, 133448 1:47-3:13)."""
         for art in list(self.offen):
             if m.zeit - self.offen[art][0] > cfg["pflicht"]["gilt_s"]:
                 del self.offen[art]
-        if modus == "KAMPF" or not self.offen:
+        if not self.offen:
             return None
         art = min(self.offen, key=lambda a: self.offen[a][0])
         return art, self.offen[art][1]

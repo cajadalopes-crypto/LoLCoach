@@ -20,6 +20,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import nachspielen as ns  # noqa: E402
+from lolcoach import aufzeichnung  # noqa: E402
 
 OFFEN = Path(__file__).resolve().parent.parent / "tests" / "szenarien" / "offen"
 ZEILE = re.compile(r"^- (\d+):(\d\d) \(([^)]*)\): (.+)$")
@@ -91,7 +92,7 @@ def main() -> None:
     staemme = [a.removesuffix(".jsonl.gz") for a in sys.argv[1:]] or sorted(
         f.name.removesuffix("_notizen.md") for f in ns.AUFNAHMEN.glob("*_notizen.md"))
     for s in staemme:
-        if not (ns.AUFNAHMEN / f"{s}.jsonl.gz").exists():
+        if not aufzeichnung.gibt(ns.AUFNAHMEN / f"{s}.jsonl.gz"):
             print(f"{s}: keine Aufnahme")
             continue
         print(f"{s}: {stubs(s)} neue Stubs")

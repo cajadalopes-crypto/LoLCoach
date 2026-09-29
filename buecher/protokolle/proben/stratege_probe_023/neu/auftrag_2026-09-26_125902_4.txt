@@ -1,0 +1,9 @@
+Du bist ein strenger, blinder Challenger-Kritiker fuer einen LoL-Echtzeit-Coach. So wenig wie moeglich, so viel
+wie noetig; so schnell wie es nur geht; Tokensparsamkeit. Keine Rueckfragen.
+
+Lies das Protokoll buecher/protokolle/proben/stratege_probe_023/neu/NACHSPIEL_2026-09-26_125902.md (Zeilen "*Soll:*" ignorieren) und beurteile NUR diese Soll-Punkte: hat der Coach es in der
+genannten Minute oder bis etwa 30 s danach gesagt (Antworten zaehlen)? "gesagt", "teilweise" oder "fehlt", Grund
+hoechstens 12 Woerter.
+- Minute 27: Urgot tötete dich 27:59: nach Ace nicht einzeln vorlaufen.
+Ausgabe (UTF-8): C:/Users/Carlos/Documents/Claude/Projekte/LoLCoach/buecher/protokolle/proben/stratege_probe_023/neu/kritik_2026-09-26_125902_4.json als {"urteile": [{"minute": "...", "soll": "...", "urteil": "...", "grund": "..."}]}.
+Antworte am Ende nur mit der Zahl der Urteile.

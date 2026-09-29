@@ -1239,7 +1239,7 @@ def bilder_aufraeumen(behalte: int = 3) -> float:
     schoben sie vorher hinaus (27.09.: 130355 verlor seine Bilder an 132154 und 133930). Die juengste Aufnahme
     bleibt immer. Gibt die freigegebenen MB zurueck."""
     from . import aufzeichnung, zustand
-    aufnahmen = sorted(aufzeichnung.ORDNER.glob("*.jsonl.gz"))
+    aufnahmen = aufzeichnung.alle()
     try:
         from .profil import KURZ
         mit_bildern = [p for p in aufnahmen if aufzeichnung.bilder(p)]

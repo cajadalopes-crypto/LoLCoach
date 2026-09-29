@@ -397,12 +397,13 @@ class Kern:
         if not aus and modus == "BASIS" and not start:
             if (a := self._basis_warten(m, gesagt)) is not None:
                 aus.append(a)
-        if not aus:
-            if (a := self._pflicht_info(m, modus, gesagt)) is not None:
-                aus.append(a)
-        if not aus:
-            if (a := self._flash_info(m, modus, gesagt)) is not None:
-                aus.append(a)
+        # Auftrag 023, 2: Pflicht-Infos kommen ZUSAETZLICH zum Plan-Satz dieses Takts, nicht an seiner Stelle
+        # (vorher verdraengte jeder Plan-Satz die Info, und nach 6 s war sie verfallen)
+        self._pflicht_folge = None
+        if (a := self._pflicht_info(m, modus, gesagt) or self._flash_info(m, modus, gesagt)) is not None:
+            aus.append(a)
+            if self._pflicht_folge is not None:
+                aus.append(self._pflicht_folge)
         plan = self.fuehrer.plan
         # Auftrag 007: nur ein Rueckzug haelt die Episode offen - ein stiller Back-Plan hielt sie in 213624 von 15:31 bis
         # 24:10 offen, und "Raus zum Mid-Tier-1-Turm: Xin Zhao und Ziggs kommen" (24:11, GEFAHR) galt als derselbe Rueckzug
@@ -624,7 +625,7 @@ class Kern:
         Champion ohne eigenen Dash (Entscheidung 3 der Pruefung b, `lage.ereignisse`). Nicht in KAMPF - dann 3 s nach
         dem Kampf, wenn der Flash noch weg ist; hoechstens einer je abstand_s, mehrere in einem Satz."""
         z = getattr(self._lagebild, "zauber", None)
-        if z is None or m.p is None or modus == "KAMPF":
+        if z is None or m.p is None:          # Auftrag 023, 2: auch in KAMPF (kurz, nie verschluckt)
             return None
         c = self.cfg["info_flash"]
         feinde = {s.name for s in m.p.gegner()}
@@ -665,24 +666,26 @@ class Kern:
         if f is None:
             return None
         art, text = f
+        # Auftrag 023, 2: die Info bleibt kurz (<= 5 Woerter); hat die Makro-Sichtung (Buch 4, 5) eine Folge ("oben 20
+        # Sekunden frei, Platten jetzt"), kommt sie als eigener Makro-Satz danach (Szenario 3048)
         info = None
         if art == "INFO_JUNGLER":
-            # hat die Makro-Sichtung (Buch 4, 5) dazu eine Folge ("Naafiri unten gesehen: oben 20 Sekunden frei,
-            # Platten jetzt"), wird es dieser Satz - mit Folge statt nur dem Ort
             try:
                 info = self.makro.info(self, m, modus)
             except Exception:
                 info = None
-            if info is not None and info[1].startswith("JUNGLER"):
-                text = info[2]
-            else:
+            if info is None or not info[1].startswith("JUNGLER"):
                 info = None
         a = self.sprecher.ansage(art, art, text, m.zeit, None, gesagt)
         if a is not None:
             self.pflicht.gesagt(art, m)
-            if info is not None:
-                self.makro.gesagt(info, m)
             self._gesprochen(a, art, m)
+            if info is not None:
+                folge = self.sprecher.ansage("MAKRO", info[1], info[2], m.zeit, None, gesagt)
+                if folge is not None:
+                    self.makro.gesagt(info, m)
+                    self._gesprochen(folge, "MAKRO", m)
+                    self._pflicht_folge = folge
         return a
 
     @staticmethod

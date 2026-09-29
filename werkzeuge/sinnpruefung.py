@@ -91,7 +91,7 @@ def main() -> None:
     if "--ab" in sys.argv:
         args.remove(sys.argv[sys.argv.index("--ab") + 1])
     pfade = [Path(x) if Path(x).exists() else AUFNAHMEN / f"{x}.jsonl.gz" for x in args] or \
-        sorted(AUFNAHMEN.glob("*.jsonl.gz"))[-5:]
+        aufzeichnung.alle(AUFNAHMEN)[-5:]
     gesamt = defaultdict(int)
     for pfad in pfade:
         gesagt = durchspielen(pfad)

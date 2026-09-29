@@ -332,8 +332,9 @@ def bauen(kern, p, lagebild=None) -> Welt | None:
     return w
 
 
-def text(w: Welt) -> str:
-    """Der Text fuer Claude, feste Reihenfolge."""
+def text(w: Welt, kurz: bool = False) -> str:
+    """Der Text fuer Claude, feste Reihenfolge. `kurz` (Auftrag 023, 4 - Lane, Fenster, Roam, Kampf): ohne Items und
+    ohne STAERKE - die haeufigen kurzen Anlaesse brauchen sie nicht, und jeder Token kostet Zeit."""
     z = [f"ZEIT {_uhr(w.zeit)}", f"DU: {w.du}", f"PLAN DES COACHS: {w.plan}", f"NACH VORN: {w.vorn}",
          f"KAUF: {w.kauf}", "SPIELER:"]
     for s in w.spieler:
@@ -346,12 +347,13 @@ def text(w: Welt) -> str:
                 teile.append(f"kann in {s.bei_dir_s} s bei dir sein")
         if s.ult not in ("?",):
             teile.append(f"Ult {s.ult}")
-        if s.items:
+        if s.items and not kurz:
             teile.append("Items: " + ", ".join(s.items[:6]))
         z.append("- " + "; ".join(teile))
     z.append("KARTE: " + " | ".join(w.karte))
     z.append("TIMER: " + ("; ".join(w.timer) if w.timer else "-"))
-    z.append("STAERKE: " + " | ".join(w.staerke))
+    if not kurz:
+        z.append("STAERKE: " + " | ".join(w.staerke))
     z.append("SEIT DEM LETZTEN AUFRUF (30 s): " + ("; ".join(f"{_uhr(t)} {x}" for t, x in w.ereignisse)
                                                   if w.ereignisse else "nichts Neues"))
     return "\n".join(z)

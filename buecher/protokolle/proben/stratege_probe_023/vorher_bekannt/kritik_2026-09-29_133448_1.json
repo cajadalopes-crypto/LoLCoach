@@ -1,0 +1,69 @@
+{
+ "minuten": {
+  "1": [
+   {"soll": "Teemo noch nie gesehen – Fluss-Auge oben setzen", "urteil": "fehlt", "grund": "Nur Welle crashen 1:37, Lux Flash 1:47; weder Teemo noch Auge."}
+  ],
+  "2": [
+   {"soll": "Teemo noch nicht gesehen, Twitch in eurem unteren Jungle – nicht zu weit vor ohne Sicht", "urteil": "fehlt", "grund": "Nichts gesprochen zwischen 1:47 und 3:13."}
+  ],
+  "3": [
+   {"soll": "Mit 775 Gold: Langschwert + Stiefel, Heiltrank", "urteil": "fehlt", "grund": "3:26 nur 'erst farmen, dann back' auf Caulfields, kein Kauf-Plan."},
+   {"soll": "Teemo im oberen Fluss (3:56), Flash weg: zurück zum Turm", "urteil": "teilweise", "grund": "3:55 Teemo oben im Fluss; Rat 3:58 Welle rein, nicht Turm."}
+  ],
+  "4": [
+   {"soll": "Teemo nach Kill oben jetzt Mid (4:26), dann unten (4:58) – Top sicher", "urteil": "teilweise", "grund": "4:58 Teemo unten; Mid-Sichtung 4:26 und Top sicher fehlen."},
+   {"soll": "Drache in 30 s, Teemo läuft unten: Top-Welle nehmen, Poppy L3 unter Druck setzen", "urteil": "teilweise", "grund": "4:09 Top-Welle crashen; Drache, Teemo unten, Poppy-Druck fehlen."}
+  ],
+  "5": [
+   {"soll": "Poppy tot (5:46): Welle crashen, Plates holen", "urteil": "teilweise", "grund": "5:41 Poppy unten, Welle drücken; Poppy tot und Plates fehlen."}
+  ],
+  "6": [
+   {"soll": "Teemo oben bei dir (6:02), 47 % Leben: zurück zum Turm", "urteil": "teilweise", "grund": "6:02 Teemo oben, aber Welle crashen; Turm erst 6:32."},
+   {"soll": "Poppy tot (6:43), 875 Gold: Welle crashen, dann back", "urteil": "teilweise", "grund": "7:02 back, Poppy tot; Welle crashen und Gold-Bezug fehlen."}
+  ],
+  "7": [
+   {"soll": "Kauf Brutalisierer, dann direkt Top", "urteil": "gesagt", "grund": "7:15, 7:27, 7:35 Brutalisierer kaufen, dann Top."},
+   {"soll": "Welle Top crashen, dann mit Volibear zu den Larven in 28 s", "urteil": "teilweise", "grund": "7:27 Kanone in 26 s; Welle crashen und Larven fehlen."}
+  ],
+  "8": [
+   {"soll": "Teemo und Poppy im oberen Fluss, Larven verloren – nicht allein rein", "urteil": "gesagt", "grund": "8:23 Teemo oben, 8:41 Larven verloren, 8:51 Poppy oben."},
+   {"soll": "Plan: Poppy fehlt auf Lane – Top-Welle pushen, Plates, dann Drache mit Team", "urteil": "teilweise", "grund": "8:00 Freeze statt Push; erst 8:55 Kanone crashen, Drache."}
+  ],
+  "9": [
+   {"soll": "Teemo zuletzt in eurem oberen Jungle – Busch vor Welle checken", "urteil": "fehlt", "grund": "9:33 Lux/Poppy im Fluss, 9:52 Teemo Mid; kein Busch-Hinweis."}
+  ],
+  "10": [
+   {"soll": "Top-Turm gefallen, 1950 Gold: back, Axiombogen-Teile kaufen", "urteil": "gesagt", "grund": "10:30 und 10:59 back, Axiombogen kaufen."},
+   {"soll": "Danach Mid zum Drachen – Teemo und Twitch in ihrem unteren Jungle", "urteil": "teilweise", "grund": "10:59 zum Drachen unten; Teemo/Twitch-Lage fehlt."}
+  ],
+  "11": [
+   {"soll": "Poppy vor 40 s unten gesehen – Top frei: Welle rein, Richtung Drache", "urteil": "teilweise", "grund": "11:12 Poppy vor 21 s unten; Welle rein/Drache fehlen, 11:53 verspätet."},
+   {"soll": "Lux, Sona, Teemo tot: jetzt Drache mit Team", "urteil": "fehlt", "grund": "11:52 Rein auf Teemo, 11:54 Sona lebt, Innerer Turm; kein Drache."}
+  ],
+  "12": [
+   {"soll": "14 % Leben, Flash weg, Lux und Sona oben im Jungle: sofort back, Welle liegen lassen", "urteil": "teilweise", "grund": "12:16 TP unter Turm, 12:33 Sona oben; Welle liegen lassen fehlt."},
+   {"soll": "In der Basis: Axiombogen, dann Eklipse (3123 Gold)", "urteil": "teilweise", "grund": "12:53 Axiombogen und Auge, dann Turm; Eklipse fehlt."}
+  ],
+  "13": [
+   {"soll": "Eklipse komplett kaufen – 2803 reicht, Kontroll-Auge weglassen falls kein Platz", "urteil": "gesagt", "grund": "13:03-13:44 Eklipse-Teile; 13:44 Auge stellen, dann Langschwert."},
+   {"soll": "Danach: Top-Welle mitnehmen, Herold in 92 s mit Volibear", "urteil": "gesagt", "grund": "13:28 Herold in 91 s, Top-Welle crashen, dann Herold."}
+  ],
+  "14": [
+   {"soll": "Herold in 28 s: mit Volibear oben zum Pit, Teemo unten", "urteil": "gesagt", "grund": "14:20/14:27 Herold mit Volibear, 14:57 Teemo unterer Jungle."},
+   {"soll": "Lux oben sichtbar – über den Fluss kommen, nicht allein Top", "urteil": "teilweise", "grund": "14:27 Lux kommt in 15 s; Fluss-Route und nicht allein fehlen."}
+  ],
+  "15": [
+   {"soll": "Herold jetzt: Teemo unten, Pit sicher", "urteil": "teilweise", "grund": "15:53 Teemo unten; Herold jetzt und Pit sicher fehlen."},
+   {"soll": "Nicht back bei vollem Leben: Herold Top einsetzen, Turm 2 mit Volibear", "urteil": "fehlt", "grund": "15:08, 15:15, 15:34 back sofort bei 100 % Leben, Gegenteil."}
+  ],
+  "16": [
+   {"soll": "Drache in 87 s: Top-Welle rein, dann zum Drachen, Teemo unten", "urteil": "teilweise", "grund": "16:52 Drache in 60 s, Welle crashen; Teemo unten fehlt, back dazwischen."}
+  ],
+  "17": [
+   {"soll": "Poppy seit 18 s weg im oberen Jungle – bei 37 % nicht vor die Welle", "urteil": "teilweise", "grund": "17:15 zurück unter Turm bei R1; Poppy-Info fehlt."},
+   {"soll": "Drache in 39 s: Welle rein, zum Team, Baron in 165 s", "urteil": "fehlt", "grund": "Nur 17:15 Lux Flash weg und Rückzug; kein Drache, kein Baron."}
+  ]
+ },
+ "fuellsaetze": {"anzahl": 2, "saetze_gesamt": 91, "zeiten": ["11:53", "15:31"]},
+ "widersprueche": {"anzahl": 3, "faelle": ["8:51/8:55 Freeze halten vs Kanone crashen", "14:43/14:44 Drache mit Yorick/Veigar vs Herold mit Volibear", "16:50/16:52 Turm mit Yorick vs Drache mit Team"]}
+}

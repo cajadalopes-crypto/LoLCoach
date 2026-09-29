@@ -1,0 +1,427 @@
+{
+ "kennzahlen": {
+  "flash": "6/6 (100 %)",
+  "jungler": "19/19 (100 %)",
+  "i4": "1/1 (100 %)",
+  "backs": "9/10 (90 %)",
+  "back_rufe": "12/12 (100 %)",
+  "stille": "69 s",
+  "sicherheit": 0,
+  "widersprueche": 4,
+  "fuellsaetze": "0/127 (0.0 %)",
+  "latenz": "2.41 / 3.41 s (n = 61)",
+  "erster_satz": 1.3566452999948524,
+  "cache": "79/104"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 57.01681900024414,
+    "champion": "Viego",
+    "gesagt": "Viego Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 95.0675277709961,
+    "champion": "Sett",
+    "gesagt": "Sett Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 161.66900634765625,
+    "champion": "Aurora",
+    "gesagt": "Aurora Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 637.2230834960938,
+    "champion": "Aurora",
+    "gesagt": "Aurora Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1294.8575439453125,
+    "champion": "Aurora",
+    "gesagt": "Aurora Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1700.7767333984375,
+    "champion": "Viego",
+    "gesagt": "Viego Flash weg.",
+    "nach_s": 0.0
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 303.7,
+    "name": "Viego",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 246,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle oben."
+   },
+   {
+    "zeit": 440.8,
+    "name": "Viego",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 120,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle unten."
+   },
+   {
+    "zeit": 508.9,
+    "name": "Viego",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 67,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle oben."
+   },
+   {
+    "zeit": 585.5,
+    "name": "Viego",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 60,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle unten."
+   },
+   {
+    "zeit": 706.6,
+    "name": "Viego",
+    "ort": "in eurem oberen Jungle",
+    "ohne_s": 94,
+    "tot_ich": false,
+    "gesagt": "Viego euer Jungle oben."
+   },
+   {
+    "zeit": 816.3,
+    "name": "Viego",
+    "ort": "im unteren Fluss",
+    "ohne_s": 95,
+    "tot_ich": true,
+    "gesagt": "Viego unterer Fluss."
+   },
+   {
+    "zeit": 901.2,
+    "name": "Viego",
+    "ort": "in eurem oberen Jungle",
+    "ohne_s": 83,
+    "tot_ich": false,
+    "gesagt": "Viego euer Jungle oben, 6 Sekunden."
+   },
+   {
+    "zeit": 992.4,
+    "name": "Viego",
+    "ort": "im unteren Fluss",
+    "ohne_s": 83,
+    "tot_ich": false,
+    "gesagt": "Viego unterer Fluss."
+   },
+   {
+    "zeit": 1115.8,
+    "name": "Viego",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 120,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle unten."
+   },
+   {
+    "zeit": 1181.8,
+    "name": "Viego",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 51,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle oben."
+   },
+   {
+    "zeit": 1285.9,
+    "name": "Viego",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 101,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle unten."
+   },
+   {
+    "zeit": 1317.9,
+    "name": "Viego",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 30,
+    "tot_ich": false,
+    "gesagt": "Viego Mid."
+   },
+   {
+    "zeit": 1404.0,
+    "name": "Viego",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 35,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle oben."
+   },
+   {
+    "zeit": 1452.4,
+    "name": "Viego",
+    "ort": "im unteren Fluss",
+    "ohne_s": 47,
+    "tot_ich": false,
+    "gesagt": "Viego unterer Fluss."
+   },
+   {
+    "zeit": 1507.7,
+    "name": "Viego",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 42,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle oben, 2 Sekunden."
+   },
+   {
+    "zeit": 1595.0,
+    "name": "Viego",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": 86,
+    "tot_ich": false,
+    "gesagt": "Viego euer Jungle unten."
+   },
+   {
+    "zeit": 1689.5,
+    "name": "Viego",
+    "ort": "in seiner Basis",
+    "ohne_s": 89,
+    "tot_ich": false,
+    "gesagt": "Viego in Basis."
+   },
+   {
+    "zeit": 1749.8,
+    "name": "Viego",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Viego Mid."
+   },
+   {
+    "zeit": 1888.0,
+    "name": "Viego",
+    "ort": "unten",
+    "ohne_s": 135,
+    "tot_ich": false,
+    "gesagt": "Viego unten."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 345.8,
+    "gesagt": "Jetzt, wo du in der Basis bist: Caulfields Kriegshammer kaufen, dann Mid zur Welle: Aurora weg, Kanonenwelle in 32 Sekunden, crashen und zurück für Axiombogen.",
+    "saetze": [
+     "Aurora ist weg, Level 6 ganz oben bei Kayn und Urgot, pass auf dich auf, farme die Mid-Welle sicher bei deinem Turm.",
+     "Jetzt, wo du in der Basis bist: Caulfields Kriegshammer kaufen, dann Mid zur Welle: Aurora weg, Kanonenwelle in 32 Sekunden, crashen und zurück für Axiombogen.",
+     "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Crash die Kanone jetzt: Aurora ist Level 7 und weg, danach back für Axiombogen, weil die Welle sauber resettet und dein nächster Spike kommt."
+    ]
+   },
+   {
+    "zeit": 554.5,
+    "gesagt": "Jetzt, wo Plan: Back jetzt: 34 Prozent Leben. Heilen, dann Mid.",
+    "saetze": [
+     "Jetzt, wo Plan: Back jetzt: 34 Prozent Leben. Heilen, dann Mid.",
+     "Zurück unter deinen äußeren Mid-Turm: drei kommen.",
+     "Kontroll-Auge kaufen, dann sofort zu Mid, Kanonenwelle in drei Sekunden kommt und Aurora in 21 Sekunden – du crasht die Welle, bevor sie oben ist."
+    ]
+   },
+   {
+    "zeit": 671.3,
+    "gesagt": "Drei von ihnen tot: Mid-Welle rein, dann back, 950 Gold für Axiombogen. Danach Mid.",
+    "saetze": [
+     "Aurora Flash weg.",
+     "Lage hat sich geändert: Sett und Bard tot, unten zahlenmäßig vorn – Yunara und Xerath pushen Bot-Welle jetzt durch, du farmst Mid am Turm, bis Aurora sichtbar ist.",
+     "Drei von ihnen tot: Mid-Welle rein, dann back, 950 Gold für Axiombogen. Danach Mid."
+    ]
+   },
+   {
+    "zeit": 914.1,
+    "gesagt": "Back jetzt: 15 Prozent Leben. Kauf Langschwert für die Eklipse, dann zurück zu deinem Turm.",
+    "saetze": [
+     "Nein, das passt nicht",
+     "Viego euer Jungle oben, 6 Sekunden.",
+     "Back jetzt: 15 Prozent Leben. Kauf Langschwert für die Eklipse, dann zurück zu deinem Turm."
+    ]
+   },
+   {
+    "zeit": 1064.6,
+    "gesagt": "Jetzt, wo Aurora und Viego gleich respawnen: back jetzt, Caulfields Kriegshammer, dann mit der Gruppe zu ihrem innerem Mid-Turm, weil ihr zwei Items vorn seid und die drei toten Champions in 3 bis 21 Sekunden zurückkommen.",
+    "saetze": [
+     "Jetzt, wo Aurora und Viego gleich respawnen: back jetzt, Caulfields Kriegshammer, dann mit der Gruppe zu ihrem innerem Mid-Turm, weil ihr zwei Items vorn seid und die drei toten Champions in 3 bis 21 Sekunden zurückkommen.",
+     "Jetzt, wo Bard tot ist und Aurora gleich kommt: nichts kaufen, direkt zur Mid-Welle, weil die Kanone in 44 Sekunden kommt und ihr dann mit dem Buff zum Mid-Turm könnt."
+    ]
+   },
+   {
+    "zeit": 1176.3,
+    "gesagt": "Jetzt, wo Sett und Bard beide in 13 Sekunden bei dir sind: Kanone rein, sofort back – Spitzhacke kaufen, dann zur Flussmitte zum Teamfight vor Baronspawn, weil ihr 3300 Gold vorn seid und zwei Gegner in 19 Sekunden zurückkommen.",
+    "saetze": [
+     "Spitzhacke und Langschwert kaufen, dann zur Flussmitte Mid: dein Team steht dort 5v3, Bard kommt in 17 Sekunden zurück, Baron in 18 – ihr erzwingt den Kampf jetzt.",
+     "Viego sein Jungle oben.",
+     "Jetzt, wo Wendepunkt: Aus der Basis: Zu Yunara und Xerath in ihren oberen Jungle, mit dir drei gegen zwei."
+    ]
+   },
+   {
+    "zeit": 1436.8,
+    "gesagt": "Back jetzt: Spitzhacke, dann zu Xerath auf Mid, weil Aurora Flash weg hat und wir mit Eklipse und Stun zusammen dort kill-fähig sind – danach Drache mit Team in 200 Sekunden.",
+    "saetze": [
+     "Back jetzt: Spitzhacke, dann zu Xerath auf Mid, weil Aurora Flash weg hat und wir mit Eklipse und Stun zusammen dort kill-fähig sind – danach Drache mit Team in 200 Sekunden.",
+     "Sett ist unbekannt und kann hier sein",
+     "Sett euer Jungle oben: Büsche meiden."
+    ]
+   },
+   {
+    "zeit": 1463.6,
+    "gesagt": "Back jetzt: Spitzhacke, dann zu Xerath auf Mid, weil Aurora Flash weg hat und wir mit Eklipse und Stun zusammen dort kill-fähig sind – danach Drache mit Team in 200 Sekunden.",
+    "saetze": [
+     "Sett euer Jungle oben: Büsche meiden.",
+     "Viego unterer Fluss.",
+     "Geh zu deinem Team: Urgot, Kayn, Yunara und Xerath stehen auf der Mid-Lane."
+    ]
+   },
+   {
+    "zeit": 1717.8,
+    "gesagt": "Jetzt, wo Aurora und Twitch tot sind und Viego in 6 Sekunden kommt: Back jetzt, Caulfields Kriegshammer kaufen, dann zu deinem inneren Turm zurück – Bard kann jeden Moment hier sein und dein Team nimmt den Drachen ohne dich.",
+    "saetze": [
+     "Viego in Basis.",
+     "Viego Flash weg.",
+     "Tiamat kaufen, dann zu deinem inneren Mid-Turm"
+    ]
+   },
+   {
+    "zeit": 1851.8,
+    "gesagt": null,
+    "saetze": [
+     "Aurora und Bard Mitte, Twitch in ihrer Basis. Zwei in der Mitte: nicht allein nach vorn.",
+     "Bard euer Jungle unten: Büsche meiden.",
+     "Dann zur Mid-Welle: dort kommt ihre nächste Welle."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 21.86541748046875,
+    "text": "Aus der Basis: Farm Mid, bei 1050 Gold back für Caulfields Kriegshammer. Danach Mid.",
+    "kette": true
+   },
+   {
+    "zeit": 360.04107666015625,
+    "text": "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Crash die Kanone jetzt: Aurora ist Level 7 und weg, danach back für Axiombogen, weil die Welle sauber resettet und dein nächster Spike kommt.",
+    "kette": true
+   },
+   {
+    "zeit": 513.628173828125,
+    "text": "Jetzt, wo Plan: Back jetzt: 34 Prozent Leben. Heilen, dann Mid.",
+    "kette": true
+   },
+   {
+    "zeit": 664.390869140625,
+    "text": "Drei von ihnen tot: Mid-Welle rein, dann back, 950 Gold für Axiombogen. Danach Mid.",
+    "kette": true
+   },
+   {
+    "zeit": 909.2396850585938,
+    "text": "Back jetzt: 15 Prozent Leben. Kauf Langschwert für die Eklipse, dann zurück zu deinem Turm.",
+    "kette": true
+   },
+   {
+    "zeit": 1051.834716796875,
+    "text": "Jetzt, wo Aurora und Viego gleich respawnen: back jetzt, Caulfields Kriegshammer, dann mit der Gruppe zu ihrem innerem Mid-Turm, weil ihr zwei Items vorn seid und die drei toten Champions in 3 bis 21 Sekunden zurückkommen.",
+    "kette": true
+   },
+   {
+    "zeit": 1150.4537353515625,
+    "text": "Jetzt, wo Sett und Bard beide in 13 Sekunden bei dir sind: Kanone rein, sofort back – Spitzhacke kaufen, dann zur Flussmitte zum Teamfight vor Baronspawn, weil ihr 3300 Gold vorn seid und zwei Gegner in 19 Sekunden zurückkommen.",
+    "kette": true
+   },
+   {
+    "zeit": 1361.4010009765625,
+    "text": "Back jetzt: 850 Gold für Spitzhacke. Danach nach Mid.",
+    "kette": true
+   },
+   {
+    "zeit": 1436.4947509765625,
+    "text": "Back jetzt: Spitzhacke, dann zu Xerath auf Mid, weil Aurora Flash weg hat und wir mit Eklipse und Stun zusammen dort kill-fähig sind – danach Drache mit Team in 200 Sekunden.",
+    "kette": true
+   },
+   {
+    "zeit": 1679.0848388671875,
+    "text": "Jetzt, wo Aurora und Twitch tot sind und Viego in 6 Sekunden kommt: Back jetzt, Caulfields Kriegshammer kaufen, dann zu deinem inneren Turm zurück – Bard kann jeden Moment hier sein und dein Team nimmt den Drachen ohne dich.",
+    "kette": true
+   },
+   {
+    "zeit": 1776.029052734375,
+    "text": "Jetzt, wo ihr innerer Top-Turm weg ist: Sett kommt in 3 Sekunden: Back jetzt für Gefräßige Hydra, dann zu deinem inneren Mid-Turm, weil Viego gleich respawnt und ihr ohne dich nicht 2v3 gewinnt.",
+    "kette": true
+   },
+   {
+    "zeit": 1800.087890625,
+    "text": "Ihr Top-Inhibitor-Turm ist weg. Back jetzt, 32 Prozent Leben, Aurora ist tot. Danach zu deinem Team. Dort heilen.",
+    "kette": true
+   }
+  ],
+  "stille_max": 69,
+  "stille_lang": [
+   [
+    95,
+    158
+   ],
+   [
+    385,
+    438
+   ],
+   [
+    716,
+    784
+   ]
+  ],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 183.36962890625,
+    "von": "welle:mid",
+    "nach": "turm",
+    "vorher": "Zurück nach Mid, bleib an deinem Mid-Turm: Viego war zuletzt unten.",
+    "text": "Aurora ist nach dem Kill vermutlich zu dir, bleib am Turm und farm die Welle, aber schau auf die Minimap."
+   },
+   {
+    "zeit": 208.14569091796875,
+    "von": "turm",
+    "nach": "drache",
+    "vorher": "Aurora ist nach dem Kill vermutlich zu dir, bleib am Turm und farm die Welle, aber schau auf die Minimap.",
+    "text": "Drache in 92 Sekunden Urgot kämpft oben, Kayn deckt, crash deine Welle jetzt in die gegnerische Platte, dann runter zum Team, weil ihr die Prio habt."
+   },
+   {
+    "zeit": 360.04107666015625,
+    "von": "welle:mid",
+    "nach": "welle",
+    "vorher": "Jetzt, wo du in der Basis bist: Caulfields Kriegshammer kaufen, dann Mid zur Welle: Aurora weg, Kanonenwelle in 32 Sekunden, crashen und zurück für Axiombogen.",
+    "text": "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Crash die Kanone jetzt: Aurora ist Level 7 und weg, danach back für Axiombogen, weil die Welle sauber resettet und dein nächster Spike kommt."
+   },
+   {
+    "zeit": 1997.29345703125,
+    "von": "welle",
+    "nach": "drache",
+    "vorher": "Jetzt, wo Wendepunkt: Aus der Basis: Farm Bot, ihr Mid-Inhibitor steht wieder in 5 Sekunden.",
+    "text": "Jetzt, wo Twitch und Bard auf der Mid sind: Drache SOFORT mit vier (Kayn, du, Yunara, Xerath), Viego kommt in 22 Sekunden – danach ihre Inhibitor, weil ihr 5v2 seid und Sett oben allein ist."
+   }
+  ],
+  "fuellsaetze": [],
+  "saetze_n": 127,
+  "i4": [
+   {
+    "zeit": 1971.7,
+    "name": "Aurora",
+    "ort": "in seiner Basis",
+    "gesagt": "Aurora in Basis: Welle drücken."
+   }
+  ],
+  "latenz": {
+   "n": 61,
+   "median": 2.41,
+   "p90": 3.41,
+   "erster_satz_median": 1.3566452999948524,
+   "cache_treffer": "79/104"
+  }
+ }
+}

@@ -29,6 +29,7 @@ P_MIN = 0.65
 
 def eine(stamm: str) -> dict:
     import nachspielen as ns
+    from lolcoach import aufzeichnung
     from lolcoach.jungle import anders, seite
     vorher: list = []            # (Zeit, {Verfahren: Seite})
     letzte = {"t": -1e9}
@@ -68,7 +69,7 @@ def eine(stamm: str) -> dict:
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     import nachspielen as ns
-    staemme = [p.name.removesuffix(".jsonl.gz") for p in sorted(ns.AUFNAHMEN.glob("*.jsonl.gz"))]
+    staemme = [p.name.removesuffix(".jsonl.gz") for p in aufzeichnung.alle(ns.AUFNAHMEN)]
     alle = []
     with ProcessPoolExecutor(8) as ex:
         for r in ex.map(eine, staemme):

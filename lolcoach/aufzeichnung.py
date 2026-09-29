@@ -20,10 +20,45 @@ import os
 ORDNER = Path(os.environ.get("LOLCOACH_AUFNAHMEN") or Path(__file__).resolve().parent.parent / "aufnahmen")
 
 
+GZ, XZ = ".jsonl.gz", ".jsonl.xz"
+
+
+def echt(pfad: str | Path) -> Path:
+    """Auftrag 023, 6: die Datei, die es wirklich gibt. Alte Aufnahmen liegen nach dem Aufraeumen als .jsonl.xz
+    (gzip 34 MB, xz 0,5 MB); der Code nennt sie weiter <stamm>.jsonl.gz - dieser Name fuehrt hier zur xz-Datei."""
+    p = Path(pfad)
+    if p.name.endswith(GZ) and not p.exists():
+        x = p.with_name(p.name.removesuffix(GZ) + XZ)
+        if x.exists():
+            return x
+    return p
+
+
+def gibt(pfad: str | Path) -> bool:
+    return echt(pfad).exists()
+
+
+def stamm(pfad: str | Path) -> str:
+    return Path(pfad).name.removesuffix(GZ).removesuffix(XZ)
+
+
+def alle(ordner: str | Path | None = None) -> list[Path]:
+    """Alle Aufnahmen eines Ordners (gz und xz), sortiert, jeweils unter ihrem Namen <stamm>.jsonl.gz."""
+    o = Path(ordner or ORDNER)
+    staemme = {stamm(p) for p in o.glob("*" + GZ)} | {stamm(p) for p in o.glob("*" + XZ)}
+    return [o / f"{s}{GZ}" for s in sorted(staemme)]
+
+
 def gz_text(pfad: Path) -> str:
     """Der lesbare Inhalt einer gzip-Datei, auch wenn sie abgebrochen ist (Coach-Fenster zu): alle
-    Mitglieder, bis es nicht weitergeht; eine halbe letzte Zeile faellt weg."""
-    roh, teile = Path(pfad).read_bytes(), []
+    Mitglieder, bis es nicht weitergeht; eine halbe letzte Zeile faellt weg. Eine xz-Aufnahme (Auftrag 023)
+    wird ganz gelesen."""
+    p = echt(pfad)
+    if p.name.endswith(XZ):
+        import lzma
+        text = lzma.decompress(p.read_bytes()).decode("utf-8", "replace")
+        return text[:text.rfind("\n") + 1] if "\n" in text else ""
+    roh, teile = p.read_bytes(), []
     while roh:
         d = zlib.decompressobj(16 + zlib.MAX_WBITS)
         try:
@@ -75,7 +110,7 @@ def fortsetzbar(daten: dict, ordner: Path = ORDNER, hoechstens: float = 900) -> 
     oder Reconnect: dieselben Spieler auf denselben Seiten, die Spielzeit laeuft weiter, kein Spielende, zuletzt
     vor hoechstens `hoechstens` Sekunden geschrieben. Sonst None (neue Partie, neue Aufnahme).
     (26.09.: ein Neustart teilte Partie 7 in zwei Aufnahmen - zwei Reviews, zwei "Partien" im Fortschritt.)"""
-    kandidaten = sorted(Path(ordner).glob("*.jsonl.gz"), reverse=True)
+    kandidaten = sorted(Path(ordner).glob("*.jsonl.gz"), reverse=True)      # live: nur gzip, xz ist fertig
     if not kandidaten or time.time() - kandidaten[0].stat().st_mtime > hoechstens:
         return None
     letzte = None
@@ -130,8 +165,11 @@ def lies(pfad: str | Path) -> Iterator[dict]:
 
 
 def lies_mit_zeit(pfad: str | Path) -> Iterator[tuple[float, dict]]:
-    """(Wanduhr, Rohdaten) - die Wanduhr verknuepft mit den Minimap-Bildern."""
-    with gzip.open(pfad, "rt", encoding="utf-8") as f:
+    """(Wanduhr, Rohdaten) - die Wanduhr verknuepft mit den Minimap-Bildern. gz oder xz (Auftrag 023)."""
+    import lzma
+    p = echt(pfad)
+    oeffne = lzma.open if p.name.endswith(XZ) else gzip.open
+    with oeffne(p, "rt", encoding="utf-8") as f:
         try:
             for zeile in f:
                 try:
@@ -139,8 +177,29 @@ def lies_mit_zeit(pfad: str | Path) -> Iterator[tuple[float, dict]]:
                     yield z["w"], z["d"]
                 except (json.JSONDecodeError, KeyError):
                     continue
-        except (EOFError, OSError, zlib.error):   # abgebrochen (Fenster zu): lesen, was da ist
+        except (EOFError, OSError, zlib.error, lzma.LZMAError):   # abgebrochen (Fenster zu): lesen, was da ist
             return
+
+
+def nach_xz(pfad: str | Path) -> int:
+    """Auftrag 023, 6: eine fertige gzip-Aufnahme verlustfrei in .jsonl.xz umwandeln (nach der Partie, nie live).
+    Geprueft wird Byte fuer Byte gegen den gzip-Inhalt, erst dann faellt die gzip-Datei weg. Gibt die gesparten
+    Bytes zurueck (0: nichts getan)."""
+    import lzma
+    p = Path(pfad)
+    if not p.name.endswith(GZ) or not p.exists():
+        return 0
+    text = gz_text(p).encode("utf-8")
+    ziel = p.with_name(p.name.removesuffix(GZ) + XZ)
+    tmp = ziel.with_name(ziel.name + ".neu")
+    tmp.write_bytes(lzma.compress(text, preset=6))
+    if lzma.decompress(tmp.read_bytes()) != text:
+        tmp.unlink(missing_ok=True)
+        return 0
+    vorher = p.stat().st_size
+    tmp.replace(ziel)
+    p.unlink()
+    return vorher - ziel.stat().st_size
 
 
 def bilder(pfad: str | Path) -> list[tuple[float, Path]]:
@@ -162,5 +221,5 @@ def bildschirme(pfad: str | Path) -> list[tuple[float, Path]]:
 
 
 def neueste() -> Path | None:
-    dateien = sorted(ORDNER.glob("*.jsonl.gz"))
+    dateien = alle(ORDNER)
     return dateien[-1] if dateien else None
