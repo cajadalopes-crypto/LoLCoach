@@ -29,11 +29,12 @@ from ..regeln import HINWEIS, SOFORT, WICHTIG, Ansage
 PRIO = {"GEFAHR": SOFORT, "PLAN": WICHTIG, "ERINNERUNG": HINWEIS, "BESTAETIGUNG": HINWEIS, "TECHNIK": SOFORT,
         "INFO_FLASH": WICHTIG, "WENDEPUNKT": WICHTIG, "FENSTER": WICHTIG, "VORSCHAU": WICHTIG,
         "VORSICHT": WICHTIG, "LAGEBILD": HINWEIS, "MAKRO": WICHTIG, "INFO_JUNGLER": WICHTIG, "INFO_LANE": WICHTIG,
-        "INFO_VORLAUF": WICHTIG, "INFO_BASIS": WICHTIG}
+        "INFO_VORLAUF": WICHTIG, "INFO_BASIS": WICHTIG,
+        "INFO_EINDRINGLING": WICHTIG}
 # zaehlen nicht zum Budget (INFO_FLASH: eigene Grenze, Auftrag 002; WENDEPUNKT: hoechstens 1 je 8 s, Buch 11, 4;
 # Auftrag 016, 1: die Informationspflicht - Flash, Jungler, Lane-Gegner weg - kommt immer, als WICHTIG)
 FREI = ("GEFAHR", "TECHNIK", "INFO_FLASH", "WENDEPUNKT", "VORSICHT", "INFO_JUNGLER", "INFO_LANE", "INFO_VORLAUF",
-        "INFO_BASIS")
+        "INFO_BASIS", "INFO_EINDRINGLING")
 
 
 def zaehlt(a: Ansage) -> bool:
@@ -52,7 +53,8 @@ class Sprecher:
         self.kategorien: dict[str, int] = {"GEFAHR": 0, "PLAN": 0, "ERINNERUNG": 0, "BESTAETIGUNG": 0,
                                            "INFO_FLASH": 0, "WENDEPUNKT": 0, "FENSTER": 0, "VORSCHAU": 0,
                                            "VORSICHT": 0, "LAGEBILD": 0, "MAKRO": 0, "INFO_JUNGLER": 0, "INFO_LANE": 0,
-                                           "INFO_VORLAUF": 0, "INFO_BASIS": 0}
+                                           "INFO_VORLAUF": 0, "INFO_BASIS": 0,
+                                           "INFO_EINDRINGLING": 0}
 
     def platz(self, zeit: float, gesagt: list) -> bool:
         """Budget frei? (Kapitel 9.2) - gemessen an allem, was gesprochen wurde (auch den alten Regeln)."""

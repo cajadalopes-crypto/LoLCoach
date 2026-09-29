@@ -1,39 +1,40 @@
 # Kampfrechner (lolcoach/kampf_rechner.py) an Riot-Partien geeicht - werkzeuge/kampf_eichung_riot.py, Auftrag 020
 stand = "2026-09-29"
 quelle = "Match-V5 EUW Solo-Queue, Challenger bis Master (werkzeuge/riot_download.py)"
-partien = 1095
-schwelle = 0.5            # |Staerke| ab hier klar_vorn / klar_hinten
+partien = 2000
+schwelle = 0.6            # |Staerke| ab hier klar_vorn / klar_hinten
 tor = true                # >= 80 % je klares Urteil in jeder Menge, >= 30 % Abdeckung
 
 [alle]
-kaempfe = 35157
-klar_vorn = 11526
-treffer_vorn = 0.9702
-klar_hinten = 12252
-treffer_hinten = 0.966
-knapp = 11379
-knapp_wir_gewinnt = 0.4947
-abdeckung = 0.6763
+kaempfe = 63225
+klar_vorn = 18464
+treffer_vorn = 0.9784
+klar_hinten = 19538
+treffer_hinten = 0.9795
+knapp = 25223
+knapp_wir_gewinnt = 0.4932
+abdeckung = 0.6011
 
 [je_seite_2]
-kaempfe = 8728
-klar_vorn = 2039
-treffer_vorn = 0.9362
-klar_hinten = 2237
-treffer_hinten = 0.9213
-knapp = 4452
-knapp_wir_gewinnt = 0.4867
-abdeckung = 0.4899
+kaempfe = 15881
+klar_vorn = 2962
+treffer_vorn = 0.9497
+klar_hinten = 3249
+treffer_hinten = 0.948
+knapp = 9670
+knapp_wir_gewinnt = 0.4838
+abdeckung = 0.3911
 
 [gleich_viele]
-kaempfe = 9577
-klar_vorn = 678
-treffer_vorn = 0.8009
-klar_hinten = 788
-treffer_hinten = 0.8046
-knapp = 8111
-knapp_wir_gewinnt = 0.4981
-abdeckung = 0.1531
+kaempfe = 17095
+klar_vorn = 610
+treffer_vorn = 0.8098
+klar_hinten = 733
+treffer_hinten = 0.8499
+knapp = 15752
+knapp_wir_gewinnt = 0.493
+abdeckung = 0.0786
+
 [aufnahmen]
 # Probe an Carlos' Aufnahmen (183125, 192113, 133448, 101426; Lagebild-Kampf je 20 s, Ausgang = Tote unter den
 # Gezaehlten in 15 s). Anders als in den Riot-Daten zaehlen live nur SICHTBARE Gegner, und "mit dir" erst ab 12 s Weg.

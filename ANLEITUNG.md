@@ -79,6 +79,10 @@ wartest, warum und was du nächstes Mal tust.
   - Kämpft ein Mitspieler in bis zu 15 s Weg, sagt Claude „Hilf“ oder „Nicht hin“ mit Grund und Kill-Check.
   - Beim Tod bricht der laufende Satz sofort ab; der Tod-Satz hat höchstens 12 Wörter und sagt keinem Toten „geh
     zurück“.
+- **Seit Auftrag 021 (29.09.2026, noch nicht freigegeben):** Claude führt den Plan (Ziel, zwei Schritte, gilt bis)
+  und sagt Timer mit Aufgabe („Drache in 30 Sekunden, Tryndamere tot: mit Udyr zum Drachen“), das Fenster nach
+  gegnerischen Toden und Roam-Gefahr; der Kern meldet Gegner in deinem Jungle. Kämpfe sagt er nur als „Nicht rein“
+  mit Zahlen oder als zwei Optionen. Das Freigabe-Tor ist noch nicht erreicht (021_bericht.md).
 - **Flash-Timer:** Pingt ein Mitspieler im Chat "Urgot Blitz" (oder "urgot ult"), läuft
   ein Timer. Der Coach sieht Flash auch selbst auf der Minimap.
 

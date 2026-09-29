@@ -1,0 +1,454 @@
+{
+ "kennzahlen": {
+  "flash": "– (keine)",
+  "jungler": "22/24 (92 %)",
+  "i4": "2/4 (50 %)",
+  "backs": "4/5 (80 %)",
+  "back_rufe": "22/22 (100 %)",
+  "stille": "46 s",
+  "sicherheit": 1,
+  "widersprueche": 4,
+  "fuellsaetze": "1/112 (0.9 %)",
+  "latenz": "2.36 / 3.1 s (n = 83)"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [],
+  "jungler": [
+   {
+    "zeit": 211.8,
+    "name": "Warwick",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Jetzt, wo Warwick im Fluss ist: Back sofort, Caulfields kaufen, dann zurück zum äußeren Turm – deine Welle läuft zu Urgot und du brauchst Leben für die nächsten 21 Sekunden bis Swain kommt."
+   },
+   {
+    "zeit": 348.7,
+    "name": "Warwick",
+    "ort": "in eurem oberen Jungle",
+    "ohne_s": 100,
+    "tot_ich": false,
+    "gesagt": "Jetzt, wo Warwick gesehen wurde: Warwick sitzt oben im Jungle: Welle crashen jetzt, Back mit Brutalisierer, dann sofort nach oben zurück – Warwick kann in 18 Sekunden bei dir sein."
+   },
+   {
+    "zeit": 412.9,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 31,
+    "tot_ich": false,
+    "gesagt": "Warwick in seinem oberen Jungle."
+   },
+   {
+    "zeit": 437.4,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 22,
+    "tot_ich": false,
+    "gesagt": "Warwick oben gesehen: zurück hinter die Welle."
+   },
+   {
+    "zeit": 461.8,
+    "name": "Warwick",
+    "ort": "in eurem oberen Jungle",
+    "ohne_s": 21,
+    "tot_ich": false,
+    "gesagt": "Warwick in eurem oberen Jungle, bei dir in 1 Sekunde."
+   },
+   {
+    "zeit": 527.2,
+    "name": "Warwick",
+    "ort": "im oberen Fluss",
+    "ohne_s": 51,
+    "tot_ich": false,
+    "gesagt": "Warwick im oberen Fluss."
+   },
+   {
+    "zeit": 660.6,
+    "name": "Warwick",
+    "ort": "in der Flussmitte",
+    "ohne_s": 122,
+    "tot_ich": false,
+    "gesagt": "Warwick in der Flussmitte."
+   },
+   {
+    "zeit": 770.5,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 107,
+    "tot_ich": false,
+    "gesagt": "Warwick im unteren Fluss."
+   },
+   {
+    "zeit": 826.7,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 53,
+    "tot_ich": false,
+    "gesagt": "Warwick im unteren Fluss."
+   },
+   {
+    "zeit": 860.5,
+    "name": "Warwick",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 30,
+    "tot_ich": false,
+    "gesagt": "Warwick auf der Mid-Lane."
+   },
+   {
+    "zeit": 939.2,
+    "name": "Warwick",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Warwick auf der Mid-Lane."
+   },
+   {
+    "zeit": 976.8,
+    "name": "Warwick",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": 32,
+    "tot_ich": false,
+    "gesagt": "Warwick in eurem unteren Jungle."
+   },
+   {
+    "zeit": 1144.9,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 166,
+    "tot_ich": false,
+    "gesagt": "Warwick im unteren Fluss."
+   },
+   {
+    "zeit": 1202.9,
+    "name": "Warwick",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Warwick auf der Mid-Lane."
+   },
+   {
+    "zeit": 1400.1,
+    "name": "Warwick",
+    "ort": "oben",
+    "ohne_s": 170,
+    "tot_ich": false,
+    "gesagt": "Warwick oben."
+   },
+   {
+    "zeit": 1457.6,
+    "name": "Warwick",
+    "ort": "oben",
+    "ohne_s": 50,
+    "tot_ich": true,
+    "gesagt": "Warwick oben."
+   },
+   {
+    "zeit": 1508.5,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 49,
+    "tot_ich": false,
+    "gesagt": "Warwick im unteren Fluss, bei dir in 1 Sekunde."
+   },
+   {
+    "zeit": 1624.4,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 66,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 1765.9,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 133,
+    "tot_ich": false,
+    "gesagt": "Warwick in seinem oberen Jungle."
+   },
+   {
+    "zeit": 1846.5,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 26,
+    "tot_ich": false,
+    "gesagt": "Warwick in seinem oberen Jungle."
+   },
+   {
+    "zeit": 1876.2,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 22,
+    "tot_ich": false,
+    "gesagt": "Warwick im unteren Fluss."
+   },
+   {
+    "zeit": 1936.5,
+    "name": "Warwick",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Warwick in seinem unteren Jungle, bei dir in 2 Sekunden."
+   },
+   {
+    "zeit": 1978.2,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 37,
+    "tot_ich": true,
+    "gesagt": "Warwick im unteren Fluss."
+   },
+   {
+    "zeit": 2040.9,
+    "name": "Warwick",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 34,
+    "tot_ich": false,
+    "gesagt": null
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 238.5,
+    "gesagt": "Jetzt, wo Warwick im Fluss ist: Back sofort, Caulfields kaufen, dann zurück zum äußeren Turm – deine Welle läuft zu Urgot und du brauchst Leben für die nächsten 21 Sekunden bis Swain kommt.",
+    "saetze": [
+     "Jetzt, wo Warwick im Fluss ist: Back sofort, Caulfields kaufen, dann zurück zum äußeren Turm – deine Welle läuft zu Urgot und du brauchst Leben für die nächsten 21 Sekunden bis Swain kommt.",
+     "Jetzt, wo du in der Basis bist: Caulfields Kriegshammer und Kontroll-Auge kaufen, dann Top zum äußeren Turm – Welle läuft zu Urgot, Warwick ist sichtbar im Fluss."
+    ]
+   },
+   {
+    "zeit": 350.7,
+    "gesagt": "Jetzt, wo Warwick gesehen wurde: Warwick sitzt oben im Jungle: Welle crashen jetzt, Back mit Brutalisierer, dann sofort nach oben zurück – Warwick kann in 18 Sekunden bei dir sein.",
+    "saetze": [
+     "Platte an ihrem äußeren Top-Turm: Urgot ist gebackt.",
+     "Jetzt, wo Warwick gesehen wurde: Warwick sitzt oben im Jungle: Welle crashen jetzt, Back mit Brutalisierer, dann sofort nach oben zurück – Warwick kann in 18 Sekunden bei dir sein.",
+     "Jetzt, wo Warwick in 6 Sekunden bei dir sein kann: Welle crashen jetzt, back sofort mit Brutalisierer, dann Top-Lane halten – Alistar kommt in 5 Sekunden und Warwick bald danach."
+    ]
+   },
+   {
+    "zeit": 623.1,
+    "gesagt": "Jetzt, wo du in der Basis bist: Kauf Eklipse, Stiefel und ein Kontroll-Auge, dann nach Top.",
+    "saetze": [
+     "Freezen am Turm: die Welle läuft zu dir mit 3 gegnerischen Vassallen, Urgot kommt gleich oben an und Warwick kann jeden Moment sein – du brauchst Sicht und Leben zum Farmen, nicht Risk.",
+     "Jetzt, wo du in der Basis bist: Kauf Eklipse, Stiefel und ein Kontroll-Auge, dann nach Top.",
+     "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Welle läuft zu ihm, Kanone in 19 Sekunden und Urgot pushed: crash jetzt die Kanonenwelle, back danach mit Gold für Axiombogen, dann zu deinem Turm zurück – die Kanone gibt dir das längste Fenster, und danach kontrollierst du neu."
+    ]
+   },
+   {
+    "zeit": 939.2,
+    "gesagt": "Tanz des Todes kaufen, dann sofort nach Top: die Kanone kommt in 25 Sekunden und Warwick plus Vex sind in 24 bis 26 Sekunden bei dir – du brauchst die Welle vor ihnen.",
+    "saetze": [
+     "Urgot und Vex oben, Alistar unten, Warwick tot, Swain fehlt. Zwei oben: nicht allein nach vorn.",
+     "Warwick auf der Mid-Lane.",
+     "Tanz des Todes kaufen, dann sofort nach Top: die Kanone kommt in 25 Sekunden und Warwick plus Vex sind in 24 bis 26 Sekunden bei dir – du brauchst die Welle vor ihnen."
+    ]
+   },
+   {
+    "zeit": 1643.9,
+    "gesagt": null,
+    "saetze": [
+     "Alistar Mitte, Vex tot, Urgot, Warwick und Swain fehlen. Drei fehlen: nicht tief gehen.",
+     "Jetzt, wo Alistar tot ist: Mid-Inhibitor mit Xerath und Karthus, ihr habt 41 Sekunden bis er lebt – TP dorthin statt Top, weil der Inhibitor mehr bringt als ein Split gegen Urgot ohne Unterstützung.",
+     "Jetzt, wo euer Inhibitor weg ist: TP Mid nicht mehr"
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 22.76913070678711,
+    "text": "Aus der Basis: Farm Top, bei 1050 Gold back für Caulfields Kriegshammer. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 211.77420043945312,
+    "text": "Jetzt, wo Warwick im Fluss ist: Back sofort, Caulfields kaufen, dann zurück zum äußeren Turm – deine Welle läuft zu Urgot und du brauchst Leben für die nächsten 21 Sekunden bis Swain kommt.",
+    "kette": true
+   },
+   {
+    "zeit": 277.51776123046875,
+    "text": "Jetzt, wo Urgot tot ist: Back sofort, Stiefel kaufen, dann mit Team zum Drachen in 22 Sekunden – ihr seid stärker und Warwick vermutlich noch unten.",
+    "kette": true
+   },
+   {
+    "zeit": 289.71771240234375,
+    "text": "Urgot ist tot, die Kanonenwelle crasht gerade bei dir: Back jetzt mit den 627 Gold, Stiefel kaufen, dann mit Team zum Drachen – ihr seid stärker und Warwick vermutlich noch unten.",
+    "kette": true
+   },
+   {
+    "zeit": 348.6693420410156,
+    "text": "Jetzt, wo Warwick gesehen wurde: Warwick sitzt oben im Jungle: Welle crashen jetzt, Back mit Brutalisierer, dann sofort nach oben zurück – Warwick kann in 18 Sekunden bei dir sein.",
+    "kette": true
+   },
+   {
+    "zeit": 362.0528259277344,
+    "text": "Jetzt, wo Warwick in 6 Sekunden bei dir sein kann: Welle crashen jetzt, back sofort mit Brutalisierer, dann Top-Lane halten – Alistar kommt in 5 Sekunden und Warwick bald danach.",
+    "kette": true
+   },
+   {
+    "zeit": 480.1643981933594,
+    "text": "Jetzt, wo Larven da sind und dein Ort unbekannt: Back jetzt, Eklipse kaufen, dann zu Bot zum Drachen in 50 Sekunden – ihre Mid-Welle läuft zu dir, crash sie nicht, Warwick ist oben noch aktiv.",
+    "kette": true
+   },
+   {
+    "zeit": 540.515625,
+    "text": "Nein – Urgot und Warwick sind beide oben/im Fluss, du stirbst bei Back: bleib unter dem Turm, crash die Welle in 26 Sekunden, dann Back mit Eklipse, danach Top – Warwick kann nicht beide Plätze gleichzeitig sein.",
+    "kette": true
+   },
+   {
+    "zeit": 568.191650390625,
+    "text": "Jetzt, wo ein Kill gefallen ist: Back jetzt, Eklipse und Stiefel kaufen, dann sofort Top – Urgot ist tot, Warwick unbekannt aber dein Geld reicht jetzt für den Spike.",
+    "kette": true
+   },
+   {
+    "zeit": 637.3181762695312,
+    "text": "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Welle läuft zu ihm, Kanone in 19 Sekunden und Urgot pushed: crash jetzt die Kanonenwelle, back danach mit Gold für Axiombogen, dann zu deinem Turm zurück – die Kanone gibt dir das längste Fenster, und danach kontrollierst du neu.",
+    "kette": true
+   },
+   {
+    "zeit": 710.9124145507812,
+    "text": "Jetzt, wo Swain drei killt und die Larven nimmt: crash die Top-Welle auf die Kanone in 36 Sekunden, dann back für den Brutalisierer und zurück zu deiner Lane – ihr haltet bis 30 min.",
+    "kette": true
+   },
+   {
+    "zeit": 726.295654296875,
+    "text": "Jetzt, wo ein Kill gefallen ist: Top-Welle rein, dann back: 1800 Gold für den Brutalisierer, Urgot ist tot. Danach zur Top-Welle.",
+    "kette": true
+   },
+   {
+    "zeit": 840.0989379882812,
+    "text": "Jetzt, wo Xerath tot ist und Warwick unten ist: Welle crashen, back für Caulfields Kriegshammer, dann oben bleiben und Urgot freezen – ihr seid Level-vorn, aber Warwick kann in 9 Sekunden hier sein.",
+    "kette": true
+   },
+   {
+    "zeit": 870.6914672851562,
+    "text": "Welle crashen, back für Tanz des Todes, dann zur Top-Welle – Urgot kommt in 11 Sekunden, aber du bist dann weg; Herold in 22 Sekunden: der Grund ist, dass ihr hinten seid und halten müsst.",
+    "kette": true
+   },
+   {
+    "zeit": 1026.02880859375,
+    "text": "Jetzt, wo Xerath und Ziggs beide tot sind und Vex immer noch oben ist: Welle halten auf deiner Lane, Swain kommt in 26 Sekunden – crashe die Kanonenwelle in 40 Sekunden, dann back für Axiombogen, danach mit TP zu Bot zum Baron-Setup, weil ihr in 173 Sekunden vier gegen fünf seid und Swain/Alistar gleich zurück sind.",
+    "kette": true
+   },
+   {
+    "zeit": 1108.3726806640625,
+    "text": "Jetzt, wo Urgot tot ist: Baron in 91 Sekunden: Urgot kommt in 22 Sekunden zurück, Kanone in 8 Sekunden – crash sie jetzt, dann back für Schutzengel, danach TP zum Baron mit deinem Team, während Shen, Xerath, Karthus und Ziggs die Welle halten.",
+    "kette": true
+   },
+   {
+    "zeit": 1264.751953125,
+    "text": "Jetzt, wo euer äußerer Mid-Turm weg ist: Swain kommt: Back jetzt, Brutalisierer kaufen, dann mit Ziggs den Inhibitor-Turm drücken, weil Urgot erst in 8 Sekunden zurück ist und ihr die Überlegenheit nutzen müsst.",
+    "kette": true
+   },
+   {
+    "zeit": 1335.112060546875,
+    "text": "Jetzt, wo Alistar in 15 Sekunden bei dir ist: Back jetzt mit Der Brutalisierer zum Axiombogen, dann zu deinem äußeren Top-Turm, weil Alistar kommt und die Kanone in 31 Sekunden – sicherer als nach Top zu laufen.",
+    "kette": true
+   },
+   {
+    "zeit": 1380.8131103515625,
+    "text": "Jetzt, wo ein Turm oder Objective gefallen ist: Back jetzt: Brutalisierer, dann mit TP zum Baron-Pit, weil Karthus in 6 Sekunden lebt und ihr zwei Gegner oben habt – 4v5 reicht noch nicht.",
+    "kette": true
+   },
+   {
+    "zeit": 1523.8087158203125,
+    "text": "**HALT – Warwick ist 2 Sekunden weg, Vex 1 Sekunde weg, ihr seid 3v5 in ihrem Jungle: Back sofort zu Basis, nicht Drache.** Back jetzt, Gespaltener Himmel kaufen, dann mit Xerath und Ziggs zur Mid-Kanonenwelle in 18 Sekunden – ihr braucht die Gruppe, nicht das Solo-Duelle.",
+    "kette": true
+   },
+   {
+    "zeit": 1888.4349365234375,
+    "text": "Ihr innerer Bot-Turm ist weg. Bot-Welle rein, dann back, 3700 Gold im Beutel, Urgot ist tot. Danach auf ihren Nexus-Turm. Dort heilen.",
+    "kette": true
+   },
+   {
+    "zeit": 2055.214599609375,
+    "text": "Euer Bot-Inhibitor ist weg. Kanone kommt 34 22, die noch rein, dann back. 5900 Gold im Beutel. Danach nach Top. Dort heilen.",
+    "kette": true
+   }
+  ],
+  "stille_max": 46,
+  "stille_lang": [
+   [
+    290,
+    335
+   ]
+  ],
+  "sicherheit": [
+   {
+    "zeit": 555.8993530273438,
+    "text": "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Crash die Welle jetzt Kanonenwelle gibt dir das längste Fenster, und Urgot steht im Fluss, nicht auf der Lane.",
+    "schluessel": "stratege:Lane: die Kanonenwelle in 19 Sekunden kommt:35",
+    "grund": "nach vorn trotz R1 (Crash die Welle jetzt Kanonenw)"
+   }
+  ],
+  "widersprueche": [
+   {
+    "zeit": 348.6693420410156,
+    "von": "turm",
+    "nach": "welle",
+    "vorher": "Platte an ihrem äußeren Top-Turm: Urgot ist gebackt.",
+    "text": "Jetzt, wo Warwick gesehen wurde: Warwick sitzt oben im Jungle: Welle crashen jetzt, Back mit Brutalisierer, dann sofort nach oben zurück – Warwick kann in 18 Sekunden bei dir sein."
+   },
+   {
+    "zeit": 388.40380859375,
+    "von": "welle",
+    "nach": "larven",
+    "vorher": "Jetzt, wo Warwick in 6 Sekunden bei dir sein kann: Welle crashen jetzt, back sofort mit Brutalisierer, dann Top-Lane halten – Alistar kommt in 5 Sekunden und Warwick bald danach.",
+    "text": "Jetzt, wo Warwick vor 21 Sekunden unten war und Alistar gerade oben sichtbar ist: Larven in 92 Sekunden"
+   },
+   {
+    "zeit": 460.7554016113281,
+    "von": "larven",
+    "nach": "welle",
+    "vorher": "Stiefel kaufen, dann Top zur Welle Larven in 32 Sekunden, Ziggs gleich wieder da: ihr habt keine Bot-Prio für Larven, crasht die Top-Welle stattdessen, danach Drache mit Team.",
+    "text": "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Crash die Kanone jetzt rein"
+   },
+   {
+    "zeit": 637.3181762695312,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Jetzt, wo du in der Basis bist: Kauf Eklipse, Stiefel und ein Kontroll-Auge, dann nach Top.",
+    "text": "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Welle läuft zu ihm, Kanone in 19 Sekunden und Urgot pushed: crash jetzt die Kanonenwelle, back danach mit Gold für Axiombogen, dann zu deinem Turm zurück – die Kanone gibt dir das längste Fenster, und danach kontrollierst du neu."
+   }
+  ],
+  "fuellsaetze": [
+   {
+    "zeit": 702.6951904296875,
+    "text": "Ihr äußerer Top-Turm ist weg. Weiter deine Top-Welle.",
+    "schluessel": "kern:FARMEN"
+   }
+  ],
+  "saetze_n": 112,
+  "i4": [
+   {
+    "zeit": 1267.8,
+    "name": "Urgot",
+    "ort": "in seiner Basis",
+    "gesagt": null
+   },
+   {
+    "zeit": 1370.7,
+    "name": "Urgot",
+    "ort": "in seiner Basis",
+    "gesagt": "Urgot in seiner Basis gesehen: drück deine Welle."
+   },
+   {
+    "zeit": 1470.9,
+    "name": "Urgot",
+    "ort": "oben",
+    "gesagt": null
+   },
+   {
+    "zeit": 1889.4,
+    "name": "Urgot",
+    "ort": "in seiner Basis",
+    "gesagt": "Ihr innerer Bot-Turm ist weg. Bot-Welle rein, dann back, 3700 Gold im Beutel, Urgot ist tot. Danach auf ihren Nexus-Turm. Dort heilen."
+   }
+  ],
+  "latenz": {
+   "n": 83,
+   "median": 2.36,
+   "p90": 3.1
+  }
+ }
+}

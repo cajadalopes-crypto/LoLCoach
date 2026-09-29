@@ -1,0 +1,60 @@
+{"minuten": {
+"1": [
+{"soll": "Poppy nur 23 % Leben: jetzt reingehen und traden", "urteil": "fehlt", "grund": "1:37 rät Crash und back, nichts zu Poppys Leben oder Trade."},
+{"soll": "Teemo noch nie gesehen – Fluss-Auge oben setzen", "urteil": "fehlt", "grund": "Kein Wort zu Teemo oder Auge bis 1:49."}],
+"2": [
+{"soll": "Teemo noch nicht gesehen, Twitch in eurem unteren Jungle – nicht zu weit vor ohne Sicht", "urteil": "teilweise", "grund": "2:28 Teemo ungesehen, Crash-Rat; Twitch unten fehlt."}],
+"3": [
+{"soll": "Mit 775 Gold: Langschwert + Stiefel, Heiltrank", "urteil": "fehlt", "grund": "3:26 sagt 'erst farmen', nennt Langschwert/Stiefel/Heiltrank nicht."},
+{"soll": "Teemo im oberen Fluss (3:56), Flash weg: zurück zum Turm", "urteil": "teilweise", "grund": "3:55 Teemo Fluss gemeldet; 3:58 Welle rein statt zurück zum Turm."}],
+"4": [
+{"soll": "Teemo nach Kill oben jetzt Mid (4:26), dann unten (4:58) – Top sicher", "urteil": "teilweise", "grund": "4:58 Teemo unten weg; Mid-Meldung 4:26 fehlt."},
+{"soll": "Drache in 30 s, Teemo läuft unten: Top-Welle nehmen, Poppy L3 unter Druck setzen", "urteil": "fehlt", "grund": "4:58 rät Freeze; Drache und Druck auf Poppy nie genannt."}],
+"5": [
+{"soll": "Level 6 gegen Poppy L4, Teemo unten: all-in mit R", "urteil": "fehlt", "grund": "5:14-5:41 nur Flash-Meldung und Welle; kein all-in."},
+{"soll": "Poppy tot (5:46): Welle crashen, Plates holen", "urteil": "gesagt", "grund": "5:41 Poppy weg: Welle jetzt crashen, dann back."}],
+"6": [
+{"soll": "Teemo oben bei dir (6:02), 47 % Leben: zurück zum Turm", "urteil": "gesagt", "grund": "6:02 Teemo oben gesehen: zurück hinter die Welle."},
+{"soll": "Poppy tot (6:43), 875 Gold: Welle crashen, dann back", "urteil": "teilweise", "grund": "6:56 Back, Poppy tot; Welle crashen fehlt."}],
+"7": [
+{"soll": "Kauf Brutalisierer, dann direkt Top", "urteil": "gesagt", "grund": "7:15 und 7:35 Brutalisierer kaufen, dann Top."},
+{"soll": "Welle Top crashen, dann mit Volibear zu den Larven in 28 s", "urteil": "teilweise", "grund": "7:23/7:51 Welle crashen; Larven mit Volibear fehlen."}],
+"8": [
+{"soll": "Teemo und Poppy im oberen Fluss, Larven verloren – nicht allein rein", "urteil": "teilweise", "grund": "8:28 nicht hin, 8:43 Larven verloren; Poppy im Fluss fehlt."},
+{"soll": "Plan: Poppy fehlt auf Lane – Top-Welle pushen, Plates, dann Drache mit Team", "urteil": "teilweise", "grund": "8:28/8:54 Welle crashen; Plates und Drache mit Team fehlen."}],
+"9": [
+{"soll": "Teemo zuletzt in eurem oberen Jungle – Busch vor Welle checken", "urteil": "fehlt", "grund": "9:33-9:52 kein Teemo-Ort im oberen Jungle, kein Busch-Rat."},
+{"soll": "Poppy L6 gegen dein L9 mit Flash: du bist drei Level vorne, all-in", "urteil": "fehlt", "grund": "9:41 rät Crash und back, kein all-in."}],
+"10": [
+{"soll": "Top-Turm gefallen, 1950 Gold: back, Axiombogen-Teile kaufen", "urteil": "teilweise", "grund": "10:59 Back für Axiombogen, aber zugleich Freeze; Turm nicht genannt."},
+{"soll": "Danach Mid zum Drachen – Teemo und Twitch in ihrem unteren Jungle", "urteil": "fehlt", "grund": "10:20-10:59 kein Drache, kein Teemo/Twitch-Ort."}],
+"11": [
+{"soll": "Poppy vor 40 s unten gesehen – Top frei: Welle rein, Richtung Drache", "urteil": "teilweise", "grund": "11:12 Poppy vor 21 s unten auf Frage; kein Push-Rat, Drache fehlt."},
+{"soll": "Lux, Sona, Teemo tot: jetzt Drache mit Team", "urteil": "fehlt", "grund": "11:31 nur Kanone crashen, Back, freezen; kein Drache."}],
+"12": [
+{"soll": "14 % Leben, Flash weg, Lux und Sona oben im Jungle: sofort back, Welle liegen lassen", "urteil": "teilweise", "grund": "12:16 rät Crash; Back erst 12:37 mit Sona-Warnung 12:33."},
+{"soll": "In der Basis: Axiombogen, dann Eklipse (3123 Gold)", "urteil": "teilweise", "grund": "12:53 Axiombogen und Kontroll-Auge; Eklipse fehlt."}],
+"13": [
+{"soll": "Eklipse komplett kaufen – 2803 reicht, Kontroll-Auge weglassen falls kein Platz", "urteil": "teilweise", "grund": "13:03-13:44 Eklipse-Teile, aber widersprüchlich; Auge-Platz erst 13:44."},
+{"soll": "Danach: Top-Welle mitnehmen, Herold in 92 s mit Volibear", "urteil": "teilweise", "grund": "13:03/13:31 TP zur Top-Welle; Herold-Zeit und Volibear fehlen."}],
+"14": [
+{"soll": "Herold in 28 s: mit Volibear oben zum Pit, Teemo unten", "urteil": "teilweise", "grund": "14:33 Herold in 27 s, Auge; 14:43 mit Yorick, Teemo unten 14:55."},
+{"soll": "Lux oben sichtbar – über den Fluss kommen, nicht allein Top", "urteil": "fehlt", "grund": "Kein Lux-Hinweis in Minute 14."}],
+"15": [
+{"soll": "Herold jetzt: Teemo unten, Pit sicher", "urteil": "gesagt", "grund": "15:00 Teemo unten, Herold in 43 s, mit Yorick hin."},
+{"soll": "Nicht back bei vollem Leben: Herold Top einsetzen, Turm 2 mit Volibear", "urteil": "fehlt", "grund": "15:13/15:34 rät gerade back bei vollem Leben, das Gegenteil."}],
+"16": [
+{"soll": "Drache in 87 s: Top-Welle rein, dann zum Drachen, Teemo unten", "urteil": "teilweise", "grund": "16:06/16:52 Drache-Zeit und Team; Welle rein erst 16:52, Teemo fehlt."},
+{"soll": "Kontroll-Auge hast du: in den Fluss-Busch vor dem Drachen setzen", "urteil": "fehlt", "grund": "16:24 Frage zum Auge beantwortet mit Back, kein Fluss-Busch."}],
+"17": [
+{"soll": "Poppy seit 18 s weg im oberen Jungle – bei 37 % nicht vor die Welle", "urteil": "teilweise", "grund": "17:15 zurück unter Turm, zwei kommen; Poppy-Ort fehlt."},
+{"soll": "Drache in 39 s: Welle rein, zum Team, Baron in 165 s", "urteil": "fehlt", "grund": "Kein Drache- oder Baron-Satz in Minute 17."}]
+},
+"gesagt": 4, "teilweise": 16, "fehlt": 13,
+"fuellsaetze": {"anzahl": 2, "saetze_gesamt": 91, "zeiten": ["13:29 Los: Drache drin (in der Basis, nichts Neues)", "13:49 Los: Drache drin (Wiederholung)"]},
+"widersprueche": {"anzahl": 5, "faelle": [
+"10:51 'drück deine Welle' gegen 10:59 'freez nah am Turm'",
+"13:12 'sparst dir das Langschwert' gegen 13:31 'nimmst noch ein Langschwert'",
+"13:24 'Plätze voll' gegen 13:31 Langschwert dazu",
+"15:13 Vampirisches Zepter gegen 15:15 Caulfields Kriegshammer, gleiche Lage",
+"16:50 'lauf hin, alle rein' gegen 16:52 'Welle crashen, back'"]}}

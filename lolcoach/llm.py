@@ -237,7 +237,7 @@ def _aus_vorrat(schluessel: tuple) -> subprocess.Popen | None:
 
 def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = "sonnet", timeout: float = 60,
                 aufwand: str | None = None, bilder: list[bytes] | None = None, nachladen: bool | int = False,
-                messung: dict | None = None, bei_fertig=None) -> str:
+                messung: dict | None = None, bei_fertig=None, wissen: str | None = None) -> str:
     """Wie `frage`, aber gestreamt: jeder fertige Satz geht sofort an `bei_satz(satz)` - der Coach kann den
     ersten Satz sprechen, waehrend der Rest noch entsteht (gemessen 26.09.: erster Satz nach 2,7-3,1 s,
     ganze Antwort nach 5,1-5,2 s). Der erste Teilsatz geht schon vor dem Satzende raus (`erster_teil`), und
@@ -254,12 +254,14 @@ def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = 
             bei_satz(s)
         try:
             return api.frage_strom(prompt, weiter, system=system, modell=modell, timeout=min(timeout, 30),
-                                   bei_fertig=bei_fertig, messung=messung, bilder=bilder)
+                                   bei_fertig=bei_fertig, messung=messung, bilder=bilder, wissen=wissen)
         except Exception as e:
             _api_ausfall(e)
             if gesagt[0]:
                 raise LLMFehler(f"API brach mitten in der Antwort ab: {e}")
     modell = _abo_modell(modell)
+    if wissen:                     # Auftrag 021: das Abo kennt keinen zwischengespeicherten Block - er haengt am System
+        system = f"{system or ''}\n\n{wissen}"
     t0 = _t.monotonic()
     schluessel = (modell, system, aufwand)
     lauf = _aus_vorrat(schluessel)

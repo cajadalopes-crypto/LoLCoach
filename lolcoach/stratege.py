@@ -588,7 +588,10 @@ def sicherheit(s: str, lage: dict) -> list[str]:
     for m in SCHWACH.finditer(s):
         if _re.search(r"\bnicht\s*$", s[:m.start()], _re.I):
             continue
-        for n in _namen_in(s[max(0, m.start() - 40):m.start()], feinde):
+        # nur der eigene Satzteil (Auftrag 021, 183125 14:27: "Jetzt, wo Garen oben gesehen wurde: Zyra fast tot"
+        # meinte Zyra - der Vorsatz des Schiedsrichters hing Garen davor)
+        fenster = s[max(0, m.start() - 40):m.start()].rsplit(":", 1)[-1]
+        for n in _namen_in(fenster, feinde):
             le = gleben.get(n)
             if le is None or le >= 0.5:
                 gruende.append(f"„schwach“ ohne Beleg ({n}: " + ("Leben unbekannt" if le is None else

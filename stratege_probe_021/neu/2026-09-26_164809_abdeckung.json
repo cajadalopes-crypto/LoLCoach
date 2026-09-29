@@ -1,0 +1,426 @@
+{
+ "kennzahlen": {
+  "flash": "8/9 (89 %)",
+  "jungler": "16/21 (76 %)",
+  "i4": "1/2 (50 %)",
+  "backs": "6/6 (100 %)",
+  "back_rufe": "16/16 (100 %)",
+  "stille": "60 s",
+  "sicherheit": 0,
+  "widersprueche": 1,
+  "fuellsaetze": "0/89 (0.0 %)",
+  "latenz": "2.46 / 3.99 s (n = 65)"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 159.56100463867188,
+    "champion": "Wukong",
+    "gesagt": "Wukong Flash weg.",
+    "nach_s": 2.0
+   },
+   {
+    "zeit": 228.58799743652344,
+    "champion": "Ahri",
+    "gesagt": "Jetzt, wo Ahri Flash weg hat und die Welle zu Wukong läuft: bleib am Turm und freez die 5er-Welle, damit er nicht farmen kann – Vi ist noch unsichtbar und du packst ihn ohne Unterstützung nicht.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 246.90513610839844,
+    "champion": "Vi",
+    "gesagt": "Vi Flash weg.",
+    "nach_s": 7.1
+   },
+   {
+    "zeit": 379.7018127441406,
+    "champion": "Wukong",
+    "gesagt": null,
+    "nach_s": null
+   },
+   {
+    "zeit": 393.935546875,
+    "champion": "Ashe",
+    "gesagt": "Ashe Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1011.9953002929688,
+    "champion": "Ashe",
+    "gesagt": "Ashe Flash weg.",
+    "nach_s": 6.1
+   },
+   {
+    "zeit": 1187.05908203125,
+    "champion": "Xerath",
+    "gesagt": "Xerath Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1630.1812744140625,
+    "champion": "Xerath",
+    "gesagt": "Xerath Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1680.1160888671875,
+    "champion": "Ashe",
+    "gesagt": "Ashe Flash weg.",
+    "nach_s": 0.0
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 231.6,
+    "name": "Vi",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 407.1,
+    "name": "Vi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 144,
+    "tot_ich": false,
+    "gesagt": "Vi auf der Mid-Lane."
+   },
+   {
+    "zeit": 522.1,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 111,
+    "tot_ich": false,
+    "gesagt": "Vi in seinem unteren Jungle."
+   },
+   {
+    "zeit": 566.9,
+    "name": "Vi",
+    "ort": "im oberen Fluss",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Vi oben gesehen: zurück hinter die Welle."
+   },
+   {
+    "zeit": 596.4,
+    "name": "Vi",
+    "ort": "in der Flussmitte",
+    "ohne_s": 26,
+    "tot_ich": false,
+    "gesagt": "Vi in der Flussmitte."
+   },
+   {
+    "zeit": 665.6,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 51,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 709.4,
+    "name": "Vi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Vi in seinem oberen Jungle, bei dir in 1 Sekunde."
+   },
+   {
+    "zeit": 787.8,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 76,
+    "tot_ich": false,
+    "gesagt": "Vi in seinem unteren Jungle."
+   },
+   {
+    "zeit": 919.1,
+    "name": "Vi",
+    "ort": "in seiner Basis",
+    "ohne_s": 63,
+    "tot_ich": false,
+    "gesagt": "Vi in seiner Basis."
+   },
+   {
+    "zeit": 970.2,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 34,
+    "tot_ich": false,
+    "gesagt": "Vi im unteren Fluss."
+   },
+   {
+    "zeit": 1008.9,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 30,
+    "tot_ich": false,
+    "gesagt": "Vi im unteren Fluss, bei dir in 3 Sekunden."
+   },
+   {
+    "zeit": 1103.6,
+    "name": "Vi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 45,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 1146.4,
+    "name": "Vi",
+    "ort": "in seiner Basis",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Vi in seiner Basis."
+   },
+   {
+    "zeit": 1208.4,
+    "name": "Vi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 53,
+    "tot_ich": true,
+    "gesagt": "Vi auf der Mid-Lane."
+   },
+   {
+    "zeit": 1284.1,
+    "name": "Vi",
+    "ort": "oben",
+    "ohne_s": 46,
+    "tot_ich": false,
+    "gesagt": "Vi oben."
+   },
+   {
+    "zeit": 1345.3,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 22,
+    "tot_ich": true,
+    "gesagt": "Vi in seinem unteren Jungle."
+   },
+   {
+    "zeit": 1401.4,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 32,
+    "tot_ich": false,
+    "gesagt": "Zurück unter euren äußeren Mid-Turm: Vi kommt."
+   },
+   {
+    "zeit": 1480.9,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Vi im unteren Fluss."
+   },
+   {
+    "zeit": 1524.9,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 36,
+    "tot_ich": false,
+    "gesagt": "Vi in seinem unteren Jungle, bei dir in 5 Sekunden."
+   },
+   {
+    "zeit": 1585.3,
+    "name": "Vi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 42,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 1659.7,
+    "name": "Vi",
+    "ort": "in seiner Basis",
+    "ohne_s": 39,
+    "tot_ich": false,
+    "gesagt": null
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 237.8,
+    "gesagt": "Jetzt, wo du 33 % Leben hast: Back sofort, Caulfields kaufen, dann zur Top-Lane – Drache in 92 Sekunden mit voller Life nach dem Kauf, aber erst wenn Wukong und Vi sichtbar sind.",
+    "saetze": [
+     "Jetzt, wo Ahri Flash weg hat und die Welle zu Wukong läuft: bleib am Turm und freez die 5er-Welle, damit er nicht farmen kann – Vi ist noch unsichtbar und du packst ihn ohne Unterstützung nicht.",
+     "Der Brutalisierer und Kontroll-Auge, dann direkt Top – die Kanonenwelle kommt in 56 Sekunden und Wukong steht oben, du musst da sein, bevor Vi dich holt.",
+     "Vi Flash weg."
+    ]
+   },
+   {
+    "zeit": 427.5,
+    "gesagt": "Xerath vermutlich zu dir rüber: Back jetzt, crash die Welle vorher und kauf Caulfields Kriegshammer, dann zu deinem äußeren Turm mit Sicht.",
+    "saetze": [
+     "Xerath vermutlich zu dir rüber: Back jetzt, crash die Welle vorher und kauf Caulfields Kriegshammer, dann zu deinem äußeren Turm mit Sicht.",
+     "Vi auf der Mid-Lane.",
+     "Caulfields Kriegshammer und Stiefel kaufen, dann zu deinem äußeren Turm Top, weil Xerath in 29 Sekunden kommt und du ohne Flash den Turm für Sicherheit brauchst."
+    ]
+   },
+   {
+    "zeit": 439.7,
+    "gesagt": "Xerath vermutlich zu dir rüber: Back jetzt, crash die Welle vorher und kauf Caulfields Kriegshammer, dann zu deinem äußeren Turm mit Sicht.",
+    "saetze": [
+     "Vi auf der Mid-Lane.",
+     "Caulfields Kriegshammer und Stiefel kaufen, dann zu deinem äußeren Turm Top, weil Xerath in 29 Sekunden kommt und du ohne Flash den Turm für Sicherheit brauchst.",
+     "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Freezen am Turm, 3–4 gegnerische Caster leben lassen: Wukong ist weg, Vi kommt vermutlich unten, und du hast Flash bald – die Welle zu dir ist dein sicherstes Fenster."
+    ]
+   },
+   {
+    "zeit": 612.7,
+    "gesagt": "Kauf Caulfields Kriegshammer für die Eklipse, Langschwert und ein Kontroll-Auge, dann zur Top-Welle.",
+    "saetze": [
+     "Vi in der Flussmitte.",
+     "Kauf Caulfields Kriegshammer für die Eklipse, Langschwert und ein Kontroll-Auge, dann zur Top-Welle."
+    ]
+   },
+   {
+    "zeit": 815.3,
+    "gesagt": "Jetzt, wo Xerath und Wukong weg sind: Eklipse kaufen, dann sofort zu deinem Team unten zum Drachen – Level 12 gegen 7 ist jetzt, die Welle oben läuft zu ihnen, aber Drache gewinnt euch das Spiel.",
+    "saetze": [
+     "Wukong in seiner Basis gesehen: drück deine Welle.",
+     "Vi in seinem unteren Jungle.",
+     "Jetzt, wo Ahri in 9 Sekunden bei dir ist: sofort zur Base, Eklipse kaufen, dann mit Sion und Zaahen zum Drachen – Herold in 91 s, aber Drache jetzt mit eurem Level-Vorteil gewinnt das Spiel, Ahri stoppt ihr mit fünf Mann."
+    ]
+   },
+   {
+    "zeit": 1616.9,
+    "gesagt": "Kauf Eklipse, dann zur Top-Welle: dort kommt ihre nächste Welle und du pushst in 172 Sekunden zum Drachen.",
+    "saetze": [
+     "Kauf Eklipse, dann zur Top-Welle: dort kommt ihre nächste Welle und du pushst in 172 Sekunden zum Drachen.",
+     "Xerath Flash weg.",
+     "Nicht hin: Xerath Flash weg, aber Sion 56 % und du 14 Sekunden weg – ihr verliert die 2v1, dann kommt Vi unten rein."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 54.974510192871094,
+    "text": "Aus der Basis: Farm Top, bei 1050 Gold back für Caulfields Kriegshammer. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 153.49456787109375,
+    "text": "Jetzt, wo Wukong tot ist: Back jetzt: 37 Prozent Leben, Wukong ist tot. Heilen, dann Top.",
+    "kette": true
+   },
+   {
+    "zeit": 208.2538299560547,
+    "text": "Jetzt, wo du 33 % Leben hast: Back sofort, Caulfields kaufen, dann zur Top-Lane – Drache in 92 Sekunden mit voller Life nach dem Kauf, aber erst wenn Wukong und Vi sichtbar sind.",
+    "kette": true
+   },
+   {
+    "zeit": 318.1667175292969,
+    "text": "Jetzt, wo Wukong zuletzt vor 8 Sekunden oben gesehen wurde und unbekannt ist: Back jetzt für Stiefel, dann zur Lane und Welle vor deinem Turm halten – Wukong muss nach vorn kommen und sein Flash ist noch 139 Sekunden weg.",
+    "kette": true
+   },
+   {
+    "zeit": 397.0024719238281,
+    "text": "Xerath vermutlich zu dir rüber: Back jetzt, crash die Welle vorher und kauf Caulfields Kriegshammer, dann zu deinem äußeren Turm mit Sicht.",
+    "kette": true
+   },
+   {
+    "zeit": 547.6148681640625,
+    "text": "Crash die Kanonenwelle jetzt rein, dann back für Spitzhacke, weil Wukong tot ist und du danach mit dem Team zum Drachen musst – Vi ist unbekannt, aber die Kanonenwelle gibt dir das Zeitfenster.",
+    "kette": true
+   },
+   {
+    "zeit": 660.5595703125,
+    "text": "Sion tot in 16 Sekunden, Vi unbekannt oben: Back jetzt, Langschwert kaufen, dann zur Top-Welle drücken – ihr seid 4000 Gold vorn, die Welle läuft zu ihnen und Wukong respawnt in 10 Sekunden, danach zum Drachen in 240 Sekunden mit dem Team.",
+    "kette": true
+   },
+   {
+    "zeit": 757.2129516601562,
+    "text": "Top-Welle rein, dann back: 2050 Gold für Eklipse. Danach nach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 870.3331298828125,
+    "text": "Jetzt, wo Wukong tot ist: TP zur unteren Welle, crash sie mit der Kanone, back zur Eklipse, dann sofort zum Drachen – Vi braucht 19 Sekunden, ihr seid in 15 dort.",
+    "kette": true
+   },
+   {
+    "zeit": 1011.9953002929688,
+    "text": "Back jetzt: 1100 Gold für Caulfields Kriegshammer. Danach zur Top-Welle.",
+    "kette": true
+   },
+   {
+    "zeit": 1108.681640625,
+    "text": "Ahri und Xerath sind gleich zurück Back jetzt, Tanz des Todes kaufen, dann zu Sion nach Mid: Baron in 91 Sekunden mit voller Kraft, die Welle crasht deine Kanone weg.",
+    "kette": true
+   },
+   {
+    "zeit": 1151.474609375,
+    "text": "Jetzt, wo Ashe in 29 Sekunden zurück ist und Vi hier dich bedrängt: Back sofort mit Tanz des Todes, dann zu Sion nach Baron – ihr startet ihn jetzt zu viert, Zaahen hält oben, fertig bevor die gegnerische Frontlinie spawnt.",
+    "kette": true
+   },
+   {
+    "zeit": 1291.17041015625,
+    "text": "Jetzt, wo Ahri und Ashe (Flash weg) in 14 Sekunden bei dir sind: Back sofort, Tanz des Todes kaufen, dann zur Top-Welle – Drache in 60 Sekunden mit Cassiopeia und Ashe, während ihr oben pusht.",
+    "kette": true
+   },
+   {
+    "zeit": 1435.05126953125,
+    "text": "Mid-Welle rein, dann back: 5700 Gold für Tanz des Todes. Danach zur Top-Welle.",
+    "kette": true
+   },
+   {
+    "zeit": 1488.069580078125,
+    "text": "Jetzt, wo Drei von ihnen tot aufgetaucht ist: Back jetzt: Tanz des Todes, dann nach Top zur Kanone, weil Vi in 14 Sekunden kommt und dein Team unten bei den toten Gegnern ist – oben spielst du sicherer.",
+    "kette": true
+   },
+   {
+    "zeit": 1558.6956787109375,
+    "text": "Jetzt, wo Ahri tot ist: Kanone crashen, sofort back mit Tanz des Todes, dann mit Team zum Drachen in 3:52, weil Ahri und Xerath tot sind und ihr 1400 Gold vorn seid.",
+    "kette": true
+   }
+  ],
+  "stille_max": 60,
+  "stille_lang": [
+   [
+    267,
+    318
+   ],
+   [
+    334,
+    394
+   ],
+   [
+    615,
+    661
+   ]
+  ],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 228.58799743652344,
+    "von": "back",
+    "nach": "turm",
+    "vorher": "Jetzt, wo du 33 % Leben hast: Back sofort, Caulfields kaufen, dann zur Top-Lane – Drache in 92 Sekunden mit voller Life nach dem Kauf, aber erst wenn Wukong und Vi sichtbar sind.",
+    "text": "Jetzt, wo Ahri Flash weg hat und die Welle zu Wukong läuft: bleib am Turm und freez die 5er-Welle, damit er nicht farmen kann – Vi ist noch unsichtbar und du packst ihn ohne Unterstützung nicht."
+   }
+  ],
+  "fuellsaetze": [],
+  "saetze_n": 89,
+  "i4": [
+   {
+    "zeit": 786.8,
+    "name": "Wukong",
+    "ort": "in seiner Basis",
+    "gesagt": "Wukong in seiner Basis gesehen: drück deine Welle."
+   },
+   {
+    "zeit": 1601.6,
+    "name": "Wukong",
+    "ort": "in seiner Basis",
+    "gesagt": null
+   }
+  ],
+  "latenz": {
+   "n": 65,
+   "median": 2.46,
+   "p90": 3.99
+  }
+ }
+}

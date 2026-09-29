@@ -30,6 +30,29 @@ class Pflicht:
         self.basis_pos = None                         # (Zeit, Ort) beim letzten Stand
         self.basis_gesagt: list[float] = []
 
+    def _eindringling(self, kern, m) -> None:
+        """Auftrag 021, 3.3 (183125 6:04, 29:xx "Garen in deinem oberen Jungle - Buesche nicht blind betreten"): ein
+        gegnerischer Laner (der Jungler hat INFO_JUNGLER) taucht in eurem Jungle auf deiner Kartenseite auf -
+        hoechstens einmal je Gegner und 60 s."""
+        b = m.b
+        if b is None or getattr(m, "pos", None) is None or getattr(m, "tot", False) or getattr(kern, "gefahr", False):
+            return                     # in einer Gefahr spricht die Warnung (Szenario 0449-rueckzug-ein-satz)
+        if (getattr(m, "leben", None) or 1.0) < kern.cfg.get("schranken", {}).get("vor_leben_min", 0.4):
+            return                     # unter R1 geht es zurueck, nicht in Buesche (0449: 20 % Leben)
+        gesagt = getattr(self, "eindringling_gesagt", None)
+        if gesagt is None:
+            gesagt = self.eindringling_gesagt = {}
+        for g in getattr(b, "gegner", None) or []:
+            if not g.sichtbar or g.s.tot or g.pos is None or g.s.rolle == "JUNGLE" or not g.ort \
+                    or "eurem" not in g.ort or "Jungle" not in g.ort:
+                continue
+            if kartenseite(g.pos) != kartenseite(m.pos) or m.zeit - gesagt.get(g.champion, -1e9) < 60.0:
+                continue
+            gesagt[g.champion] = m.zeit
+            ort = g.ort.replace("eurem", "deinem")
+            self.offen["INFO_EINDRINGLING"] = (m.zeit, f"{g.champion} {ort}: Büsche nicht blind betreten.")
+            return
+
     def _basis_steht(self, kern, m, modus: str | None) -> None:
         """Auftrag 018, 2 (183125 18:46-19:48: nach dem Respawn eine Minute im Brunnen, keine Anweisung - "ich bleibe
         stehen, bis du mir sagst, was ich tun soll"): stehst du lebend basis_steht_s in der Basis, ohne dich zu
@@ -124,6 +147,7 @@ class Pflicht:
         c = kern.cfg["pflicht"]
         self._vorlauf(kern, m)
         self._basis_steht(kern, m, modus)
+        self._eindringling(kern, m)
         if b.jungler is not None and not b.jungler.s.tot:
             self._vorhersage(kern, m, b.jungler)
         j = b.jungler
@@ -147,7 +171,7 @@ class Pflicht:
             self.lane_bereit = True
         an_lane = str(getattr(m, "bereich", None) or "lane").startswith("lane")      # du stehst an einer Lane
         if not (g.sichtbar and g.pos is not None and m.pos is not None and self.lane_bereit and an_lane
-                and modus in ("LANE", "SEITE") and m.zeit >= c["ab_s"]):
+                and modus in ("LANE", "SEITE", "OBJECTIVE", "UNTERWEGS", "GRUPPE") and m.zeit >= c["ab_s"]):
             return
         basis = "Basis" in (g.ort or "")
         meine, seine = kartenseite(m.pos), kartenseite(g.pos)

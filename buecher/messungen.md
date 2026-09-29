@@ -4,7 +4,76 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 021 – Gehirn mit Plan und Freigabe-Tor (Buch 14, Schritt C, 29.09.2026)
+
+**Gebaut:**
+- **Plan-Objekt:** Claude schreibt nach dem gesprochenen Satz eine stille Zeile `PLAN: Ziel | Schritt | danach |
+  Grund | gilt bis | Abbruch` (`stratege_live.Plan`). Sie steht in jedem Prompt und beantwortet „Und dann?“.
+- **Jeder Plan-Satz des Kerns geht an Claude:** Das gilt für PLAN, WENDEPUNKT, VORSCHAU, FENSTER und MAKRO, mit dem
+  Satz als Entwurf. Der Kern spricht ihn nur als Ersatz: wenn Claude ausfällt oder nach 5 s nichts gesagt hat.
+  „NICHTS“ auf einen Plan-Entwurf heißt: der Plan bleibt.
+- **Wissen je Partie** (`lolcoach/partie_wissen.py`): ~5000 Tokens als zwischengespeicherter Block, darin Buch 13,
+  die Wellen-Regeln, Objective-Zeiten, das Lexikon der 10 Champions und Carlos' Build. Der Zwischenspeicher greift:
+  1,6 Mio. Tokens gelesen je Partie.
+- **Neue Anlässe:**
+  - Objective-Timer mit Aufgabe, 90 s und 30 s vorher und beim Spawn;
+  - das Fenster nach einem gegnerischen Tod;
+  - die Roam-Gefahr eines starken Laners ohne Sicht;
+  - der Kern meldet „Gegner in deinem Jungle: Büsche nicht blind betreten“.
+- **Kampfansage:** nur mit dem Rechner. „klar hinten“ ergibt „Nicht rein“; „klar vorn“ und „knapp“ ergeben zwei
+  Optionen, weil „klar vorn“ live nicht belegt ist (020).
+- **Sicherheit:** Der Satz wird vor dem Sprechen noch einmal gegen die Lage JETZT geprüft (125902 9:15: beim Fragen
+  war nach vorn erlaubt, beim Sprechen stand das Leben unter R1). „schwach“ gilt nur für den eigenen Satzteil
+  (183125 14:27: der Vorsatz nannte Garen, gemeint war Zyra).
+
+**Runden** (Haiku über die API; Kritiker blind und frisch, je Partie einer; Soll-Listen der bekannten Partien aus 019,
+der neuen blind aus `stratege_probe_021/stub/LAGE_*.md`):
+
+| Größe | Tor | 019 (Haiku) | 021 Runde 1 | 021 Runde 2 (bekannt) | 021 neu (125902, 164809, 120049) |
+|---|---|---|---|---|---|
+| Soll-Liste gesagt + teilweise | ≥ 80 / ≥ 75 % | 61 % | 58 % | 56 % | **70 %** |
+| Sicherheit | 0 / 0 / 0 | 0 | 0 | 0 (nach Messfix) | 1 → 0 nach Fix (125902 nachgespielt) |
+| Flash / Jungler / Lane-Gegner weg | je ≥ 90 % | – | – | 88 % / 89 % / 58 % | 89 % / 84 % / 43 % |
+| Füllsätze (Kritiker) | ≤ 5 % | 8 % | 3 % | 4,0 % | 3,2 % |
+| Widersprüche je Partie (Kritiker) | ≤ 1 | 6 in vier Partien | 2 / 6 / 5 / 5 | 2 / 7 / 4 / 7 | 4 / 2 / 1 |
+| Latenz ganzer Satz, Median | ≤ 2 s | 1,6 s | 2,6–2,9 s | 2,3–2,5 s | 2,3–2,5 s |
+| Kosten je 30 min | ≤ 0,50 $ | 0,25 $ | 0,58 $ | 0,45 $ | 0,34 $ |
+
+**Kosten der Nachspiele:**
+
+| Lauf | Kosten |
+|---|---|
+| Runde 1 | 2,24 $ |
+| Runde 2 | 1,85 $ |
+| neue Menge | 1,00 $ |
+| 125902 mit dem Sicherheitsfix | 0,37 $ |
+| **zusammen** | **5,46 $** (Budget 6 $) |
+
+- Eine dritte Runde auf der bekannten Menge hätte das Budget überschritten.
+- Nach Runde 1 wurde der gesprochene Teil sofort beim Beginn der PLAN-Zeile gesprochen, und eine zweite Anfrage
+  nach einem Verwerfen gab es nur noch für wichtige Anlässe. Das senkte die Kosten, die Latenz aber nur von
+  2,6–2,9 auf 2,3–2,5 s. Der Wissensblock macht jeden Aufruf rund 5000 Tokens länger.
+
+**Warum die Soll-Liste nicht steigt:**
+- **Die Kritiker streuen stark.** Dieselbe Minute wird einmal „gesagt“, einmal „fehlt“ bewertet. Zwischen Runde 1
+  und 2 kippten auf 183125 viele Urteile, ohne dass sich der Satz grundlegend änderte.
+- **Ein Teil der Soll-Punkte verlangt, was die harten Regeln verbieten:** Trade oder All-in ohne Kill-Check,
+  Wards, Level-Vergleiche mit All-in. 133448 enthält vier solche Punkte.
+- **Neu gesagt werden jetzt:** Timer mit Aufgabe, Fenster nach Toten, Kaufketten mit Item und Gegner im eigenen
+  Jungle. Dafür fehlen in Runde 2 Dinge, die 019 hatte, etwa Teemos Flash um 19:11 oder die Stille in 133448
+  1:47–3:13.
+
+---
+
 ## Auftrag 020 – Kampfrechner, geeicht an Riot-Partien (Buch 14, Schritt B, 29.09.2026)
+
+**Nachtrag 29.09. 22:55 (in 021):** Der Download ist fertig. Die Eichung mit 2000 Partien und 63 225 Kämpfen ergibt:
+- Schwelle 0,60, Tor ja.
+- Alle Kämpfe: 97,8 / 98,0 %.
+- Teamkämpfe: 95,0 / 94,8 %.
+- Gleich viele Beteiligte: 81,0 / 85,0 % bei 7,9 % Abdeckung.
+- Der Schlüssel ist nicht abgelaufen.
+
 
 **Fähigkeitswerte:** Meraki `lolstaticdata` geprüft. Es ist veraltet (jüngste Änderung Patch 25.15, 171 Champions;
 Graves Q dort 45–125 + 80 %, im Spiel 50–150 + 55 %). Deshalb CommunityDragon (Patch 16.19, 173 Champions), jetzt

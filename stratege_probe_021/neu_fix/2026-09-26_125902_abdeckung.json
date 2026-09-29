@@ -1,0 +1,420 @@
+{
+ "kennzahlen": {
+  "flash": "– (keine)",
+  "jungler": "22/24 (92 %)",
+  "i4": "3/4 (75 %)",
+  "backs": "5/5 (100 %)",
+  "back_rufe": "22/22 (100 %)",
+  "stille": "49 s",
+  "sicherheit": 0,
+  "widersprueche": 1,
+  "fuellsaetze": "0/110 (0.0 %)",
+  "latenz": "2.28 / 2.91 s (n = 69)"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [],
+  "jungler": [
+   {
+    "zeit": 211.8,
+    "name": "Warwick",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Warwick im oberen Fluss."
+   },
+   {
+    "zeit": 348.7,
+    "name": "Warwick",
+    "ort": "in eurem oberen Jungle",
+    "ohne_s": 100,
+    "tot_ich": false,
+    "gesagt": "Warwick in eurem oberen Jungle."
+   },
+   {
+    "zeit": 412.9,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 31,
+    "tot_ich": false,
+    "gesagt": "Warwick in seinem oberen Jungle."
+   },
+   {
+    "zeit": 437.4,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 22,
+    "tot_ich": false,
+    "gesagt": "Warwick oben gesehen: zurück hinter die Welle."
+   },
+   {
+    "zeit": 461.8,
+    "name": "Warwick",
+    "ort": "in eurem oberen Jungle",
+    "ohne_s": 21,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 527.2,
+    "name": "Warwick",
+    "ort": "im oberen Fluss",
+    "ohne_s": 51,
+    "tot_ich": false,
+    "gesagt": "Warwick im oberen Fluss."
+   },
+   {
+    "zeit": 660.6,
+    "name": "Warwick",
+    "ort": "in der Flussmitte",
+    "ohne_s": 122,
+    "tot_ich": false,
+    "gesagt": "Warwick in der Flussmitte."
+   },
+   {
+    "zeit": 770.5,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 107,
+    "tot_ich": false,
+    "gesagt": "Warwick im unteren Fluss."
+   },
+   {
+    "zeit": 826.7,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 53,
+    "tot_ich": false,
+    "gesagt": "Warwick im unteren Fluss."
+   },
+   {
+    "zeit": 860.5,
+    "name": "Warwick",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 30,
+    "tot_ich": false,
+    "gesagt": "Warwick ist gerade auf der Mid sichtbar: Herold-Crash verschieben, erst crashen wenn er weg oder an dir vorbei ist, sonst Gank beim Back – Drache in 91 Sekunden mit Urgot tot, ihr habt Prio, nach dem Herold direkt hin."
+   },
+   {
+    "zeit": 939.2,
+    "name": "Warwick",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Warwick auf der Mid-Lane."
+   },
+   {
+    "zeit": 976.8,
+    "name": "Warwick",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": 32,
+    "tot_ich": false,
+    "gesagt": "Warwick in eurem unteren Jungle."
+   },
+   {
+    "zeit": 1144.9,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 166,
+    "tot_ich": false,
+    "gesagt": "Warwick im unteren Fluss."
+   },
+   {
+    "zeit": 1202.9,
+    "name": "Warwick",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Warwick auf der Mid-Lane."
+   },
+   {
+    "zeit": 1400.1,
+    "name": "Warwick",
+    "ort": "oben",
+    "ohne_s": 170,
+    "tot_ich": false,
+    "gesagt": "Warwick oben."
+   },
+   {
+    "zeit": 1457.6,
+    "name": "Warwick",
+    "ort": "oben",
+    "ohne_s": 50,
+    "tot_ich": true,
+    "gesagt": "Warwick oben."
+   },
+   {
+    "zeit": 1508.5,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 49,
+    "tot_ich": false,
+    "gesagt": "Warwick im unteren Fluss, bei dir in 3 Sekunden."
+   },
+   {
+    "zeit": 1624.4,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 66,
+    "tot_ich": false,
+    "gesagt": "Jetzt, wo Urgot tot ist (47 s) und Warwick unten im Fluss: bleib oben, crash die Welle mit der Kanone in 17 Sekunden, dann TP zur Basis und mit dem Team zum Drachen – ihr seid vier, Warwick kann nicht beide Objectives halten."
+   },
+   {
+    "zeit": 1765.9,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 133,
+    "tot_ich": false,
+    "gesagt": "Warwick in seinem oberen Jungle."
+   },
+   {
+    "zeit": 1846.5,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 26,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 1876.2,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 22,
+    "tot_ich": false,
+    "gesagt": "Warwick im unteren Fluss."
+   },
+   {
+    "zeit": 1936.5,
+    "name": "Warwick",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Warwick in seinem unteren Jungle, bei dir in 2 Sekunden."
+   },
+   {
+    "zeit": 1978.2,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 37,
+    "tot_ich": true,
+    "gesagt": "Warwick im unteren Fluss."
+   },
+   {
+    "zeit": 2040.9,
+    "name": "Warwick",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 34,
+    "tot_ich": false,
+    "gesagt": "Warwick in seinem unteren Jungle."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 238.5,
+    "gesagt": "Jetzt, wo du in der Basis bist: Kauf Caulfields Kriegshammer und Kontroll-Auge, dann zu deinem äußeren Top-Turm, weil Warwick in 27 Sekunden bei dir sein kann und du mit dem Hammer zur Welle pünktlich da bist.",
+    "saetze": [
+     "Warwick im oberen Fluss.",
+     "Jetzt, wo du in der Basis bist: Kauf Caulfields Kriegshammer und Kontroll-Auge, dann zu deinem äußeren Top-Turm, weil Warwick in 27 Sekunden bei dir sein kann und du mit dem Hammer zur Welle pünktlich da bist."
+    ]
+   },
+   {
+    "zeit": 350.7,
+    "gesagt": "Jetzt, wo Alistar tot ist: Drache in 55 Sekunden, Warwick vermutlich oben – crash die Kanonenwelle jetzt, back mit Stiefel, dann mit Team zum Pit.",
+    "saetze": [
+     "Jetzt, wo Urgot tot ist und Alistar noch 11 Sekunden tot bleibt: Welle crashen, back mit Stiefel, dann mit Team zum Drachen – Warwick vermutlich oben, danach habt ihr Prio.",
+     "Warwick in eurem oberen Jungle.",
+     "Jetzt, wo du in der Basis bist: Sauber: Der Brutalisierer und Kontroll-Auge kaufen, dann sofort nach Top – Kanonenwelle kommt in 34 Sekunden und Warwick ist oben, danach mit Team zum Drachen."
+    ]
+   },
+   {
+    "zeit": 623.1,
+    "gesagt": "Jetzt, wo du in der Basis bist: Kauf Eklipse, Stiefel und ein Kontroll-Auge, dann nach Top.",
+    "saetze": [
+     "Freezen am Turm: 3 gegnerische Caster kommen zu dir, dein Turm ist deine Sicherheit, und Urgot kann in einer Sekunde da sein—Risiko zu groß zum Nachdrängen.",
+     "Jetzt, wo du in der Basis bist: Kauf Eklipse, Stiefel und ein Kontroll-Auge, dann nach Top.",
+     "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Crash die Kanonenwelle jetzt, weil Urgot im Fluss ist und du in 16 Sekunden unter Druck kommst—dann Back mit Axiombogen und raus aus der Lane, bevor er ankommt."
+    ]
+   },
+   {
+    "zeit": 939.2,
+    "gesagt": "Jetzt, wo Vex oben auftaucht ist und nur 1 s weg: Back sofort zur Basis, Tanz des Todes kaufen, dann mit TP zur Kanonenwelle Top – Drache in 32 Sekunden, Warwick kommt raus, ihr nehmt ihn statt des Drachens, wenn er allein ist.",
+    "saetze": [
+     "Jetzt, wo Vex oben auftaucht ist und nur 1 s weg: Back sofort zur Basis, Tanz des Todes kaufen, dann mit TP zur Kanonenwelle Top – Drache in 32 Sekunden, Warwick kommt raus, ihr nehmt ihn statt des Drachens, wenn er allein ist.",
+     "Warwick auf der Mid-Lane.",
+     "Jetzt, wo Warwick auf der Mid-Lane aufgetaucht ist: Tanz des Todes kaufen, dann sofort nach Top zur Kanonenwelle laufen, weil Warwick und Vex in 24–26 Sekunden bei der Basis sind und ihr den Druck oben halten müsst vor dem Drachen."
+    ]
+   },
+   {
+    "zeit": 1643.9,
+    "gesagt": "Jetzt, wo du in der Basis bist: Back jetzt: Caulfields Kriegshammer statt Dorans Klinge, dann TP zur Kanone in 18 Sekunden – danach mit vier zum Drachen, weil ihr das Fenster vor Urgots Spawn nutzen müsst.",
+    "saetze": [
+     "Alistar Mitte, Vex tot, Urgot, Warwick und Swain fehlen. Drei fehlen: nicht tief gehen.",
+     "Jetzt, wo Urgot tot ist (47 s) und Warwick unten im Fluss: bleib oben, crash die Welle mit der Kanone in 17 Sekunden, dann TP zur Basis und mit dem Team zum Drachen – ihr seid vier, Warwick kann nicht beide Objectives halten.",
+     "Jetzt, wo du in der Basis bist: Back jetzt: Caulfields Kriegshammer statt Dorans Klinge, dann TP zur Kanone in 18 Sekunden – danach mit vier zum Drachen, weil ihr das Fenster vor Urgots Spawn nutzen müsst."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 22.76913070678711,
+    "text": "Aus der Basis: Farm Top, bei 1050 Gold back für Caulfields Kriegshammer. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 289.71771240234375,
+    "text": "Jetzt, wo du Urgot getötet hast: Back sofort, kauf Stiefel für 300 Gold, dann zur Welle oben – Warwick ist unbekannt, crashe die Kanonenwelle in 7 Sekunden und farm dahinter.",
+    "kette": true
+   },
+   {
+    "zeit": 305.90142822265625,
+    "text": "Jetzt, wo Alistar tot ist: Drache in 55 Sekunden, Warwick vermutlich oben – crash die Kanonenwelle jetzt, back mit Stiefel, dann mit Team zum Pit.",
+    "kette": true
+   },
+   {
+    "zeit": 335.369140625,
+    "text": "Jetzt, wo Urgot tot ist und Alistar noch 11 Sekunden tot bleibt: Welle crashen, back mit Stiefel, dann mit Team zum Drachen – Warwick vermutlich oben, danach habt ihr Prio.",
+    "kette": true
+   },
+   {
+    "zeit": 388.40380859375,
+    "text": "Warwick ist oben bei dir, Larven in 92 Sekunden: Welle crashen, back mit Axiombogen statt Stiefeln – dann mit Shen und Xerath zum Drachen, weil ihr drei seid und sie nicht kommen können.",
+    "kette": true
+   },
+   {
+    "zeit": 457.730224609375,
+    "text": "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Crash die Kanone jetzt rein, weil Warwick in 19 Sekunden bei dir sein kann und du danach sofort weg musst – Back nach dem Crash, Stiefel kaufen, dann mit Team zum Drachen.",
+    "kette": true
+   },
+   {
+    "zeit": 547.657470703125,
+    "text": "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Crash jetzt: Kanonenwelle rein, Back danach mit Eklipse und Stiefel, weil du in 40 Sekunden zum Drachen musst und die Welle sauber zurückgesetzt ist.",
+    "kette": true
+   },
+   {
+    "zeit": 568.191650390625,
+    "text": "Jetzt, wo Urgot tot und Warwick unten ist: Back sofort, Eklipse und Stiefel kaufen, dann mit Team zum Drachen, weil ihr zwei tot habt und die Prio nutzen müsst.",
+    "kette": true
+   },
+   {
+    "zeit": 637.3181762695312,
+    "text": "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Crash die Kanonenwelle jetzt, weil Urgot im Fluss ist und du in 16 Sekunden unter Druck kommst—dann Back mit Axiombogen und raus aus der Lane, bevor er ankommt.",
+    "kette": true
+   },
+   {
+    "zeit": 680.0946044921875,
+    "text": "Jetzt, wo Urgot tot ist und die Larven weg: Drücke deine Top-Welle bis zum äußeren Turm, weil Warwick vermutlich oben ist und du mit Axiombogen vor seinem nächsten Gank 1v1 gewinnst—dann vor dem Herold in 200 Sekunden Back.",
+    "kette": true
+   },
+   {
+    "zeit": 840.0989379882812,
+    "text": "Jetzt, wo Urgot sichtbar oben ist und Warwick unten sein dürfte: Back jetzt, Caulfields Kriegshammer kaufen, dann zur Welle zurück und crashen vor dem Herold in 59 Sekunden, weil ihr danach mit der Gruppe zum Herold müsst und die Kanonenwelle das längste Fenster gibt.",
+    "kette": true
+   },
+   {
+    "zeit": 875.8248291015625,
+    "text": "Warwick ist gerade weg von dir (Mid): Welle crashen jetzt, dann back: Tanz des Todes kaufen, zur Top-Welle zurück – Herold in 7 Sekunden, danach mit Team hin, weil Urgot kommt bald wieder.",
+    "kette": true
+   },
+   {
+    "zeit": 919.909423828125,
+    "text": "Jetzt, wo Vex oben auftaucht ist und nur 1 s weg: Back sofort zur Basis, Tanz des Todes kaufen, dann mit TP zur Kanonenwelle Top – Drache in 32 Sekunden, Warwick kommt raus, ihr nehmt ihn statt des Drachens, wenn er allein ist.",
+    "kette": true
+   },
+   {
+    "zeit": 1142.85693359375,
+    "text": "Back jetzt: 2400 Gold für Schutzengel. Danach zur Top-Welle.",
+    "kette": true
+   },
+   {
+    "zeit": 1152.9906005859375,
+    "text": "Urgot tot für 35 Sekunden, aber dein Gold reicht nicht für Schutzengel – back jetzt mit 2640 Gold, kaufe Schutzengel (2100), dann sofort zur Top-Welle, weil die Kanone in 15 Sekunden kommt und dich dort braucht.",
+    "kette": true
+   },
+   {
+    "zeit": 1198.85009765625,
+    "text": "Back jetzt: Caulfields Kriegshammer kaufen, dann zu Top zur Kanone in 18 Sekunden, weil die Welle zu dir läuft und der Baron-Tausch lädt.",
+    "kette": true
+   },
+   {
+    "zeit": 1272.9188232421875,
+    "text": "Jetzt, wo dein Inhibitor unten weg ist: Welle rein, back für den Brutalisierer, dann zum Baron in 80 Sekunden mit Team – ihr seid beim Skalieren vorn, Baron bricht ihre Verteidigung.",
+    "kette": true
+   },
+   {
+    "zeit": 1378.7965087890625,
+    "text": "Back jetzt: Brutalisierer kaufen, dann zur Top-Welle laufen – sieben gegnerische Vasallen crashen bevor sie beim Inhibitor ankommen, danach mit Shen und Xerath zum Baron in 2 Minuten.",
+    "kette": true
+   },
+   {
+    "zeit": 1513.5750732421875,
+    "text": "Back jetzt: 1850 Gold für Caulfields Kriegshammer. Danach nach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 1648.970458984375,
+    "text": "Jetzt, wo du in der Basis bist: Back jetzt: Caulfields Kriegshammer statt Dorans Klinge, dann TP zur Kanone in 18 Sekunden – danach mit vier zum Drachen, weil ihr das Fenster vor Urgots Spawn nutzen müsst.",
+    "kette": true
+   },
+   {
+    "zeit": 1885.3350830078125,
+    "text": "Ihr innerer Bot-Turm ist weg. Bot-Welle rein, dann back, 3700 Gold im Beutel, Urgot ist tot. Danach auf ihren Nexus-Turm. Dort heilen.",
+    "kette": true
+   },
+   {
+    "zeit": 2055.214599609375,
+    "text": "Euer Bot-Inhibitor ist weg. Kanone kommt 34 22, die noch rein, dann back. 5900 Gold im Beutel. Danach nach Top. Dort heilen.",
+    "kette": true
+   }
+  ],
+  "stille_max": 49,
+  "stille_lang": [
+   [
+    241,
+    290
+   ]
+  ],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 637.3181762695312,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Jetzt, wo du in der Basis bist: Kauf Eklipse, Stiefel und ein Kontroll-Auge, dann nach Top.",
+    "text": "Jetzt, wo die Kanonenwelle in 19 Sekunden kommt: Crash die Kanonenwelle jetzt, weil Urgot im Fluss ist und du in 16 Sekunden unter Druck kommst—dann Back mit Axiombogen und raus aus der Lane, bevor er ankommt."
+   }
+  ],
+  "fuellsaetze": [],
+  "saetze_n": 110,
+  "i4": [
+   {
+    "zeit": 1267.8,
+    "name": "Urgot",
+    "ort": "in seiner Basis",
+    "gesagt": "Urgot in seiner Basis gesehen: drück deine Welle."
+   },
+   {
+    "zeit": 1370.7,
+    "name": "Urgot",
+    "ort": "in seiner Basis",
+    "gesagt": "Urgot in seiner Basis gesehen: drück deine Welle."
+   },
+   {
+    "zeit": 1470.9,
+    "name": "Urgot",
+    "ort": "oben",
+    "gesagt": null
+   },
+   {
+    "zeit": 1889.4,
+    "name": "Urgot",
+    "ort": "in seiner Basis",
+    "gesagt": "Urgot in seiner Basis gesehen: drück deine Welle."
+   }
+  ],
+  "latenz": {
+   "n": 69,
+   "median": 2.28,
+   "p90": 2.91
+  }
+ }
+}

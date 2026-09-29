@@ -49,7 +49,40 @@ STRATEGE_ABSICHTEN = frozenset(("JETZT", "DANACH", "WARUM", "ENTWEDER", "SOLL_IC
 ANLASS_FENSTER_S = 5.0     # nach Respawn, Basis-Ankunft, Kills: so lange wartet der Stratege auf den Plan-Satz des Kerns
 ANLASS_RUHE_S = 10.0       # ... kommt keiner, fragt er allein - nur, wenn so lange nichts Planendes gesagt wurde
 PLAN_KATEGORIEN = ("PLAN", "WENDEPUNKT", "VORSCHAU", "FENSTER", "GEFAHR", "VORSICHT", "LAGEBILD", "TEAMPLAN")
+ERSETZT = ("PLAN", "WENDEPUNKT", "VORSCHAU", "FENSTER", "MAKRO")    # Auftrag 021: Plan-Saetze fuehrt Claude
+# ... und nur diese Anlaesse fragen nach einem verworfenen Vorschlag ein zweites Mal (Kosten, Runde 1: 218 Aufrufe)
+NOCHMAL = ("Wendepunkt", "Respawn", "Ankunft in der Basis", "Kampf in der Nähe", "zwei Kills in 10 s")
 NICHTS = _re.compile(r"^\W*nichts\W*$", _re.I)
+PLAN_ZEILE = _re.compile(r"^\W*PLAN\s*:", _re.I)
+# Auftrag 021, 1 (Buch 14 C.1): Claude fuehrt den Plan - Ziel, zwei Schritte, Grund, gueltig bis, Abbruch
+PLAN_FORMAT = (" Nach dem gesprochenen Text schreibst du immer eine eigene letzte Zeile, die nicht gesprochen wird: "
+               "'PLAN: Ziel | naechster Schritt | Schritt danach | Grund | gilt bis mm:ss | Abbruch wenn ...' - "
+               "hoechstens 20 Woerter, Stichworte. "
+               "Aenderst du den Plan nicht, wiederhol ihn dort. Bei NICHTS keine PLAN-Zeile.")
+
+
+class Plan:
+    """Der aktive Plan, von Claude gesetzt (Auftrag 021, 1): Ziel, naechste zwei Schritte, Grund, gueltig bis,
+    Abbruch-Bedingung. Er beantwortet "Und dann?" und steht in jedem Prompt."""
+
+    def __init__(self, zeile: str, zeit: float, satz: str):
+        teile = [t.strip() for t in PLAN_ZEILE.sub("", zeile).split("|")]
+        teile += [""] * (6 - len(teile))
+        self.ziel, self.schritt, self.danach, self.grund, bis, self.abbruch = teile[:6]
+        self.abbruch = self.abbruch.removeprefix("Abbruch wenn").strip(" :")
+        m = _re.search(r"(\d{1,2}):(\d\d)", bis)
+        self.bis = int(m.group(1)) * 60 + int(m.group(2)) if m else zeit + 90.0
+        self.zeit, self.satz = zeit, satz
+
+    def gilt(self, zeit: float) -> bool:
+        return bool(self.ziel) and zeit <= self.bis
+
+    def text(self, zeit: float) -> str:
+        uhr = f"{int(self.bis // 60)}:{int(self.bis % 60):02d}"
+        return (f"AKTIVER PLAN (seit {int(zeit - self.zeit)} s, gilt bis {uhr}): Ziel {self.ziel}; als Naechstes "
+                f"{self.schritt}; danach {self.danach}; Grund: {self.grund}; Abbruch wenn {self.abbruch or '-'}. "
+                "Aendere ihn nur, wenn sich die Lage geaendert hat oder er erledigt ist - dann zuerst, was sich "
+                "geaendert hat.")
 
 
 def _cfg() -> dict:
@@ -117,20 +150,24 @@ def wellen_regeln() -> str:
         return ""
 
 
-def claude_strom(prompt: str, bei_satz, system: str, timeout: float, bei_fertig=None, modell: str = "sonnet") -> str:
-    """Der echte Weg: Claude ueber die API (Auftrag 019) oder das Abo, gestreamt, mit vorgehaltenem Prozess."""
+def claude_strom(prompt: str, bei_satz, system: str, timeout: float, bei_fertig=None, modell: str = "sonnet",
+                 wissen: str | None = None) -> str:
+    """Der echte Weg: Claude ueber die API (Auftrag 019) oder das Abo, gestreamt, mit vorgehaltenem Prozess.
+    `wissen`: der Wissensblock der Partie (Auftrag 021), bei der API zwischengespeichert."""
     from . import llm
     return llm.frage_strom(prompt, bei_satz, system=system, modell=modell, timeout=timeout, aufwand="low",
-                           nachladen=2, bei_fertig=bei_fertig)      # Auftrag 017: zwei vorgehalten
+                           nachladen=2, bei_fertig=bei_fertig, wissen=wissen)      # Auftrag 017: zwei vorgehalten
 
 
 claude_strom.mit_fertig = True
+claude_strom.mit_wissen = True
 
 
 class Zwischenspeicher:
     """Auftrag 019, 0.5: im Nachspiel je (Modell, System, Prompt) die Antwort merken - ein Wiederholungslauf mit
     unveraenderter Lage fragt nicht neu. Die Datei ist eine JSON-Zeilenliste."""
     mit_fertig = True
+    mit_wissen = True
 
     def __init__(self, frage_fn, datei: Path):
         import hashlib
@@ -147,8 +184,8 @@ class Zwischenspeicher:
                 except (ValueError, KeyError):
                     pass
 
-    def __call__(self, prompt, bei_satz, system, timeout, bei_fertig=None, modell="sonnet"):
-        k = self._h(f"{modell}\n{system}\n{prompt}".encode("utf-8")).hexdigest()
+    def __call__(self, prompt, bei_satz, system, timeout, bei_fertig=None, modell="sonnet", wissen=None):
+        k = self._h(f"{modell}\n{system}\n{wissen or ''}\n{prompt}".encode("utf-8")).hexdigest()
         if k in self._d:
             self.treffer += 1
             text = self._d[k]
@@ -158,7 +195,8 @@ class Zwischenspeicher:
                 bei_fertig()
             return text
         self.neu += 1
-        text = self.frage_fn(prompt, bei_satz, system, timeout, bei_fertig=bei_fertig, modell=modell)
+        extra = {"wissen": wissen} if getattr(self.frage_fn, "mit_wissen", False) else {}
+        text = self.frage_fn(prompt, bei_satz, system, timeout, bei_fertig=bei_fertig, modell=modell, **extra)
         with self._schloss:
             self._d[k] = text
             with open(self.datei, "a", encoding="utf-8") as f:
@@ -343,6 +381,14 @@ class MakroStratege:
         self._flash_eigen: float | None = None
         self._spike_gesagt: set = set()
         self._gefahr_vorher = False
+        # Auftrag 021: Plan-Objekt, Partie fuer den Wissensblock, neue Anlaesse
+        self.plan_obj: Plan | None = None
+        self._p = None
+        self._obj_gesagt: set = set()
+        self._tote_gegner: set = set()
+        self._fenster_zuletzt = -1e9
+        self._roam_gesagt: dict[str, float] = {}
+        self._starke: dict[str, float] = {}
 
     # --- Zustand -------------------------------------------------------------------------------------------------
 
@@ -379,7 +425,9 @@ class MakroStratege:
         if (kopf := kern.kopfzeile()):
             inhalt = f"{kopf}\n\n{inhalt}"
         a = self.schiedsrichter.aktiv
-        if a is not None and self._zeit - a[1] <= WIEDERHOLUNG_S:
+        if self.plan_obj is not None and self.plan_obj.gilt(self._zeit):
+            inhalt += "\n\n" + self.plan_obj.text(self._zeit)             # Auftrag 021, 1
+        elif a is not None and self._zeit - a[1] <= WIEDERHOLUNG_S:
             inhalt += f"\n\nAKTIVER PLAN (seit {int(self._zeit - a[1])} s): „{a[2]}“ - aendere ihn nur, wenn sich die " \
                       "Lage geaendert hat, und sag dann zuerst, was sich geaendert hat."
         eigene = [(t, s) for t, s in self.verlauf if self._zeit - t <= 60.0][-2:]
@@ -389,6 +437,29 @@ class MakroStratege:
         if (auge := self._auge_grund()):
             inhalt += f"\n\nKONTROLL-AUGE: nicht vorschlagen ({auge})."
         return mit_entwurf(kurzer_prompt(f"{inhalt}\n\n{ende}"), entwurf)
+
+    def _wissen(self) -> str | None:
+        """Auftrag 021, 2: der Wissensblock dieser Partie (zwischengespeichert)."""
+        try:
+            from . import partie_wissen
+            return partie_wissen.block(self._p)
+        except Exception:
+            return None
+
+    def _noch_sicher(self, a):
+        """Auftrag 021 (Nachspiel 125902 9:15: "Crash die Welle" - beim Fragen war nach vorn erlaubt, beim Sprechen
+        stand das Leben unter R1): der Sprechplan prueft den Satz vor dem Sprechen noch einmal gegen die Lage JETZT."""
+        def pruefe() -> bool:
+            try:
+                return not stratege.sicherheit(a.text, stratege.pruef_lage(self.kern, self._p))
+            except Exception:
+                return True
+        return pruefe
+
+    def _plan_merken(self, versuche: list[dict], zeit: float, text: str | None) -> None:
+        zeile = next((v.get("plan") for v in reversed(versuche) if v.get("plan")), None)
+        if text and zeile:
+            self.plan_obj = Plan(zeile, zeit, text)
 
     def _auge_grund(self) -> str | None:
         """Auftrag 016, 5: hoechstens einmal je Back vorschlagen; sagt Carlos Nein, 5 min lang gar nicht."""
@@ -423,6 +494,19 @@ class MakroStratege:
         gemeldet = [False]
 
         def satz(s: str, ende: bool = False) -> None:
+            if "plan" in v or PLAN_ZEILE.match(s or ""):  # Auftrag 021: die PLAN-Zeile wird gemerkt, nicht gesprochen
+                erste = "plan" not in v
+                v["plan"] = (v.get("plan", "") + " " + (s or "")).strip()
+                if erste and gut:
+                    fertig()                             # der gesprochene Teil ist da: nicht auf die PLAN-Zeile warten
+                return
+            if (i := (s or "").find("PLAN:")) > 0:
+                v["plan"] = s[i:].strip()
+                s = s[:i]
+                satz(s, ende=True)
+                if gut:
+                    fertig()
+                return
             s = " ".join(f"{halb[0]} {s}".split())
             halb[0] = ""
             if not s or erster_verworfen[0] or v["nichts"]:
@@ -461,8 +545,9 @@ class MakroStratege:
                     bei_satz(" ".join(gut))
         try:
             if getattr(self.frage_fn, "mit_fertig", False):
-                self.frage_fn(prompt, satz, stratege.STRATEGE_SYSTEM, self.ausfall_s, bei_fertig=fertig,
-                              modell=modell)
+                extra = {"wissen": self._wissen()} if getattr(self.frage_fn, "mit_wissen", False) else {}
+                self.frage_fn(prompt, satz, stratege.STRATEGE_SYSTEM + PLAN_FORMAT, self.ausfall_s, bei_fertig=fertig,
+                              modell=modell, **extra)
             else:
                 self.frage_fn(prompt, satz, stratege.STRATEGE_SYSTEM, self.ausfall_s)
         except Exception as e:                            # Abo-Fehler, Zeitueberschreitung: still weiter mit dem Kern
@@ -476,7 +561,7 @@ class MakroStratege:
         return v
 
     def _frage(self, p, anlass: str, ende: str, bei_satz=None, vorbereitet=None,
-               modell: str = "stark") -> tuple[str | None, list[dict]]:
+               modell: str = "stark", nochmal: bool = True) -> tuple[str | None, list[dict]]:
         """Bis zu zwei Versuche (der zweite mit dem Grund des Verwerfens). (Text oder None, Versuche). `vorbereitet`:
         (Prompt, Pruef-Lage), im Takt gebaut - der Hintergrund-Faden liest den Kern dann nicht mehr."""
         prompt, lage = vorbereitet or (self._prompt(p, anlass, ende), self._lage(p))
@@ -489,6 +574,8 @@ class MakroStratege:
             return None, versuche
         if a["nichts"]:
             return None, versuche
+        if not a["text"] and a["gruende"] and not nochmal:
+            return None, versuche                        # Auftrag 021: Kosten - nur wichtige Anlaesse fragen zweimal
         if not a["text"] and a["gruende"]:
             weg = a["verworfen"][0]["satz"] if a["verworfen"] else ""
             b = self._versuch(prompt + f"\n\nDein Vorschlag „{weg}“ wurde verworfen: {'; '.join(a['gruende'])}. "
@@ -511,8 +598,13 @@ class MakroStratege:
         if not self.bereit() or (absicht or "OFFEN") not in STRATEGE_ABSICHTEN or p is None:
             return None
         self._zeit = p.zeit
+        self._p = p
         kette = bool(stratege.BACK_WORT.search(frage) or _re.search(r"kauf|was (mach|tu)|und dann|danach|plan", frage,
                                                                      _re.I))
+        pl = self.plan_obj
+        if entwurf is None and pl is not None and pl.gilt(p.zeit) and _re.search(r"und dann|danach|was dann|als nächstes",
+                                                                                 frage, _re.I):
+            entwurf = f"{pl.schritt[:1].upper()}{pl.schritt[1:]}, danach {pl.danach}: {pl.grund}."   # Auftrag 021, 1
         ende = f"Frage des Spielers: {frage}" + (
             "\nSag die Kette: den naechsten Schritt und den danach (bei Back oder Kauf: was, dann wohin, warum)."
             if kette else "")
@@ -527,6 +619,7 @@ class MakroStratege:
                         "quelle": "stratege" if text else "kern", "text": text, "versuche": versuche})
         if text:
             self._gesprochen(p.zeit, text)
+            self._plan_merken(versuche, p.zeit, text)
             self.schiedsrichter.ereignis(p.zeit, "du gefragt hast")
             self.schiedsrichter.setze(text, p.zeit)
             if bei_satz is not None:
@@ -542,29 +635,35 @@ class MakroStratege:
         if p is None or not p.ich:
             return ansagen
         self._zeit = p.zeit
+        self._p = p
         anlass = self._anlass(p, ansagen)
         if not self.bereit():
             return self._richte(ansagen, p)
         ansagen = [a for a in ansagen if a.schluessel != "kern:WELLE_DRUECKEN"]
         m = self.kern.m
         modus = getattr(getattr(self.kern, "modus", None), "aktuell", None)
+        ersetzt = lambda a: a.schluessel.startswith("kern:") and getattr(a, "_kategorie", None) in ERSETZT
+        if self._laeuft and not (m is not None and m.tot):
+            # Auftrag 021, 1: Claude fasst den Plan gerade neu - der Kern baut keinen eigenen Plan-Satz dazwischen
+            return self._richte([a for a in ansagen if not ersetzt(a)], p)
         if self._laeuft or modus in ("KAMPF", "TOT", None) or getattr(self.kern, "gefahr", False) \
                 or (m is not None and m.tot):
             return self._richte(ansagen, p)             # Auftrag 017, 0.2: ein Aufruf zur Zeit - der Anlass verfaellt
-        if anlass == "Kampf in der Nähe" or (anlass or "").startswith("Lane:"):
+        if anlass == "Kampf in der Nähe" or (anlass or "").startswith(("Lane:", "Objective:", "Fenster:", "Roam:")):
             self._starte(p, anlass, None)                   # sofort, ohne auf den Kern zu warten
-            return self._richte(ansagen, p)
+            return self._richte([a for a in ansagen if not ersetzt(a)], p)
         if anlass:
             self._offen = (anlass, p.zeit)
         offen = self._offen if self._offen is not None and p.zeit - self._offen[1] <= ANLASS_FENSTER_S else None
-        # der Plan-Satz des Kerns an einem Wendepunkt (oder kurz nach Respawn, Basis, Kills) geht an den Strategen
-        wp = next((a for a in ansagen if a.schluessel.startswith("kern:") and (
-            getattr(a, "_kategorie", None) == "WENDEPUNKT"
-            or (offen is not None and getattr(a, "_kategorie", None) == "PLAN"))), None)
+        # Auftrag 021, 1: JEDER Plan-Satz des Kerns geht als Entwurf an Claude (vorher nur der Wendepunkt); der Kern
+        # spricht ihn nur als Ersatz, wenn Claude ausfaellt oder zu spaet kommt
+        wp = next((a for a in ansagen if ersetzt(a)), None)
         if wp is not None:
-            ansagen = [a for a in ansagen if a is not wp]
+            ansagen = [a for a in ansagen if not ersetzt(a)]
             self._offen = None
-            self._starte(p, "Wendepunkt" if offen is None else offen[0], wp)
+            art = offen[0] if offen is not None else "Wendepunkt" if getattr(wp, "_kategorie", None) == "WENDEPUNKT" \
+                else "Plan"
+            self._starte(p, art, wp)
             return self._richte(ansagen, p)
         plan_satz = any(a.schluessel.startswith("kern:") and getattr(a, "_kategorie", None) in PLAN_KATEGORIEN
                         for a in ansagen)
@@ -636,12 +735,76 @@ class MakroStratege:
                 sr.ereignis(p.zeit, _als_ereignis(a.text))
         if anlass is None and not tot and (k := self._kampf_nah(p)) is not None:
             anlass = k
+        try:
+            neu = self._neue_anlaesse(p, m) if m is not None and not tot else None
+        except (AttributeError, TypeError):          # verkuerzte Lagen (Tests, Spielbeginn)
+            neu = None
+        if anlass is None and neu is not None:
+            anlass = neu
         if anlass is None and not tot and m is not None:
             anlass = self._lane_anlass(p, m)
         self._war_tot, self._kills_n = tot, n
         if m is not None and m.bereich is not None:        # ohne Ort (Spielbeginn, Minimap weg) zaehlt nichts
             self._war_basis = basis
         return anlass
+
+    def _neue_anlaesse(self, p, m) -> str | None:
+        """Auftrag 021, 3 (was in den Soll-Listen aus 019 fehlte): Objective-Timer mit Aufgabe (90 s und 30 s vorher,
+        beim Spawn), das Fenster nach einem gegnerischen Tod, Roam-Gefahr eines starken Laners ohne Sicht."""
+        from .welt import OBJ_DE
+        sr = self.schiedsrichter
+        aus = None
+        for o in m.objectives or []:
+            spawn = round(p.zeit + (o.spawn_in or 0.0)) if not o.lebt else None
+            stufe = "90" if not o.lebt and 84 <= o.spawn_in <= 92 else "30" if not o.lebt and 25 <= o.spawn_in <= 33 \
+                else None
+            schl = (o.schl, round(spawn / 30) if spawn else None, stufe)
+            if stufe and schl not in self._obj_gesagt:
+                self._obj_gesagt.add(schl)
+                aus = aus or f"Objective: {OBJ_DE.get(o.schl, o.schl)} in {int(round(o.spawn_in))} Sekunden"
+            if o.lebt and (o.schl, "lebt") not in self._obj_gesagt and p.zeit > 120:
+                self._obj_gesagt.add((o.schl, "lebt"))
+                self._obj_gesagt.discard((o.schl, "weg"))
+                aus = aus or f"Objective: {OBJ_DE.get(o.schl, o.schl)} ist jetzt da"
+            if not o.lebt and (o.schl, "lebt") in self._obj_gesagt:
+                self._obj_gesagt.discard((o.schl, "lebt"))
+        # Fenster: ein Gegner stirbt, waehrend ein Objective lebt oder bald kommt, oder zwei sind tot
+        tote = {s.name for s in p.gegner() if s.tot}
+        neu_tot = [s for s in p.gegner() if s.tot and s.name not in self._tote_gegner]
+        self._tote_gegner = tote
+        if aus is None and neu_tot and p.zeit - self._fenster_zuletzt >= 20.0:
+            nah = [o for o in m.objectives or [] if o.lebt or o.spawn_in <= 60]
+            if nah or len(tote) >= 2:
+                self._fenster_zuletzt = p.zeit
+                wer = " und ".join(s.champion for s in p.gegner() if s.tot)
+                rest = min(int(s.respawn or 0) for s in p.gegner() if s.tot)
+                aus = f"Fenster: {wer} tot (der erste lebt in {rest} Sekunden wieder)"
+                sr.ereignis(p.zeit, f"{neu_tot[0].champion} tot ist")
+        # Roam-Gefahr: ein gegnerischer Laner (nicht der Jungler) mit Kill in den letzten 60 s oder frisch Level 6,
+        # jetzt >= 12 s ohne Sicht - nur in der Lane-Phase
+        b = m.b
+        if b is not None:
+            for g in b.gegner:
+                s = g.s
+                vorher = self._starke.get(s.name + ":k"), self._starke.get(s.name + ":l")
+                if vorher[0] is not None and s.kills > vorher[0]:
+                    self._starke[s.name] = p.zeit
+                if vorher[1] is not None and s.level >= 6 > vorher[1]:
+                    self._starke[s.name] = p.zeit
+                self._starke[s.name + ":k"], self._starke[s.name + ":l"] = s.kills, s.level
+                if aus is not None or not m.lane_phase or s.rolle in ("JUNGLE", "") or s.tot or g.sichtbar:
+                    continue
+                stark_seit = self._starke.get(s.name)
+                if stark_seit is None or p.zeit - stark_seit > 60 or g.seit is None or g.seit < 12:
+                    continue
+                if p.zeit - self._roam_gesagt.get(s.name, -1e9) < 90:
+                    continue
+                self._roam_gesagt[s.name] = p.zeit
+                lane = {"TOP": "Top", "MIDDLE": "Mid", "BOTTOM": "Bot", "UTILITY": "Bot"}.get(s.rolle, s.rolle)
+                aus = (f"Roam: {s.champion} fehlt seit {int(g.seit)} Sekunden auf der {lane}-Lane, eben "
+                       + ("Level 6" if s.level >= 6 and self._starke.get(s.name + ":l6") is None else "ein Kill"))
+                self._starke[s.name + ":l6"] = 1.0 if s.level >= 6 else None
+        return aus
 
     def _lane_anlass(self, p, m) -> str | None:
         """Auftrag 017, 1.2 (Buch 13, Teil 3): Anlaesse mit Inhalt statt Zeittakt, nur in der Lane-Phase an deiner Lane -
@@ -811,7 +974,22 @@ class MakroStratege:
             ende = (f"ANLASS: Kampf in der Naehe um {uhr}: {self._kampf_text}. Sag zuerst 'Hilf' oder 'Nicht "
                     "hin', dann den Grund aus diesen Zahlen (Leben, Level, Flash, Tote, dein Weg) - und was danach "
                     "kommt. Angreifen nur, wo der KILL-CHECK es traegt; sonst helfen heisst: dazustellen, Schaden "
-                    "vom Mitspieler nehmen.")
+                    f"vom Mitspieler nehmen.{kampf_regel(self._kampf_text)}")
+        elif art.startswith("Objective:"):
+            ende = (f"ANLASS ({uhr}): {art.split(': ', 1)[1]}. Sag den Timer MIT Aufgabe: wer lebt, wer tot ist, wer "
+                    "hingeht, was du vorher mit deiner Welle machst - oder, wenn ihr keine Prio habt, was ihr "
+                    "stattdessen tauscht. Ein Satz, dann der Schritt danach. Der Timer wird immer gesagt.")
+        elif art.startswith("Fenster:"):
+            ende = (f"ANLASS ({uhr}): {art.split(': ', 1)[1]}. Was macht ihr mit dem Fenster (Objective, Turm, "
+                    "Inhibitor) und wer - mit Uhrzeit, bis wann es offen ist? Nach vorn nur, wenn es erlaubt ist; "
+                    f"sonst, was du stattdessen tust.{nichts}")
+        elif art.startswith("Roam:"):
+            ende = (f"ANLASS ({uhr}): {art.split(': ', 1)[1]}. Warn kurz, wohin er vermutlich geht, und was du "
+                    f"jetzt tust (Welle, Sicht, nicht zu weit vor).{nichts}")
+        elif art == "Plan":
+            ende = (f"ANLASS ({uhr}): der Coach will den Plan setzen (ENTWURF unten). Stimmt er, sag ihn als Kette "
+                    "(Schritt, danach, Grund); ist es derselbe Plan wie der aktive, antworte NICHTS; ist er falsch, "
+                    "sag den besseren.")
         else:
             ende = (f"ANLASS: Wendepunkt ({art}) um {uhr}. Nenn den naechsten Schritt und den danach, mit Grund"
                     + (" - bei einem Back im selben Satz Kauf und Ziel." if kette else "."))
@@ -819,7 +997,12 @@ class MakroStratege:
         wiederholt = [False]
 
         def einwerfen(a) -> bool:
-            warnung = getattr(a, "_kategorie", None) in ("GEFAHR", "VORSICHT")
+            # Auftrag 021, Runde 1: Timer mit Aufgabe, Fenster und Roam-Warnung sind selbst das Ereignis - der
+            # Schiedsrichter liess 12 von 17 Objective-Saetzen fallen ("derselbe Plan", "ohne Lageaenderung")
+            warnung = getattr(a, "_kategorie", None) in ("GEFAHR", "VORSICHT") or \
+                (a.schluessel.startswith("stratege:") and art.startswith("Objective:")
+                 and plan_ziel(a.text) in (None, *(z for z in ("drache", "herold", "baron", "larven")
+                                                    if z in art.lower().replace("ä", "ae"))))
             ok, text, _ = self.schiedsrichter.pruefe(a.text, max(self._zeit, zeit0), warnung=warnung)
             if ok:
                 a.text = text
@@ -834,6 +1017,7 @@ class MakroStratege:
                 entschieden.set()
             a = Ansage(s, WICHTIG, f"stratege:{art}:{nr}", zeit=max(self._zeit, zeit0), gueltig=12.0, sperre=0.0)
             a._kategorie = "STRATEGE"
+            a.pruefe = self._noch_sicher(a)
             if not einwerfen(a):
                 uebernommen[0] = False                   # derselbe Plan wie eben: nichts sagen
                 wiederholt[0] = True
@@ -860,16 +1044,20 @@ class MakroStratege:
             try:
                 try:
                     text, versuche = self._frage(p, "Was jetzt, und warum?", ende, satz, vorbereitet,
-                                                 self.modelle["lane" if lane else "plan"])
+                                                 self.modelle["lane" if lane else "plan"],
+                                                 nochmal=art in NOCHMAL)
                 except Exception as e:
                     text, versuche = None, [{"fehler": f"{type(e).__name__}: {e}"}]
+                nichts_ = any(v.get("nichts") for v in versuche)
+                if nichts_ and art == "Plan":
+                    entschieden.set()                    # Auftrag 021: Claude haelt den Plan - der Kern-Satz schweigt
                 if not uebernommen[0]:
                     fallback()
-                nichts_ = any(v.get("nichts") for v in versuche)
                 quelle = "stratege" if uebernommen[0] else "wiederholt" if wiederholt[0] else (
                     "kern" if kern_satz is not None else "nichts" if nichts_ else "still")
                 if uebernommen[0] and text:
                     self._gesprochen(zeit0, text)
+                    self._plan_merken(versuche, zeit0, text)
                 self._schreibe({"zeit": zeit0, "art": art, "quelle": quelle, "text": text if uebernommen[0] else
                                 (kern_satz.text if kern_satz is not None else None),
                                 "kern_satz": kern_satz.text if kern_satz is not None else None, "versuche": versuche})
@@ -881,6 +1069,27 @@ class MakroStratege:
             return
         threading.Timer(frist, fallback).start()
         threading.Thread(target=lauf, daemon=True).start()
+
+
+def kampf_regel(kampf_text: str | None) -> str:
+    """Auftrag 021, 4: Kampfansagen nur mit dem Kampfrechner und nur fuer freigegebene Urteile
+    (wissen/kampf_eichung.toml: klar_hinten ja, klar_vorn an Carlos' Aufnahmen nicht belegt)."""
+    import tomllib
+    try:
+        d = tomllib.loads((Path(__file__).resolve().parent.parent / "wissen" / "kampf_eichung.toml")
+                          .read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        d = {}
+    auf = d.get("aufnahmen", {})
+    t = kampf_text or ""
+    if not d.get("tor") or "RECHNER" not in t:
+        return ""
+    if "klar hinten" in t and auf.get("klar_hinten_sprechen", False):
+        return " Der RECHNER sagt klar hinten: sag 'Nicht rein' mit seinen zwei Zahlen."
+    if "klar vorn" in t and auf.get("klar_vorn_sprechen", False):
+        return " Der RECHNER sagt klar vorn: 'Nehmt den Kampf' mit seinen zwei Zahlen - nur, wenn nach vorn erlaubt ist."
+    return (" Der RECHNER ist nicht klar genug fuer einen Befehl: nenn zwei Optionen (helfen / nicht helfen) mit je "
+            "einem Grund.")
 
 
 def ohne_fuellsatz(text: str) -> str:

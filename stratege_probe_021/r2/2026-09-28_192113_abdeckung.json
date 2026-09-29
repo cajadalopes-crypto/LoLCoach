@@ -1,0 +1,380 @@
+{
+ "kennzahlen": {
+  "flash": "6/7 (86 %)",
+  "jungler": "13/14 (93 %)",
+  "i4": "3/4 (75 %)",
+  "backs": "9/10 (90 %)",
+  "back_rufe": "13/13 (100 %)",
+  "stille": "48 s",
+  "sicherheit": 0,
+  "widersprueche": 1,
+  "fuellsaetze": "0/174 (0.0 %)",
+  "latenz": "2.36 / 3.84 s (n = 114)"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 69.02359008789062,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 5.3
+   },
+   {
+    "zeit": 388.9655456542969,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 838.0535278320312,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 6.4
+   },
+   {
+    "zeit": 847.7702026367188,
+    "champion": "Cassiopeia",
+    "gesagt": "Cassiopeia Flash weg.",
+    "nach_s": 6.5
+   },
+   {
+    "zeit": 1151.1043701171875,
+    "champion": "Teemo",
+    "gesagt": null,
+    "nach_s": null
+   },
+   {
+    "zeit": 1536.1158447265625,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 12.2
+   },
+   {
+    "zeit": 1679.8330078125,
+    "champion": "Cassiopeia",
+    "gesagt": "Cassiopeia Flash weg.",
+    "nach_s": 0.0
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 214.7,
+    "name": "Master Yi",
+    "ort": "im unteren Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Master Yi im unteren Fluss."
+   },
+   {
+    "zeit": 287.3,
+    "name": "Master Yi",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": 72,
+    "tot_ich": false,
+    "gesagt": "Master Yi in eurem unteren Jungle."
+   },
+   {
+    "zeit": 599.0,
+    "name": "Master Yi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 304,
+    "tot_ich": false,
+    "gesagt": "Master Yi auf der Mid-Lane."
+   },
+   {
+    "zeit": 760.0,
+    "name": "Master Yi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 145,
+    "tot_ich": false,
+    "gesagt": "Master Yi im unteren Fluss."
+   },
+   {
+    "zeit": 890.6,
+    "name": "Master Yi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 88,
+    "tot_ich": false,
+    "gesagt": "Master Yi in seinem oberen Jungle, bei dir in 1 Sekunde."
+   },
+   {
+    "zeit": 961.3,
+    "name": "Master Yi",
+    "ort": "oben",
+    "ohne_s": 54,
+    "tot_ich": false,
+    "gesagt": "Master Yi oben."
+   },
+   {
+    "zeit": 1063.3,
+    "name": "Master Yi",
+    "ort": "im oberen Fluss",
+    "ohne_s": 71,
+    "tot_ich": false,
+    "gesagt": "Master Yi im oberen Fluss."
+   },
+   {
+    "zeit": 1170.9,
+    "name": "Master Yi",
+    "ort": "in der Flussmitte",
+    "ohne_s": 42,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 1257.8,
+    "name": "Master Yi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 72,
+    "tot_ich": false,
+    "gesagt": "Master Yi in seinem oberen Jungle."
+   },
+   {
+    "zeit": 1324.8,
+    "name": "Master Yi",
+    "ort": "in seiner Basis",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Master Yi in seiner Basis."
+   },
+   {
+    "zeit": 1381.4,
+    "name": "Master Yi",
+    "ort": "oben",
+    "ohne_s": 49,
+    "tot_ich": true,
+    "gesagt": "Master Yi oben."
+   },
+   {
+    "zeit": 1549.4,
+    "name": "Master Yi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 162,
+    "tot_ich": false,
+    "gesagt": "Master Yi in seinem oberen Jungle."
+   },
+   {
+    "zeit": 1708.3,
+    "name": "Master Yi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 115,
+    "tot_ich": false,
+    "gesagt": "Master Yi auf der Mid-Lane."
+   },
+   {
+    "zeit": 1774.9,
+    "name": "Master Yi",
+    "ort": "in seiner Basis",
+    "ohne_s": 29,
+    "tot_ich": false,
+    "gesagt": "Master Yi in seiner Basis."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 120.3,
+    "gesagt": null,
+    "saetze": [
+     "Lauf direkt nach Top, sonst verpasst du die Welle, nimm ein Kontroll-Auge mit."
+    ]
+   },
+   {
+    "zeit": 259.3,
+    "gesagt": "Back jetzt, Caulfields kaufen, dann Top zur Welle – 38 % Leben sind zu wenig gegen Yi, und die Welle ist bereits bei dir gecrasht.",
+    "saetze": [
+     "Zurück unter deinen äußeren Top-Turm: Teemo kommt.",
+     "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Freeze am Turm, 3-4 gegnerische Caster stehen lassen Yi ist unbekannt und dein Leben zu niedrig für Trades, die Kanone kommt in 41 Sekunden und du backst danach.",
+     "Jetzt, wo du gefragt hast: Drache in 32 Sekunden, Teemo und Yi unbekannt oben: crash die Welle jetzt mit der Kanone, dann zurück – dein Team geht mit Sett und Brand zum Drachen, ihr habt die Prio."
+    ]
+   },
+   {
+    "zeit": 410.3,
+    "gesagt": "Der Brutalisierer für den Axiombogen, dann nach Top zurück – die Welle ist sauber weg und ihr braucht den Schaden für den Drachen in 90 Sekunden.",
+    "saetze": [
+     "Teemo Flash weg.",
+     "Der Brutalisierer für den Axiombogen, dann nach Top zurück – die Welle ist sauber weg und ihr braucht den Schaden für den Drachen in 90 Sekunden."
+    ]
+   },
+   {
+    "zeit": 581.4,
+    "gesagt": "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Crash jetzt die Kanone in 21 Sekunden, dann sofort back mit Spitzhacke zur Mid zum Drachen, weil die Welle sauber resettet und du das Fenster hältst.",
+    "saetze": [
+     "Cassiopeia tot für 13 Sekunden: Drache jetzt mit Brand und Sona, du crash die Kanone, dann sofort back Spitzhacke und zu ihnen, weil ihr das Fenster zu dritt vor Pantheon und Alistar haltet.",
+     "Jetzt, wo ihr äußerer Top-Turm weg ist: Crash die Top-Kanone sofort, back Spitzhacke und Caulfields, dann direkt zu ihrem inneren Top-Turm mit Ult-Druck, weil Teemo 14 Sekunden tot ist und Pantheon noch weg.",
+     "Master Yi auf der Mid-Lane."
+    ]
+   },
+   {
+    "zeit": 624.3,
+    "gesagt": "Kauf Caulfields und Spitzhacke 19 Gold über – dann sofort nach Top zur Welle, weil Pantheon in 25 Sekunden kommt und du mit der Rüstung seinen Speer-Poke aushältst.",
+    "saetze": [
+     "Master Yi auf der Mid-Lane.",
+     "Teemo oben gesehen: drück deine Welle."
+    ]
+   },
+   {
+    "zeit": 775.2,
+    "gesagt": "Nicht hin: du brauchst 12 Sekunden, Sona fällt in 6, und dein Leben reicht nicht mal für den Schaden vom Gegner-CC – back jetzt, Spitzhacke kaufen, dann sofort zum Drachen, weil Kai'Sa und Brand euch reichen und ihr 12 zu 1 führt.",
+    "saetze": [
+     "Teemo unten gesehen: farm unter deinem Turm.",
+     "Master Yi im unteren Fluss.",
+     "Jetzt, wo du in der Basis bist: Hol deine Top-Welle: 6 Vasallen laufen in deinen Turm."
+    ]
+   },
+   {
+    "zeit": 926.8,
+    "gesagt": "Eklipse kaufen, dann zu deinem äußeren Top-Turm",
+    "saetze": [
+     "Raus, zu eurem Mid-Turm!",
+     "Master Yi in seinem oberen Jungle, bei dir in 1 Sekunde.",
+     "Von der Top-Lane zurück zu eurem äußeren Mid-Turm: drei kommen."
+    ]
+   },
+   {
+    "zeit": 1093.5,
+    "gesagt": "Jetzt, wo Cassiopeia tot ist: Back jetzt: 28 Prozent Leben. Kauf Tiamat und Caulfields Kriegshammer für die Gefräßige Hydra, dann zurück zu deinem Turm.",
+    "saetze": [
+     "Master Yi im oberen Fluss.",
+     "Jetzt, wo Cassiopeia tot ist: Back jetzt: 28 Prozent Leben. Kauf Tiamat und Caulfields Kriegshammer für die Gefräßige Hydra, dann zurück zu deinem Turm.",
+     "Jetzt, wo du in der Basis bist: Tiamat und Caulfields kaufen, dann zu Brand nach Mid, um mit vier zum Drachen zu rotieren – Yi ist unbekannt, aber das Fenster mit zwei toten Gegnern jetzt offen."
+    ]
+   },
+   {
+    "zeit": 1160.6,
+    "gesagt": "Jetzt, wo Brand tot ist und Yi unten sein kann: Weg von Mid, crash die Top-Welle mit der Kanone in 25 Sekunden, dann sofort back für Gefräßige Hydra – mit vier zum Drachen, weil ihr 2500 Gold vorn seid und die Kanone dein sicherstes Gold ist.",
+    "saetze": [
+     "Zurück unter euren äußeren Mid-Turm: drei kommen.",
+     "Jetzt, wo ihr äußerer Mid-Turm weg ist: Back jetzt: Vampirisches Zepter verkaufen Nachfüllbarer Trank, dann zu deinem inneren Mid-Turm, weil Yi jederzeit kommt und dein Team den Drachen in 40 Sekunden braucht.",
+     "Jetzt, wo du in der Basis bist: Verkauf Nachfüllbarer Trank, kauf Vampirisches Zepter für Gefräßige Hydra, dann zu deinem inneren Mid-Turm, weil Yi jederzeit kommt und dein Team Drache in 40 Sekunden braucht."
+    ]
+   },
+   {
+    "zeit": 1236.2,
+    "gesagt": "Kauf Gefräßige Hydra, dann sofort zum Drachen in 40 Sekunden Brand crasht Top, ihr braucht die Gruppe jetzt, weil ihr 2200 Gold vorn seid.",
+    "saetze": [
+     "Du stehst tief: Master Yi, Teemo und Pantheon fehlen seit 23 Sekunden.",
+     "Jetzt, wo Kai'Sa neben dir kämpft: Nicht hin: Kai'Sa hat 58 % und Teemos Leben ist unbekannt Halte dich zur Drachen-Rotation bereit, Brand respawnt in 3 Sekunden.",
+     "Jetzt, wo Sie haben den Drachen aufgetaucht ist: Nichts kaufen, sofort zu Sett und Brand, dann alle vier zum Baron in 40 Sekunden, weil wir 3200 Gold vorn sind und Yi im Team haben."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 364.523193359375,
+    "text": "Nein – Pantheon kommt in 17 Sekunden, Teemo in 25: Crash die Welle jetzt mit der Kanone in 22 Sekunden, back sofort danach mit Caulfields zu Axiombogen, dann mit Team zum Drachen, weil ihr 1400 Gold vorn seid und Platte später noch da ist.",
+    "kette": true
+   },
+   {
+    "zeit": 516.6110229492188,
+    "text": "Back jetzt: 850 Gold für Spitzhacke. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 545.3201904296875,
+    "text": "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Crash jetzt die Kanone in 21 Sekunden, dann sofort back mit Spitzhacke zur Mid zum Drachen, weil die Welle sauber resettet und du das Fenster hältst.",
+    "kette": true
+   },
+   {
+    "zeit": 559.3621215820312,
+    "text": "Cassiopeia tot für 13 Sekunden: Drache jetzt mit Brand und Sona, du crash die Kanone, dann sofort back Spitzhacke und zu ihnen, weil ihr das Fenster zu dritt vor Pantheon und Alistar haltet.",
+    "kette": true
+   },
+   {
+    "zeit": 572.904052734375,
+    "text": "Jetzt, wo ihr äußerer Top-Turm weg ist: Crash die Top-Kanone sofort, back Spitzhacke und Caulfields, dann direkt zu ihrem inneren Top-Turm mit Ult-Druck, weil Teemo 14 Sekunden tot ist und Pantheon noch weg.",
+    "kette": true
+   },
+   {
+    "zeit": 686.3242797851562,
+    "text": "Jetzt, wo Teemo und Alistar tot sind: Welle crashen in 10 Sekunden, dann sofort back für Langschwert und Verstärkungszepter, danach mit vier zum Drachen in 40 Sekunden, weil ihr 10:1 führt und Yi vermutlich oben ist.",
+    "kette": true
+   },
+   {
+    "zeit": 749.0340576171875,
+    "text": "Nicht hin: du brauchst 12 Sekunden, Sona fällt in 6, und dein Leben reicht nicht mal für den Schaden vom Gegner-CC – back jetzt, Spitzhacke kaufen, dann sofort zum Drachen, weil Kai'Sa und Brand euch reichen und ihr 12 zu 1 führt.",
+    "kette": true
+   },
+   {
+    "zeit": 847.228515625,
+    "text": "Herold in 52 Sekunden: Welle crashen, back, dann mit Team zum Herold. Kauf Langschwert.",
+    "kette": true
+   },
+   {
+    "zeit": 1076.2774658203125,
+    "text": "Jetzt, wo Cassiopeia tot ist: Back jetzt: 28 Prozent Leben. Kauf Tiamat und Caulfields Kriegshammer für die Gefräßige Hydra, dann zurück zu deinem Turm.",
+    "kette": true
+   },
+   {
+    "zeit": 1115.353515625,
+    "text": "Jetzt, wo Brand neben dir kämpft: Nicht hin – ihr Burst 560 gegen Pantheons 1610, Brand stirbt in zwei Sekunden; bleib auf der Lane, crash die Kanonenwelle in 51 Sekunden, dann back für Gefräßige Hydra, weil dein Fenster der Drache ist, nicht dieser Kampf.",
+    "kette": true
+   },
+   {
+    "zeit": 1148.2789306640625,
+    "text": "Jetzt, wo ihr äußerer Mid-Turm weg ist: Back jetzt: Vampirisches Zepter verkaufen Nachfüllbarer Trank, dann zu deinem inneren Mid-Turm, weil Yi jederzeit kommt und dein Team den Drachen in 40 Sekunden braucht.",
+    "kette": true
+   },
+   {
+    "zeit": 1492.1890869140625,
+    "text": "Jetzt, wo ihr innerer Bot-Turm weg ist: Drück ihren Bot-Inhibitor-Turm mit der Welle jetzt, danach sofort back, kauf Schutzengel, dann zu eurem inneren Bot-Turm – Yi ist noch unsichtbar, Gruppenschutz geht vor Splitpush.",
+    "kette": true
+   },
+   {
+    "zeit": 1582.5499267578125,
+    "text": "Jetzt, wo Brand neben dir kämpft: Nicht hin – du brauchst 6 Sekunden, Alistar ist in 2 Sekunden da, und dein Leben reicht nicht für seine W+Q; Brand hält mit Ult bereit, Yi fällt danach – back jetzt zum inneren Mid-Turm, Schutzengel kaufen, dann mit Team zum Drachen um 27:00.",
+    "kette": true
+   }
+  ],
+  "stille_max": 48,
+  "stille_lang": [
+   [
+    317,
+    365
+   ]
+  ],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 449.8848876953125,
+    "von": "welle:bot",
+    "nach": "turm",
+    "vorher": "Jetzt, wo du gefragt hast: Pantheon eben Level 6: R kommt auf Bot oder zu dir oben bleib am Turm, freeze die Welle, gib keinen freien Kill.",
+    "text": "Jetzt, wo die Welle kippt und jetzt zu ihm läuft: Bleib am Turm und freez: deine Welle läuft zu ihm, Teemo ist nah dran und Pantheon kann jeden Moment springen – danach warten wir auf die Larven-Roam in 30 Sekunden mit dem Team."
+   }
+  ],
+  "fuellsaetze": [],
+  "saetze_n": 174,
+  "i4": [
+   {
+    "zeit": 599.6,
+    "name": "Teemo",
+    "ort": "oben",
+    "gesagt": "Teemo oben gesehen: drück deine Welle."
+   },
+   {
+    "zeit": 749.6,
+    "name": "Teemo",
+    "ort": "unten",
+    "gesagt": "Teemo unten gesehen: farm unter deinem Turm."
+   },
+   {
+    "zeit": 1540.6,
+    "name": "Teemo",
+    "ort": "in seiner Basis",
+    "gesagt": "Teemo Flash weg."
+   },
+   {
+    "zeit": 1798.7,
+    "name": "Teemo",
+    "ort": "in seiner Basis",
+    "gesagt": null
+   }
+  ],
+  "latenz": {
+   "n": 114,
+   "median": 2.36,
+   "p90": 3.84
+  }
+ }
+}

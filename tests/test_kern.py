@@ -947,6 +947,72 @@ def kampf_rechner_020():
     assert rechne([K("Riven", "wir", 8)], s) is None                   # eine Seite fehlt
 
 
+def gehirn_021():
+    """Auftrag 021: Plan-Objekt (von Claude, nicht gesprochen), Wissensblock >= 4096 Tokens, Kampfansage nur fuer
+    freigegebene Rechner-Urteile, neue Anlaesse (Objective-Timer, Fenster, Roam), Kern-Plan-Saetze nur als Ersatz."""
+    from types import SimpleNamespace as NS
+    from lolcoach import partie_wissen, stratege_live as sl, welt
+    pl = sl.Plan("PLAN: Drache | Welle crashen | mit Udyr zum Drachen | Tryndamere tot | gilt bis 4:40 | "
+                 "Abbruch wenn Tryndamere lebt", 250.0, "Drache in 30 Sekunden ...")
+    assert (pl.ziel, pl.schritt, pl.danach, pl.bis, pl.abbruch) == \
+        ("Drache", "Welle crashen", "mit Udyr zum Drachen", 280, "Tryndamere lebt"), vars(pl)
+    assert pl.gilt(270) and not pl.gilt(281) and "als Naechstes Welle crashen" in pl.text(260)
+    # die PLAN-Zeile wird gemerkt, nicht gesprochen
+    ms = sl.MakroStratege.__new__(sl.MakroStratege)
+    ms.frage_fn = sl.AufzeichnungsStub(["Drache in 30 Sekunden: Welle crashen, dann zum Drachen. "
+                                        "PLAN: Drache | Welle crashen | zum Drachen | Trynd tot | gilt bis 4:40 | -"])
+    ms.ausfall_s = 5.0
+    ms._p = None
+    gesagt = []
+    v = ms._versuch("LAGE", {}, gesagt.append, "schnell")
+    assert gesagt == ["Drache in 30 Sekunden: Welle crashen, dann zum Drachen."], gesagt
+    assert v["plan"].startswith("PLAN: Drache"), v
+    # Wissensblock
+    t = partie_wissen._block("Graves", ("Graves", "Udyr", "Pantheon", "Urgot", "Zyra"),
+                             ("Garen", "Tryndamere", "Fizz", "KogMaw", "Nautilus"))
+    assert welt.tokens(t) >= 4096 and "GEGNER - Fizz" in t and "Carlos' eigener" not in t[:50], welt.tokens(t)
+    # Kampfansage: klar hinten ja, klar vorn nur als Option (wissen/kampf_eichung.toml)
+    assert "Nicht rein" in sl.kampf_regel("...; RECHNER mit dir: klar hinten: ihr 400 Burst ...")
+    assert "zwei Optionen" in sl.kampf_regel("...; RECHNER mit dir: klar vorn: ihr 2400 Burst ...")
+    assert sl.kampf_regel("ohne Rechner") == ""
+    # "schwach" gilt dem eigenen Satzteil (183125 14:27, Runde 2: der Vorsatz nannte Garen, gemeint war Zyra)
+    from lolcoach import stratege
+    lage = {"gegner": [{"name": "Garen", "leben": 1.0, "sichtbar": True, "tot": False, "seit": 0}]}
+    assert not stratege.sicherheit("Jetzt, wo Garen oben gesehen wurde: Zyra fast tot – back jetzt.", lage)
+    assert stratege.sicherheit("Garen fast tot: back.", lage)
+    # vor dem Sprechen noch einmal gegen die Lage JETZT (125902 9:15: "Crash die Welle" - inzwischen unter R1)
+    alt = stratege.pruef_lage
+    try:
+        stratege.pruef_lage = lambda k, p: {"vorn": {"verboten": True, "leben": 30}}
+        ms2 = sl.MakroStratege.__new__(sl.MakroStratege)
+        ms2.kern, ms2._p = None, None
+        a = NS(text="Crash die Welle jetzt, die Kanonenwelle gibt dir das längste Fenster.")
+        assert ms2._noch_sicher(a)() is False
+        stratege.pruef_lage = lambda k, p: {"vorn": {"verboten": False}}
+        assert ms2._noch_sicher(a)() is True
+    finally:
+        stratege.pruef_lage = alt
+    # neue Anlaesse
+    ms = sl.MakroStratege(NS(m=None), NS(gesagt=[]), frage_fn=sl.AufzeichnungsStub(), aktiv=True)
+    gegner = [NS(name="f", champion="Fizz", tot=False, respawn=0, kills=0, level=5, rolle="MIDDLE")]
+    gl = [NS(s=gegner[0], sichtbar=True, seit=0.0)]
+    m = NS(objectives=[NS(schl="drache", lebt=False, spawn_in=88.0)], lane_phase=True, b=NS(gegner=gl))
+    p = NS(zeit=212.0, gegner=lambda: gegner)
+    assert ms._neue_anlaesse(p, m) == "Objective: Drache in 88 Sekunden"
+    assert ms._neue_anlaesse(p, m) is None                                 # einmal je Stufe
+    gegner[0].level, gl[0].sichtbar, gl[0].seit = 6, False, 0.0
+    p.zeit = 230.0
+    m.objectives = []
+    assert ms._neue_anlaesse(p, m) is None                                 # eben Level 6, aber noch gesehen
+    gl[0].seit, p.zeit = 14.0, 244.0
+    assert (ms._neue_anlaesse(p, m) or "").startswith("Roam: Fizz fehlt seit 14 Sekunden auf der Mid-Lane")
+    gegner[0].tot, gegner[0].respawn = True, 20.0
+    m.objectives = [NS(schl="baron", lebt=True, spawn_in=0.0)]
+    p.zeit = 1300.0
+    ms._obj_gesagt.add(("baron", "lebt"))
+    assert ms._neue_anlaesse(p, m) == "Fenster: Fizz tot (der erste lebt in 20 Sekunden wieder)"
+
+
 def kauf_018():
     """Auftrag 018, 4 (183125 34:26-36:47): Schwarzes Beil und Lord Dominiks Grüße teilen die einzigartige Gruppe
     LastWhisper (Spieldaten); Elixier ab Level 9, wenn sonst nichts passt - aber nur mit freiem Platz."""
@@ -989,6 +1055,6 @@ if __name__ == "__main__":
                  vorsicht_statt_raus, drache_vor_inhibitor, recall_kanal, anteil_geglaettet,
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
                  stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017, lagebild_019,
-                 objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018, kampf_rechner_020):
+                 objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018, kampf_rechner_020, gehirn_021):
         test()
         print(f"{test.__name__} OK")

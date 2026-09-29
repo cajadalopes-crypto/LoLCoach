@@ -17,6 +17,9 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 021 (Gehirn mit Plan, Buch 14 C) gebaut - TOR NICHT ERREICHT** - Soll-Liste bekannt 56 %, neu 70 %; Latenz
+2,3-2,5 s; Widersprueche 1-7 je Partie; Lane-Gegner-weg 43-58 %. Carlos noch nicht live. Budget 5,46 $ von 6 $ verbraucht.
+
 **Auftrag 020 (Kampfrechner, Buch 14 B) umgesetzt** - Riot-Eichung Tor erreicht (Schwelle 0,5), an Carlos'
 Aufnahmen aber klar_vorn nur 13/24 - live nur klar_hinten sprechen. Eichung mit vollem Download wiederholen.
 
