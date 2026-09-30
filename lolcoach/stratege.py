@@ -275,7 +275,16 @@ def pruef_lage(kern, p) -> dict:
         # Auftrag 027, 3 (091311 20:17-21:19 "dein Team startet den Baron", es kaempfte am Drachen): wie viele
         # Mitspieler stehen laut Minimap an jeder Grube - und von wie vielen kennen wir den Ort
         "team_am": _team_am_mit_gedaechtnis(kern, b, m.zeit if m is not None else None),
+        # Auftrag 028, 6.3 und 6.2: was Carlos abgelehnt hat, und wer ohne Back kauft (Ornn)
+        "sperren": [{"was": x.was, "muster": x.muster} for x in (
+            kern.einspruch.lage(m.zeit) if m is not None and getattr(kern, "einspruch", None) is not None else [])],
+        "kauf_ohne_back": bool(p is not None and p.ich is not None and _ohne_back(p.ich.champion_id)),
     }
+
+
+def _ohne_back(champion_id) -> bool:
+    from .sonderregeln import kauft_ohne_back
+    return kauft_ohne_back(champion_id)
 
 
 def _team_am_mit_gedaechtnis(kern, b, zeit) -> dict | None:
@@ -391,7 +400,7 @@ OBJ_ZIEL = _re.compile(r"\b(zum|zur|richtung|nimm|hol|mach|erzwing\w*|auf den|an
 OBJ_ZEIT = _re.compile(r"in \d+|spawnt|kommt in|erst in|minute|sekunden|\d+:\d\d|um \d", _re.I)
 OBJ_NEIN = _re.compile(r"nicht (richtung|zum|zur|auf|an|zu)|statt|kein(en)? (drachen|baron|herold)", _re.I)
 OBJ_FAKT = _re.compile(r"genommen|geholt|ist weg|ist tot|haben den|habt den|vorbei|gefallen", _re.I)
-KAUF_WORT = _re.compile(r"kauf|hol dir|zuerst|fertig|besorg", _re.I)
+KAUF_WORT = _re.compile(r"kauf|hol dir|\bholen\b|zuerst|fertig|besorg", _re.I)   # Auftrag 028: "Dorans Schild holen"
 KAUF_SPAETER = _re.compile(r"beim nächsten back|später|nächstes mal", _re.I)
 _ITEMS: dict | None = None
 
@@ -541,6 +550,12 @@ def pruefe_015(s: str, lage: dict) -> list[str]:
                     gruende.append(f"{n} geht nicht zusammen mit {alt} (einzigartig)")
         except Exception:
             pass
+        # Auftrag 028, 6.2 (134020 1:14 "Back jetzt: Dorans Schild holen" - er hatte ihn seit Spielbeginn): nie ein
+        # Item, das schon im Inventar liegt (ausser Verbrauchsgueter, die stapeln)
+        for n in genannt:
+            i = items[n][3]
+            if i in besitz_ids and "Consumable" not in (items["_id"].get(i, {}).get("tags") or []):
+                gruende.append(f"{n} hast du schon")
         if genannt:
             # Auftrag 016, 5 (133448 13:27: "kauf Auge, Hammer und Spitzhacke" - dann war fuer das Langschwert kein Platz)
             try:
@@ -771,7 +786,15 @@ def pruefe(satz: str, lage: dict) -> list[str]:
                     break
         gruende += pruefe_017(s, lage)
         gruende += fakten(s, lage)                                                  # Auftrag 024, 2-3
-        if lage.get("kauf_bereit") and (m_ := KEIN_BACK.search(s)) and not GRUND.search(s[m_.end():]) \
+        for sp in lage.get("sperren") or []:                                        # Auftrag 028, 6.3
+            if _re.search(sp["muster"], s, _re.I) and not _re.search(
+                    r"\b(kein\w*|nie|niemals|nicht)\b[^.]*(" + sp["muster"] + ")", s, _re.I):
+                gruende.append(f"vom Spieler gesperrt ({sp['was']})")
+        if lage.get("kauf_ohne_back") and back_ruf(s) and _re.search(r"\bkauf|\bgold\b|\bitem", s, _re.I) \
+                and not _re.search(r"prozent leben|leben|mana|heil", s, _re.I):
+            gruende.append("Back zum Kaufen - dieser Champion kauft ohne Back (wissen/sonderregeln.toml)")
+        if lage.get("kauf_bereit") and not lage.get("kauf_ohne_back") and (m_ := KEIN_BACK.search(s)) \
+                and not GRUND.search(s[m_.end():]) \
                 and not GRUND.search(s[:m_.start()]):
             gruende.append("kein Back ohne Grund - mit Gold für ein Item ist Back richtig")   # Auftrag 024, 5.5
         if lage.get("anlass") and NUR_NEIN.match(s):

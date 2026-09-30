@@ -1,0 +1,155 @@
+# Auftrag 028, 6: die Ornn-Partie 134020 (Blind Pick, Ornn gegen Tryndamere; Sejuani in beiden Teams). Jede Notiz
+# ist ein Szenario (aufnahmen/2026-09-30_134020_notizen.md). Die TP-Notizen (2:57, 11:55) sind Auftrag 029 und stehen
+# in tests/szenarien/offen/2026-09-30_134020_tp.toml. Rot auf 5b80e91 (vor Teil 6) - siehe Bericht 028.
+
+aufnahme = "2026-09-30_134020"
+spielmodus = "CLASSIC"
+bots = true
+
+[[szenario]]
+id = "0122-kein-item-das-er-hat"
+fenster = ["0:30", "2:00"]
+quelle = "Notiz 1:22: 'Dorans Schild bereits, was laberst du?' - 1:14 'Back jetzt: Dorans Schild holen'"
+lage = "Ornn auf der Top-Lane, Dorans Schild seit Spielbeginn im Inventar, 20 % Leben."
+darf_nicht_sagen = ["Dorans Schild"]
+warum = "Auftrag 028, 6.2: nie ein Item empfehlen, das er schon hat."
+
+[[szenario]]
+id = "0114-stratege-dorans"
+zeit = "1:14"
+quelle = "Live 1:14 (Stratege): 'Back jetzt: Dorans Schild holen, dann Top zurück'"
+lage = "Dorans Schild liegt im Inventar."
+satz_pruefen = ["Back jetzt: Dorans Schild holen, dann Top zurück."]
+verwerfen = true
+warum = "Auftrag 028, 6.2: auch der Stratege nennt kein Item, das im Inventar liegt."
+
+[[szenario]]
+id = "0231-tp-oder-laufen"
+zeit = "2:31"
+kern_frage = true
+frage = "Soll ich mich teleporten oder laufen?"
+quelle = "Live 2:29: auf 'teleporten oder laufen' kam eine Kauf-Kette"
+lage = "Ornn tot, lebt in wenigen Sekunden, Welle kommt zu seinem Turm."
+muss_nennen_eins = ["lauf", "Teleport", "TP"]
+darf_nicht_sagen = ["Kauf"]
+warum = "Auftrag 028, 6.4: zuerst die Frage beantworten (ja/nein oder die Wahl, mit Grund), dann der Plan."
+
+[[szenario]]
+id = "0321-freeze-frage"
+zeit = "3:21"
+kern_frage = true
+frage = "Soll ich nicht freesen? Warum soll ich die Welle drücken?"
+quelle = "Live 3:17-3:56: Carlos will freezen, der Coach sagt dreimal 'crash'"
+lage = "Ornn auf der Top-Lane, die Welle laeuft zu ihm."
+darf_nicht_sagen = ["crash"]
+warum = "Auftrag 028, 6.3: sein Widerspruch wird eine Sperre - die Antwort crasht nicht."
+
+[[szenario]]
+id = "0322-freeze-sperre"
+fenster = ["3:23", "4:40"]
+quelle = "Live 3:32 und 3:56: 'Jetzt, wo deine Welle zu dir läuft ...: crash die ...' nach 'ich lass sie friezen'"
+lage = "Carlos hat um 3:21 gesagt, dass er freezt."
+darf_nicht_sagen = ["crash", "Welle rein", "drück die"]
+warum = "Auftrag 028, 6.3: die Sperre gilt fuer alle Stimmen, bis sich die Lage aendert (Tod, Back, 2 min)."
+
+[[szenario]]
+id = "0755-ganze-kette"
+fenster = ["7:10", "8:25"]
+quelle = "Notiz 7:55: 'Wenn ich nur Bamis Glutstein kaufe, habe ich noch 1000 Gold - Kettenweste und Rubinkristall'"
+lage = "Ornn mit rund 1050 Gold, Bamis Glutstein und Stoffrüstung im Inventar."
+muss_nennen_alle = ["Kettenweste", "Rubinkristall"]
+darf_nicht_sagen = ["Gold für"]
+warum = "Auftrag 028, 6.2: jeder Kauf-Ruf nennt die ganze Kette, die das Gold kauft."
+
+[[szenario]]
+id = "1241-sejuani-mit-team"
+fenster = ["0:30", "34:00"]
+quelle = "Notiz 12:41: 'Du sagst Sejuani Flussmitte' - es war die eigene; Sejuani in beiden Teams"
+lage = "Blind Pick: Sejuani im eigenen und im gegnerischen Team."
+text_max = { '(?<!ihre )(?<!eure )(?<!ihrer )(?<!eurer )Sejuani' = 0 }
+warum = "Auftrag 028, 6.1: ein doppelter Name nie allein - 'ihre Sejuani' oder 'eure Sejuani'."
+
+[[szenario]]
+id = "1228-sejuani-flussmitte"
+fenster = ["12:20", "12:40"]
+quelle = "Live 12:28 'Sejuani Flussmitte' - die eigene Sejuani, der Gegner-Eintrag hatte ihr Icon (4083 Bilder doppelt)"
+lage = "Die eigene Sejuani kaempft in der Flussmitte; die gegnerische ist nicht zu sehen."
+darf_nicht_sagen = ["Ihre Sejuani Flussmitte"]
+warum = "Auftrag 028, 6.1: ein Icon gehoert einem Team - der doppelte Eintrag im selben Bild faellt (lage._entdoppeln)."
+
+[[szenario]]
+id = "1401-kein-back-zum-kaufen"
+fenster = ["0:30", "34:00"]
+quelle = "Notiz 14:01: 'Du sagst schon wieder Back Dornenpanzer' (7:55, 12:56, 13:28, 14:01) - Ornn kauft ohne Rückruf"
+lage = "Ornn (Passiv Lebende Schmiede): kauft Items ueberall ausser Verbrauchsgueter."
+text_max = { '\bback\b[^.]*(\bkauf|Gold für|Gold im Beutel)' = 0, 'pünktlich zur Kanone' = 0 }
+warum = "Auftrag 028, 6.2: Sonderregeln je Champion wirken im Kern (wissen/sonderregeln.toml) - Ornn backt nur fuer Leben."
+
+[[szenario]]
+id = "1401-stiefel-stufe-zwei"
+fenster = ["9:00", "14:50"]
+quelle = "Notiz 14:01 und 14:51: 'du laesst mich nie Schuhe upgraden' - gegen Tryndamere und Miss Fortune Stahlkappen"
+lage = "Ornn mit einfachen Stiefeln und Sonnenfeuer-Ägide."
+muss_nennen_eins = ["Stahlkappen"]
+warum = "Auftrag 028, 6.2: Stiefel der zweiten Stufe nach dem Gegnerteam, spaetestens nach dem ersten fertigen Item."
+
+[[szenario]]
+id = "1451-kein-elixier"
+fenster = ["0:30", "34:00"]
+quelle = "Notiz 14:51: 'Elixiere holt man sich ganz am Ende ... niemals mitten im Spiel' - fuenfmal ungefragt empfohlen"
+lage = "Ornn mit weniger als sechs fertigen Items."
+darf_nicht_sagen = ["Elixier"]
+warum = "Auftrag 028, 6.2: Elixiere nur mit sechs fertigen Items; uebriges Gold in den Build oder ein Kontroll-Auge."
+
+[[szenario]]
+id = "1620-elixier-sperre"
+zeit = "16:35"
+kern_frage = true
+frage = "Ich kaufe kein Elixier mitten im Game. Ich mache jetzt meine eigenen Entscheidungen."
+quelle = "Live 16:20, 19:42, 20:03: 'kein Elixier mitten im Spiel' - der Kern empfahl es trotzdem 22:17, 25:05, 32:31"
+lage = "Carlos lehnt das Elixier ab."
+darf_nicht_sagen = ["Elixier des"]
+warum = "Auftrag 028, 6.3: sein Widerspruch sperrt fuer den Rest der Partie alle Stimmen."
+
+[[szenario]]
+id = "1835-drache-kein-hin-und-her"
+fenster = ["17:55", "18:36"]
+quelle = "Notiz 18:35: 'dass du wieder nur Scheisse da warst' - 18:02 'Jetzt, wo du in der Basis bist: Zum Drachen', 18:18 'Nicht zu Sejuani', 18:24 'Drache weg: nicht hin', 18:27 'Bleib am Drachen'"
+lage = "Ornn aus der Basis zum Drachen; der Drache faellt 18:24."
+hin_und_her_max = 0
+darf_nicht_sagen = ["Jetzt, wo du in der Basis bist", "Bleib dabei"]
+warum = "Auftrag 028, 1 und 2: ein Plan, keine internen Etiketten, keine Fuellsaetze."
+
+[[szenario]]
+id = "2054-schlechter-rat-als-eisen"
+fenster = ["19:20", "20:55"]
+quelle = "Notiz 20:54: 'Momente mit schlechterem Rat als ein Eisenspieler' - davor 19:33 'Kauf Elixier des Metalls, dann zum Herold', 19:42/20:03 'Du hast recht'"
+lage = "Mitten im Spiel, Ornn mit Gold."
+darf_nicht_sagen = ["Elixier", "Du hast recht", "Mein Fehler"]
+warum = "Auftrag 028, 6.2 und 1.2: kein Elixier mitten im Spiel, keine Entschuldigung."
+
+[[szenario]]
+id = "2202-kanone"
+fenster = ["0:30", "34:00"]
+quelle = "Notiz 22:02: 'was du fuer einen Fetisch mit dieser Kanone hast' - 42-mal in 34 min"
+lage = "Die ganze Partie."
+je_10min_max = { 'Kanone' = 6 }
+warum = "Auftrag 028, 6.5: die Kanone nur, wenn sie die naechste Handlung ausloest - hoechstens 1 je 90 s."
+
+[[szenario]]
+id = "2746-warum-keine-chance"
+zeit = "27:46"
+kern_frage = true
+frage = "Wieso habe ich gegen die keine Chance? Erklär mir die Gründe, wieso ich keine Chance habe."
+quelle = "Live 27:36: 'Warum hatte ich keine Chance?' bekam 'Du lebst in ...'"
+lage = "Ornn tot nach einem verlorenen Kampf."
+darf_nicht_sagen = ["Du lebst in"]
+warum = "Auftrag 028, 6.4: zuerst die Frage - der Grund -, dann der Plan."
+
+[[szenario]]
+id = "2920-spielende"
+fenster = ["29:20", "30:20"]
+quelle = "Live 29:26 'Jetzt beenden', 29:44 'Back jetzt', 30:01 'Jetzt beenden' und 'Raus jetzt', 30:04 'Geh auf ihren Nexus', 30:07 'Zurück'"
+lage = "Nexus offen, drei bis vier Gegner tot; Leona und Miss Fortune leben bald wieder."
+hin_und_her_max = 0
+warum = "Auftrag 028, 6.6: 'Jetzt beenden' nur ohne R1 und wenn das Team wirklich dort ist - kein Hin und Her."

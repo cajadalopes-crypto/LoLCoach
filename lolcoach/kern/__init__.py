@@ -246,6 +246,8 @@ class Kern:
         self.pakete = PaketFuehrer()
         from .herzschlag import Herzschlag
         self.herzschlag = Herzschlag()                  # Auftrag 027, 1
+        from .einspruch import Einsprueche
+        self.einspruch = Einsprueche()                  # Auftrag 028, 6.3: Carlos' Widerspruch sperrt alle Stimmen
         self._letzt_ziel: tuple | None = None           # (Spielzeit, Ziel) des letzten Plan-Satzes - kein Hin und Her
         self._kampf_ev_t: float | None = None           # letztes Kampf-Event (Auftrag 027, 4)
         self.uhren = None
@@ -281,6 +283,7 @@ class Kern:
         self.m = self.bau.neu(p, b, lagebild)
         if self.m is not None:
             self.m.auge_aus = self.m.zeit < self.auge_nein_bis      # Auftrag 016, 5 (basis.kontrollauge_dazu)
+            self.einspruch.lage(self.m.zeit, tot=bool(self.m.tot), basis=self.m.bereich == "basis_eigen")
         return self.modus.neu(self.m)
 
     def spricht_in(self, modus: str | None) -> bool:
@@ -625,13 +628,41 @@ class Kern:
         if m is None or m.b is None or not text:
             return []
         try:
-            return stratege.sicherheit(text, self._sicher_lage(m))
+            gruende = stratege.sicherheit(text, self._sicher_lage(m))
         except Exception:
-            return []
+            gruende = []
+        if (sp := self.einspruch.trifft(text, m.zeit)) is not None:
+            gruende.append(f"gesperrt ({sp.was})")          # Auftrag 028, 6.3
+        return gruende
+
+    def doppelte_namen(self) -> set:
+        """Auftrag 028, 6.1: Champions, die es in beiden Teams gibt (Blind Pick)."""
+        p = getattr(self.m, "p", None) if self.m is not None else None
+        if p is None:
+            return set()
+        namen = [s.champion for s in p.spieler]
+        return {n for n in namen if namen.count(n) > 1}
+
+    def teamnamen(self, text: str, schluessel: str = "", thema: str = "") -> str:
+        """Auftrag 028, 6.1: ein doppelter Name wird "ihre Sejuani" oder "eure Sejuani" - fuer jede Quelle."""
+        doppelt = self.doppelte_namen()
+        if not doppelt or not text:
+            return text
+        from .sprache import teamnamen
+        p = self.m.p
+        gegner = {s.champion for s in p.spieler if s.team != p.mein_team} - doppelt
+        freunde = {s.champion for s in p.spieler if s.team == p.mein_team} - doppelt
+        return teamnamen(text, doppelt, schluessel, thema, gegner, freunde)
+
+    def hoere(self, text: str, zeit: float) -> None:
+        """Auftrag 028, 6.3: eine Frage oder Notiz von Carlos - was er ablehnt, sperrt ab jetzt alle Stimmen."""
+        self.einspruch.hoere(text, zeit)
 
     def sichere_antwort(self, text: str | None) -> str | None:
         """Auftrag 028, 3: eine Antwort beim Sprechen - der unsichere Satz faellt, an seiner Stelle der Grund ("Kein
         sicherer Kill mehr."); bleibt nichts, die Anweisung des Herzschlags. None: nichts Sicheres zu sagen."""
+        if text:
+            text = self.teamnamen(text, "antwort")          # Auftrag 028, 6.1
         if not text or not self.unsicher_jetzt(text):
             return text
         import re as _re
@@ -1257,7 +1288,9 @@ class Kern:
         if m.b is None or not any(h.art == "FARMEN" for h in kand):
             return kand
         k, cr = m.kauf, self.cfg["recall"]
-        viel = k is not None and bool(k.kaufen) and (m.b.gold or 0) >= k.kosten + cr["back_vor_farmen_gold"]
+        from ..sonderregeln import kauft_ohne_back
+        viel = k is not None and bool(k.kaufen) and (m.b.gold or 0) >= k.kosten + cr["back_vor_farmen_gold"] \
+            and not kauft_ohne_back(m.b.ich.champion_id)          # Auftrag 028, 6.2: Ornn kauft ohne Back
         wenig = m.leben is not None and m.leben < cr["leben_back"]
         if not (viel or wenig):
             return kand

@@ -261,6 +261,32 @@ def _ohne_welle(kern, lane: str, warum: str) -> str:
     return f"{alt}, {warum}."
 
 
+def _tp_oder_laufen(kern, f: str) -> str | None:
+    """Auftrag 028, 6.4: "Teleport oder laufen?" - die Wahl mit Grund, in einem Satz. TP lohnt, wenn der Weg zu deinem
+    aeusseren Turm laenger als 30 s ist und deine Welle schon zu dir laeuft oder dort liegt; sonst laufen und TP fuer
+    einen Kampf aufheben. None: keine solche Frage (oder keine Lage)."""
+    if not (re.search(r"\b(teleport\w*|tp)\b", f) and re.search(r"\b(lauf\w*|geh\w*|zu fu(ß|ss))\b", f)):
+        return None
+    m = kern.m
+    if m is None or m.p is None or not m.p.mein_team:
+        return None
+    from .merkmale import TUERME
+    lane = m.meine_lane or "Top"
+    turm = TUERME.get((m.p.mein_team, lane, "aussen")) or TUERME.get((m.p.mein_team, lane, "innen"))
+    von = m.pos if m.pos is not None and not m.tot else BRUNNEN.get(m.p.mein_team)   # tot: ab dem Brunnen
+    if turm is None or von is None:
+        return None
+    weg = abstand(von, turm) * WEGFAKTOR / (m.mein_tempo or 340.0)
+    weg += (m.respawn or 0.0) if m.tot else 0.0
+    tp_bereit = m.tp_in is not None and m.tp_in <= 0
+    w = m.welle
+    welle_da = w is not None and w.zustand in ("ZU_DIR", "GROSS_ZU_DIR", "GECRASHT_BEI_DIR")
+    if tp_bereit and weg > 30.0 and welle_da:
+        return f"Teleport: zu Fuß brauchst du {int(weg)} Sekunden, deine Welle ist vorher an deinem Turm."
+    grund = "TP hast du nicht" if not tp_bereit else "heb TP für einen Kampf auf"
+    return f"Laufen: in {int(weg)} Sekunden bist du an deinem Turm, {grund}."
+
+
 def _respawn_plan(kern) -> str:
     """Auftrag 008, A3.1: tot bekommt den Respawn-Plan - Zeit, Kauf, Ziel -, nie "Farm deine Mid-Welle" (101426 32:07:
     "Soll ich zu meinem Turm?" 18 s nach dem Tod -> "Nein. Farm deine Mid-Welle"; 32:22: "Bist du behindert?")."""
@@ -464,6 +490,9 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
     m = kern.m
     h = _jetzt(kern)
     danach = kern.danach_text
+    if (tp := _tp_oder_laufen(kern, f)) is not None:
+        # Auftrag 028, 6.4 (134020 2:29 "Soll ich teleporten oder laufen?" bekam eine Kauf-Kette): zuerst die Frage
+        return f"{tp} " + (_respawn_plan(kern) if m.tot else (_jetzt_satz(kern, h) or "")), h
     if m is not None and m.tot and a in ("JETZT", "SOLL_ICH", "ENTWEDER", "DANACH"):
         return _respawn_plan(kern), h                  # Auftrag 008, A3.1
     if a == "JETZT":

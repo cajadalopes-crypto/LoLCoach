@@ -206,6 +206,10 @@ class PaketFuehrer:
                 or not getattr(m, "lane_phase", False) or m.tot \
                 or (p is not None and p.typ in ("BACK", "KAUF")) or not (u.gold_bis and u.gold_bis[1] == 0):
             return None
+        from ..sonderregeln import kauft_ohne_back
+        ich = getattr(getattr(m, "b", None), "ich", None)
+        if ich is not None and kauft_ohne_back(ich.champion_id):
+            return None                  # Auftrag 028, 6.2: Ornn kauft ohne Back - kein Back fuer Gold
         n = u.back_spaetestens - m.zeit
         schl = round(u.back_spaetestens / 10.0)
         if not 8.0 <= n <= 12.0 or schl in self._vorback:

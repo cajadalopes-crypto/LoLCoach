@@ -393,6 +393,8 @@ class Sprechplan:
             return None
         if self._doppel(a.text, zeit):
             return None
+        if self.kern is not None and hasattr(self.kern, "teamnamen"):
+            a.text = self.kern.teamnamen(a.text, a.schluessel, a.thema or "")     # Auftrag 028, 6.1: "ihre Sejuani"
         # "Ach nee - Ekko ist beim Drachen": der Satz davor wurde mitten drin widerrufen (Carlos' Wunsch 26.09.)
         w = self._widerruf
         # nur, wenn der neue Satz die neue Fassung des alten ist: dieselbe Art, oder beide eine Gefahr (Position) -

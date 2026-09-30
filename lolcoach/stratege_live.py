@@ -470,6 +470,17 @@ class MakroStratege:
                 f"{int(t // 60)}:{int(t % 60):02d} „{s}“" for t, s in eigene)
         if (auge := self._auge_grund()):
             inhalt += f"\n\nKONTROLL-AUGE: nicht vorschlagen ({auge})."
+        if hasattr(kern, "doppelte_namen") and (doppelt := kern.doppelte_namen()):
+            inhalt += ("\n\nIN BEIDEN TEAMS: " + ", ".join(sorted(doppelt)) + " - nenne sie nie allein, immer 'ihre "
+                       f"{sorted(doppelt)[0]}' (Gegner) oder 'eure {sorted(doppelt)[0]}' (dein Team).")   # Auftrag 028, 6.1
+        # Auftrag 028, 6.3 und 6.2: was der Spieler abgelehnt hat, und die Sonderregel seines Champions
+        if (ein := getattr(kern, "einspruch", None)) is not None and (sperren := ein.kontext(self._zeit)):
+            inhalt += f"\n\n{sperren}"
+        if p is not None and p.ich is not None:
+            from .sonderregeln import kauft_ohne_back
+            if kauft_ohne_back(getattr(p.ich, "champion_id", None)):
+                inhalt += (f"\n\nSONDERREGEL {p.ich.champion}: kauft Items ohne Back, ausserhalb des Kampfes dort, "
+                           "wo er steht - nie 'Back, um zu kaufen'; Back nur fuer Leben und Mana.")
         return mit_entwurf(kurzer_prompt(f"{inhalt}\n\n{ende}"), entwurf)
 
     def _wissen(self) -> str | None:

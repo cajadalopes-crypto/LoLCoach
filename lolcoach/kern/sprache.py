@@ -158,3 +158,43 @@ def an(ort: str) -> str:
     if ort == "deiner Basis":
         return "in deiner Basis"
     return f"bei {ort}"
+
+
+# Auftrag 028, 6.1 (134020, Blind Pick: Sejuani in beiden Teams - "Nicht zu Sejuani", "Sejuani Flussmitte" meinten
+# mal die eine, mal die andere): ein Name, den es in beiden Teams gibt, steht nie allein - "ihre Sejuani" (Gegner)
+# oder "eure Sejuani" (dein Team). Nach "zu/mit/bei/von" im Dativ ("zu eurer Sejuani").
+_DATIV_VOR = ("zu", "mit", "bei", "von", "hinter", "neben", "vor")
+# Saetze ueber Mitspieler: "zu X und Y", "mit X", "hilf X", "Geh zu deinem Team, nicht zu X" (der Kampf-Partner)
+_MIT_VOR = ("zu", "mit", "bei", "hilf", "hinter", "neben")
+_GEGNER_SCHL = ("kern:INFO_JUNGLER", "kern:INFO_EINDRINGLING", "kern:INFO_FLASH", "kern:ZURUECK", "kern:RAUS",
+                "kern:VORSICHT", "kern:JUNGLER_NAH", "kern:INFO_SPIKE", "kern:SPIKE")
+
+
+def teamnamen(text: str, doppelt: set, schluessel: str = "", thema: str = "", gegner: set = frozenset(),
+              freunde: set = frozenset()) -> str:
+    """Jeder doppelte Name mit seinem Team. Gegner, wenn der Satz eine Gefahr oder eine Sichtung ist oder der Name
+    ohne Praeposition davor steht; Mitspieler nach "zu/mit/bei/hilf" (dorthin geht man). "X kämpft mit Y": X ist im
+    anderen Team als Y (`gegner`, `freunde`: die eindeutigen Namen je Seite)."""
+    if not doppelt or not text:
+        return text
+    gegner_satz = thema == "gefahr" or schluessel.startswith(_GEGNER_SCHL)
+    for name in sorted(doppelt, key=len, reverse=True):
+        def ersetze(m):
+            vor = text[:m.start()].split()
+            davor = vor[-1].lower().strip(",:;") if vor else ""
+            if davor in BESITZER:
+                return m.group(0)
+            eigen = not gegner_satz and davor in _MIT_VOR
+            if (k := re.match(r"\s+kämpft\s+(?:mit|gegen)\s+([^.,:;]+)", text[m.end():])):
+                anderer = k.group(1).strip()
+                if any(anderer.startswith(g) for g in gegner):
+                    eigen = True
+                elif any(anderer.startswith(f) for f in freunde):
+                    eigen = False
+            if davor in _DATIV_VOR:
+                return ("eurer " if eigen else "ihrer ") + m.group(0)
+            art = "eure " if eigen else "ihre "
+            return (art.capitalize() if m.start() == 0 or text[:m.start()].rstrip().endswith((".", "!", "?"))
+                    else art) + m.group(0)
+        text = re.sub(rf"(?<![\wÄÖÜäöüß]){re.escape(name)}(?![\wÄÖÜäöüß])", ersetze, text)
+    return text

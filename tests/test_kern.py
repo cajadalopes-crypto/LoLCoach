@@ -1139,16 +1139,17 @@ def kauf_018():
     ie = ids("Kontroll-Auge", "Überheblichkeit", "Stiefel", "Lord Dominiks Grüße", "Der Sammler", "Riesenschwert")
     g = stratege.pruefe("Kauf Klinge der Unendlichkeit, dann nach Top.", {"gold": 2412, "items": list(ie)})
     assert not g, g
-    # 35:43, 1205 Gold: sechs Items - nichts, auch kein Elixier; mit freiem Platz das Elixier des Zorns
+    # 35:43, 1205 Gold. Auftrag 028, 6.2 (loest 018, 4 ab): das Elixier nur mit sechs fertigen Items; mit freiem
+    # Platz und fertigem Build ein Kontroll-Auge - nie ein Elixier mitten im Spiel (134020: fuenfmal fuer Ornn)
     voll = inv + ids("Schildbogen der Unsterblichkeit")
-    assert kaufplan.plan("Graves", voll, 1205, 18) is None
+    assert kaufplan.plan("Graves", voll, 1205, 18).kaufen == ["Elixier des Zorns"]
+    assert kaufplan.plan("Graves", voll, 1205, 8) is None                        # erst ab Level 9
     alt = kaufplan._plan
     try:
         kaufplan._plan = lambda *a: None                   # Build fertig, ein Platz frei
-        assert kaufplan.plan("Graves", inv, 1205, 18).kaufen == ["Elixier des Zorns"]
-        assert kaufplan.plan("Graves", inv, 1205, 8) is None                     # erst ab Level 9
-        assert kaufplan.plan("Graves", inv, 400, 18) is None
-        assert kaufplan.plan("Lux", inv, 1205, 18).kaufen == ["Elixier der Zauberei"]
+        assert kaufplan.plan("Graves", inv, 1205, 18).kaufen == ["Kontroll-Auge"]
+        assert kaufplan.plan("Graves", inv, 50, 18) is None
+        assert kaufplan.plan("Lux", voll, 1205, 18).kaufen == ["Elixier der Zauberei"]
     finally:
         kaufplan._plan = alt
 
@@ -1470,6 +1471,7 @@ def ein_plan_028():
     sp.neu([Ansage("Rein: töte Xerath!", WICHTIG, "kern:PAKET_HERZ", zeit=300.0)])
     assert sp.takt(300.0) is None and sp.verworfen_sicher, sp.verworfen_sicher
     k.m = NS()
+    k.teamnamen = lambda t, *a: t
     k.sichere_antwort = lambda t: Kern.sichere_antwort(k, t)
     import lolcoach.kern.herzschlag as hz
     alt, hz.vorlage = hz.vorlage, lambda kern, m: "Geh zu deiner Top-Welle und farm sie."
@@ -1482,6 +1484,45 @@ def ein_plan_028():
         hz.vorlage = alt
 
 
+def ornn_028():
+    """Auftrag 028, 6 (Ornn-Partie 134020): Widerspruch sperrt alle Stimmen, doppelte Namen mit Team, Kauf mit Inhalt
+    (Stiefel nach Gegnern, Spielakte-Build, kein Elixier mitten im Spiel, Ornn ohne Back)."""
+    from lolcoach import kaufplan, stratege
+    from lolcoach.kern.einspruch import Einsprueche
+    from lolcoach.kern.sprache import teamnamen
+    from lolcoach.sonderregeln import kauft_ohne_back
+    # 6.3: "ich lass sie friezen" sperrt crash bis Tod/Back; "kein Elixier" fuer den Rest der Partie
+    e = Einsprueche()
+    e.hoere("Nee, ich lass den mal lieber pushen, damit ich reinfreezen kann.", 215.0)
+    e.hoere("Ich kaufe kein Alexi mit Game.", 995.0)
+    assert e.trifft("Crash die Welle, dann back.", 230.0) and not e.trifft("Nicht crashen: lass sie kommen.", 230.0)
+    assert e.trifft("Kauf Elixier des Metalls, dann zum Baron.", 1340.0)
+    e.lage(260.0, basis=True)
+    assert [s.was for s in e.sperren] == ["kein Elixier"]
+    lage = {"sperren": [{"was": s.was, "muster": s.muster} for s in e.sperren]}
+    assert any("gesperrt" in g for g in stratege.pruefe("Kauf Elixier des Metalls, dann zum Baron.", lage))
+    # 6.1: ein doppelter Name nie allein
+    assert teamnamen("Sejuani Flussmitte.", {"Sejuani"}, "kern:INFO_JUNGLER") == "Ihre Sejuani Flussmitte."
+    assert teamnamen("Geh zu deinem Team, nicht zu Sejuani.", {"Sejuani"}) == "Geh zu deinem Team, nicht zu eurer Sejuani."
+    assert teamnamen("Sejuani kämpft mit Miss Fortune.", {"Sejuani"}, gegner={"Miss Fortune"}) == \
+        "Eure Sejuani kämpft mit Miss Fortune."
+    # 6.2: Ornn - Build bis Jak'Sho, Stahlkappen gegen Tryndamere und Miss Fortune nach dem ersten Item, kein Elixier
+    it = stratege._items()
+    ids = lambda *n: tuple(it[x][3] for x in n)
+    g = ("Tryndamere", "MissFortune", "Sejuani", "Leona", "Brand")
+    assert kaufplan.stiefel("Ornn", g)[0] == it["Beschichtete Stahlkappen"][3]
+    assert it["Jak'Sho, der Proteaner"][3] in kaufplan.kern("Ornn")
+    k = kaufplan.plan("Ornn", ids("Dorans Schild", "Bamis Glutstein", "Stoffrüstung", "Stiefel"), 1052, 7, g)
+    assert k.kaufen == ["Kettenweste", "Rubinkristall"], k                        # 7:55: die ganze Kette
+    k = kaufplan.plan("Ornn", ids("Dorans Schild", "Sonnenfeuer-Ägide", "Dornenpanzer", "Stiefel"), 1001, 11, g)
+    assert k.kaufen == ["Beschichtete Stahlkappen"], k                            # nicht Elixier des Metalls
+    assert kauft_ohne_back("Ornn") and not kauft_ohne_back("Riven")
+    assert any("kauft ohne Back" in x for x in stratege.pruefe("Back jetzt: Dornenpanzer kaufen, dann Top.",
+                                                                {"kauf_ohne_back": True}))
+    assert any("hast du schon" in x for x in stratege.pruefe(
+        "Back jetzt: Dorans Schild holen, dann Top zurück.", {"gold": 600, "items": list(ids("Dorans Schild"))}))
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
@@ -1492,6 +1533,6 @@ if __name__ == "__main__":
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
                  stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017, lagebild_019,
                  objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018, kampf_rechner_020, gehirn_021,
-                 aufraeumen_022, stimme_023, udyr_024, pakete_025, pakete_026, herz_027, ein_plan_028):
+                 aufraeumen_022, stimme_023, udyr_024, pakete_025, pakete_026, herz_027, ein_plan_028, ornn_028):
         test()
         print(f"{test.__name__} OK")

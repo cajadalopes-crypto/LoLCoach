@@ -234,6 +234,7 @@ class Lagebild:
     def neu(self, zeit: float, sichtungen: list[minimap.Sichtung], p: Partie) -> None:
         self.letztes_bild = zeit if self.letztes_bild is None else max(self.letztes_bild, zeit)
         self.tod_merken(p)
+        sichtungen = self._entdoppeln(zeit, sichtungen, p)
         for s in sichtungen:
             sp = zuordnen(s, p)
             if sp:
@@ -248,6 +249,52 @@ class Lagebild:
         self._verbuendete_halten(zeit, sichtungen, p)
         self._recalls_merken(zeit, sichtungen, p)
         self._stillstand_merken(p)
+
+    def _entdoppeln(self, zeit: float, sichtungen: list, p: Partie) -> list:
+        """Auftrag 028, 6.1 (134020: Sejuani in beiden Teams, Blind Pick): ein Icon, das in einem Bild fuer BEIDE Teams
+        steht (4083 Bilder, "Sejuani Flussmitte" um 12:28 war die eigene), gehoert dem, der zuletzt dort in der Naehe
+        war - der andere Eintrag ist ein Geist und faellt. Ohne Ringfarbe faellt er ohnehin (zuordnen)."""
+        doppelt = {c for c in {s.champion_id for s in p.spieler}
+                   if sum(1 for s in p.spieler if s.champion_id == c) > 1}
+        if not doppelt:
+            return sichtungen
+        weg = set()
+        for i, a in enumerate(sichtungen):
+            if a.champion_id not in doppelt or i in weg:
+                continue
+            for j in range(i + 1, len(sichtungen)):
+                b = sichtungen[j]
+                if j in weg or b.champion_id != a.champion_id or abs(a.x - b.x) > 0.025 or abs(a.y - b.y) > 0.025:
+                    continue
+                if a.team is None or b.team is None:
+                    weg.add(i if a.team is None else j)
+                    continue
+
+                def abstand_zuletzt(s) -> float:
+                    sp = zuordnen(s, p)
+                    g = self.zuletzt.get((sp.name, sp.team)) if sp else None
+                    if g is None or zeit - g[0] > 30.0:
+                        return 9.0
+                    return abs(g[1] - s.x) + abs(g[2] - s.y)
+                weg.add(j if abstand_zuletzt(a) <= abstand_zuletzt(b) else i)
+        aus = [s for k, s in enumerate(sichtungen) if k not in weg]
+        # die Spur reisst (134020 12:31: das Icon der eigenen Sejuani lief ab 12:31 als "CHAOS" weiter): steht eine
+        # Sichtung genau dort, wo eben (<= 2 s) der Namensvetter des anderen Teams war, und hat ihr eigenes Team dort
+        # keine frische Spur, ist es sein Icon
+        for k, s in enumerate(aus):
+            if s.champion_id not in doppelt or s.team is None:
+                continue
+            anders = minimap.Sichtung(s.champion_id, "CHAOS" if s.team == "ORDER" else "ORDER", s.x, s.y, s.guete)
+            sp, sp_anders = zuordnen(s, p), zuordnen(anders, p)
+            if sp is None or sp_anders is None or any(x is not s and zuordnen(x, p) is sp_anders for x in aus):
+                continue
+            g_eigen = self.zuletzt.get((sp.name, sp.team))
+            g_anders = self.zuletzt.get((sp_anders.name, sp_anders.team))
+            nah = lambda g, r: g is not None and abs(g[1] - s.x) + abs(g[2] - s.y) <= r   # noqa: E731
+            if g_anders is not None and zeit - g_anders[0] <= 2.0 and nah(g_anders, 0.03) \
+                    and not (g_eigen is not None and zeit - g_eigen[0] <= 5.0 and nah(g_eigen, 0.1)):
+                aus[k] = anders
+        return aus
 
     def _stillstand_merken(self, p: Partie) -> None:
         """Seit wann steht jeder Mitspieler auf derselben Stelle (lebend, auf der Minimap immer zu sehen)?"""

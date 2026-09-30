@@ -198,6 +198,17 @@ class Herzschlag:
             self._basis_gesagt = z
             self.kauf = True
             return self._sagen(z, kauf_satz(kern, m, gesagt=gesagt))
+        # Auftrag 028, 6.2: wer ohne Rueckruf kauft (Ornn, wissen/sonderregeln.toml), kauft ausserhalb des Kampfes dort,
+        # wo er steht - statt "Back jetzt: 1000 Gold für Dornenpanzer" (134020 12:56)
+        if not nur_still and not basis and k is not None and k.kaufen and k.kosten >= 400 \
+                and z - self._basis_gesagt >= 45.0 and _kauft_ohne_back(m) \
+                and not any(g.sichtbar and not g.s.tot and g.abstand is not None and g.abstand <= 1500
+                            for g in m.b.gegner):
+            self._basis_gesagt = z
+            self.kauf = True
+            from .. import kaufplan
+            from .modi import liste
+            return self._sagen(z, f"Kauf gleich hier, ohne Back: {liste([kaufplan._akk(x) for x in k.kaufen])}.")
         # Stillstand: am selben Fleck, nicht im Recall-Kanal, nicht in der Basis - der Satz kommt schon nach
         # STILL_SAGEN_S, damit er nach 5 s zu hoeren ist (der Sprechplan braucht bis zu 2 s)
         # (auch im Brunnen: 091311 15:17-15:51 stand Carlos 34 s dort und wartete auf eine Anweisung)
@@ -364,6 +375,12 @@ def _ziel_kurz(kern, m) -> str:
         return (h.daten.get("kurz") or fuehren.kurz(h)) if h is not None else ""
     except Exception:
         return ""
+
+
+def _kauft_ohne_back(m) -> bool:
+    from ..sonderregeln import kauft_ohne_back
+    ich = getattr(getattr(m, "b", None), "ich", None)
+    return ich is not None and kauft_ohne_back(ich.champion_id)
 
 
 def kauf_satz(kern, m, respawn: float | None = None, gesagt: list = ()) -> str | None:
@@ -559,6 +576,12 @@ def ende_satz(m) -> str | None:
         return None
     offen = any(e.team == p.mein_team and m.zeit - e.zeit <= 290.0 for e in p.kills_von("InhibKilled"))
     if not offen:
+        return None
+    # Auftrag 028, 6.6 (134020 29:26-30:17: "Jetzt beenden", "Back jetzt", "Jetzt beenden", "Raus jetzt", "Zurück"):
+    # nur, wenn dein Team wirklich dort ist - mindestens zwei lebende Mitspieler an ihrem Nexus
+    from ..bewertung import gegenteam
+    from .merkmale import NEXUS
+    if not hasattr(m, "team_nah") or m.team_nah(NEXUS[gegenteam(p.mein_team)], 5000) < 2:
         return None
     tp = " Per TP, wenn bereit." if m.tp_in is not None and m.tp_in <= 0 else ""
     return f"Jetzt beenden: alle auf den Nexus, {len(tot_lang)} von ihnen sind tot.{tp}"

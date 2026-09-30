@@ -468,12 +468,19 @@ def farmen_satz(h: Handlung, m, zeitleiste: list, danach_text: str | None, cfg: 
         return f"Farm {wo}, {g.champion} ist {int(g.s.respawn)} Sekunden weg."
     k = getattr(b, "kauf", None) if b is not None else None
     n = getattr(k, "naechstes", None) if k is not None else None
+    from ..sonderregeln import kauft_ohne_back
+    ohne_back = b is not None and b.ich is not None and kauft_ohne_back(b.ich.champion_id)   # Auftrag 028, 6.2
     if n and b.gold is not None:
         from .modi import _akk
         item, fehlt = n
         ziel = int((b.gold + fehlt + 49) // 50 * 50)
+        if ohne_back:
+            return f"Farm {wo}, bei {ziel} Gold kauf {_akk(item)} gleich hier."
         return f"Farm {wo}, bei {ziel} Gold back für {_akk(item)}."
     if k is not None and getattr(k, "kaufen", None):
+        if ohne_back:
+            from .modi import _akk, liste
+            return f"Farm {wo}, kauf {liste([_akk(x) for x in k.kaufen])} gleich hier."
         return f"Farm {wo}, {k.kaufen[0]} ist schon bezahlbar: nach der Welle back."
     if danach_text:
         return f"Farm {wo}, danach {danach_text.split(':')[0]}."

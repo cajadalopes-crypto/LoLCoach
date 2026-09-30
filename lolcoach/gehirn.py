@@ -313,6 +313,11 @@ class Gehirn:
                 print(f"  Spielakte fehlgeschlagen: {e}", flush=True)
                 self.akte = None
             self._akte_laeuft = False
+            try:
+                from . import kaufplan
+                kaufplan.akte_setzen(p.ich.champion_id, self.akte)   # Auftrag 028, 6.2: ihr Build ohne eigenen
+            except Exception:
+                pass
             if self.akte and self.ablage:
                 self.ablage.write_text(self.akte, encoding="utf-8")
             if fertig:

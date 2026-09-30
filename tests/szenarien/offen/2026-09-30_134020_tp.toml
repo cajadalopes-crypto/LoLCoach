@@ -1,0 +1,22 @@
+# Offen fuer Auftrag 029 (TP-Plays und Sicht): die zwei TP-Notizen der Ornn-Partie 134020. Auftrag 028, 6.7 nimmt
+# sie ausdruecklich aus ("erst muss es eine Stimme geben, sonst widersprechen sich auch die TP-Calls").
+
+aufnahme = "2026-09-30_134020"
+spielmodus = "CLASSIC"
+bots = true
+
+[[szenario]]
+id = "0257-tp-kalkulieren"
+fenster = ["2:30", "5:00"]
+quelle = "Notiz 2:57: 'ich will, dass mit Teleport viel besser kalkuliert wird und Plays berechnet werden'"
+lage = "Ornn mit TP, Drache um 5:00, Bot-Lane kaempft."
+muss_nennen_eins = ["TP", "Teleport"]
+warum = "Auftrag 029: TP-Plays - wann TP auf eine andere Lane oder zum Objective lohnt."
+
+[[szenario]]
+id = "1155-kein-tp-call"
+fenster = ["5:00", "12:00"]
+quelle = "Notiz 11:55: 'Du hast nicht einen einzigen Teleport Call gesagt bis jetzt'"
+lage = "Ornn Top, TP bereit, mehrere Kaempfe unten und am Drachen."
+muss_nennen_eins = ["TP", "Teleport"]
+warum = "Auftrag 029: mindestens ein begruendeter TP-Call, wenn ein Play offen ist."

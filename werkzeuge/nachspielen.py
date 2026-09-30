@@ -116,7 +116,7 @@ class Lauf:
     stratege: object = None                              # Auftrag 015: der Makro-Stratege mit Stub (Protokoll)
 
 
-def frage_stellen(text: str, p, lb, plan, fid=None, stratege=None) -> dict:
+def frage_stellen(text: str, p, lb, plan, fid=None, stratege=None, kern=None) -> dict:
     """Eine Frage wie per Sprechtaste (Auftrag 003): zuerst der Fragenweg des Kerns (`antworten.frage_kern`), sonst
     die alte Sofort-Antwort; was Claude braucht, wird offline nicht gefragt ("quelle": "claude"). Die Antwort geht wie
     live in `gesagt` ("antwort")."""
@@ -126,6 +126,8 @@ def frage_stellen(text: str, p, lb, plan, fid=None, stratege=None) -> dict:
     t0 = time.perf_counter()
     r = {}
     frage = text
+    if kern is not None and hasattr(kern, "hoere"):
+        kern.hoere(text, p.zeit)                        # Auftrag 028, 6.3 (wie live, sprache._beantworte)
     kopf = (text.lower().replace(",", " ").replace(".", " ").split() or [""])[0].strip(":")
     if kopf in NOTIZ_WORTE:                              # wie live (sprache.py): Notiz, mit Frage beantwortet
         if (innen := frage_in_notiz(text)) is None:
@@ -197,8 +199,17 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
     antworten_offen: list[dict] = []
     vorher = None
     letzte_probe = -1e9
+    # Auftrag 028, 6.2: wie live gilt ohne eigenen Build der der Spielakte - die aufgezeichnete, sonst keine
+    from lolcoach import kaufplan
+    kaufplan.AKTE_BUILD.clear()
+    kaufplan.AKTE_STIEFEL.clear()
+    akte = pfad.with_name(pfad.name.removesuffix(".jsonl.gz") + "_spielakte.md")
+    akte_offen = akte.exists()
     for w, d in aufzeichnung.lies_mit_zeit(pfad):
         p = zustand.partie(d)
+        if akte_offen and p.ich:
+            kaufplan.akte_setzen(p.ich.champion_id, akte.read_text(encoding="utf-8"))
+            akte_offen = False
         if sicht and p.ich:
             for wb, s in sicht.zwischen(w, lage.champions(p)):
                 lb.neu(p.zeit - (w - wb), s, p)
@@ -247,7 +258,7 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
                                getattr(kern, "danach_text", None) or ""))
         while offene_fragen and p.zeit >= offene_fragen[0][0]:
             ft, ftext, fid = offene_fragen.pop(0)
-            lauf.antworten.append(frage_stellen(ftext, p, lb, plan, fid, ms))
+            lauf.antworten.append(frage_stellen(ftext, p, lb, plan, fid, ms, kern))
             antworten_offen.append(lauf.antworten[-1])
         while offen and p.zeit >= offen[0]:
             soll = offen.pop(0)

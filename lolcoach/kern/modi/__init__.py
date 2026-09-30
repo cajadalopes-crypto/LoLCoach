@@ -128,13 +128,16 @@ def back_gruende(m, cfg: dict) -> list[BackGrund]:
     if nie_unter and gold < nie_unter and not (leben is not None and leben < (ausser or 0.0)) and not gecrasht:
         return []
     aus = []
+    # Auftrag 028, 6.2 (134020 7:55, 12:56, 13:28, 14:01 "1000 Gold für Dornenpanzer" - das Gold kaufte mehr): der
+    # Back-Ruf nennt die ganze Kette, die das Gold kauft
+    kette = liste([_akk(x) for x in k.kaufen]) if k is not None and k.kaufen else ""
     if gecrasht and not k.lohnt:
         aus.append(BackGrund("WELLE_GECRASHT", k.kosten * cfg["kauf"]["kauf_faktor"],
-                             f"Welle ist drin, {gold // 50 * 50} Gold für {_akk(k.kaufen[0])}"))
+                             f"Welle ist drin, Kauf {kette}"))
     if k is not None and k.lohnt:
-        teil = k.kaufen[0] if k.kaufen else "den nächsten Kauf"
         g = k.kosten * cfg["kauf"]["kauf_faktor"] + (c["spike_bonus"] if k.kern_fertig else 0.0)
-        aus.append(BackGrund("GOLD_STUFE", g, f"{gold // 50 * 50} Gold für {_akk(teil)}"))
+        aus.append(BackGrund("GOLD_STUFE", g, f"Kauf {kette}" if kette else
+                             f"{gold // 50 * 50} Gold für den nächsten Kauf"))
     if gold >= c["horten_ab"]:
         g = c["horten_zuschlag"] * (gold - c["horten_ab"]) / 500.0
         if k is None or not k.lohnt:
@@ -158,6 +161,10 @@ def back_gruende(m, cfg: dict) -> list[BackGrund]:
                              f"{g.champion} ist {'tot' if g.s.tot else 'gebackt'}"))
     # Pruefung c, R4: ein toter oder gebackter Lane-Gegner ist ein Grund fuer Platten oder Druecken - fuer einen Back
     # nur zusammen mit Gold oder Leben (173159 28:11: "Back ...: Cho'Gath ist tot")
+    # Auftrag 028, 6.2: wer ohne Rueckruf kauft (Ornn, wissen/sonderregeln.toml), backt nur fuer Leben
+    from ...sonderregeln import kauft_ohne_back
+    if kauft_ohne_back(b.ich.champion_id):
+        aus = [x for x in aus if x.art in ("LEBEN", "GEGNER_ZURUECK")]
     if not any(x.art in ("LEBEN", "GOLD_STUFE", "GOLD_HORTEN", "WELLE_GECRASHT") for x in aus):
         aus = [x for x in aus if x.art != "GEGNER_ZURUECK"]
     # der tragende Grund zuerst: Leben, dann Gold, dann Tempo

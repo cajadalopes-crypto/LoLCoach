@@ -1,0 +1,10 @@
+# Sonderregeln je Champion, die Kauf, Back oder TP aendern (Auftrag 028, 6.2) - sie wirken im Kern, nicht nur als
+# Text fuer Claude. Quelle ist das Lexikon (wissen/lexikon/champions/<Champion>.md); jede Regel nennt ihre Stelle.
+#
+#   kauf_ohne_back = true   kauft Items ueberall (ausser Verbrauchsgueter): kein "Back, um zu kaufen" - Back nur fuer
+#                           Leben und Mana; gekauft wird ausserhalb des Kampfes dort, wo er steht
+#   tp_global = true        (noch keine Regel - TP-Plays sind Auftrag 029)
+
+[Ornn]
+kauf_ohne_back = true
+quelle = "Ornn.md, Passiv Lebende Schmiede: kauft Items ohne Rückruf (außer Verbrauchsgüter)"

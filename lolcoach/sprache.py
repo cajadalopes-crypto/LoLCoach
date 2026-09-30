@@ -294,6 +294,9 @@ class Gespraech:
             self.sprecher.freigeben()  # Rauschen, Raeuspern, "B."
             return
         print(f"  Du: {text}", flush=True)
+        kern_ = getattr(self.lagebild, "kern", None)
+        if kern_ is not None and hasattr(kern_, "hoere"):
+            kern_.hoere(text, p.zeit)          # Auftrag 028, 6.3: sein Widerspruch sperrt alle Stimmen
         makro = None
         if _bruchstueck(text, woerter, [s.champion for s in p.spieler]):
             # Live 26.09. (Practice Tool): "Und man", "Da hoere ich", "Der Thomas Dau" - Nebengeraeusche oder
