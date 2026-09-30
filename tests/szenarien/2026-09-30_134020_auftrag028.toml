@@ -30,9 +30,8 @@ kern_frage = true
 frage = "Soll ich mich teleporten oder laufen?"
 quelle = "Live 2:29: auf 'teleporten oder laufen' kam eine Kauf-Kette"
 lage = "Ornn tot, lebt in wenigen Sekunden, Welle kommt zu seinem Turm."
-muss_nennen_eins = ["lauf", "Teleport", "TP"]
-darf_nicht_sagen = ["Kauf"]
-warum = "Auftrag 028, 6.4: zuerst die Frage beantworten (ja/nein oder die Wahl, mit Grund), dann der Plan."
+muss_nennen_eins = ["Laufen:", "Teleport:"]
+warum = "Auftrag 028, 6.4: zuerst die Frage beantworten (die Wahl vorn, mit Grund), dann der Plan - die Kauf-Kette darf danach kommen."
 
 [[szenario]]
 id = "0321-freeze-frage"
