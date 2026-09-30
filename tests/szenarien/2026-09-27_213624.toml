@@ -102,7 +102,8 @@ id = "1900-raus-unter-15"
 fenster = ["18:59", "19:04"]
 quelle = "Auftrag 002, Offen 2 / Auftrag 003, Teil A 2: 19:00 Riven 12 %, Sona 825 entfernt, ihr Balken unbekannt - RAUS blieb stumm"
 lage = "Riven mit 12 % Leben, ein Gegner in kampf_radius, kurz vor dem Tod."
-muss_nennen_eins = ["Raus"]
+# Auftrag 036: die makro-Fassung ergaenzt (B4 (wenig Leben, Gegner nah) sagt "Back"); die alte bleibt
+muss_nennen_eins = ["Raus", "Back", "Zurück"]
 warum = "Unter 15 % eigenem Leben mit einem Gegner in kampf_radius ist RAUS robust belegt, auch ohne Balken."
 
 [[szenario]]

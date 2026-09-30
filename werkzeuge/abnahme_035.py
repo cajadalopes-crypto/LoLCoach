@@ -102,6 +102,9 @@ def tor(m: dict) -> list[tuple[str, str, str, bool | None]]:
     zeilen = [
         ("Challenger-Treue", "schlaegt alle drei Vergleiche deutlich", _treue_text(tu),
          None if tu is None else tu["erreicht"]),
+        ("Tor 036: gegen haeufigste je Rolle und Minute", "hoeher bei Treffer UND Wert", _treue_text(tu, HAEUFIGSTE),
+         None if tu is None or tu["urteile"].get(HAEUFIGSTE) is None else
+         tu["urteile"][HAEUFIGSTE]["treffer_pp"] > 0 and tu["urteile"][HAEUFIGSTE]["wert_pkt"] > 0),
         ("Sicherheit", "0", str(v.get("sicherheit", "-")), None if not v else v["sicherheit"] == 0),
         ("Widerspruch (automatisch)", "<= 1 je Partie", str(max(v.get("widerspruch", [0]) or [0])) if v else "-",
          None if not v else max(v["widerspruch"] or [0]) <= 1),
@@ -119,11 +122,16 @@ def tor(m: dict) -> list[tuple[str, str, str, bool | None]]:
     return zeilen
 
 
-def _treue_text(tu: dict | None) -> str:
+HAEUFIGSTE = "haeufigste je Rolle und Minute"
+
+
+def _treue_text(tu: dict | None, nur: str | None = None) -> str:
     if tu is None:
         return "-"
     teile = []
     for name, u in tu["urteile"].items():
+        if nur is not None and name != nur:
+            continue
         teile.append(f"{name}: " + ("nicht anlegbar" if u is None else
                                     f"{u['treffer_pp']:+.1f} pp Treffer, {u['wert_pkt']:+.2f} Pkt Wert"))
     return "; ".join(teile)
@@ -147,20 +155,62 @@ def markdown(m: dict) -> str:
             out.append(f"| {name} | {pc(r['anlegbar'])} | {pc(r['treffer'])} | {pc(r['treffer_locker'])} | "
                        f"{pc(r['treffer_sieger'])} | {pc(r['treffer_challenger'])} | {pc(r['treffer_sieger_challenger'])} | "
                        f"{r['wert_dr']:+.2f} ± {r['wert_dr_se']:.2f} |")
+        # Auftrag 036: die Warnungen - wie oft, und sagen sie etwas vorher?
+        out += ["", f"Gefahr (Auftrag 036): gefahr_schwelle = {gefahr_schwelle()} (wissen/kern.toml)"
+                + (f"; gewaehlt mit gefahr_schwelle.py: {m['gefahr_schwelle']}" if m.get("gefahr_schwelle") else
+                   " - werkzeuge/challenger/gefahr_schwelle.py ist noch nicht gelaufen"), ""]
+        for name, r in t["politiken"].items():
+            if "warnungen" in r:
+                out.append(f"- {name}: Warnungen {pc(r['warnungen'])}, Tod in 60 s nach Warnung "
+                           f"{pc(r['warnung_tod60'])}, ohne Warnung {pc(r.get('ohne_warnung_tod60'))}, "
+                           f"Formen {r['formen']}")
         out += ["", "Beispiele:", ""]
         for b in t.get("beispiele", []):
             out.append(f"- {b['minute']} min, {b['rolle']}, {b['liga']}, {'Sieg' if b['sieg'] else 'Niederlage'} - "
                        f"{b['lage']}. Coach: „{b['coach']}“ - der Spieler: {b['spieler']}"
                        f"{' (Treffer)' if b['treffer'] else ''}.")
+    v = (m.get("verdrahtung") or {}).get("gesamt") or {}
+    if v.get("still_fehl") or v.get("basis_fehl"):
+        out += ["", "## Fehlfaelle Stillstand und Basis (Auftrag 036, je eine Zeile)", "",
+                "| Partie | Art | Zeit | was fehlte | zuletzt gesagt |", "|---|---|---|---|---|"]
+        for f_ in v.get("still_fehl", []):
+            out.append(f"| {f_['stamm']} | Stillstand{' (Basis)' if f_['basis'] else ''} | {f_['ab']}-{f_['bis']} | "
+                       f"keine positive Anweisung | {f_['zuletzt']} |")
+        for f_ in v.get("basis_fehl", []):
+            out.append(f"| {f_['stamm']} | Basis ({'Respawn' if f_['respawn'] else 'Ankunft'}) | {f_['zeit']} | "
+                       f"kein Kauf-Satz (zuletzt {f_['kauf_zuletzt']}) | {f_['zuletzt']} |")
     s = m.get("szenarien")
     if s:
         out += ["", "## Szenarien (--kern makro)", "",
                 f"{s['makro']['gruen']} gruen / {s['makro']['gruen'] + s['makro']['rot']} geprueft "
                 f"(--kern neu: {s['neu']['gruen']} / {s['neu']['gruen'] + s['neu']['rot']})", "",
-                "| Szenario | makro | neu | Beurteilung (noch zu schreiben) |", "|---|---|---|---|"]
+                "| Szenario | makro | neu | warum rot (makro) | Beurteilung (phase6_bericht.md) |", "|---|---|---|---|---|"]
+        gr = s.get("gruende") or {}
         for sid, (mk, nu) in sorted(s["vergleich"].items()):
-            out.append(f"| {sid} | {mk} | {nu} | |")
+            warum = "; ".join(gr.get(sid, []))[:200].replace("|", "/")
+            out.append(f"| {sid} | {mk} | {nu} | {warum} | |")
     return "\n".join(out) + "\n"
+
+
+def gefahr_schwelle() -> str:
+    try:
+        import tomllib
+        return str(tomllib.loads((WURZEL / "wissen" / "kern.toml").read_text(encoding="utf-8"))
+                   ["makro_gehirn"].get("gefahr_schwelle", "-"))
+    except Exception:
+        return "-"
+
+
+def gefahr_schwelle_kurz() -> str | None:
+    """Die Zahlen aus werkzeuge/challenger/gefahr_schwelle.py (buecher/challenger/gefahr_schwelle.json)."""
+    try:
+        g = json.loads((BUCH / "gefahr_schwelle.json").read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    a = g["alle"]
+    return (f"{g['schwelle']:.3f}, Warnungen {100 * a['anteil']:.1f} %, Tod mit/ohne Warnung "
+            f"{100 * a['tod_mit']:.1f} / {100 * a['tod_ohne']:.1f} %, Faktor {a['faktor']:.2f}"
+            + ("" if g["erreicht"] else " - ZIEL NICHT ERREICHT"))
 
 
 def szenarien(schnell: bool) -> dict:
@@ -176,7 +226,10 @@ def szenarien(schnell: bool) -> dict:
     stand = lambda sid, r, g: "rot" if sid in r else "gruen" if sid in g else "-"
     return {"makro": {k: ergebnis["makro"].get(k) for k in ("gruen", "rot", "uebersprungen")},
             "neu": {k: ergebnis["neu"].get(k) for k in ("gruen", "rot", "uebersprungen")},
-            "vergleich": {sid: (stand(sid, r_m, g_m), stand(sid, r_n, g_n)) for sid in sorted(wichtig)}}
+            "vergleich": {sid: (stand(sid, r_m, g_m), stand(sid, r_n, g_n)) for sid in sorted(wichtig)},
+            # 036: warum rot unter makro (szenarien.py --json schreibt die Verstoesse)
+            "gruende": {sid: g for d in (ergebnis["makro"].get("je_datei") or {}).values()
+                        for sid, g in (d.get("gruende") or {}).items()}}
 
 
 def main() -> None:
@@ -185,6 +238,10 @@ def main() -> None:
     n = args[args.index("--n") + 1] if "--n" in args else "30000"
     start = time.strftime("%Y-%m-%dT%H:%M")
     m: dict = {"start": start}
+    m["gefahr_schwelle"] = gefahr_schwelle_kurz()
+    if m["gefahr_schwelle"] is None:
+        print("!! buecher/challenger/gefahr_schwelle.json fehlt - zuerst python werkzeuge/challenger/gefahr_schwelle.py "
+              "(Auftrag 036); gemessen wird mit dem Wert aus kern.toml", flush=True)
     m["gehirn_laufzeit"] = gehirn_laufzeit()
     if "--ohne-generalprobe" not in args:
         code, aus = _lauf(["werkzeuge/generalprobe.py", "--minuten", "2.5"])

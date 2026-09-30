@@ -554,6 +554,8 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
         ergebnis[status] += 1
         if status in ("rot", "gruen"):
             ergebnis[f"{status}_ids"].append(sz["id"])
+        if status == "rot":
+            ergebnis.setdefault("gruende", {})[sz["id"]] = [v[:240] for v in verstoesse[:4]]   # 036: warum rot
         zeichen = {"rot": "ROT  ", "gruen": "GRUEN", "uebersprungen": "--   "}[status]
         print(f"  {zeichen} {sz['id']}" + (f"  [uebersprungen: {', '.join(uebersprungen)}]" if uebersprungen else ""))
         for v in verstoesse:
@@ -638,7 +640,8 @@ def main() -> None:
           f"uebersprungen)")
     if args.json:
         Path(args.json).write_text(json.dumps({"kern": args.kern, **gesamt, "je_datei": {
-            Path(d).name: {"rot": e.get("rot_ids", []), "gruen": e.get("gruen_ids", [])}
+            Path(d).name: {"rot": e.get("rot_ids", []), "gruen": e.get("gruen_ids", []),
+                           "gruende": e.get("gruende", {})}
             for d, (e, _) in zip(dateien, ergebnisse)}}, ensure_ascii=False, indent=1), encoding="utf-8")
 
 

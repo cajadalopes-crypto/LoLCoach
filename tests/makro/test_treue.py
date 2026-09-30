@@ -133,8 +133,54 @@ def alter_kern_anlegen():
     assert a is None or a[0] in treue.AKTIONEN
 
 
+def gefahr_schwelle_rechnung():
+    """Auftrag 036: werkzeuge/challenger/gefahr_schwelle.py - die Gefahr-Handregel warnt nur mit dem Modell; die
+    Schwelle laesst sich aus zwei Laeufen exakt durchrechnen; gewaehlt wird die kleinste, die beide Ziele erfuellt;
+    kern.toml wird richtig geschrieben."""
+    import tomllib
+    import gefahr_schwelle as gs
+    # der echte Entscheider an einem Riot-Moment: alle Gegner nie gesehen -> J5 feuert (Handregel)
+    hirn = treue.MomentHirn(gh.Gehirn, KEYS, mo.BASIS_NAMEN, {"delta": 0.005, "p_klar": 0.15, "p_geteilt": 0.08})
+    x = zeile()
+    b = np.hstack([x[mo.X_SPALTEN], [0, 0, 0]]).astype(np.float64)
+    lauf = lambda gf, s: treue.coach(treue.lage_aus_moment(x, meta(), f.SP, f.MI), b, hirn, "wert", s)
+    hirn.setzen(np.array([0.0, 0.02, -0.01, 0.0, 0.0]), np.array([0.1, 0.6, 0.1, 0.1, 0.1]), np.full(5, 0.05), 0.55)
+    null, unendlich, toml = lauf(0.05, 0.0), lauf(0.05, float("inf")), lauf(0.05, None)
+    assert null["form"] == "gefahr" and "J5" in null["gefeuert"], null
+    assert unendlich["form"] != "gefahr" and "J5" in unendlich["unbestaetigt"], unendlich
+    assert abs(null["tod60"] - 0.05) < 1e-6 and toml["form"] != "gefahr"          # 0,05 < gefahr_schwelle
+    hirn.setzen(np.array([0.0, 0.02, -0.01, 0.0, 0.0]), np.array([0.1, 0.6, 0.1, 0.1, 0.1]), np.full(5, 0.8), 0.55)
+    assert lauf(0.8, None)["form"] == "gefahr"                                    # das Modell bestaetigt
+    # die Kurve: 10 Momente, Handregel feuert in 0-5, tod60 steigt; gestorben wird in 3, 4 und 8
+    p = np.array([0.1, 0.2, 0.3, 0.5, 0.6, 0.7, 0.1, 0.2, np.nan, 0.3])
+    g0 = np.array([1, 1, 1, 1, 1, 1, 0, 0, 0, 0], bool)
+    gi = np.zeros(10, bool)
+    tod = np.array([0, 0, 0, 1, 1, 0, 0, 0, 1, 0], bool)
+    assert list(gs.warnt(p, g0, gi, 0.5)) == [False] * 3 + [True] * 3 + [False] * 4
+    k = gs.kurve(p, g0, gi, tod, raster=[0.0, 0.4, 0.55, 0.65])
+    z0, z4 = k[0], k[1]
+    assert z0["warnungen"] == 6 and abs(z0["tod_mit"] - 2 / 6) < 1e-9 and abs(z0["tod_ohne"] - 1 / 4) < 1e-9
+    assert z4["warnungen"] == 3 and abs(z4["faktor"] - (2 / 3) / (1 / 7)) < 1e-9
+    z, ok = gs.waehlen(k, anteil_max=0.35, faktor_min=2.0, n_min=2)
+    assert ok and z["schwelle"] == 0.4, z                   # 0,0: Anteil 60 % zu hoch; 0,4: 30 %, Faktor 4,7
+    z, ok = gs.waehlen(k, anteil_max=0.35, faktor_min=50.0, n_min=2)
+    assert not ok and z is not None                          # nicht erreichbar: der beste Faktor, klar markiert
+    # Politik bei Schwelle s: je Moment Lauf 0 oder Lauf unendlich
+    assert gs.politik(["a0", "b0", "c0"], ["a", "b", "c"], [0.5, 0.1, float("nan")], 0.4) == ["a0", "b", "c"]
+    # kern.toml: der Wert wird gesetzt, alles andere bleibt
+    alt = (HIER.parents[1] / "wissen" / "kern.toml").read_text(encoding="utf-8")
+    neu = gs.toml_schreiben(alt, 0.315, "bestimmt im Test")
+    a, n = tomllib.loads(alt), tomllib.loads(neu)
+    assert n["makro_gehirn"]["gefahr_schwelle"] == 0.315
+    n["makro_gehirn"]["gefahr_schwelle"] = a["makro_gehirn"]["gefahr_schwelle"]
+    assert a == n and "bestimmt im Test" in neu and abs(len(neu.splitlines()) - len(alt.splitlines())) <= 1
+    ohne = "\n".join(z for z in alt.splitlines() if not z.startswith("gefahr_schwelle"))
+    assert tomllib.loads(gs.toml_schreiben(ohne, 0.3, "x"))["makro_gehirn"]["gefahr_schwelle"] == 0.3
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    for t in (lage_aus_moment, treffer_und_schluessel, coach_mit_momenthirn, auswerten_bekannt, alter_kern_anlegen):
+    for t in (lage_aus_moment, treffer_und_schluessel, coach_mit_momenthirn, auswerten_bekannt, alter_kern_anlegen,
+              gefahr_schwelle_rechnung):
         t()
         print(f"{t.__name__} OK")

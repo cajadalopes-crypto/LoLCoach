@@ -293,7 +293,8 @@ frage = "Ja okay, du hast mir gerade im Backcloud Code oder im Chat gesagt, dass
 kern_frage = true
 absicht = "DANACH"
 ohne_claude = true
-muss_nennen_eins = ["Nach dem Back", "Aus der Basis"]
+# Auftrag 036: die makro-Fassung ergaenzt (DANACH-Antwort des Entscheiders: "Danach ... Jetzt: ..."); die alte bleibt
+muss_nennen_eins = ["Nach dem Back", "Aus der Basis", "Danach"]
 warum = "\"Was mache ich jetzt, sobald ich im Back bin, im Fountain?\" - das Ziel nach dem Back."
 
 [[szenario]]
@@ -303,7 +304,8 @@ frage = "Was mache ich, sobald ich zurück bin im Fountain?"
 kern_frage = true
 absicht = "DANACH"
 ohne_claude = true
-muss_nennen_eins = ["Nach dem Back", "Aus der Basis"]
+# Auftrag 036: die makro-Fassung ergaenzt (DANACH-Antwort des Entscheiders: "Danach ... Jetzt: ..."); die alte bleibt
+muss_nennen_eins = ["Nach dem Back", "Aus der Basis", "Danach"]
 warum = "Dasselbe kurz."
 
 [[szenario]]
@@ -555,7 +557,8 @@ frage = "Soll ich mir keine Sorgen machen, dass vier Leute von meinen Gegnern ge
 kern_frage = true
 absicht = "RISIKO"
 ohne_claude = true
-muss_nennen_eins = ["fehlt", "fehlen", "zu sehen"]
+# Auftrag 036: die makro-Fassung ergaenzt (RISIKO-Antwort: "Unbekannt sind X und Y."); die alte bleibt
+muss_nennen_eins = ["fehlt", "fehlen", "zu sehen", "Unbekannt sind"]
 warum = "Gefahr-Frage."
 
 [[szenario]]
@@ -565,7 +568,8 @@ frage = "Warum ist es sicher, jetzt gerade die Botwelle zu farmen?"
 kern_frage = true
 absicht = "RISIKO"
 ohne_claude = true
-muss_nennen_eins = ["fehlt", "fehlen", "zu sehen", "unten"]
+# Auftrag 036: die makro-Fassung ergaenzt (RISIKO-Antwort: "Unbekannt sind X und Y."); die alte bleibt
+muss_nennen_eins = ["fehlt", "fehlen", "zu sehen", "unten", "Unbekannt sind"]
 warum = "Gefahr-Frage."
 
 [[szenario]]
@@ -575,7 +579,8 @@ frage = "Ich soll ihn drücken, obwohl fünf Gegner leben und keiner von denen a
 kern_frage = true
 absicht = "RISIKO"
 ohne_claude = true
-muss_nennen_eins = ["fehlt", "fehlen", "zu sehen"]
+# Auftrag 036: die makro-Fassung ergaenzt (RISIKO-Antwort: "Unbekannt sind X und Y."); die alte bleibt
+muss_nennen_eins = ["fehlt", "fehlen", "zu sehen", "Unbekannt sind"]
 warum = "Gefahr-Frage."
 
 [[szenario]]

@@ -183,7 +183,13 @@ def hoeren(d: dict, gesagt: list | None = None) -> dict:
     p90 = lsort[int(0.9 * (len(lsort) - 1))] if lsort else 0.0
     # Stillstand
     still_n = still_ok = 0
+    still_fehl, basis_fehl = [], []          # Auftrag 036: je Fehlfall eine Zeile (Zeit, Ort, der letzte Satz davor)
     kauf_t = [s["t"] for s in g if "kauf" in s["text"].lower()]
+
+    def _davor(t: float) -> str:
+        vor = [s for s in g if s["t"] <= t + 2.0]
+        return f"{_uhr(vor[-1]['t'])} {vor[-1]['text'][:60]}" if vor else "-"
+
     seit = None
     gemeldet = False
     for x in takte:
@@ -203,16 +209,26 @@ def hoeren(d: dict, gesagt: list | None = None) -> dict:
             # Ankommen im Brunnen ist die Anweisung fuers Stehen dort - 125902 27:24, 133448 13:11)
             # (1,5 s Spiel: die Takte hier liegen rund 1 s auseinander, der Kern sieht jeden - 091311 20:46 kam der
             # Satz im selben Moment, in dem Carlos stehen blieb)
-            still_ok += any(seit[0] - 1.5 <= t <= x["t"] + 2.0 for t in pos)
+            ok = any(seit[0] - 1.5 <= t <= x["t"] + 2.0 for t in pos)
+            still_ok += ok
+            if not ok:
+                still_fehl.append({"ab": _uhr(seit[0]), "bis": _uhr(x["t"]), "basis": bool(x["basis"]),
+                                   "modus": x["modus"], "zuletzt": _davor(x["t"])})
     # Basis
     basis_n = basis_ok = 0
-    war = False
+    war = tot_vor = False
     for x in takte:
         b = x["basis"] and not x["tot"]
         if b and not war and x.get("kauf") and x["t"] >= START_S:       # vor dem Spielbeginn: Startkauf, Briefing
             basis_n += 1
-            basis_ok += any(x["t"] - 14.0 <= t <= x["t"] + 2.0 for t in kauf_t)   # im Tod 12 s vor dem Respawn gesagt, im Recall-Kanal davor
+            ok = any(x["t"] - 14.0 <= t <= x["t"] + 2.0 for t in kauf_t)   # im Tod 12 s vor dem Respawn gesagt, im Recall-Kanal davor
+            basis_ok += ok
+            if not ok:
+                vor = [t for t in kauf_t if t < x["t"] - 14.0]
+                basis_fehl.append({"zeit": _uhr(x["t"]), "respawn": bool(tot_vor),
+                                   "kauf_zuletzt": _uhr(vor[-1]) if vor else "-", "zuletzt": _davor(x["t"])})
         war = b
+        tot_vor = x["tot"]
     neg = [s for s in g if s["schl"] != "antwort" and negativ_allein(s["text"])]
     hin = 0
     # dieselbe Zielbestimmung wie die Regel im Kern (herzschlag.plan_ziel_von): Kauf-Kette und Rueckzug ohne eigenes
@@ -248,7 +264,12 @@ def hoeren(d: dict, gesagt: list | None = None) -> dict:
             "negativ_beispiele": [s["text"][:70] for s in neg[:3]],
             "widerspruch": len(wid), "widerspruch_beispiele": wid[:4], "fuell": [len(fuell), len(g)],
             "fuell_beispiele": [s["text"][:50] for s in fuell[:3]],
-            "kanone": [kanone, round(max(dauer, 1.0) / 90.0, 1)]}
+            "kanone": [kanone, round(max(dauer, 1.0) / 90.0, 1)],
+            "still_fehl": still_fehl, "basis_fehl": basis_fehl}
+
+
+def _uhr(t: float) -> str:
+    return f"{int(t // 60)}:{int(t % 60):02d}"
 
 
 # nackt bestaetigen oder entschuldigen, ohne Schritt danach ("Bleib dabei, Kanone in 18 Sekunden." zaehlt mit)

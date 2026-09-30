@@ -42,7 +42,8 @@ id = "0519-tp-weg"
 fenster = ["5:07", "5:40"]
 quelle = "Carlos 5:19: 'Es kommt ein TP ... dass du mir dann auch sagst, wer seinen TP verloren hat.'"
 lage = "Xerath teleportiert 5:07 von unten nach oben (Minimap-Fernsprung)."
-muss_nennen_eins = ["Xerath TP weg"]
+# Auftrag 036: die makro-Fassung ergaenzt (J7 sagt "<Name> hat TP benutzt"); die alte bleibt
+muss_nennen_eins = ["Xerath TP weg", "TP benutzt"]
 warum = "Pflicht-Info wie beim Flash, <= 5 Woerter (kern._flash_info mit INFO_ZAUBER)."
 
 # --- 5. Kaufen, Notizen, Satzbau -------------------------------------------------------------------------------------

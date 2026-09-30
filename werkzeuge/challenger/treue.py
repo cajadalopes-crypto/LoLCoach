@@ -180,18 +180,20 @@ class MomentHirn:
         return {"siegchance": sieg, "jungler": jungler or {}, "jungler_unsicherheit": None}
 
 
-def coach(lage, v, hirn, reihenfolge: str) -> dict:
-    """Ein erster Takt des Entscheiders: Kommando, Form, Aktion(en), G0?, stumm (ohne Daten)."""
+def coach(lage, v, hirn, reihenfolge: str, gefahr_schwelle: float | None = None) -> dict:
+    """Ein erster Takt des Entscheiders: Kommando, Form, Aktion(en), G0?, stumm (ohne Daten). `gefahr_schwelle`:
+    None = wissen/kern.toml (Auftrag 036); werkzeuge/challenger/gefahr_schwelle.py setzt 0 und unendlich."""
     from lolcoach.makro import aktionen, wahrnehmung
     from lolcoach.makro.takt import Entscheider
-    e = Entscheider(hirn=hirn, reihenfolge=reihenfolge)
+    e = Entscheider(hirn=hirn, reihenfolge=reihenfolge, gefahr_schwelle=gefahr_schwelle)
     a = e.entscheide(lage, v, {"welle_gecrasht": False, "spike_fehlt": None, "lane_gegner_backt": False})
     akts = [aktionen.aktion(a.kommando)]
     if a.form == "geteilt" and a.zweite is not None:
         akts.append(aktionen.aktion(a.zweite))
     reg = e._reg
     return {"id": a.kommando.id, "form": a.form, "text": a.vorlage, "aktionen": akts, "g0": a.kommando.id == "G0",
-            "stumm": [i for i in a.stumm if not wahrnehmung.fehlt(reg[i].eingaben)], "gefeuert": a.gefeuert}
+            "stumm": [i for i in a.stumm if not wahrnehmung.fehlt(reg[i].eingaben)], "gefeuert": a.gefeuert,
+            "tod60": a.tod60, "unbestaetigt": a.unbestaetigt}
 
 
 # --- 4. Der alte Kern, soweit anlegbar -----------------------------------------------------------------------------
@@ -286,6 +288,7 @@ def auswerten(P, politiken: dict, beispiele: int = 10) -> dict:
             r["warnungen"] = float(warn.mean())
             r["warnung_tod60"] = float(tod60[warn].mean()) if warn.any() else float("nan")
             r["grundrate_tod60"] = float(tod60.mean())
+            r["ohne_warnung_tod60"] = float(tod60[~warn].mean()) if (~warn).any() else float("nan")   # 036
             r["formen"] = dict(Counter(u["form"] for u in liste if u is not None))
             r["kommandos"] = dict(Counter(u["id"] for u in liste if u is not None).most_common(15))
             r["stumm_je_entscheidung"] = dict(Counter(s for u in liste if u is not None for s in u["stumm"])
@@ -347,11 +350,10 @@ def haeufigste(P) -> list:
     return out
 
 
-def main() -> None:
-    sys.stdout.reconfigure(encoding="utf-8")
-    args = sys.argv[1:]
-    wert = lambda name, vorgabe: int(args[args.index(name) + 1]) if name in args else vorgabe
-    n, n_alt, n_bsp = wert("--n", 30000), wert("--alt", 3000), wert("--beispiele", 10)
+def laden(n: int = 30000):
+    """Pruefdaten (analyse.Pruefdaten, n Momente) und das Gehirn der Momente - gemeinsam mit
+    werkzeuge/challenger/gefahr_schwelle.py (Auftrag 036). Rueckgabe: (P, hirn, setzen(i)) - setzen(i) legt die
+    Modellwerte von Moment i ins Gehirn."""
     import numpy as np
     import analyse
     import gehirn as gh
@@ -373,13 +375,27 @@ def main() -> None:
         {"delta": 0.01, "p_klar": 0.15, "p_geteilt": 0.08}
     hirn = MomentHirn(gh.Gehirn, meta["schluessel"], meta["merkmale"], schwellen)
     assert list(meta["schluessel"]) == list(P.keys_liste)
+
+    def setzen(i: int) -> None:
+        hirn.setzen(P.q[i], P.p[i], P.gf[i], float(sieg_v[i]),
+                    {gh.BEREICHE[j]: float(x) for j, x in enumerate(pj[i]) if x >= 0.05})
+    return P, hirn, setzen
+
+
+def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")
+    args = sys.argv[1:]
+    wert = lambda name, vorgabe: int(args[args.index(name) + 1]) if name in args else vorgabe
+    n, n_alt, n_bsp = wert("--n", 30000), wert("--alt", 3000), wert("--beispiele", 10)
+    import numpy as np
+    import phase1 as f
+    P, hirn, setzen = laden(n)
     politiken = {"Coach (wert)": [], "Coach (fest)": []}
     t0 = time.time()
     for i in range(len(P.k)):
         lage_w = lage_aus_moment(P.X[i], P.M[i], f.SP, f.MI)
         lage_f = lage_aus_moment(P.X[i], P.M[i], f.SP, f.MI)
-        hirn.setzen(P.q[i], P.p[i], P.gf[i], float(sieg_v[i]),
-                    {gh.BEREICHE[j]: float(x) for j, x in enumerate(pj[i]) if x >= 0.05})
+        setzen(i)
         politiken["Coach (wert)"].append(coach(lage_w, P.B[i], hirn, "wert"))
         politiken["Coach (fest)"].append(coach(lage_f, P.B[i], hirn, "fest"))
         if i % 5000 == 0:
@@ -436,7 +452,8 @@ def drucken(e: dict) -> None:
     for name in ("Coach (wert)", "Coach (fest)"):
         r = e["politiken"][name]
         print(f"{name}: Abdeckung {pc(r['abdeckung'])}, mit Aktion {pc(r['mit_aktion'])}, Warnungen {pc(r['warnungen'])}"
-              f" (Tod in 60 s nach Warnung {pc(r['warnung_tod60'])}, Grundrate {pc(r['grundrate_tod60'])}), "
+              f" (Tod in 60 s nach Warnung {pc(r['warnung_tod60'])}, ohne Warnung {pc(r.get('ohne_warnung_tod60'))}, "
+              f"Grundrate {pc(r['grundrate_tod60'])}), "
               f"Formen {r['formen']}")
     print(f"Reihenfolge: {e['reihenfolge']} bleibt")
     if "auf_den_alt_momenten" in e:

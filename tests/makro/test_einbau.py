@@ -259,6 +259,12 @@ def echtes_gehirn_schnittstelle():
     assert lage.plan.get("back")                              # die anderen Entscheidungen wissen: Back ist der Plan
 
 
+def gefaehrlich(lage, p: float = 0.9):
+    """Das Gefahr-Modell bestaetigt (Auftrag 036): eine Option mit Todeswahrscheinlichkeit p (Hirn.tod60)."""
+    lage.hirn.optionen = [("Lane", "", 0.0, 1.0, p, "klar", [])]
+    return lage
+
+
 def _reg(*paare):
     """Ein eigenes Register: (Nummer, Klasse, Wert, feuert(lage) -> bool)."""
     return {i: Entscheidung(i, i, "R", ("uhr",), (), (lambda f, i=i, k=k, w=w: lambda l: Kommando(
@@ -290,7 +296,7 @@ def kein_planwechsel_ohne_grund():
     b_an["an"] = True
     assert e2.entscheide(L(zeit=610)).kommando.id == "A"      # 10 s: gehalten
     assert e2.entscheide(L(zeit=621)).grund == "abgelaufen"   # 21 s: der bessere Plan darf kommen
-    g = L(zeit=622)
+    g = gefaehrlich(L(zeit=622))
     g.plan["gefahr_test"] = True
     a = e2.entscheide(g)                                       # Gefahr wechselt immer
     assert a.kommando.id == "G" and a.form == "gefahr" and a.grund == "gefahr"
@@ -358,7 +364,7 @@ def claude_nur_stimme():
     # Gefahr formt Claude nie - sie muss sofort heraus
     g = Entscheider()
     g._reg = _reg(("G", "gefahr", 1.0, lambda l: True))
-    ga = g.entscheide(L())
+    ga = g.entscheide(gefaehrlich(L()))
     au = Stimme(frage=treu).formen(ga, namen)
     assert au.fertig and au.ergebnis() == (ga.vorlage, "vorlage:gefahr")
     # Treue-Pruefung einzeln
@@ -474,6 +480,101 @@ def hoechstens_14_woerter():
     assert g.vorlage == "Zurück zum Turm." and len(g.voll.split()) > 8
 
 
+def gefahr_aus_dem_modell():
+    """Auftrag 036: eine Gefahr-Entscheidung warnt nur, wenn das Gefahr-Modell sie bestaetigt (Hirn.tod60 >=
+    gefahr_schwelle). Die Handregel bleibt Zusatzbedingung; ohne Modellwert warnt nur B4; faellt die Warnung weg,
+    spricht die beste positive Anweisung."""
+    from lolcoach.makro import vorrang
+    from lolcoach.makro.lage import Hirn
+    # tod60: gewichtet mit pi (p_highelo), nur Optionen mit Werten
+    h = Hirn(optionen=[("Lane", "", 0.1, 0.6, 0.1, "klar", []), ("Back", "", 0.0, 0.2, 0.5, "klar", [])])
+    assert abs(h.tod60 - (0.6 * 0.1 + 0.2 * 0.5) / 0.8) < 1e-9
+    assert Hirn().tod60 is None
+    # die Schwelle steht in kern.toml
+    assert 0.0 < vorrang.schwelle() < 1.0
+    reg = _reg(("J5", "gefahr", 3.5, lambda l: True), ("A", "rest", 1.0, lambda l: True))
+    # Handregel feuert, das Modell sieht wenig Gefahr: keine Warnung, die positive Anweisung spricht
+    e = Entscheider(gefahr_schwelle=0.4)
+    e._reg = reg
+    a = e.entscheide(gefaehrlich(L(), 0.15))
+    assert a.kommando.id == "A" and a.form != "gefahr" and a.unbestaetigt == ["J5"] and abs(a.tod60 - 0.15) < 1e-9
+    # das Modell bestaetigt: Gefahr vorn
+    e = Entscheider(gefahr_schwelle=0.4)
+    e._reg = reg
+    a = e.entscheide(gefaehrlich(L(), 0.55))
+    assert a.kommando.id == "J5" and a.form == "gefahr" and not a.unbestaetigt
+    # das Modell allein warnt nicht: ohne Handregel keine Gefahr
+    e = Entscheider(gefahr_schwelle=0.4)
+    e._reg = _reg(("A", "rest", 1.0, lambda l: True))
+    assert e.entscheide(gefaehrlich(L(), 0.9)).form != "gefahr"
+    # ohne Modellwert: nur B4 (wenig Leben, Gegner nah)
+    e = Entscheider(gefahr_schwelle=0.4)
+    e._reg = _reg(("J5", "gefahr", 3.5, lambda l: True), ("B4", "gefahr", 4.0, lambda l: True),
+                  ("A", "rest", 1.0, lambda l: True))
+    ohne = L()
+    ohne.hirn.optionen = []
+    a = e.entscheide(ohne)
+    assert a.kommando.id == "B4" and a.form == "gefahr" and a.unbestaetigt == ["J5"] and a.tod60 is None
+    # nie Schweigen: faellt die einzige Warnung weg, gilt die Grund-Anweisung
+    e = Entscheider(gefahr_schwelle=0.4)
+    e._reg = _reg(("J5", "gefahr", 3.5, lambda l: True))
+    a = e.entscheide(gefaehrlich(L(), 0.1))
+    assert a.kommando.id in ("G0", "Z3") and a.kommando.text
+    # ein gehaltener Warn-Plan faellt, sobald das Modell ihn nicht mehr bestaetigt (erledigt)
+    e = Entscheider(gefahr_schwelle=0.4)
+    e._reg = reg
+    assert e.entscheide(gefaehrlich(L(zeit=600), 0.6)).kommando.id == "J5"
+    a = e.entscheide(gefaehrlich(L(zeit=601), 0.2))
+    assert a.kommando.id == "A" and a.grund == "erledigt"
+    # die echte J5 an einer Lage mit zwei fehlenden Gegnern: nur mit Bestaetigung
+    lage = L(zeit=600)
+    for g in lage.gegner:
+        g.gesehen_vor = 40.0
+    a = Entscheider(gefahr_schwelle=0.4).entscheide(gefaehrlich(lage, 0.1))
+    assert "J5" in a.gefeuert and "J5" in a.unbestaetigt and a.kommando.id != "J5"
+    lage = L(zeit=600)
+    for g in lage.gegner:
+        g.gesehen_vor = 40.0
+    a = Entscheider(gefahr_schwelle=0.4).entscheide(gefaehrlich(lage, 0.7))
+    assert a.form == "gefahr"
+
+
+def stillstand_und_basis_036():
+    """Auftrag 036, Teil 2 (Stillstand 80 %, Basis 83 % bei Carlos): das Stehen beginnt nach Einkauf, Recall-Kanal und
+    Kampf neu (wie 027 misst); der Kauf kommt in der ganzen eigenen Basis und im Tod als "Du lebst in ..." (B8)."""
+    from types import SimpleNamespace as NS
+    from lolcoach.makro.lage import Spieler
+    # im Brunnen nach dem Einkauf stehen: nach den 10 s Einkauf und still_s kommt das "Los"
+    mc = MakroCoach(kern=None, hirn=None)
+    mc.anweisung = object()
+    mc.gesagt = [{"zeit": 600.0, "ansage": "Kauf Stiefel.", "id": "B7", "kategorie": "WENDEPUNKT", "quelle": "x"}]
+    gesprochen = [NS(gesprochen=600.2)]
+    ich_ = Spieler("Riven", "TOP", pos=(500.0, 500.0), im_brunnen=True, in_basis=True)
+    lage = NS(ich=ich_)
+    steht = [z for z in range(600, 620) if mc._stillstand(lage, float(z), gesprochen)]
+    assert steht and 614 <= steht[0] <= 615, steht          # vorher: nie (der Kauf-Satz galt als Anweisung)
+    # B7 in der Basis ausserhalb des Brunnens - nur mit kaufbarem Bauteil
+    reg = Entscheider()._reg
+    lage = ich(L(gold=1200), in_basis=True, im_brunnen=False)
+    lage.spike_fehlt = 0
+    assert reg["B7"].pruefe(lage) is not None
+    lage.spike_fehlt = 400
+    assert reg["B7"].pruefe(lage) is None                    # nichts kaufbar: beim Hinauslaufen kein "Kauf ..."
+    # Ankunft in der Basis: der Kauf loest den gehaltenen Plan ab (Ereignis), ohne Grund zu warten
+    e = Entscheider()
+    e._reg = _reg(("A", "rest", 5.0, lambda l: True), ("B7", "rest", 0.5, lambda l: l.ich.in_basis))
+    assert e.entscheide(L(zeit=600)).kommando.id == "A"
+    a = e.entscheide(ich(L(zeit=601), in_basis=True))
+    assert a.kommando.id == "B7" and a.grund == "event", (a.kommando.id, a.grund)
+    # im Tod: B8 ("Du lebst in ...") loest den Kauf beim Sterben (B7) ab
+    e = Entscheider()
+    e._reg = _reg(("B7", "rest", 1.0, lambda l: not l.ich.lebt),
+                  ("B8", "rest", 0.5, lambda l: not l.ich.lebt and l.ich.respawn <= 12))
+    assert e.entscheide(ich(L(zeit=600), lebt=False, respawn=30)).kommando.id == "B7"
+    a = e.entscheide(ich(L(zeit=619), lebt=False, respawn=11))
+    assert a.kommando.id == "B8" and a.grund == "event", (a.kommando.id, a.grund)
+
+
 def verworfen_kommt_wieder():
     """Verwirft der Sprechplan die Plan-Ansage (Sprech-Tor, Back-Sperre aus 028, zu alt), gilt der Plan als nicht
     gesagt und kommt erneut - der neue Plan geht nie still verloren."""
@@ -496,14 +597,14 @@ def verdrahtung_035():
     an = {"G2": False}
     e = Entscheider()
     e._reg = _reg(("G1", "gefahr", 3.0, lambda l: True), ("G2", "gefahr", 5.0, lambda l: an["G2"]))
-    assert e.entscheide(L(zeit=600)).kommando.id == "G1"
+    assert e.entscheide(gefaehrlich(L(zeit=600))).kommando.id == "G1"
     an["G2"] = True
-    assert e.entscheide(L(zeit=601)).kommando.id == "G1"          # G1 gilt noch: kein Pingpong
-    assert e.entscheide(L(zeit=602), anlass="kill").kommando.id == "G2"
+    assert e.entscheide(gefaehrlich(L(zeit=601))).kommando.id == "G1"          # G1 gilt noch: kein Pingpong
+    assert e.entscheide(gefaehrlich(L(zeit=602)), anlass="kill").kommando.id == "G2"
     # Brunnen: die Warnung haelt keinen Plan
     e = Entscheider()
     e._reg = _reg(("G1", "gefahr", 3.0, lambda l: True), ("A", "rest", 1.0, lambda l: True))
-    assert e.entscheide(ich(L(), im_brunnen=True)).kommando.id == "A"
+    assert e.entscheide(gefaehrlich(ich(L(), im_brunnen=True))).kommando.id == "A"
     # Wiederholung kurz, Stillstand "Los:"
     mc = MakroCoach(kern=None, hirn=None)
     mc.entscheider._reg = _reg(("A", "rest", 1.0, lambda l: l.zeit < 605 or l.zeit >= 608),
@@ -560,6 +661,7 @@ if __name__ == "__main__":
                  echtes_gehirn_schnittstelle,
                  kein_planwechsel_ohne_grund, sicherheits_sperre, claude_nur_stimme, fehlende_wahrnehmung, laufzeit,
                  kern_stellung_makro, verworfen_kommt_wieder, verdrahtung_035, hoechstens_14_woerter,
+                 gefahr_aus_dem_modell, stillstand_und_basis_036,
                  fragen_antwort_dann_plan):
         test()
         print(f"{test.__name__} OK")

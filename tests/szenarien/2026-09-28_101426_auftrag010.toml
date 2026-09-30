@@ -86,7 +86,8 @@ zeit = "10:37"
 # Flash wird gesagt, egal wie weit weg - Carlos, 133448: "er sagt nicht, wessen Flash weg ist"
 fenster = ["10:20", "10:45"]
 lage = "Kritik 009: 'Aurora ohne Flash.' um 10:37 - ohne bekannten Ort, keine Folge."
-muss_nennen_eins = ["Aurora Flash weg"]
+# Auftrag 036: die makro-Fassung ergaenzt (J8 sagt "<Name> ohne Flash fuer ..."); die alte bleibt
+muss_nennen_eins = ["Aurora Flash weg", "Aurora ohne Flash"]
 warum = "Auftrag 016, 1.1: ein gesehener Flash wird immer gesagt."
 
 # --- 3. Rueckzug auf eine andere Lane -----------------------------------------------------------------------------

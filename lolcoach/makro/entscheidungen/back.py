@@ -117,7 +117,10 @@ def b6(lage: MakroLage):
 
 @entscheidung("B7", "Kauf-Kette", "D,R", ("eigene_items", "kaufplan"), ("R:B7",))
 def b7(lage: MakroLage):
-    if not (lage.ich.im_brunnen or not lage.ich.lebt) or lage.gold < 300:
+    # 036: in der Basis (ausserhalb des Brunnens) nur, wenn der Kaufplan ein Bauteil jetzt kaufbar sieht - sonst hiesse
+    # es beim Hinauslaufen noch einmal "Kauf ..."
+    basis = lage.ich.in_basis and lage.spike_fehlt == 0
+    if not (lage.ich.im_brunnen or basis or not lage.ich.lebt) or lage.gold < 300:
         return None
     r = regeln.regel("B7")
     teile = list(lage.plan.get("kauf") or ["dein naechstes Bauteil"])

@@ -84,7 +84,10 @@ def gesamt(ergebnisse: list[dict]) -> dict:
             "ms_median": ms[len(ms) // 2] if ms else 0.0, "ms_p95": ms[int(0.95 * (len(ms) - 1))] if ms else 0.0,
             "ms_max": ms[-1] if ms else 0.0, "quelle": dict(q),
             "vorlage_anteil": round(sum(v for k, v in q.items() if k.startswith("vorlage")) / max(1, sum(q.values())), 3),
-            "hirn_geladen": all(r["makro"]["hirn"] for r in ergebnisse) if ergebnisse else False}
+            "hirn_geladen": all(r["makro"]["hirn"] for r in ergebnisse) if ergebnisse else False,
+            # Auftrag 036: die Fehlfaelle je Partie (Zeile im Bericht)
+            "still_fehl": [{"stamm": r["stamm"], **f_} for r in ergebnisse for f_ in r["hoeren"].get("still_fehl", [])],
+            "basis_fehl": [{"stamm": r["stamm"], **f_} for r in ergebnisse for f_ in r["hoeren"].get("basis_fehl", [])]}
 
 
 def main() -> None:
@@ -115,6 +118,13 @@ def main() -> None:
               f"Quelle {dict(m['quelle'])}, verworfen {m['verworfen']}", flush=True)
         for x in d["sicherheit"][:4]:
             print(f"    SICHERHEIT {x['t']} {x['schl']} {x['grund']}: {x['text']}", flush=True)
+        # Auftrag 036: je Fehlfall eine Zeile (Stillstand, Basis)
+        for f_ in h.get("still_fehl", []):
+            print(f"    STILLSTAND {f_['ab']}-{f_['bis']} {'Basis' if f_['basis'] else f_['modus']}: keine Anweisung "
+                  f"(zuletzt {f_['zuletzt']})", flush=True)
+        for f_ in h.get("basis_fehl", []):
+            print(f"    BASIS {f_['zeit']} {'Respawn' if f_['respawn'] else 'Ankunft'}: kein Kauf-Satz (Kauf zuletzt "
+                  f"{f_['kauf_zuletzt']}, zuletzt {f_['zuletzt']})", flush=True)
         (AUS / f"{Path(d['stamm']).name.removesuffix('.jsonl.gz')}.json").write_text(json.dumps({**r, "makro": {k: v for k, v in m.items() if k != "ms_liste"}},
                                                            ensure_ascii=False, default=str), encoding="utf-8")
     g = gesamt(ergebnisse)

@@ -516,3 +516,7 @@ modell = "schnell"               # [llm] schnell
 reihenfolge = "wert"             # Auftrag 035, Teil 0: Gefahr vorn, dann der Aktionswert des Gehirns (Ersatz: fester
                                  # Wert); "fest" = Stand 034 (Gefahr, Objective-Kette, Rest). Umschalten fuers
                                  # Messen auch mit LOLCOACH_MAKRO_REIHENFOLGE=fest|wert. Teil 2 misst beide.
+gefahr_schwelle = 0.40           # Auftrag 036: eine Gefahr-Entscheidung (J4, J5, J9 ...) warnt nur, wenn die
+                                 # Todeswahrscheinlichkeit in 60 s (Gefahr-Modell, Hirn.tod60) mindestens so hoch ist.
+                                 # VORLAEUFIG (doppelte Grundrate 19,7 %, 035) - werkzeuge/challenger/gefahr_schwelle.py
+                                 # bestimmt sie an den Pruefpartien und schreibt sie hierher.

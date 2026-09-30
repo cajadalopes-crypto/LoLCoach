@@ -72,6 +72,8 @@ schweigen ueberall; Protokoll `<stamm>_makro.jsonl` (`werkzeuge/makro_protokoll.
 davor. Ohne `daten/challenger/modelle` laeuft er ohne Gehirn (nur Regeln und Rechner).
 Seit Auftrag 035 messen `szenarien.py`, `protokoll.py`, `kennzahlen.py` und `nachspielen.py` per Default `--kern makro`
 (`--kern neu` fuer den alten Stand).
+Seit Auftrag 036 warnt eine Gefahr-Entscheidung nur, wenn das Gefahr-Modell sie bestaetigt (`Hirn.tod60 >=
+[makro_gehirn] gefahr_schwelle`, `makro/vorrang.bestaetigt`; ohne Modell nur B4) - die Handregel allein warnt nicht.
 Bis 034 war `neu` Default: in LANE, BASIS und TOT entscheidet und spricht der Kern (Kandidaten je Modus in
 `kern/modi/`, Wert und Gefahr in `wert.py`/`gefahr.py`, gehaltener Plan in `plan.py`, Budget in `sprechen.py`;
 Welle nach Buch 1, Recall/Kauf nach Buch 3), die alten Regeln schweigen dort; `schatten` = das Regelwerk spricht,
@@ -113,6 +115,8 @@ durch denselben Code wie das Live-Spiel.
   treue.py` (Challenger-Treue: Kommando gegen die Aktion der High-Elo-Spieler in den Pruefpartien, beide Reihenfolgen,
   gegen "immer farmen", haeufigste Aktion je Rolle/Minute und den alten Kern), Szenarien makro/neu, Guthaben ->
   `buecher/challenger/phase5_messung.md`. Die Abo-Runde startet es nie, es nennt nur den Befehl.
+  Davor einmal `python werkzeuge/challenger/gefahr_schwelle.py` (036): waehlt `gefahr_schwelle` an den Pruefpartien
+  (Tod nach Warnung >= 2 x ohne, Warnungen <= 15 %) und schreibt sie nach `wissen/kern.toml`.
 - `python werkzeuge/szenarien.py` - war der Rat in dieser Lage richtig? Szenarien aus
   `tests/szenarien/*.toml` gegen das nachgespielte System (`--mit-claude`: auch Fragen, ueber das
   Abo, `--lage`: nachgespielte Lage je Szenario, `--konstruiert`: die konstruierten Lagen aus

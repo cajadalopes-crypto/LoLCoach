@@ -10,7 +10,8 @@ id = "0118-udyr-weg-platten"
 fenster = ["1:17", "1:35"]
 quelle = "Event LANE_WEG 1:18 (werkzeuge/pakete_messen.py): Udyr verlaesst die Lane, der Kern schwieg"
 lage = "Lane-Phase, Udyr seit 5 s ausserhalb seiner Lane gesehen."
-muss_nennen_eins = ["Platten"]
+# Auftrag 036: die makro-Fassung ergaenzt (J6 sagt "... die Platte holen"); die alte bleibt
+muss_nennen_eins = ["Platten", "Platte"]
 warum = "Buch 15, 5 / Auftrag 026, 6: Lane-Gegner weg -> Welle rein, dann Platten (pakete._lane_weg)."
 
 [[szenario]]

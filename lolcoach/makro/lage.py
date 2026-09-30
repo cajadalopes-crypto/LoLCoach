@@ -30,6 +30,7 @@ class Spieler:
     tp_hat: bool = False
     tp_in: float | None = None            # s bis TP bereit (0 = bereit, None = unbekannt)
     im_brunnen: bool = False
+    in_basis: bool = False                # 036: in der eigenen Basis (wie 027 misst: Kauf-Anweisung beim Ankommen)
     backt: bool = False                   # Recall gesehen bzw. Richtung Basis verschwunden
     spike_neu: bool = False               # gerade Level 6 oder Item fertig
     tempo: float = 365.0
@@ -97,6 +98,17 @@ class Hirn:
 
     def beste(self):
         return self.optionen[0] if self.optionen else None
+
+    @property
+    def tod60(self) -> float | None:
+        """Todeswahrscheinlichkeit in 60 s in dieser Lage (Auftrag 036): das Gefahr-Modell (gefahr60) je Aktion,
+        gewichtet mit dem, was High-Elo-Spieler hier tun (pi). None ohne Gehirn - dann warnt nur, was ohne Modell
+        warnen darf (vorrang.OHNE_MODELL)."""
+        paare = [(o[3], o[4]) for o in self.optionen if o[3] is not None and o[4] is not None]
+        summe = sum(p for p, _ in paare)
+        if not paare or summe <= 0:
+            return None
+        return sum(p * g for p, g in paare) / summe
 
     def jungler_seite(self) -> str | None:
         """'oben' / 'unten', wenn die Jungler-Karte klar ist (>= 60 %)."""

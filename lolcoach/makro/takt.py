@@ -9,6 +9,8 @@ Ablauf je Aufruf (hoechstens einmal je Sekunde, das haelt makro/einbau.py):
    Ohne Gehirn (keine Modelle, Fehler) bleibt `lage.hirn` leer - die Regeln und Rechner entscheiden allein.
 2. Alle 111 Entscheidungen, deren Live-Eingaben in diesem Takt da sind (`lage.vorhanden`, wahrnehmung.EINGABEN). Fehlt
    eine Eingabe, schweigt genau diese Entscheidung - die anderen sprechen.
+   Seit 036 zaehlt eine Gefahr-Entscheidung nur, wenn das Gefahr-Modell sie bestaetigt (`vorrang.bestaetigt`:
+   Todeswahrscheinlichkeit der Lage >= gefahr_schwelle; ohne Modellwert nur B4) - sonst faellt sie weg.
 3. Die Sicherheits-Sperre (der alte Kern: R1, Kill-Check, Fakten, verbotene Begriffe) streicht Kommandos, die nicht
    gesagt werden duerfen. `vorrang.ordnen`: seit 035 Gefahr vorn, dann der Aktionswert des Gehirns (Ersatz: der
    feste Wert); `reihenfolge="fest"` gibt die Reihenfolge aus 032 (Gefahr, Objective-Kette, Rest).
@@ -52,6 +54,8 @@ class Anweisung:
     gesperrt: list[tuple[str, str]] = field(default_factory=list)   # (Nummer, Grund) - von der Sicherheits-Sperre
     fehler: list[str] = field(default_factory=list)
     alternativen: list = field(default_factory=list)   # die zwei naechstbesten freien Kommandos (Protokoll)
+    unbestaetigt: list[str] = field(default_factory=list)  # 036: Gefahr-Handregeln, die das Modell nicht bestaetigt
+    tod60: float | None = None        # 036: Todeswahrscheinlichkeit in 60 s (Gefahr-Modell), None ohne Gehirn
     ms: float = 0.0                   # Laufzeit der Entscheidung (Gehirn + 111 + Vorrang + Sperre)
     ms_hirn: float = 0.0
 
@@ -137,8 +141,11 @@ def sicher_zurueck(lage: MakroLage) -> Kommando:
 
 
 class Entscheider:
-    def __init__(self, hirn=None, sperre=None, halten_s: float = HALTEN_S, reihenfolge: str = "wert"):
+    def __init__(self, hirn=None, sperre=None, halten_s: float = HALTEN_S, reihenfolge: str = "wert",
+                 gefahr_schwelle: float | None = None):
         self.hirn = hirn                  # werkzeuge/challenger/gehirn.Gehirn oder eine Attrappe (bewerte, lage_info)
+        # Auftrag 036: eine Gefahr-Entscheidung feuert nur, wenn das Gefahr-Modell sie bestaetigt (vorrang.bestaetigt)
+        self.gefahr_schwelle = vorrang.schwelle() if gefahr_schwelle is None else float(gefahr_schwelle)
         self.sperre = sperre              # (Text) -> [Gruende]; leer = darf gesagt werden
         self.halten_s = halten_s
         # Auftrag 035, Teil 0: "wert" = Gefahr vorn, dann der Aktionswert des Gehirns; "fest" = Stand 032/034
@@ -235,9 +242,15 @@ class Entscheider:
         self._plan_setzen(lage)
         anw = Anweisung(kommando=grund_kommando(lage), form="grund", zeit=lage.zeit)
         ks = self._kommandos(lage, anw)
-        if lage.ich.im_brunnen and lage.ich.lebt:
+        # Auftrag 036: Gefahr nur, wenn das Modell sie bestaetigt - die Handregel allein warnt nicht mehr
+        anw.tod60 = lage.hirn.tod60
+        anw.unbestaetigt = [k.id for k in ks if not vorrang.bestaetigt(k, lage.hirn, self.gefahr_schwelle)]
+        if anw.unbestaetigt:
+            ks = [k for k in ks if k.id not in anw.unbestaetigt]
+        if lage.ich.im_brunnen or not lage.ich.lebt:
             # im eigenen Brunnen bist du sicher: Warnungen fuer draussen (Lane, Spike, fehlende Gegner) halten dort
-            # keinen Plan fest - dran sind Kauf und Rueckweg (Nachspiel 035: "Shen hat seinen Spike" hielt den Brunnen)
+            # keinen Plan fest - dran sind Kauf und Rueckweg (Nachspiel 035: "Shen hat seinen Spike" hielt den Brunnen).
+            # Tot ebenso (036: "Zurueck zum Turm" an einen Toten, Beispiel aus phase5_messung.md)
             from dataclasses import replace
             ks = [replace(k, klasse="rest", wert=k.wert - 20.0) if k.klasse == "gefahr" and k.id != "M9" else k
                   for k in ks]            # ... sie stehen hinten an (fester Wert - 20)
@@ -250,10 +263,16 @@ class Entscheider:
         frei = vorrang.ordnen(frei, lage.hirn, self.reihenfolge)
         if frei:
             anw.kommando, anw.form, anw.zweite = self._form(lage, frei)
-            # im Brunnen kommt der Kauf zuerst (Auftrag 027, Basis-Reaktion >= 95 %) - ausser eine Gefahr
-            kauf = next((k for k in frei if k.id in ("B7", "B8")), None)
-            if kauf is not None and anw.form != "gefahr" and (lage.ich.im_brunnen or not lage.ich.lebt):
+            # im Brunnen kommt der Kauf zuerst (Auftrag 027, Basis-Reaktion >= 95 %) - ausser eine Gefahr. 036: in der
+            # ganzen eigenen Basis (so misst 027), und im Tod "Du lebst in ...: Kauf-Kette" (B8) vor dem Kauf beim
+            # Sterben (B7) - sonst kam der Kauf-Satz bei langen Toden mehr als 14 s vor dem Respawn
+            kauf = next((k for k in frei if k.id == "B8"), None) or next((k for k in frei if k.id == "B7"), None)
+            if kauf is not None and anw.form != "gefahr" and (lage.ich.im_brunnen or lage.ich.in_basis
+                                                              or not lage.ich.lebt):
                 anw.kommando, anw.form, anw.zweite = kauf, "klar", None
+                # der Wechsel zum Kauf ist ein Ereignis (Ankunft in der Basis, gleich Respawn): er wartet auf keinen Grund
+                if anlass == "takt" and (self.aktiv is None or self.aktiv.kommando.id != kauf.id):
+                    anlass = "basis"
         elif self._gesperrt(anw.kommando):
             anw.kommando, anw.form = sicher_zurueck(lage), "gefahr"
         anw.alternativen = [k for k in frei if k is not anw.kommando][:2]
@@ -291,6 +310,7 @@ class Entscheider:
                 alt.kommando = frisch
             alt.neu, alt.zeit = False, anw.zeit
             alt.gefeuert, alt.stumm, alt.gesperrt, alt.fehler = anw.gefeuert, anw.stumm, anw.gesperrt, anw.fehler
+            alt.unbestaetigt, alt.tod60 = anw.unbestaetigt, anw.tod60
             alt.grund = "gehalten"
             return
         anw.grund, anw.seit = grund, anw.zeit

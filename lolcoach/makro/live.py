@@ -36,6 +36,7 @@ MONSTER_EVENT = {"DragonKill": "drache", "BaronKill": "baron", "HeraldKill": "he
 INHIB_ZURUECK = 300.0          # wie bewertung.INHIB_ZURUECK / phase1.INHIB_RESPAWN
 BARON_BUFF, ELDER_BUFF = 180.0, 150.0
 BRUNNEN_R = 1200.0             # so nah am eigenen Brunnen heisst "im Brunnen" (Kauf moeglich)
+BASIS_R = 4200.0               # 036: ohne den alten Kern (m.bereich) gilt so nah am Brunnen als eigene Basis
 KAMPF_R = 1200.0               # Champions beider Teams so eng beieinander: ein Kampf (Minimap; 034: 2000 - zu weit)
 KAMPF_KILL_S = 10.0            # ... in einer Lane waehrend der Lane-Phase nur mit einem Kill so kurz davor
 SICHTBAR_S = 3.0               # so frisch zaehlt eine Minimap-Sichtung als "jetzt"
@@ -106,6 +107,12 @@ class LageBau:
         zeit = float(p.zeit)
         vorhanden = {"uhr", "ereignisse", "scoreboard", "eigene_items", "gegner_items", "monster_timer"}
         ich = self._ich(p, b, lb, zeit, vorhanden)
+        # Auftrag 036 (Basis-Reaktion 83 %): 027 misst ab dem Betreten der eigenen Basis (m.bereich "basis_eigen"), der
+        # Kauf kam erst am Brunnen (1200) - beim Heimlaufen Sekunden zu spaet
+        if ich.lebt and ich.pos is not None:
+            bereich = getattr(m, "bereich", None) if m is not None else None
+            ich.in_basis = ich.im_brunnen or (bereich == "basis_eigen" if bereich is not None else
+                                              _abst(ich.pos, BRUNNEN_XY[p.mein_team or ORDER]) <= BASIS_R)
         lage = MakroLage(zeit=zeit, team=team, ich=ich, gold=int(p.gold or 0))
         lage.vorhanden = vorhanden
         self._items_und_trinket(lage, p, lb, zeit, vorhanden)

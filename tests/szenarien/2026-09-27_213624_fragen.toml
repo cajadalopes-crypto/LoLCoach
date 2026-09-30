@@ -35,7 +35,8 @@ warum = "WARUM kommt aus dem Plan des Kerns, Grund und Vergleich, und widerspric
 
 # Auftrag 004, Teil C: keine Floskel, die Antwort beantwortet die Frage
 darf_nicht_sagen = ["bis sich etwas öffnet", "Danach rechne ich neu", "ist gerade keine Option."]
-muss_nennen_eins = ["Raus", "raus"]
+# Auftrag 036: die makro-Fassung ergaenzt (die Warnung heisst unter makro "Zurück zum Turm"); die alte bleibt
+muss_nennen_eins = ["Raus", "raus", "Zurück", "zurück"]
 
 # Wie 1:19: verweist auf ein "Raus", das es nach dem Fix nicht mehr gibt.
 
@@ -52,7 +53,8 @@ mit_handlung = true
 warum = "Wiederholte Warum-Frage (8 s nach 1:19): andere Formulierung, mehr Grund (Regel 5), immer mit Handlung."
 # Auftrag 004, Teil C: keine Floskel, die Antwort beantwortet die Frage
 darf_nicht_sagen = ["bis sich etwas öffnet", "Danach rechne ich neu", "ist gerade keine Option."]
-muss_nennen_eins = ["Raus", "raus"]
+# Auftrag 036: die makro-Fassung ergaenzt (die Warnung heisst unter makro "Zurück zum Turm"); die alte bleibt
+muss_nennen_eins = ["Raus", "raus", "Zurück", "zurück"]
 
 [[szenario]]
 id = "0225-rumble-kit"

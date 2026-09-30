@@ -17,16 +17,18 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
-**Auftrag 035 (Challenger-Gehirn, Stufe 5: die Abnahme) - TOR NICHT ERREICHT (in der Cloud nicht messbar), Zweig
-`stufe5-abnahme`** - gebaut: Vorrang nach Aktionswert (`makro/vorrang.py`, `makro/aktionen.py`), Messwerkzeuge auf
-`--kern makro`, `werkzeuge/makro_messen.py` (Teil 1), `werkzeuge/challenger/treue.py` (Teil 2),
-`werkzeuge/abnahme_035.py` (alles ausser der Abo-Runde in einem Zug); Verdrahtungs-Fixes aus dem Bot-Nachspiel
-(Gefahr-Pingpong, falsche Lane-Kaempfe, Erinnerung ohne Rueckfall, Stillstand, Satzlaenge <= 14/8 Woerter).
-**Offen fuer Carlos:** `python werkzeuge/abnahme_035.py` lokal laufen lassen (echtes Gehirn, alle Testpartien,
-Treue, Szenarien), Reihenfolge nach den Treue-Zahlen festlegen, die 14 Roten je Zeile beurteilen, dann die
-Abo-Runde (091311, 134020, 164809) und die Kritiker - Liste in `buecher/challenger/phase5_bericht.md`.
-Offen im Koennen: im Bot-Nachspiel 97 Warnungen je 30 min (J4/J5/J9 ohne Gefahr-Modell) - die
-Warnungs-Praezision misst `treue.py`.
+**Auftrag 036 (Warnungsflut abstellen: Gefahr aus dem Modell) - TOR NICHT ERREICHT (noch nicht gemessen), Zweig
+`stufe6-gefahr`** - Gefahr-Entscheidungen warnen nur mit Bestaetigung des Gefahr-Modells (`Hirn.tod60 >=
+gefahr_schwelle`, vorrang.bestaetigt; ohne Modell nur B4); Stillstand/Basis-Ursachen behoben (Anker nach Einkauf,
+Kanal, Kampf; Kauf in der ganzen Basis, als Ereignis, B8 vor B7); 121 rote Szenarien je Zeile beurteilt
+(buecher/challenger/phase6_bericht.md).
+**Offen fuer Carlos:** `python werkzeuge\challenger\gefahr_schwelle.py`, dann `python werkzeuge\abnahme_035.py`;
+Tor 036: Treffer UND Wert ueber "haeufigste je Rolle und Minute"; die G-Szenarien (0904, 0545, 2531, 0923) muessen
+gruen sein. Befunde B aus phase6_bericht.md (Fragen ohne Ja/Nein bzw. ohne die gefragte Alternative, Einspruch zur
+Lage, Todesrueckblick, Annehmen im Kampf, Kauf-Saetze, Back-Erinnerung) - Reihenfolge entscheidet Carlos.
+
+**Auftrag 035 (Stufe 5: die Abnahme) - bei Carlos gemessen (phase5_messung.md): TOR NICHT ERREICHT** - 87 %
+Warnungen ohne Vorhersagekraft, Treue unter "haeufigste je Rolle und Minute", Stillstand 80 %, Basis 83 %; -> 036.
 
 **Review entfernt auf Carlos' Wunsch (30.09.2026, Auftrag 028)** - wiederherstellbar aus Commit b6377df
 (review.py, review_server.py, web/review.html, verlauf.py, Fokus im Briefing, Bericht nach der Partie); wieder

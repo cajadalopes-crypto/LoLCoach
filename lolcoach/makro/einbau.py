@@ -74,7 +74,8 @@ class MakroCoach:
         self.entscheider = Entscheider(hirn=self.hirn, sperre=getattr(kern, "makro_sperre", None),
                                        halten_s=float(self.cfg["halten_s"]),
                                        reihenfolge=os.environ.get("LOLCOACH_MAKRO_REIHENFOLGE") or
-                                       str(self.cfg["reihenfolge"]))
+                                       str(self.cfg["reihenfolge"]),
+                                       gefahr_schwelle=self.cfg.get("gefahr_schwelle"))
         if frage is None and os.environ.get("LOLCOACH_MAKRO_STIMME") == "stub":
             frage = stimme_stub                # Nachspiel (035, Teil 1): der Weg ueber die Stimme ohne Claude
         self.stimme = Stimme(frage=frage if self.cfg.get("claude", True) else None, frist_s=float(self.cfg["frist_s"]),
@@ -132,6 +133,7 @@ class MakroCoach:
         # Wiederholsperre (Nachspiel 035: "Shen hat seinen Spike" fuenfmal in einer Minute): dieselbe Entscheidung hat
         # Carlos eben gehoert - kommt sie ohne Ereignis oder Frage wieder, nur kurz ("Weiter: ...")
         if self._im_kampf():
+            self._steht = None             # 036: nach dem Kampf beginnt das Stehen neu (wie 027 misst)
             # Buch 17: Mikro (Kampf) macht Carlos selbst; Buch 7: im Kampf nur kurze Rufe. Der Entscheider schweigt,
             # ausser einer Gefahr - und die nur als Handlung, hoechstens 5 Woerter. Der Plan kommt nach dem Kampf.
             if anw.form == "gefahr" and anw.schluessel != self._gesagt_schl and len(anw.kommando.tu.split()) <= 5:
@@ -143,9 +145,12 @@ class MakroCoach:
         steht = self._stillstand(lage, zeit, gesagt)       # Carlos steht und hat seit dem keine Anweisung (027)
         wartet = self._wartet is not None and self._wartet.schluessel == anw.schluessel
         if anw.schluessel != self._gesagt_schl and not wartet:
+            # 036 (Basis-Reaktion): der Kauf beim Ankommen in der Basis und kurz vor dem Respawn kommt sofort (<= 2 s),
+            # ohne Budget und ohne den Wendepunkt-Abstand
+            kauf_jetzt = anw.kommando.id in KAUF_IDS and anw.grund == "event"
             kategorie = ("GEFAHR" if anw.form == "gefahr" else
                          "WENDEPUNKT" if anw.grund in ("event", "frage") and
-                         zeit - self._wendepunkt >= float(self.cfg["wendepunkt_abstand_s"]) else
+                         (kauf_jetzt or zeit - self._wendepunkt >= float(self.cfg["wendepunkt_abstand_s"])) else
                          "STILL" if steht else "PLAN")
             if kategorie == "PLAN" and not self._platz(zeit, gesagt):
                 self._wartet = anw         # Budget voll: gesagt, sobald Platz ist - wenn der Plan dann noch gilt
@@ -197,8 +202,13 @@ class MakroCoach:
         if self._still_gesagt or zeit - seit < float(self.cfg["still_s"]) or self.anweisung is None or self._offen:
             return False
         back = max((self._id_zuletzt.get(i, -1e9) for i in BACK_IDS), default=-1e9)
-        kauf = max((self._id_zuletzt.get(i, -1e9) for i in KAUF_IDS), default=-1e9)
-        if zeit - back <= 16.0 or (ich.im_brunnen and zeit - kauf <= 10.0):
+        # der Einkauf wie 027: in der Basis die 10 s nach einem Satz mit "Kauf" (auch "Weiter: Kauf ...")
+        kauf = max((x["zeit"] for x in self.gesagt[-8:] if "kauf" in x["ansage"].lower()), default=-1e9)
+        if zeit - back <= 16.0 or ((ich.im_brunnen or ich.in_basis) and zeit - kauf <= 10.0):
+            # 036 (Stillstand 80 %): 027 beginnt das Stehen nach Recall-Kanal und Einkauf NEU - bisher zaehlte hier der
+            # Back- oder Kauf-Satz als "seit er steht, kam eine Anweisung", und das "Los" kam nie (im Brunnen nach dem
+            # Einkauf stehen: jedes Mal ein Fehlfall)
+            self._steht = None
             return False
         # seit er steht, kam schon eine Anweisung (die Wiederholungen des Sprechplans zaehlen mit)
         return not any(a.gesprochen is not None and a.gesprochen >= seit - 1.5 for a in gesagt[-6:])
@@ -367,6 +377,10 @@ class MakroCoach:
                  "gesperrt": anw.gesperrt, "fehlt": luecken(lage), "stumm": self._stumm_live(anw),
                  "ms": round(anw.ms, 2),
                  "ms_hirn": round(anw.ms_hirn, 2)}
+        if anw.tod60 is not None:
+            zeile["tod60"] = round(anw.tod60, 3)          # 036: Gefahr-Modell der Lage
+        if anw.unbestaetigt:
+            zeile["unbestaetigt"] = anw.unbestaetigt      # 036: Gefahr-Handregeln ohne Bestaetigung durch das Modell
         if anw.fehler:
             zeile["fehler"] = anw.fehler
         self.protokoll.append(zeile)
