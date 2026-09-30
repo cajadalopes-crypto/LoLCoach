@@ -215,8 +215,9 @@ def main():
         se = v.std() / np.sqrt(len(v))
         B.aussage("A11", f"{mon} ({stufe}): die Siegchance des nehmenden Teams steigt um {pp(v.mean())} "
                          f"(Siegchance-Modell, 40 s vorher gegen 40 s nachher).", len(v),
-                  f"„{mon} ist {100 * v.mean():.0f} Punkte Siegchance wert – dafuer lohnt ein Kampf.“"
-                  if v.mean() > 0.04 else f"„{mon} ist wenig wert ({100 * v.mean():.0f} Punkte) – nicht alles dafuer riskieren.“",
+                  f"„{mon} ist {100 * v.mean():.0f} Punkte Siegchance wert – dafuer lohnt ein Kampf.“" if v.mean() >= 0.03 else
+                  (f"„{mon} bringt nur {100 * v.mean():.1f} Punkte – nehmen, wenn es ohne grosses Risiko geht.“" if v.mean() >= 0.01
+                   else f"„{mon} ist wenig wert ({100 * v.mean():.1f} Punkte) – dafuer nichts riskieren, der Turm danach zaehlt.“"),
                   v.mean() / se if se else None, art="Modell V")
     zust = defaultdict(lambda: np.zeros(3))
     for row in obj:
