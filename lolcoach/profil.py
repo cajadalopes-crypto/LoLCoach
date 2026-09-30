@@ -4,11 +4,8 @@ Diamond+ erreicht man nicht in einer Partie, sondern indem man DIESELBEN Fehler
 abstellt. Ein Coach, der jede Partie vergisst, entdeckt jedes Mal dieselben Fehler
 neu und weiss nicht, ob der letzte Rat gewirkt hat. Deshalb:
   - je Partie harte Kennzahlen aus der Aufnahme (CS bei 10:00, Tode vor 14:00,
-    gehortetes Gold, ...) - gerechnet, nicht geschaetzt, zwischengespeichert,
-  - der Fokus aus dem letzten Review ("naechste_partie") geht in Spielakte und
-    Briefing der naechsten Partie,
-  - das Review sieht Kennzahlen und Lektionen der vorigen Partien und benennt
-    Wiederholungen als solche ("wie schon am ...") und ob der Fokus umgesetzt wurde.
+    gehortetes Gold, ...) - gerechnet, nicht geschaetzt, zwischengespeichert.
+(Der Fokus aus dem Review und das Profil fuer Claude sind mit dem Review entfernt, Auftrag 028.)
 Bot-Partien und Abbrueche (< 5 min) zaehlen fuer die Durchschnitte nicht mit.
 """
 from __future__ import annotations
@@ -96,14 +93,6 @@ def rechne(aufnahme: Path) -> Kennzahlen | None:
         ward_min=round(ich.ward_score / minuten, 2), champion_id=ich.champion_id)
 
 
-def _review(ordner: Path, stamm: str) -> dict | None:
-    datei = ordner / f"{stamm}_review.json"
-    try:
-        return json.loads(datei.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return None
-
-
 def partien(ordner: Path | None = None, vor: str | None = None) -> list[Kennzahlen]:
     """Alle Partien im Aufnahme-Ordner, neueste zuerst. `vor`: nur die vor dieser Aufnahme
     (Stamm) - fuer die laufende Partie, deren Aufnahme noch waechst, und fuer das Review
@@ -138,44 +127,3 @@ def partien(ordner: Path | None = None, vor: str | None = None) -> list[Kennzahl
         except OSError:
             pass
     return aus
-
-
-def fokus(ordner: Path | None = None, vor: str | None = None) -> str | None:
-    """Der Fokus aus dem juengsten Review (nur echte Partien - ein Test von 40 s hat keinen)."""
-    ordner = Path(ordner or aufzeichnung.ORDNER)
-    for k in partien(ordner, vor):
-        if k.dauer >= KURZ and (r := _review(ordner, k.stamm)) and (f := (r.get("naechste_partie") or "").strip()):
-            return f
-    return None
-
-
-def _schnitt(werte: list[float]) -> str:
-    return f"{sum(werte) / len(werte):.1f}" if werte else "-"
-
-
-def text(ordner: Path | None = None, vor: str | None = None, hoechstens: int = 6) -> str:
-    """Das Profil fuer Claude: Kennzahlen und Lektionen der letzten Partien, Durchschnitte."""
-    ordner = Path(ordner or aufzeichnung.ORDNER)
-    alle = [k for k in partien(ordner, vor) if k.dauer >= KURZ]
-    if not alle:
-        return ""
-    zeilen = ["BISHERIGE PARTIEN DES SPIELERS (neueste zuerst; aus Aufnahmen gerechnet):"]
-    for k in alle[:hoechstens]:
-        zeilen.append("- " + k.zeile())
-        if r := _review(ordner, k.stamm):
-            lektionen = sorted(r.get("lektionen") or [], key=lambda l: -int(l.get("wichtigkeit") or 0))
-            if lektionen:
-                zeilen.append("  Lektionen im Review: " + "; ".join(
-                    f"{l.get('titel')} ({l.get('zeit', '?')})" for l in lektionen[:4]))
-            if f := (r.get("naechste_partie") or "").strip():
-                zeilen.append(f"  Fokus danach: {f}")
-    echt = [k for k in alle if k.zaehlt]
-    if echt:
-        zeilen.append(f"SCHNITT aus {len(echt)} echten Partien (ohne Bots): CS/min {_schnitt([k.cs_min for k in echt])}, "
-                      f"CS bei 10:00 {_schnitt([k.cs_10 for k in echt if k.cs_10 is not None])}, "
-                      f"Tode vor 14:00 {_schnitt([k.tode_vor_14 for k in echt])}, "
-                      f"Gold gehortet {_schnitt([k.horten for k in echt])}x je Partie, "
-                      f"Siege {sum(k.ergebnis == 'Win' for k in echt)}/{len(echt)}")
-    else:
-        zeilen.append("Bisher nur Bot-Partien - Kennzahlen gegen echte Gegner fehlen noch.")
-    return "\n".join(zeilen)

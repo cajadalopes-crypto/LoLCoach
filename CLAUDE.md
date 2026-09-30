@@ -2,8 +2,8 @@
 
 Ein Coach fuer League of Legends, der waehrend Ranked-Partien mitschaut und
 per Sprache sagt, was jetzt zu tun ist und WARUM - wie ein Challenger-Kollege,
-dem man per Discord den Bildschirm teilt. Dazu ein Review nach dem Spiel, in dem
-man mit ihm redet. Anforderungen: `ANFORDERUNGEN.md`. Bedienung fuer Carlos:
+dem man per Discord den Bildschirm teilt. (Das Review nach dem Spiel ist seit Auftrag 028 entfernt - Carlos:
+"nie einmal gelesen"; wiederherstellbar aus Commit b6377df.) Anforderungen: `ANFORDERUNGEN.md`. Bedienung fuer Carlos:
 `ANLEITUNG.md`. Offene Aufgaben: `OFFEN.md`.
 
 ## Harte Grenzen (nicht verhandelbar)
@@ -47,16 +47,16 @@ man mit ihm redet. Anforderungen: `ANFORDERUNGEN.md`. Bedienung fuer Carlos:
 | `sprechplan.py`, `stimme.py` | wer redet wann (Vorrang, Themen-Sperre, kein "geh rein" direkt nach einer Warnung); Stimme Killian (neuronal, edge-tts) |
 | `gehirn.py`, `stratege.py` | Spielakte + Briefing, Midgame-Plan, situative Anweisungen (Claude formuliert WAS) |
 | `todesanalyse.py` | Rueckblick der letzten 45 s; beim Tod die Fakten fuer "warum und was naechstes Mal" |
-| `profil.py` | Gedaechtnis ueber Partien: Kennzahlen je Aufnahme (Cache `aufnahmen/profil.json`), Fokus aus dem letzten Review -> Briefing, fruehere Partien -> Review |
+| `profil.py` | Kennzahlen je Aufnahme (Cache `aufnahmen/profil.json`), Partie-Dauer fuers Aufraeumen und die Bilder |
 | `champions.py`, `wissen/lexikon/` | Wissensbasis: Steckbriefe aus Data Dragon; Lexikon (Grundlagen, Mechaniken mit Zahlen, Saison 2026, alle 173 Champions in voller Tiefe); `wissen/mechanik.toml` maschinenlesbar |
 | `sprache.py`, `antworten.py` | Push-to-Talk, faster-whisper (RTX 4070), Sofort-Antworten oder Claude |
 | `itemnamen.py` | fast richtige Item-Namen in Claude-Saetzen korrigieren |
 | `dashboard.py` + `web/dashboard.html` | Live-Dashboard :8790 |
-| `verlauf.py`, `review.py`, `review_server.py` + `web/review.html` | Spielverstaendnis (Zeitleiste + Momente), Claude-Review mit Belegen, Review-Oberflaeche :8791 mit Gespraech (Text und Sprache) |
-| `bericht.py` | Text-Bericht (Markdown) |
+| `bericht.py` | Text-Bericht (Markdown), nur auf Befehl (`bericht`) - nicht mehr automatisch nach der Partie |
+| `llm_api.py` | Claude ueber die API - nur mit `LOLCOACH_API=1` (setzt allein `Coach starten.cmd`, Sparprotokoll) |
 | `llm.py` | Claude ueber die Claude-Code-Kommandozeile (Abo), schlank (eigener Systemprompt, stdin) |
 
-`python -m lolcoach` = live. Weitere Befehle: `abspielen`, `review`, `bericht`,
+`python -m lolcoach` = live. Weitere Befehle: `abspielen`, `bericht`,
 `frage`, `mikrotest`, `status`, `llm` (siehe `--help`). `live` und `abspielen` nehmen
 `--kern alt|schatten|neu` (Entscheidungskern, Buch 0 Kapitel 3): der Kern (`lolcoach/kern/`) bestimmt in jeder
 Stellung den Modus, sperrt die alten Regeln danach (Kapitel 14) und schreibt live `aufnahmen/<stamm>_kern.jsonl`.
@@ -95,8 +95,8 @@ durch denselben Code wie das Live-Spiel.
 
 - `python tests/alle.py` - alle Tests (echte Partien als Testfaelle, ~10 s).
 - `python werkzeuge/szenarien.py` - war der Rat in dieser Lage richtig? Szenarien aus
-  `tests/szenarien/*.toml` gegen das nachgespielte System (`--mit-claude`: auch Fragen und
-  Review, `--lage`: nachgespielte Lage je Szenario, `--konstruiert`: die konstruierten Lagen aus
+  `tests/szenarien/*.toml` gegen das nachgespielte System (`--mit-claude`: auch Fragen, ueber das
+  Abo, `--lage`: nachgespielte Lage je Szenario, `--konstruiert`: die konstruierten Lagen aus
   `tests/szenarien/konstruiert/` ohne Aufnahme, `kern/testlage.py`). Buch 0, Kapitel 12.
 - `python werkzeuge/protokoll.py [aufnahme ...]` - jede ungefragte Ansage mit Zeit, Modus, Plan, Ort, Leben, Gold
   und den zwei naechstbesten Optionen nach `buecher/protokolle/<stamm>.md`; abgebrochene Saetze markiert
@@ -132,4 +132,4 @@ Wissen, das mit dem Patch veraltet (Timer, Builds, Matchups), gehoert in
 `wissen/`, nie in den Code - und jeder Wert dort traegt seinen Stand. Was die
 API oder das Bild wirklich liefern, wird an echten Aufnahmen geprueft, nicht aus
 dem Gedaechtnis angenommen. Claude-Ausgaben im Spiel: kurz (hart gekuerzt),
-nur aus der Lage, Item-Namen abgesichert; im Review nur mit Beleg.
+nur aus der Lage, Item-Namen abgesichert.

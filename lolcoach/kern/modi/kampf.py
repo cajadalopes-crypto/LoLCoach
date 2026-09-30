@@ -394,5 +394,5 @@ def rueckblick(probe: dict | None, taeter: str | None, beteiligt: list[str], tur
               else "Gegen zwei erst mit vollem Leben oder mit deinem Jungler.")
         return f"Du bist mit {prozent} gegen {_namen(wer[:2])} geblieben. {s2}"
     if len(wer) == 1:
-        return f"Duell gegen {wer[0]} verloren. Schau es dir im Review an."
+        return f"Duell gegen {wer[0]} verloren."          # (ohne Review-Verweis, Auftrag 028)
     return None

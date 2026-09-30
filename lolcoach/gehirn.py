@@ -112,11 +112,10 @@ def matchup(champion_id: str, gegner) -> str:
     return ""
 
 
-def akte_quelle(p: Partie, fokus: str | None = None) -> str:
+def akte_quelle(p: Partie) -> str:
     """Rohstoff fuer Spielakte + Briefing - schlank (gemessen 26.09.: 17 000 Zeichen, 35 s):
     fuer dich Kniffe/Spikes/Lane-Plan/Build und die EINE Matchup-Zeile gegen deinen Gegner,
-    fuer Lane-Gegner und Jungler das Noetigste, fuer den Rest Kurzsteckbriefe.
-    `fokus`: der Fokus aus dem Review der letzten Partie (profil.fokus)."""
+    fuer Lane-Gegner und Jungler das Noetigste, fuer den Rest Kurzsteckbriefe."""
     wir, die = p.mein_team, gegenteam(p.mein_team)
     g, j = p.gegenueber(), p.jungler(die)
     teile = [f"Ich: {_champion_zeile(p.ich)}. Mein Team: {', '.join(_champion_zeile(s) for s in p.team(wir))}. "
@@ -142,8 +141,6 @@ def akte_quelle(p: Partie, fokus: str | None = None) -> str:
             teile.append(champions.steckbrief(s.champion_id))
     rest = [s for s in p.spieler if s not in (p.ich, g, j)]
     teile.append("UEBRIGE:\n" + "\n".join(champions.steckbrief(s.champion_id, kurz=True) for s in rest))
-    if fokus:
-        teile.append(f"FOKUS DES SPIELERS (aus dem Review seiner letzten Partie): {fokus}")
     return "\n\n".join(teile)
 
 
@@ -168,9 +165,6 @@ AKTE_SYSTEM = (
     "TRADE:\n(EIN gesprochener Halbsatz, hoechstens 14 Woerter, klein anfangend: worauf der Spieler bei Trade und "
     "All-in gegen seinen Lane-Gegner achten muss - welche Faehigkeit des Gegners er abwarten oder koedern muss und wie "
     "lange sie dann weg ist, z. B. 'erst nach seinem E, das blockt 2 Sekunden deine Autos, 16 Sekunden Abklingzeit')\n"
-    "FOKUS:\n(nur wenn das Material einen FOKUS DES SPIELERS nennt: EIN kurzer gesprochener Satz, hoechstens 20 "
-    "Woerter, der diesen Fokus auf genau diese Partie anwendet - wann und wogegen er heute darauf achten muss; "
-    "ohne Zeichen wie / oder +. Das BRIEFING selbst erwaehnt den Fokus nicht, dieser Satz wird danach gesprochen)\n"
     "Zahlen immer als Ziffern (1300 Gold, 3:15), nie ausgeschrieben - BRIEFING und LANEPLAN nennen dieselben "
     "Zahlen. Nur was das Material stuetzt; Item-Namen nur aus dem Material; Unsicheres als unsicher.")
 
@@ -222,8 +216,8 @@ TOD_SYSTEM = (
     "Woertern; Deutsch, kein Markdown): den eigentlichen Grund - nur aus den FAKTEN, nichts dazuerfinden; steht "
     "dort, dass die Minimap nicht gelesen wurde, sag nichts ueber Sicht oder wer zu sehen war - und "
     "was er in genau so einer Lage naechstes Mal tut. Kein Trost, kein Vorwurf, keine Allgemeinplaetze. Zeigen "
-    "die Fakten keinen Fehler (fairer Tausch, Objective dafuer bekommen), sag das in einem Satz. Hat der Tod mit "
-    "seinem FOKUS HEUTE zu tun, sag es. Spawnt gleich ein Objective, das er verpasst, sag, was das Team jetzt "
+    "die Fakten keinen Fehler (fairer Tausch, Objective dafuer bekommen), sag das in einem Satz. "
+    "Spawnt gleich ein Objective, das er verpasst, sag, was das Team jetzt "
     "tun sollte. Kommentiere nie die Daten, sprich nur zum Spieler. Liegen Bilder bei, sind es seine "
     "Bildschirme etwa 6 und 3 Sekunden vor dem Tod: lies daraus, was die Fakten nicht haben (Leben beider "
     "Seiten, wer im Kampf war, Vasallen, Turm) - nur, was wirklich zu sehen ist. Die BEWERTUNG IN DER LETZTEN "
@@ -280,8 +274,6 @@ class Gehirn:
         self.akte: str | None = None
         self.briefing: str | None = None   # kommt mit der Akte (ein Aufruf statt zwei)
         self.ult_warnungen: dict[str, str] = {}  # Champion -> ein Satz zu seiner Ult (kommt mit der Akte)
-        self.fokus_satz: str | None = None       # der Fokus aus dem letzten Review, auf diese Partie bezogen
-        self.fokus: str | None = None            # derselbe Fokus im Wortlaut des Reviews (Dashboard)
         self.laneplan: list[str] = []            # "Spielweise: ...", "Level 1-3: ..." (Dashboard-Zettel)
         self.trade_hinweis: str = ""             # "erst nach seinem E ..." - haengt der Komponist an Druck-Ansagen
         self._akte_laeuft = False
@@ -296,26 +288,17 @@ class Gehirn:
         self._akte_laeuft = True
 
         def lauf():
-            fokus = None
-            if self.ablage:
-                try:
-                    from . import profil
-                    fokus = profil.fokus(self.ablage.parent, vor=self.ablage.name.removesuffix("_spielakte.md"))
-                except Exception as e:  # das Profil ist Zugabe - ohne es geht die Akte trotzdem
-                    print(f"  Profil nicht lesbar: {e}", flush=True)
-            self.fokus = fokus
+            # (der Fokus aus dem Review der letzten Partie ist mit dem Review entfernt, Auftrag 028)
             try:
-                roh = llm.frage(akte_quelle(p, fokus), system=AKTE_SYSTEM, modell=self.modell,
+                roh = llm.frage(akte_quelle(p), system=AKTE_SYSTEM, modell=self.modell,
                                 timeout=90, aufwand="low").strip()
                 teile = akte_teile(roh)
                 akte, briefing = teile.get("AKTE", ""), teile.get("BRIEFING", "")
-                ults, fokus_satz = teile.get("ULTS", ""), teile.get("FOKUS", "")
+                ults = teile.get("ULTS", "")
                 self.laneplan = laneplan_zeilen(teile.get("LANEPLAN", ""))
                 self.akte = akte.strip()
                 if self.laneplan:
                     self.akte += "\nLANE-PLAN (so hast du es ihm gesagt):\n" + "\n".join(self.laneplan)
-                if fokus:
-                    self.akte += f"\nFOKUS HEUTE (aus dem Review der letzten Partie): {fokus}"
                 self.ult_warnungen = {}
                 trade = kuerzen(teile.get("TRADE", "").strip().strip("'\""), 1, woerter=16).rstrip(".")
                 self.trade_hinweis = trade[:1].lower() + trade[1:] if trade else ""
@@ -325,9 +308,6 @@ class Gehirn:
                         self.ult_warnungen[name.strip()] = kuerzen(satz.strip(), 1)
                 from .itemnamen import absichern
                 briefing = kuerzen(briefing, 6, woerter=BRIEFING_WOERTER)
-                if fokus and (fokus_satz := kuerzen(fokus_satz.strip(), 1)):
-                    briefing += " " + fokus_satz
-                self.fokus_satz = fokus_satz if fokus else None
                 self.briefing = absichern(briefing)[0] or None
             except llm.LLMFehler as e:
                 print(f"  Spielakte fehlgeschlagen: {e}", flush=True)

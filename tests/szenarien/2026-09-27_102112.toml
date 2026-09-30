@@ -194,17 +194,7 @@ warum = """Vier Gegner tot, der erste ist fruehestens in ~24 s zurueck am Turm (
 davon entfernt. Das ist das Fenster, in dem das Spiel endet - Gold im Beutel kann danach ausgegeben werden."""
 
 
-[[szenario]]
-id = "review-102112"
-typ = "review"
-quelle = "Review 27.09. (Sonnet): Lektion 1 'Kein Kontroll-Auge', Lektion 3 'Du warst oben' waehrend der Datenluecke"
-datenluecke = ["15:55", "24:24"]
-lektion_1_nicht = ["Kontroll-Auge"]
-oben_eins = ["36:32", "28:0", "Basis"]
-keine_position_in_luecke = true
-warum = """Die Rangfolge muss nach Wirkung gehen: das verpasste Ende-Fenster und zehn Minuten Basis ohne Ziel
-kosten mehr als ein fehlendes Kontroll-Auge. Fuer 15:55-24:24 gibt es keine Daten - also keine Aussage,
-wo Carlos war."""
+# (review-102112 entfernt - das Review ist raus, Auftrag 028)
 
 
 # Modus-Sollwerte (Buch 0, Kapitel 5.3) - Abnahme Schritt 2: >= 90 % getroffen

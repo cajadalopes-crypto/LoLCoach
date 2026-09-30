@@ -1,9 +1,8 @@
-"""python -m lolcoach [live|abspielen|bericht|review|status|llm|frage|mikrotest] ...
+"""python -m lolcoach [live|abspielen|bericht|status|llm|frage|mikrotest] ...
 
   live (Standard)       wartet auf eine Partie, coacht sie, schreibt sie mit (Daten + Minimap)
   abspielen [DATEI]     spielt eine Aufnahme durch denselben Code (Standard: die neueste)
   bericht [DATEI]       Post-Game-Bericht einer Aufnahme (Text)
-  review [DATEI]        Review-Oberflaeche: Zeitleiste, Minimap-Wiedergabe, Lektionen, Gespraech
   status                ein Schnappschuss, sofort
   llm "Frage"           prueft die Claude-Anbindung
 
@@ -25,7 +24,7 @@ from . import (ansicht, aufzeichnung, bericht, komponist, lage, liveapi, llm, pr
 def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, sicht=None,
               anzeigen=(), alle: int = 5, nur_coach: bool = False, gehirn: bool = False,
               gehirn_ablage=None, kern_ablage=None, kern_stellung: str = "neu",
-              fokus: str | None = None, makro: bool = False) -> sprechplan.Sprechplan:
+              makro: bool = False) -> sprechplan.Sprechplan:
     """Gemeinsamer Kern fuer Live und Aufnahme.
 
     `quelle` liefert (Wanduhr, Rohdaten); `sicht` hat `zwischen(bis, champions)`
@@ -39,11 +38,9 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
     # Schritt 3 spricht er mit --kern neu (Default) in LANE, BASIS und TOT selbst
     from .kern import Kern
     kern_ = Kern(kern_ablage, stellung=kern_stellung)
-    kern_.fokus = fokus
     werk.kern = plan.kern = kern_
     kern_.transport = plan
     technik: list = []            # TECHNIK-Ansagen (Kapitel 9.1): Minimap nicht erkannt - durch den Sprechplan
-    war_tot = [False]
     lagebild = lage.Lagebild() if sicht else None
     stratege_ = None
     if gehirn:
@@ -144,10 +141,6 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
                 ansagen = neu_
         ansagen += technik
         technik.clear()
-        tot = bool(p.ich and p.ich.tot)
-        if tot and not war_tot[0] and getattr(sicht, "b", None) is not None:
-            sicht.b.puffer_sichern()   # die Sekunden vor dem Tod als Bilder fuers Review
-        war_tot[0] = tot
         if stratege_:
             for a in [a for a in ansagen if a.situativ]:
                 stratege_.veredle(a)
@@ -194,13 +187,6 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
 
 LIVE_TAKT = 0.25   # Sekunden zwischen zwei Abfragen der Live-API im Spiel
 
-
-def _fokus() -> str | None:
-    """Fokus des Tages aus dem letzten Review (Buch 3, 3.3: ist es das Kontroll-Auge, steht es im Kauf-Satz zuerst)."""
-    try:
-        return profil.fokus()
-    except Exception:
-        return None
 
 def _stimm_cfg() -> dict:
     """[stimme] aus wissen/kern.toml (Auftrag 002, S2): Name und Tempo - Carlos waehlt die Stimme aus den Proben."""
@@ -344,12 +330,6 @@ def live(args) -> None:
         return
     sprecher = stimme.Stumm() if args.stumm else _stimme(args.stimme, tempo=args.tempo)
     anzeigen = [] if args.ohne_dashboard else [d for d in [_dashboard()] if d]
-    try:
-        from . import review_server
-        review_server.starte()
-        print(f"Review-Oberflaeche: http://127.0.0.1:{review_server.PORT}")
-    except OSError as e:
-        print(f"Review-Oberflaeche nicht gestartet ({e})")
     if not args.ohne_sprache:
         from . import sprache
         try:
@@ -357,9 +337,8 @@ def live(args) -> None:
             print(f"Fragen an den Coach: Taste '{args.ptt}' gedrueckt halten und sprechen")
         except Exception as e:
             print(f"Sprachsteuerung aus ({type(e).__name__}: {e})")
-    threading.Thread(target=_reviews_nachholen, daemon=True).start()
     for a in anzeigen:
-        a.partie_vorbei = True   # noch keine Partie: die Sprechtaste redet uebers Review
+        a.partie_vorbei = True   # noch keine Partie: die Sprechtaste schweigt (das Review ist entfernt, Auftrag 028)
     print("Warte auf eine Partie (Strg+C beendet) ...")
     while True:
         if not liveapi.laeuft(args.basis):
@@ -375,11 +354,8 @@ def live(args) -> None:
                 fort = None
             schreiber = aufzeichnung.Schreiber(fortsetzen=fort)
             if schreiber.fortgesetzt:       # gesperrte Datei: der Schreiber hat neu angefangen
-                # dieselbe Partie wie die juengste Aufnahme (Neustart, Reconnect): weiterschreiben; das
-                # Review des Bruchstuecks ist veraltet und entsteht nach dem Spiel neu
+                # dieselbe Partie wie die juengste Aufnahme (Neustart, Reconnect): weiterschreiben
                 stamm = fort.name.removesuffix(".jsonl.gz")
-                for rest in ("_review.json", "_verlauf.json", "_bericht.md"):
-                    fort.with_name(stamm + rest).unlink(missing_ok=True)
                 datei = fort.with_name(stamm + "_ansagen.json")
                 try:
                     _ANSAGEN_VORHER[fort] = json.loads(datei.read_text(encoding="utf-8"))
@@ -417,7 +393,7 @@ def live(args) -> None:
                                  schreiber.pfad.name.removesuffix(".jsonl.gz") + "_spielakte.md") if schreiber else None,
                              kern_ablage=schreiber.pfad.with_name(
                                  schreiber.pfad.name.removesuffix(".jsonl.gz") + "_kern.jsonl") if schreiber else None,
-                             kern_stellung=args.kern, fokus=_fokus(),
+                             kern_stellung=args.kern,
                              makro=not args.ohne_stratege and not args.ohne_gehirn)
         finally:
             hund.halt()
@@ -433,46 +409,11 @@ def live(args) -> None:
                 if plan:
                     _ansagen_speichern(schreiber.pfad, plan)
         if schreiber:
-            # im Hintergrund: Claude braucht bis zu zwei Minuten, die naechste Partie nicht
-            # nur nach einer echten Partie, nicht nach einem Test oder einem Wechsel nach Sekunden (Practice Tool)
-            if plan and len(plan.gesagt) >= 3 and plan.gesagt[-1].zeit >= profil.KURZ:
-                sprecher.sage("Partie vorbei. Ich schreibe jetzt das Review, das dauert ein, zwei Minuten.")
-            threading.Thread(target=_bericht_im_hintergrund, args=(schreiber.pfad, args.ich, sprecher, args.basis),
-                             daemon=False).start()
+            # Auftrag 028: kein Review, kein automatischer Bericht - nur aufraeumen (im Hintergrund)
+            threading.Thread(target=_nach_der_partie, daemon=False).start()
         for a in anzeigen:
-            a.partie_vorbei = True    # Sprechtaste geht jetzt ans Review (Review-Seite, gewaehlte Partie)
-        print("Partie vorbei. Bericht wird geschrieben. Warte auf die naechste ...")
-
-
-def _reviews_nachholen(hoechstens: int = 3) -> None:
-    """Partien ohne Review (Fenster waehrend des Reviews geschlossen - Partie 4 und 5) beim Start
-    nachholen: die juengsten `hoechstens`, nur echte Partien ab 5 Minuten, still im Hintergrund."""
-    try:
-        from . import profil, review
-        jetzt = time.time()
-        offen = [k for k in profil.partien(aufzeichnung.ORDNER) if k.dauer >= profil.KURZ
-                 and not review.pfade(aufzeichnung.ORDNER / f"{k.stamm}.jsonl.gz")["review"].exists()
-                 # nicht, was vor Kurzem noch lief: die Partie kann gleich fortgesetzt werden (Neustart)
-                 and jetzt - aufzeichnung.echt(aufzeichnung.ORDNER / f"{k.stamm}.jsonl.gz").stat().st_mtime > 900][:hoechstens]
-        for k in reversed(offen):   # aelteste zuerst: jedes Review sieht die frueheren
-            print(f"Review wird nachgeholt: {k.stamm} ({k.champion} gegen {k.gegner}) ...", flush=True)
-            review.erstelle(aufzeichnung.ORDNER / f"{k.stamm}.jsonl.gz")
-            print(f"Review fertig: http://127.0.0.1:8791/?partie={k.stamm}", flush=True)
-    except Exception as e:  # darf den Coach nie stoeren
-        print(f"Review nachholen fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
-
-
-def _review_ansage(review: dict) -> str:
-    """Nach dem Review gesprochen: der wichtigste Punkt und der Fokus fuer die naechste Partie."""
-    from .gehirn import kuerzen
-    teile = ["Review ist fertig."]
-    lektionen = sorted(review.get("lektionen") or [], key=lambda l: -int(l.get("wichtigkeit") or 0))
-    if lektionen and lektionen[0].get("titel"):
-        teile.append(f"Wichtigster Punkt: {lektionen[0]['titel'].rstrip('.')}.")
-    if fokus := (review.get("naechste_partie") or "").strip():
-        teile.append(f"Fokus für die nächste Partie: {kuerzen(fokus, 1)}")
-    teile.append("Alles Weitere auf der Review-Seite - frag mich dort.")
-    return " ".join(teile)
+            a.partie_vorbei = True    # Sprechtaste schweigt bis zur naechsten Partie
+        print("Partie vorbei. Warte auf die naechste ...")
 
 
 def _spieldauer(pfad) -> float:
@@ -485,25 +426,9 @@ def _spieldauer(pfad) -> float:
     return 0.0
 
 
-def _bericht_im_hintergrund(pfad, ich, sprecher=None, basis: str = liveapi.BASIS) -> None:
-    try:
-        ziel = bericht.schreibe(pfad, ich, mit_llm=False)  # die Claude-Analyse steckt im Review
-        print(f"Bericht: {ziel}", flush=True)
-    except Exception as e:  # der Bericht darf den Coach nie beenden
-        print(f"Bericht fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
-    try:
-        from . import review
-        if _spieldauer(pfad) < profil.KURZ:
-            print("Kurze Partie (Test, Wechsel, Remake) - kein Review.", flush=True)
-            return
-        print("Review wird geschrieben (1-3 Minuten) ...", flush=True)
-        r = review.erstelle(pfad)
-        stamm = pfad.name.removesuffix(".jsonl.gz")
-        print(f"Review fertig: http://127.0.0.1:8791/?partie={stamm}", flush=True)
-        if sprecher is not None and r.get("lektionen") and not liveapi.laeuft(basis):
-            sprecher.sage(_review_ansage(r))   # nicht mitten in die naechste Partie hinein
-    except Exception as e:
-        print(f"Review fehlgeschlagen: {type(e).__name__}: {e}", flush=True)
+def _nach_der_partie() -> None:
+    """Nach der Partie: nur aufraeumen. Das Review (und der automatische Text-Bericht) sind seit Auftrag 028 entfernt
+    (Carlos 30.09.2026: "nie einmal gelesen") - wiederherstellbar aus dem Commit vor Auftrag 028."""
     try:
         # Auftrag 022: Testpartien und die letzten drei Partien behalten ihre Bilder, der Rest geht (lolcoach/aufraeumen)
         from . import aufraeumen
@@ -578,26 +503,6 @@ def mikrotest(args) -> None:
         time.sleep(1)
 
 
-def review_befehl(args) -> None:
-    from . import review_server
-    review_server.starte()
-    url = f"http://127.0.0.1:{review_server.PORT}/"
-    if args.datei:
-        url += f"?partie={args.datei.removesuffix('.jsonl.gz').split('/')[-1].split(chr(92))[-1]}"
-    print(f"Review: {url}  (Strg+C beendet)")
-    if not args.ohne_sprache:
-        try:
-            review_server.Sprachfragen(args.ptt, _stimme(args.stimme))
-            print(f"Fragen per Sprache: Taste '{args.ptt}' halten - bezieht sich auf die Partie und den Zeitpunkt im Browser")
-        except Exception as e:
-            print(f"Sprachfragen aus ({type(e).__name__}: {e})")
-    if not args.ohne_browser:
-        import webbrowser
-        webbrowser.open(url)
-    while True:
-        time.sleep(1)
-
-
 def status(args) -> None:
     try:
         p = zustand.partie(liveapi.alles(args.basis), args.ich)
@@ -655,12 +560,6 @@ def main() -> None:
     mt = unter.add_parser("mikrotest", help="Push-to-Talk und Spracherkennung ohne Partie pruefen")
     mt.add_argument("--ptt", default="maus5")
     mt.add_argument("--stimme", default=STIMME, help="neuronale Stimme (de-DE-KatjaNeural, ...) oder windows")
-    rv = unter.add_parser("review", help="Review-Oberflaeche nach dem Spiel (Browser)")
-    rv.add_argument("datei", nargs="?", help="Aufnahme, die gleich geoeffnet wird")
-    rv.add_argument("--ohne-browser", action="store_true")
-    rv.add_argument("--ohne-sprache", action="store_true", help="keine Fragen per Headset")
-    rv.add_argument("--ptt", default="maus5")
-    rv.add_argument("--stimme", default=STIMME)
     unter.add_parser("status")
     lm = unter.add_parser("llm")
     lm.add_argument("frage")
@@ -674,7 +573,7 @@ def main() -> None:
     if args.befehl is None:
         args = ap.parse_args(sys.argv[1:] + ["live"])  # ohne Befehl: live mit allen Voreinstellungen
     {"live": live, "abspielen": abspielen, "bericht": bericht_befehl, "status": status,
-     "llm": frage_llm, "frage": frage_an_aufnahme, "mikrotest": mikrotest, "review": review_befehl}[args.befehl](args)
+     "llm": frage_llm, "frage": frage_an_aufnahme, "mikrotest": mikrotest}[args.befehl](args)
 
 
 if __name__ == "__main__":

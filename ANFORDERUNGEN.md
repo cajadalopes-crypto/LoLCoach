@@ -21,6 +21,7 @@ Gibt Rückmeldung, wenn erkennbar etwas suboptimal gespielt wurde ("das war hier
 Ausgabe per Sprachausgabe (TTS) während des laufenden Spiels
 
 Ergänzt durch eine Post-Game-Analyse für die vertiefte Auswertung ganzer Spiele/Sessions
+(zurückgestellt: das Review ist seit 30.09.2026 entfernt, Carlos: "sobald er besser wird, reden wir wieder darüber")
 
 Datenquellen
 

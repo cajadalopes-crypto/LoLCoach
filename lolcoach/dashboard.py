@@ -190,9 +190,8 @@ class Dashboard:
 
     def aktualisiere(self, p: Partie, lagebild=None, ansagen=()) -> None:
         z = zustand_json(p, lagebild, ansagen)
-        # der Fokus aus dem letzten Review - die ganze Partie sichtbar, wie ein Zettel am Monitor
+        # der Lane-Plan - die ganze Partie sichtbar, wie ein Zettel am Monitor
         if g := getattr(self, "_gehirn", None):
-            z["fokus"] = g.fokus
             z["laneplan"] = list(getattr(g, "laneplan", []) or [])
         daten = json.dumps(z, ensure_ascii=False).encode("utf-8")
         with self._schloss:

@@ -273,29 +273,10 @@ class Gespraech:
         except OSError:
             pass
 
-    def _review_frage(self, audio: np.ndarray) -> None:
-        """Nach der Partie: die Frage geht ans Review der Partie, die die Review-Seite gerade zeigt (sonst der
-        letzten) - samt dem Moment, den er dort ansieht. Carlos: 'nach dem Spiel mit dir reden'."""
-        from . import aufzeichnung, review, review_server
-        stamm = review_server.ansicht.get("stamm") or (aufzeichnung.neueste().name.removesuffix(".jsonl.gz")
-                                                        if aufzeichnung.neueste() else None)
-        if not stamm:
-            self.sprecher.antworte("Ich habe noch keine Partie aufgenommen.")
-            return
-        text = self.erkenner.text(audio, [])
-        if not text or len(text.split()) < 2:
-            self.sprecher.freigeben()
-            return
-        print(f"  Du (Review {stamm}): {text}", flush=True)
-        antwort = review.frage(aufzeichnung.ORDNER / f"{stamm}.jsonl.gz", text, review_server.ansicht.get("zeit"),
-                               gesprochen=True)
-        print(f"  Coach: {antwort}", flush=True)
-        from .gehirn import kuerzen   # vorgelesen kurz; ganz steht es auf der Review-Seite
-        self.sprecher.antworte(kuerzen(antwort, 4, woerter=70))
-
     def _beantworte(self, audio: np.ndarray) -> None:
         if getattr(self, "partie_vorbei", False):
-            self._review_frage(audio)
+            # ausserhalb einer Partie antwortet der Coach nicht (das Review ist entfernt, Auftrag 028)
+            self.sprecher.freigeben()
             return
         p = self.p
         start = time.monotonic()

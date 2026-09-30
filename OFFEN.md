@@ -17,6 +17,10 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Review entfernt auf Carlos' Wunsch (30.09.2026, Auftrag 028)** - wiederherstellbar aus Commit b6377df
+(review.py, review_server.py, web/review.html, verlauf.py, Fokus im Briefing, Bericht nach der Partie); wieder
+aufnehmen, wenn der Coach gut ist.
+
 **Auftrag 027 (Herzschlag: immer eine gesprochene Anweisung) - TOR NICHT ERREICHT** - Luecke p90 12/10 s, Stillstand
 95/98 %, Basis 97 %, Kauf gibt alles Gold aus, Faktencheck "Team am Baron", Back-Regel neu; offen: Stratege-Neins
 (10 im API-Nachspiel, danach behoben, nicht nachgemessen), Hin und Her 1 (Wendepunkt), Sicherheit 1 (Claude-Antwort),

@@ -8,8 +8,7 @@ diesem Ordner (Windows PowerShell kennt kein `&&`, also nur diese eine Zeile):
     python -m lolcoach
 
 Dann einfach spielen. Sobald das Spiel geladen ist, sagt Killian "Coach verbunden",
-nach etwa 20 Sekunden kommt das Briefing - am Ende mit deinem Fokus aus dem Review
-der letzten Partie. Stirbst du, sagt er dir, während du auf den Wiedereinstieg
+nach etwa 20 Sekunden kommt das Briefing. Stirbst du, sagt er dir, während du auf den Wiedereinstieg
 wartest, warum und was du nächstes Mal tust.
 
 - **Was der Coach rechnet:** Jede Ansage ist aus der Lage gerechnet, nicht vorgefertigt -
@@ -86,21 +85,10 @@ wartest, warum und was du nächstes Mal tust.
 - **Flash-Timer:** Pingt ein Mitspieler im Chat "Urgot Blitz" (oder "urgot ult"), läuft
   ein Timer. Der Coach sieht Flash auch selbst auf der Minimap.
 
-## Nach der Partie: Review
+## Nach der Partie
 
-Das Review entsteht automatisch (1-3 Minuten nach Spielende). Ansehen:
-
-    python -m lolcoach review
-
-- **Fortschritt** (Startseite): alle Partien im Vergleich - CS/min, CS bei 10:00, Tode
-  vor 14:00, gehortetes Gold, Wardscore; grün/rot gegen deinen Schnitt; dazu der Fokus
-  aus jedem Review und ob du ihn umgesetzt hast. Bot-Partien zählen nicht im Schnitt.
-- Zeitleiste mit deinen Toden, Kämpfen, Objectives, Farm-Löchern; Klick springt hin
-- Minimap-Wiedergabe: wer wann wo war (abspielen, ±10 s)
-- Lektionen mit Spielzeit, Beleg und was du stattdessen tun solltest
-- **Mit dem Coach reden:** unten tippen - oder Maus 5 halten und fragen,
-  z. B. "Warum war der Tod bei 21:17 mein Fehler?". Die Frage bezieht sich auch
-  auf den Zeitpunkt, den du gerade ansiehst.
+Das Review ist entfernt (auf deinen Wunsch, 30.09.2026) - es kommt zurück, wenn der Coach im Spiel gut ist.
+Die Aufnahme, deine Notizen ("Notiz ...") und die Ansagen bleiben gespeichert; daraus werden Szenarien.
 
 ## Wenn etwas nicht geht
 

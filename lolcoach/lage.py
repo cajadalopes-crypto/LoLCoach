@@ -1029,13 +1029,6 @@ class Beobachter(threading.Thread):
         if not ziel.exists():
             ziel.write_bytes(jpg)
 
-    def puffer_sichern(self) -> None:
-        """Alle Bildschirme der letzten 12 s auf die Platte - beim Tod: die Sekunden davor, jede einzeln
-        (Carlos: 'Momente notieren, die du durch Screenshot siehst')."""
-        if self.ordner:
-            for wand, jpg in list(self._bildschirme):
-                self._schirm_schreiben(wand, jpg)
-
     def bildschirm(self, vor: float = 0.0) -> bytes | None:
         """Der Spielbildschirm (JPEG) etwa `vor` Sekunden vor jetzt - None, wenn keiner da ist
         oder der naechste mehr als 2 s daneben liegt (z. B. Spiel minimiert)."""

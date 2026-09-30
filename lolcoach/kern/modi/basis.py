@@ -461,11 +461,6 @@ def kontrollauge_dazu(m) -> bool:
     return kaufplan.plaetze_nach(b.ich.items, k.kaufen if k is not None and k.kaufen else []) >= 1 and rest >= 75
 
 
-def _fokus_kontrollauge(m) -> bool:
-    f = getattr(m, "fokus", None) or ""
-    return "kontroll" in f.lower()
-
-
 def _vorderster_turm(m) -> str:
     """"deinem äußeren Top-Turm": der vorderste stehende eigene Turm deiner Lane (Dativ), sonst "deinem Turm"."""
     from ... import bewertung
@@ -495,10 +490,7 @@ def kaufen(m, cfg: dict, modus: str, ziel: Handlung) -> Handlung | None:
     if i is not None:
         teile[i] = mit_ziel(k.kaufen[i], ziel_item)
     if kontrollauge_dazu(m):
-        if _fokus_kontrollauge(m):
-            teile = ["ein Kontroll-Auge"] + teile
-        else:
-            teile.append("ein Kontroll-Auge")
+        teile.append("ein Kontroll-Auge")
     teile = teile[:5]
     was = liste(teile)
     verkauf = f"Verkauf {k.verkaufen}, dann k" if k.verkaufen else "K"

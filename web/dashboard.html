@@ -70,7 +70,6 @@
     <div class="kasten" id="kartenkasten" hidden><h2>Kartenlage</h2><div id="kartenlage" class="leiste"></div>
       <div id="kartenflash" class="klein"></div></div>
     <div class="kasten" id="plankasten" hidden><h2>Dein Lane-Plan</h2><div id="laneplan" class="plan"></div></div>
-    <div class="kasten" id="fokuskasten" hidden style="border-color: var(--warn)"><h2>Dein Fokus heute</h2><div id="fokus"></div></div>
     <div class="kasten"><h2>Objectives</h2><div class="obj" id="obj"></div><div class="klein" id="drachen"></div></div>
     <div class="kasten"><h2 id="lanekopf">Lane</h2><div id="lane" class="zahl"></div></div>
     <div class="kasten"><h2>Gegner</h2><div class="gegner" id="gegner"></div></div>
@@ -199,8 +198,6 @@ function zeige(z) {
   $('plankasten').hidden = !plan.length;
   $('laneplan').innerHTML = plan.map(l => { const [k, ...r] = l.split(':');
     return `<div><b>${k}:</b> ${r.join(':')}</div>`; }).join('');
-  $('fokuskasten').hidden = !z.fokus;               // aus dem Review der letzten Partie
-  if (z.fokus) $('fokus').textContent = z.fokus;
   $('ansagen').innerHTML = z.ansagen.map(a => `<li class="p${a.prio}"><span class="klein">${a.zeit}</span> ${a.text}</li>`).join('');
   const k = z.kern;                                  // Buch 0: Modus + INFO, die nur hier steht (nicht gesprochen)
   $('moduskasten').hidden = !(k && k.modus);

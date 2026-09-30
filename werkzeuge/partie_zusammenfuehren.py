@@ -1,12 +1,12 @@
 """Eine Partie, die ueber mehrere Aufnahmen verteilt ist (Coach neu gestartet, bevor es die Fortsetzung
-gab), zu EINER Aufnahme zusammenfuehren - damit Review und Fortschritt sie als eine Partie sehen.
+gab), zu EINER Aufnahme zusammenfuehren - damit Messwerkzeuge und Profil sie als eine Partie sehen.
 
     python werkzeuge/partie_zusammenfuehren.py <ziel-stamm> <teil-stamm> [...]
 
 Ziel ist die erste Aufnahme der Partie. Die Teile werden angehaengt (Schnappschuesse, Minimap-Bilder,
 Sichtungen, Ereignisse, Ansagen, Notizen, Sprechtasten-Log); ihre Dateien wandern nach
-aufnahmen/_zusammengefuehrt/ (nichts wird geloescht). Veraltetes Review/Verlauf/Bericht des Ziels
-wandert mit - der naechste Coach-Start (oder `python -m lolcoach review`) schreibt es neu.
+aufnahmen/_zusammengefuehrt/ (nichts wird geloescht). Alte Review-/Verlauf-/Bericht-Dateien des Ziels
+(aus der Zeit vor Auftrag 028) wandern mit.
 """
 from __future__ import annotations
 

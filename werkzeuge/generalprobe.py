@@ -7,7 +7,7 @@ die Minimap (1/s, volle Aufloesung) genau dort, wo der Coach sie sucht. Ist das 
 breiter als 16:9 (Carlos' 7680 x 2160, randlos = ganzer Schirm), kommen Mitspieler-Leiste
 und Chat an die Raender - so sitzt das HUD von League auf 32:9. Der Coach laeuft als
 eigener Prozess dagegen - mit Bildschirmaufnahme, Verfolger, Mitspieler-Leiste, Regeln,
-Dashboard, Speichern (und Review danach, ausser `--ohne-review`). Aufnahmen landen in
+Dashboard, Speichern. Aufnahmen landen in
 `aufnahmen_probe/`. Am Ende: Takt, Minimap gefunden, HUD gelesen, Fehler, CPU und Speicher
 des Coach-Prozesses (und seiner fleissigsten Faeden), Flash-Clips.
 
@@ -16,7 +16,7 @@ Die Probe merkt das und laesst den Coach per GDI sehen (`LOLCOACH_KAMERA=gdi`) -
 ist dann eine Untergrenze, GDI kostet ein Vielfaches (Auftrag 007, C1).
 
     python werkzeuge/generalprobe.py [--aufnahme ...] [--ab 13] [--minuten 2.5] [--breite 7680]
-                                     [--ohne-gehirn] [--ohne-review] [--gdi]
+                                     [--ohne-gehirn] [--gdi]
 """
 import argparse
 import bisect
@@ -227,7 +227,6 @@ def main():
     ap.add_argument("--ab", type=float, default=13.0, help="Spielminute, ab der die Probe laeuft")
     ap.add_argument("--minuten", type=float, default=2.5)
     ap.add_argument("--ohne-gehirn", action="store_true")
-    ap.add_argument("--ohne-review", action="store_true", help="nach 'Partie vorbei' beenden (spart Claude)")
     ap.add_argument("--gdi", action="store_true", help="Coach sieht per GDI (sonst nur bei ausgeschaltetem Schirm)")
     schirm_b = ctypes.windll.user32.GetSystemMetrics(0)
     ap.add_argument("--breite", type=int, default=schirm_b, help="Fensterbreite (randlos = ganzer Schirm)")
@@ -346,20 +345,17 @@ def main():
     fenster.after(100, takt)
     try:
         fenster.mainloop()
-        print("Probe-Partie vorbei - warte auf Aufnahme" + ("" if args.ohne_review else ", Bericht und Review") + " ...")
-        frist = time.time() + 420
-        # nur Zeilen nach der Partie: beim Start holt der Coach alte Reviews nach ("Review fertig" schon mittendrin)
+        print("Probe-Partie vorbei - warte auf die Aufnahme ...")
+        frist = time.time() + 120
         ab = len((ordner / "generalprobe.log").read_text(encoding="utf-8", errors="replace"))
         while time.time() < frist and coach.poll() is None:
             text = (ordner / "generalprobe.log").read_text(encoding="utf-8", errors="replace")[ab:]
-            if "Review fertig" in text or "Review fehlgeschlagen" in text or "Kurze Partie" in text:
-                break
-            if args.ohne_review and "Partie vorbei" in text:
+            if "Partie vorbei" in text:          # (kein Review mehr danach, Auftrag 028)
                 break
             time.sleep(2)
     finally:
         uhr.ende = True
-        # ganzer Baum: ein Review-Aufruf (claude) liefe sonst ohne Coach weiter
+        # ganzer Baum: ein Claude-Aufruf liefe sonst ohne Coach weiter
         subprocess.run(["taskkill", "/T", "/F", "/PID", str(coach.pid)], capture_output=True)
         if coach.poll() is None:
             coach.terminate()

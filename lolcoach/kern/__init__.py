@@ -170,7 +170,6 @@ class Kern:
         self.fuehrer = PlanFuehrer(self.cfg)
         self.sprecher = Sprecher(self.cfg)
         self.transport = None                     # sprechplan.Sprechplan: was gesprochen wurde (Budget, Kehrtwenden)
-        self.fokus: str | None = None             # Fokus des Tages (profil.fokus, live)
         self.staerken: list[tuple[float, str]] = []   # Bestaetigungen - fuer das Review (Buch 3, 5)
         self.gefahr = False                       # schlaegt das Gefahr-Modell gerade an (7.5)?
         self.kandidaten: list = []
@@ -212,7 +211,6 @@ class Kern:
         self._praefix: tuple[float, str] | None = None
         self._rueckzug: tuple[float, tuple, list] | None = None
         self._stapel_bestaetigt: str | None = None
-        self._fokus_bestaetigt = False
         self._mitte_wache: dict = {}        # Buch 5, 9: Art -> (zuletzt, ...) - Plaene, deren Ausgang bestaetigt wird
         self._basis = {"seit": None, "kauf": None, "n": 0, "zuletzt": None, "gold": None}
         # Auftrag 002, S3: INFO_FLASH - offene und gemeldete Flash-Timer der Gegner ((Name, Zeit) -> Timer)
@@ -282,7 +280,6 @@ class Kern:
         """Merkmale dieses Takts (aus der Bewertung, die das Regelwerk schon gerechnet hat) und der Modus."""
         self.m = self.bau.neu(p, b, lagebild)
         if self.m is not None:
-            self.m.fokus = self.fokus
             self.m.auge_aus = self.m.zeit < self.auge_nein_bis      # Auftrag 016, 5 (basis.kontrollauge_dazu)
         return self.modus.neu(self.m)
 
@@ -2029,7 +2026,7 @@ class Kern:
             zahl = {2: "zwei", 3: "drei", 4: "vier", 5: "fünf"}
             s1 = (f"{wo} kamen {zahl.get(len(wer), len(wer))} von ihnen zusammen." if len(wer) >= 2
                   else f"{wo} kam {wer[0]} dazu." if wer else f"{wo} kam es zum Kampf.")
-            return s1 + " Schau es dir im Review an."
+            return s1                        # (kein Verweis aufs Review mehr - entfernt, Auftrag 028)
         probe = self.proben.letzte(zeit)
         if probe is not None:
             # was zuletzt GESPROCHEN wurde, zaehlt - uebergeben ist nicht gesagt, und nach "Raus" kann "Dreh um" und
@@ -2317,9 +2314,6 @@ class Kern:
                 self._stapel_bestaetigt = o.schl
         if text is None:
             text = self._mitte_bestaetigung(m)
-        if text is None and not self._fokus_bestaetigt and m.fokus and "kontroll" in m.fokus.lower() \
-                and m.b is not None and KONTROLLAUGE in m.b.ich.items:
-            text, self._fokus_bestaetigt = "Kontroll-Auge gekauft - genau der Fokus.", True
         if text is None:
             return None
         # Auftrag 010, 2 (Kritik 009: "Gut raus." allein ist Info ohne Folgen): die Bestaetigung steht vor dem

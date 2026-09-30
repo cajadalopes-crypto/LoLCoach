@@ -115,7 +115,6 @@ class Merkmale:
     tote_gegner: list = field(default_factory=list)      # (Champion, Respawn in s)
     tote_eigene: int = 0
     umwandeln_lief: bool = False                         # Umwandel-Fenster im Takt davor offen (Buch 5, 8)
-    fokus: str | None = None                 # Fokus des Tages (profil.fokus) - Kontroll-Auge zuerst
     ult_mitspieler: dict = field(default_factory=dict)   # Buch 7, 3.2: Name -> Ult bereit (HUD-Leiste), fehlt = ?
     # Buch 6, Kapitel 6: um wie viel sich euer Jungler der Grube in den letzten 10 s genaehert hat (schl -> Einheiten)
     jungler_wir_naeher: dict = field(default_factory=dict)
