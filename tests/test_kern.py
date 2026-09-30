@@ -1412,6 +1412,7 @@ def ein_plan_028():
     from lolcoach import stratege
     from lolcoach.kern.herzschlag import auffrischen, countdown, wechsel_grund
     from lolcoach.regeln import WICHTIG, Ansage
+    from lolcoach import sprechplan as sprechplan_mod
     from lolcoach.sprechplan import Sprechplan
     from lolcoach.stratege_live import Schiedsrichter
     # 1.2: keine Entschuldigung - "Stimmt. Neu:"; ein reines "Tut mir leid." entfaellt
@@ -1438,7 +1439,7 @@ def ein_plan_028():
     back = Ansage("Back jetzt: 14 Prozent Leben.", WICHTIG, "kern:PAKET_HERZ", zeit=100.0, gesprochen=100.0)
     sp.gesagt.append(back)
     herz = Ansage("Geh zu deiner Top-Welle und farm sie.", WICHTIG, "kern:PAKET_HERZ", zeit=103.0)
-    assert sp._ein_plan(herz, 103.0) is None
+    assert sp._ein_plan(herz, 103.0) is sprechplan_mod.WARTEN          # binnen 5 s wartet jeder Wechsel
     drueck = Ansage("Drück ihren inneren Mid-Turm: Level 14 gegen 10.", WICHTIG, "kern:DRUECKEN", zeit=107.0)
     assert sp._ein_plan(drueck, 107.0) is None               # "Back jetzt" gilt: nur Gefahr oder Frage (2302)
     sp.gesagt.append(Ansage("Farm deine Top-Welle.", WICHTIG, "kern:PAKET_HERZ", zeit=121.0, gesprochen=121.0))

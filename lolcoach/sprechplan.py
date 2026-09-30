@@ -108,6 +108,8 @@ def _stimmt(a: Ansage) -> bool:
 WARTEN_HOECHSTENS = {SOFORT: 6.0, WICHTIG: 10.0, HINWEIS: 20.0}
 ACH_NEE = 8.0     # Sekunden: so lange nach einem widerrufenen Satz beginnt der neue zum selben Thema mit "Ach nee"
 DOPPEL_S = 10.0   # Auftrag 028, 1.3: so lange ist derselbe Satz aus keiner Quelle ein zweites Mal zu hoeren
+HIN_UND_HER_S = 5.0   # Auftrag 027, 1.4: so lange nach einem Plan-Satz kein Satz mit anderem Ziel (Gefahr ausgenommen)
+WARTEN = "<warten>"
 
 
 def _kern_text(text: str) -> str:
@@ -201,6 +203,11 @@ class Sprechplan:
             return a.text
         aktiv = next(((x.gesprochen, halte_ziel(x.text, plan_ziel_von(x)), plan_ziel_von(x)) for x in reversed(self.gesagt[-8:])
                       if x.gesprochen is not None and plan_ziel_von(x)), None)
+        if aktiv is not None and zeit - aktiv[0] < HIN_UND_HER_S and not ziele_vertraeglich(aktiv[2], z) \
+                and a.thema != "gefahr":
+            # Auftrag 027, 1.4 / 028, 1: auch ein begruendeter Wechsel kommt nicht binnen 5 s nach dem letzten
+            # Plan-Satz (Stub 028: sieben Mal "Farm Top" -> 4 s spaeter "Plan geändert: Platte ...") - er wartet
+            return WARTEN
         if wechsel_grund(a, aktiv[1] if aktiv is not None and zeit - aktiv[0] < WECHSEL_S else None):
             return a.text
         if aktiv is None or zeit - aktiv[0] >= WECHSEL_S or ziele_vertraeglich(aktiv[2], z):
@@ -389,6 +396,9 @@ class Sprechplan:
         # hier zaehlt, was zuletzt GESPROCHEN wurde (231200 5:29: "Back jetzt", dann aus der Schlange "Geh zu deiner
         # Top-Welle"). Ein Wechsel binnen 20 s ohne Grund faellt weg; ein Kern-Satz mit eigenem Grund wird hoerbar.
         if (neu_text := self._ein_plan(a, zeit)) is None:
+            return None
+        if neu_text is WARTEN:
+            self.warte.append(a)              # gleich noch einmal - die Wartefrist der Ansage laeuft weiter
             return None
         a.text = neu_text
         # Auftrag 028, 3: der Kill-Check fuer jede Quelle, gegen die Lage JETZT - nicht die beim Erzeugen
