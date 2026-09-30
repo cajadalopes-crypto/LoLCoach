@@ -508,6 +508,10 @@ class Kern:
                     continue
             self._letzt_ziel = (m.zeit, z)
             letzte.append((m.zeit, z, a.text))
+        # Auftrag 028, 1.3 (164326 30:48, Szenario 3048): die Sichtung mit ihrem Nutzen ("Naafiri unten gesehen: oben
+        # 15 Sekunden frei, ...") ersetzt die blosse Sichtung im selben Takt - sonst kam die zuerst und die volle fiel weg
+        if any(a.schluessel == "kern:JUNGLER_WEIT" for a in aus):
+            aus = [a for a in aus if a.schluessel != "kern:INFO_JUNGLER"]
         self._modus_vorher = modus
         return aus
 

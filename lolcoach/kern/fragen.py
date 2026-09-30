@@ -270,6 +270,7 @@ def _tp_oder_laufen(kern, f: str) -> str | None:
     m = kern.m
     if m is None or m.p is None or not m.p.mein_team:
         return None
+    from ..bewertung import BRUNNEN, WEGFAKTOR, abstand
     from .merkmale import TUERME
     lane = m.meine_lane or "Top"
     turm = TUERME.get((m.p.mein_team, lane, "aussen")) or TUERME.get((m.p.mein_team, lane, "innen"))
