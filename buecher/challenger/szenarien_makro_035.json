@@ -1,0 +1,630 @@
+{
+ "kern": "makro",
+ "gruen": 262,
+ "rot": 121,
+ "uebersprungen": 3,
+ "je_datei": {
+  "2026-09-26_120049_auftrag025.toml": {
+   "rot": [
+    "m01-mehrere-events-259",
+    "m02-mehrere-events-508",
+    "m03-mehrere-events-728"
+   ],
+   "gruen": []
+  },
+  "2026-09-26_125902_auftrag025.toml": {
+   "rot": [
+    "m04-mehrere-events-225",
+    "m05-mehrere-events-445",
+    "m06-mehrere-events-643"
+   ],
+   "gruen": []
+  },
+  "2026-09-26_164809_auftrag025.toml": {
+   "rot": [
+    "m07-mehrere-events-138",
+    "m08-mehrere-events-504",
+    "m09-mehrere-events-808"
+   ],
+   "gruen": []
+  },
+  "2026-09-27_102112.toml": {
+   "rot": [
+    "0904-drei-kommen",
+    "2522-kein-baron-drache-lebt",
+    "2847-baron-statt-drache",
+    "3500-drache-solo",
+    "3632-ende-statt-back"
+   ],
+   "gruen": [
+    "0517-platte-ohne-flash",
+    "0850-kein-hin-und-her",
+    "3004-basis-kauf-und-ziel",
+    "3100-basis-braucht-ziel",
+    "3535-rueckzug-31s",
+    "2751-back-danach-back",
+    "3715-ein-ziel-je-basis",
+    "1341-kein-warte-hier"
+   ]
+  },
+  "2026-09-27_102112_auftrag009.toml": {
+   "rot": [],
+   "gruen": [
+    "1322-recall-kanal-reicht"
+   ]
+  },
+  "2026-09-27_102112_buch3.toml": {
+   "rot": [
+    "0545-back-bei-40-prozent",
+    "0600-basis-kauf",
+    "1315-crash-dann-back"
+   ],
+   "gruen": []
+  },
+  "2026-09-27_102112_buch6.toml": {
+   "rot": [
+    "3451-drache-an-der-grube",
+    "3831-nexus-nicht-inhib",
+    "1453-herold-ein-satz"
+   ],
+   "gruen": [
+    "2516-keine-zahl-ohne-rat",
+    "3335-keine-zahl-ohne-rat",
+    "2637-grund-nicht-dagegen"
+   ]
+  },
+  "2026-09-27_102112_buch7.toml": {
+   "rot": [
+    "2501-sona-allein",
+    "2613-fiddlesticks-allein",
+    "2631-zu-zweit-rein"
+   ],
+   "gruen": []
+  },
+  "2026-09-27_102112_pruefung.toml": {
+   "rot": [
+    "3002-basis-ein-ziel"
+   ],
+   "gruen": [
+    "2547-grund-fuer-das-ziel",
+    "0554-kein-wellenbefehl-in-basis",
+    "1048-keine-platte-nach-gefahr",
+    "3801-kurzform-zu-deinem-team"
+   ]
+  },
+  "2026-09-27_133930_pruefung.toml": {
+   "rot": [],
+   "gruen": [
+    "1745-kauf-einmal",
+    "0701-keine-bestaetigung-im-kampf",
+    "1230-wohin-sicher",
+    "1457-rueckblick-passt",
+    "1516-wohin-sicher",
+    "swiftplay-keine-classic-zeiten",
+    "swiftplay-kein-erster-drache",
+    "swiftplay-keine-larven"
+   ]
+  },
+  "2026-09-27_140253_buch6.toml": {
+   "rot": [
+    "0647-mid-larven-zu-frueh"
+   ],
+   "gruen": [
+    "0729-larven-nur-mit-jungler",
+    "0427-drache-nur-mit-team"
+   ]
+  },
+  "2026-09-27_140253_pruefung.toml": {
+   "rot": [
+    "0843-todesrueckblick",
+    "1005-tod-ohne-kopfgeld",
+    "0349-ein-plan"
+   ],
+   "gruen": [
+    "0806-kein-back-gegner-kommen",
+    "1025-wohin-nicht-in-den-tod",
+    "0349-bauteil-nennen",
+    "0000-nichts-vor-spielbeginn",
+    "0238-schutzplan-sparsam",
+    "0401-kein-stapeln",
+    "swiftplay-keine-classic-zeiten"
+   ]
+  },
+  "2026-09-27_144655_buch7.toml": {
+   "rot": [
+    "0622-tod-gegen-gangplank"
+   ],
+   "gruen": [
+    "0915-raus-kurz"
+   ]
+  },
+  "2026-09-27_144655_pruefung.toml": {
+   "rot": [
+    "0701-lane-hinten-plan",
+    "0449-rueckzug-ein-satz",
+    "0159-wohin-risiko",
+    "0923-gewarnt-nicht-nebel"
+   ],
+   "gruen": [
+    "0900-kein-raus-am-turm",
+    "0647-kein-stapeln-bei-gefahr",
+    "0338-keine-info-im-kampf",
+    "0137-schutzplan-sparsam",
+    "0439-kein-gut-raus",
+    "0506-wohin-sicher",
+    "0159-aeusserer-turm"
+   ]
+  },
+  "2026-09-27_164326_buch4.toml": {
+   "rot": [
+    "1400-teamplan",
+    "3048-naafiri-unten-fenster-oben"
+   ],
+   "gruen": []
+  },
+  "2026-09-27_164326_kritik008.toml": {
+   "rot": [
+    "3302-sie-haben-den-baron"
+   ],
+   "gruen": []
+  },
+  "2026-09-27_164326_pruefung_c.toml": {
+   "rot": [
+    "2239-keine-doppelwarnung",
+    "wendepunkt-ansage"
+   ],
+   "gruen": [
+    "4113-kein-drache-von-baron",
+    "1737-kein-du-schlaegst",
+    "zur-gruppe-mit-ort",
+    "2626-kauf-passt-zum-build",
+    "0853-kein-back-bei-0",
+    "back-dauerton",
+    "wohin-kurz",
+    "0748-nicht-zu-spaet",
+    "3302-keine-null-welle",
+    "1142-mehrzahl",
+    "1036-back-fassung-bleibt",
+    "2858-rein-mit-ungesehenen",
+    "0019-kaufbar-unmoeglich",
+    "2217-euer-turm-kein-grund",
+    "1623-back-statt-farmen",
+    "2556-back-statt-farmen",
+    "2837-back-statt-farmen",
+    "3949-kein-back-nach-baron",
+    "3514-turmziel-bleibt",
+    "3554-grube-ziel-bleibt",
+    "4209-fenster-ziel-bleibt",
+    "4233-nexus-ziel-bleibt",
+    "0418-flash-einmal",
+    "1259-aeusserer-turm",
+    "2101-baron-ungesehene",
+    "1628-kein-farm-nach-back",
+    "3534-drache-bleibt"
+   ]
+  },
+  "2026-09-27_173159_buch4.toml": {
+   "rot": [
+    "1400-teamplan"
+   ],
+   "gruen": [
+    "1058-olaf-unten-ohne-wirkung"
+   ]
+  },
+  "2026-09-27_173159_kritik008.toml": {
+   "rot": [],
+   "gruen": [
+    "2217-leben-von-jetzt"
+   ]
+  },
+  "2026-09-27_173159_pruefung_c.toml": {
+   "rot": [
+    "back-dauerton",
+    "wendepunkt-ansage"
+   ],
+   "gruen": [
+    "3512-kein-aeltester-mit-15",
+    "2850-kein-aeltester-bestreiten",
+    "1423-kein-kampf-mit-16",
+    "2200-kein-druecken-mit-36",
+    "2109-zur-gruppe-mit-ort",
+    "1204-kein-spitzhacke-dauerton",
+    "0745-cho-allein",
+    "wohin-kurz",
+    "3606-zum-team",
+    "2258-einzahl",
+    "3232-keine-kleine-welle",
+    "0932-mehrzahl",
+    "3524-rueckblick-ohne-jungler",
+    "2903-rueckblick-nach-ruf",
+    "3710-basis-einmal",
+    "1533-nicht-klar-ueberlegen",
+    "2852-ungesehene-zaehlen",
+    "3513-respawn-nicht-nebel",
+    "0639-kein-back-in-gefahr",
+    "3459-kein-back-in-ihrer-basis",
+    "2017-baron-grube-kein-turm",
+    "3650-belagerung",
+    "3509-respawn-am-nexus",
+    "2607-kein-warte-hier"
+   ]
+  },
+  "2026-09-27_213624.toml": {
+   "rot": [
+    "0455-sona-ohne-flash",
+    "0841-rumble-ohne-flash",
+    "1900-raus-unter-15",
+    "0944-turm-ist-down",
+    "wendepunkt-ansage"
+   ],
+   "gruen": [
+    "s1-zahlen-gesprochen",
+    "s23-plan-hoechstens-14",
+    "s23-gefahr-hoechstens-8",
+    "2322-flashes-frage",
+    "0111-raus-ohne-beleg",
+    "ziggs-allein-keine-gefahr",
+    "towerdive-lass-ihn",
+    "1247-ziel-nicht-noch-einmal",
+    "1621-66-prozent-mit-team",
+    "0944-nach-turmfall-kein-farmen",
+    "1429-euer-turm-kein-grund",
+    "1711-kein-back-in-basis",
+    "2357-kein-warte-nach-back"
+   ]
+  },
+  "2026-09-27_213624_auftrag009.toml": {
+   "rot": [],
+   "gruen": [
+    "0429-recall-kanal-warnung-bleibt"
+   ]
+  },
+  "2026-09-27_213624_auftrag011.toml": {
+   "rot": [
+    "2209-von-der-bot-lane"
+   ],
+   "gruen": []
+  },
+  "2026-09-27_213624_buch4.toml": {
+   "rot": [
+    "1617-drei-von-ihnen-tot"
+   ],
+   "gruen": []
+  },
+  "2026-09-27_213624_fragen.toml": {
+   "rot": [
+    "0119-warum-raus-zum-turm",
+    "0127-warum-raus-obwohl-ich-gewinne",
+    "0404-xin-ist-bei-mir-oben",
+    "0458-soll-ich-team-helfen",
+    "0955-tower-down-was-jetzt",
+    "1036-habe-ich-und-was-jetzt",
+    "1052-warum-nicht-drache-helfen",
+    "1135-warum-top-und-nicht-drache",
+    "1205-warum-top-statt-drache",
+    "1223-drache-war-kuerzer",
+    "1256-drache-oder-turm",
+    "1312-was-mache-ich-jetzt",
+    "1316-welche-welle-welche-lane",
+    "1336-drache-tot-wohin",
+    "1348-was-jetzt-leerlauf",
+    "1437-okay-was-jetzt",
+    "1640-was-nach-dem-tower"
+   ],
+   "gruen": [
+    "0044-win-condition",
+    "0225-rumble-kit",
+    "0257-ueberhitzen-buff",
+    "0328-wo-ist-gesin-bruchstueck",
+    "0340-wieso-wahrscheinlich-unten",
+    "0415-warum-zurueck-bin-level-5",
+    "0441-notiz-xin-weggebummst",
+    "0559-notiz-englische-aussprache",
+    "0627-wie-macht-sich-mein-team",
+    "0700-notiz-schraegstrich",
+    "0741-bist-du-noch-da",
+    "0755-warum-eclipse",
+    "0849-flaechen-ueberblick",
+    "0913-flashes-bei-den-gegnern",
+    "0925-und-die-anderen-lanes",
+    "0944-erster-tower-was-jetzt",
+    "1012-kein-platz-langschwert",
+    "1017-kein-platz-im-inventar",
+    "1024-kein-platz-noch-einmal",
+    "1112-dreitausend",
+    "1149-notiz-zehnmal-gefragt",
+    "1238-warum-so-sicher-drache",
+    "1323-notiz-ignorierst-mich",
+    "1420-notiz-teleport-quest",
+    "1446-wo-ist-xin",
+    "1525-notiz-ziggs-getowerdived",
+    "1602-notiz-zu-lang-zu-langsam",
+    "1631-alle-tot-warum-zurueck",
+    "1708-notiz-schritte-frueher",
+    "1941-notiz-flash-timer",
+    "2032-notiz-naechste-schritte",
+    "2315-flashes",
+    "2322-gegnerische-flashes",
+    "2345-ohne-flash-erst-recht-kaempfen",
+    "2000-notiz-kein-nein",
+    "2103-notiz-kein-nein",
+    "1054-drache-nicht-geraten",
+    "1138-drache-nicht-geraten",
+    "1054-gleich-gezaehlt",
+    "1038-schon-gekauft"
+   ]
+  },
+  "2026-09-28_101426_auftrag008.toml": {
+   "rot": [
+    "a1-warnungen-je-30min",
+    "2531-warnung-bleibt",
+    "a2-konkrete-sprache",
+    "3213-ich-bin-tot",
+    "3216-ja-ich-bin-auch-tot",
+    "2839-kein-kontrollauge-ohne-platz",
+    "1938-korrektur-twitch-bei-mir",
+    "2650-lage-auf-abruf",
+    "a4-lagebild-ungefragt"
+   ],
+   "gruen": [
+    "1356-ungesehen-kein-raus",
+    "1616-ungesehen-kein-raus",
+    "2335-ungesehen-kein-raus",
+    "0526-viego-ist-nicht-urgot",
+    "3207-tot-kein-farm",
+    "2324-kein-afk",
+    "1924-wo-ist-twitch"
+   ]
+  },
+  "2026-09-28_101426_auftrag009.toml": {
+   "rot": [
+    "lagebild-folgerung-handelt",
+    "bauteil-mit-ziel"
+   ],
+   "gruen": [
+    "0235-kein-trade-bei-15",
+    "2016-viego-zaehlt-mit",
+    "1400-viego-weit-still",
+    "kein-possessiv-vor-champion",
+    "1211-schutzplan-fertiges-item",
+    "3217-klaeren-raus-zum-turm",
+    "3107-klaeren-welle"
+   ]
+  },
+  "2026-09-28_101426_auftrag010.toml": {
+   "rot": [
+    "2440-bard-tot-ziel",
+    "3338-drache-drin-ziel",
+    "1037-flash-ohne-ort"
+   ],
+   "gruen": [
+    "1400-mid-welle-statt-halten",
+    "1736-sett-tot-ziel",
+    "2230-rueckzug-gilt-still",
+    "2302-back-gilt-still",
+    "2809-back-gilt-still",
+    "gut-raus-nicht-allein",
+    "2335-von-der-bot-lane"
+   ]
+  },
+  "2026-09-28_101426_auftrag011.toml": {
+   "rot": [
+    "2010-keine-wiederholung"
+   ],
+   "gruen": []
+  },
+  "2026-09-28_101426_auftrag025.toml": {
+   "rot": [
+    "m11-mehrere-events-427",
+    "m12-mehrere-events-608"
+   ],
+   "gruen": [
+    "m10-mehrere-events-230"
+   ]
+  },
+  "2026-09-28_101426_kritik008.toml": {
+   "rot": [],
+   "gruen": [
+    "2447-kein-tief-auf-der-lane",
+    "3123-kein-tief-auf-der-lane",
+    "2538-raus-mit-lane",
+    "3207-tot-respawn-mit-kauf"
+   ]
+  },
+  "2026-09-28_192113_auftrag012.toml": {
+   "rot": [],
+   "gruen": [
+    "1940-keine-leere-top-welle",
+    "2326-top-welle-am-nexus",
+    "2231-cassiopeia-nicht-aus-dem-nebel"
+   ]
+  },
+  "2026-09-28_192113_auftrag025.toml": {
+   "rot": [
+    "m15-mehrere-events-637"
+   ],
+   "gruen": [
+    "m13-mehrere-events-301",
+    "m14-mehrere-events-457"
+   ]
+  },
+  "2026-09-28_192113_fragen.toml": {
+   "rot": [
+    "0354-soll-ich-nicht-durchpushen",
+    "1024-soll-ich-zum-drake",
+    "1034-warum-nicht-zum-drake",
+    "1354-wieso-nicht-flash",
+    "1430-warum-weisst-du-nichts-flash",
+    "1522-sobald-im-fountain-lang",
+    "1521-sobald-im-fountain",
+    "1846-top-farmen-andere",
+    "1940-zwei-leute-farmen-top",
+    "1948-top-reingepusht",
+    "2014-kein-minion",
+    "2024-teemo-hat-farm-geholt",
+    "2039-warum-nicht-mid",
+    "2052-kein-minion-oben",
+    "2204-adc-farmt-top",
+    "2354-topwelle-am-nexus",
+    "2402-drache-erst-in-zwei-minuten",
+    "2438-keine-sorgen-vier-unsichtbar",
+    "2444-warum-sicher-botwelle",
+    "2514-druecken-obwohl-keiner-zu-sehen",
+    "0437-drache-timer-zur-sprechzeit"
+   ],
+   "gruen": [
+    "0217-kontrollauge",
+    "0229-kontrollauge-wieder",
+    "0249-notiz-mit-kontrollauge",
+    "0403-nachfrage-antworten",
+    "0410-warum-nicht-durchpushen",
+    "0422-win-condition",
+    "0516-timer-rueckmeldung",
+    "0707-was-jetzt-genau",
+    "0713-bot-lane",
+    "0808-jungle-coachen",
+    "0820-jungle-coachen-wieder",
+    "0831-ignorierst-frage",
+    "0842-warum-keine-platten",
+    "0852-was-heisst-gebackt",
+    "0942-angst-vor-ganks",
+    "0946-in-der-base-wohin",
+    "1026-warum-nicht",
+    "1136-was-mache-ich-jetzt",
+    "1231-du-sagst-nie-etwas-anderes",
+    "1340-warum-immer-toplane",
+    "1352-wer-hat-flash",
+    "1435-wenn-turm-down-danach",
+    "1441-ignorierst-danach",
+    "1536-funktionierst-du-noch",
+    "1549-warum-topwelle-durchpushen",
+    "1603-antwortest-nicht",
+    "1656-tp-oder-laufen",
+    "1706-spielstate",
+    "1816-wenn-ich-gebacked-bin",
+    "1817-bin-back-was-jetzt",
+    "1914-bin-back-was-jetzt",
+    "2009-was-jetzt",
+    "2121-drache-ueber-top",
+    "2138-was-soll-ich-machen",
+    "2147-warum-nicht-bot-deffen",
+    "2337-riesenschwert-was-danach",
+    "2415-sag-mir-was-ich-machen-soll",
+    "2619-innerer-mitturm",
+    "2823-nur-schutzengel-kaufen",
+    "2840-trank-verkaufen",
+    "2847-keine-antwort"
+   ]
+  },
+  "2026-09-29_133448_auftrag025.toml": {
+   "rot": [
+    "m17-mehrere-events-403",
+    "m18-mehrere-events-708"
+   ],
+   "gruen": [
+    "m16-mehrere-events-202"
+   ]
+  },
+  "2026-09-29_183125_auftrag018.toml": {
+   "rot": [
+    "1836-was-wenn-ich-lebe",
+    "1912-plan-nach-respawn",
+    "1935-steht-in-der-basis"
+   ],
+   "gruen": [
+    "1948-turm-mit-stufe",
+    "1953-welcher-turm",
+    "3426-kein-schwarzes-beil",
+    "3543-trank-bei-vollem-inventar",
+    "3821-tod-kurz"
+   ]
+  },
+  "2026-09-29_183125_auftrag025.toml": {
+   "rot": [
+    "m19-mehrere-events-441",
+    "m20-mehrere-events-701",
+    "m21-mehrere-events-910"
+   ],
+   "gruen": []
+  },
+  "2026-09-29_231200_auftrag024.toml": {
+   "rot": [
+    "0519-tp-weg"
+   ],
+   "gruen": [
+    "0257-xerath-lebt",
+    "0756-gragas-lebt",
+    "0556-udyr-nicht-weg",
+    "0322-kein-kauf-auf-der-lane",
+    "0814-kein-kaputter-satz",
+    "1103-notiz-mit-frage",
+    "3220-voll-mit-gold"
+   ]
+  },
+  "2026-09-29_231200_auftrag025.toml": {
+   "rot": [
+    "m23-mehrere-events-655",
+    "m24-mehrere-events-854"
+   ],
+   "gruen": [
+    "m22-mehrere-events-408"
+   ]
+  },
+  "2026-09-29_231200_auftrag026.toml": {
+   "rot": [
+    "0118-udyr-weg-platten",
+    "0402-back-zur-frist"
+   ],
+   "gruen": []
+  },
+  "2026-09-29_231200_auftrag028.toml": {
+   "rot": [],
+   "gruen": [
+    "2625-antwort-kill-beim-sprechen"
+   ]
+  },
+  "2026-09-30_091311_auftrag027.toml": {
+   "rot": [
+    "1753-tot-kauf-vor-respawn",
+    "2554-kauf-im-tod"
+   ],
+   "gruen": [
+    "1033-stiefel-ausbauen",
+    "1139-tief-mit-anweisung",
+    "1541-stillstand-pflicht",
+    "1518-stillstand-erste-reaktion",
+    "1805-brunnen-erst-kaufen",
+    "1951-alles-gold",
+    "2105-team-baron-behauptung",
+    "2040-team-drache-stimmt",
+    "2321-kein-hin-und-her",
+    "1243-luecke-lane",
+    "2217-luecke-mitte",
+    "2046-kein-team-am-baron"
+   ]
+  },
+  "2026-09-30_134020_auftrag028.toml": {
+   "rot": [
+    "0231-tp-oder-laufen",
+    "1401-kein-back-zum-kaufen"
+   ],
+   "gruen": [
+    "0122-kein-item-das-er-hat",
+    "0114-stratege-dorans",
+    "0321-freeze-frage",
+    "0322-freeze-sperre",
+    "0755-ganze-kette",
+    "1241-sejuani-mit-team",
+    "1228-sejuani-flussmitte",
+    "1401-stiefel-stufe-zwei",
+    "1451-kein-elixier",
+    "1620-elixier-sperre",
+    "1835-drache-kein-hin-und-her",
+    "2054-schlechter-rat-als-eisen",
+    "2202-kanone",
+    "2746-warum-keine-chance",
+    "2920-spielende"
+   ]
+  }
+ }
+}
