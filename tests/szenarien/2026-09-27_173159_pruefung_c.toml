@@ -74,8 +74,10 @@ id = "back-dauerton"
 fenster = ["12:00", "35:00"]
 quelle = "Pruefung c, R4: 12 Back-Rufe zwischen 12:04 und 34:59, die meisten ignoriert"
 lage = "Riven nach der Lane-Phase."
-je_10min_max = { "\\bback\\b" = 3 }
-warum = "Hoechstens 3 Back-Rufe je 10 Minuten; nach einem ignorierten Back 90 s Ruhe."
+ohne_neues_max = { "\\bback\\b" = 0 }
+warum = """Auftrag 028, 2 (umgeschrieben): 'zu viel reden' ist durch Buch 15 abgeloest. Rot ist ein Back-Ruf ohne neue Info
+(derselbe Satz ohne Zahlen binnen 120 s), gruen einer mit neuem Grund. Vorher: hoechstens 3 je 10 Minuten, nach einem
+ignorierten Back 90 s Ruhe."""
 
 # --- R5: der Lane-Gegner allein ist keine Gefahr ---
 

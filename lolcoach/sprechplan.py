@@ -193,18 +193,22 @@ class Sprechplan:
         (binnen WECHSEL_S nach dem letzten gesprochenen Plan-Satz, aus welcher Quelle auch immer). Ein Kern-Plan-Satz
         mit eigenem Grund ("Drück die Bot-Welle: Ezreal ist tot") wird hoerbar: "Plan geändert: ..."."""
         try:
-            from .kern.herzschlag import WECHSEL_S, plan_ziel_von, wechsel_grund, ziele_vertraeglich
+            from .kern.herzschlag import WECHSEL_S, halte_ziel, plan_ursprung, plan_ziel_von, wechsel_grund, ziele_vertraeglich
         except Exception:
             return a.text
         z = plan_ziel_von(a)
-        if not z or wechsel_grund(a):
+        if not z:
             return a.text
-        aktiv = next(((x.gesprochen, plan_ziel_von(x)) for x in reversed(self.gesagt[-8:])
+        aktiv = next(((x.gesprochen, halte_ziel(x.text, plan_ziel_von(x)), plan_ziel_von(x)) for x in reversed(self.gesagt[-8:])
                       if x.gesprochen is not None and plan_ziel_von(x)), None)
-        if aktiv is None or zeit - aktiv[0] >= WECHSEL_S or ziele_vertraeglich(aktiv[1], z):
+        if wechsel_grund(a, aktiv[1] if aktiv is not None and zeit - aktiv[0] < WECHSEL_S else None):
             return a.text
-        if ": " in a.text and a.schluessel.startswith("kern:") and not a.schluessel.startswith("kern:PAKET_") \
-                and zeit - aktiv[0] >= 5.0:
+        if aktiv is None or zeit - aktiv[0] >= WECHSEL_S or ziele_vertraeglich(aktiv[2], z):
+            return a.text
+        if aktiv[1] != "back" and ": " in a.text and a.schluessel.startswith("kern:") \
+                and not a.schluessel.startswith("kern:PAKET_") \
+                and zeit - (plan_ursprung(sorted((x.gesprochen, plan_ziel_von(x)) for x in self.gesagt[-20:]
+                                                 if x.gesprochen is not None and plan_ziel_von(x))) or aktiv[0]) >= 5.0:
             return f"Plan geändert: {a.text}"
         return None
 

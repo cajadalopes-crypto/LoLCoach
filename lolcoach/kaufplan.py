@@ -451,10 +451,10 @@ def kaufbar(name: str, inventar, ziel: str | None = None) -> tuple[bool, str]:
     frei = PLAETZE - _belegt(inventar)
     if "Consumable" in _tags(i):
         elixier_ = i in ELIXIER.values()
-        if elixier_ and fertige(inventar) < PLAETZE:
-            # Auftrag 028, 6.2 (Carlos 134020): ein Elixier nur mit sechs fertigen Items - nie mitten im Spiel
-            return False, "Elixier erst mit sechs fertigen Items"
-        if i in inventar or frei >= 1 or elixier_:     # Auftrag 018, 4: das Kontroll-Auge braucht einen Platz
+        if elixier_ and fertige(inventar) < ELIXIER_AB_FERTIG:
+            # Auftrag 028, 6.2 (Carlos 134020): ein Elixier nur, wenn der Build fertig ist - nie mitten im Spiel
+            return False, "Elixier erst mit fertigem Build"
+        if i in inventar or frei >= 1:                 # Auftrag 018, 4: auch Elixiere brauchen einen Platz
             return True, ""
         return False, "Inventar voll"
     stiefel = "Boots" in _tags(i)
@@ -600,6 +600,10 @@ def _auffuellen(k: Kauf | None, champion_id: str, items: tuple[int, ...], gold: 
 
 
 ELIXIER_AB_LEVEL = 9
+# Auftrag 028, 6.2: "Elixiere nur mit vollem Inventar (sechs fertige Items), spaet" - und 183125 36:47 ging es mit
+# sechs Items nicht zu kaufen (es braucht einen Platz, Auftrag 018, 4). Beides zusammen: fuenf fertige Items (der
+# Build ist fertig) und ein freier Platz; sonst nie
+ELIXIER_AB_FERTIG = 5
 ELIXIER = {"Zorn": 2140, "Zauberei": 2139, "Metall": 2138}
 
 
@@ -628,7 +632,8 @@ def plan(champion_id: str, items: tuple[int, ...], gold: float, level: int | Non
     inv = tuple(int(i) for i in items)
     if k is None or not (k.kaufen or k.naechstes):
         e = ddragon.items().get(elixier(champion_id))
-        if fertige(inv) >= PLAETZE and level is not None and level >= ELIXIER_AB_LEVEL and e is not None \
+        if fertige(inv) >= ELIXIER_AB_FERTIG and PLAETZE - _belegt(inv) >= 1 and level is not None \
+                and level >= ELIXIER_AB_LEVEL and e is not None \
                 and gold >= e["gold"]["total"]:
             return Kauf(e["name"], [e["name"]], e["gold"]["total"], None)
         auge = ddragon.items().get(KONTROLLAUGE)

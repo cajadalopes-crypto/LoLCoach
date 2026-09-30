@@ -130,7 +130,12 @@ def back_gruende(m, cfg: dict) -> list[BackGrund]:
     aus = []
     # Auftrag 028, 6.2 (134020 7:55, 12:56, 13:28, 14:01 "1000 Gold für Dornenpanzer" - das Gold kaufte mehr): der
     # Back-Ruf nennt die ganze Kette, die das Gold kauft
-    kette = liste([_akk(x) for x in k.kaufen]) if k is not None and k.kaufen else ""
+    kette = ""
+    if k is not None and k.kaufen:
+        from ...kaufplan import mit_ziel
+        teile = [_akk(x) for x in k.kaufen]
+        teile[0] = mit_ziel(k.kaufen[0], getattr(k, "item", None))      # Auftrag 009, 4: Bauteil mit Ziel
+        kette = liste(teile)
     if gecrasht and not k.lohnt:
         aus.append(BackGrund("WELLE_GECRASHT", k.kosten * cfg["kauf"]["kauf_faktor"],
                              f"Welle ist drin, Kauf {kette}"))

@@ -81,7 +81,7 @@ GRUND_SCHL = ("antwort", "kern:PAKET_ABGEBROCHEN", "kern:PAKET_BUDGET_AB", "kern
               "kern:JUNGLER_NAH", "kern:VORSICHT")
 
 
-def wechsel_grund(a) -> bool:
+def wechsel_grund(a, aktiv_ziel: str | None = None) -> bool:
     """Auftrag 028, 1.1: darf dieser Satz den aktiven Plan wechseln? Gefahr (R1, neuer Gegner, Abbruch), ein echtes
     Event oder besseres Play MIT dem Grund vorn ("Plan geändert: ...", "Jetzt, wo ...", "Udyr weg: ...", ein
     Wendepunkt), oder Carlos fragt."""
@@ -89,15 +89,44 @@ def wechsel_grund(a) -> bool:
     t = (a.text or "").strip()
     if getattr(a, "thema", "") == "gefahr" or s in GRUND_SCHL or s.startswith("kern:INFO_"):
         return True
+    if aktiv_ziel == "back":
+        # ein Back-Ruf gilt (Auftrag 010, 1; Szenario 2302 "Drache drin: Farm Bot" 10 s nach "Back jetzt"): nur Gefahr
+        # oder eine Frage aendern ihn
+        return getattr(a, "_kategorie", None) == "GEFAHR" or bool(re.match(r"^\W*(stimmt\. neu|neu:)", t, re.I))
     if getattr(a, "_kategorie", None) in ("WENDEPUNKT", "GEFAHR") or getattr(a, "kategorie", None) in ("WENDEPUNKT",
                                                                                                          "GEFAHR"):
         return True
-    if re.match(r"^\W*(plan geändert|jetzt, wo|stimmt\. neu|neu:)", t, re.I):
+    if re.match(r"^\W*(los:\s*)?(plan geändert|jetzt, wo|stimmt\. neu|neu:)", t, re.I):   # auch "Los: Plan ..."
         return True
     if re.match(r"^(Sie haben|Ihr habt|Euer|Eure|Ihr|Ihre)\b[^.:]*\b(weg|genommen|down|gefallen|fällt|tot)\b", t):
         return True
     kopf = t.split(": ", 1)[0] if ": " in t else ""
     return bool(kopf) and bool(re.search(r"\b(tot|weg|gesehen|drin|down|gefallen|lebt wieder|gebackt)\b", kopf, re.I))
+
+
+SOFORT_BACK = re.compile(r"^\W*(stopp\W+)?(back jetzt|jetzt back)\b", re.I)
+
+
+def halte_ziel(text: str, ziel: str | None) -> str | None:
+    """Das Ziel, das ein Wechsel achten muss: "back" nur fuer einen sofortigen Back-Ruf ("Back jetzt: ...") - ein
+    "Welle rein, dann back" haelt nichts fest (101426 17:39, Szenario 1736)."""
+    if ziel == "back" and not SOFORT_BACK.search((text or "").split("“ – ", 1)[-1]):
+        return "back_spaeter"
+    return ziel
+
+
+def plan_ursprung(paare: list) -> float | None:
+    """Auftrag 028, 1 (102112 34:47-34:59: "Ihr Mid-Inhibitor-Turm jetzt" als Stillstand und als warum-nicht alle 5 s
+    wiederholt - der Drache des Kerns kam nie durch): seit wann der aktive Plan gilt - der erste Satz der juengsten
+    Reihe mit vertraeglichem Ziel, nicht seine letzte Wiederholung. `paare`: [(Spielzeit, Ziel)], aelteste zuerst."""
+    if not paare:
+        return None
+    t0, z0 = paare[-1]
+    for t, z in reversed(paare[:-1]):
+        if not ziele_vertraeglich(z, z0):
+            break
+        t0 = t
+    return t0
 
 
 def ziele_vertraeglich(a: str, b: str) -> bool:
@@ -285,11 +314,11 @@ def warn_satz(gesagt: list, jetzt: float) -> str | None:
     return None
 
 
-def eben_gesagt(text: str, gesagt: list, jetzt: float, fenster: float = 60.0) -> bool:
+def eben_gesagt(text: str, gesagt: list, jetzt: float, fenster: float = 60.0, letzte: int = 10) -> bool:
     """Wurde dieser Satz (sein Anfang, ohne Zahlen) in den letzten `fenster` Sekunden schon gesprochen - auch als
     Anfang eines "warum nicht"-Nachsatzes?"""
     kopf = _kern_des_satzes(text)
-    return any(_kern_des_satzes(a.text or "") == kopf for a in gesagt[-10:]
+    return any(_kern_des_satzes(a.text or "") == kopf for a in list(gesagt)[-letzte:]
                if (a.gesprochen if a.gesprochen is not None else a.zeit or -1e9) >= jetzt - fenster)
 
 
@@ -310,10 +339,29 @@ def auffrischen(kern, m, gesagt: list, fenster: float = 60.0, still: bool = Fals
         za = plan_ziel_von(a) if t is not None else None
         if za:
             if z and m.zeit - t < WECHSEL_S and not ziele_vertraeglich(za, z):
-                text = a.text.split("“ – ", 1)[-1]
+                seit = plan_ursprung(sorted((x.gesprochen, plan_ziel_von(x)) for x in list(gesagt)[-20:]
+                                            if x.gesprochen is not None and plan_ziel_von(x)))
+                if ": " in text and za != "back" and seit is not None and m.zeit - seit >= 5.0:
+                    # der Plan des Kerns hat sich mit Grund geaendert (102112 34:54 "Drache jetzt: ..." ging in der
+                    # Schlange verloren, danach wiederholte der Stillstand den alten Mid-Inhibitor-Turm): hoerbar
+                    text = f"Plan geändert: {text}"
+                else:
+                    text = _nur_positiv(a.text.split("“ – ", 1)[-1])
             break
-    if not eben_gesagt(text, gesagt, m.zeit, fenster):
-        return text
+    # (ein Back-Ruf kommt binnen 120 s nur mit Neuem wieder - 173159, Szenario back-dauerton: "Back jetzt." als Nachschub)
+    back_eben = bool(SOFORT_BACK.search(text)) and eben_gesagt(text, gesagt, m.zeit, 120.0, 40)
+    if not back_eben and not eben_gesagt(text, gesagt, m.zeit, fenster):
+        grund = text.split(": ")[0].strip().lower()
+        grund_gesagt = eben_gesagt(text, gesagt, m.zeit, LANG_S, 40) or (len(grund) >= 8 and any(
+            grund in (a.text or "").lower() for a in list(gesagt)[-40:]
+            if (a.gesprochen if a.gesprochen is not None else a.zeit or -1e9) >= m.zeit - LANG_S))
+        if not (": " in text and grund_gesagt and (k := kurzform(text))):
+            return text
+        # Auftrag 028, 2 (144655, Szenario 0137: "Gangplank ist vorn: Welle zu deinem Turm ziehen, farmen, kein
+        # Trade bis zum Axiombogen." jede Minute): der Grund ist gesagt - wieder kommt nur die Handlung
+        if not eben_gesagt(k, gesagt, m.zeit, fenster):
+            return k
+        text = k                          # auch die ist eben gesagt: weiter unten das Neue (oder "Los:")
     kopf = text.split(": ")[0].split(", ")[0].rstrip(".")
     # 1. der naechste Schritt
     danach = (getattr(kern, "danach_text", None) or "").strip().rstrip(".")
@@ -333,6 +381,24 @@ def auffrischen(kern, m, gesagt: list, fenster: float = 60.0, still: bool = Fals
         if not eben_gesagt(s, gesagt, m.zeit, fenster):
             return s
     return f"Los: {text}" if still else None
+
+
+LANG_S = 180.0      # so lange ist der Grund einer Anweisung gesagt - wiederholt wird nur die Handlung
+
+
+def kurzform(text: str) -> str | None:
+    """Die Handlung eines Satzes ohne Grund: "Gangplank ist vorn: Welle zu deinem Turm ziehen, farmen, ..." ->
+    "Welle zu deinem Turm ziehen." None: keine Handlung darin."""
+    from .sprache import vage_formen
+    if SOFORT_BACK.search(text):
+        return None                      # ein Back ohne seinen Grund ist nur Nachschub
+    for teil in text.rstrip(".").split(": "):
+        kopf = teil.split(", ")[0].strip()
+        if HANDLUNG.search(kopf):
+            k = kopf[:1].upper() + kopf[1:] + "."
+            # nie vage (Auftrag 008, A2): "Geh zur Mid-Welle." ohne Grund ist keine Anweisung - dann ganz oder nichts
+            return None if vage_formen(k) else k
+    return None
 
 
 def countdown(kern, m) -> str | None:
@@ -539,8 +605,17 @@ def aktiver_plan_satz(gesagt: list, jetzt: float, fenster: float = 60.0) -> str 
         if jetzt - t > fenster:
             break
         if plan_ziel_von(a):
-            return (a.text or "").split("“ – ", 1)[-1]
+            return _nur_positiv((a.text or "").split("“ – ", 1)[-1])
     return None
+
+
+def _nur_positiv(text: str) -> str:
+    """Der positive Teil eines gesprochenen Plan-Satzes - ohne Vorsatz ("Los:", "Plan geändert:") und ohne ein schon
+    angehaengtes "nicht zu X" (sonst "Nicht zu Tryndamere, nicht zu Tryndamere.", Szenario 2501)."""
+    t = re.sub(r"^\W*((los|plan geändert)\s*:\s*)+", "", text.strip(), flags=re.I)
+    t = " ".join(s for s in re.split(r"(?<=[.!?])\s+", t) if not re.match(r"^\W*nicht\b", s, re.I))
+    t = re.sub(r",\s*nicht zu [^.:]+(:[^.]*)?", "", t, flags=re.I).strip()
+    return t[:1].upper() + t[1:] if t else text
 
 
 def nachsatz(positiv_text: str | None, warum: str, gesagt: list = (), jetzt: float | None = None,
@@ -557,9 +632,13 @@ def nachsatz(positiv_text: str | None, warum: str, gesagt: list = (), jetzt: flo
     if jetzt is not None and eben_gesagt(pos, gesagt, jetzt):
         # dieselbe Anweisung eben erst: nur ihr Kopf, das Neue ist die abgewogene Chance (Auftrag 028, 2 - kein
         # "Bleib dabei." mehr, 091311 34:32)
-        kopf = pos.split(": ")[0].split(", ")[0]
-        return f"{kopf}, nicht zu {wer}: {grund.rstrip('.')}." if len(f"{kopf} {wer} {grund}".split()) + 2 <= grenze \
-            else f"{kopf}, nicht zu {wer}."
+        # (der Kopf muss eine Handlung sein - "Rumble weg" ist keine: 213624 9:45 wurde daraus ein 19-Wort-Satz)
+        teil = next((t for t in pos.split(": ") if HANDLUNG.search(t.split(", ")[0])), None)
+        if teil is not None:
+            kopf = teil.split(", ")[0]
+            kopf = kopf[:1].upper() + kopf[1:]
+            return f"{kopf}, nicht zu {wer}: {grund.rstrip('.')}." \
+                if len(f"{kopf} {wer} {grund}".split()) + 2 <= grenze else f"{kopf}, nicht zu {wer}."
     for s in (f"{pos}. Nicht zu {wer}: {grund.rstrip('.')}.", f"{pos}. Nicht zu {wer}."):
         if len(s.split()) <= grenze:
             return s

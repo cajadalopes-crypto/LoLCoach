@@ -41,7 +41,7 @@ zeit = "14:53"
 fenster = ["14:50", "15:10"]
 quelle = "Buch 6, 0.6: 'Nimm keinen Kampf an, ihr seid nur zu dritt: ... Gib den Herold lieber ab. Geh zurueck ...'"
 lage = """Nachgespielt: Riven L13, 26 % Leben, auf ihrer Lane, Herold in 6 s. Sett tot (13 s). Riven geht back."""
-ansagen_max = 1
+ohne_neues_max = { "." = 0 }    # Auftrag 028, 2: statt ansagen_max = 1 ("zu viel reden" ist abgeloest)
 max_woerter = 18
 darf_nicht = ["NEHMEN", "BESTREITEN", "ANLAUFEN"]
 darf_nicht_sagen = ["Nimm keinen Kampf"]

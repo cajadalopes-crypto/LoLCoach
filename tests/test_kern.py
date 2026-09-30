@@ -1139,17 +1139,18 @@ def kauf_018():
     ie = ids("Kontroll-Auge", "Überheblichkeit", "Stiefel", "Lord Dominiks Grüße", "Der Sammler", "Riesenschwert")
     g = stratege.pruefe("Kauf Klinge der Unendlichkeit, dann nach Top.", {"gold": 2412, "items": list(ie)})
     assert not g, g
-    # 35:43, 1205 Gold. Auftrag 028, 6.2 (loest 018, 4 ab): das Elixier nur mit sechs fertigen Items; mit freiem
-    # Platz und fertigem Build ein Kontroll-Auge - nie ein Elixier mitten im Spiel (134020: fuenfmal fuer Ornn)
+    # 35:43, 1205 Gold: sechs Items - nichts, auch kein Elixier (es braucht einen Platz); mit freiem Platz und
+    # fertigem Build (fuenf fertige Items) das Elixier - mitten im Spiel nie, dann ein Kontroll-Auge (Auftrag 028, 6.2)
     voll = inv + ids("Schildbogen der Unsterblichkeit")
-    assert kaufplan.plan("Graves", voll, 1205, 18).kaufen == ["Elixier des Zorns"]
-    assert kaufplan.plan("Graves", voll, 1205, 8) is None                        # erst ab Level 9
+    assert kaufplan.plan("Graves", voll, 1205, 18) is None
     alt = kaufplan._plan
     try:
         kaufplan._plan = lambda *a: None                   # Build fertig, ein Platz frei
-        assert kaufplan.plan("Graves", inv, 1205, 18).kaufen == ["Kontroll-Auge"]
+        assert kaufplan.plan("Graves", inv, 1205, 18).kaufen == ["Elixier des Zorns"]
+        assert kaufplan.plan("Graves", inv, 1205, 8).kaufen == ["Kontroll-Auge"]  # Elixier erst ab Level 9
+        assert kaufplan.plan("Graves", inv[:3], 1205, 18).kaufen == ["Kontroll-Auge"]   # mitten im Spiel nie
         assert kaufplan.plan("Graves", inv, 50, 18) is None
-        assert kaufplan.plan("Lux", voll, 1205, 18).kaufen == ["Elixier der Zauberei"]
+        assert kaufplan.plan("Lux", inv, 1205, 18).kaufen == ["Elixier der Zauberei"]
     finally:
         kaufplan._plan = alt
 
@@ -1439,7 +1440,9 @@ def ein_plan_028():
     herz = Ansage("Geh zu deiner Top-Welle und farm sie.", WICHTIG, "kern:PAKET_HERZ", zeit=103.0)
     assert sp._ein_plan(herz, 103.0) is None
     drueck = Ansage("Drück ihren inneren Mid-Turm: Level 14 gegen 10.", WICHTIG, "kern:DRUECKEN", zeit=107.0)
-    assert sp._ein_plan(drueck, 107.0) == "Plan geändert: Drück ihren inneren Mid-Turm: Level 14 gegen 10."
+    assert sp._ein_plan(drueck, 107.0) is None               # "Back jetzt" gilt: nur Gefahr oder Frage (2302)
+    sp.gesagt.append(Ansage("Farm deine Top-Welle.", WICHTIG, "kern:PAKET_HERZ", zeit=121.0, gesprochen=121.0))
+    assert sp._ein_plan(drueck, 127.0) == "Plan geändert: Drück ihren inneren Mid-Turm: Level 14 gegen 10."
     assert sp._ein_plan(herz, 125.0) == herz.text                                  # nach 20 s ein neuer Plan
     # 1.3: kein Doppel binnen 10 s aus beliebiger Quelle (231200 22:00: "Raus jetzt, nach Top." alle 4 s)
     sp.gesagt.append(Ansage("Raus jetzt, nach Top.", WICHTIG, "kern:PAKET_STILL", zeit=130.0, gesprochen=130.0))

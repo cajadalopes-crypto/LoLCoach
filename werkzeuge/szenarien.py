@@ -20,7 +20,9 @@ Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes
                             positive Anweisung), negativ_allein_max, hin_und_her_max (Plan-Saetze mit anderem Ziel
                             in < 5 s), satz_pruefen = ["..."] + verwerfen = true|false (stratege.pruefe zur `zeit`);
                             seit Auftrag 028: antwort_sprechen = ["..."] (eine Antwort geht zur `zeit` an die
-                            Stimme - was gesprochen wird, hat keinen Sicherheitsgrund)
+                            Stimme - was gesprochen wird, hat keinen Sicherheitsgrund), ohne_neues_max = { "muster" =
+                            n } (hoechstens n Saetze mit dem Muster, die im Fenster schon so zu hoeren waren - ohne
+                            Zahlen gleich; ersetzt die Zaehl-Grenzen fuer "zu viel reden", Buch 15)
   Datei:                    spielmodus = "CLASSIC" | "SWIFTPLAY" (Vorgabe CLASSIC) - muss zum gameMode der Aufnahme
                             passen, sonst rot (Qualitaetsrunde 2, G6: 133930 und 140253 sind Swiftplay)
   Kern (Modus, Plan-Art):   modus und [[modus_soll]] ab Schritt 2 (irgendein Takt in zeit +-2 s hat einen der
@@ -117,6 +119,18 @@ def fassung(text: str) -> str:
     return t.split(":", 1)[0].strip().lower()
 
 
+OHNE_NEUES_S = 120.0     # so lange ist ein Satz "eben gesagt" - danach ist dieselbe Lage eine neue
+
+
+def ohne_neues_kern(text: str) -> str:
+    """Auftrag 028, 2: der Satz ohne Vorsatz ("Plan geändert:"), Zahlen und Satzzeichen - gleich heisst: nichts
+    Neues ("Back jetzt: 1500 Gold im Beutel" und "Back jetzt: 1600 Gold im Beutel")."""
+    # ("Los:" bleibt - er steht, das ist neu; wie im Doppel-Tor des Sprechplans)
+    t = re.sub(r"^\W*((plan geändert|ach nee)\s*:\s*)+", "", text.strip(), flags=re.I).lower()
+    t = re.sub(r"\d+|\b(eins|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf)\b", "", t)
+    return " ".join(re.findall(r"[a-zäöüß]+", t))
+
+
 def gold_verstoesse(a) -> list[str]:
     """gold_reicht: "N Gold fuer ITEM" - das Item kostet (abzueglich der Bauteile, die du hast) hoechstens N."""
     from lolcoach import kaufplan
@@ -193,6 +207,20 @@ def neue_pruefungen(sz: dict, ansagen: list, stehend: tuple | None = None) -> li
         treffer = [t for t in texte if re.search(muster, t, re.I)]
         if len(treffer) > n:
             aus.append(f"text_max '{muster}' {n} - {len(treffer)}: " + " / ".join(t[:45] for t in treffer))
+    # Auftrag 028, 2: "zu viel reden" ist durch Buch 15 abgeloest ("nerv nicht" hat geschadet) - rot ist nur ein Satz
+    # ohne neue Info: derselbe Satz (ohne Zahlen, ohne "Los:") war im Fenster schon zu hoeren
+    for muster, n in (sz.get("ohne_neues_max") or {}).items():
+        gesehen, alt = {}, []
+        for a in ansagen:
+            t, zeit = a.text, ns.gesprochen_um(a)
+            if not re.search(muster, t, re.I):
+                continue
+            k = ohne_neues_kern(t)
+            if k in gesehen and zeit - gesehen[k] <= OHNE_NEUES_S:
+                alt.append(t)
+            gesehen[k] = zeit
+        if len(alt) > n:
+            aus.append(f"ohne_neues_max '{muster}' {n} - {len(alt)} ohne neue Info: " + " / ".join(t[:45] for t in alt))
     # Qualitaetsrunde 3: hoechstens n Treffer in jedem 10-Minuten-Fenster (R4: "hoechstens 3 Back-Rufe je 10 Minuten")
     for muster, n in (sz.get("je_10min_max") or {}).items():
         zeiten = sorted(ns.gesprochen_um(a) for a in ansagen if re.search(muster, a.text, re.I))
@@ -474,7 +502,7 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                         verstoesse.append(f"ansagen_max {sz['ansagen_max']} - {len(zaehlt)}: "
                                           + " / ".join(f"{ns.uhr(t)} {s[:40]}" for t, s in zaehlt))
                 if any(k in sz for k in ("ziele_max", "satz_mit", "fassung_einmal", "woerter_max", "gold_reicht",
-                                         "text_max", "planwechsel_max", "max_woerter", "alte_regeln_max",
+                                         "text_max", "ohne_neues_max", "planwechsel_max", "max_woerter", "alte_regeln_max",
                                          "je_10min_max", "kategorie_max", "kategorie_min", "sprache_konkret",
                                          "positiv_abstand_max", "negativ_allein_max", "hin_und_her_max")):
                     geprueft += 1

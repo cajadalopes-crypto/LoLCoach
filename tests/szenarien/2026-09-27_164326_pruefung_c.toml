@@ -60,8 +60,10 @@ id = "back-dauerton"
 fenster = ["25:00", "40:00"]
 quelle = "Pruefung c, R4: 11 Back-Rufe zwischen 25:27 und 39:49"
 lage = "Riven nach der Lane-Phase."
-je_10min_max = { "\\bback\\b" = 3 }
-warum = "Hoechstens 3 Back-Rufe je 10 Minuten."
+ohne_neues_max = { "\\bback\\b" = 0 }
+warum = """Auftrag 028, 2 (umgeschrieben): 'zu viel reden' ist durch Buch 15 abgeloest ("nerv nicht" hat geschadet). Rot ist
+ein Back-Ruf ohne neue Info (derselbe Satz ohne Zahlen binnen 120 s), gruen einer mit neuem Grund. Vorher: hoechstens 3 je
+10 Minuten."""
 
 # --- R5 ---
 

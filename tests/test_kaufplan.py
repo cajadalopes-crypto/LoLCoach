@@ -118,9 +118,11 @@ def kaufbar_drei_regeln():
     """Soll 3: Platz frei oder eigene Bauteile verbraucht; nicht schon im Inventar; baut ins Ziel ein."""
     voll = inv("Tanz des Todes", "Axiombogen", "Eklipse", "Seryldas Bitterkeit", "Schutzengel", "Gefräßige Hydra")
     assert kaufplan.kaufbar("Langschwert", voll) == (False, "Inventar voll, und es verbraucht keine eigenen Bauteile")
-    # Auftrag 028, 6.2 (loest 018, 4 ab): ein Elixier nur mit sechs fertigen Items - dann ja, vorher nie
-    assert kaufplan.kaufbar("Elixier des Zorns", voll)[0]
-    assert not kaufplan.kaufbar("Elixier des Zorns", voll[:5])[0]
+    # Auftrag 018, 4: das Elixier liegt bis zum Trinken im Inventar (183125 36:47 ging es mit sechs Items nicht zu
+    # kaufen); Auftrag 028, 6.2: und nur mit fertigem Build (fuenf fertige Items), nie mitten im Spiel
+    assert not kaufplan.kaufbar("Elixier des Zorns", voll)[0]
+    assert kaufplan.kaufbar("Elixier des Zorns", voll[:5])[0]
+    assert not kaufplan.kaufbar("Elixier des Zorns", voll[:3])[0]
     mit_teil = inv("Endloser Hunger", "Axiombogen", "Vampirisches Zepter", "Riesenschwert",
                    "Ionische Stiefel der Deutlichkeit", "Gottlose Hydra")
     assert kaufplan.kaufbar("Schutzengel", mit_teil) == (True, "")                 # verbraucht das Riesenschwert

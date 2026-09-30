@@ -482,10 +482,10 @@ class Kern:
         # Stratege, Antwort). Ein anderes Ziel binnen WECHSEL_S nur mit Grund (Gefahr, Event vorn, Frage); ein Kern-
         # Plan-Satz mit eigenem Grund (": ...") wird hoerbar als "Plan geändert: ..."; sonst entfaellt der Satz.
         # Das gilt auch fuer Wendepunkte - sie tragen ihr Ereignis vorn und sind damit begruendet.
-        from .herzschlag import WECHSEL_S, plan_ziel_von, wechsel_grund, ziele_vertraeglich
+        from .herzschlag import WECHSEL_S, halte_ziel, plan_ziel_von, wechsel_grund, ziele_vertraeglich
         # (nur Gesprochenes zaehlt, dazu dieser Takt - ein erzeugter, aber nie gesprochener Satz ist kein Plan:
         # 091311 13:21 hielt ein ungesprochenes "Drache" den Herzschlag 20 s fern)
-        letzte = [(a.gesprochen, plan_ziel_von(a)) for a in gesagt[-8:] if a.gesprochen is not None]
+        letzte = [(a.gesprochen, plan_ziel_von(a), a.text) for a in gesagt[-8:] if a.gesprochen is not None]
         letzte = [x for x in letzte if x[1]]
         for a in list(aus):
             z = plan_ziel_von(a)
@@ -493,10 +493,13 @@ class Kern:
                 continue
             aktiv = max(letzte, key=lambda x: x[0], default=None)
             if aktiv is not None and m.zeit - aktiv[0] < WECHSEL_S and not ziele_vertraeglich(aktiv[1], z) \
-                    and not wechsel_grund(a):
-                eigener_grund = ": " in (a.text or "") and a.schluessel.startswith("kern:") \
+                    and not wechsel_grund(a, halte_ziel(aktiv[2], aktiv[1])):
+                eigener_grund = halte_ziel(aktiv[2], aktiv[1]) != "back" and ": " in (a.text or "") and a.schluessel.startswith("kern:") \
                     and not a.schluessel.startswith("kern:PAKET_")
-                if eigener_grund and m.zeit - aktiv[0] >= 5.0:
+                from .herzschlag import plan_ursprung
+                seit = plan_ursprung(sorted((a_.gesprochen, plan_ziel_von(a_)) for a_ in gesagt[-20:]
+                                            if a_.gesprochen is not None and plan_ziel_von(a_)))
+                if eigener_grund and m.zeit - (seit if seit is not None else aktiv[0]) >= 5.0:
                     a.text = f"Plan geändert: {a.text}"
                 else:
                     aus.remove(a)
@@ -504,7 +507,7 @@ class Kern:
                         self.herzschlag.verworfen()   # nicht gesagt - der Herzschlag versucht es im naechsten Takt
                     continue
             self._letzt_ziel = (m.zeit, z)
-            letzte.append(self._letzt_ziel)
+            letzte.append((m.zeit, z, a.text))
         self._modus_vorher = modus
         return aus
 
@@ -553,8 +556,31 @@ class Kern:
                 # 53 %), aber kurz: nur der Kopf der Anweisung, hoechstens 8 Woerter (Kampf-Rufe, Szenario 2501/2631)
                 grenze = 8 if nah else self.cfg["sprechen"]["max_woerter"]
                 # (die positive Haelfte ist der EINE aktive Plan - der zuletzt gesprochene; sonst die Vorlage)
-                from .herzschlag import aktiver_plan_satz
-                v = aktiver_plan_satz(gesagt, m.zeit) or vorlage(self, m)
+                from .herzschlag import WECHSEL_S, aktiver_plan_satz
+                v, v_kern = aktiver_plan_satz(gesagt, m.zeit, WECHSEL_S), vorlage(self, m)
+                from .herzschlag import plan_ziel_von as _pz, ziele_vertraeglich as _zv
+                from types import SimpleNamespace as _NS
+                z_a, z_k = (_pz(_NS(schluessel="kern:PAKET_HERZ", text=x)) if x else None for x in (v, v_kern))
+                t_akt = max((x.gesprochen for x in gesagt[-10:] if x.gesprochen is not None and _pz(x)), default=None)
+                kz = getattr(self, "_kern_ziel", (None, -1e9))
+                if z_k and (kz[0] is None or not _zv(kz[0], z_k)):
+                    self._kern_ziel = kz = (z_k, m.zeit)          # seit wann der Kern dieses Ziel will
+                if z_a and z_k and not _zv(z_a, z_k) and t_akt is not None and kz[1] > t_akt:
+                    # der Kern hat seinen Plan NACH dem letzten gesprochenen geaendert (102112 34:53: noch "Ihr
+                    # Mid-Inhibitor-Turm", der Kern war beim Drachen) - mit Grund hoerbar, sonst kein Nachsatz
+                    from .herzschlag import plan_ursprung
+                    seit = plan_ursprung(sorted((x.gesprochen, _pz(x)) for x in gesagt[-20:]
+                                                if x.gesprochen is not None and _pz(x)))
+                    import re as _re_
+                    if _re_.search(r": |, (sonst|weil|denn) ", v_kern) and seit is not None \
+                            and m.zeit - seit >= 5.0 and m.zeit - t_akt >= 5.0:
+                        v = f"Plan geändert: {v_kern}"
+                    else:
+                        v = None
+                    v_kern = None
+                if v is None and v_kern is None and not (t_akt is not None and kz[1] > t_akt):
+                    v = aktiver_plan_satz(gesagt, m.zeit)     # der Kern hat keine Vorlage: der Plan bis 60 s
+                v = v or v_kern
                 if nah and v:
                     v = v.split(": ")[0].split(", ")[0]
                 if (s := nachsatz(v, w, gesagt, m.zeit, grenze)) is not None:

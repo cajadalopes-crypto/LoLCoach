@@ -201,7 +201,7 @@ def hoeren(d: dict, gesagt: list | None = None) -> dict:
         hin += t2 - t1 < 5.0 and not ziele_vertraeglich(z1, z2)
     # Auftrag 028, 1.5: Widerspruch - ein Planwechsel ohne Grund (Gefahr, Event vorn, Frage) binnen 20 s nach dem
     # letzten Plan-Satz; dieselbe Grund-Erkennung wie die Regel im Kern (herzschlag.wechsel_grund)
-    from lolcoach.kern.herzschlag import WECHSEL_S, wechsel_grund
+    from lolcoach.kern.herzschlag import WECHSEL_S, halte_ziel, wechsel_grund
     wid = []
     aktiv = None
     for s in g:
@@ -210,7 +210,7 @@ def hoeren(d: dict, gesagt: list | None = None) -> dict:
         if not z:
             continue
         if aktiv is not None and s["t"] - aktiv[0] < WECHSEL_S and not ziele_vertraeglich(aktiv[1], z) \
-                and not wechsel_grund(a):
+                and not wechsel_grund(a, halte_ziel(aktiv[2], aktiv[1])):
             wid.append((round(s["t"]), aktiv[2][:40], s["text"][:50]))
         aktiv = (s["t"], z, s["text"])
     # Auftrag 028, 2: Fuellsaetze - nackte Bestaetigungen und Entschuldigungen (ohne naechsten Schritt)

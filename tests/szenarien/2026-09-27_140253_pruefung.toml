@@ -12,7 +12,7 @@ fenster = ["8:00", "8:40"]
 quelle = "Pruefung D: 8:01 'Raus: Brand kommt' -> 8:06 'Jetzt back' -> 8:15 'Bleib an: Brand und Yasuo' -> 8:31 'Denk dran: Bleib ...', tot 8:43"
 lage = "Riven 56 -> 33 % an ihrem Mid-Tier-1-Turm, Brand und Yasuo kommen."
 darf_nicht_sagen = ["Jetzt back", "Back jetzt", "Denk dran"]
-ansagen_max = 2
+ohne_neues_max = { "." = 0 }    # Auftrag 028, 2: statt ansagen_max = 2 ("zu viel reden" ist abgeloest)
 warum = """'Jetzt back' ist verboten, solange ein sichtbarer Gegner dich waehrend des Kanals (8 s) erreicht (Buch 3,
 2.2). 'Denk dran' nie in GEFAHR - wer in Gefahr ist, braucht die Handlung."""
 

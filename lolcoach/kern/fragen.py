@@ -692,7 +692,12 @@ def _antwort(kern, a: str, frage: str, p, lagebild, zeit: float, wiederholt: boo
     if a == "KAUF":
         k = getattr(m.b, "kauf", None) if m is not None and m.b is not None else None
         if k is not None and k.kaufen:
-            return _kauf_antwort(kern, m, k, h, zeit), h
+            text = _kauf_antwort(kern, m, k, h, zeit)
+            if re.search(r"kein(en)? platz|inventar (ist )?voll", f) and not k.verkaufen:
+                # Auftrag 028, 6.4: zuerst die Frage - der Kauf passt ohne Verkauf (213624 10:12 mit den Stiefeln
+                # der zweiten Stufe, die die einfachen ersetzen)
+                text = f"Passt ohne Verkauf: {text[:1].lower()}{text[1:]}"
+            return text, h
         if k is not None and getattr(k, "naechstes", None):
             item, fehlt = k.naechstes
             return f"Noch {fehlt} Gold bis {item}: erst farmen, dann back.", h
