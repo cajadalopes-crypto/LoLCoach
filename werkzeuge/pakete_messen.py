@@ -29,9 +29,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 TESTPARTIEN = ("2026-09-28_101426", "2026-09-28_192113", "2026-09-29_133448", "2026-09-29_183125",
-               "2026-09-26_125902", "2026-09-26_164809", "2026-09-26_120049", "2026-09-29_231200", "2026-09-30_091311")
+               "2026-09-26_125902", "2026-09-26_164809", "2026-09-26_120049", "2026-09-29_231200", "2026-09-30_091311",
+               "2026-09-30_134020")
+# Auftrag 028, 5 (Sparprotokoll): waehrend der Arbeit nur diese drei, alle erst am Ende
+ARBEIT = ("2026-09-30_091311", "2026-09-30_134020", "2026-09-29_231200")
 WICHTIG = ("OBJ_BALD", "OBJ_DA", "TURM_FAELLT", "FLASH_WEG", "TP_WEG", "LANE_WEG", "KAMPF")
-AUS = Path(__file__).resolve().parent.parent / "buecher" / "protokolle" / "proben" / "pakete_027"   # 025/026: pakete_025/026
+AUS = Path(__file__).resolve().parent.parent / "buecher" / "protokolle" / "proben" / "pakete_028"   # 025-027: pakete_0NN
 
 
 def _lauf(stamm: str) -> dict:
@@ -90,8 +93,8 @@ def _lauf(stamm: str) -> dict:
 
     t0 = time.monotonic()
     lauf = ns.durchspielen(ns.pfad_zu(stamm), beim_takt=bt)
-    gesagt = [{"t": round(ns.gesprochen_um(a), 1), "text": a.text, "schl": a.schluessel, "thema": a.thema}
-              for a in lauf.gesagt]
+    gesagt = [{"t": round(ns.gesprochen_um(a), 1), "text": a.text, "schl": a.schluessel, "thema": a.thema,
+               "kat": getattr(a, "_kategorie", None)} for a in lauf.gesagt]
     return {"stamm": stamm, "takte": takte, "events": events, "pakete": pakete, "gesagt": gesagt,
             "dauer_s": round(time.monotonic() - t0)}
 
@@ -182,9 +185,37 @@ def hoeren(d: dict, gesagt: list | None = None) -> dict:
     plan_s = [(t, z) for t, z in plan_s if z]
     for (t1, z1), (t2, z2) in zip(plan_s, plan_s[1:]):
         hin += t2 - t1 < 5.0 and not ziele_vertraeglich(z1, z2)
+    # Auftrag 028, 1.5: Widerspruch - ein Planwechsel ohne Grund (Gefahr, Event vorn, Frage) binnen 20 s nach dem
+    # letzten Plan-Satz; dieselbe Grund-Erkennung wie die Regel im Kern (herzschlag.wechsel_grund)
+    from lolcoach.kern.herzschlag import WECHSEL_S, wechsel_grund
+    wid = []
+    aktiv = None
+    for s in g:
+        a = NS(schluessel=s["schl"], text=s["text"], thema=s.get("thema") or "", kategorie=s.get("kat"))
+        z = plan_ziel_von(a)
+        if not z:
+            continue
+        if aktiv is not None and s["t"] - aktiv[0] < WECHSEL_S and not ziele_vertraeglich(aktiv[1], z) \
+                and not wechsel_grund(a):
+            wid.append((round(s["t"]), aktiv[2][:40], s["text"][:50]))
+        aktiv = (s["t"], z, s["text"])
+    # Auftrag 028, 2: Fuellsaetze - nackte Bestaetigungen und Entschuldigungen (ohne naechsten Schritt)
+    fuell = [s for s in g if FUELL.match(s["text"].split("“ – ", 1)[-1] if s["schl"] == "antwort" else s["text"])]
+    # Auftrag 028, 6.5: "Kanone" hoechstens 1 Nennung je 90 s Spielzeit
+    dauer = max((x["t"] for x in takte), default=0.0) - START_S
+    kanone = sum(1 for s in g if "kanone" in s["text"].lower() and s["schl"] != "antwort")
     return {"luecke_p90": round(p90, 1), "luecke_max": round(max(lsort) if lsort else 0.0, 1),
             "still": [still_ok, still_n], "basis": [basis_ok, basis_n], "negativ": len(neg), "hin_her": hin,
-            "negativ_beispiele": [s["text"][:70] for s in neg[:3]]}
+            "negativ_beispiele": [s["text"][:70] for s in neg[:3]],
+            "widerspruch": len(wid), "widerspruch_beispiele": wid[:4], "fuell": [len(fuell), len(g)],
+            "fuell_beispiele": [s["text"][:50] for s in fuell[:3]],
+            "kanone": [kanone, round(max(dauer, 1.0) / 90.0, 1)]}
+
+
+# nackt bestaetigen oder entschuldigen, ohne Schritt danach ("Bleib dabei, Kanone in 18 Sekunden." zaehlt mit)
+FUELL = __import__("re").compile(r"^\W*(bleib dabei|weiter so|mach weiter|genau so|gut so|passt|okay|mein fehler|"
+                                 r"tut mir leid|sorry|entschuldig\w*)\b(?![^.]*\b(dann|danach)\b)[^.]*\.?\s*$",
+                                 __import__("re").I)
 
 
 def _quote(ja: int, n: int) -> str:
@@ -321,7 +352,7 @@ def auswerten(d: dict) -> dict:
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    staemme = args or list(TESTPARTIEN)
+    staemme = args or list(ARBEIT if "--arbeit" in sys.argv else TESTPARTIEN)
     AUS.mkdir(parents=True, exist_ok=True)
     from concurrent.futures import ProcessPoolExecutor
     t0 = time.monotonic()
@@ -350,9 +381,13 @@ def main() -> None:
         summe["negativ"] = summe.get("negativ", 0) + h["negativ"]
         summe["hin_her"] = summe.get("hin_her", 0) + h["hin_her"]
         summe.setdefault("luecken", []).append((h["luecke_p90"], h["luecke_max"]))
+        summe.setdefault("widerspruch", []).append(h["widerspruch"])
+        summe["fuell"] = [a + b for a, b in zip(summe.get("fuell", [0, 0]), h["fuell"])]
+        summe.setdefault("kanone", []).append(round(h["kanone"][0] / h["kanone"][1], 2))
         print(f"{r['stamm']}: HOEREN Luecke p90 {h['luecke_p90']} s / max {h['luecke_max']} s, Stillstand "
               f"{_quote(*h['still'])}, Basis {_quote(*h['basis'])}, negativ allein {h['negativ']}, hin und her "
-              f"{h['hin_her']}", flush=True)
+              f"{h['hin_her']}, Widerspruch {h['widerspruch']}, Fuellsaetze {_quote(*h['fuell'])}, Kanone "
+              f"{h['kanone'][0]} in {h['kanone'][1]} x 90 s", flush=True)
         print(f"{r['stamm']}: Abdeckung {r['abdeckung']} (angesagt {r['abdeckung_gesagt']}), Abbruch {r['abbruch']}, "
               f"Budget {r['budget']}, Back {r['back']}, Chancen {r['chancen']}, Events {r['events']}, "
               f"Pakete {r['pakete_n']}", flush=True)
@@ -363,7 +398,9 @@ def main() -> None:
          "erahnt": {k: _quote(j, n) for k, (n, j) in erahnt.items()},
          "hoeren": {"luecke_p90_max": max(p for p, _ in summe["luecken"]), "luecke_max": max(x for _, x in summe["luecken"]),
                     "stillstand": _quote(*summe["still"]), "basis": _quote(*summe["basis"]),
-                    "negativ_allein": summe["negativ"], "hin_und_her": summe["hin_her"]}}
+                    "negativ_allein": summe["negativ"], "hin_und_her": summe["hin_her"],
+                    "widerspruch_je_partie": summe["widerspruch"], "fuellsaetze": _quote(*summe["fuell"]),
+                    "kanone_je_90s_max": max(summe["kanone"])}}
     print("GESAMT:", json.dumps(g, ensure_ascii=False), f"({time.monotonic() - t0:.0f} s)")
     (AUS / "ergebnis.json").write_text(json.dumps({"gesamt": g, "je_partie": ergebnisse}, ensure_ascii=False, indent=1),
                                        encoding="utf-8")

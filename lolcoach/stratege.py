@@ -168,7 +168,27 @@ VOR_VERNEINT_DANACH = _re.compile(r"^\W*(\w+\W+){0,4}(nicht|verboten|zu riskant|
 INNERE = _re.compile(r"\bR[12]\b|\bEV\b|p_tod|todesrisiko\W+(\w+\W+){0,3}\d|\b\d[.,]\d\d\b|\bkerns?\b|kandidat|"
                      r"gesperrt|\bmodell\b|hysterese|\bwert [+-]?\d|"
                      # Auftrag 019: Haiku sagte "Der Entwurf passt nicht" (Nachspiel 101426, fuenfmal)
-                     r"\bentwurf", _re.I)
+                     r"\bentwurf|"
+                     # Auftrag 028, 1.4: interne Etiketten nach "Jetzt, wo" ("Jetzt, wo Plan: ...", "Jetzt, wo
+                     # Wendepunkt: ...", "Jetzt, wo du gefragt hast: ..."), und keine Entschuldigungen (1.2)
+                     r"jetzt, wo (plan|wendepunkt|leerlauf|fenster|objective|anlass|du gefragt hast)\b|"
+                     r"mein fehler|tut mir leid|entschuldig", _re.I)
+ENTSCHULDIGUNG = _re.compile(r"^\W*(mein fehler|tut mir leid|sorry|entschuldig\w*( bitte)?|du hast recht|"
+                              r"stimmt,? du hast recht)\W*[.!,–-]*\s*", _re.I)
+
+
+def ohne_entschuldigung(s: str, erster: bool = True) -> str:
+    """Auftrag 028, 1.2 (091311 21:03-21:30: "Mein Fehler.", "Tut mir leid."): keine Entschuldigung - eine Korrektur
+    beginnt mit "Stimmt. Neu:". Ein Satz, der NUR aus der Entschuldigung besteht, entfaellt."""
+    if not s or not (m := ENTSCHULDIGUNG.match(s)):
+        return s
+    rest = s[m.end():].strip()
+    if not rest:
+        return ""
+    rest = rest[:1].upper() + rest[1:]
+    return f"Stimmt. Neu: {rest}" if erster and not rest.lower().startswith(("stimmt", "neu")) else rest
+
+
 ENTWARNUNG = _re.compile(r"kein(e|en)? (gank-?)?(risiko|gefahr|sorge)|keine angst|weit weg|in seiner (basis|base)|"
                          r"in der (basis|base)|ist eh (in|im|weg)|steht (eh |noch |gerade )?(in|im) (seiner|der) (basis|base)|"
                          r"\bsafe\b|\bsicher\b", _re.I)

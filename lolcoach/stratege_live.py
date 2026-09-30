@@ -229,6 +229,9 @@ class AufzeichnungsStub:
 # --- Auftrag 017, 1.5: ein aktiver Plan -----------------------------------------------------------------------------
 
 AENDERUNG_S = 30.0          # innerhalb dieser Zeit aendert sich der Plan nur nach einer echten Lageaenderung
+# Auftrag 028, 1.4: interne Etiketten der Anlaesse - nie nach "Jetzt, wo" gesprochen
+INTERNES_ETIKETT = _re.compile(r"^(Plan|Wendepunkt|Leerlauf|Fenster|Objective|Timer|Lane|Makro|Anlass|Respawn|"
+                               r"Ankunft in der Basis|Aus der Basis)\s*:\s*", _re.I)
 WIEDERHOLUNG_S = 60.0       # derselbe Plan wird fruehestens danach noch einmal gesagt
 NUR_INFO = ("kern:INFO_", "kern:PAKET_", "kern:VORSICHT", "kern:technik", "kern:LAGEBILD", "tod", "briefing", "antwort")
 ZIELE = (
@@ -280,12 +283,28 @@ class Schiedsrichter:
         self.gilt = None          # Auftrag 024, 2: (Ereignistext) -> bool, "Xerath tot ist" nur, solange er tot ist
 
     def ereignis(self, zeit: float, was: str | None) -> None:
-        if not was:
+        # Auftrag 028, 1.4 (091311 20:19 "Jetzt, wo Plan: Welle gerettet", 22:30 "Jetzt, wo Plan: Farm deine
+        # Top-Welle"): interne Etiketten sind kein Ereignis - abgeschnitten; bleibt nur ein Etikett, gibt es keins
+        while was and (m := INTERNES_ETIKETT.match(was)):
+            was = was[m.end():].strip()
+        if not was or ":" in was or (was != "du gefragt hast" and was.split()[0].lower() in KEIN_EREIGNIS_KOPF):
             return                # Auftrag 024, 5.4: kein Ereignis ("Aus der Basis aufgetaucht ist")
         if self.ereignisse and self.ereignisse[-1][1] == was and zeit - self.ereignisse[-1][0] < 5.0:
             return
         self.ereignisse.append((zeit, was))
         del self.ereignisse[:-20]
+
+    def beobachte(self, gesagt: list) -> None:
+        """Auftrag 028, 1: EIN aktiver Plan fuer alle Quellen - auch Herzschlag, Pakete und Antworten setzen ihn, wenn
+        sie gesprochen sind (vorher sah der Schiedsrichter nur, was durch ihn lief: 16:03 "zu Yorick", 3 s spaeter
+        "drueck den inneren Top-Turm")."""
+        for a in list(gesagt)[-6:]:
+            t = a.gesprochen if a.gesprochen is not None else None
+            if t is None or (self.aktiv is not None and t <= self.aktiv[1]):
+                continue
+            z = plan_ziel(a.text or "")
+            if z is not None and z != "zurueck" and not (a.text or "").startswith(("Kauf", "Verkauf", "Du lebst")):
+                self.aktiv = (z, t, a.text)
 
     def setze(self, text: str, zeit: float) -> None:
         z = plan_ziel(text)
@@ -313,8 +332,12 @@ class Schiedsrichter:
         neu = [e for e in self.ereignisse if e[0] > a[1] - 0.5 and (self.gilt is None or self.gilt(e[1]))]
         if not neu:
             return self._weg(text, zeit, f"Planwechsel {a[0]} -> {z} nach {int(alter)} s ohne Lageänderung")
-        if not _re.match(r"^\W*(jetzt|da |nachdem|weil|zwei|drei|vier|ihr|euer|eure|die|der|das|du lebst|"
-                         r"[A-ZÄÖÜ][\w'’]+ (ist|sind|hat|war|oben|unten|tot|weg|gesehen|zurück))", text, _re.I):
+        if neu[-1][1] == "du gefragt hast":
+            # Auftrag 028, 1.2/1.4: auf eine Frage kein "Jetzt, wo du gefragt hast:" - eine Korrektur heisst "Neu:"
+            if not _re.match(r"^\W*(stimmt|neu|ja|nein)\b", text, _re.I):
+                text = f"Neu: {text}"
+        elif not _re.match(r"^\W*(jetzt|da |nachdem|weil|zwei|drei|vier|ihr|euer|eure|die|der|das|du lebst|plan geändert|"
+                           r"[A-ZÄÖÜ][\w'’]+ (ist|sind|hat|war|oben|unten|tot|weg|gesehen|zurück))", text, _re.I):
             text = f"Jetzt, wo {neu[-1][1]}: {text}"       # gross bleibt gross ("Herold", 183125 14:43)
         self.aktiv = (z, zeit, text)
         return True, text, None
@@ -533,6 +556,7 @@ class MakroStratege:
                 return
             s = " ".join(f"{halb[0]} {s}".replace("**", "").split())    # Auftrag 023: kein Markdown ("**Nein**")
             halb[0] = ""
+            s = stratege.ohne_entschuldigung(s, erster=not gut)   # Auftrag 028, 1.2: "Mein Fehler." -> "Stimmt. Neu:"
             if not s or erster_verworfen[0] or v["nichts"]:
                 return
             if not gut and NICHTS.match(s):
@@ -637,7 +661,11 @@ class MakroStratege:
             if kette else "") + (
             # Auftrag 023, 3: 30 von 52 Widerspruechen in 021 betrafen Antworten
             "\nDeine Antwort bestaetigt den AKTIVEN PLAN - oder aendert ihn ausdruecklich mit dem Grund zuerst "
-            "('Jetzt, wo ...: ...'). Keine zweite Empfehlung daneben.")
+            "('Jetzt, wo ...: ...'). Keine zweite Empfehlung daneben."
+            # Auftrag 028, 1.2 und 6.4 (134020 2:29 "Soll ich teleporten oder laufen?" bekam eine Kauf-Kette)
+            "\nBeantworte ZUERST genau die Frage: ja oder nein bzw. die gefragte Wahl, mit Grund, in einem Satz. "
+            "Erst danach der Plan. Keine Entschuldigung; hattest du unrecht, beginne mit 'Stimmt. Neu:'. "
+            "Hat der Spieler etwas abgelehnt (SPERREN), empfiehl es nicht wieder.")
         a = self.schiedsrichter.aktiv
         if entwurf is None and a is not None and p.zeit - a[1] <= WIEDERHOLUNG_S:
             danach = getattr(self.kern, "danach_text", None)
@@ -678,6 +706,7 @@ class MakroStratege:
             return ansagen
         self._zeit = p.zeit
         self._p = p
+        self.schiedsrichter.beobachte(getattr(self.plan, "gesagt", None) or [])     # Auftrag 028, 1: ein Plan
         anlass = self._anlass(p, ansagen)
         if not self.bereit():
             return self._richte(ansagen, p)

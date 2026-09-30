@@ -1403,6 +1403,60 @@ def herz_027():
         herzschlag.ende_satz = alt
 
 
+def ein_plan_028():
+    """Auftrag 028, 1 und 2: ein aktiver Plan fuer alle Quellen, Wechsel nur mit Grund, keine Fuellsaetze, keine
+    Entschuldigungen, keine internen Etiketten nach "Jetzt, wo"."""
+    from types import SimpleNamespace as NS
+    from lolcoach import stratege
+    from lolcoach.kern.herzschlag import auffrischen, countdown, wechsel_grund
+    from lolcoach.regeln import WICHTIG, Ansage
+    from lolcoach.sprechplan import Sprechplan
+    from lolcoach.stratege_live import Schiedsrichter
+    # 1.2: keine Entschuldigung - "Stimmt. Neu:"; ein reines "Tut mir leid." entfaellt
+    assert stratege.ohne_entschuldigung("Mein Fehler. Kauf Tiamat, dann Top.") == "Stimmt. Neu: Kauf Tiamat, dann Top."
+    assert stratege.ohne_entschuldigung("Tut mir leid.") == ""
+    assert stratege.sicherheit("Jetzt, wo Plan: Farm deine Top-Welle.", {})           # 1.4: internes Etikett
+    # 1.4: "Plan: ..." und "Wendepunkt: Aus der Basis: ..." sind kein Ereignis; eine Frage heisst "Neu:"
+    sr = Schiedsrichter()
+    sr.ereignis(100.0, "Plan: Farm deine Top-Welle")
+    sr.ereignis(101.0, "Wendepunkt: Aus der Basis: Farm Top")
+    sr.ereignis(102.0, "Plan: Welle gerettet - kein Turm verloren")                 # das Etikett faellt, der Rest ist eins
+    assert sr.ereignisse == [(102.0, "Welle gerettet - kein Turm verloren")], sr.ereignisse
+    sr.setze("Farm deine Top-Welle.", 100.0)
+    sr.ereignis(105.0, "du gefragt hast")
+    ok, text, _ = sr.pruefe("Geh zum Drachen: ihr seid vier.", 106.0)
+    assert ok and text.startswith("Neu: Geh zum Drachen"), text
+    # 1.1: ein Wechsel braucht einen Grund - Gefahr, Event vorn, Frage, "Plan geändert"
+    assert wechsel_grund(NS(schluessel="kern:PAKET_CHANCE", text="Udyr weg: Welle rein, dann Platten.", thema=""))
+    assert wechsel_grund(NS(schluessel="kern:DRUECKEN", text="Sie haben den Drachen genommen. Drück ihren Top-Turm.", thema=""))
+    assert not wechsel_grund(NS(schluessel="kern:PAKET_HERZ", text="Geh zu deiner Top-Welle und farm sie.", thema=""))
+    # das Sprech-Tor: 3 s nach "Back jetzt" kein "Geh zur Top-Welle" (231200 5:29); ein Kern-Satz mit eigenem
+    # Grund nach 5 s wird hoerbar gewechselt
+    sp = Sprechplan(NS())
+    back = Ansage("Back jetzt: 14 Prozent Leben.", WICHTIG, "kern:PAKET_HERZ", zeit=100.0, gesprochen=100.0)
+    sp.gesagt.append(back)
+    herz = Ansage("Geh zu deiner Top-Welle und farm sie.", WICHTIG, "kern:PAKET_HERZ", zeit=103.0)
+    assert sp._ein_plan(herz, 103.0) is None
+    drueck = Ansage("Drück ihren inneren Mid-Turm: Level 14 gegen 10.", WICHTIG, "kern:DRUECKEN", zeit=107.0)
+    assert sp._ein_plan(drueck, 107.0) == "Plan geändert: Drück ihren inneren Mid-Turm: Level 14 gegen 10."
+    assert sp._ein_plan(herz, 125.0) == herz.text                                  # nach 20 s ein neuer Plan
+    # 2: eine Anweisung kommt nur mit Neuem wieder - nie "Bleib dabei" (auch nicht mit Kanone)
+    kern = NS(fuehrer=NS(plan=None), danach_text="", uhren=NS(kanone_in=18.0), cfg={}, _back_rufe=[], _stand=None,
+              pakete=NS(fertig=[]))
+    m = NS(zeit=200.0, b=NS(kauf=NS(kaufen=[], verkaufen=None)), tot=False, respawn=0.0, pos=(1000.0, 1000.0),
+           bereich="lane_eigen", meine_lane="Top", lane_hier="Top", p=None, tp_in=None)
+    eben = [Ansage("Geh zu deiner Top-Welle und farm sie.", WICHTIG, "kern:PAKET_HERZ", zeit=190.0, gesprochen=190.0)]
+    assert auffrischen(kern, m, eben) is None                                          # nichts Neues: still
+    assert auffrischen(kern, m, eben, still=True).startswith("Los:")                  # er steht: das ist neu
+    kern.danach_text = "back für die Eklipse"
+    assert auffrischen(kern, m, eben) == "Geh zu deiner Top-Welle und farm sie, danach back für die Eklipse."
+    # 6.5: die Kanone nur als Countdown <= 10 s vor der Handlung (Back)
+    assert countdown(kern, m) is None
+    kern.uhren.kanone_in = 6.0
+    kern.fuehrer.plan = NS(art="WELLE_REIN_UND_BACK", handlung=NS(schritte=["Welle rein", "back"]))
+    assert countdown(kern, m) == "Kanone in 6 Sekunden, dann Back."
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
@@ -1413,6 +1467,6 @@ if __name__ == "__main__":
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
                  stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017, lagebild_019,
                  objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018, kampf_rechner_020, gehirn_021,
-                 aufraeumen_022, stimme_023, udyr_024, pakete_025, pakete_026, herz_027):
+                 aufraeumen_022, stimme_023, udyr_024, pakete_025, pakete_026, herz_027, ein_plan_028):
         test()
         print(f"{test.__name__} OK")

@@ -180,6 +180,26 @@ class Sprechplan:
                 self._widerruf = (spiel, a.thema, a.schluessel.split(":")[0])
         return melde
 
+    def _ein_plan(self, a: Ansage, zeit: float) -> str | None:
+        """Auftrag 028, 1: der Text, mit dem `a` gesprochen wird - None, wenn er den aktiven Plan ohne Grund wechselt
+        (binnen WECHSEL_S nach dem letzten gesprochenen Plan-Satz, aus welcher Quelle auch immer). Ein Kern-Plan-Satz
+        mit eigenem Grund ("Drück die Bot-Welle: Ezreal ist tot") wird hoerbar: "Plan geändert: ..."."""
+        try:
+            from .kern.herzschlag import WECHSEL_S, plan_ziel_von, wechsel_grund, ziele_vertraeglich
+        except Exception:
+            return a.text
+        z = plan_ziel_von(a)
+        if not z or wechsel_grund(a):
+            return a.text
+        aktiv = next(((x.gesprochen, plan_ziel_von(x)) for x in reversed(self.gesagt[-8:])
+                      if x.gesprochen is not None and plan_ziel_von(x)), None)
+        if aktiv is None or zeit - aktiv[0] >= WECHSEL_S or ziele_vertraeglich(aktiv[1], z):
+            return a.text
+        if ": " in a.text and a.schluessel.startswith("kern:") and not a.schluessel.startswith("kern:PAKET_") \
+                and zeit - aktiv[0] >= 5.0:
+            return f"Plan geändert: {a.text}"
+        return None
+
     def _vorbereiten(self, a: Ansage) -> None:
         """Sie kommt als naechste dran: die Stimme synthetisiert ihren Anfang schon (einmal je Ansage) - dann klingt
         sie ohne die 0,2-0,6 s des Dienstes."""
@@ -335,6 +355,12 @@ class Sprechplan:
             self._vorbereiten(a)
             return None
         self.warte.remove(a)
+        # Auftrag 028, 1: EIN Plan auch in der Reihenfolge des Sprechens - die Regel im Kern sieht, was er erzeugt;
+        # hier zaehlt, was zuletzt GESPROCHEN wurde (231200 5:29: "Back jetzt", dann aus der Schlange "Geh zu deiner
+        # Top-Welle"). Ein Wechsel binnen 20 s ohne Grund faellt weg; ein Kern-Satz mit eigenem Grund wird hoerbar.
+        if (neu_text := self._ein_plan(a, zeit)) is None:
+            return None
+        a.text = neu_text
         # "Ach nee - Ekko ist beim Drachen": der Satz davor wurde mitten drin widerrufen (Carlos' Wunsch 26.09.)
         w = self._widerruf
         # nur, wenn der neue Satz die neue Fassung des alten ist: dieselbe Art, oder beide eine Gefahr (Position) -

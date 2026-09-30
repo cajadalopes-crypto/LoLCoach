@@ -475,22 +475,31 @@ class Kern:
                     aus.remove(a)
         # Auftrag 027, 1.4: kein Hin und Her - zwei Plan-Saetze mit verschiedenem Ziel binnen 5 s gibt es nicht
         # (091311 23:21: "Crash die Top-Welle", 1 s spaeter "Bot-Turm"); der zweite entfaellt, Gefahr ausgenommen
-        from .herzschlag import plan_ziel_von, ziele_vertraeglich
-        letzte = [(a.gesprochen if a.gesprochen is not None else a.zeit, plan_ziel_von(a)) for a in gesagt[-6:]]
-        letzte = [x for x in letzte if x[0] is not None and x[1]] + ([self._letzt_ziel] if self._letzt_ziel else [])
+        # Auftrag 028, 1: EIN aktiver Plan - der juengste Plan-Satz aus JEDER Quelle (Kern, Herzschlag, Pakete,
+        # Stratege, Antwort). Ein anderes Ziel binnen WECHSEL_S nur mit Grund (Gefahr, Event vorn, Frage); ein Kern-
+        # Plan-Satz mit eigenem Grund (": ...") wird hoerbar als "Plan geändert: ..."; sonst entfaellt der Satz.
+        # Das gilt auch fuer Wendepunkte - sie tragen ihr Ereignis vorn und sind damit begruendet.
+        from .herzschlag import WECHSEL_S, plan_ziel_von, wechsel_grund, ziele_vertraeglich
+        # (nur Gesprochenes zaehlt, dazu dieser Takt - ein erzeugter, aber nie gesprochener Satz ist kein Plan:
+        # 091311 13:21 hielt ein ungesprochenes "Drache" den Herzschlag 20 s fern)
+        letzte = [(a.gesprochen, plan_ziel_von(a)) for a in gesagt[-8:] if a.gesprochen is not None]
+        letzte = [x for x in letzte if x[1]]
         for a in list(aus):
             z = plan_ziel_von(a)
             if not z:
                 continue
-            # (ein Wendepunkt sagt sein Ereignis vorn - "Turm ist down: ..." - und darf den Plan wechseln: 213624 9:44
-            # fiel sonst "Turm ist down" gegen ein "Farm Top" von 2 s vorher weg)
-            wende = getattr(a, "_kategorie", None) == "WENDEPUNKT"
-            if a.thema != "gefahr" and not wende \
-                    and any(m.zeit - t < 5.0 and not ziele_vertraeglich(v, z) for t, v in letzte):
-                aus.remove(a)
-                if a.schluessel in ("kern:PAKET_HERZ", "kern:PAKET_STILL"):
-                    self.herzschlag.verworfen()   # nicht gesagt - der Herzschlag versucht es im naechsten Takt
-                continue
+            aktiv = max(letzte, key=lambda x: x[0], default=None)
+            if aktiv is not None and m.zeit - aktiv[0] < WECHSEL_S and not ziele_vertraeglich(aktiv[1], z) \
+                    and not wechsel_grund(a):
+                eigener_grund = ": " in (a.text or "") and a.schluessel.startswith("kern:") \
+                    and not a.schluessel.startswith("kern:PAKET_")
+                if eigener_grund and m.zeit - aktiv[0] >= 5.0:
+                    a.text = f"Plan geändert: {a.text}"
+                else:
+                    aus.remove(a)
+                    if a.schluessel in ("kern:PAKET_HERZ", "kern:PAKET_STILL"):
+                        self.herzschlag.verworfen()   # nicht gesagt - der Herzschlag versucht es im naechsten Takt
+                    continue
             self._letzt_ziel = (m.zeit, z)
             letzte.append(self._letzt_ziel)
         self._modus_vorher = modus
@@ -535,10 +544,17 @@ class Kern:
             # (nicht, wenn ein Gegner schon bei dir ist - dann kommt dein eigener Kampf-Ruf, 102112 25:01 und 26:31)
             nah = m.b is not None and any(g.sichtbar and not g.s.tot and g.abstand is not None and g.abstand <= 1500
                                           for g in m.b.gegner)
-            if modus not in ("KAMPF", "TOT") and not nah and (w := warum_nicht(self, m, modus, self.pakete)) is not None:
-                # Auftrag 027, 1.2: "warum nicht" nur als Nachsatz zu einer positiven Anweisung, nie allein
-                if (s := nachsatz(vorlage(self, m), w, gesagt, m.zeit, self.cfg["sprechen"]["max_woerter"])) \
-                        is not None:
+            if modus not in ("KAMPF", "TOT") and (w := warum_nicht(self, m, modus, self.pakete)) is not None:
+                # Auftrag 027, 1.2: "warum nicht" nur als Nachsatz zu einer positiven Anweisung, nie allein.
+                # Auftrag 028, 4: auch mit einem Gegner bei dir (027 schwieg dann - die Chancen fielen von 68 auf
+                # 53 %), aber kurz: nur der Kopf der Anweisung, hoechstens 8 Woerter (Kampf-Rufe, Szenario 2501/2631)
+                grenze = 8 if nah else self.cfg["sprechen"]["max_woerter"]
+                # (die positive Haelfte ist der EINE aktive Plan - der zuletzt gesprochene; sonst die Vorlage)
+                from .herzschlag import aktiver_plan_satz
+                v = aktiver_plan_satz(gesagt, m.zeit) or vorlage(self, m)
+                if nah and v:
+                    v = v.split(": ")[0].split(", ")[0]
+                if (s := nachsatz(v, w, gesagt, m.zeit, grenze)) is not None:
                     saetze.append(("WARUM_NICHT", s))
             ende = any(art in ("ERLEDIGT", "ABGEBROCHEN", "BUDGET_AB") for art, _ in saetze)
             # in Gefahr nur die Stillstand-Reaktion, und nur mit dem sicheren Plan-Satz (Rueckzug) - nie "farm"
@@ -547,7 +563,8 @@ class Kern:
                     self, m, modus, gesagt, paket_ende=ende, nur_still=self.gefahr, diesmal=aus)) is not None:
                 # Auftrag 027, 1: immer eine gesprochene Anweisung; der Kauf hat Vorrang (Schluessel KAUF)
                 if self.herzschlag.kauf:          # 183125 2:22: "Nicht zu Zyra" verdraengte "Kauf Stiefel, dann Top"
-                    saetze = [("KAUF", h)] + [x for x in saetze if x[0] != "WARUM_NICHT"]
+                    # (Auftrag 028, 4: die Chance kommt NACH der Kauf-Kette, nicht statt ihr)
+                    saetze = [("KAUF", h)] + saetze
                 else:                             # STILL: Stillstand-Reaktion, Vorrang wie eine Pflicht-Info
                     saetze.append(("STILL" if self.herzschlag.still else "HERZ", h))
             # ein Back-Ruf aus Herzschlag oder Nachsatz ist ein Back-Ruf (Kanal, Sperre) - 091311 19:48 "Back jetzt:

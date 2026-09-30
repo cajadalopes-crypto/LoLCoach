@@ -16,6 +16,7 @@ Claude. "Warum nicht" haengt nur noch als Nachsatz daran (`nachsatz`).
 from __future__ import annotations
 
 import re
+from types import SimpleNamespace as NS_
 
 AUFFRISCHEN_S = 25.0
 START_S = 30.0              # vor dem Spielbeginn (Brunnen, Einkauf) schweigt der Herzschlag
@@ -29,7 +30,7 @@ KEINE_ANWEISUNG = ("kern:INFO_", "kern:LAGEBILD", "kern:technik", "kern:TEAMPLAN
                    "kern:ERINNERUNG")
 HANDLUNG = re.compile(r"\b(geh|lauf|crash|farm|drück|druecke?|kauf|back|hilf|halte?n?|bleib|zurück|raus|nimm|push|"
                       r"warte|stell|verteidig|freez|schieb|folge|rotier|beenden?|tp|teleportier|jetzt|drache|baron|"
-                      r"herold|welle)\w*", re.I)
+                      r"herold|welle|rein\b|dreh)\w*", re.I)
 PAKET_ENDE = ("ERLEDIGT", "ABGEBROCHEN", "BUDGET_AB")
 GRUBE = {"drache": "am Drachen", "baron": "am Baron", "herold": "am Herold", "larven": "an den Larven"}
 NUR_NEIN = re.compile(r"\b(nicht hin|nicht rein|nicht zu|nicht vor|nicht dort|kein back|nicht back|stehst tief|"
@@ -57,6 +58,10 @@ def plan_ziel_von(a) -> str | None:
     if a.schluessel in ("antwort", "kern:PAKET_KAUF") or text.startswith(("Kauf", "Verkauf", "Stell dein", "Du lebst")) \
             or not positiv(a):
         return None
+    # Auftrag 028, 1: Gefahr und Kampf-Rufe unterbrechen den Plan, sie SIND keiner - danach gilt wieder der Plan
+    # (091311 13:21: "Rein auf Malphite!" hielt 20 s lang jede Anweisung fern)
+    if getattr(a, "thema", "") == "gefahr" or a.schluessel in KAMPF_RUFE:
+        return None
     # auch "Überheblichkeit und Langschwert kaufen, dann Top" (Stratege, 183125 9:27) ist die Kauf-Kette, und ein
     # blosser Timer ("Drache in 92 Sekunden", 133448 16:21) ist keine Anweisung
     if re.search(r"\bkauf\w*\b.*\bdann\b", text, re.I) or re.fullmatch(r"[\w\s'-]+ in \d+ Sekunden\.?", text.strip()):
@@ -68,6 +73,31 @@ def plan_ziel_von(a) -> str | None:
         text = text[kopf.end():]
     z = plan_ziel(text)
     return None if z in (None, "zurueck") else z
+
+
+KAMPF_RUFE = ("kern:REIN", "kern:RAUS", "kern:DREHEN", "kern:ZURUECK", "kern:JUNGLER_NAH", "kern:technik")
+WECHSEL_S = 20.0           # Auftrag 028, 1: ein Planwechsel in 20 s nach dem letzten Plan-Satz braucht einen Grund
+GRUND_SCHL = ("antwort", "kern:PAKET_ABGEBROCHEN", "kern:PAKET_BUDGET_AB", "kern:ZURUECK", "kern:RAUS",
+              "kern:JUNGLER_NAH", "kern:VORSICHT")
+
+
+def wechsel_grund(a) -> bool:
+    """Auftrag 028, 1.1: darf dieser Satz den aktiven Plan wechseln? Gefahr (R1, neuer Gegner, Abbruch), ein echtes
+    Event oder besseres Play MIT dem Grund vorn ("Plan geändert: ...", "Jetzt, wo ...", "Udyr weg: ...", ein
+    Wendepunkt), oder Carlos fragt."""
+    s = a.schluessel or ""
+    t = (a.text or "").strip()
+    if getattr(a, "thema", "") == "gefahr" or s in GRUND_SCHL or s.startswith("kern:INFO_"):
+        return True
+    if getattr(a, "_kategorie", None) in ("WENDEPUNKT", "GEFAHR") or getattr(a, "kategorie", None) in ("WENDEPUNKT",
+                                                                                                         "GEFAHR"):
+        return True
+    if re.match(r"^\W*(plan geändert|jetzt, wo|stimmt\. neu|neu:)", t, re.I):
+        return True
+    if re.match(r"^(Sie haben|Ihr habt|Euer|Eure|Ihr|Ihre)\b[^.:]*\b(weg|genommen|down|gefallen|fällt|tot)\b", t):
+        return True
+    kopf = t.split(": ", 1)[0] if ": " in t else ""
+    return bool(kopf) and bool(re.search(r"\b(tot|weg|gesehen|drin|down|gefallen|lebt wieder|gebackt)\b", kopf, re.I))
 
 
 def ziele_vertraeglich(a: str, b: str) -> bool:
@@ -200,7 +230,7 @@ class Herzschlag:
                         return self._sagen(z, kauf_satz(kern, m, gesagt=gesagt))
                     if (ziel := _ziel_kurz(kern, m)):
                         return self._sagen(z, geh_satz(ziel, "Raus jetzt,"))
-                return self._sagen(z, auffrischen(kern, m, gesagt))
+                return self._sagen(z, auffrischen(kern, m, gesagt, still=True))
         # (sagt der Kern in diesem Takt selbst eine positive Anweisung, ist das die Auffrischung - 125902 27:21:
         # "Ihr Nexus-Turm jetzt" zweimal in einem Takt)
         # (nicht im Recall-Kanal: "Bleib dabei" 13 s nach "Back jetzt", 144655 5:04 und 102112 14:58)
@@ -252,25 +282,59 @@ def eben_gesagt(text: str, gesagt: list, jetzt: float, fenster: float = 60.0) ->
                if (a.gesprochen if a.gesprochen is not None else a.zeit or -1e9) >= jetzt - fenster)
 
 
-def auffrischen(kern, m, gesagt: list, fenster: float = 60.0) -> str | None:
-    """Die Auffrischung: die aktuelle Anweisung mit neuer Info - war genau sie eben (<= 60 s) schon zu hoeren, die
-    Kurzform "Bleib dabei" statt desselben Satzes noch einmal (Dauerton: 'nimmt sie sonst niemand' fuenfmal, 164326;
-    'Spitzhacke' sechsmal, 173159)."""
-    text = vorlage(kern, m, neu=False)
+def auffrischen(kern, m, gesagt: list, fenster: float = 60.0, still: bool = False) -> str | None:
+    """Die Auffrischung. Auftrag 028, 2: eine Anweisung kommt nur mit etwas NEUEM wieder - dem naechsten Schritt
+    ("Farm Top, danach back: 1100 Gold fuer Eklipse"), einem Countdown <= 10 s bis zur Handlung ("Kanone in 6
+    Sekunden, dann Back") oder einem neuen Grund aus der Lage ("... : Drache spawnt in 40 Sekunden"). Nackte
+    Bestaetigungen ("Bleib dabei.", auch "Bleib dabei, Kanone in 18 Sekunden.") sind Fuellsaetze - lieber schweigen.
+    `still`: Carlos steht - dann die Anweisung selbst, mit "Los:" (das Stehen ist das Neue)."""
+    text = vorlage(kern, m)
     if not text:
         return None
-    if eben_gesagt(text, gesagt, m.zeit, fenster):
-        # "Bleib dabei" nur mit neuer Info - nackt zaehlten es die Kritiker als Fuellsatz (API-Nachspiel 027)
-        u = getattr(kern, "uhren", None)
-        if u is not None and u.kanone_in is not None and 5 <= u.kanone_in <= 45:
-            return f"Bleib dabei, Kanone in {int(u.kanone_in)} Sekunden."
-        swift = getattr(getattr(m, "p", None), "modus", None) == "SWIFTPLAY"      # dort gelten die Zeiten nicht
-        e = min((e for e in getattr(kern, "zeitleiste", None) or [] if 5 <= e.in_s(m.zeit) <= 90
-                  and e.art not in ("kauf", "welle") and not (swift and e.art == "objective")),
-                key=lambda e: e.in_s(m.zeit), default=None)
-        if e is not None:
-            return f"Bleib dabei: {e.text} in {e.in_s(m.zeit)} Sekunden."
-    return vorlage(kern, m, neu=True)
+    # Auftrag 028, 1: EIN Plan - widerspricht die Vorlage dem juengst gesprochenen Plan-Satz (< 20 s), gilt der
+    # (sonst faellt der Herzschlag am Sprech-Tor weg und Carlos steht ohne Anweisung: 091311 13:21)
+    z = plan_ziel_von(NS_(schluessel="kern:PAKET_HERZ", text=text))
+    for a in reversed(list(gesagt)[-8:]):
+        t = a.gesprochen if a.gesprochen is not None else None
+        za = plan_ziel_von(a) if t is not None else None
+        if za:
+            if z and m.zeit - t < WECHSEL_S and not ziele_vertraeglich(za, z):
+                text = a.text.split("“ – ", 1)[-1]
+            break
+    if not eben_gesagt(text, gesagt, m.zeit, fenster):
+        return text
+    kopf = text.split(": ")[0].split(", ")[0].rstrip(".")
+    # 1. der naechste Schritt
+    danach = (getattr(kern, "danach_text", None) or "").strip().rstrip(".")
+    if danach and HANDLUNG.search(danach) and danach.lower() not in text.lower():
+        s = f"{kopf}, danach {danach}."
+        if not eben_gesagt(s, gesagt, m.zeit, fenster):
+            return s
+    # 2. ein Countdown <= 10 s bis zur Handlung
+    if (c := countdown(kern, m)) is not None and not eben_gesagt(c, gesagt, m.zeit, 15.0):
+        return c
+    # 3. ein neuer Grund aus der Lage: ein Objective, das bald kommt
+    swift = getattr(getattr(m, "p", None), "modus", None) == "SWIFTPLAY"      # dort gelten die Zeiten nicht
+    e = min((e for e in getattr(kern, "zeitleiste", None) or [] if 5 <= e.in_s(m.zeit) <= 60
+             and e.art == "objective" and not swift), key=lambda e: e.in_s(m.zeit), default=None)
+    if e is not None:
+        s = f"{kopf}: {e.text} in {e.in_s(m.zeit)} Sekunden."
+        if not eben_gesagt(s, gesagt, m.zeit, fenster):
+            return s
+    return f"Los: {text}" if still else None
+
+
+def countdown(kern, m) -> str | None:
+    """Auftrag 028, 6.5: die Kanone nur, wenn sie die naechste Handlung ausloest - "Kanone in 6 Sekunden, dann Back"
+    (Plan mit Back danach), hoechstens 10 s vorher."""
+    u = getattr(kern, "uhren", None)
+    pl = getattr(getattr(kern, "fuehrer", None), "plan", None)
+    if u is None or u.kanone_in is None or not 2 <= u.kanone_in <= 10 or pl is None:
+        return None
+    schritte = [s.lower() for s in (getattr(pl.handlung, "schritte", None) or [])]
+    if pl.art in ("WELLE_REIN_UND_BACK",) or "back" in schritte:
+        return f"Kanone in {int(u.kanone_in)} Sekunden, dann Back."
+    return None
 
 
 def geh_satz(ziel: str, vorn: str = "Geh") -> str:
@@ -337,9 +401,9 @@ def kauf_satz(kern, m, respawn: float | None = None, gesagt: list = ()) -> str |
     return f"{kopf}{vk} {teile[0]}."
 
 
-def vorlage(kern, m, neu: bool = False, nur_plan: bool = False) -> str | None:
-    """Die aktuelle positive Anweisung aus dem Plan des Kerns - mit neuer Info (Kanone, Gold) bei `neu`. `nur_plan`:
-    ohne Rueckfall (Welle, Ziel) - in Gefahr gilt nur, was der Plan selbst sagt."""
+def vorlage(kern, m, nur_plan: bool = False) -> str | None:
+    """Die aktuelle positive Anweisung aus dem Plan des Kerns. `nur_plan`: ohne Rueckfall (Welle, Ziel) - in Gefahr
+    gilt nur, was der Plan selbst sagt."""
     if nur_plan:
         pl = kern.fuehrer.plan
         s = (pl.handlung.satz or "") if pl is not None else ""
@@ -377,18 +441,21 @@ def vorlage(kern, m, neu: bool = False, nur_plan: bool = False) -> str | None:
         nah = [g for g in (getattr(b, "gegner", None) or []) if getattr(g, "sichtbar", False) and not g.s.tot
                and getattr(g, "abstand", None) is not None and g.abstand <= 2000]
         if len(nah) >= 2:
-            return None
+            # dann gilt die letzte Warnung (091311 28:53: zwei Gegner nah, "Raus, zu eurem Mid-Turm!" 17 s vorher)
+            return warn_satz(getattr(getattr(kern, "transport", None), "gesagt", None) or [], m.zeit)
         # ... und nicht gleich nach einer Warnung (140253 8:05 "Brand gesehen: zurück hinter die Welle", 8:27 "Geh zu
         # deiner Mid-Welle") - dann gilt die Warnung
         warn = ("kern:JUNGLER_NAH", "kern:VORSICHT", "kern:ZURUECK", "kern:RAUS")
-        for a in (getattr(getattr(kern, "transport", None), "gesagt", None) or [])[-6:]:
+        for a in reversed((getattr(getattr(kern, "transport", None), "gesagt", None) or [])[-6:]):   # juengste zuerst
             t = a.gesprochen if a.gesprochen is not None else a.zeit
             if t is not None and m.zeit - t <= 25.0 and (a.thema == "gefahr" or a.schluessel in warn):
                 if not positiv(a):
                     return None
-                # die Warnung sagte, was zu tun ist - ihre Handlung noch einmal ("Zurück hinter die Welle.")
+                # die Warnung sagte, was zu tun ist - ihre Handlung noch einmal ("Zurück hinter die Welle.");
+                # steht die Handlung vor dem Doppelpunkt ("Zurück unter euren Turm: zwei kommen."), der ganze Satz
                 s = (a.text or "").split(": ", 1)[-1].strip()
-                return s[:1].upper() + s[1:] if HANDLUNG.search(s) else None
+                s = s if HANDLUNG.search(s) else (a.text or "").strip()
+                return s[:1].upper() + s[1:]
         lane = m.meine_lane or m.lane_hier
         danach = (kern.danach_text or "").split(":")[0]
         w = getattr(m, "welle", None)
@@ -419,12 +486,7 @@ def vorlage(kern, m, neu: bool = False, nur_plan: bool = False) -> str | None:
             saetze.append(s)
             n += len(s.split())
         text = " ".join(saetze)
-    if neu:
-        u = getattr(kern, "uhren", None)
-        grenze = (getattr(kern, "cfg", None) or {}).get("sprechen", {}).get("max_woerter", 14)
-        if u is not None and u.kanone_in is not None and 5 <= u.kanone_in <= 45 and "Kanone" not in text \
-                and len(text.split()) + 4 <= grenze:          # die Wortgrenze gilt auch mit der Kanone
-            text = text.rstrip(".") + f", Kanone in {int(u.kanone_in)} Sekunden."
+    # (Auftrag 028, 6.5: keine Kanone als Anhaengsel mehr - sie kommt nur als Countdown vor der Handlung, `countdown`)
     return text
 
 
@@ -451,6 +513,19 @@ def _ziel_satz(kern, m) -> str:
     return geh_satz(ziel) if ziel else ""
 
 
+def aktiver_plan_satz(gesagt: list, jetzt: float, fenster: float = 60.0) -> str | None:
+    """Auftrag 028, 1: der juengst GESPROCHENE Plan-Satz (jede Quelle, <= `fenster` s) - der eine aktive Plan."""
+    for a in reversed(list(gesagt)[-10:]):
+        t = a.gesprochen if a.gesprochen is not None else None
+        if t is None:
+            continue
+        if jetzt - t > fenster:
+            break
+        if plan_ziel_von(a):
+            return (a.text or "").split("“ – ", 1)[-1]
+    return None
+
+
 def nachsatz(positiv_text: str | None, warum: str, gesagt: list = (), jetzt: float | None = None,
              grenze: int = 14) -> str | None:
     """ "Warum nicht" nur als Nachsatz zu einer positiven Anweisung: "Crash die Welle. Nicht zu Yorick: 10 s weg."
@@ -463,7 +538,11 @@ def nachsatz(positiv_text: str | None, warum: str, gesagt: list = (), jetzt: flo
         return None
     pos = positiv_text.rstrip(".")
     if jetzt is not None and eben_gesagt(pos, gesagt, jetzt):
-        pos = "Bleib dabei"                          # dieselbe Anweisung eben erst - kein Dauerton (back-dauerton)
+        # dieselbe Anweisung eben erst: nur ihr Kopf, das Neue ist die abgewogene Chance (Auftrag 028, 2 - kein
+        # "Bleib dabei." mehr, 091311 34:32)
+        kopf = pos.split(": ")[0].split(", ")[0]
+        return f"{kopf}, nicht zu {wer}: {grund.rstrip('.')}." if len(f"{kopf} {wer} {grund}".split()) + 2 <= grenze \
+            else f"{kopf}, nicht zu {wer}."
     for s in (f"{pos}. Nicht zu {wer}: {grund.rstrip('.')}.", f"{pos}. Nicht zu {wer}."):
         if len(s.split()) <= grenze:
             return s
