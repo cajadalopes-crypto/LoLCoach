@@ -1,0 +1,8 @@
+{
+ "beschreibung": "Pruefstichprobe wards_proben_pruef.json (seed 3302), alter Farbleser: Teil A je Fund echt/falsch; Teil B ganze Karten, echte Wards gezaehlt. Von Hand, 30.09.2026.",
+ "falsch": ["A4.0", "A27.0", "A34.0", "A40.0", "A44.1"],
+ "falsch_grund": {"A4.0": "Champion-Ring", "A27.0": "Vasallen", "A34.0": "Champion-Ring", "A40.0": "Champion-Ring", "A44.1": "Vasallen"},
+ "funde_gesamt": 96,
+ "B_echt": {"8": 4, "9": 1, "11": 1, "12": 1, "13": 2, "14": 2, "15": 1},
+ "B_uebersehen": {"8": [[0.798, 0.672, "Y", "Fluss, Kopf abgetrennt"]], "13": [[0.781, 0.733, "Oval", "im Fluss"]], "14": [[0.70, 0.64, "Y", "Fluss/Ping"]]}
+}

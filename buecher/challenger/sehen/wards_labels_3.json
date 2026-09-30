@@ -1,0 +1,8 @@
+{
+ "beschreibung": "Stichprobe 3 (wards_proben_3.json, seed 3303, 72 Zufallskarten ab 1:30): Funde des Vorlagenlesers (3 Vorlagen) je echt/falsch, dazu jedes sichtbare Ward, das er nicht fand. Von Hand an ganzen Karten und Vergroesserungen, 30.09.2026.",
+ "falsch": ["B14.6", "B14.7"],
+ "falsch_grund": {"B14.6": "blauer Rueckzugs-Ping", "B14.7": "blauer Rueckzugs-Ping"},
+ "uebersehen": {"65": [[0.284, 0.189, "eigen", "Kamerarahmen-Linie kreuzt das Symbol"]]},
+ "blass": {"23": [[0.614, 0.528]], "34": [[0.526, 0.581]], "46": [[0.693, 0.782]], "69": [[0.523, 0.581]]},
+ "blass_befund": "Umriss-Y ohne dunklen Rand; Verlauf je +-60 s: vorher hell, danach ueber eine Minute blass am selben Ort, dann weg - also noch ein Ward"
+}

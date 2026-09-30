@@ -1,0 +1,1539 @@
+[
+ {
+  "stamm": "2026-09-27_164326",
+  "tp": [
+   {
+    "zeit": 2522,
+    "wer": "Bubble boy",
+    "champion": "Teemo",
+    "art": "SummonerTeleport",
+    "wand": 1790522736.49,
+    "wege": [
+     [
+      2521.0,
+      0.195,
+      0.136
+     ],
+     [
+      2521.1,
+      0.195,
+      0.132
+     ],
+     [
+      2521.1,
+      0.195,
+      0.131
+     ],
+     [
+      2521.1,
+      0.195,
+      0.13
+     ],
+     [
+      2521.2,
+      0.195,
+      0.127
+     ],
+     [
+      2521.2,
+      0.195,
+      0.127
+     ],
+     [
+      2521.3,
+      0.195,
+      0.127
+     ],
+     [
+      2521.3,
+      0.195,
+      0.126
+     ],
+     [
+      2521.4,
+      0.194,
+      0.123
+     ],
+     [
+      2530.1,
+      0.908,
+      0.368
+     ],
+     [
+      2530.3,
+      0.908,
+      0.368
+     ],
+     [
+      2530.4,
+      0.908,
+      0.368
+     ]
+    ]
+   }
+  ],
+  "recall": [
+   {
+    "wer": "Bubble boy",
+    "zeit": 1328,
+    "items_vorher": [
+     2031,
+     3020,
+     3087,
+     3118,
+     3340
+    ],
+    "naechst_zeit": 1334,
+    "naechst_ort": "oben",
+    "items_nachher": [
+     2031,
+     3020,
+     3087,
+     3118,
+     3340
+    ],
+    "neue_items": false,
+    "basis": false
+   }
+  ]
+ },
+ {
+  "stamm": "2026-09-27_173159",
+  "tp": [],
+  "recall": [
+   {
+    "wer": "RonFlex",
+    "zeit": 984,
+    "items_vorher": [
+     3153,
+     3172,
+     3340,
+     6670
+    ],
+    "naechst_zeit": 994,
+    "naechst_ort": "oben",
+    "items_nachher": [
+     3153,
+     3172,
+     3340,
+     6670
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "VenenoAmasao",
+    "zeit": 1240,
+    "items_vorher": [
+     1029,
+     1056,
+     3047,
+     3084,
+     3340
+    ],
+    "naechst_zeit": 1243,
+    "naechst_ort": "unten",
+    "items_nachher": [
+     1029,
+     1056,
+     3047,
+     3084,
+     3340
+    ],
+    "neue_items": false,
+    "basis": false
+   }
+  ]
+ },
+ {
+  "stamm": "2026-09-27_213624",
+  "tp": [],
+  "recall": [
+   {
+    "wer": "Ziggs",
+    "zeit": 158,
+    "items_vorher": [
+     3070,
+     3340
+    ],
+    "naechst_zeit": 176,
+    "naechst_ort": "auf der Mid-Lane",
+    "items_nachher": [
+     2055,
+     3070,
+     3340
+    ],
+    "neue_items": true,
+    "basis": false
+   },
+   {
+    "wer": "Caitlyn",
+    "zeit": 363,
+    "items_vorher": [
+     1036,
+     1036,
+     1055,
+     2055,
+     3340
+    ],
+    "naechst_zeit": 389,
+    "naechst_ort": "im unteren roten Jungle",
+    "items_nachher": [
+     1018,
+     1036,
+     1036,
+     1055,
+     2055,
+     3340
+    ],
+    "neue_items": true,
+    "basis": false
+   }
+  ]
+ },
+ {
+  "stamm": "2026-09-28_101426",
+  "tp": [],
+  "recall": [
+   {
+    "wer": "CΗUΒΙ",
+    "zeit": 101,
+    "items_vorher": [
+     2003,
+     3340,
+     3865
+    ],
+    "naechst_zeit": 104,
+    "naechst_ort": "unten",
+    "items_nachher": [
+     2003,
+     3340,
+     3865
+    ],
+    "neue_items": false,
+    "basis": false
+   }
+  ]
+ },
+ {
+  "stamm": "2026-09-28_192113",
+  "tp": [
+   {
+    "zeit": 532,
+    "wer": "Pantheon",
+    "champion": "Pantheon",
+    "art": "R",
+    "wand": 1790616604.6,
+    "wege": [
+     [
+      531.1,
+      0.604,
+      0.412
+     ],
+     [
+      531.1,
+      0.604,
+      0.412
+     ],
+     [
+      531.1,
+      0.604,
+      0.412
+     ],
+     [
+      531.2,
+      0.605,
+      0.412
+     ],
+     [
+      531.2,
+      0.605,
+      0.41
+     ],
+     [
+      531.2,
+      0.605,
+      0.41
+     ],
+     [
+      531.3,
+      0.605,
+      0.41
+     ],
+     [
+      531.3,
+      0.607,
+      0.409
+     ],
+     [
+      531.3,
+      0.607,
+      0.409
+     ],
+     [
+      531.4,
+      0.609,
+      0.409
+     ],
+     [
+      535.9,
+      0.868,
+      0.919
+     ],
+     [
+      535.9,
+      0.87,
+      0.921
+     ]
+    ]
+   },
+   {
+    "zeit": 1078,
+    "wer": "Pantheon",
+    "champion": "Pantheon",
+    "art": "R",
+    "wand": 1790617150.15,
+    "wege": [
+     [
+      1076.7,
+      0.458,
+      0.532
+     ],
+     [
+      1076.8,
+      0.458,
+      0.532
+     ],
+     [
+      1076.8,
+      0.458,
+      0.532
+     ],
+     [
+      1076.8,
+      0.458,
+      0.532
+     ],
+     [
+      1076.9,
+      0.458,
+      0.532
+     ],
+     [
+      1076.9,
+      0.458,
+      0.532
+     ],
+     [
+      1076.9,
+      0.458,
+      0.532
+     ],
+     [
+      1081.7,
+      0.774,
+      0.058
+     ],
+     [
+      1081.8,
+      0.772,
+      0.06
+     ],
+     [
+      1081.8,
+      0.768,
+      0.06
+     ],
+     [
+      1081.9,
+      0.768,
+      0.06
+     ],
+     [
+      1081.9,
+      0.767,
+      0.06
+     ]
+    ]
+   },
+   {
+    "zeit": 1472,
+    "wer": "Pantheon",
+    "champion": "Pantheon",
+    "art": "R",
+    "wand": 1790617544.04,
+    "wege": [
+     [
+      1470.7,
+      0.882,
+      0.928
+     ],
+     [
+      1470.7,
+      0.882,
+      0.928
+     ],
+     [
+      1470.7,
+      0.881,
+      0.928
+     ],
+     [
+      1470.8,
+      0.881,
+      0.928
+     ],
+     [
+      1470.8,
+      0.881,
+      0.928
+     ],
+     [
+      1470.8,
+      0.881,
+      0.928
+     ],
+     [
+      1476.2,
+      0.488,
+      0.202
+     ],
+     [
+      1476.4,
+      0.488,
+      0.198
+     ],
+     [
+      1476.5,
+      0.486,
+      0.195
+     ],
+     [
+      1476.5,
+      0.488,
+      0.195
+     ],
+     [
+      1476.5,
+      0.486,
+      0.193
+     ],
+     [
+      1476.5,
+      0.488,
+      0.193
+     ]
+    ]
+   }
+  ],
+  "recall": [
+   {
+    "wer": "Pantheon",
+    "zeit": 84,
+    "items_vorher": [
+     1036,
+     2031,
+     3340
+    ],
+    "naechst_zeit": 105,
+    "naechst_ort": "auf der Mid-Lane",
+    "items_nachher": [
+     1036,
+     2031,
+     3340
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "Pantheon",
+    "zeit": 184,
+    "items_vorher": [
+     1036,
+     2031,
+     3340
+    ],
+    "naechst_zeit": 202,
+    "naechst_ort": "im oberen Fluss",
+    "items_nachher": [
+     1036,
+     2031,
+     3340
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "Pantheon",
+    "zeit": 1077,
+    "items_vorher": [
+     1001,
+     2031,
+     2055,
+     3340,
+     6692
+    ],
+    "naechst_zeit": 1082,
+    "naechst_ort": "oben",
+    "items_nachher": [
+     1001,
+     1033,
+     2031,
+     2055,
+     3340,
+     6692
+    ],
+    "neue_items": true,
+    "basis": false
+   },
+   {
+    "wer": "Teemo",
+    "zeit": 1184,
+    "items_vorher": [
+     1037,
+     1086,
+     2055,
+     3009,
+     3113,
+     3144,
+     3363
+    ],
+    "naechst_zeit": 1192,
+    "naechst_ort": "oben",
+    "items_nachher": [
+     1042,
+     1086,
+     2022,
+     2055,
+     3009,
+     3087,
+     3363
+    ],
+    "neue_items": true,
+    "basis": false
+   },
+   {
+    "wer": "Teemo",
+    "zeit": 1615,
+    "items_vorher": [
+     1042,
+     1086,
+     2055,
+     3009,
+     3087,
+     3363,
+     3802
+    ],
+    "naechst_zeit": 1627,
+    "naechst_ort": "unten",
+    "items_nachher": [
+     1042,
+     1086,
+     2055,
+     3009,
+     3087,
+     3363,
+     3802
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "Pantheon",
+    "zeit": 1672,
+    "items_vorher": [
+     1028,
+     1036,
+     2031,
+     2055,
+     3173,
+     3340,
+     6692
+    ],
+    "naechst_zeit": 1690,
+    "naechst_ort": "unten",
+    "items_nachher": [
+     1028,
+     1036,
+     2031,
+     2055,
+     3173,
+     3340,
+     6692
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "Alistar",
+    "zeit": 1771,
+    "items_vorher": [
+     2022,
+     3009,
+     3050,
+     3190,
+     3364,
+     3876
+    ],
+    "naechst_zeit": 1774,
+    "naechst_ort": "unten",
+    "items_nachher": [
+     2022,
+     3009,
+     3050,
+     3190,
+     3364,
+     3876
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "Alistar",
+    "zeit": 1782,
+    "items_vorher": [
+     2022,
+     3009,
+     3050,
+     3190,
+     3364,
+     3876
+    ],
+    "naechst_zeit": 1785,
+    "naechst_ort": "in der roten Basis",
+    "items_nachher": [
+     1031,
+     3009,
+     3050,
+     3067,
+     3190,
+     3364,
+     3876
+    ],
+    "neue_items": true,
+    "basis": true
+   }
+  ]
+ },
+ {
+  "stamm": "2026-09-29_133448",
+  "tp": [],
+  "recall": [
+   {
+    "wer": "Sona",
+    "zeit": 172,
+    "items_vorher": [
+     3340,
+     3865
+    ],
+    "naechst_zeit": 194,
+    "naechst_ort": "unten",
+    "items_nachher": [
+     1001,
+     3340,
+     3865
+    ],
+    "neue_items": true,
+    "basis": false
+   },
+   {
+    "wer": "Lux",
+    "zeit": 224,
+    "items_vorher": [
+     1027,
+     1052,
+     3340
+    ],
+    "naechst_zeit": 246,
+    "naechst_ort": "auf der Mid-Lane",
+    "items_nachher": [
+     1027,
+     1052,
+     3340
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "Lux",
+    "zeit": 297,
+    "items_vorher": [
+     1027,
+     1052,
+     3340
+    ],
+    "naechst_zeit": 319,
+    "naechst_ort": "unten",
+    "items_nachher": [
+     1027,
+     1052,
+     2022,
+     2055,
+     3340
+    ],
+    "neue_items": true,
+    "basis": false
+   },
+   {
+    "wer": "Sona",
+    "zeit": 995,
+    "items_vorher": [
+     1004,
+     1028,
+     2022,
+     3009,
+     3364,
+     3871,
+     6620
+    ],
+    "naechst_zeit": 1014,
+    "naechst_ort": "unten",
+    "items_nachher": [
+     1004,
+     2022,
+     3009,
+     3067,
+     3364,
+     3871,
+     6620
+    ],
+    "neue_items": true,
+    "basis": false
+   }
+  ]
+ },
+ {
+  "stamm": "2026-09-29_183125",
+  "tp": [],
+  "recall": [
+   {
+    "wer": "Fizz",
+    "zeit": 94,
+    "items_vorher": [
+     1056,
+     3340
+    ],
+    "naechst_zeit": 111,
+    "naechst_ort": "auf der Mid-Lane",
+    "items_nachher": [
+     1056,
+     3340
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "Fizz",
+    "zeit": 289,
+    "items_vorher": [
+     1056,
+     2055,
+     3057,
+     3340
+    ],
+    "naechst_zeit": 306,
+    "naechst_ort": "auf der Mid-Lane",
+    "items_nachher": [
+     1052,
+     1056,
+     2055,
+     3057,
+     3340
+    ],
+    "neue_items": true,
+    "basis": false
+   },
+   {
+    "wer": "Garen",
+    "zeit": 983,
+    "items_vorher": [
+     1042,
+     1042,
+     1055,
+     2055,
+     3006,
+     3077,
+     3340
+    ],
+    "naechst_zeit": 997,
+    "naechst_ort": "im oberen Fluss",
+    "items_nachher": [
+     1042,
+     1042,
+     1055,
+     2055,
+     3006,
+     3077,
+     3340
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "Fizz",
+    "zeit": 994,
+    "items_vorher": [
+     1052,
+     1052,
+     1056,
+     2055,
+     3100,
+     3175,
+     3340
+    ],
+    "naechst_zeit": 1061,
+    "naechst_ort": "oben",
+    "items_nachher": [
+     1056,
+     1058,
+     2055,
+     3100,
+     3145,
+     3175,
+     3340
+    ],
+    "neue_items": true,
+    "basis": false
+   },
+   {
+    "wer": "KogMaw",
+    "zeit": 2045,
+    "items_vorher": [
+     1028,
+     1056,
+     2055,
+     3085,
+     3124,
+     3302,
+     3363
+    ],
+    "naechst_zeit": 2048,
+    "naechst_ort": "in der roten Basis",
+    "items_nachher": [
+     1011,
+     1056,
+     2055,
+     3085,
+     3124,
+     3302,
+     3363
+    ],
+    "neue_items": true,
+    "basis": true
+   }
+  ]
+ },
+ {
+  "stamm": "2026-09-29_231200",
+  "tp": [
+   {
+    "zeit": 307,
+    "wer": "Xerath",
+    "champion": "Xerath",
+    "art": "SummonerTeleport",
+    "wand": 1790716627.0,
+    "wege": [
+     [
+      305.9,
+      0.763,
+      0.744
+     ],
+     [
+      306.0,
+      0.763,
+      0.746
+     ],
+     [
+      306.0,
+      0.763,
+      0.746
+     ],
+     [
+      306.0,
+      0.765,
+      0.746
+     ],
+     [
+      306.0,
+      0.765,
+      0.747
+     ],
+     [
+      306.1,
+      0.765,
+      0.747
+     ],
+     [
+      306.1,
+      0.767,
+      0.747
+     ],
+     [
+      306.1,
+      0.767,
+      0.747
+     ],
+     [
+      306.3,
+      0.768,
+      0.751
+     ],
+     [
+      314.8,
+      0.121,
+      0.154
+     ],
+     [
+      314.9,
+      0.123,
+      0.154
+     ],
+     [
+      314.9,
+      0.123,
+      0.154
+     ]
+    ]
+   },
+   {
+    "zeit": 640,
+    "wer": "Lissandra",
+    "champion": "Lissandra",
+    "art": "SummonerTeleport",
+    "wand": 1790716960.16,
+    "wege": [
+     [
+      639.2,
+      0.284,
+      0.326
+     ],
+     [
+      639.2,
+      0.284,
+      0.326
+     ],
+     [
+      639.2,
+      0.284,
+      0.326
+     ],
+     [
+      639.3,
+      0.284,
+      0.326
+     ],
+     [
+      639.3,
+      0.284,
+      0.326
+     ],
+     [
+      639.4,
+      0.284,
+      0.326
+     ],
+     [
+      639.4,
+      0.284,
+      0.326
+     ],
+     [
+      639.4,
+      0.286,
+      0.326
+     ],
+     [
+      645.6,
+      0.875,
+      0.791
+     ],
+     [
+      645.7,
+      0.874,
+      0.789
+     ],
+     [
+      645.7,
+      0.872,
+      0.789
+     ],
+     [
+      645.8,
+      0.872,
+      0.789
+     ]
+    ]
+   },
+   {
+    "zeit": 992,
+    "wer": "Udyr",
+    "champion": "Udyr",
+    "art": "SummonerTeleport",
+    "wand": 1790717312.09,
+    "wege": [
+     [
+      991.0,
+      0.468,
+      0.091
+     ],
+     [
+      991.0,
+      0.468,
+      0.091
+     ],
+     [
+      991.0,
+      0.468,
+      0.091
+     ],
+     [
+      991.1,
+      0.468,
+      0.091
+     ],
+     [
+      991.1,
+      0.468,
+      0.091
+     ],
+     [
+      991.1,
+      0.468,
+      0.091
+     ],
+     [
+      991.2,
+      0.468,
+      0.091
+     ],
+     [
+      991.3,
+      0.47,
+      0.093
+     ],
+     [
+      991.3,
+      0.468,
+      0.091
+     ],
+     [
+      991.4,
+      0.468,
+      0.091
+     ],
+     [
+      995.2,
+      0.875,
+      0.812
+     ],
+     [
+      995.4,
+      0.872,
+      0.816
+     ]
+    ]
+   }
+  ],
+  "recall": [
+   {
+    "wer": "Lissandra",
+    "zeit": 224,
+    "items_vorher": [
+     1056,
+     2022,
+     3340
+    ],
+    "naechst_zeit": 239,
+    "naechst_ort": "auf der Mid-Lane",
+    "items_nachher": [
+     1056,
+     2022,
+     3340
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "Lissandra",
+    "zeit": 1695,
+    "items_vorher": [
+     1056,
+     2022,
+     2420,
+     3118,
+     3175,
+     3363,
+     4645
+    ],
+    "naechst_zeit": 1701,
+    "naechst_ort": "oben",
+    "items_nachher": [
+     1056,
+     2022,
+     2420,
+     3118,
+     3175,
+     3363,
+     4645
+    ],
+    "neue_items": false,
+    "basis": false
+   }
+  ]
+ },
+ {
+  "stamm": "2026-09-30_091311",
+  "tp": [
+   {
+    "zeit": 647,
+    "wer": "Malphite",
+    "champion": "Malphite",
+    "art": "SummonerTeleport",
+    "wand": 1790753036.56,
+    "wege": [
+     [
+      645.7,
+      0.167,
+      0.112
+     ],
+     [
+      645.7,
+      0.167,
+      0.112
+     ],
+     [
+      645.7,
+      0.167,
+      0.112
+     ],
+     [
+      651.2,
+      0.777,
+      0.733
+     ],
+     [
+      651.2,
+      0.775,
+      0.732
+     ],
+     [
+      651.3,
+      0.775,
+      0.732
+     ],
+     [
+      651.3,
+      0.774,
+      0.732
+     ],
+     [
+      651.3,
+      0.774,
+      0.73
+     ],
+     [
+      651.3,
+      0.772,
+      0.73
+     ],
+     [
+      651.4,
+      0.772,
+      0.73
+     ],
+     [
+      651.4,
+      0.77,
+      0.728
+     ],
+     [
+      651.4,
+      0.77,
+      0.728
+     ]
+    ]
+   },
+   {
+    "zeit": 954,
+    "wer": "Malphite",
+    "champion": "Malphite",
+    "art": "SummonerTeleport",
+    "wand": 1790753343.47,
+    "wege": [
+     [
+      952.3,
+      0.105,
+      0.232
+     ],
+     [
+      952.4,
+      0.105,
+      0.232
+     ],
+     [
+      952.4,
+      0.105,
+      0.232
+     ],
+     [
+      952.6,
+      0.105,
+      0.232
+     ],
+     [
+      952.6,
+      0.105,
+      0.232
+     ],
+     [
+      952.6,
+      0.105,
+      0.232
+     ],
+     [
+      956.6,
+      0.914,
+      0.682
+     ],
+     [
+      956.7,
+      0.912,
+      0.684
+     ],
+     [
+      956.7,
+      0.912,
+      0.684
+     ],
+     [
+      956.7,
+      0.912,
+      0.684
+     ],
+     [
+      956.8,
+      0.912,
+      0.686
+     ],
+     [
+      956.8,
+      0.912,
+      0.686
+     ]
+    ]
+   },
+   {
+    "zeit": 1972,
+    "wer": "Malphite",
+    "champion": "Malphite",
+    "art": "SummonerTeleport",
+    "wand": 1790754361.43,
+    "wege": [
+     [
+      1970.5,
+      0.586,
+      0.083
+     ],
+     [
+      1970.5,
+      0.586,
+      0.083
+     ],
+     [
+      1970.5,
+      0.586,
+      0.083
+     ],
+     [
+      1970.6,
+      0.584,
+      0.083
+     ],
+     [
+      1970.6,
+      0.584,
+      0.083
+     ],
+     [
+      1977.9,
+      0.654,
+      0.893
+     ],
+     [
+      1978.1,
+      0.66,
+      0.891
+     ],
+     [
+      1978.2,
+      0.663,
+      0.891
+     ],
+     [
+      1978.2,
+      0.663,
+      0.889
+     ],
+     [
+      1978.3,
+      0.665,
+      0.889
+     ],
+     [
+      1978.3,
+      0.665,
+      0.889
+     ],
+     [
+      1978.3,
+      0.667,
+      0.889
+     ]
+    ]
+   }
+  ],
+  "recall": [
+   {
+    "wer": "Gragas",
+    "zeit": 118,
+    "items_vorher": [
+     1056,
+     3340
+    ],
+    "naechst_zeit": 140,
+    "naechst_ort": "auf der Mid-Lane",
+    "items_nachher": [
+     1056,
+     2055,
+     3340
+    ],
+    "neue_items": true,
+    "basis": false
+   },
+   {
+    "wer": "Braum",
+    "zeit": 221,
+    "items_vorher": [
+     1028,
+     3340,
+     3865
+    ],
+    "naechst_zeit": 240,
+    "naechst_ort": "unten",
+    "items_nachher": [
+     1028,
+     2022,
+     3340,
+     3865
+    ],
+    "neue_items": true,
+    "basis": false
+   },
+   {
+    "wer": "Gragas",
+    "zeit": 256,
+    "items_vorher": [
+     1001,
+     1056,
+     2055,
+     3340
+    ],
+    "naechst_zeit": 271,
+    "naechst_ort": "auf der Mid-Lane",
+    "items_nachher": [
+     1001,
+     1056,
+     2055,
+     3340
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "Gragas",
+    "zeit": 384,
+    "items_vorher": [
+     1001,
+     1056,
+     2055,
+     3340
+    ],
+    "naechst_zeit": 397,
+    "naechst_ort": "auf der Mid-Lane",
+    "items_nachher": [
+     1056,
+     2055,
+     3020,
+     3340
+    ],
+    "neue_items": true,
+    "basis": false
+   },
+   {
+    "wer": "Gragas",
+    "zeit": 480,
+    "items_vorher": [
+     1056,
+     2022,
+     2055,
+     3020,
+     3340
+    ],
+    "naechst_zeit": 522,
+    "naechst_ort": "im oberen Fluss",
+    "items_nachher": [
+     1056,
+     2022,
+     2055,
+     3020,
+     3340
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "Braum",
+    "zeit": 525,
+    "items_vorher": [
+     1001,
+     1029,
+     3067,
+     3340,
+     3866
+    ],
+    "naechst_zeit": 553,
+    "naechst_ort": "im unteren Fluss",
+    "items_nachher": [
+     1001,
+     1029,
+     1033,
+     3067,
+     3364,
+     3866
+    ],
+    "neue_items": true,
+    "basis": false
+   },
+   {
+    "wer": "Amumu",
+    "zeit": 637,
+    "items_vorher": [
+     1001,
+     1052,
+     1101,
+     2055,
+     3147,
+     3340
+    ],
+    "naechst_zeit": 640,
+    "naechst_ort": "auf der Mid-Lane",
+    "items_nachher": [
+     1001,
+     1052,
+     1101,
+     2055,
+     3147,
+     3340
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "Ezreal",
+    "zeit": 854,
+    "items_vorher": [
+     1036,
+     2055,
+     3044,
+     3057,
+     3070,
+     3340
+    ],
+    "naechst_zeit": 883,
+    "naechst_ort": "im unteren Fluss",
+    "items_nachher": [
+     1036,
+     2055,
+     3070,
+     3078,
+     3340
+    ],
+    "neue_items": true,
+    "basis": false
+   }
+  ]
+ },
+ {
+  "stamm": "2026-09-30_134020",
+  "tp": [],
+  "recall": [
+   {
+    "wer": "Brand",
+    "zeit": 150,
+    "items_vorher": [
+     3070,
+     3340
+    ],
+    "naechst_zeit": 175,
+    "naechst_ort": "in der Flussmitte",
+    "items_nachher": [
+     2022,
+     3070,
+     3340
+    ],
+    "neue_items": true,
+    "basis": false
+   },
+   {
+    "wer": "Tryndamere",
+    "zeit": 577,
+    "items_vorher": [
+     1036,
+     1042,
+     1055,
+     2055,
+     3006,
+     3340
+    ],
+    "naechst_zeit": 582,
+    "naechst_ort": "im oberen roten Jungle",
+    "items_nachher": [
+     1036,
+     1042,
+     1055,
+     2055,
+     3006,
+     3340
+    ],
+    "neue_items": false,
+    "basis": false
+   },
+   {
+    "wer": "Sejuani",
+    "zeit": 1157,
+    "items_vorher": [
+     1031,
+     2055,
+     3047,
+     3067,
+     3084,
+     3340,
+     6660
+    ],
+    "naechst_zeit": 1160,
+    "naechst_ort": "in der blauen Basis",
+    "items_nachher": [
+     1031,
+     2055,
+     3047,
+     3067,
+     3084,
+     3340,
+     6660
+    ],
+    "neue_items": false,
+    "basis": true
+   }
+  ]
+ }
+]

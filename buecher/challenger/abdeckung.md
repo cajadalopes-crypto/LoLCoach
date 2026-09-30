@@ -4,20 +4,18 @@ Erzeugt von `werkzeuge/challenger/abdeckung.py` aus dem Register (`lolcoach/makr
 
 | | erkannt | gerechnet | gesagt | getestet |
 |---|---:|---:|---:|---:|
-| **Stand** | 97/111 (+14 fuer 033) | **111/111** | **111/111** | **111/111** |
+| **Stand** | 105/111 (+6 fuer 033) | **111/111** | **111/111** | **111/111** |
 
 **Tor 3a** (gerechnet, gesagt, getestet je 111/111): **ERREICHT**. 'Erkannt' gilt fuer alle ausser den mit 033 markierten (Wahrnehmung fehlt).
 
 ## Wahrnehmung fehlt -> Auftrag 033
 
-- **eigene_wards** (Minimap: eigene Wards (Ort, Ablauf, zerstoert)): S10, S12, S14, T4, M5
-- **wellen_alle** (Minimap: Wellen der anderen Lanes): W11, W14, M6
-- **busch_sicht** (Spielbild: Busch vor dir ohne Sicht): S11
-- **trinket_ladungen** (HUD: Trinket-Ladungen): S13
-- **gegner_recall** (Spielbild/Minimap: Lane-Gegner beginnt Recall): B5
-- **tp_stand_gegner** (zuverlaessiger TP-Stand der Gegner (heute nur nach gesehenem Sprung)): T9
-- **kopfgeld** (Minimap: markierte Objective-Kopfgelder): O12
-- **mitspieler_zauber** (HUD: Beschwoererzauber der Mitspieler (Flash)): P2
+- **busch_sicht** (Busch vor dir ohne Sicht - Minimap-Nebel zu grob, nicht gebaut): S11
+- **ward_weg** (Minimap: eigener Ward weg - wem er gehoert und 'weg' 6-14 % falsch (Icon/Text darueber)): S12
+- **gegner_recall** (Recall des Lane-Gegners - 18 von 36 erkannten bestaetigt (Items/Basis)): B5
+- **tp_stand_gegner** (TP-Stand der Gegner - 10 Spruenge in 10 Partien erkannt, Treffer nicht messbar): T9
+- **kopfgeld** (Objective-Kopfgeld - Goldrand an Tuermen lesbar, Bedeutung nicht belegt, API ohne Ereignis): O12
+- **mitspieler_zauber** (Blitz der Mitspieler - HUD zeigt ihn nicht, Chat: 0 von 50 Blitz-Pings): P2
 
 ## Alle 111
 
@@ -34,11 +32,11 @@ Spalten: Nr, Entscheidung, Grundlage (Buch 17), erkannt, gerechnet, gesagt, gete
 | S7 | Linse statt gelbem Trinket | D,R | ✔ | ✔ | ✔ | ✔ | – | Tausch beim Back auf Linse: Herold kommt, du raeumst die Grube. |
 | S8 | Sicht vor dem Objective | D,R | ✔ | ✔ | ✔ | ✔ | – | Larven in 70 s: Ward den Eingang auf ihrer Seite – wer vorher Sicht hat, bekommt das Monster. Danach Welle. |
 | S9 | Raeumen vor dem Objective | R | ✔ | ✔ | ✔ | ✔ | – | Linse jetzt an der Drachengrube: ihr Ward muss weg, bevor ihr startet. |
-| S10 | Flanken-Ward vor dem Split | D,R | 033 | ✔ | ✔ | ✔ | eigene_wards | Bevor du drueckst: Ward an ihren Jungle-Eingang zu deiner Seite – sonst stirbst du ohne Warnung (allein splitten ohne Info endet oft tot). |
+| S10 | Flanken-Ward vor dem Split | D,R | ✔ | ✔ | ✔ | ✔ | – | Bevor du drueckst: Ward an ihren Jungle-Eingang zu deiner Seite – sonst stirbst du ohne Warnung (allein splitten ohne Info endet oft tot). |
 | S11 | Kein Face-Check | D,M | 033 | ✔ | ✔ | ✔ | busch_sicht | Nicht in den Busch: 2 fehlen. Erst Ward oder Linse. |
-| S12 | Sicht abgelaufen oder zerstoert | M,R | 033 | ✔ | ✔ | ✔ | eigene_wards | Dein Ward im Tri-Busch ist weg: neu setzen – ohne ihn siehst du keinen Gank. Erst dann wieder vorgehen. |
-| S13 | Trinket-Ladungen nicht verfallen lassen | M,R | 033 | ✔ | ✔ | ✔ | trinket_ladungen | Einen Ward jetzt in den Fluss: beide Ladungen sind voll, sonst verfaellt eine. |
-| S14 | Ward fuer einen Mitspieler oder ein Objective | M,R | 033 | ✔ | ✔ | ✔ | eigene_wards | Setz den Ward an die Larven: Vi geht gleich hin und hat dort keine Sicht. |
+| S12 | Sicht abgelaufen oder zerstoert | M,R | 033 | ✔ | ✔ | ✔ | ward_weg | Dein Ward im Tri-Busch ist weg: neu setzen – ohne ihn siehst du keinen Gank. Erst dann wieder vorgehen. |
+| S13 | Trinket-Ladungen nicht verfallen lassen | M,R | ✔ | ✔ | ✔ | ✔ | – | Einen Ward jetzt in den Fluss: beide Ladungen sind voll, sonst verfaellt eine. |
+| S14 | Ward fuer einen Mitspieler oder ein Objective | M,R | ✔ | ✔ | ✔ | ✔ | – | Setz den Ward an die Larven: Vi geht gleich hin und hat dort keine Sicht. |
 | J1 | Startseite ableiten | D | ✔ | ✔ | ✔ | ✔ | – | Er ist oben gesehen worden: Start auf der oberen Seite, erster Gank eher Top. |
 | J2 | Gank-Fenster vorwarnen | D,M | ✔ | ✔ | ✔ | ✔ | – | Gank-Fenster jetzt: Welle zurueckziehen lassen – ihr Jungler ist unbekannt und deine Welle steht vorn. Erst wieder nach vorn, wenn er gesehen wird. |
 | J3 | Freifenster nutzen | D,Re | ✔ | ✔ | ✔ | ✔ | – | Er ist Bot: 43 s Ruhe – so lange braucht er zu dir. Danach Welle rein, Platte holen. |
@@ -63,10 +61,10 @@ Spalten: Nr, Entscheidung, Grundlage (Buch 17), erkannt, gerechnet, gesagt, gete
 | W8 | Welle retten oder Objective | Re,D | ✔ | ✔ | ✔ | ✔ | – | Lass die Welle: der Drache ist mehr wert: 145 Gold gegen 3.0 Punkte Siegchance. |
 | W9 | Nicht zu tief druecken | D,M | ✔ | ✔ | ✔ | ✔ | – | Stopp vor ihrem Turm: ihr Jungler ist unbekannt und du willst nicht backen. |
 | W10 | Nach Kill oder Tod des Lane-Gegners | D,M | ✔ | ✔ | ✔ | ✔ | – | Er ist 25 s tot: Welle crashen, 2 Platten – du hast 57 s, bis er zurueck ist. Danach Back. |
-| W11 | Seitenwelle holen (Mitte und Spaet) | D,M | 033 | ✔ | ✔ | ✔ | wellen_alle | Bot-Welle holen, bis vor ihren Turm: sie laeuft auf euren Turm. |
+| W11 | Seitenwelle holen (Mitte und Spaet) | D,M | ✔ | ✔ | ✔ | ✔ | – | Bot-Welle holen, bis vor ihren Turm: sie laeuft auf euren Turm. |
 | W12 | Grosse Welle stapeln fuer Turm oder Dive | M,Re | ✔ | ✔ | ✔ | ✔ | – | Zwei Wellen stapeln: ihr Turm ist schwach und Aatrox ist weg. Danach mit Vi auf den Turm. |
 | W13 | Welle aufgeben | Re,D | ✔ | ✔ | ✔ | ✔ | – | Lass die Welle und geh: der Drache ist in 15 s. |
-| W14 | Wellen der anderen Lanes fuer Prio | M | 033 | ✔ | ✔ | ✔ | wellen_alle | Kein Drache jetzt: die Bot-Welle laeuft auf euren Turm: euer Bot kann nicht weg. Erst wenn Bot die Welle hat. |
+| W14 | Wellen der anderen Lanes fuer Prio | M | ✔ | ✔ | ✔ | ✔ | – | Kein Drache jetzt: die Bot-Welle laeuft auf euren Turm: euer Bot kann nicht weg. Erst wenn Bot die Welle hat. |
 | B1 | Wann Back | D,M | ✔ | ✔ | ✔ | ✔ | – | Back jetzt: Welle drin, 1000 Gold fuer dein naechstes Bauteil. |
 | B2 | Back im Takt des Objectives | D | ✔ | ✔ | ✔ | ✔ | – | Back jetzt: dann bist du 57 s vor dem Drachen voll da. Direkt zur Grube. |
 | B3 | Back verschieben | D,M | ✔ | ✔ | ✔ | ✔ | – | Noch nicht back: Aatrox ist 20 s tot. Erst Welle und Platten, dann Back. |
@@ -79,7 +77,7 @@ Spalten: Nr, Entscheidung, Grundlage (Buch 17), erkannt, gerechnet, gesagt, gete
 | T1 | TP zurueck in die Lane oder aufheben | Re,D | ✔ | ✔ | ✔ | ✔ | – | TP zurueck: mehrere Wellen laufen auf deinen Turm (etwa 76 Gold) und kein Monster steht an. TP ist in 4:48 min wieder da. |
 | T2 | TP zu Kampf oder Objective auf der anderen Seite | Re,D | ✔ | ✔ | ✔ | ✔ | – | Welle rein (6 s), dann TP zum Kampf: 4 gegen 3, du bist in 12 s da, rechtzeitig da. |
 | T3 | TP halten fuer das Objective | Re,D | ✔ | ✔ | ✔ | ✔ | – | Nicht TP fuer die Lane: du brauchst ihn in 1:30 min am Drachen (Abklingzeit 4:48 min). |
-| T4 | TP-Flanke in der Spaetphase | Re,R | 033 | ✔ | ✔ | ✔ | eigene_wards | Wenn sie anfangen: TP auf den Ward Flanke hinter Baron – von hinten trifft deine Ankunft ihre Hinterleute. |
+| T4 | TP-Flanke in der Spaetphase | Re,R | ✔ | ✔ | ✔ | ✔ | – | Wenn sie anfangen: TP auf den Ward Flanke hinter Baron – von hinten trifft deine Ankunft ihre Hinterleute. |
 | T5 | TP zur Verteidigung | Re | ✔ | ✔ | ✔ | ✔ | – | TP auf den Mid-Turm: sonst faellt er in 15 s. |
 | T6 | Konter-TP | M,Re | ✔ | ✔ | ✔ | ✔ | – | Du auch: TP dorthin – Aatrox TPt zum Kampf, sonst 3 gegen 4. |
 | T7 | TP-Ziel waehlen | Re,M | ✔ | ✔ | ✔ | ✔ | – | TP auf den Vasallen hinten, nicht auf den Ward im Fluss: dort steht Leona. |
@@ -118,8 +116,8 @@ Spalten: Nr, Entscheidung, Grundlage (Buch 17), erkannt, gerechnet, gesagt, gete
 | M2 | Split: ob, welche Seite, wie tief | D | ✔ | ✔ | ✔ | ✔ | – | Split bis zu ihrem Turm, nicht weiter: sie muessen dir jemanden schicken. Sofort weg, wenn drei fehlen. |
 | M3 | Split verlassen | D,Re | ✔ | ✔ | ✔ | ✔ | – | Split abbrechen, lauf jetzt: Baron in 40 s. |
 | M4 | Gruppe Mid | D | ✔ | ✔ | ✔ | ✔ | – | Geh Mid zur Gruppe: 4 von euch stehen dort, allein bist du das leichtere Ziel. |
-| M5 | 1-3-1 oder 1-4 | D,R | 033 | ✔ | ✔ | ✔ | eigene_wards | 1-3-1, du Top: du bist staerker als dein Gegner und hast Sicht an der Flanke. |
-| M6 | Seitenwellen vor Baron oder Drache | D,M | 033 | ✔ | ✔ | ✔ | wellen_alle | Top und Bot-Welle druecken: dann Baron: sie muessen die Wellen holen. |
+| M5 | 1-3-1 oder 1-4 | D,R | ✔ | ✔ | ✔ | ✔ | – | 1-3-1, du Top: du bist staerker als dein Gegner und hast Sicht an der Flanke. |
+| M6 | Seitenwellen vor Baron oder Drache | D,M | ✔ | ✔ | ✔ | ✔ | – | Top und Bot-Welle druecken: dann Baron: sie muessen die Wellen holen. |
 | M7 | Inhibitor-Druck | D,M | ✔ | ✔ | ✔ | ✔ | – | Ihr Bot-Inhibitor ist weg: die andere Seite halten – die Super-Vasallen machen dort Druck fuer euch. |
 | M8 | Spiel beenden | D,Re | ✔ | ✔ | ✔ | ✔ | – | 3 tot: Mid-Inhibitor jetzt – ihr seid 27 s vor dem ersten Respawn fertig. |
 | M9 | Basis verteidigen | D,M | ✔ | ✔ | ✔ | ✔ | – | Nicht raus: Wellen im Tor clearen – sie haben den Baron. Danach auf ihren Fehler warten. |

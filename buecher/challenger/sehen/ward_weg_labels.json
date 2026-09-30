@@ -1,0 +1,14 @@
+{
+ "beschreibung": "50 zufaellige 'weg' der Wardspur (VERDECKT 0,045, ohne Nachsehen), je 10 s vorher / 4 s nachher von Hand, 30.09.2026",
+ "falsch": {
+  "E9": "Champion-Icon auf dem Ward",
+  "E25": "Timer-Text '2m+' ueber dem Ward",
+  "E31": "Kamerarahmen-Linien, Ward noch da",
+  "E32": "Champion-Icon auf dem Ward",
+  "E33": "Champion-Icon auf dem Ward",
+  "E38": "Champion-Icon auf dem Ward",
+  "E41": "Champion-Icon auf dem Ward"
+ },
+ "richtig": 43,
+ "gesamt": 50
+}

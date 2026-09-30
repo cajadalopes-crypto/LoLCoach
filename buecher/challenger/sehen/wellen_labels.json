@@ -1,0 +1,7 @@
+{
+ "beschreibung": "Wellen aller Lanes, Frage der Entscheidungen W11/W14/M6: steht eine gegnerische Welle auf eurer Haelfte der Seitenlane (stand == 'bei_uns')? Von Hand an vergroesserten Stellen und Streifen der eigenen Haelfte, 30.09.2026.",
+ "stichprobe_1": {"datei": "wellen_proben.json", "zweck": "Fehler finden (Eichung)", "befund": "4 von 24 'bei_uns' falsch: einzelne rote Punkte = Totenkopf-Marker, Turm-Ziffer, Champion-Ring -> Knochen-Filter, mind. 2 Gegner-Vasallen"},
+ "stichprobe_2_endleser": {"datei": "wellen_proben_pruef_final.json", "seitenlanes": 118, "meldungen": 11, "richtig": 10, "falsch": {"57 Bot": "1 Vasall + Totenkopf daneben"}, "uebersehen": {"9 Bot": "Welle in eurer Basis (Basis wird ausgeblendet)"}, "hinweis": "25 Bot war mit dem alten Leser uebersehen (Pulk halb unter blauen Vasallen) - mit Pulk-Zerlegung gefunden; an dieser Stichprobe wurde die Pulk-Zerlegung gebaut"},
+ "stichprobe_4_endleser": {"datei": "wellen_proben_4.json", "seed": 3323, "seitenlanes": 120, "meldungen": 16, "richtig": 16, "falsch": {}, "uebersehen": {}, "hinweis": "frisch, an nichts beteiligt"},
+ "ergebnis_endleser": {"echte_wellen": 27, "gefunden": 26, "treffer": 0.963, "meldungen": 27, "fehlalarme": 1, "fehlalarm_anteil": 0.037}
+}

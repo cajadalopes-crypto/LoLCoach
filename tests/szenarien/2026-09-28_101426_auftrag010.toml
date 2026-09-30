@@ -53,9 +53,9 @@ warum = "Auftrag 010, 1: der Rueckzug gilt - kein neues Ziel."
 
 [[szenario]]
 id = "2302-back-gilt-still"
-zeit = "23:02"
-fenster = [["23:02", "23:18"]]
-lage = "Leerlauf 6: 22:52 'Back jetzt, 900 Gold fuer Spitzhacke', Riven noch auf der Bot-Lane."
+zeit = "22:25"
+fenster = [["22:25", "22:41"]]
+lage = "Leerlauf 6: seit 028 kommt der Back-Ruf 22:25 (vorher 22:52, Szenario damals 23:02-23:18); 23:02 ist Riven schon zurueck im Fluss (925 Gold) - geprueft werden die 16 s nach dem Ruf (Auftrag 033, Rest 4)."
 kategorie_max = { "PLAN|WENDEPUNKT|FENSTER" = 0 }
 warum = "Auftrag 010, 1: der Back-Ruf gilt - kein neues Ziel."
 

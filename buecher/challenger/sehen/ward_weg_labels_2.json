@@ -1,0 +1,4 @@
+{"beschreibung": "50 zufaellige 'weg' der Wardspur NACH dem Fix (VERDECKT 0,065, Nachsehen 0,45), neue Partien 164326/183125/231200, je 10 s vorher / 4 s nachher von Hand, 30.09.2026",
+ "falsch": {"E17": "Ward danach noch sichtbar", "E20": "Ward unter dem Timer-Text '1:48'", "E23": "Ward danach noch sichtbar (Ping daneben)"},
+ "unklar": {"E11": "Champion-Icon danach auf der Stelle", "E30": "Champion-Icon danach auf der Stelle", "E36": "Champion-Icon danach auf der Stelle", "E44": "Champion-Icons danach auf der Stelle"},
+ "gesamt": 50, "fehlalarme_min": 3, "fehlalarme_max": 7, "urteil": "nicht verlaesslich (6-14 % > 5 %)"}

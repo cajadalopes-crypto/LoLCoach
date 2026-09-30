@@ -480,6 +480,41 @@ def kaufbar(name: str, inventar, ziel: str | None = None) -> tuple[bool, str]:
     return False, "Inventar voll, und es verbraucht keine eigenen Bauteile"
 
 
+# Auftrag 033 (Rest 1 aus 028; 134020: Stahlkappen 14:11 gekauft, 32:29 fuer die Schikane verkauft - 32:30 empfahl
+# der Coach sie wieder): Stiefel, die in dieser Partie da waren und ohne Aufwertung verschwanden, sind verkauft - mit
+# vollem Build (>= 5 fertige Items, der einzige Grund, sie abzugeben) werden keine Stiefel mehr empfohlen. Je Champion
+# gemerkt; eine neue Partie (kein fertiges Item, keine Stiefel) loescht das Gedaechtnis.
+_BESESSEN: dict[str, set[int]] = {}
+_VERKAUFT: dict[str, set[int]] = {}
+
+
+def _stiefel2(i: int) -> bool:
+    return "Boots" in _tags(i) and bool(ddragon.items().get(i, {}).get("from"))
+
+
+def inventar_merken(champion_id: str, items) -> None:
+    items = [int(i) for i in items]
+    if fertige(items) == 0 and not any(_stiefel2(i) for i in items):
+        _BESESSEN.pop(champion_id, None)
+        _VERKAUFT.pop(champion_id, None)
+    vorher = _BESESSEN.setdefault(champion_id, set())
+    weiter = set().union(*(_baum(j) for j in items)) if items else set()
+    if fertige(items) >= ELIXIER_AB_FERTIG:
+        for i in vorher - set(items):
+            if i not in weiter:               # nicht aufgewertet, sondern weg: verkauft
+                _VERKAUFT.setdefault(champion_id, set()).add(i)
+    vorher |= {i for i in items if _stiefel2(i)}
+
+
+def verkauft(champion_id: str) -> frozenset[int]:
+    return frozenset(_VERKAUFT.get(champion_id, ()))
+
+
+def _hat(i: int, items) -> bool:
+    """Liegt i im Inventar - auch als Bauteil eines aufgewerteten Items (Stahlkappen in Gepanzertem Vormarsch)?"""
+    return i in items or any(i in _baum(j) for j in items)
+
+
 def _reihe(champion_id: str, items: tuple[int, ...], gegner: tuple[str, ...] = ()) -> list[int]:
     """Die offenen Ziel-Items, bestes zuerst: meiste eigene Bauteile (Gold), dann Carlos' Build, dann Lexikon. Die
     Stiefel der zweiten Stufe spaetestens nach dem ersten fertigen Item (Auftrag 028, 6.2) - dann vorn."""
@@ -489,8 +524,9 @@ def _reihe(champion_id: str, items: tuple[int, ...], gegner: tuple[str, ...] = (
     zweite = stiefel(champion_id, gegner)[0]
     stiefel_vorn = zweite is not None and fertige(items) >= 1 \
         and not any("Boots" in _tags(i) and it.get(i, {}).get("from") for i in items)
+    weg = verkauft(champion_id)
     for n, schritt in enumerate(schritte(champion_id, gegner)):
-        if any(i in items for i in schritt):
+        if any(_hat(i, items) or i in weg for i in schritt):
             continue
         for m, i in enumerate(schritt):
             if i in it and gruppe(i) not in gruppen and konflikt(i, items) is None:
@@ -599,7 +635,10 @@ def _auffuellen(k: Kauf | None, champion_id: str, items: tuple[int, ...], gold: 
     return k
 
 
-ELIXIER_AB_LEVEL = 9
+# Auftrag 033 (Rest 3 aus 028), aus 3000 High-Elo-Partien (werkzeuge/challenger/elixiere.py, buecher/challenger/
+# elixiere.json): nur 9 % der Spieler kaufen ueberhaupt ein Elixier; beim Kauf Minute 26/32/40 und Level 14/17/18
+# (10/50/90 %), 65 % mit >= 5 fertigen Items. Darum ab Level 14 (vorher 9) und weiter fuenf fertige Items.
+ELIXIER_AB_LEVEL = 14
 # Auftrag 028, 6.2: "Elixiere nur mit vollem Inventar (sechs fertige Items), spaet" - und 183125 36:47 ging es mit
 # sechs Items nicht zu kaufen (es braucht einen Platz, Auftrag 018, 4). Beides zusammen: fuenf fertige Items (der
 # Build ist fertig) und ein freier Platz; sonst nie
@@ -628,6 +667,7 @@ def plan(champion_id: str, items: tuple[int, ...], gold: float, level: int | Non
     kam es ab Level 9, sobald sonst nichts passte - Ornn bekam es fuenfmal, auch nach Carlos' Widerspruch. Uebriges
     Gold geht in den Build (Lexikon bis Situativ) oder in ein Kontroll-Auge."""
     gegner = tuple(gegner) or GEGNER[0]
+    inventar_merken(champion_id, items)
     k = _plan(champion_id, items, gold, gegner)
     inv = tuple(int(i) for i in items)
     if k is None or not (k.kaufen or k.naechstes):
@@ -647,7 +687,9 @@ def _plan(champion_id: str, items: tuple[int, ...], gold: float, gegner: tuple[s
     it = ddragon.items()
     items = tuple(int(i) for i in items)
     frei = PLAETZE - _belegt(items)
-    stiefel_fehlt = not any("Boots" in _tags(i) for i in items)
+    # Stiefel verkauft (fuer den sechsten Platz): nicht wieder kaufen
+    stiefel_fehlt = not any("Boots" in _tags(i) for i in items) and not any("Boots" in _tags(i)
+                                                                          for i in verkauft(champion_id))
     reihe = _reihe(champion_id, items, gegner)
     ohne = _auffuellen(_erster(reihe, items, gold, frei, stiefel_fehlt), champion_id, items, gold, stiefel_fehlt,
                        gegner)

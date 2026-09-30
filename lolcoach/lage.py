@@ -95,6 +95,11 @@ class Lagebild:
         self._recall: dict[str, float] = {}          # Gegner -> Spielzeit, zu der er nach 7 s Stillstand verschwand
         self.fernspruenge: list = []                 # gemeldete TP/globale Ults (zauber.Timer)
         self._still: dict[str, tuple[float, float, float]] = {}   # Mitspieler -> (seit, x, y) ohne Bewegung (AFK)
+        # Auftrag 033: Wards deines Teams (Minimap, alle 3 s) und Ladungen des gelben Trinkets (HUD)
+        from .sehen import Wardspur
+        self.wardspur = Wardspur()
+        self.wards_zeit: float | None = None
+        self.trinket: tuple[int, float] | None = None     # (Ladungen, Spielzeit der Lesung)
 
     def eigene_zauber(self, p: Partie, jetzt: float) -> dict[str, float] | None:
         """Beschwoererzauber des Spielers -> Sekunden bis bereit (0 = bereit), aus dem HUD (frisch, < 3 s).
@@ -123,6 +128,19 @@ class Lagebild:
         else:
             self._quest_kandidat = (zustand, zeit)
 
+    def team_wards(self, jetzt: float) -> list | None:
+        """Wards deines Teams, die stehen (sehen.Spurward: Ort, seit wann); None ohne frische Lesung (> 10 s).
+        Wem ein Ward gehoert und wann es weg ist, liest der Coach NICHT verlaesslich (wahrnehmung.py, 033)."""
+        if self.wards_zeit is None or jetzt - self.wards_zeit > 10:
+            return None
+        return self.wardspur.stehen()
+
+    def trinket_ladungen(self, jetzt: float) -> int | None:
+        """Ladungen des gelben Trinkets (0-2), frisch (< 3 s) aus dem HUD - sonst None."""
+        if self.trinket is None or jetzt - self.trinket[1] > 3:
+            return None
+        return self.trinket[0]
+
     def eigene_faehigkeiten(self, jetzt: float) -> dict[str, bool] | None:
         """Q W E R bereit? (aus dem HUD, frisch)"""
         if self.eigene_zeit is None or jetzt - self.eigene_zeit > 3:
@@ -148,6 +166,15 @@ class Lagebild:
                 self.wellen_zeit = zeit_von_wand(e[1])
             elif e[0] == "platten":
                 self.platten.update(e[2])
+            elif e[0] == "wards":
+                from .sehen import Ward
+                z = zeit_von_wand(e[1])
+                # Champion-Icons verdecken Wards - wer eben (1,5 s) irgendwo gesehen wurde, verdeckt dort
+                icons = [(x, y) for (zt, x, y) in self.zuletzt.values() if z - zt <= 1.5]
+                self.wardspur.neu(z, [Ward(*w) for w in e[2]], icons)
+                self.wards_zeit = z
+            elif e[0] == "trinket":
+                self.trinket = (e[2], zeit_von_wand(e[1]))
             elif e[0] == "gruben":
                 for g, z in e[2].items():
                     if self.gruben.get(g, ("",))[0] != z:
@@ -760,6 +787,9 @@ class FlashClips:
             pass
 
 
+WARD_TAKT = 3.0           # s zwischen zwei Ward-Lesungen (die Wardspur bestaetigt nach 6 s)
+
+
 class Beobachter(threading.Thread):
     """Schaut 1/`takt`-mal je Sekunde auf die Minimap (Verfolger, Flash-Spruenge)
     und einmal je Sekunde in den Chat (Windows-Texterkennung).
@@ -810,7 +840,7 @@ class Beobachter(threading.Thread):
     def run(self) -> None:
         import gzip
         import json
-        from . import bild
+        from . import bild, sehen
         kamera = _Kamera()
         verfolger = None
         from .welle import Wellenleser
@@ -831,6 +861,7 @@ class Beobachter(threading.Thread):
         self.clips = FlashClips(self.ordner.with_name(self.ordner.name.removesuffix("_bilder") + "_flashclips")
                                 if self.ordner else None)
         threading.Thread(target=self._spur_lauf, args=(leser,), daemon=True).start()
+        threading.Thread(target=self._ward_lauf, daemon=True).start()     # Auftrag 033: eigener Faden (200 ms)
         letzte_spur = 0.0
         if self.ordner:   # fortgesetzte Partie: abgebrochene Protokolle erst saeubern, sonst ist das Angehaengte unlesbar
             from .aufzeichnung import gz_saeubern
@@ -912,6 +943,10 @@ class Beobachter(threading.Thread):
                                         if (q := hud.quest(ganz)) is not None:   # Auftrag 006, W2: nur lesen
                                             with self._schloss:
                                                 self._ereignisse.append(("quest", start, q))
+                                        # Auftrag 033: Trinket-Ladungen (0,05 ms; gemessen 80/80 richtig)
+                                        if (tr := sehen.trinket(ganz)) is not None:
+                                            with self._schloss:
+                                                self._ereignisse.append(("trinket", start, tr))
                                     klein = cv2.resize(ganz, (BILDSCHIRM_BREITE, round(BILDSCHIRM_BREITE * hoehe / mb)),
                                                        interpolation=cv2.INTER_AREA)
                                     self._balken_pruefen(start, klein, leser)
@@ -1000,6 +1035,22 @@ class Beobachter(threading.Thread):
         if pos is None:
             return sichtungen
         return sichtungen + [minimap.Sichtung(ich[0], None, pos[0], pos[1], 0.0)]
+
+    def _ward_lauf(self) -> None:
+        """Wards deines Teams auf der Minimap, alle WARD_TAKT s (sehen.wards, ~200 ms - darum nicht im 60-Hz-Takt).
+        Gemessen an 60 frischen Karten: 116 von 118 Wards gefunden, 1 Fehlfund in 117 (phase3b_bericht.md)."""
+        from . import sehen
+        while not self._halt.wait(WARD_TAKT):
+            karte = getattr(self, "_letzte_karte", None)
+            if karte is None:
+                continue
+            try:
+                funde = sehen.wards(np.array(karte, copy=True))
+            except Exception as e:
+                self.fehler = f"Wards: {type(e).__name__}: {e}"
+                continue
+            with self._schloss:
+                self._ereignisse.append(("wards", time.time(), [[w.x, w.y, w.art, w.guete] for w in funde]))
 
     def _spur_lauf(self, leser) -> None:
         """Arbeits-Thread der Balkenspur (lebensbalken.Balkenspur): ~12 Spielbilder/s, Balken finden (~13 ms),

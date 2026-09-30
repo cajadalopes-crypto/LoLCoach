@@ -144,7 +144,7 @@ def s11(lage: MakroLage):
     return Kommando("S11", "Nicht in den Busch", f"{n} fehlen", "erst Ward oder Linse", klasse="gefahr", wert=4.0)
 
 
-@entscheidung("S12", "Sicht abgelaufen oder zerstoert", "M,R", ("eigene_wards",), ("R:S12",))
+@entscheidung("S12", "Sicht abgelaufen oder zerstoert", "M,R", ("eigene_wards", "ward_weg"), ("R:S12",))
 def s12(lage: MakroLage):
     if not lage.ward_verloren:
         return None

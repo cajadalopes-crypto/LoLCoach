@@ -1,0 +1,4 @@
+{
+ "beschreibung": "Trinket-Stichprobe 1 (trinket_proben.json, seed 3310, 80 Schirmbilder mit gelbem Trinket laut Live-API): Ladungen von Hand, 30.09.2026. Grau mit Zahl unten rechts = Ladungen (Symbol gesperrt, z. B. tot); Zahl in der Mitte / blau = 0 Ladungen mit Aufladezeit.",
+ "ladungen": [2,2,0,1,2,1,2,2,2,2, 1,1,1,2,1,1,2,1,2,0, 0,1,2,1,0,2,1,0,1,0, 1,2,2,1,1,2,2,2,1,0, 0,2,2,2,0,2,0,0,2,1, 2,2,1,1,0,1,1,2,2,0, 2,1,2,2,1,1,2,0,1,1, 0,0,2,2,2,2,2,2,1,0]
+}

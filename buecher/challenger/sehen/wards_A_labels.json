@@ -1,0 +1,6 @@
+{
+ "beschreibung": "Teil A der Ward-Messung (Stichprobe wards_proben.json, seed 3301): je Fund des Lesers echt (1) oder falsch (0). Von Hand an vergroesserten Ausschnitten, 30.09.2026.",
+ "falsch": ["A2.0", "A6.0", "A18.0", "A24.0", "A28.0", "A36.0", "A37.0", "A38.3", "A46.0", "A47.0", "A51.1", "A57.0"],
+ "falsch_grund": {"A2.0": "Champion-Ring", "A6.0": "Vasallen", "A18.0": "Champion-Ring", "A24.0": "Vasallen", "A28.0": "Vasallen", "A36.0": "Champion-Ring", "A37.0": "Vasallen", "A38.3": "Vasallen", "A46.0": "Vasallen", "A47.0": "Vasallen", "A51.1": "Vasallen", "A57.0": "Vasallen"},
+ "funde_gesamt": 91
+}

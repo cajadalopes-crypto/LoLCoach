@@ -3,7 +3,8 @@ stand = "30.09.2026 - Startwerte aus Buch 15; Budget-Treue misst werkzeuge/paket
 marge_s = 8.0               # Sicheres Fenster = T_gefahr - T_flucht - marge (Buch 15, 2.1); 026: 2 -> 8 (Budget-Treue: 164809 18:07 kam Xerath 6 s frueher, als die Uhr ab seinem vermuteten Brunnen rechnete)
 unbekannt_s = 45.0          # 026: wer so lange ungesehen ist, zaehlt mit hoechstens unbekannt_min_s (vorher: gar nicht)
 unbekannt_min_s = 5.0
-tp_s = 6.0                  # ein Gegner mit bereitem TP in seiner Basis ist so schnell da (Kanal 4 s + Weg)
+tp_s = 5.0                  # ein Gegner mit bereitem TP in seiner Basis ist so schnell da: Kanal 3 s (seit 25.S1.1,
+#                             vorher 4; Stand Patch 26.19, nachgeschlagen 30.09.2026, wissen/makro/patchwerte.toml [tp]) + Weg 2 s
 # Back-Frist: Recall-Kanal und Einkauf aus kern.toml [recall] (kanal_s, einkauf_s), der Weg aus wissen/wege.toml
 hysterese_ge = 150.0        # Chancen-Scanner: so viel mehr wert muss ein neues Paket sein (Buch 15, 5)
 countdown_bei_s = 5.0       # "Noch 5 Sekunden." - hoechstens zweimal je Paket (Buch 15, 1)

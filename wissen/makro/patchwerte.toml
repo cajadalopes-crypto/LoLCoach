@@ -5,7 +5,7 @@ stand = "Patch 26.19, nachgeschlagen 30.09.2026"
 
 [tp]
 quelle = ["wiki_teleport", "riftpatchnotes_teleport"]
-kanal_s = 3.0                 # seit 25.S1.1 (vorher 4) - wissen/uhren.toml tp_s = 6 rechnet noch mit 4 s Kanal
+kanal_s = 3.0                 # seit 25.S1.1 (vorher 4) - wissen/uhren.toml tp_s seit 033 mit 3 s Kanal (5 s)
 anflug_min_s = 0.5            # Flug zum Ziel nach dem Kanal, je nach Entfernung
 anflug_max_s = 5.0
 anflug_max_unleashed_s = 4.0

@@ -205,10 +205,25 @@ def lexikon_bleibt_rueckfall():
     assert kern and k is not None and k.item == IT[kern[0]]["name"], (k, kern)
 
 
+def auftrag_033_kein_wiederholungskauf():
+    """134020: Stahlkappen 14:11 gekauft, 32:29 fuer den sechsten Platz verkauft - danach nie wieder Stiefel. Und
+    aufgewertete Stiefel (Gepanzerter Vormarsch) zaehlen als Stahlkappen."""
+    kaufplan._BESESSEN.clear(), kaufplan._VERKAUFT.clear()
+    kaufplan.plan("Ornn", (1054, 3068, 3075, 3047, 3340), 170.0, 12)                       # 14:11
+    kaufplan.plan("Ornn", (2504, 3068, 3075, 3047, 3110, 6665, 3340), 1237.0, 17)          # 28:13
+    k = kaufplan.plan("Ornn", (2504, 3068, 3075, 3110, 6665, 3340), 5212.0, 18)            # 32:29, verkauft
+    assert 3047 in kaufplan.verkauft("Ornn"), kaufplan.verkauft("Ornn")
+    assert k is None or not any("Stiefel" in n or "Stahlkappen" in n for n in k.kaufen), k
+    kaufplan._BESESSEN.clear(), kaufplan._VERKAUFT.clear()
+    k = kaufplan.plan("Ornn", (3068, 3174, 3075), 3000.0, 14)
+    assert k is None or not any("Stiefel" in n or "Stahlkappen" in n for n in k.kaufen), k
+    kaufplan._BESESSEN.clear(), kaufplan._VERKAUFT.clear()
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (build_aus_den_aufnahmen, befund_164326_kein_caulfields, volles_inventar_kauft_nichts,
                  befund_173159_keine_spitzhacke_ausser_im_ziel, kaufbar_drei_regeln, alles_genannte_ist_kaufbar,
-                 auftrag_027_alles_gold, lexikon_bleibt_rueckfall):
+                 auftrag_027_alles_gold, lexikon_bleibt_rueckfall, auftrag_033_kein_wiederholungskauf):
         test()
         print(f"{test.__name__} OK")

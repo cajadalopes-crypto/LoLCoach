@@ -1206,6 +1206,7 @@ def udyr_024():
     assert sl._als_ereignis("Aus der Basis: Farm Top, Langschwert in 64 Sekunden kaufbar.") is None
     assert sl._als_ereignis("Teemo im oberen Fluss.") == "Teemo im oberen Fluss aufgetaucht ist"
     assert sl._als_ereignis("Xerath TP weg.") == "Xerath TP weg ist"
+    assert sl._als_ereignis("Baron in 34 Sekunden: Farm Top.") is None      # 091311 19:24 (Auftrag 033)
     # 5.3: FARMEN ohne Kauf-Vorschau
     h = NS(ziel=NS(name="Top-Welle"))
     leiste = [NS(art="kauf", schl="Caulfields Kriegshammer", in_s=lambda j: 43, text="")]
@@ -1299,7 +1300,7 @@ def pakete_026():
     assert u.t_gefahr == 5.0 and u.wer == "Pantheon", u
     tp = g(seit=10.0, ort="in seiner Basis", s=NS(tot=False, zauber=("SummonerTeleport",), name="t", respawn=0.0,
                                                   team="CHAOS"), champion="Xerath")
-    assert uhren.rechnen(m(tp), {}).t_gefahr == 6.0                     # TP bereit aus der Basis
+    assert uhren.rechnen(m(tp), {}).t_gefahr == 5.0                     # TP bereit aus der Basis (033: Kanal 3 s)
     # Abbruch: ein Gegner kommt NEU auf 1000 heran und ihr seid nicht mehr - "Raus jetzt", Ziel 15 s gesperrt
     h = Handlung("PLATTEN", Ziel("turm", "ihren Top-Turm", (4318.0, 13875.0), 3.0), "LANE", 12.0, satz="Drück den Turm.")
     kern = NS(fuehrer=NS(plan=Plan(h, 100.0, gesagt=100.0)), pflicht=NS(lane_gesagt=-1e9))

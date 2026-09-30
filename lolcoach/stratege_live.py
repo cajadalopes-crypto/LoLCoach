@@ -1245,6 +1245,10 @@ def _als_ereignis(text: str) -> str | None:
     """Ein Info- oder Wendepunkt-Satz als Nebensatz fuer "Jetzt, wo ...": "Teemo im oberen Fluss." -> "Teemo im oberen
     Fluss aufgetaucht ist"; "Ihr aeusserer Mid-Turm ist weg." -> "ihr aeusserer Mid-Turm weg ist"."""
     s = stratege._saetze(text)[0] if stratege._saetze(text) else text
+    # Auftrag 033 (Rest 4 aus 028; 091311 19:24 "Jetzt, wo Baron in 34 Sekunden aufgetaucht ist: Baron in 32
+    # Sekunden: ..."): eine Uhr ("Baron in 34 Sekunden", "Drache in 1:10") ist nichts, was passiert IST
+    if _re.match(r"^[^:,]*?\bin (\d+ ?(Sekunden|s|Minuten)|\d+:\d\d)\b", s):
+        return None
     s = s.split(":")[0].split(",")[0].rstrip(" .!")
     m = _re.match(r"^(.*?) (ist|sind) (.*)$", s)
     if m:

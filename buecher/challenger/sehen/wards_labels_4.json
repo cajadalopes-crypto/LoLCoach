@@ -1,0 +1,9 @@
+{
+ "beschreibung": "Pruefstichprobe 4 (wards_proben_4.json, seed 3304, 60 Zufallskarten ab 1:30) fuer den endgueltigen Leser (4 Vorlagen, Kamerarahmen ausgeblendet, Schwelle 0,60) - keine dieser Karten war an Vorlage oder Schwelle beteiligt. Von Hand an ganzen Karten und Vergroesserungen, 30.09.2026.",
+ "funde": 117,
+ "falsch": ["B19.5"],
+ "falsch_grund": {"B19.5": "blauer Rueckzugs-Ping im Kampfpulk (Guete 0,605)"},
+ "uebersehen": {"0": [[0.228, 0.230, "kontrolle", "blasses Kontrollauge - dafuer gibt es keine Vorlage"]], "11": [[0.904, 0.809, "team", "zur Haelfte unter einem Champion-Icon"]]},
+ "art_falsch": {"B17.5": "matt (team), gelesen als blass"},
+ "ergebnis": {"echte_wards": 118, "gefunden": 116, "treffer": 0.983, "fehlalarme": 0.0085}
+}

@@ -1,0 +1,825 @@
+[
+{
+"stamm": "2026-09-29_183125",
+"w": 1790700937.492,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_183125_bilder\\1790700937492.jpg",
+"zeit": 1453,
+"team": "ORDER",
+"vorsprung": 7600,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_213624",
+"w": 1790539082.018,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_213624_bilder\\1790539082018.jpg",
+"zeit": 1298,
+"team": "ORDER",
+"vorsprung": 13175,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"innen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_231200",
+"w": 1790717495.721,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_231200_bilder\\1790717495721.jpg",
+"zeit": 1176,
+"team": "ORDER",
+"vorsprung": 11675,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_173159",
+"w": 1790524314.162,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_173159_bilder\\1790524314162.jpg",
+"zeit": 1128,
+"team": "CHAOS",
+"vorsprung": 1125,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_133448",
+"w": 1790682541.223,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_133448_bilder\\1790682541223.jpg",
+"zeit": 854,
+"team": "ORDER",
+"vorsprung": 3400,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_231200",
+"w": 1790718117.588,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_231200_bilder\\1790718117588.jpg",
+"zeit": 1798,
+"team": "ORDER",
+"vorsprung": 14825,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-28_192113",
+"w": 1790617365.95,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-28_192113_bilder\\1790617365950.jpg",
+"zeit": 1294,
+"team": "ORDER",
+"vorsprung": 6575,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-28_101426",
+"w": 1790585292.579,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-28_101426_bilder\\1790585292579.jpg",
+"zeit": 1956,
+"team": "CHAOS",
+"vorsprung": 11350,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_231200",
+"w": 1790717858.536,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_231200_bilder\\1790717858536.jpg",
+"zeit": 1539,
+"team": "ORDER",
+"vorsprung": 9175,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_164326",
+"w": 1790521603.087,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_164326_bilder\\1790521603087.jpg",
+"zeit": 1389,
+"team": "CHAOS",
+"vorsprung": 100,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-28_192113",
+"w": 1790617630.235,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-28_192113_bilder\\1790617630235.jpg",
+"zeit": 1558,
+"team": "ORDER",
+"vorsprung": 7350,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-30_091311",
+"w": 1790754576.24,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-30_091311_bilder\\1790754576240.jpg",
+"zeit": 2186,
+"team": "ORDER",
+"vorsprung": 21625,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_164326",
+"w": 1790521303.969,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_164326_bilder\\1790521303969.jpg",
+"zeit": 1090,
+"team": "CHAOS",
+"vorsprung": 1262,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-28_101426",
+"w": 1790584768.54,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-28_101426_bilder\\1790584768540.jpg",
+"zeit": 1432,
+"team": "CHAOS",
+"vorsprung": 11662,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-30_134020",
+"w": 1790769797.182,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-30_134020_bilder\\1790769797182.jpg",
+"zeit": 1383,
+"team": "ORDER",
+"vorsprung": 15575,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"aussen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_173159",
+"w": 1790524252.022,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_173159_bilder\\1790524252022.jpg",
+"zeit": 1066,
+"team": "CHAOS",
+"vorsprung": -1375,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_213624",
+"w": 1790538656.7,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_213624_bilder\\1790538656700.jpg",
+"zeit": 873,
+"team": "ORDER",
+"vorsprung": 7725,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"innen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_164326",
+"w": 1790521401.316,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_164326_bilder\\1790521401316.jpg",
+"zeit": 1187,
+"team": "CHAOS",
+"vorsprung": 5887,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-30_134020",
+"w": 1790770032.411,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-30_134020_bilder\\1790770032411.jpg",
+"zeit": 1618,
+"team": "ORDER",
+"vorsprung": 12100,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"aussen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_164326",
+"w": 1790522058.995,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_164326_bilder\\1790522058995.jpg",
+"zeit": 1845,
+"team": "CHAOS",
+"vorsprung": -2525,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_183125",
+"w": 1790701678.596,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_183125_bilder\\1790701678596.jpg",
+"zeit": 2194,
+"team": "ORDER",
+"vorsprung": 7200,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-30_091311",
+"w": 1790753704.317,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-30_091311_bilder\\1790753704317.jpg",
+"zeit": 1314,
+"team": "ORDER",
+"vorsprung": 2192,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_183125",
+"w": 1790700869.486,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_183125_bilder\\1790700869486.jpg",
+"zeit": 1385,
+"team": "ORDER",
+"vorsprung": 9550,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_213624",
+"w": 1790538822.349,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_213624_bilder\\1790538822349.jpg",
+"zeit": 1039,
+"team": "ORDER",
+"vorsprung": 13325,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"innen"
+]
+],
+"gold_gegner": [
+[
+"Mid",
+"Inhib"
+]
+]
+},
+{
+"stamm": "2026-09-29_133448",
+"w": 1790682637.125,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_133448_bilder\\1790682637125.jpg",
+"zeit": 950,
+"team": "ORDER",
+"vorsprung": 3925,
+"gold_eigene": [
+[
+"Top",
+"innen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_173159",
+"w": 1790524944.036,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_173159_bilder\\1790524944036.jpg",
+"zeit": 1758,
+"team": "CHAOS",
+"vorsprung": 9850,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_133448",
+"w": 1790682624.642,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_133448_bilder\\1790682624642.jpg",
+"zeit": 938,
+"team": "ORDER",
+"vorsprung": 3125,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-30_134020",
+"w": 1790769468.636,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-30_134020_bilder\\1790769468636.jpg",
+"zeit": 1054,
+"team": "ORDER",
+"vorsprung": 8825,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"aussen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_183125",
+"w": 1790701617.952,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_183125_bilder\\1790701617952.jpg",
+"zeit": 2134,
+"team": "ORDER",
+"vorsprung": 8300,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_183125",
+"w": 1790700430.692,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_183125_bilder\\1790700430692.jpg",
+"zeit": 946,
+"team": "ORDER",
+"vorsprung": 4725,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-28_192113",
+"w": 1790617385.464,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-28_192113_bilder\\1790617385464.jpg",
+"zeit": 1313,
+"team": "ORDER",
+"vorsprung": 5575,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-30_134020",
+"w": 1790770222.754,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-30_134020_bilder\\1790770222754.jpg",
+"zeit": 1808,
+"team": "ORDER",
+"vorsprung": 13050,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"aussen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_231200",
+"w": 1790717753.974,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_231200_bilder\\1790717753974.jpg",
+"zeit": 1434,
+"team": "ORDER",
+"vorsprung": 15250,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_173159",
+"w": 1790525257.673,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_173159_bilder\\1790525257673.jpg",
+"zeit": 2071,
+"team": "CHAOS",
+"vorsprung": 10700,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_213624",
+"w": 1790539015.942,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_213624_bilder\\1790539015942.jpg",
+"zeit": 1232,
+"team": "ORDER",
+"vorsprung": 11900,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"innen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_213624",
+"w": 1790539052.731,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_213624_bilder\\1790539052731.jpg",
+"zeit": 1269,
+"team": "ORDER",
+"vorsprung": 13075,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"innen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_213624",
+"w": 1790539265.862,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_213624_bilder\\1790539265862.jpg",
+"zeit": 1482,
+"team": "ORDER",
+"vorsprung": 16775,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"innen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_231200",
+"w": 1790718129.947,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_231200_bilder\\1790718129947.jpg",
+"zeit": 1810,
+"team": "ORDER",
+"vorsprung": 15125,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_231200",
+"w": 1790717836.86,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_231200_bilder\\1790717836860.jpg",
+"zeit": 1517,
+"team": "ORDER",
+"vorsprung": 10700,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_133448",
+"w": 1790682589.656,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_133448_bilder\\1790682589656.jpg",
+"zeit": 903,
+"team": "ORDER",
+"vorsprung": 3625,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_173159",
+"w": 1790524552.279,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_173159_bilder\\1790524552279.jpg",
+"zeit": 1366,
+"team": "CHAOS",
+"vorsprung": 6550,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-30_134020",
+"w": 1790770247.655,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-30_134020_bilder\\1790770247655.jpg",
+"zeit": 1833,
+"team": "ORDER",
+"vorsprung": 12050,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"aussen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_213624",
+"w": 1790538707.326,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_213624_bilder\\1790538707326.jpg",
+"zeit": 924,
+"team": "ORDER",
+"vorsprung": 8925,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"innen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_183125",
+"w": 1790701222.079,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_183125_bilder\\1790701222079.jpg",
+"zeit": 1738,
+"team": "ORDER",
+"vorsprung": 7000,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-30_134020",
+"w": 1790769333.78,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-30_134020_bilder\\1790769333780.jpg",
+"zeit": 919,
+"team": "ORDER",
+"vorsprung": 5075,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"aussen"
+]
+],
+"gold_gegner": [
+[
+"Bot",
+"aussen"
+]
+]
+},
+{
+"stamm": "2026-09-29_133448",
+"w": 1790682545.289,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_133448_bilder\\1790682545289.jpg",
+"zeit": 858,
+"team": "ORDER",
+"vorsprung": 3400,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-28_101426",
+"w": 1790584604.84,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-28_101426_bilder\\1790584604840.jpg",
+"zeit": 1269,
+"team": "CHAOS",
+"vorsprung": 9150,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_173159",
+"w": 1790524888.16,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_173159_bilder\\1790524888160.jpg",
+"zeit": 1702,
+"team": "CHAOS",
+"vorsprung": 5125,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-28_192113",
+"w": 1790617590.046,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-28_192113_bilder\\1790617590046.jpg",
+"zeit": 1518,
+"team": "ORDER",
+"vorsprung": 6200,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_183125",
+"w": 1790701169.658,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_183125_bilder\\1790701169658.jpg",
+"zeit": 1685,
+"team": "ORDER",
+"vorsprung": 8650,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_231200",
+"w": 1790717919.438,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_231200_bilder\\1790717919438.jpg",
+"zeit": 1600,
+"team": "ORDER",
+"vorsprung": 11575,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-28_101426",
+"w": 1790584253.392,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-28_101426_bilder\\1790584253392.jpg",
+"zeit": 917,
+"team": "CHAOS",
+"vorsprung": 3575,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-30_091311",
+"w": 1790754442.405,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-30_091311_bilder\\1790754442405.jpg",
+"zeit": 2053,
+"team": "ORDER",
+"vorsprung": 11737,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-28_192113",
+"w": 1790617408.183,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-28_192113_bilder\\1790617408183.jpg",
+"zeit": 1336,
+"team": "ORDER",
+"vorsprung": 3625,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-27_213624",
+"w": 1790539169.324,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-27_213624_bilder\\1790539169324.jpg",
+"zeit": 1386,
+"team": "ORDER",
+"vorsprung": 16000,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"innen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-28_192113",
+"w": 1790617583.656,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-28_192113_bilder\\1790617583656.jpg",
+"zeit": 1511,
+"team": "ORDER",
+"vorsprung": 6200,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-29_183125",
+"w": 1790701528.192,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-29_183125_bilder\\1790701528192.jpg",
+"zeit": 2044,
+"team": "ORDER",
+"vorsprung": 2725,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-28_192113",
+"w": 1790616946.027,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-28_192113_bilder\\1790616946027.jpg",
+"zeit": 874,
+"team": "ORDER",
+"vorsprung": 7150,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"aussen"
+]
+],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-28_192113",
+"w": 1790617756.379,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-28_192113_bilder\\1790617756379.jpg",
+"zeit": 1684,
+"team": "ORDER",
+"vorsprung": 4000,
+"gold_eigene": [],
+"gold_gegner": []
+},
+{
+"stamm": "2026-09-30_134020",
+"w": 1790769631.17,
+"pfad": "C:\\Users\\Carlos\\Documents\\Claude\\Projekte\\LoLCoach\\aufnahmen\\2026-09-30_134020_bilder\\1790769631170.jpg",
+"zeit": 1217,
+"team": "ORDER",
+"vorsprung": 11800,
+"gold_eigene": [
+[
+"Top",
+"aussen"
+],
+[
+"Mid",
+"aussen"
+],
+[
+"Bot",
+"aussen"
+]
+],
+"gold_gegner": []
+}
+]
