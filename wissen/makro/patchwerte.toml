@@ -1,0 +1,47 @@
+# Patch-Werte fuer die Makro-Rechner (Auftrag 032). Wechseln mit dem Patch - nie im Code.
+# Spawn-Timer der Monster: wissen/objektive.toml; Wellen-Takt und Kanonen: wissen/wellen.toml; Vasallen-Gold/-XP und
+# Todeszeiten: wissen/mechanik.toml. Hier nur, was dort fehlt.
+stand = "Patch 26.19, nachgeschlagen 30.09.2026"
+
+[tp]
+quelle = ["wiki_teleport", "riftpatchnotes_teleport"]
+kanal_s = 3.0                 # seit 25.S1.1 (vorher 4) - wissen/uhren.toml tp_s = 6 rechnet noch mit 4 s Kanal
+anflug_min_s = 0.5            # Flug zum Ziel nach dem Kanal, je nach Entfernung
+anflug_max_s = 5.0
+anflug_max_unleashed_s = 4.0
+abklingzeit_s = 300           # vor 10:00
+unleashed_ab_s = 600
+unleashed_abklingzeit_s = [330, 240]    # Level 1 .. 18, linear
+# Top-Quest (Saison 2026): Patch 26.19 (22.09.2026)
+top_quest_abklingzeit_s = 390
+top_quest_unleashed_s = [300, 210]
+ziele = ["turm", "vasall", "ward"]
+volle_karte_einheiten = 20000.0   # Abstand, bei dem der Anflug die volle Dauer braucht (Annahme: Kartendiagonale)
+
+[recall]
+quelle = ["mobalytics_recall"]
+kanal_s = 8.0                 # Recall-Kanal (Wiki Recall); verstaerkter Recall (Baron/Herold) kuerzer
+einkauf_s = 3.0               # Annahme: Einkauf im Brunnen
+
+[welle]
+quelle = ["nerfplz_wellen", "loltheory_wellen", "metabot_wellen"]
+# Sekunden, bis eine Welle nach dem Stand zu dir (an deinen Turm) zurueckkommt bzw. unter deinem Turm stirbt.
+# Grobe Werte aus den Quellen (Crash -> Reset -> Rueckprall ~ eine Welle). Beobachtete Wellen (Minimap) haben Vorrang.
+rueckprall_nach_crash_s = 25.0
+mitte_bis_turm_s = 12.0
+bei_uns_bis_verlust_s = 0.0
+crash_dauer_s = 6.0           # eine Welle mit Faehigkeiten in den Turm druecken (Beispiel Buch 17: "Erst crashen (6 s)")
+anteil_verlust_am_turm = 0.6  # Anteil des Wellengolds, den du verlierst, wenn der eigene Turm die Welle toetet
+
+[gold_siegchance]
+quelle = ["eigen_gold_siegchance"]
+# Siegchance-Punkte je 1000 Gold Item-Vorsprung des Teams (beschreibend, logistisch bei Gleichstand, n = 20-37 k)
+minute = [10, 15, 20, 25]
+punkte_je_1000 = [8.73, 7.31, 5.77, 4.85]
+
+[gank]
+quelle = ["eigen_ganks", "dodge_jungle2026"]
+# erster Gank mit Kill auf der Lane (Top/Mid/Bot): 5-%-Quantil 2:17/2:45/2:23, 10 % 3:08/3:15/2:57, Median 7:18/7:23/6:41
+frueh_moeglich_s = 135        # davor praktisch nie (< 5 %)
+fenster_ab_s = 170            # ab hier 8 % aller ersten Ganks oben (Level 3 um 2:30, Quelle dodge.gg)
+voll_ab_s = 210               # Krabbler 3:30 / Level 4 nach Full Clear

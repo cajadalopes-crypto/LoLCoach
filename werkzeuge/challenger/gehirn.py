@@ -39,8 +39,15 @@ BEREICHE = ["Basis Blau", "Basis Rot", "Toplane", "Midlane", "Botlane", "Fluss o
 P_MIN = 0.02
 # lesbare Kernmerkmale fuer die Gruende
 KERN = ["leben_anteil", "gold_tasche", "minute", "tote_gegner", "tote_wir", "mit_nah", "abst_brunnen", "drache_bis",
-        "baron_da", "diff_itemwert_team", "diff_level_lane", "lg_nahe_sichtbar", "geg1_gesehen_alter", "inhibs_offen_wir",
-        "baron_buff_wir", "seit_back"]
+        "baron_da", "itemwert", "level", "lg_nahe_sichtbar", "geg1_gesehen_alter", "inhibs_offen_wir",
+        "baron_buff_wir", "seit_back"]      # seit 032 ohne Gegner-Items/-Level (Entscheidung zu Stufe 2)
+ROLLEN_CODE = {0: "TOP", 1: "JUNGLE", 2: "MIDDLE", 3: "BOTTOM", 4: "UTILITY"}
+
+
+def _back_regel() -> dict:
+    import tomllib
+    pfad = HIER.parents[1] / "wissen" / "makro" / "regeln.toml"
+    return tomllib.loads(pfad.read_text(encoding="utf-8"))["back_gruende"]
 
 # kurze Stichworte fuer die Gruende (Merkmal -> Wort); Rest: der Merkmalsname
 STICHWORT = {
@@ -140,18 +147,67 @@ class Gehirn:
             out.append(f"{STICHWORT.get(self.merkmale[j], self.merkmale[j])} {'hoch' if hoch else 'niedrig'}")
         return out
 
-    def bewerte(self, lage, mit_grund: bool = True):
+    # ---- Back nur mit Grund (Entscheidung zu Stufe 2, Punkt 2; Regel wissen/makro/regeln.toml [back_gruende])
+    def back_gruende(self, v, kontext: dict | None = None) -> list[str]:
+        """Gruende fuer Back aus Lage und Kontext (Welle, Kaufplan, Recall des Lane-Gegners - live aus Minimap/API).
+        Leer = Back wird nicht empfohlen, auch wenn der Aktionswert Back vorn sieht (Back ist in den Daten
+        ueberbewertet: wer beim Recall stirbt, ist nicht als Back erkennbar)."""
+        k = kontext or {}
+        r = _back_regel()
+        g = []
+        leben = v[self.idx["leben_anteil"]]
+        if not np.isnan(leben) and leben < r["leben_unter"]:
+            g.append("Leben niedrig")
+        if k.get("welle_gecrasht"):
+            g.append("Welle gecrasht")
+        rolle = ROLLEN_CODE.get(int(v[self.idx["rolle"]])) if not np.isnan(v[self.idx["rolle"]]) else None
+        gold = v[self.idx["gold_tasche"]]
+        spike = k.get("spike_fehlt")
+        if spike is not None:
+            if spike <= 0:
+                g.append("Gold fuer das naechste Bauteil")
+        elif rolle and not np.isnan(gold) and gold >= r["spike_gold"].get(rolle, 900):
+            g.append("Gold fuer ein Bauteil")
+        lo, hi = r["objective_takt_s"]
+        for n in ("drache_bis", "baron_bis", "herold_bis", "larven_bis"):
+            t = v[self.idx[n]]
+            if not np.isnan(t) and lo <= t <= hi:
+                g.append("Objective-Takt")
+                break
+        if k.get("lane_gegner_backt"):
+            g.append("Lane-Gegner backt")
+        return g
+
+    def bewerte(self, lage, mit_grund: bool = True, kontext: dict | None = None):
+        """Liste (Aktion, Ziel, Wert, p_highelo, Gefahr, Klarheit, Grund), beste zuerst.
+        - Back ohne Grund (back_gruende) rutscht hinter die naechste Aktion, Grund 'ohne Back-Grund'.
+        - Klarheit 'unklar': zuerst, was High-Elo hier am haeufigsten tut (Policy), mit Ziel - nie 'nichts'
+          (Entscheidung zu Stufe 2, Punkt 4)."""
         v = self.vektor(lage)
         q, p, g = self.werte(v)
         stufe, b, z = self.klarheit(q, p)
         kand = np.where(p >= P_MIN)[0]
         if len(kand) == 0:
             kand = np.argsort(-p)[:3]
-        kand = kand[np.argsort(-q[kand])]
+        if stufe == "unklar":
+            kand = kand[np.argsort(-p[kand])]          # Policy zuerst
+        else:
+            kand = kand[np.argsort(-q[kand])]
+        kand = list(kand)
+        back = self.schluessel.index("Back") if "Back" in self.schluessel else -1
+        bg = self.back_gruende(v, kontext)
+        if back in kand and not bg and kand.index(back) == 0 and len(kand) > 1:
+            kand[0], kand[1] = kand[1], kand[0]
+        erster = kand[0]
+        zweiter = kand[1] if len(kand) > 1 else erster
         out = []
         for i in kand:
             akt, _, ziel = self.schluessel[i].partition(":")
-            gr = self.grund(v, int(i), z if i == b else b) if mit_grund and i == b else []
+            gr = self.grund(v, int(i), zweiter) if mit_grund and i == erster else []
+            if i == back:
+                gr = gr + ([f"Back-Grund: {x}" for x in bg] or ["ohne Back-Grund"])
+            if stufe == "unklar" and i == erster:
+                gr = ["das tun High-Elo-Spieler hier am haeufigsten"] + gr
             out.append((akt, ziel, round(float(q[i]) * 100, 2), round(float(p[i]), 3), round(float(g[i]), 3), stufe, gr))
         return out
 

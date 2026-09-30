@@ -44,12 +44,18 @@ def niedrige_prioritaet():
 
 # ---------------------------------------------------------------- Daten
 
-BASIS_NAMEN = f.NAMEN + ["rolle", "seite", "anlass"]
+# Entscheidung zu Stufe 2 (Buch 17, 30.09.2026): keine Gegner-Items/-Level (Live-API zeigt sie nur "wie zuletzt
+# gesehen"). Heraus faellt das ganze Gegner-Scoreboard aus Items, Level und CS - genau die Menge, deren Verzicht in 031
+# gemessen wurde (Siegchance 0,163).
+GEGNER_SCOREBOARD = ["itemwert_team_gegner", "level_team_gegner", "cs_team_gegner", "diff_itemwert_team",
+                     "diff_level_team", "diff_itemwert_lane", "diff_level_lane", "diff_cs_lane"]
+X_SPALTEN = [i for i, n in enumerate(f.NAMEN) if n not in GEGNER_SCOREBOARD]
+BASIS_NAMEN = [f.NAMEN[i] for i in X_SPALTEN] + ["rolle", "seite", "anlass"]
 
 
 def basis(D) -> np.ndarray:
     M = D["meta"]
-    return np.hstack([D["X"], M[:, [f.MI["rolle"], f.MI["team"], f.MI["anlass"]]].astype(np.float32)])
+    return np.hstack([D["X"][:, X_SPALTEN], M[:, [f.MI["rolle"], f.MI["team"], f.MI["anlass"]]].astype(np.float32)])
 
 
 def aktion_schluessel(A) -> np.ndarray:
@@ -198,14 +204,10 @@ def trainiere_V(D, messung):
     return vhat
 
 
-GEGNER_SCOREBOARD = ["itemwert_team_gegner", "level_team_gegner", "cs_team_gegner", "diff_itemwert_team",
-                     "diff_level_team", "diff_itemwert_lane", "diff_level_lane", "diff_cs_lane"]
-
-
 def trainiere_V_ohne(D, messung):
     """Risiko-Messung: die Live-API zeigt Gegner-Items/-Level nur 'wie zuletzt gesehen'. Was kostet V ohne sie?"""
     M, B, tr, te = D["meta"], D["B"], D["tr"], D["te"]
-    raus = [BASIS_NAMEN.index(n) for n in GEGNER_SCOREBOARD]
+    raus = [BASIS_NAMEN.index(n) for n in GEGNER_SCOREBOARD if n in BASIS_NAMEN]   # seit 032 schon draussen
     B2 = B.copy()
     B2[:, raus] = np.nan
     y = M[:, f.MI["sieg"]].astype(np.float32)

@@ -1,0 +1,113 @@
+# Makro-Regeln ausser Sicht (Buch 17, Teil B2-B12), Auftrag 032. Je Regel mindestens eine Quelle mit Datum
+# (wissen/makro/quellen.toml). "daten" = Pruefung gegen die High-Elo-Daten; WIDERSPRUCH = die Daten gewinnen.
+stand = "30.09.2026"
+
+# ---------------------------------------------------------------- B2 Jungler
+[J7]
+text = "Hat der Gegner-Top TP benutzt, fehlt ihm die Flanke fuer die Abklingzeit: jetzt ist dein Fenster fuer Plays auf der anderen Seite."
+quelle = ["wiki_teleport", "riftpatchnotes_teleport"]
+
+[J9]
+text = "Ab Level 6 der Gegner mit globaler oder langer Ult (wissen/makro/ults.toml): nicht tief ohne Sicht, auch wenn die Lane leer aussieht."
+quelle = ["lexikon"]
+level_ab = 6
+
+[J11]
+text = "Level 1-2 und mehrere Gegner fehlen: Invade-Gefahr - am eigenen Buff-Busch warten, bis der eigene Jungler ihn hat."
+quelle = ["mobalytics_invade"]
+bis_s = 100
+fehlen_mind = 3
+
+# ---------------------------------------------------------------- B3 Wellen
+[W1]
+text = "Freeze vor dem eigenen Turm, wenn der Lane-Gegner allein vorn ist oder dein Jungler kommt; Push, wenn du backen, roamen oder zum Objective willst."
+quelle = ["nerfplz_wellen", "loltheory_wellen", "metabot_wellen"]
+freeze_mehr_gegner_vasallen = 3
+
+[W2]
+text = "Vor dem Back zwei Wellen langsam aufbauen und mit der Kanone crashen; nie auf eine Kanonenwelle backen, die gleich ankommt."
+quelle = ["mobalytics_recall", "metabot_recall", "mobalytics_cheater_recall"]
+aufbau_wellen = 2
+
+# ---------------------------------------------------------------- B4 Back
+[B5]
+text = "Backt der Lane-Gegner, backe auch - sofort, dann verliert keiner eine Welle (sofern deine Welle nicht bei ihm steht)."
+quelle = ["metabot_recall"]
+
+[B7]
+text = "Kauf-Kette mit dem ganzen Gold: Bauteil des naechsten Spikes zuerst, dann Kontroll-Auge (75), dann Stiefel."
+quelle = ["esportsnet_warding", "metabot_recall"]
+kontrollauge = 75
+
+[B9]
+text = "Sonderregeln je Champion (z. B. Kauf ohne Back) aus wissen/sonderregeln.toml und dem Lexikon."
+quelle = ["lexikon"]
+
+[back_gruende]
+text = "Back steht nur mit einem dieser Gruende im Kommando (Entscheidung zu Stufe 2): Welle gecrasht, Leben niedrig, Gold fuer ein Spike-Bauteil, Objective-Takt, Lane-Gegner backt selbst."
+quelle = ["mobalytics_recall", "metabot_recall", "eigen_handbuch"]
+leben_unter = 0.35
+objective_takt_s = [60, 120]
+# Median-Gold beim Betreten des Ladens (5:00-20:00, Handbuch A4): Top 866, Jungle 1100, Mid 867, ADC 1015, Support 601
+spike_gold = { TOP = 866, JUNGLE = 1100, MIDDLE = 867, BOTTOM = 1015, UTILITY = 601 }
+
+# ---------------------------------------------------------------- B5 TP
+[T4]
+text = "TP-Flanke in der Spaetphase: hinter den Gegner (Ward oder Vasall ausserhalb ihrer Sicht), erst wenn der Kampf beginnt."
+quelle = ["wiki_teleport", "mobatrainer_teamfight"]
+kampf_start_toleranz_s = 5
+
+# ---------------------------------------------------------------- B6 Roams
+[R10]
+text = "Gegner-Camp nehmen (Top: Krug/Raptoren oben) nur mit Welle drin, Gegner-Jungler weit weg und Lane-Gegner nicht in der Naehe; 10 s, dann zurueck."
+quelle = ["mobalytics_invade", "loltheory_roam"]
+dauer_s = 10
+jungler_mind_s = 20
+
+[roam_allgemein]
+text = "Roamen erst nach dem Crash: Welle in den Turm, dann gehen. Top roamt selten zu Fuss - meist per TP (Weg zu weit)."
+quelle = ["loltheory_roam"]
+
+# ---------------------------------------------------------------- B7 Objectives
+[O3]
+text = "Herold in die Lane mit dem schwaechsten Aussenturm reiten (Bonus-Schaden, Voidmites); mit Larven-Buff geht der Turm schneller."
+quelle = ["nerfplz_objectives", "esportsnet_saison2026", "mobalytics_larven"]
+daten = "WIDERSPRUCH (teilweise): Das Siegchance-Modell misst fuer den Herold -0,7 Punkte (n = 3876) - Buch-Quellen nennen ihn wertvoll. Die Daten gewinnen: Herold nie vor Drache oder Platten stellen."
+
+[O6]
+text = "Seelen-Drache und Elder: alles darauf - aber hinten nicht auf die Seele gieren (danach kommt der Elder)."
+quelle = ["nerfplz_drachen"]
+
+[O7]
+text = "Setup-Kette vor jedem Monster: 90 s Welle, 60 s Back, 30 s Sicht/Raeumen, dann Grube."
+quelle = ["mobalytics_drachen", "wecoach_objectives"]
+schritte = [[90, "Welle"], [60, "Back"], [30, "Sicht"], [0, "Grube"]]
+daten = "Stufe 2 Ketten: Jungler 'Objective > Objective > Back' +6,1 Punkte; Support 'Back > Objective > Back' +5,4 (Siegquote 63-64 %)."
+
+[O8]
+text = "Steal-Gefahr: Ist der Gegner-Jungler in der Naehe (<= 1500 oder unbekannt) und euer Smite nicht bereit, das Monster nicht in Smite-Reichweite kloppen."
+quelle = ["mobalytics_nach_baron", "nerfplz_baron"]
+smite_bereich = 1500
+
+[O12]
+text = "Objective-Kopfgeld: Liegt ihr hinten, zahlen markierte Tuerme und Monster bis zu 10 % des Gold-Abstands extra (max. 1000) - euer Weg zurueck."
+quelle = ["wiki_objective_bounties"]
+
+[baron_nach_ace]
+text = "Nach einem Ace: Reicht die Zeit bis Inhibitor oder Nexus vor dem ersten Respawn, Spiel schliessen; sonst Baron (Entscheidung zu Stufe 2, Punkt 3)."
+quelle = ["mobalytics_nach_baron", "eigen_handbuch"]
+zerstoeren_inhib_s = 8.0
+zerstoeren_nexus_s = 10.0
+zerstoeren_turm_s = 6.0
+daten = "Stufe 2: nach einem Ace mit Baron schlaegt 'in die gegnerische Basis' den Baron um 6,7 Punkte (doppelt robust, +-1,9)."
+
+# ---------------------------------------------------------------- B9 Spaetphase
+[M5]
+text = "1-3-1 nur mit zwei starken Seiten-Spielern (Duell- und Wellenstaerke) und Sicht an den Flanken; sonst 1-4."
+quelle = ["mobalytics_131", "mobalytics_split"]
+daten = "Handbuch: Split allein ohne Info ab 25:00 = 73 % Tod in 60 s; Split nur mit Sicht."
+
+[split]
+text = "Split ist ein Druckmittel: Er zwingt Gegner zu dir. Ohne Sicht, gegen 3+ unbekannte Gegner, stirbt der Splitter."
+quelle = ["mobalytics_split", "eigen_handbuch"]
+tief_bis = "Turm"

@@ -147,23 +147,21 @@ _Keine Aussage mit n >= 200 und klarem Signal._
 
 ## A11. Spielstand und Siegbedingung
 
-- Baron (20-30): die Siegchance des nehmenden Teams steigt um +4.1 Punkte (Siegchance-Modell, 40 s vorher gegen 40 s nachher). _(n = 4.222, |z| 27; Modell V)_  
+- Baron (20-30): die Siegchance des nehmenden Teams steigt um +3.2 Punkte (Siegchance-Modell, 40 s vorher gegen 40 s nachher). _(n = 4.222, |z| 21; Modell V)_  
+  Kommando: „Baron ist 3 Punkte Siegchance wert – dafuer lohnt ein Kampf.“
+- Baron (ab 30:00): die Siegchance des nehmenden Teams steigt um +4.2 Punkte (Siegchance-Modell, 40 s vorher gegen 40 s nachher). _(n = 634, |z| 8; Modell V)_  
   Kommando: „Baron ist 4 Punkte Siegchance wert – dafuer lohnt ein Kampf.“
-- Baron (ab 30:00): die Siegchance des nehmenden Teams steigt um +2.2 Punkte (Siegchance-Modell, 40 s vorher gegen 40 s nachher). _(n = 634, |z| 4; Modell V)_  
-  Kommando: „Baron ist wenig wert (2 Punkte) – nicht alles dafuer riskieren.“
-- Drache (20-30): die Siegchance des nehmenden Teams steigt um +2.2 Punkte (Siegchance-Modell, 40 s vorher gegen 40 s nachher). _(n = 4.627, |z| 15; Modell V)_  
-  Kommando: „Drache ist wenig wert (2 Punkte) – nicht alles dafuer riskieren.“
-- Drache (ab 30:00): die Siegchance des nehmenden Teams steigt um +1.7 Punkte (Siegchance-Modell, 40 s vorher gegen 40 s nachher). _(n = 644, |z| 3; Modell V)_  
-  Kommando: „Drache ist wenig wert (2 Punkte) – nicht alles dafuer riskieren.“
-- Drache (vor 20:00): die Siegchance des nehmenden Teams steigt um +4.3 Punkte (Siegchance-Modell, 40 s vorher gegen 40 s nachher). _(n = 10.968, |z| 50; Modell V)_  
+- Drache (20-30): die Siegchance des nehmenden Teams steigt um +1.4 Punkte (Siegchance-Modell, 40 s vorher gegen 40 s nachher). _(n = 4.627, |z| 9; Modell V)_  
+  Kommando: „Drache bringt nur 1.4 Punkte – nehmen, wenn es ohne grosses Risiko geht.“
+- Drache (vor 20:00): die Siegchance des nehmenden Teams steigt um +4.3 Punkte (Siegchance-Modell, 40 s vorher gegen 40 s nachher). _(n = 10.968, |z| 56; Modell V)_  
   Kommando: „Drache ist 4 Punkte Siegchance wert – dafuer lohnt ein Kampf.“
-- Herold (vor 20:00): die Siegchance des nehmenden Teams steigt um -0.7 Punkte (Siegchance-Modell, 40 s vorher gegen 40 s nachher). _(n = 3.876, |z| 6; Modell V)_  
-  Kommando: „Herold ist wenig wert (-1 Punkte) – nicht alles dafuer riskieren.“
+- Herold (vor 20:00): die Siegchance des nehmenden Teams steigt um -1.1 Punkte (Siegchance-Modell, 40 s vorher gegen 40 s nachher). _(n = 3.876, |z| 9; Modell V)_  
+  Kommando: „Herold ist wenig wert (-1.1 Punkte) – dafuer nichts riskieren, der Turm danach zaehlt.“
 - Bei 20:00 3000+ Item-Gold vorn: Siegquote 79 %. _(n = 8.374, |z| 30; beschreibend)_  
   Kommando: „Wir sind vorn – nichts erzwingen, Sicht und Objectives.“
 - Bei 20:00 3000+ Item-Gold hinten: Siegquote 21 %. _(n = 8.279, |z| 30; beschreibend)_  
   Kommando: „Wir liegen hinten – auf Picks und Gegner-Fehler spielen, keine 50:50-Kaempfe.“
-- Das Siegchance-Modell (nur Wissbares) liegt im Brier bei 0.159; der echte Gold-Abstand allein (im Spiel unsichtbar) bei 0.170. _(n = 1.121.045; Modell, Pruefung)_  
+- Das Siegchance-Modell (nur Wissbares) liegt im Brier bei 0.163; der echte Gold-Abstand allein (im Spiel unsichtbar) bei 0.170. _(n = 1.121.045; Modell, Pruefung)_  
   Kommando: „Siegchance jetzt 62 % – ihr seid vorn, aber nicht sicher.“
 
 ## A12. Team und Kommunikation
@@ -190,13 +188,13 @@ _Keine Aussage mit n >= 200 und klarem Signal._
 
 ## Q. Aus dem Aktionswert (doppelt robust, je Aktionspaar der staerkste Fund)
 
-- Gegner-Jungler vor < 15 s gesehen: Back schlaegt Warten: +2.6 Punkte Siegchance in 120 s (doppelt robust, Pruefung, 4326 Partien). _(n = 93.897, |z| 12; kausal geschaetzt (DR))_  
-  Kommando: „Back statt Warten.“
-- Leben unter 35 %: Objective:Baron schlaegt Lane: +2.1 Punkte Siegchance in 120 s (doppelt robust, Pruefung, 4113 Partien). _(n = 39.428, |z| 10; kausal geschaetzt (DR))_  
+- Gegner-Jungler vor < 15 s gesehen: Objective:Baron schlaegt Lane: +1.5 Punkte Siegchance in 120 s (doppelt robust, Pruefung, 4326 Partien). _(n = 93.897, |z| 10; kausal geschaetzt (DR))_  
   Kommando: „Baron statt Lane.“
-- Team 3000+ Items vorn: Gruppe schlaegt Lane: +1.5 Punkte Siegchance in 120 s (doppelt robust, Pruefung, 3560 Partien). _(n = 53.020, |z| 6; kausal geschaetzt (DR))_  
+- mind. 2 von uns tot: Back schlaegt Warten: +3.0 Punkte Siegchance in 120 s (doppelt robust, Pruefung, 4002 Partien). _(n = 35.450, |z| 8; kausal geschaetzt (DR))_  
+  Kommando: „Back statt Warten.“
+- Team 3000+ Items vorn: Gruppe schlaegt Lane: +2.2 Punkte Siegchance in 120 s (doppelt robust, Pruefung, 3560 Partien). _(n = 53.020, |z| 8; kausal geschaetzt (DR))_  
   Kommando: „Gruppe statt Lane.“
-- Herold steht: Objective:Drache schlaegt Lane: +1.9 Punkte Siegchance in 120 s (doppelt robust, Pruefung, 3777 Partien). _(n = 23.909, |z| 6; kausal geschaetzt (DR))_  
+- Herold steht: Objective:Drache schlaegt Lane: +1.5 Punkte Siegchance in 120 s (doppelt robust, Pruefung, 3777 Partien). _(n = 23.909, |z| 5; kausal geschaetzt (DR))_  
   Kommando: „Drache statt Lane.“
 
-_Verworfen (n < 200 oder kein klares Signal): 26 Aussagen._
+_Verworfen (n < 200 oder kein klares Signal): 27 Aussagen._

@@ -1,0 +1,71 @@
+# Sicht-Regeln (Buch 17, Teil B1). Je Regel: Entscheidung, Kern, Parameter, Quelle(n), Datenpruefung.
+stand = "30.09.2026"
+
+[S1]
+text = "Erster Trinket in den Busch auf der Seite, von der der Gegner-Jungler kommt: Startseite unten -> Fluss-Busch (er kommt ueber den Fluss), Startseite oben -> Tri-Busch/Blau-Eingang."
+quelle = ["esportsnet_warding", "nerfplz_sicht"]
+fluss_busch = "Fluss-Busch"
+tri_busch = "Tri-Busch"
+daten = "Jungler-Karte (Stufe 2): Top-3-Treffer 78 %, der Ort wird aus ihr gelesen."
+
+[S2]
+text = "Trinket halten, solange das Gank-Fenster zu ist; setzen, kurz bevor es aufgeht."
+quelle = ["eigen_ganks", "dodge_jungle2026"]
+halten_bis_s = 135            # 5-%-Quantil des ersten Top-Ganks (2:17)
+setzen_bis_s = 165
+daten = "WIDERSPRUCH zum Beispiel in Buch 17 ('bis 2:50, vorher kann er nicht da sein'): 8 % der ersten Top-Ganks fallen vor 2:50. Die Daten gewinnen: halten bis ~2:15."
+
+[S4]
+text = "Tiefer Ward (gegnerischer Krug-/Raptoren-Eingang, Buff-Eingang) nur mit Welle drin und Lane-Gegner weg (back/tot), Jungler weit weg."
+quelle = ["wecoach_sicht_jungle", "esportsnet_warding"]
+jungler_mind_s = 20           # Jungler braucht mindestens so lange zum Ward-Ort
+dauer_s = 10
+
+[S6]
+text = "Jeder Back mit >= 75 Gold uebrig und keinem gesetzten Kontroll-Auge: Kontroll-Auge kaufen; Top in Tri-Busch, Fluss-Busch oder Blau-Ausgang, gegen mobile Jungler ausserhalb des Busches weiter vorn."
+quelle = ["esportsnet_warding", "wecoach_sicht_jungle"]
+preis = 75
+orte = ["Tri-Busch", "Fluss-Busch", "Blau-Ausgang"]
+daten = "Handbuch A9/A13: Gewinner setzen mehr Kontroll-Augen (Top 1,0 gegen 0,8 je 30 min, |z| 6)."
+
+[S7]
+text = "Linse statt gelbem Trinket: Jungler in der Mitte der Partie, Support nach der Ward-Quest; Top vor Objective-Phasen, wenn er Gruben raeumt."
+quelle = ["esportsnet_warding"]
+top_ab_s = 840                # nach dem Plattenende, vor Herold/Drache-Phasen
+rollen_frueh = ["UTILITY"]
+
+[S8]
+text = "Sicht am Objective 90-60 s vor dem Spawn setzen (Eingaenge auf der Gegnerseite, dann Grube)."
+quelle = ["mobalytics_drachen", "wecoach_objectives"]
+von_s = 90
+bis_s = 50
+daten = "Handbuch A6: das nehmende Team steht in den 120 s davor 2-4x oefter an der Grube (|z| 39-186)."
+
+[S9]
+text = "Raeumen mit Linse/Kontroll-Auge 45-30 s vor dem Start."
+quelle = ["mobalytics_drachen"]
+von_s = 45
+bis_s = 20
+
+[S10]
+text = "Vor dem Split Flanken-Ward an den Eingang, ueber den die Gegner zu dir kommen."
+quelle = ["mobalytics_split"]
+daten = "Handbuch A2: allein splitten ab 25:00 mit 3 unbekannten Gegnern = 73 % Tod in 60 s."
+
+[S11]
+text = "Kein Face-Check in unbekannte Buesche, wenn >= 2 Gegner unbekannt sind: erst Ward oder Linse."
+quelle = ["nerfplz_sicht"]
+unbekannt_mind = 2
+
+[S12]
+text = "Ist ein eigener Ward weg (abgelaufen oder zerstoert), neu setzen, bevor du wieder vorgehst."
+quelle = ["nerfplz_sicht"]
+
+[S13]
+text = "Volle Trinket-Ladungen nicht verfallen lassen: eine Ladung setzen."
+quelle = ["esportsnet_warding"]
+ladungen_max = 2
+
+[S14]
+text = "Ward fuer einen Mitspieler oder das Objective auf seiner Seite, wenn er dorthin geht und keine Sicht da ist."
+quelle = ["nerfplz_sicht"]

@@ -1,0 +1,159 @@
+# Globale und lange Ults (>= 2500 Einheiten) - erzeugt aus dem Lexikon von werkzeuge/challenger/ults_aus_lexikon.py
+# Regel J9 (wissen/makro/regeln.toml): ab Level 6 dieser Gegner nicht tief ohne Sicht.
+stand = "Lexikon 26.09.2026 (Patch 26.19), erzeugt 30.09.2026"
+quelle = ["lexikon"]
+
+[Akshan]
+art = "lang"
+weite = 2500
+ult = "Wohlverdiente Strafe"
+
+[Ashe]
+art = "global"
+ult = "Verzauberter Kristallpfeil"
+
+[Bard]
+art = "lang"
+weite = 3400
+ult = "Innehalten"
+
+[Briar]
+art = "lang"
+weite = 12000
+ult = "Sicherer Tod"
+
+[Caitlyn]
+art = "lang"
+weite = 3500
+ult = "Ass im Ärmel"
+
+[Draven]
+art = "global"
+ult = "Wirbelnder Tod"
+
+[Ezreal]
+art = "global"
+ult = "Energietrommelfeuer"
+
+[Galio]
+art = "lang"
+weite = 5500
+ult = "Heldenhafter Auftritt"
+
+[Gangplank]
+art = "global"
+ult = "Kanonensperrfeuer"
+
+[Jinx]
+art = "global"
+ult = "Super-Mega-Todesrakete!"
+
+[Kaisa]
+art = "lang"
+weite = 3000
+ult = "Killerinstinkt"
+
+[Karthus]
+art = "global"
+ult = "Requiem"
+
+[Kled]
+art = "lang"
+weite = 4500
+ult = "Aaangriiiff!!!"
+
+[Lux]
+art = "lang"
+weite = 3340
+ult = "Finales Funkeln"
+
+[Maokai]
+art = "lang"
+weite = 3000
+ult = "Wurzelfänge"
+
+[Mel]
+art = "global"
+ult = "Goldene Eklipse"
+
+[Nami]
+art = "lang"
+weite = 2550
+ult = "Flutwelle"
+
+[Nocturne]
+art = "lang"
+weite = 4000
+ult = "Paranoia"
+
+[Ornn]
+art = "lang"
+weite = 2500
+ult = "Ruf des Schmiedefeuers"
+
+[Pantheon]
+art = "lang"
+weite = 5500
+ult = "Astraler Kollisionskurs"
+
+[Rengar]
+art = "lang"
+weite = 3500
+ult = "Jagdfieber"
+
+[Ryze]
+art = "lang"
+weite = 3000
+ult = "Weltentor"
+
+[Senna]
+art = "global"
+ult = "Schattendämmerung"
+
+[Shen]
+art = "global"
+ult = "Geeinter Halt"
+
+[Sion]
+art = "lang"
+weite = 7500
+ult = "Unaufhaltbarer Ansturm"
+
+[Smolder]
+art = "lang"
+weite = 4200
+ult = "MAAAMAAAA!"
+
+[Soraka]
+art = "global"
+ult = "Wunsch"
+
+[Taliyah]
+art = "lang"
+weite = 6500
+ult = "Terradukt"
+
+[TwistedFate]
+art = "lang"
+weite = 5500
+ult = "Schicksal"
+
+[Urgot]
+art = "lang"
+weite = 2500
+ult = "Schreckensherrschaft"
+
+[Vex]
+art = "lang"
+weite = 3000
+ult = "Schattenfall"
+
+[Xerath]
+art = "lang"
+weite = 5000
+ult = "Arkanes Ritual"
+
+[Ziggs]
+art = "lang"
+weite = 5000
+ult = "Megainferno-Bombe"

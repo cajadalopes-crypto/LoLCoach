@@ -1,0 +1,184 @@
+# Quellen der Makro-Regeln (Auftrag 032). Jede Regel in wissen/makro/*.toml nennt mindestens eine davon.
+# datum = Veroeffentlichung/Stand der Quelle, soweit angegeben; abgerufen = wann hier gelesen.
+# "eigen_*" = eigene Messung an den 4761 High-Elo-Partien (Stufen 0-2, buecher/challenger/).
+stand = "30.09.2026"
+
+[wiki_teleport]
+titel = "League of Legends Wiki: Teleport"
+url = "https://wiki.leagueoflegends.com/en-us/Teleport"
+datum = "Patch 26.03 (letzter Eintrag der Historie)"
+abgerufen = "2026-09-30"
+
+[riftpatchnotes_teleport]
+titel = "riftpatchnotes: Teleport - Aenderungen je Patch"
+url = "https://www.riftpatchnotes.com/lol/spell/teleport"
+datum = "2026-09-22 (Patch 26.19)"
+abgerufen = "2026-09-30"
+
+[nerfplz_wellen]
+titel = "Wave Management Explained: Freezing, Slow Push ... (nerfplz)"
+url = "https://www.nerfplz.com/2026/08/wave-management-explained-freezing-slow.html"
+datum = "2026-08-30"
+abgerufen = "2026-09-30"
+
+[loltheory_wellen]
+titel = "Wave Management in League of Legends: When to Freeze, Slow Push, and Fast Push (LoL Theory)"
+url = "https://blog.loltheory.gg/wave-management-league-of-legends/"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[metabot_wellen]
+titel = "Wave Management: Freezing, Slow Push and Bouncing Explained (metabot)"
+url = "https://metabot.gg/en/league/guides/wave-management-freezing-slow-push"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[mobalytics_recall]
+titel = "5 Best Recall Timers (Mobalytics)"
+url = "https://mobalytics.gg/blog/lol-5-best-recall-timers/"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[metabot_recall]
+titel = "When to Recall in League of Legends: Back Timing and Gold Economy Basics (metabot)"
+url = "https://metabot.gg/en/league/guides/when-to-recall-back-timing-economy"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[mobalytics_cheater_recall]
+titel = "Top Lane Wave Management Guide: Cheater Recall (Mobalytics)"
+url = "https://mobalytics.gg/blog/lol-top-lane-wave-management-guide-cheater-recall/"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[esportsnet_warding]
+titel = "LoL Warding - The Ultimate vision control guide (esports.net)"
+url = "https://www.esports.net/news/lol/lol-warding-guide/"
+datum = "Season 13 (2023)"
+abgerufen = "2026-09-30"
+
+[nerfplz_sicht]
+titel = "Vision in LoL: 10 Things Wards Do (nerfplz)"
+url = "https://www.nerfplz.com/2026/10/vision-in-lol-10-things-wards-do-that.html"
+datum = "2026-08-26"
+abgerufen = "2026-09-30"
+
+[wecoach_sicht_jungle]
+titel = "League of Legends Vision Control & Warding Guide for Junglers (WeCoach)"
+url = "https://wecoach.gg/blog/article/league-of-legends-vision-control-warding-guide-for-junglers"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[mobalytics_drachen]
+titel = "7 Tips to Secure More Dragons (Mobalytics)"
+url = "https://mobalytics.gg/blog/lol-7-tips-to-secure-more-dragons/"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[wecoach_objectives]
+titel = "League of Legends Objectives-Guide (WeCoach)"
+url = "https://wecoach.gg/de/blog/article/league-of-legends-objectives-guide"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[nerfplz_objectives]
+titel = "Every Summoner's Rift Objective (nerfplz)"
+url = "https://www.nerfplz.com/2026/08/every-summoners-rift-objective.html"
+datum = "2026-08-08"
+abgerufen = "2026-09-30"
+
+[nerfplz_baron]
+titel = "Baron Nashor Guide: Spawn Timers ... (nerfplz)"
+url = "https://www.nerfplz.com/2026/10/baron-nashor-guide-spawn-timers-three.html"
+datum = "2026-08-19"
+abgerufen = "2026-09-30"
+
+[mobalytics_nach_baron]
+titel = "How to Make the Most of Baron Once You Have It (Mobalytics)"
+url = "https://mobalytics.gg/blog/league-of-legends-what-to-do-after-taking-baron-nashor/"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[nerfplz_drachen]
+titel = "LoL Dragons Explained: 10 Things (nerfplz)"
+url = "https://www.nerfplz.com/2026/10/lol-dragons-explained-10-things-pit.html"
+datum = "2026-08-20"
+abgerufen = "2026-09-30"
+
+[mobalytics_larven]
+titel = "Void Grubs Guide (Mobalytics)"
+url = "https://mobalytics.gg/blog/lol-void-grubs-guide/"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[esportsnet_saison2026]
+titel = "LoL Season 1 2026 Gameplay: New Items, Role Quests & Objective Changes (esports.net)"
+url = "https://www.esports.net/wiki/guides/lol-season-changes-2026/"
+datum = "2026"
+abgerufen = "2026-09-30"
+
+[mobalytics_split]
+titel = "How to Split Push in League of Legends (Mobalytics)"
+url = "https://mobalytics.gg/blog/how-to-split-push-in-league-of-legends/"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[mobalytics_131]
+titel = "How to Play the 1-3-1 (Mobalytics)"
+url = "https://mobalytics.gg/blog/lol-how-to-play-1-3-1/"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[dodge_jungle2026]
+titel = "Jungle Guide for League of Legends (2026) - Clear Routes, Gank Timing, Objective Priority (dodge.gg)"
+url = "https://www.dodge.gg/en-US/lol/news/jungle-guide-2026"
+datum = "2026"
+abgerufen = "2026-09-30"
+
+[loltheory_roam]
+titel = "Roaming in League of Legends: When, How, and What It Costs (LoL Theory)"
+url = "https://blog.loltheory.gg/roaming-lol/"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[mobalytics_invade]
+titel = "5 Tips to Prevent Invades (Mobalytics)"
+url = "https://mobalytics.gg/blog/lol-5-tips-to-prevent-invades/"
+datum = "ohne Datum"
+abgerufen = "2026-09-30"
+
+[wiki_objective_bounties]
+titel = "League of Legends Wiki: Objective bounties"
+url = "https://wiki.leagueoflegends.com/en-us/Objective_bounties"
+datum = "Patch 25.x"
+abgerufen = "2026-09-30"
+
+[mobatrainer_teamfight]
+titel = "Teamfighting guide (mobatrainer)"
+url = "https://www.mobatrainer.com/guides/teamfighting"
+datum = "Patch 26.13"
+abgerufen = "2026-09-30"
+
+[lexikon]
+titel = "Eigenes Lexikon: wissen/lexikon/champions/*.md (Data Dragon 16.19.1)"
+url = "wissen/lexikon/champions/"
+datum = "2026-09-26 (Patch 26.19)"
+abgerufen = "2026-09-30"
+
+[eigen_ganks]
+titel = "Eigene Messung: erster Gank mit Kill je Lane (2467 Top-, 2457 Mid-, 3174 Bot-Faelle)"
+url = "werkzeuge/challenger/ableitungen.py ganks(), Auftrag 032"
+datum = "2026-09-30"
+abgerufen = "2026-09-30"
+
+[eigen_handbuch]
+titel = "Eigenes Challenger-Handbuch (Stufe 2)"
+url = "buecher/challenger/handbuch.md"
+datum = "2026-09-30"
+abgerufen = "2026-09-30"
+
+[eigen_gold_siegchance]
+titel = "Eigene Messung: Siegchance-Punkte je 1000 Gold Item-Vorsprung des Teams (logistisch, bei Gleichstand)"
+url = "Stufe-1-Momente zu 10/15/20/25 min, Auftrag 032"
+datum = "2026-09-30"
+abgerufen = "2026-09-30"
