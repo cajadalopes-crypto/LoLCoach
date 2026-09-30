@@ -96,6 +96,8 @@ def wechsel_grund(a, aktiv_ziel: str | None = None) -> bool:
     if getattr(a, "_kategorie", None) in ("WENDEPUNKT", "GEFAHR") or getattr(a, "kategorie", None) in ("WENDEPUNKT",
                                                                                                          "GEFAHR"):
         return True
+    if getattr(a, "_mit_grund", False):
+        return True           # Auftrag 034/035: der Makro-Entscheider wechselt nur mit Grund (makro/takt.py, Regel 028)
     if re.match(r"^\W*(los:\s*)?(plan geändert|jetzt, wo|stimmt\. neu|neu:)", t, re.I):   # auch "Los: Plan ..."
         return True
     if re.match(r"^(Sie haben|Ihr habt|Euer|Eure|Ihr|Ihre)\b[^.:]*\b(weg|genommen|down|gefallen|fällt|tot)\b", t):

@@ -198,7 +198,8 @@ def gehirn_attrappe():
     h = HirnAttrappe([("Lane", "", 0.3, 0.3, 0.05, "geteilt", []), ("Split", "", 0.2, 0.3, 0.05, "geteilt", [])],
                      siegchance=0.8)
     a = Entscheider(hirn=h).entscheide(monster(L(), "drache", 50))
-    assert a.form == "geteilt" and a.zweite is not None and a.vorlage.startswith("Zwei Optionen."), a.vorlage
+    assert a.form == "geteilt" and a.zweite is not None and a.voll.startswith("Zwei Optionen."), a.voll
+    assert " Oder: " in a.vorlage and len(a.vorlage.split()) <= 14, a.vorlage        # gesprochen: kurz (Auftrag 002)
     # das Gehirn faellt aus: die Regeln entscheiden allein, der Takt laeuft weiter
     class Kaputt(HirnAttrappe):
         def bewerte(self, *a, **k):
@@ -460,6 +461,19 @@ def kern_stellung_makro():
     assert any(a for t in alle3 for a in t)
 
 
+def hoechstens_14_woerter():
+    """Auftrag 002 / Szenario s23-plan-hoechstens-14: gesprochen hoechstens 14 Woerter (Gefahr 8) - gekuerzt wird von
+    hinten, die Handlung bleibt."""
+    from lolcoach.makro.takt import Anweisung
+    lang = Kommando("W10", "Er ist 20 s tot: Welle crashen, zwei Platten", "du hast 35 s, bis er zurueck ist",
+                    "dann Back und mit dem naechsten Bauteil zurueck an die Top-Welle")
+    a = Anweisung(lang, "klar")
+    assert len(a.voll.split()) > 14 and len(a.vorlage.split()) <= 14 and a.vorlage.startswith("Er ist 20 s tot")
+    g = Anweisung(Kommando("J5", "Zurueck zum Turm", "Vi und Brand fehlen seit mindestens 15 s", "Bot anpingen",
+                           klasse="gefahr"), "gefahr")
+    assert g.vorlage == "Zurück zum Turm." and len(g.voll.split()) > 8
+
+
 def verworfen_kommt_wieder():
     """Verwirft der Sprechplan die Plan-Ansage (Sprech-Tor, Back-Sperre aus 028, zu alt), gilt der Plan als nicht
     gesagt und kommt erneut - der neue Plan geht nie still verloren."""
@@ -467,11 +481,59 @@ def verworfen_kommt_wieder():
     mc.entscheider._reg = _reg(("A", "rest", 1.0, lambda l: True))
     p = zustand.partie(schnappschuss(zeit=600.0))
     erste = mc.takt(p, None, None, None, gesagt=[])
-    assert len(erste) == 1 and erste[0].gesprochen is None and erste[0]._kategorie == "WENDEPUNKT"
+    assert len(erste) == 1 and erste[0].gesprochen is None and erste[0]._kategorie == "PLAN" and erste[0]._mit_grund
     for z in (601.0, 605.0):
         assert mc.takt(zustand.partie(schnappschuss(zeit=z)), None, None, None, gesagt=[]) == []
     neu = mc.takt(zustand.partie(schnappschuss(zeit=612.0)), None, None, None, gesagt=[])   # 8 s gueltig + 2 s
     assert len(neu) == 1 and neu[0].text == erste[0].text and mc.verworfen == 1
+
+
+def verdrahtung_035():
+    """Auftrag 035, Befunde aus dem Nachspiel botspiel_riven_2: keine Gefahr loest eine andere Gefahr ab, solange die
+    alte gilt; dieselbe Entscheidung kommt binnen 30 s nur kurz wieder; wer steht, bekommt seine Anweisung ("Los:");
+    im Brunnen halten Warnungen fuer draussen keinen Plan fest; das 2 gegen 2 in der Lane ist kein Kampf."""
+    # Gefahr gegen Gefahr
+    an = {"G2": False}
+    e = Entscheider()
+    e._reg = _reg(("G1", "gefahr", 3.0, lambda l: True), ("G2", "gefahr", 5.0, lambda l: an["G2"]))
+    assert e.entscheide(L(zeit=600)).kommando.id == "G1"
+    an["G2"] = True
+    assert e.entscheide(L(zeit=601)).kommando.id == "G1"          # G1 gilt noch: kein Pingpong
+    assert e.entscheide(L(zeit=602), anlass="kill").kommando.id == "G2"
+    # Brunnen: die Warnung haelt keinen Plan
+    e = Entscheider()
+    e._reg = _reg(("G1", "gefahr", 3.0, lambda l: True), ("A", "rest", 1.0, lambda l: True))
+    assert e.entscheide(ich(L(), im_brunnen=True)).kommando.id == "A"
+    # Wiederholung kurz, Stillstand "Los:"
+    mc = MakroCoach(kern=None, hirn=None)
+    mc.entscheider._reg = _reg(("A", "rest", 1.0, lambda l: l.zeit < 605 or l.zeit >= 608),
+                              ("B", "rest", 0.5, lambda l: 605 <= l.zeit < 609))
+    def takt(z, x=0.12):
+        d = schnappschuss(zeit=z)
+        p = zustand.partie(d)
+        lb = lagebild(p, z)
+        s_ = lb.zuletzt[("Carlos", "ORDER")]
+        lb.zuletzt[("Carlos", "ORDER")] = (z, x, s_[2])
+        return mc.takt(p, bewertung.bewerte(p, lb), lb, None, gesagt=[])
+    erste = takt(600.0)
+    assert erste and erste[0].text.startswith("Tu A")
+    texte = []
+    for i, z in enumerate(range(601, 621)):
+        texte += [a.text for a in takt(float(z), x=0.12 + (0.02 * i if z < 612 else 0.2))]
+    assert any(t.startswith("Tu B") for t in texte), texte              # 605: A erledigt, B
+    assert "Weiter: Tu A." in texte, texte                               # 609: B erledigt, A wieder - nur kurz
+    assert any(t.startswith("Los:") or t.startswith("Tu") for t in texte[-2:]), texte   # er steht ab 612
+    # Kampf: die Botlane 2 gegen 2 in der Lane-Phase ist keiner
+    from lolcoach.makro.lage import Spieler as Sp
+    lage = L(zeit=400)
+    lage.gegner = [Sp("Ezreal", "BOTTOM", pos=(12500, 1800), gesehen_vor=0), Sp("Leona", "UTILITY", pos=(12600, 1900),
+                                                                               gesehen_vor=0)]
+    lage.mitspieler = [Sp("Varus", "BOTTOM", pos=(12000, 1700)), Sp("Bard", "UTILITY", pos=(12100, 1600))]
+    lb = lagemod.Lagebild()
+    bau = LageBau()
+    assert bau._kampf(lage, lb) is None and bau._kampf(lage, lb, kill_vor=3.0) is not None
+    lage.zeit = 1200
+    assert bau._kampf(lage, lb) is not None
 
 
 def fragen_antwort_dann_plan():
@@ -479,7 +541,7 @@ def fragen_antwort_dann_plan():
     mc = k.makro_coach
     p = zustand.partie(schnappschuss(zeit=602))
     r = mc.beantworte("Was soll ich jetzt machen?", p)
-    assert r["quelle"] == "makro" and r["text"] == mc.plan_satz()
+    assert r["quelle"] == "makro" and r["text"] == mc.entscheider.aktiv.voll       # gefragt: der ganze Satz
     r = mc.beantworte("Warum soll ich das machen?", p)
     assert r["text"].startswith("Weil ") and "Also:" in r["text"]
     assert mc.beantworte("Und danach?", p)["text"].startswith("Danach")
@@ -497,6 +559,7 @@ if __name__ == "__main__":
     for test in (lage_aus_schnappschuss, bereich_wie_training, eine_anweisung_je_takt, gehirn_attrappe,
                  echtes_gehirn_schnittstelle,
                  kein_planwechsel_ohne_grund, sicherheits_sperre, claude_nur_stimme, fehlende_wahrnehmung, laufzeit,
-                 kern_stellung_makro, verworfen_kommt_wieder, fragen_antwort_dann_plan):
+                 kern_stellung_makro, verworfen_kommt_wieder, verdrahtung_035, hoechstens_14_woerter,
+                 fragen_antwort_dann_plan):
         test()
         print(f"{test.__name__} OK")

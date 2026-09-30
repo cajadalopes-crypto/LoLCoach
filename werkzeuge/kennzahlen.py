@@ -40,7 +40,7 @@ Geht in sinnpruefung.py auf (deren Pruefungen stecken in 1-4 und 7).
 
     python werkzeuge/kennzahlen.py [aufnahme ...] [--nur-kern] [--fragen]     (ohne Angabe: die 5 juengsten)
 
-Altes System = --kern alt (Regelwerk mit der Modus-Sperre aus Schritt 2), Kern = --kern neu (Schritt 3).
+Seit Auftrag 035: --kern neu (der alte Kern) neben --kern makro (der Makro-Entscheider); --nur-kern nur makro.
 """
 from __future__ import annotations
 
@@ -135,6 +135,12 @@ def fassungswechsel(lauf: ns.Lauf, fenster: float = 30.0) -> list[tuple[float, s
             schritt_frei = True
             continue
         if fassung(ohne_anlass(a1)) == fassung(ohne_anlass(a2)):
+            continue
+        # Auftrag 035: die Kurzform desselben Makro-Plans ("Weiter: X.", "Los: X.") ist keine neue Fassung - sie
+        # wiederholt die Handlung, deren voller Satz eben kam (herzschlag.kurzform, Auftrag 027)
+        ohne = lambda t: re.sub(r"^(weiter|los):\s*", "", t.strip(), flags=re.I).rstrip(".").lower()
+        if a2.schluessel == a1.schluessel and a2.schluessel.startswith("kern:MAKRO_") \
+                and (ohne(a1.text).startswith(ohne(a2.text)) or ohne(a2.text).startswith(ohne(a1.text))):
             continue
         if getattr(a2, "_kategorie", "") == "WENDEPUNKT":
             continue          # Buch 11, 4: ein Wendepunkt ist ein neues Ereignis (Struktur, Objective, Kill, Basis)
@@ -269,7 +275,7 @@ def objective_ohne_chance(lauf: ns.Lauf) -> list[tuple[float, str]]:
     return aus
 
 
-def kennzahlen(pfad: Path, kern: str = "neu", fragen: bool = False) -> dict:
+def kennzahlen(pfad: Path, kern: str = "makro", fragen: bool = False) -> dict:
     import fuehrmass
     stamm = pfad.name.removesuffix(".jsonl.gz")
     liste = [(f["zeit"], f["text"], i) for i, f in enumerate(fuehrmass.fragen_aus_log(stamm))] if fragen else None
@@ -299,7 +305,9 @@ def kennzahlen(pfad: Path, kern: str = "neu", fragen: bool = False) -> dict:
             "flash": sum(a.schluessel.split(":")[0] in FLASH_SCHL for a in gesagt),
             "kehrtwenden": kw, "fassungswechsel": fassungswechsel(lauf), "verstoesse": v, "brier": brier, "proben": n, "grundrate": grund,
             "luecken": lauf.luecken, "quote": quote, "brier_kern": brier_kern, "lane_phase": (lp_n, lp_sek),
-            "kategorien": dict(lauf.kern.sprecher.kategorien) if lauf.kern is not None else {},
+            "kategorien": (dict(lauf.kern.sprecher.kategorien) if getattr(lauf.kern, "makro_coach", None) is None
+                           else dict(__import__("collections").Counter(
+                               x["kategorie"] for x in lauf.kern.makro_coach.gesagt))) if lauf.kern is not None else {},
             "staerken": list(lauf.kern.staerken) if lauf.kern is not None else [], "kern": kern,
             "kampf": kampf_verstoesse(lauf), "ohne_chance": objective_ohne_chance(lauf),
             "schranken": schranken_verstoesse(lauf),
@@ -348,6 +356,8 @@ def ausgeben(k: dict) -> None:
         for a in x[:3]:
             print(f"      {nr} {ns.uhr(ns.gesprochen_um(a))} {a.text[:110]}")
     kat = k["kategorien"]
+    if kat and k["kern"] == "makro":
+        print("   Makro: " + ", ".join(f"{x} {n}" for x, n in sorted(kat.items())))
     if kat and k["kern"] == "neu":
         print("   Kern: GEFAHR / PLAN / ERINNERUNG / BESTAETIGUNG / INFO_FLASH / WENDEPUNKT / VORSCHAU = "
               + " / ".join(str(kat.get(x, 0)) for x in ("GEFAHR", "PLAN", "ERINNERUNG", "BESTAETIGUNG", "INFO_FLASH",
@@ -378,7 +388,7 @@ def main() -> None:
     nur_kern = "--nur-kern" in sys.argv
     pfade = [ns.pfad_zu(x) for x in args] or aufzeichnung.alle(ns.AUFNAHMEN)[-5:]
     for p in pfade:
-        for kern in (("neu",) if nur_kern else ("alt", "neu")):
+        for kern in (("makro",) if nur_kern else ("neu", "makro")):     # Auftrag 035: der neue gegen den alten Kern
             ausgeben(kennzahlen(p, kern, fragen="--fragen" in sys.argv))
 
 

@@ -17,13 +17,16 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
-**Auftrag 034 (Challenger-Gehirn, Stufe 4: der Einbau) gebaut, Zweig `stufe4-einbau`** - `--kern makro` ist Standard:
-MakroLage live (`makro/live.py`), Entscheider im Takt (`makro/takt.py`, eine Anweisung, Wechsel nur mit Grund,
-Klarheit -> Form, nie Schweigen), Claude nur Stimme (`makro/stimme.py`, Vorlage bei Abweichung/Ausfall/Frist), alter
-Kern nur Sicherheits-Sperre. In der Cloud nur mit konstruierten Lagen geprueft (`tests/makro/test_einbau.py`).
-**Offen fuer Carlos (Stufe 5, Auftrag 035):** Messlauf nach `buecher/challenger/phase4_bericht.md` (Liste "nicht
-geprueft") - Gehirn mit echten Modellen, Laufzeit live, Nachspiele/Szenarien mit `--kern makro`, Generalprobe;
-Punkte "Offen" im Bericht (Briefing, freie Claude-Antworten, Werkzeuge noch mit `--kern neu` als Default).
+**Auftrag 035 (Challenger-Gehirn, Stufe 5: die Abnahme) - TOR NICHT ERREICHT (in der Cloud nicht messbar), Zweig
+`stufe5-abnahme`** - gebaut: Vorrang nach Aktionswert (`makro/vorrang.py`, `makro/aktionen.py`), Messwerkzeuge auf
+`--kern makro`, `werkzeuge/makro_messen.py` (Teil 1), `werkzeuge/challenger/treue.py` (Teil 2),
+`werkzeuge/abnahme_035.py` (alles ausser der Abo-Runde in einem Zug); Verdrahtungs-Fixes aus dem Bot-Nachspiel
+(Gefahr-Pingpong, falsche Lane-Kaempfe, Erinnerung ohne Rueckfall, Stillstand, Satzlaenge <= 14/8 Woerter).
+**Offen fuer Carlos:** `python werkzeuge/abnahme_035.py` lokal laufen lassen (echtes Gehirn, alle Testpartien,
+Treue, Szenarien), Reihenfolge nach den Treue-Zahlen festlegen, die 14 Roten je Zeile beurteilen, dann die
+Abo-Runde (091311, 134020, 164809) und die Kritiker - Liste in `buecher/challenger/phase5_bericht.md`.
+Offen im Koennen: im Bot-Nachspiel 97 Warnungen je 30 min (J4/J5/J9 ohne Gefahr-Modell) - die
+Warnungs-Praezision misst `treue.py`.
 
 **Review entfernt auf Carlos' Wunsch (30.09.2026, Auftrag 028)** - wiederherstellbar aus Commit b6377df
 (review.py, review_server.py, web/review.html, verlauf.py, Fokus im Briefing, Bericht nach der Partie); wieder

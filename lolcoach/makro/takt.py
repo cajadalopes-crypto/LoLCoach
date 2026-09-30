@@ -10,7 +10,8 @@ Ablauf je Aufruf (hoechstens einmal je Sekunde, das haelt makro/einbau.py):
 2. Alle 111 Entscheidungen, deren Live-Eingaben in diesem Takt da sind (`lage.vorhanden`, wahrnehmung.EINGABEN). Fehlt
    eine Eingabe, schweigt genau diese Entscheidung - die anderen sprechen.
 3. Die Sicherheits-Sperre (der alte Kern: R1, Kill-Check, Fakten, verbotene Begriffe) streicht Kommandos, die nicht
-   gesagt werden duerfen. `vorrang.ordnen`: Gefahr, Objective-Kette, Rest nach Wert.
+   gesagt werden duerfen. `vorrang.ordnen`: seit 035 Gefahr vorn, dann der Aktionswert des Gehirns (Ersatz: der
+   feste Wert); `reihenfolge="fest"` gibt die Reihenfolge aus 032 (Gefahr, Objective-Kette, Rest).
 4. Die Klarheit entscheidet die Form: Gefahr immer als Kommando; klar -> ein Kommando; geteilt -> zwei Optionen;
    unklar -> die Objective-Kette, sonst was High-Elo hier am haeufigsten tut (Z3). Nie Schweigen: feuert nichts,
    gilt die Grund-Anweisung (G0).
@@ -50,6 +51,7 @@ class Anweisung:
     stumm: list[str] = field(default_factory=list)      # Entscheidungen ohne Wahrnehmung in diesem Takt
     gesperrt: list[tuple[str, str]] = field(default_factory=list)   # (Nummer, Grund) - von der Sicherheits-Sperre
     fehler: list[str] = field(default_factory=list)
+    alternativen: list = field(default_factory=list)   # die zwei naechstbesten freien Kommandos (Protokoll)
     ms: float = 0.0                   # Laufzeit der Entscheidung (Gehirn + 111 + Vorrang + Sperre)
     ms_hirn: float = 0.0
 
@@ -60,13 +62,20 @@ class Anweisung:
         return (k.id, re.sub(r"\d+", "#", k.tu), self.zweite.id if self.zweite is not None else None)
 
     @property
-    def vorlage(self) -> str:
-        """Der Satz, der gesprochen wird, wenn Claude nicht formt (oder abweicht)."""
+    def voll(self) -> str:
+        """Der ganze Satz "Tu X: weil Y. Danach Z." (Protokoll, Dashboard, Frage "warum")."""
         k = self.kommando
         if self.form == "geteilt" and self.zweite is not None:
             z = self.zweite
             return sprechbar(f"Zwei Optionen. {k.text} Oder: {_gross(z.tu)} – {z.weil}.")
         return k.text
+
+    @property
+    def vorlage(self) -> str:
+        """Der Satz, der gesprochen wird, wenn Claude nicht formt (oder abweicht) - hoechstens max_woerter (PLAN 14,
+        GEFAHR 8; wissen/kern.toml [sprechen], Auftrag 002: "redest viel zu lange ... immer zu spaet"). Gekuerzt wird
+        von hinten: erst "Danach ...", dann der Grund; die Handlung bleibt immer."""
+        return kurz_genug(self, max_woerter(self.form == "gefahr"))
 
     @property
     def kurz(self) -> str:
@@ -76,6 +85,34 @@ class Anweisung:
 
 def _gross(s: str) -> str:
     return s[:1].upper() + s[1:] if s else s
+
+
+def max_woerter(gefahr: bool) -> int:
+    try:
+        from .. import wissen
+        c = wissen.lade("kern")["sprechen"]
+        return int(c["max_woerter_gefahr"] if gefahr else c["max_woerter"])
+    except Exception:
+        return 8 if gefahr else 14
+
+
+def _satz(*teile: str) -> str:
+    from .kommando import jetzt_statt_null
+    tu, *rest = [t.strip().rstrip(".") for t in teile if t and t.strip()]
+    s = _gross(tu) + ((" – " if ":" in tu else ": ") + rest[0] if rest else "") + "."
+    return sprechbar(jetzt_statt_null(s))
+
+
+def kurz_genug(anw: "Anweisung", n: int) -> str:
+    """Der laengste der Saetze voll / Handlung + Grund / Handlung, der hoechstens n Woerter hat (sonst die Handlung)."""
+    k = anw.kommando
+    if anw.form == "geteilt" and anw.zweite is not None:
+        z = anw.zweite
+        kandidaten = [anw.voll, sprechbar(f"{_satz(k.tu, k.weil)} Oder: {_satz(z.tu)}"),
+                      sprechbar(f"{_satz(k.tu)} Oder: {_satz(z.tu)}")]
+    else:
+        kandidaten = [k.text, _satz(k.tu, k.weil), _satz(k.tu)]
+    return next((s for s in kandidaten if len(s.split()) <= n), kandidaten[-1])
 
 
 def grund_kommando(lage: MakroLage) -> Kommando:
@@ -100,10 +137,12 @@ def sicher_zurueck(lage: MakroLage) -> Kommando:
 
 
 class Entscheider:
-    def __init__(self, hirn=None, sperre=None, halten_s: float = HALTEN_S):
+    def __init__(self, hirn=None, sperre=None, halten_s: float = HALTEN_S, reihenfolge: str = "wert"):
         self.hirn = hirn                  # werkzeuge/challenger/gehirn.Gehirn oder eine Attrappe (bewerte, lage_info)
         self.sperre = sperre              # (Text) -> [Gruende]; leer = darf gesagt werden
         self.halten_s = halten_s
+        # Auftrag 035, Teil 0: "wert" = Gefahr vorn, dann der Aktionswert des Gehirns; "fest" = Stand 032/034
+        self.reihenfolge = reihenfolge if reihenfolge in vorrang.REIHENFOLGEN else "wert"
         self.aktiv: Anweisung | None = None
         self.hirn_fehler: str | None = None
         self.zeiten: list[float] = []     # ms je Entscheidung (fuer den Bericht)
@@ -192,21 +231,32 @@ class Entscheider:
     def entscheide(self, lage: MakroLage, merkmale: dict | None = None, kontext: dict | None = None,
                    anlass: str = "takt", frage: bool = False) -> Anweisung:
         t0 = time.perf_counter()
-        ms_hirn = self._hirn(lage, merkmale or {}, kontext or {})
+        ms_hirn = self._hirn(lage, merkmale if merkmale is not None else {}, kontext or {})
         self._plan_setzen(lage)
         anw = Anweisung(kommando=grund_kommando(lage), form="grund", zeit=lage.zeit)
         ks = self._kommandos(lage, anw)
+        if lage.ich.im_brunnen and lage.ich.lebt:
+            # im eigenen Brunnen bist du sicher: Warnungen fuer draussen (Lane, Spike, fehlende Gegner) halten dort
+            # keinen Plan fest - dran sind Kauf und Rueckweg (Nachspiel 035: "Shen hat seinen Spike" hielt den Brunnen)
+            from dataclasses import replace
+            ks = [replace(k, klasse="rest", wert=k.wert - 20.0) if k.klasse == "gefahr" and k.id != "M9" else k
+                  for k in ks]            # ... sie stehen hinten an (fester Wert - 20)
         frei = []
         for k in ks:
             if g := self._gesperrt(k):
                 anw.gesperrt.append((k.id, "; ".join(g)))
             else:
                 frei.append(k)
-        frei = vorrang.ordnen(frei)
+        frei = vorrang.ordnen(frei, lage.hirn, self.reihenfolge)
         if frei:
             anw.kommando, anw.form, anw.zweite = self._form(lage, frei)
+            # im Brunnen kommt der Kauf zuerst (Auftrag 027, Basis-Reaktion >= 95 %) - ausser eine Gefahr
+            kauf = next((k for k in frei if k.id in ("B7", "B8")), None)
+            if kauf is not None and anw.form != "gefahr" and (lage.ich.im_brunnen or not lage.ich.lebt):
+                anw.kommando, anw.form, anw.zweite = kauf, "klar", None
         elif self._gesperrt(anw.kommando):
             anw.kommando, anw.form = sicher_zurueck(lage), "gefahr"
+        anw.alternativen = [k for k in frei if k is not anw.kommando][:2]
         self._halten(anw, ks, anlass, frage)
         a = self.aktiv
         a.ms_hirn = ms_hirn
@@ -227,7 +277,11 @@ class Entscheider:
             return
         erledigt = alt.kommando.id not in {k.id for k in ks} or any(
             g[0] == alt.kommando.id for g in anw.gesperrt)
-        grund = ("gefahr" if anw.form == "gefahr" else "frage" if frage else "event" if anlass != "takt"
+        # Eine Gefahr loest einen Plan immer ab - eine andere Gefahr aber nur, wenn die alte vorbei ist (oder ein
+        # Ereignis/eine Frage): sonst wechselten sich Warnungen jede Sekunde ab (Nachspiel 035, botspiel_riven_2:
+        # "Zurueck zum Turm" / "Shen hat seinen Spike" / "Nicht kaempfen" im Wechsel)
+        neue_gefahr = anw.form == "gefahr" and (alt.form != "gefahr" or erledigt)
+        grund = ("gefahr" if neue_gefahr else "frage" if frage else "event" if anlass != "takt"
                  else "erledigt" if erledigt else "abgelaufen" if anw.zeit - alt.seit >= self.halten_s else None)
         if grund is None:
             # gehalten: der alte Plan gilt weiter - mit den Zahlen dieses Takts, wenn seine Entscheidung noch feuert

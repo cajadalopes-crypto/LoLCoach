@@ -505,8 +505,14 @@ stand = "Auftrag 034, 30.09.2026 - Startwerte, bei Carlos (Stufe 5) messen"
 takt_s = 1.0                     # hoechstens so oft wird entschieden (der Coach taktet live 4/s)
 start_s = 45.0                   # davor (Brunnen, Einkauf) spricht der Entscheider nicht
 halten_s = 20.0                  # Regel 028: so lange braucht ein Planwechsel einen Grund (Gefahr, Event, Frage, erledigt)
-erinnern_s = 25.0                # so viel Stille, dann die Erinnerung "Weiter: ..." (danach 2x, 4x so lange, Auftrag 027)
+erinnern_s = 25.0                # so viel Stille, dann die Erinnerung "Weiter: ..." (035: ohne Verdoppeln - Tor Luecke <= 35 s)
+wiederholen_s = 30.0             # 035: dieselbe Entscheidung so lange nicht noch einmal (ausser Ereignis oder Frage)
+still_s = 3.5                    # 035 (027): so lange still am selben Fleck (still_radius), dann "Los: ..."
+still_radius = 120.0
 wendepunkt_abstand_s = 8.0       # ein Wechsel aus einem Ereignis ist budgetfrei, hoechstens einmal je so viele s
 claude = true                    # Claude formt den Satz (nur live, nur ueber die API - das Abo braucht 4-11 s)
 frist_s = 2.0                    # so lange wartet der Satz auf Claude, dann spricht die Vorlage (Haiku API: 1,6 s Median)
 modell = "schnell"               # [llm] schnell
+reihenfolge = "wert"             # Auftrag 035, Teil 0: Gefahr vorn, dann der Aktionswert des Gehirns (Ersatz: fester
+                                 # Wert); "fest" = Stand 034 (Gefahr, Objective-Kette, Rest). Umschalten fuers
+                                 # Messen auch mit LOLCOACH_MAKRO_REIHENFOLGE=fest|wert. Teil 2 misst beide.

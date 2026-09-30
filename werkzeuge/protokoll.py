@@ -32,8 +32,25 @@ def _option(h) -> str:
 
 
 def schnappschuss(a, p, werk, kern) -> dict:
-    """Die Lage in dem Takt, in dem `a` an die Stimme ging."""
+    """Die Lage in dem Takt, in dem `a` an die Stimme ging. Mit --kern makro: Anweisung, Form, Grund des Wechsels und
+    die zwei naechstbesten Kommandos des Makro-Entscheiders (Auftrag 035)."""
     m = kern.m
+    mc = getattr(kern, "makro_coach", None)
+    if mc is not None and mc.entscheider.aktiv is not None:
+        from lolcoach.makro.aktionen import plan_art
+        an = mc.entscheider.aktiv
+        leben = m.leben if m is not None and m.leben is not None else (werk.b.leben if werk.b is not None else None)
+        return {
+            "zeit": a.gesprochen, "modus": kern.modus.aktuell or "–",
+            "ort": bereich_worte(m.bereich) if m is not None else "Ort unbekannt",
+            "leben": None if leben is None else round(leben * 100),
+            "gold": None if p.gold is None else int(p.gold),
+            "plan": (f"{an.kommando.id} {plan_art(an.kommando)} ({an.form}, {an.grund})", an.kommando.wert, 0.0),
+            "gefahr": an.form == "gefahr",
+            "optionen": [f"{k.id} {plan_art(k)} „{k.text}“" for k in an.alternativen],
+            "danach": an.kommando.danach or None, "entscheidend": an.kommando.weil,
+            "zeitleiste": [f"{ns.uhr(e.zeit)} {e.text}" for e in (getattr(kern, "zeitleiste", None) or [])[:5]],
+        }
     plan = kern.fuehrer.plan
     kand = sorted(kern.kandidaten or [], key=lambda h: -h.ev)
     gewaehlt = plan.als() if plan is not None else None
@@ -57,7 +74,7 @@ def schnappschuss(a, p, werk, kern) -> dict:
     }
 
 
-def protokoll(stamm: str, kern: str = "neu", fragen: bool = False, stratege: str | None = None) -> Path:
+def protokoll(stamm: str, kern: str = "makro", fragen: bool = False, stratege: str | None = None) -> Path:
     import fuehrmass
     pfad = ns.pfad_zu(stamm)
     liste = [(f["zeit"], f["text"], i) for i, f in enumerate(fuehrmass.fragen_aus_log(stamm))] if fragen else None
@@ -172,7 +189,7 @@ def protokoll(stamm: str, kern: str = "neu", fragen: bool = False, stratege: str
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    kern = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--kern=")), "neu")
+    kern = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--kern=")), "makro")
     staemme = args or [aufzeichnung.alle()[-1].name.removesuffix(".jsonl.gz")]
     for stamm in staemme:
         print(protokoll(stamm, kern, fragen="--fragen" in sys.argv,

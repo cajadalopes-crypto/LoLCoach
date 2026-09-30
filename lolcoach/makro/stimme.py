@@ -18,11 +18,11 @@ import time
 SYSTEM = (
     "Du bist die Stimme eines League-of-Legends-Coaches und sitzt neben dem Spieler, der gerade spielt. Du bekommst "
     "eine fertige Anweisung als Fakten: TU (die Handlung), WEIL (der Grund), DANACH (der naechste Schritt). Forme "
-    "daraus EINEN kurzen gesprochenen deutschen Satz, hoechstens 22 Woerter, Handlung zuerst. Erfinde nichts: keine "
+    "daraus EINEN kurzen gesprochenen deutschen Satz, hoechstens 14 Woerter, Handlung zuerst. Erfinde nichts: keine "
     "andere oder zusaetzliche Handlung, kein anderes Ziel, keine Namen, Zahlen oder Zeiten, die nicht in den Fakten "
     "stehen. Keine Verneinung weglassen. Kein Markdown, keine Anfuehrungszeichen, keine Einleitung.")
 
-HOECHSTENS_WOERTER = 30
+HOECHSTENS_WOERTER = 14      # wie [sprechen] max_woerter (Auftrag 002 / 035: Szenario s23-plan-hoechstens-14)
 STOPP = {"der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "einer", "und", "oder", "dann",
          "jetzt", "mit", "zu", "zum", "zur", "in", "im", "an", "am", "auf", "bis", "fuer", "für", "von", "vor", "nach",
          "ist", "sind", "du", "dich", "dir", "dein", "deine", "deinen", "deinem", "deiner", "ihr", "ihre", "ihren",
@@ -46,7 +46,7 @@ def _woerter(text: str) -> list[str]:
     return [w.lower() for w in re.findall(r"[\wÄÖÜäöüß'-]+", text)]
 
 
-def abweichung(satz: str, vorlage: str, namen: set[str] = frozenset()) -> list[str]:
+def abweichung(satz: str, vorlage: str, namen: set[str] = frozenset(), erlaubt: str | None = None) -> list[str]:
     """Warum `satz` nicht dasselbe sagt wie `vorlage` - leer heisst: treu. Geprueft wird hart, lieber die Vorlage
     als ein falscher Satz:
     - jede Zahl im Satz steht auch in der Vorlage;
@@ -55,24 +55,28 @@ def abweichung(satz: str, vorlage: str, namen: set[str] = frozenset()) -> list[s
       Handlungsarten der Vorlage fehlen nicht;
     - Verneinung bleibt Verneinung;
     - die Inhaltswoerter der Handlung (TU) kommen vor (mindestens die Haelfte, gekuerzt auf 5 Buchstaben);
-    - hoechstens HOECHSTENS_WOERTER Woerter."""
+    - hoechstens HOECHSTENS_WOERTER Woerter.
+    `erlaubt`: der ganze Satz (Grund, danach) - Zahlen, Namen und Handlungen daraus darf Claude nennen; die
+    Handlungen der Vorlage muss er nennen."""
     g = []
+    quelle = f"{vorlage} {erlaubt}" if erlaubt else vorlage
     if not satz or not satz.strip():
         return ["leer"]
     if len(satz.split()) > HOECHSTENS_WOERTER:
         g.append("zu lang")
-    if extra := set(ZAHL.findall(satz)) - set(ZAHL.findall(vorlage)):
+    if extra := set(ZAHL.findall(satz)) - set(ZAHL.findall(quelle)):
         g.append(f"Zahl erfunden ({', '.join(sorted(extra))})")
     for n in namen:
-        if re.search(rf"(?<!\w){re.escape(n)}(?!\w)", satz) and not re.search(rf"(?<!\w){re.escape(n)}(?!\w)", vorlage):
+        if re.search(rf"(?<!\w){re.escape(n)}(?!\w)", satz) and not re.search(rf"(?<!\w){re.escape(n)}(?!\w)", quelle):
             g.append(f"Name erfunden ({n})")
     for art, muster in HANDLUNGEN.items():
         im_satz, in_vorlage = bool(muster.search(satz)), bool(muster.search(vorlage))
-        if im_satz and not in_vorlage:
+        if im_satz and not muster.search(quelle):
             g.append(f"Handlung erfunden ({art})")
         elif in_vorlage and not im_satz and art != "warten":
             g.append(f"Handlung fehlt ({art})")
-    if bool(NICHT.search(satz)) != bool(NICHT.search(vorlage)):
+    if bool(NICHT.search(satz)) != bool(NICHT.search(vorlage)) and not (NICHT.search(satz) and erlaubt
+                                                                     and NICHT.search(erlaubt)):
         g.append("Verneinung geaendert")
     return g
 
@@ -97,15 +101,30 @@ def fakten(anw) -> str:
     if anw.form == "geteilt" and anw.zweite is not None:
         z.append(f"ODER (gleich gut): {sprechbar(anw.zweite.tu)} - {sprechbar(anw.zweite.weil)}")
     z.append(f"VORLAGE (so waere es richtig): {anw.vorlage}")
+    z.append(f"GANZ (nur zur Einordnung, nicht alles sagen): {anw.voll}")
     return "\n".join(z)
+
+
+def strom_als_frage(strom):
+    """Ein Strom-Weg (stratege_live.claude_strom / Zwischenspeicher: (prompt, bei_satz, system, timeout, modell=...))
+    als `frage(prompt, system=, modell=, timeout=) -> str` fuer die Stimme (Nachspiel, Auftrag 035)."""
+    def frage(prompt: str, system: str | None = None, modell: str = "schnell", timeout: float = 30.0, **_) -> str:
+        teile: list[str] = []
+        try:
+            text = strom(prompt, teile.append, system, timeout, modell=modell)
+        except TypeError:
+            text = strom(prompt, teile.append, system, timeout)
+        return text if isinstance(text, str) and text.strip() else " ".join(teile)
+    return frage
 
 
 class Auftrag:
     """Eine Formulierung im Hintergrund. `ergebnis()` blockiert nie."""
 
-    def __init__(self, anw, vorlage: str, namen: set[str], frist_s: float):
+    def __init__(self, anw, vorlage: str, namen: set[str], frist_s: float, voll: str | None = None):
         self.anw = anw
         self.vorlage = vorlage
+        self.voll = voll
         self.namen = set(namen)
         self.ende = time.monotonic() + frist_s
         self._fertig = threading.Event()
@@ -132,7 +151,7 @@ class Auftrag:
             return self.vorlage, f"vorlage:ausfall ({self._fehler})"
         satz = (self._text or "").strip().strip('"„“').strip()
         satz = re.sub(r"\s+", " ", satz)
-        g = abweichung(satz, self.vorlage, self.namen)
+        g = abweichung(satz, self.vorlage, self.namen, self.voll)
         if tu_fehlt(satz, self.anw.kommando.tu):
             g.append("Handlung nicht genannt")
         if g:
@@ -144,15 +163,17 @@ class Stimme:
     """Claude als Stimme. `frage(prompt, system=..., modell=..., timeout=...) -> str` (lolcoach.llm.frage oder ein
     Stub im Test). Ohne `frage` spricht immer die Vorlage. Gefahr formt Claude nie - sie muss sofort heraus."""
 
-    def __init__(self, frage=None, frist_s: float = 2.0, modell: str = "schnell"):
+    def __init__(self, frage=None, frist_s: float = 2.0, modell: str = "schnell", synchron: bool = False):
         self.frage = frage
         self.frist_s = frist_s
         self.modell = modell
+        # Nachspiel (035, Teil 3): auf Claude warten statt der Wanduhr-Frist - gemessen wird der Satz, nicht die Zeit
+        self.synchron = synchron
         self.aufrufe = 0
         self.quellen: dict[str, int] = {}
 
     def formen(self, anw, namen: set[str] = frozenset()) -> Auftrag:
-        a = Auftrag(anw, anw.vorlage, namen, self.frist_s)
+        a = Auftrag(anw, anw.vorlage, namen, self.frist_s, getattr(anw, "voll", None))
         if self.frage is None or anw.form == "gefahr":
             a.direkt = "aus" if self.frage is None else "gefahr"
             a._fertig.set()
@@ -165,7 +186,11 @@ class Stimme:
                 a._setzen(text)
             except Exception as e:           # Ausfall: die Vorlage spricht
                 a._setzen(None, f"{type(e).__name__}")
-        threading.Thread(target=lauf, daemon=True, name="makro-stimme").start()
+        if self.synchron:
+            lauf()
+            a.ende = float("inf")
+        else:
+            threading.Thread(target=lauf, daemon=True, name="makro-stimme").start()
         return a
 
     def zaehlen(self, quelle: str) -> None:

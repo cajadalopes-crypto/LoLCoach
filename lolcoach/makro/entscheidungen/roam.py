@@ -95,7 +95,7 @@ def r6(lage: MakroLage):
 def r7(lage: MakroLage):
     if not lage.plan.get("unterwegs") or len(lage.unbekannt()) < 2:
         return None
-    return Kommando("R7", "Durch euren Jungle, nicht durch den Fluss", f"{len(lage.unbekannt())} Gegner fehlen", klasse="gefahr", wert=1.5)
+    return Kommando("R7", "Geh durch euren Jungle, nicht durch den Fluss", f"{len(lage.unbekannt())} Gegner fehlen", klasse="gefahr", wert=1.5)
 
 
 @entscheidung("R8", "Roam-Kosten gegen Nutzen", "Re,D", ("welle_eigen", "eigene_position"),

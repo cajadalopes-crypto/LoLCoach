@@ -47,8 +47,8 @@ alle halten; sonst uebersprungen. Am Ende die Quote.
                                   [--kern alt|schatten|neu] [--konstruiert]
 
 --lage zeigt je Szenario die nachgespielte Lage neben der aus dem Szenario (Bestaetigung, Schritt 1).
---kern wie beim Coach (Default neu: der Kern spricht in LANE, BASIS, TOT und seit Schritt 4 in SEITE, GRUPPE,
-UNTERWEGS, VERTEIDIGEN).
+--kern wie beim Coach (seit Auftrag 035 Default makro: der Makro-Entscheider; seine Anweisung zaehlt als die Plan-Art,
+der sie entspricht - lolcoach/makro/aktionen.plan_art. --kern neu: der alte Kern, zum Vergleich).
 --konstruiert prueft die konstruierten Lagen (tests/szenarien/konstruiert/, Buch 1 6.2) statt der Aufnahmen.
 """
 from __future__ import annotations
@@ -381,7 +381,7 @@ def plaene_um(lauf: ns.Lauf, von: float, bis: float) -> list[str]:
 
 
 def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lauf: ns.Lauf | None = None,
-                 kern: str = "neu") -> dict:
+                 kern: str = "makro") -> dict:
     """`lauf`: schon nachgespielt (kennzahlen.py) - dann ohne Fragen an Claude."""
     cfg = tomllib.loads(datei.read_text(encoding="utf-8"))
     stamm = cfg["aufnahme"]
@@ -607,9 +607,10 @@ def main() -> None:
     ap.add_argument("--nur", choices=("alt", "kern"))
     ap.add_argument("--mit-claude", action="store_true", help="Fragen echt an Claude (ueber das Abo, Sparprotokoll)")
     ap.add_argument("--lage", action="store_true", help="nachgespielte Lage je Szenario zeigen")
-    ap.add_argument("--kern", choices=("alt", "schatten", "neu", "makro"), default="neu")   # makro: Auftrag 034
+    ap.add_argument("--kern", choices=("alt", "schatten", "neu", "makro"), default="makro")   # Auftrag 035: makro
     ap.add_argument("--konstruiert", action="store_true", help="die konstruierten Lagen (Buch 1, 6.2)")
     ap.add_argument("--prozesse", type=int, default=0, help="parallel (Vorgabe: Kerne - 2; 1 = seriell)")
+    ap.add_argument("--json", default=None, help="Ergebnis als JSON (Quote, rote/gruene IDs je Datei; Auftrag 035)")
     args = ap.parse_args()
     if args.konstruiert:
         sys.exit(0 if konstruiert() else 1)
@@ -635,6 +636,10 @@ def main() -> None:
     gepr = gesamt["gruen"] + gesamt["rot"]
     print(f"\nGesamt: {gesamt['gruen']} gruen / {gepr} geprueft ({gesamt['rot']} rot, {gesamt['uebersprungen']} "
           f"uebersprungen)")
+    if args.json:
+        Path(args.json).write_text(json.dumps({"kern": args.kern, **gesamt, "je_datei": {
+            Path(d).name: {"rot": e.get("rot_ids", []), "gruen": e.get("gruen_ids", [])}
+            for d, (e, _) in zip(dateien, ergebnisse)}}, ensure_ascii=False, indent=1), encoding="utf-8")
 
 
 def konstruiert() -> bool:

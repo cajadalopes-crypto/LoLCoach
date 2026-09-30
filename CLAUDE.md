@@ -59,7 +59,7 @@ dem man per Discord den Bildschirm teilt. (Das Review nach dem Spiel ist seit Au
 | `bericht.py` | Text-Bericht (Markdown), nur auf Befehl (`bericht`) - nicht mehr automatisch nach der Partie |
 | `llm_api.py` | Claude ueber die API - nur mit `LOLCOACH_API=1` (setzt allein `Coach starten.cmd`, Sparprotokoll) |
 | `llm.py` | Claude ueber die Claude-Code-Kommandozeile (Abo), schlank (eigener Systemprompt, stdin) |
-| `makro/` | Challenger-Gehirn (Buch 17): 111 Entscheidungen, Rechner, Regeln (032), Wahrnehmung (033); seit 034 der Entscheider im Coach: `live.py` (MakroLage je Takt), `takt.py` (Gehirn + 111 + Vorrang -> eine Anweisung), `stimme.py` (Claude formt nur den Satz, sonst die Vorlage), `einbau.py` (Takt, Budget, Fragen, Protokoll `<stamm>_makro.jsonl`) |
+| `makro/` | Challenger-Gehirn (Buch 17): 111 Entscheidungen, Rechner, Regeln (032), Wahrnehmung (033); seit 034 der Entscheider im Coach: `live.py` (MakroLage je Takt), `takt.py` (Gehirn + 111 + Vorrang -> eine Anweisung), `stimme.py` (Claude formt nur den Satz, sonst die Vorlage), `einbau.py` (Takt, Budget, Fragen, Protokoll `<stamm>_makro.jsonl`); seit 035 `vorrang.py` (Gefahr vorn, dann Aktionswert des Gehirns, fester Wert als Ersatz; `[makro_gehirn] reihenfolge = "wert"\|"fest"`) und `aktionen.py` (Kommando -> Aktion des Gehirns) |
 
 `python -m lolcoach` = live. Weitere Befehle: `abspielen`, `bericht`,
 `frage`, `mikrotest`, `status`, `llm` (siehe `--help`). `live` und `abspielen` nehmen
@@ -70,6 +70,8 @@ Stellung den Modus, sperrt die alten Regeln danach (Kapitel 14) und schreibt liv
 ist nur noch Sicherheits-Sperre (`Kern.makro_sperre`: R1, Kill-Check, Fakten, verbotene Begriffe); die alten Regeln
 schweigen ueberall; Protokoll `<stamm>_makro.jsonl` (`werkzeuge/makro_protokoll.py`). `--kern neu` gibt den Stand
 davor. Ohne `daten/challenger/modelle` laeuft er ohne Gehirn (nur Regeln und Rechner).
+Seit Auftrag 035 messen `szenarien.py`, `protokoll.py`, `kennzahlen.py` und `nachspielen.py` per Default `--kern makro`
+(`--kern neu` fuer den alten Stand).
 Bis 034 war `neu` Default: in LANE, BASIS und TOT entscheidet und spricht der Kern (Kandidaten je Modus in
 `kern/modi/`, Wert und Gefahr in `wert.py`/`gefahr.py`, gehaltener Plan in `plan.py`, Budget in `sprechen.py`;
 Welle nach Buch 1, Recall/Kauf nach Buch 3), die alten Regeln schweigen dort; `schatten` = das Regelwerk spricht,
@@ -106,6 +108,11 @@ durch denselben Code wie das Live-Spiel.
 - `python tests/alle.py` - alle Tests (echte Partien als Testfaelle, ~10 s). `python tests/makro/alle.py` - das
   Makro-Gehirn (032-034, ohne Modelle). `python tests/einzeln.py [--basis alt.txt]` - jede Testfunktion einzeln (ohne
   `daten/` bricht `alle.py` beim ersten Datenbedarf ab; mit `--basis` nur, was neu rot ist).
+- Abnahme des Challenger-Gehirns (035, ohne Guthaben): `python werkzeuge/abnahme_035.py` - Laufzeit des Gehirns,
+  Generalprobe, `werkzeuge/makro_messen.py` (Verdrahtung: 027-Masse im Nachspiel mit Stub-Stimme), `werkzeuge/challenger/
+  treue.py` (Challenger-Treue: Kommando gegen die Aktion der High-Elo-Spieler in den Pruefpartien, beide Reihenfolgen,
+  gegen "immer farmen", haeufigste Aktion je Rolle/Minute und den alten Kern), Szenarien makro/neu, Guthaben ->
+  `buecher/challenger/phase5_messung.md`. Die Abo-Runde startet es nie, es nennt nur den Befehl.
 - `python werkzeuge/szenarien.py` - war der Rat in dieser Lage richtig? Szenarien aus
   `tests/szenarien/*.toml` gegen das nachgespielte System (`--mit-claude`: auch Fragen, ueber das
   Abo, `--lage`: nachgespielte Lage je Szenario, `--konstruiert`: die konstruierten Lagen aus

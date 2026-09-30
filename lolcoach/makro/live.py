@@ -36,7 +36,8 @@ MONSTER_EVENT = {"DragonKill": "drache", "BaronKill": "baron", "HeraldKill": "he
 INHIB_ZURUECK = 300.0          # wie bewertung.INHIB_ZURUECK / phase1.INHIB_RESPAWN
 BARON_BUFF, ELDER_BUFF = 180.0, 150.0
 BRUNNEN_R = 1200.0             # so nah am eigenen Brunnen heisst "im Brunnen" (Kauf moeglich)
-KAMPF_R = 2000.0               # Champions beider Teams so eng beieinander: ein Kampf (Minimap)
+KAMPF_R = 1200.0               # Champions beider Teams so eng beieinander: ein Kampf (Minimap; 034: 2000 - zu weit)
+KAMPF_KILL_S = 10.0            # ... in einer Lane waehrend der Lane-Phase nur mit einem Kill so kurz davor
 SICHTBAR_S = 3.0               # so frisch zaehlt eine Minimap-Sichtung als "jetzt"
 FRISCH_MIT_S = 3.0             # Mitspieler-Position/HUD so frisch
 
@@ -121,7 +122,8 @@ class LageBau:
         self._strukturen(lage, p, lb, zeit, vorhanden)
         lage.ereignisse = self._ereignisse(p, lb, zeit)
         self._wards(lage, lb, zeit, vorhanden)
-        lage.kampf = self._kampf(lage, lb)
+        lage.kampf = self._kampf(lage, lb, kill_vor=min((e[2] for e in lage.ereignisse if e[0] in ("kill", "tod")),
+                                                        default=None))
         if lb is not None:
             vorhanden |= {"gegner_sichtungen", "gegner_flash", "tp_sprung", "chat", "kampf"}
         self.anlass = self._anlass(p, ich, zeit)
@@ -386,8 +388,11 @@ class LageBau:
             lage.wards.append(Ward(ort=_ward_ort(pos, w, lage.team), pos=pos,
                                    art="kontrolle" if w.art == "kontrolle" else "gelb"))
 
-    def _kampf(self, lage: MakroLage, lb) -> Kampf | None:
-        """Ein Kampf auf der Minimap: mindestens zwei sichtbare Gegner und ein Mitspieler (ohne dich) in KAMPF_R."""
+    def _kampf(self, lage: MakroLage, lb, kill_vor: float | None = None) -> Kampf | None:
+        """Ein Kampf auf der Minimap: mindestens zwei sichtbare Gegner und ein Mitspieler (ohne dich) in KAMPF_R.
+        In einer Lane waehrend der Lane-Phase (vor 14:00) ist das 2 gegen 2 kein Kampf, ausser ein Kill oder Tod liegt
+        hoechstens KAMPF_KILL_S zurueck (Nachspiel 035: die Botlane galt dauernd als Kampf - "Nicht kaempfen: 1 gegen
+        3" jede halbe Minute)."""
         if lb is None:
             return None
         sicht = [g for g in lage.gegner if g.lebt and g.pos is not None and g.gesehen_vor is not None
@@ -401,6 +406,9 @@ class LageBau:
             if len(geg) >= 2 and wir and (bester is None or len(geg) + len(wir) > bester[0]):
                 mitte = (sum(x.pos[0] for x in geg + wir) / (len(geg) + len(wir)),
                          sum(x.pos[1] for x in geg + wir) / (len(geg) + len(wir)))
+                if lage.zeit < LANE_PHASE_BIS and bereich(*mitte) in (2, 3, 4) \
+                        and (kill_vor is None or kill_vor > KAMPF_KILL_S):
+                    continue
                 bei = next((n.capitalize() for n, pos in GRUBEN.items() if n in ("drache", "baron")
                             and _abst(mitte, pos) <= 2500), wir[0].champion)
                 bester = (len(geg) + len(wir), Kampf(pos=mitte, wir=len(wir), gegner=len(geg), bei=bei))

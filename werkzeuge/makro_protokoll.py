@@ -30,10 +30,15 @@ def _q(werte: list[float], q: float) -> float:
 
 def auswerten(pfad: Path) -> dict:
     e, a = lesen(pfad)
+    return auswerten_daten(e, a, pfad.name)
+
+
+def auswerten_daten(e: list[dict], a: list[dict], name: str = "") -> dict:
+    """Wie `auswerten`, aus den Listen (Nachspiel: MakroCoach.protokoll und .gesagt, werkzeuge/makro_messen.py)."""
     ms = [x["ms"] for x in e if "ms" in x]
     hirn = [x.get("ms_hirn", 0.0) for x in e]
     return {
-        "datei": pfad.name, "entscheidungen": len(e), "ansagen": len(a),
+        "datei": name, "entscheidungen": len(e), "ansagen": len(a),
         "ms": {"median": _q(ms, 0.5), "p95": _q(ms, 0.95), "max": max(ms, default=0.0),
                "ueber_50": sum(m > 50 for m in ms)},
         "ms_hirn_median": _q(hirn, 0.5),

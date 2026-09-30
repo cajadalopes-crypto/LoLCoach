@@ -141,7 +141,7 @@ def s11(lage: MakroLage):
     if not lage.gesehen_busch or len(lage.unbekannt()) < regeln.regel("S11")["unbekannt_mind"]:
         return None
     n = len(lage.unbekannt())
-    return Kommando("S11", "Nicht in den Busch", f"{n} fehlen", "erst Ward oder Linse", klasse="gefahr", wert=4.0)
+    return Kommando("S11", "Bleib vor dem Busch, erst Ward oder Linse", f"{n} fehlen", "dann rein", klasse="gefahr", wert=4.0)
 
 
 @entscheidung("S12", "Sicht abgelaufen oder zerstoert", "M,R", ("eigene_wards", "ward_weg"), ("R:S12",))

@@ -106,5 +106,5 @@ def k7(lage: MakroLage):
     tz = rechner.todes_kosten(lage.ich.level, lage.zeit)
     if tz < 35 or lage.mitspieler_bei(lage.ich.pos, 3000) or len(lage.unbekannt()) < 3:
         return None
-    return Kommando("K7", "Nicht allein tiefer als die Flussmitte", f"{sek(tz)} Todeszeit und {len(lage.unbekannt())} fehlen",
+    return Kommando("K7", "Bleib diesseits der Flussmitte, nicht allein tiefer", f"{sek(tz)} Todeszeit und {len(lage.unbekannt())} fehlen",
                     klasse="gefahr", wert=4.0)

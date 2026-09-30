@@ -29,7 +29,7 @@ def m2(lage: MakroLage):
     if split is None or beste is None or split[2] < beste[2] - 0.5 or len(lage.unbekannt()) >= 3:
         return None
     tp = ", TP bereit fuer den Baron" if lage.ich.tp_hat and lage.ich.tp_in == 0 else ""
-    return Kommando("M2", "Split bis zu ihrem Turm, nicht weiter", f"sie muessen dir jemanden schicken{tp}",
+    return Kommando("M2", "Drück die Seitenwelle bis zu ihrem Turm, nicht weiter", f"sie muessen dir jemanden schicken{tp}",
                     "sofort weg, wenn drei fehlen")
 
 

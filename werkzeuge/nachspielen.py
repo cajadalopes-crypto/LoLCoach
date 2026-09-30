@@ -78,10 +78,28 @@ class Takt:
 
 
 def plan_art(kern, modus) -> str | None:
-    """Die Plan-Art des Takts; in KAMPF die Entscheidung der Tabelle 5.1 (Buch 7, 5 - kein PlanFuehrer dort)."""
+    """Die Plan-Art des Takts; in KAMPF die Entscheidung der Tabelle 5.1 (Buch 7, 5 - kein PlanFuehrer dort).
+    Mit --kern makro (Auftrag 035): die Art, der die Anweisung des Makro-Entscheiders entspricht (makro/aktionen.py)."""
+    if (mc := getattr(kern, "makro_coach", None)) is not None:
+        from lolcoach.makro.aktionen import plan_art as makro_art
+        a = mc.entscheider.aktiv
+        return None if a is None else makro_art(a.kommando)
     if modus == "KAMPF" and getattr(kern, "_kampf", None) is not None and kern._kampf.tabelle:
         return kern._kampf.tabelle
     return kern.fuehrer.plan.als() if kern.fuehrer.plan is not None else None
+
+
+def makro_felder(kern) -> dict | None:
+    """Mit --kern makro: die Felder eines Takts aus der Anweisung des Makro-Entscheiders (Ziel = der Satz, Gefahr =
+    Form "gefahr"; p_tod, Objective-Urteile und Stumm-Rufe gibt es dort nicht). None: nicht makro."""
+    mc = getattr(kern, "makro_coach", None)
+    if mc is None:
+        return None
+    a = mc.entscheider.aktiv
+    if a is None:
+        return {"ziel": "", "gefahr": False, "gesagt": False, "danach": ""}
+    return {"ziel": a.voll, "gefahr": a.form == "gefahr", "gesagt": mc._gesagt_schl == a.schluessel,
+            "danach": a.kommando.danach or ""}
 
 
 def plan_ziel(plan) -> str:
@@ -169,12 +187,18 @@ def antwort_sprechen(aus: dict, p, plan, kern) -> None:
         plan.gesagt.append(a)
 
 
-def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, kern_stellung: str = "neu",
+def _stub_klasse():
+    """Die echte Stub-Klasse (nachspiel_abdeckung ersetzt stratege_live.AufzeichnungsStub durch den Zwischenspeicher)."""
+    from lolcoach import stratege_live
+    return getattr(stratege_live, "_AufzeichnungsStubKlasse", stratege_live.AufzeichnungsStub)
+
+
+def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, kern_stellung: str = "makro",
                  beim_takt=None, fragen=None, stratege: str | None = None) -> Lauf:
     """Die Aufnahme wie live, nur stumm. `halte_bei`: Spielzeiten, zu denen Partie und Bewertung festgehalten
     werden (der erste Takt ab dieser Zeit). `proben`: je Sekunde Gegner-Ankunft und Positionen (Gefahr-Eichung).
     `rueckruf(soll, p, b, lb, wand)`: an jeder Haltezeit, solange das Lagebild noch diesen Stand hat (Fragen).
-    `kern_stellung`: wie --kern (Schritt 3: neu = der Kern spricht in LANE, BASIS, TOT).
+    `kern_stellung`: wie --kern (seit Auftrag 035 Standard makro = der Makro-Entscheider; neu = der alte Kern).
     `beim_takt(p, werk, kern, plan)`: nach jedem Takt des Sprechplans (werkzeuge/protokoll.py).
     `fragen`: [(Spielzeit, Text, id)] - zur Zeit wie per Sprechtaste gestellt (Auftrag 003), in `lauf.antworten`."""
     lauf = Lauf(pfad)
@@ -188,7 +212,19 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
     global AKTUELL
     AKTUELL = lauf              # Auftrag 027, 3: fuer Rueckrufe, die den Kern brauchen (szenarien: satz_pruefen)
     ms = None
-    if stratege == "stub":
+    if stratege == "stub" and getattr(kern, "makro_coach", None) is not None:
+        # Auftrag 035: unter --kern makro entscheidet Claude nichts - "Stratege" heisst hier: Claude als Stimme.
+        # Stub (ohne Abo): die Vorlage kommt als Claudes Satz zurueck (der Weg wird geprueft). Hat der Aufrufer den
+        # echten Weg eingesetzt (nachspiel_abdeckung.laufen: Zwischenspeicher + claude_strom), formt Claude den Satz -
+        # synchron, damit das Nachspiel ihn misst (Treue-Pruefung, Vorlage-Anteil), nicht die Wanduhr-Frist.
+        from lolcoach import stratege_live
+        from lolcoach.makro.einbau import stimme_stub
+        from lolcoach.makro.stimme import strom_als_frage
+        quelle = stratege_live.AufzeichnungsStub()
+        st = kern.makro_coach.stimme
+        st.frage = stimme_stub if isinstance(quelle, _stub_klasse()) else strom_als_frage(quelle)
+        st.synchron = True
+    elif stratege == "stub":
         # Auftrag 015, B5: die Stratege-Wege im Nachspielen, mit Aufzeichnungs-Stub statt Abo, synchron
         from lolcoach.stratege_live import AufzeichnungsStub, MakroStratege
         ms = MakroStratege(kern, plan, frage_fn=AufzeichnungsStub(), synchron=True, aktiv=True)
@@ -231,6 +267,7 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
         if lauf.spielmodus is None and p.modus not in (None, "", "?"):
             lauf.spielmodus = p.modus
         b = werk.b
+        mf = makro_felder(kern)
         if vorher is not None:
             dw = w - vorher[0]
             if dw > LUECKE_AB:
@@ -245,17 +282,21 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
                                frozenset(g.champion for g in b.gegner if g.sichtbar and g.abstand is not None
                                          and g.abstand <= NEU_SICHTBAR_RADIUS) if b else frozenset(),
                                werk.modus, plan_art(kern, werk.modus),
-                               kern.gefahr,
-                               kern.fuehrer.plan.handlung.p_tod if kern.fuehrer.plan is not None else None,
-                               plan_ziel(kern.fuehrer.plan),
-                               kern.fuehrer.plan.handlung.daten.get("objective") if kern.fuehrer.plan else None,
-                               {s: u.zieht for s, u in (kern.m.obj_urteile or {}).items()} if kern.m else {},
-                               getattr(kern, "_stumm_takt", None),
+                               kern.gefahr if mf is None else mf["gefahr"],
+                               (kern.fuehrer.plan.handlung.p_tod if kern.fuehrer.plan is not None else None)
+                               if mf is None else None,
+                               plan_ziel(kern.fuehrer.plan) if mf is None else mf["ziel"],
+                               (kern.fuehrer.plan.handlung.daten.get("objective") if kern.fuehrer.plan else None)
+                               if mf is None else None,
+                               ({s: u.zieht for s, u in (kern.m.obj_urteile or {}).items()} if kern.m else {})
+                               if mf is None else {},
+                               getattr(kern, "_stumm_takt", None) if mf is None else None,
                                sum(len(p.kills_von(e)) for e in STRUKTUR_EVENTS),
                                sum(len(p.kills_von(e)) for e in OBJ_KILL_EVENTS),
                                bool(p.ich and p.ich.tot),
-                               bool(kern.fuehrer.plan is not None and kern.fuehrer.plan.gesagt is not None),
-                               getattr(kern, "danach_text", None) or ""))
+                               bool(kern.fuehrer.plan is not None and kern.fuehrer.plan.gesagt is not None)
+                               if mf is None else mf["gesagt"],
+                               (getattr(kern, "danach_text", None) or "") if mf is None else mf["danach"]))
         while offene_fragen and p.zeit >= offene_fragen[0][0]:
             ft, ftext, fid = offene_fragen.pop(0)
             lauf.antworten.append(frage_stellen(ftext, p, lb, plan, fid, ms, kern))

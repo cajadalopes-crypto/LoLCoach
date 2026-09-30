@@ -37,8 +37,10 @@ WICHTIG = ("OBJ_BALD", "OBJ_DA", "TURM_FAELLT", "FLASH_WEG", "TP_WEG", "LANE_WEG
 AUS = Path(__file__).resolve().parent.parent / "buecher" / "protokolle" / "proben" / "pakete_028"   # 025-027: pakete_0NN
 
 
-def _lauf(stamm: str) -> dict:
-    """Ein Nachspiel; je Takt ein kleiner Datensatz."""
+def _lauf(stamm: str, kern_stellung: str | None = None) -> dict:
+    """Ein Nachspiel; je Takt ein kleiner Datensatz. `kern_stellung`: wie --kern (Vorgabe wie nachspielen, seit 035
+    makro). Mit makro zusaetzlich die Planwechsel des Makro-Entscheiders (`makro_enden`, fuer die Anweisungs-Luecke)
+    und sein Protokoll (`makro`: je Entscheidung und je Ansage, werkzeuge/makro_protokoll.py)."""
     import nachspielen as ns
     from lolcoach.bewertung import abstand
     from lolcoach.kern.pakete import hilfe_kandidat
@@ -47,8 +49,14 @@ def _lauf(stamm: str) -> dict:
 
     sicher: list = []
     gesehen_g = [0]
+    makro_enden: list = []
+    makro_plan = [None]
 
     def bt(p, werk, kern, plan):
+        mc = getattr(kern, "makro_coach", None)
+        if mc is not None and mc.entscheider.aktiv is not None and mc.entscheider.aktiv.schluessel != makro_plan[0]:
+            makro_plan[0] = mc.entscheider.aktiv.schluessel      # der alte Plan ist hier zu Ende (Anweisungs-Luecke)
+            makro_enden.append(round(p.zeit, 2))
         m = kern.m
         neu, gesehen_g[0] = plan.gesagt[gesehen_g[0]:], len(plan.gesagt)
         if m is None or m.b is None:
@@ -82,7 +90,9 @@ def _lauf(stamm: str) -> dict:
                       "pos": list(b.pos) if b.pos is not None else None,
                       "kauf": bool(getattr(b, "kauf", None) is not None and b.kauf.kaufen),
                       # der Recall-Kanal: 16 s nach dem Back-Ruf (wie herzschlag - er beginnt oft erst nach der Welle)
-                      "back_ruf": bool(getattr(kern, "_back_rufe", None)) and p.zeit - kern._back_rufe[-1] <= 16.0,
+                      "back_ruf": (bool(getattr(kern, "_back_rufe", None)) and p.zeit - kern._back_rufe[-1] <= 16.0)
+                      if mc is None else p.zeit - max([mc._id_zuletzt.get(i, -1e9) for i in
+                                                       ("B1", "B2", "B4", "B5", "W3")]) <= 16.0,
                       "wir_nah": 1 + sum(1 for s, wo, *_ in b.mitspieler or [] if wo is not None and not s.tot
                                          and b.pos is not None and abstand(wo, b.pos) <= 1500),
                       "sie_nah": sum(1 for g in b.gegner if g.sichtbar and not g.s.tot and g.abstand is not None
@@ -106,11 +116,19 @@ def _lauf(stamm: str) -> dict:
                                "ende": pk.ende, "verlauf": pk.verlauf, "partner": pk.partner, "obj": pk.obj})
 
     t0 = time.monotonic()
-    lauf = ns.durchspielen(ns.pfad_zu(stamm), beim_takt=bt)
+    lauf = ns.durchspielen(ns.pfad_zu(stamm), beim_takt=bt,
+                           **({"kern_stellung": kern_stellung} if kern_stellung else {}))
     gesagt = [{"t": round(ns.gesprochen_um(a), 1), "text": a.text, "schl": a.schluessel, "thema": a.thema,
-               "kat": getattr(a, "_kategorie", None)} for a in lauf.gesagt]
-    return {"stamm": stamm, "takte": takte, "events": events, "pakete": pakete, "gesagt": gesagt,
-            "sicherheit": sicher, "dauer_s": round(time.monotonic() - t0)}
+               "kat": getattr(a, "_kategorie", None), "mit_grund": bool(getattr(a, "_mit_grund", False))}
+              for a in lauf.gesagt]
+    d = {"stamm": stamm, "takte": takte, "events": events, "pakete": pakete, "gesagt": gesagt,
+         "sicherheit": sicher, "dauer_s": round(time.monotonic() - t0)}
+    mc = getattr(lauf.kern, "makro_coach", None)
+    if mc is not None:
+        d["makro_enden"] = makro_enden
+        d["makro"] = {"protokoll": mc.protokoll, "gesagt": list(mc.gesagt), "verworfen": mc.verworfen,
+                      "hirn": mc.hirn is not None, "reihenfolge": mc.entscheider.reihenfolge}
+    return d
 
 
 def hoeren(d: dict, gesagt: list | None = None) -> dict:
@@ -129,7 +147,11 @@ def hoeren(d: dict, gesagt: list | None = None) -> dict:
     takte = d["takte"]
     g = gesagt if gesagt is not None else d["gesagt"]
     pos = sorted(s["t"] for s in g if positiv(NS(schluessel=s["schl"], text=s["text"])))
-    enden = sorted(v[0] for pk in d["pakete"] for v in pk["verlauf"] if v[1] in ("ERLEDIGT", "ABGEBROCHEN", "BUDGET_AB"))
+    if d.get("makro_enden") is not None:
+        enden = sorted(d["makro_enden"])      # Auftrag 035: eine Anweisung gilt, bis der Makro-Entscheider wechselt
+    else:
+        enden = sorted(v[0] for pk in d["pakete"] for v in pk["verlauf"]
+                       if v[1] in ("ERLEDIGT", "ABGEBROCHEN", "BUDGET_AB"))
     luecken, cur, vor_t = [], 0.0, None
     import bisect
     for x in takte:
@@ -145,7 +167,9 @@ def hoeren(d: dict, gesagt: list | None = None) -> dict:
         i = bisect.bisect_right(pos, x["t"]) - 1
         gueltig = False
         if i >= 0 and x["t"] - pos[i] <= 30.0:
-            j = bisect.bisect_right(enden, pos[i])
+            # Auftrag 035: ein Planwechsel im selben Takt wie der Satz (Wechsel auf 0,01 s, Satz auf 0,1 s gerundet)
+            # beendet nicht den Satz, der ihn ansagt - 0,5 s Toleranz
+            j = bisect.bisect_right(enden, pos[i] + (0.5 if d.get("makro_enden") is not None else 0.0))
             gueltig = not (j < len(enden) and enden[j] <= x["t"])
         if gueltig:
             if cur > 0:
@@ -205,7 +229,8 @@ def hoeren(d: dict, gesagt: list | None = None) -> dict:
     wid = []
     aktiv = None
     for s in g:
-        a = NS(schluessel=s["schl"], text=s["text"], thema=s.get("thema") or "", kategorie=s.get("kat"))
+        a = NS(schluessel=s["schl"], text=s["text"], thema=s.get("thema") or "", kategorie=s.get("kat"),
+               _mit_grund=s.get("mit_grund", False))              # Auftrag 035: Makro-Wechsel mit Grund
         z = plan_ziel_von(a)
         if not z:
             continue

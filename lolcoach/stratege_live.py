@@ -226,6 +226,9 @@ class AufzeichnungsStub:
         return text
 
 
+_AufzeichnungsStubKlasse = AufzeichnungsStub     # Auftrag 035: die Klasse, auch wenn AufzeichnungsStub ersetzt wird
+
+
 # --- Auftrag 017, 1.5: ein aktiver Plan -----------------------------------------------------------------------------
 
 AENDERUNG_S = 30.0          # innerhalb dieser Zeit aendert sich der Plan nur nach einer echten Lageaenderung

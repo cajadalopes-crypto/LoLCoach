@@ -2609,7 +2609,7 @@ class Kern:
                     "bereich": bereich_worte(m.bereich if m else None),
                     "plan": {"art": f"{k.id} ({a.form})", "ziel": sprechbar(jetzt_statt_null(k.tu)),
                              "grund": sprechbar(jetzt_statt_null(k.weil)),
-                             "satz": a.vorlage,
+                             "satz": a.voll,
                              "ev": round(k.wert), "schritte": [k.danach] if k.danach else [], "schritt": 0},
                     "top": [{"art": g, "ev": 0, "grund": "gefeuert"} for g in a.gefeuert[:3]],
                     "gefahr": a.form == "gefahr",
