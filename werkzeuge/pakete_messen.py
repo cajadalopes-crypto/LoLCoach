@@ -45,11 +45,25 @@ def _lauf(stamm: str) -> dict:
     takte, events, pakete = [], [], []
     gesehen_ende: set = set()
 
+    sicher: list = []
+    gesehen_g = [0]
+
     def bt(p, werk, kern, plan):
         m = kern.m
+        neu, gesehen_g[0] = plan.gesagt[gesehen_g[0]:], len(plan.gesagt)
         if m is None or m.b is None:
             return
         b = m.b
+        if neu:
+            # Auftrag 028, 3/5: Sicherheit wie im Abo-Nachspiel (nachspiel_abdeckung) - jeder Satz jeder Quelle
+            from lolcoach import stratege
+            from nachspiel_abdeckung import _kill_jetzt
+            lage = {"vorn": {"verboten": bool((kern.vorn() or {}).get("verboten"))}, "kill": _kill_jetzt(b),
+                    "gegner_leben": {g.champion: g.leben for g in b.gegner if g.sichtbar}}
+            for a in neu:
+                txt = a.text.split("“ – ", 1)[-1] if a.schluessel == "antwort" else a.text
+                for grund in stratege.sicherheit(txt, lage):
+                    sicher.append({"t": round(p.zeit, 1), "schl": a.schluessel, "text": txt[:90], "grund": grund})
         modus = kern.modus.aktuell
         hilfe = None
         if not m.tot and modus not in ("KAMPF", "TOT", "BASIS"):
@@ -96,7 +110,7 @@ def _lauf(stamm: str) -> dict:
     gesagt = [{"t": round(ns.gesprochen_um(a), 1), "text": a.text, "schl": a.schluessel, "thema": a.thema,
                "kat": getattr(a, "_kategorie", None)} for a in lauf.gesagt]
     return {"stamm": stamm, "takte": takte, "events": events, "pakete": pakete, "gesagt": gesagt,
-            "dauer_s": round(time.monotonic() - t0)}
+            "sicherheit": sicher, "dauer_s": round(time.monotonic() - t0)}
 
 
 def hoeren(d: dict, gesagt: list | None = None) -> dict:
@@ -346,7 +360,7 @@ def auswerten(d: dict) -> dict:
             "roh": {"frei": len(frei), "mit": len(mit), "gesagt": len(gesagt_p), "abbruch": [ok, faelle],
                     "budget": [budget_f, budget_n, budget_g], "back": [back_ok, back_n], "chancen": [ch_ok, ch_n],
                     "events": [ev_ok, ev_n]},
-            "pakete_n": len(pakete)}
+            "pakete_n": len(pakete), "sicherheit_liste": d.get("sicherheit") or []}
 
 
 def main() -> None:
@@ -387,7 +401,10 @@ def main() -> None:
         print(f"{r['stamm']}: HOEREN Luecke p90 {h['luecke_p90']} s / max {h['luecke_max']} s, Stillstand "
               f"{_quote(*h['still'])}, Basis {_quote(*h['basis'])}, negativ allein {h['negativ']}, hin und her "
               f"{h['hin_her']}, Widerspruch {h['widerspruch']}, Fuellsaetze {_quote(*h['fuell'])}, Kanone "
-              f"{h['kanone'][0]} in {h['kanone'][1]} x 90 s", flush=True)
+              f"{h['kanone'][0]} in {h['kanone'][1]} x 90 s, Sicherheit {len(r.get('sicherheit_liste') or [])}",
+              flush=True)
+        for x in (r.get("sicherheit_liste") or [])[:4]:
+            print(f"    SICHERHEIT {x['t']} {x['schl']} {x['grund']}: {x['text']}", flush=True)
         print(f"{r['stamm']}: Abdeckung {r['abdeckung']} (angesagt {r['abdeckung_gesagt']}), Abbruch {r['abbruch']}, "
               f"Budget {r['budget']}, Back {r['back']}, Chancen {r['chancen']}, Events {r['events']}, "
               f"Pakete {r['pakete_n']}", flush=True)

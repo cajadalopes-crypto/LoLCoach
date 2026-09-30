@@ -18,7 +18,9 @@ Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes
                             sprache_konkret = true (kein gesprochener Satz mit vager Form, kern.sprache.vage_formen);
                             seit Auftrag 027: positiv_abstand_max (so viele Sekunden im Fenster hoechstens ohne
                             positive Anweisung), negativ_allein_max, hin_und_her_max (Plan-Saetze mit anderem Ziel
-                            in < 5 s), satz_pruefen = ["..."] + verwerfen = true|false (stratege.pruefe zur `zeit`)
+                            in < 5 s), satz_pruefen = ["..."] + verwerfen = true|false (stratege.pruefe zur `zeit`);
+                            seit Auftrag 028: antwort_sprechen = ["..."] (eine Antwort geht zur `zeit` an die
+                            Stimme - was gesprochen wird, hat keinen Sicherheitsgrund)
   Datei:                    spielmodus = "CLASSIC" | "SWIFTPLAY" (Vorgabe CLASSIC) - muss zum gameMode der Aufnahme
                             passen, sonst rot (Qualitaetsrunde 2, G6: 133930 und 140253 sind Swiftplay)
   Kern (Modus, Plan-Art):   modus und [[modus_soll]] ab Schritt 2 (irgendein Takt in zeit +-2 s hat einen der
@@ -368,6 +370,15 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                 from lolcoach import stratege
                 pl = stratege.pruef_lage(ns.AKTUELL.kern, p)
                 pruef_[s["id"]] = [(satz, stratege.pruefe(satz, pl)) for satz in s["satz_pruefen"]]
+            if s.get("antwort_sprechen") and "zeit" in s and ns.sekunden(s["zeit"]) == soll:
+                # Auftrag 028, 3: eine Antwort, die jetzt an die Stimme geht (live: sprache._sicher) - gesprochen
+                # wird, was der Kill-Check des Kerns durchlaesst; danach die Sicherheit des Gesprochenen
+                from lolcoach import stratege
+                k = ns.AKTUELL.kern
+                weg = getattr(k, "sichere_antwort", lambda t: t)
+                pl = stratege.pruef_lage(k, p)
+                pruef_[s["id"]] = [(satz, (lambda g: stratege.sicherheit(g, pl) if g else [])(weg(satz)))
+                                   for satz in s["antwort_sprechen"]]
             if s.get("frage") and s.get("sofort") and ns.sekunden(s["zeit"]) == soll and nur != "kern":
                 from lolcoach import antworten
                 antworten_[s["id"]] = antworten.sofort(s["frage"], p, lb) or "(keine Sofort-Antwort)"
@@ -391,7 +402,14 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
         ergebnis["rot_ids"].append("spielmodus")
     for sz in szen:
         verstoesse, geprueft, uebersprungen = [], 0, []
-        if sz.get("satz_pruefen"):
+        if sz.get("antwort_sprechen"):
+            geprueft += 1
+            for satz, gruende in pruef_.get(sz["id"], [(s, None) for s in sz["antwort_sprechen"]]):
+                if gruende is None:
+                    verstoesse.append(f"antwort_sprechen - nicht geprueft (Zeit nicht erreicht): \"{satz[:60]}\"")
+                elif gruende:
+                    verstoesse.append(f"antwort_sprechen - gesprochen trotz {'; '.join(gruende)}: \"{satz[:70]}\"")
+        elif sz.get("satz_pruefen"):
             # Auftrag 027, 3: verwerfen = true heisst, pruefe() muss jeden Satz ablehnen (false: durchlassen)
             geprueft += 1
             for satz, gruende in pruef_.get(sz["id"], [(s, None) for s in sz["satz_pruefen"]]):

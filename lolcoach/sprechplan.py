@@ -107,6 +107,13 @@ def _stimmt(a: Ansage) -> bool:
 # lange darf eine Ansage hoechstens warten, egal was die Regel wollte - das Briefing ausgenommen.
 WARTEN_HOECHSTENS = {SOFORT: 6.0, WICHTIG: 10.0, HINWEIS: 20.0}
 ACH_NEE = 8.0     # Sekunden: so lange nach einem widerrufenen Satz beginnt der neue zum selben Thema mit "Ach nee"
+DOPPEL_S = 10.0   # Auftrag 028, 1.3: so lange ist derselbe Satz aus keiner Quelle ein zweites Mal zu hoeren
+
+
+def _kern_text(text: str) -> str:
+    """Der Satz ohne Vorsatz ("Los:", "Plan geändert:", "Ach nee:"), Satzzeichen und Gross/klein - fuer Doppel."""
+    t = re.sub(r"^\W*((los|plan geändert|ach nee|stimmt\. neu|neu)\s*:\s*)+", "", text.strip(), flags=re.I)
+    return " ".join(re.findall(r"\w+", t.lower()))
 # "Geh zurueck" eben gehoert - ein zweites aus anderem Grund sagt nichts Neues (Nachlauf 194524, 16:46-17:23: viermal
 # "geh zurueck zu deinem Mid-Tier-1-Turm" in 37 s, aus Gold, Jungler und Unterzahl). Gezaehlt ab dem Moment, in dem
 # die Worte "geh zurueck" im Satz fallen - kommt ein neues vorher, ist es das direktere und darf abbrechen.
@@ -141,6 +148,7 @@ class Sprechplan:
         self._widerruf: tuple[float, str, str] | None = None   # (Spielzeit, Thema, Schluessel-Art) des widerrufenen
         self._rueckzug_gehoert = -1e9    # Spielzeit, zu der das letzte "geh zurueck" beim Spieler ankommt
         self.kern = None                 # kern.Kern: Modus fuer die Einwuerfe des Strategen (Kapitel 14)
+        self.verworfen_sicher: list = []  # Auftrag 028, 3: (Zeit, Schluessel, Text, Grund) - am Sprech-Tor gefallen
         self.abstand_s = _abstand_s()
 
     def _melder(self, a: Ansage, ab: float):
@@ -199,6 +207,24 @@ class Sprechplan:
                 and zeit - aktiv[0] >= 5.0:
             return f"Plan geändert: {a.text}"
         return None
+
+    def _doppel(self, text: str, zeit: float) -> bool:
+        """Auftrag 028, 1.3: kein Doppel binnen DOPPEL_S aus beliebiger Quelle - derselbe Satz, oder einer, der nur
+        wiederholt, was eben gesagt wurde (231200 22:00-22:22: "Raus jetzt, nach Top." alle 4 s; "Los: X" 5 s nach X;
+        die Kauf-Kette zweimal). Wer etwas anfuegt ("..., nicht zu Swain"), sagt Neues und darf."""
+        k = _kern_text(text)
+        if len(k) < 8:
+            return False
+        los = text.lstrip().lower().startswith("los:")     # er steht: das Stehen ist das Neue (Auftrag 027, 1)
+        for x in reversed(self.gesagt[-10:]):
+            if x.gesprochen is None or zeit - x.gesprochen > DOPPEL_S:
+                continue
+            if los and not x.text.lstrip().lower().startswith("los:"):
+                continue
+            kx = _kern_text(x.text.split("“ – ", 1)[-1] if x.schluessel == "antwort" else x.text)
+            if kx == k or kx.startswith(k):
+                return True
+        return False
 
     def _vorbereiten(self, a: Ansage) -> None:
         """Sie kommt als naechste dran: die Stimme synthetisiert ihren Anfang schon (einmal je Ansage) - dann klingt
@@ -361,6 +387,12 @@ class Sprechplan:
         if (neu_text := self._ein_plan(a, zeit)) is None:
             return None
         a.text = neu_text
+        # Auftrag 028, 3: der Kill-Check fuer jede Quelle, gegen die Lage JETZT - nicht die beim Erzeugen
+        if self.kern is not None and (gruende := self.kern.unsicher_jetzt(a.text)):
+            self.verworfen_sicher.append((zeit, a.schluessel, a.text, "; ".join(gruende)))
+            return None
+        if self._doppel(a.text, zeit):
+            return None
         # "Ach nee - Ekko ist beim Drachen": der Satz davor wurde mitten drin widerrufen (Carlos' Wunsch 26.09.)
         w = self._widerruf
         # nur, wenn der neue Satz die neue Fassung des alten ist: dieselbe Art, oder beide eine Gefahr (Position) -

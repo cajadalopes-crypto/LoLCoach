@@ -600,18 +600,58 @@ class Kern:
         """Auftrag 016, 6.4, hart fuer jeden Kern-Satz (Kritik 016: "Rein auf Poppy!" ohne Kill, 133448 9:47): nach vorn
         unter R1, Angriff ohne Kill-Check, "schwach" ohne Beleg - dann nicht gesagt, nur als stumm protokolliert."""
         from .. import stratege
-        b = m.b
-        if b is None:
+        if m.b is None:
             return False                 # (auch GEFAHR: "Rein auf Poppy!" kommt als Kampf-Ruf in dieser Kategorie)
-        lage = {"vorn": {"verboten": m.leben is not None and not m.tot
+        gruende = stratege.sicherheit(a.text, self._sicher_lage(m))
+        if gruende:
+            self._stumm(m, a.schluessel.split(":", 1)[-1], a.text, self.modus.aktuell, grund="; ".join(gruende))
+        return bool(gruende)
+
+    def _sicher_lage(self, m: Merkmale) -> dict:
+        from .. import stratege
+        b = m.b
+        return {"vorn": {"verboten": m.leben is not None and not m.tot
                          and m.leben < self.cfg["schranken"]["vor_leben_min"]},
                 "kill": stratege.kill_jetzt(b),
                 "gegner_leben": {g.champion: g.leben for g in b.gegner if g.sichtbar and g.leben is not None},
                 "gegner": [{"name": g.champion} for g in b.gegner]}
-        gruende = stratege.sicherheit(a.text, lage)
-        if gruende:
-            self._stumm(m, a.schluessel.split(":", 1)[-1], a.text, self.modus.aktuell, grund="; ".join(gruende))
-        return bool(gruende)
+
+    def unsicher_jetzt(self, text: str) -> list[str]:
+        """Auftrag 028, 3: der Kill-Check fuer JEDE Quelle, gegen die Lage beim SPRECHEN (231200 26:25: die Antwort
+        "Xerath töten sofort" war beim Fragen geprueft - 3,5 s spaeter hielt der Kill nicht mehr, und Antworten gingen
+        ohne zweite Pruefung an die Stimme). Stratege, Antworten, Herzschlag, Events. Die Gruende, leer heisst sicher."""
+        from .. import stratege
+        m = self.m
+        if m is None or m.b is None or not text:
+            return []
+        try:
+            return stratege.sicherheit(text, self._sicher_lage(m))
+        except Exception:
+            return []
+
+    def sichere_antwort(self, text: str | None) -> str | None:
+        """Auftrag 028, 3: eine Antwort beim Sprechen - der unsichere Satz faellt, an seiner Stelle der Grund ("Kein
+        sicherer Kill mehr."); bleibt nichts, die Anweisung des Herzschlags. None: nichts Sicheres zu sagen."""
+        if not text or not self.unsicher_jetzt(text):
+            return text
+        import re as _re
+        from .herzschlag import vorlage
+        gut, grund = [], ""
+        for s in _re.split(r"(?<=[.!?])\s+", text.strip()):
+            if g := self.unsicher_jetzt(s):
+                grund = grund or g[0]
+            elif s:
+                gut.append(s)
+        kopf = ("Kein sicherer Kill mehr." if grund.startswith("Angriff") else
+                "Nicht nach vorn: zu wenig Leben." if grund.startswith("nach vorn") else None)
+        if not gut:
+            try:
+                v = vorlage(self, self.m)
+            except Exception:
+                v = None
+            if v and not self.unsicher_jetzt(v):
+                gut = [v]
+        return " ".join(x for x in [kopf] + gut if x) or None
 
     def _herz_sicher(self, a, m: Merkmale) -> bool:
         """Auftrag 027, 1: faellt der Herzschlag an der Sicherheit ("Nimm den Kampf" ohne Kill-Check, 183125 19:57),

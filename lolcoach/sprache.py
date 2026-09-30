@@ -343,6 +343,8 @@ class Gespraech:
                         return
                     if gesprochen and gesprochen[0] is None:
                         return
+                    if self._sicher(satz) != satz:
+                        return                 # Auftrag 028, 3: ein unsicherer Satz der Claude-Antwort faellt
                     if not gesprochen:
                         self._zeiten(p, erkannt, time.monotonic() - start, "Claude", text)
                     gesprochen.append(satz)
@@ -376,6 +378,10 @@ class Gespraech:
                         antwort = "Ich sehe es leider noch nicht - frag mich gleich noch mal."
                 if antwort.strip().rstrip(".").lower() == "notiert":
                     self._notiere(text, p)  # Claude hat es als Rueckmeldung erkannt
+        antwort = self._sicher(antwort)                # Auftrag 028, 3: auch die Antwort des Kerns
+        if not antwort:
+            self.sprecher.freigeben()
+            return
         print(f"  Coach: {antwort}", flush=True)
         self._zeiten(p, erkannt, time.monotonic() - start, "ganz", text)
         if makro is not None and p is not None:
@@ -389,6 +395,7 @@ class Gespraech:
         """Auftrag 015, B1: die Antwort des Strategen. Seit Auftrag 017, 0.1 GANZ geprueft und am Stueck gesprochen
         (vorher Satz fuer Satz mit Pausen dazwischen). False: der Kern antwortet."""
         antwort = makro.antworte(text, r.get("absicht"), p, entwurf=r.get("text"))
+        antwort = self._sicher(antwort)              # Auftrag 028, 3: Kill-Check beim Sprechen, nicht beim Fragen
         if not antwort:
             return False
         self._zeiten(p, erkannt, time.monotonic() - start, "Stratege", text)
@@ -400,6 +407,17 @@ class Gespraech:
             a._quelle = "stratege"
             self.gesagt.append(a)
         return True
+
+    def _sicher(self, antwort: str | None) -> str | None:
+        """Auftrag 028, 3 (231200 26:25 "Xerath töten sofort": beim Fragen geprueft, 3,5 s spaeter gesprochen - da
+        hielt der Kill nicht mehr): jede Antwort geht beim Sprechen noch einmal durch den Kill-Check des Kerns."""
+        kern = getattr(self.lagebild, "kern", None)
+        if kern is None or not hasattr(kern, "sichere_antwort") or not antwort:
+            return antwort
+        try:
+            return kern.sichere_antwort(antwort)
+        except Exception:
+            return antwort
 
     def _zeiten(self, p, erkannt: float, stimme: float, wie: str, text: str) -> None:
         """Wie lange er warten musste - je Frage ins Tastenprotokoll: Spracherkennung, bis die ersten Worte an die

@@ -1,0 +1,13 @@
+# Auftrag 028, 3: der Kill-Check fuer jede Quelle - an der Udyr-Partie 231200. Auf 72ea066 (vor dem Fix) rot.
+
+aufnahme = "2026-09-29_231200"
+spielmodus = "PRACTICETOOL"
+bots = true
+
+[[szenario]]
+id = "2625-antwort-kill-beim-sprechen"
+zeit = "26:28"
+quelle = "Nachspiel 027: Antwort 'Xerath töten sofort' - beim Fragen (26:25) hielt der Kill, ab 26:26 nicht mehr; live 3,5 s spaeter gesprochen"
+lage = "Riven am Top-Fluss, Leben 47 % und fallend, Xerath nicht mehr sicher toetbar."
+antwort_sprechen = ["Jetzt, wo sie beim Herold anfangen: Xerath töten sofort, dann Top-Welle mit der Kanone in 6 s crashen, danach Drachen nehmen – ihr seid 6100 Gold vorn."]
+warum = "Auftrag 028, 3: die Antwort ging ohne zweite Pruefung an die Stimme - der Kill-Check gilt beim Sprechen, fuer jede Quelle."

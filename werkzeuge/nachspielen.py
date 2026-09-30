@@ -148,10 +148,23 @@ def frage_stellen(text: str, p, lb, plan, fid=None, stratege=None) -> dict:
     if aus["text"] and stratege is not None and aus["quelle"] != "stratege":
         stratege.antwort_gesprochen(aus["text"], p.zeit)       # Auftrag 023, 3: auch die Kern-Antwort setzt den Plan
     if aus["text"] and plan is not None:
-        a = regeln.Ansage(f"„{frage}“ – {aus['text']}", regeln.WICHTIG, "antwort", zeit=p.zeit, gesprochen=p.zeit)
+        aus["_frage"] = frage          # gesprochen wird wie live erst danach (antwort_sprechen, im naechsten Takt)
+    return aus
+
+
+def antwort_sprechen(aus: dict, p, plan, kern) -> None:
+    """Auftrag 028, 3: live geht die Antwort Sekunden nach der Frage an die Stimme (231200 26:25: 3,5 s) - dort prueft
+    sie der Kill-Check gegen die Lage DANN (sprache._sicher). Hier: im Takt nach der Frage, gegen die Lage jetzt."""
+    frage = aus.pop("_frage", None)
+    if frage is None or plan is None:
+        return
+    text = kern.sichere_antwort(aus["text"]) if kern is not None and hasattr(kern, "sichere_antwort") else aus["text"]
+    if text != aus["text"]:
+        aus["ungeprueft"], aus["text"] = aus["text"], text
+    if text:
+        a = regeln.Ansage(f"„{frage}“ – {text}", regeln.WICHTIG, "antwort", zeit=aus["zeit"], gesprochen=aus["zeit"])
         a._ziel = aus["ziel"]
         plan.gesagt.append(a)
-    return aus
 
 
 def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, kern_stellung: str = "neu",
@@ -181,6 +194,7 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
     lb = lage.Lagebild() if sicht else None
     offen = sorted(halte_bei)
     offene_fragen = sorted(fragen or [], key=lambda f: f[0])
+    antworten_offen: list[dict] = []
     vorher = None
     letzte_probe = -1e9
     for w, d in aufzeichnung.lies_mit_zeit(pfad):
@@ -195,6 +209,8 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
             neu = ms.bearbeite(neu, p, lb)
         for a in neu:
             a._b = werk.b
+        while antworten_offen:
+            antwort_sprechen(antworten_offen.pop(0), p, plan, kern)
         plan.neu(neu)
         sprecher.takt(p.zeit)
         plan.takt(p.zeit)
@@ -232,6 +248,7 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
         while offene_fragen and p.zeit >= offene_fragen[0][0]:
             ft, ftext, fid = offene_fragen.pop(0)
             lauf.antworten.append(frage_stellen(ftext, p, lb, plan, fid, ms))
+            antworten_offen.append(lauf.antworten[-1])
         while offen and p.zeit >= offen[0]:
             soll = offen.pop(0)
             lauf.halte[soll] = (p, b, lage_kurz(p, b, lb))
@@ -242,6 +259,8 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
             p_da = gefahr.alle_p_da(kern.m, kern.cfg["gefahr"]) if kern.m is not None and kern.m.b is b else {}
             lauf.proben.append((p.zeit, b.pos, [(g.champion, g.ankunft, g.sichtbar, g.seit, g.pos, g.s.tot,
                                                  p_da.get(g.champion)) for g in b.gegner]))
+    for aus in antworten_offen:
+        antwort_sprechen(aus, None, plan, kern)
     lauf.gesagt = plan.gesagt
     lauf.abbrueche = sprecher.abbrueche
     return lauf

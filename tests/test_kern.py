@@ -1440,6 +1440,13 @@ def ein_plan_028():
     drueck = Ansage("Drück ihren inneren Mid-Turm: Level 14 gegen 10.", WICHTIG, "kern:DRUECKEN", zeit=107.0)
     assert sp._ein_plan(drueck, 107.0) == "Plan geändert: Drück ihren inneren Mid-Turm: Level 14 gegen 10."
     assert sp._ein_plan(herz, 125.0) == herz.text                                  # nach 20 s ein neuer Plan
+    # 1.3: kein Doppel binnen 10 s aus beliebiger Quelle (231200 22:00: "Raus jetzt, nach Top." alle 4 s)
+    sp.gesagt.append(Ansage("Raus jetzt, nach Top.", WICHTIG, "kern:PAKET_STILL", zeit=130.0, gesprochen=130.0))
+    assert sp._doppel("Raus jetzt, nach Top.", 134.0) and not sp._doppel("Raus jetzt, nach Top.", 141.0)
+    assert not sp._doppel("Los: Raus jetzt, nach Top.", 135.0)          # er steht - das ist neu
+    assert not sp._doppel("Raus jetzt, nach Top: Udyr kommt.", 135.0)   # ein Grund dazu ist neu
+    sp.gesagt.append(Ansage("Los: Raus jetzt, nach Top.", WICHTIG, "kern:PAKET_STILL", zeit=135.0, gesprochen=135.0))
+    assert sp._doppel("Los: Raus jetzt, nach Top.", 140.0)
     # 2: eine Anweisung kommt nur mit Neuem wieder - nie "Bleib dabei" (auch nicht mit Kanone)
     kern = NS(fuehrer=NS(plan=None), danach_text="", uhren=NS(kanone_in=18.0), cfg={}, _back_rufe=[], _stand=None,
               pakete=NS(fertig=[]))
@@ -1455,6 +1462,24 @@ def ein_plan_028():
     kern.uhren.kanone_in = 6.0
     kern.fuehrer.plan = NS(art="WELLE_REIN_UND_BACK", handlung=NS(schritte=["Welle rein", "back"]))
     assert countdown(kern, m) == "Kanone in 6 Sekunden, dann Back."
+    # 3: der Kill-Check beim SPRECHEN, fuer jede Quelle (231200 26:25: beim Fragen hielt der Kill, beim Sprechen nicht)
+    from lolcoach.kern import Kern
+    k = NS(unsicher_jetzt=lambda t: ["Angriff ohne Kill-Check (töten)"] if "töte" in t else [])
+    sp = Sprechplan(NS(beschaeftigt=False, sage=lambda *a, **kw: None))
+    sp.kern = k
+    sp.neu([Ansage("Rein: töte Xerath!", WICHTIG, "kern:PAKET_HERZ", zeit=300.0)])
+    assert sp.takt(300.0) is None and sp.verworfen_sicher, sp.verworfen_sicher
+    k.m = NS()
+    k.sichere_antwort = lambda t: Kern.sichere_antwort(k, t)
+    import lolcoach.kern.herzschlag as hz
+    alt, hz.vorlage = hz.vorlage, lambda kern, m: "Geh zu deiner Top-Welle und farm sie."
+    try:
+        assert k.sichere_antwort("Xerath töten sofort, dann Top crashen.") == \
+            "Kein sicherer Kill mehr. Geh zu deiner Top-Welle und farm sie."
+        assert k.sichere_antwort("Ja, TP. Dann töte Xerath.") == "Kein sicherer Kill mehr. Ja, TP."
+        assert k.sichere_antwort("Ja, TP auf die Top-Welle.") == "Ja, TP auf die Top-Welle."
+    finally:
+        hz.vorlage = alt
 
 
 if __name__ == "__main__":
