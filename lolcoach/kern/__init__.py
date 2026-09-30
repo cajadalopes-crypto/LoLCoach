@@ -586,7 +586,9 @@ class Kern:
                     v = aktiver_plan_satz(gesagt, m.zeit)     # der Kern hat keine Vorlage: der Plan bis 60 s
                 v = v or v_kern
                 if nah and v:
-                    v = v.split(": ")[0].split(", ")[0]
+                    # (der Kopf der Anweisung - nicht "Plan geändert" allein: 134020 32:27 "Plan geändert. Nicht zu ...")
+                    vor = "Plan geändert: " if v.startswith("Plan geändert: ") else ""
+                    v = vor + v[len(vor):].split(": ")[0].split(", ")[0]
                 if (s := nachsatz(v, w, gesagt, m.zeit, grenze)) is not None:
                     saetze.append(("WARUM_NICHT", s))
             ende = any(art in ("ERLEDIGT", "ABGEBROCHEN", "BUDGET_AB") for art, _ in saetze)
