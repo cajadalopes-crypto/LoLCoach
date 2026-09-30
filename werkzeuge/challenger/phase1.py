@@ -39,6 +39,8 @@ ZIEL = g.ABLAGE / "phase1"
 AUFTEILUNG = g.BUCH / "aufteilung.json"        # einmal festgelegt, nie mehr aendern (committet)
 TEIL_GROESSE = 150
 NAHE_SICHTBAR = 1200.0
+NAHE_SICHTBAR_LANE = 1800.0     # Entscheidung 031/0.2: bis 14:00, beide in der Lane der Rolle (Vasallen geben Sicht)
+LANE_PHASE_BIS = 14 * 60
 MERGE = 5                                       # Zeitpunkte eines Spielers, die so eng liegen, werden einer
 
 ROLLEN = list(g.ROLLEN)
@@ -47,6 +49,11 @@ ANLAESSE = ["Minute", "Kill", "eigener Tod", "Respawn", "Back", "Gebaeude", "Mon
 AUFTEILUNGEN = ["Training", "Pruefung Spieler", "Pruefung Zeit", "Pruefung beides"]
 AKTIONEN = ["Tot", "Back", "Objective", "TP", "Rotation", "Split", "Gruppe", "Jungle", "Lane", "Warten", "Unterwegs"]
 MONSTER = ["–", "Drache", "Baron", "Herold", "Larven", "Elder"]
+# Wohin (Entscheidung 031/0.1): Ort am Ende des 60-s-Fensters bzw. des ersten Ereignisses, an dem er beteiligt ist
+WOHIN = ["–", "eigene Basis", "Toplane", "Midlane", "Botlane", "Drachengrube", "Barongrube", "eigener Jungle oben",
+         "eigener Jungle unten", "gegn. Jungle oben", "gegn. Jungle unten", "Fluss oben", "Fluss unten", "gegn. Basis"]
+VERDECKT = [("teamgold_diff", "echter Team-Gold-Abstand (im Spiel NICHT sichtbar - nur Vergleich)", "Minute, linear", "G"),
+            ("jgl_bereich", "wo der Gegner-Jungler wirklich ist (Bereich 0-10, 11 = tot) - nur Ziel der Jungler-Karte", "Minute, linear", "G")]
 ZUSTAENDE = ["frei", "bestritten", "umkaempft"]
 BEREICHE = ["basis_blau", "basis_rot", "top", "mid", "bot", "fluss_oben", "fluss_unten", "jungle_blau_oben",
             "jungle_blau_unten", "jungle_rot_oben", "jungle_rot_unten"]
@@ -126,7 +133,7 @@ MERKMALE: list[tuple[str, str, str, str]] = [
     ("diff_level_lane", "dein Level - Lane-Gegner", "Scoreboard", "B"),
     ("diff_cs_lane", "deine CS - Lane-Gegner", "Scoreboard (Minute, linear)", "G"),
     # Lane-Gegner nahe sichtbar (Entscheidung 1)
-    ("lg_nahe_sichtbar", "Lane-Gegner lebt und steht <= 1200 neben dir (\"nahe sichtbar\")", "Minute, linear", "G"),
+    ("lg_nahe_sichtbar", "Lane-Gegner lebt und steht <= 1200 neben dir (\"nahe sichtbar\"); bis 14:00, beide in der Lane der Rolle: <= 1800", "Minute, linear", "G"),
     ("lg_x", "Lane-Gegner x, nur wenn nahe sichtbar, sonst NaN", "Minute, linear", "G"),
     ("lg_y", "Lane-Gegner y, nur wenn nahe sichtbar, sonst NaN", "Minute, linear", "G"),
     # Gegner (nach Rolle): tot + Restzeit, zuletzt gesehen
@@ -156,6 +163,8 @@ AKTION = [
     ("ziel", "bei Objective: 1 Drache, 2 Baron, 3 Herold, 4 Larven, 5 Elder; bei Rotation: Zielzone 1-3", "Regeln", "G"),
     ("ziel_zustand", "bei Objective-Kill: 0 frei, 1 bestritten, 2 umkaempft; -1 = Spawn/kein Kill", "Entscheidung 3", "G"),
     ("tp", "1 = TP sicher erkannt, -1 = TP unbekannt (hat TP), 0 = hat kein TP", "Positionssprung, Phase 0", "G"),
+    ("wohin", "Ort am Ende des Fensters bzw. des ersten eigenen Ereignisses darin (Code aus WOHIN)", "Minute/Ereignis", "G"),
+    ("wohin_mit", "dort bei Mitspieler (Rolle 1-5, 0 = allein)", "Minimap", "G"),
 ]
 AI = {n[0]: i for i, n in enumerate(AKTION)}
 
@@ -400,11 +409,14 @@ class Raster:
         self.tp_sicher: dict[int, list[int]] = {}
         # an welchen Ereignissen mit Ort war der Spieler beteiligt (Sekunden) - fuer "Warten"
         self.beteiligt: dict[int, list[int]] = {}
+        self.beteiligt_ort: dict[int, list[tuple[int, float, float]]] = {}
         for e in p.events:
             if e["typ"] in ("CHAMPION_KILL", "BUILDING_KILL", "ELITE_MONSTER_KILL", "TURRET_PLATE_DESTROYED"):
                 for q in {e.get("killerId"), e.get("victimId"), *(e.get("assistingParticipantIds") or [])}:
                     if q:
                         self.beteiligt.setdefault(q, []).append(int(math.ceil(e["t"])))
+                        if e.get("position"):
+                            self.beteiligt_ort.setdefault(q, []).append((int(math.ceil(e["t"])), *e["position"]))
 
     # ---- Scoreboard je Team (Index 0 = Blau, 1 = Rot)
     def _team_zaehler(self):
@@ -639,7 +651,10 @@ def lage(R: Raster, pid: int, sek: np.ndarray) -> np.ndarray:
         X[:, SP["diff_cs_lane"]] = R.cs[pid, sek] - R.cs[lg, sek]
         # DIE EINZIGE STELLE, an der eine Gegnerposition aus den Minuten in die Lage kommt (Entscheidung 1)
         lx, ly = R.x[lg, sek], R.y[lg, sek]
-        nah = lebt & R.lebt[lg, sek] & (np.hypot(lx - x, ly - y) <= NAHE_SICHTBAR)
+        lane = LANE_DER_ROLLE.get(rolle, -1)
+        radius = np.where((sek < LANE_PHASE_BIS) & (lane > 0) & (ber == lane) & (bereich_np(lx, ly) == lane),
+                          NAHE_SICHTBAR_LANE, NAHE_SICHTBAR)
+        nah = lebt & R.lebt[lg, sek] & (np.hypot(lx - x, ly - y) <= radius)
         X[:, SP["lg_nahe_sichtbar"]] = nah
         X[:, SP["lg_x"]] = np.where(nah, lx, np.nan)
         X[:, SP["lg_y"]] = np.where(nah, ly, np.nan)
@@ -684,38 +699,50 @@ def aktion_flags(R: Raster, pid: int, sek: np.ndarray, spiegel: bool = False, fr
         nonlocal flags
         flags |= np.where(maske, 1 << code, 0).astype(np.int32)
 
-    e30, e60, e120 = np.minimum(sek + 30, S - 1), np.minimum(sek + 60, S - 1), np.minimum(sek + 120, S - 1)
-    # Tot: >= 30 s des Fensters tot
-    tot_s = np.array([(~R.lebt[pid, s + 1:min(S, s + 61)]).sum() for s in sek])
-    setze(0, (tot_s >= 30) | ~R.lebt[pid, np.minimum(sek, S - 1)])
+    # Fenster endet beim Tod (031): stirbt er im Fenster, zaehlt sein letzter Ort davor. Sonst waeren Split/Lane/Gruppe
+    # ueber das Ueberleben definiert (wer beim Splitten stirbt, hiesse "Unterwegs") - der Aktionswert maesse Glueck.
+    td_erst = np.full(n, 10 ** 9)
+    for td, _ in R.tode[pid]:
+        c = int(math.ceil(td))
+        td_erst = np.where((sek < c) & (c <= sek + 120) & (c < td_erst), c, td_erst)
+    ende60 = np.minimum(sek + 60, td_erst - 1)
+    ende120 = np.minimum(sek + 120, td_erst - 1)
+    e30 = np.minimum(np.minimum(sek + 30, ende60), S - 1)
+    e60 = np.minimum(np.maximum(ende60, sek), S - 1)
+    e120 = np.minimum(np.maximum(ende120, sek), S - 1)
+    # Tot: nur wer JETZT tot ist (wer im Fenster stirbt, bekommt die Aktion vor dem Tod; der Tod ist Folge)
+    setze(0, ~R.lebt[pid, np.minimum(sek, S - 1)])
     # Back: Ladenbesuch (nicht nach Tod) beginnt im Fenster
     bs = np.array(R.back_start[pid] or [-10 ** 6])
     i = np.searchsorted(bs, sek, side="right")
     setze(1, (i < len(bs)) & (bs[np.minimum(i, len(bs) - 1)] <= sek + 60))
-    # Objective: Monster-Kill im Fenster, du <= 3000 an der Grube (oder beteiligt); oder Spawn im Fenster, du <= 3000
+    # Objective = HINGEHEN, nicht Bekommen (031): du stehst <= 3000 an der Grube, waehrend dort ein Monster offen ist -
+    # (a) bei +60 und es steht dann (auch frisch gespawnt), oder (b) im Moment, in dem es faellt, EGAL welches Team es
+    # nimmt. Frueher zaehlte nur "faellt und du bist dabei" - dann misst der Aktionswert den Erfolg, nicht die Entscheidung.
+    e60_ = e60
+    xe, ye = pos(e60_)
+    lebt_e = R.lebt[pid, e60_]
     for (s_k, art, team, zst, nk, nah, opos, killer, helfer) in R.obj_tab:
         imf = (sek < s_k) & (s_k <= sek + 60)
         if not imf.any():
             continue
         x, y = pos(np.full(n, s_k))
-        dran = (np.hypot(x - opos[0], y - opos[1]) <= 3000)
-        if not spiegel:
-            dran |= pid in {killer, *helfer}
-        m = imf & dran & R.lebt[pid, min(s_k, S - 1)]
+        m = imf & (np.hypot(x - opos[0], y - opos[1]) <= 3000) & R.lebt[pid, min(s_k, S - 1)]
         neu = m & (ziel == 0)
         ziel[neu] = art
         zustand[neu] = zst
         setze(2, m)
-    grube = {1: g.DRACHE, 5: g.DRACHE, 2: g.BARON, 3: g.BARON, 4: g.BARON}
-    for s_sp, art in R.spawns:
-        imf = (sek < s_sp) & (s_sp <= sek + 60)
-        if not imf.any():
-            continue
-        x, y = pos(np.full(n, s_sp))
-        m = imf & (np.hypot(x - grube[art][0], y - grube[art][1]) <= 3000) & R.lebt[pid, min(s_sp, S - 1)]
-        neu = m & (ziel == 0)
-        ziel[neu] = art
-        setze(2, m)
+    for grube, arten in ((g.DRACHE, ("drache",)), (g.BARON, ("baron", "herold", "larven"))):
+        an_grube = lebt_e & (np.hypot(xe - grube[0], ye - grube[1]) <= 3000)
+        for o in arten:
+            offen = R.obj_da[o][e60_] == 1
+            m = an_grube & offen
+            neu = m & (ziel == 0)
+            if o == "drache":
+                ziel[neu] = np.where(R.elder_naechst[e60_][neu] == 1, 5, 1)
+            else:
+                ziel[neu] = {"baron": 2, "herold": 3, "larven": 4}[o]
+            setze(2, m)
     # TP: nur sicher erkannte Spruenge
     tp = np.where(p.hat_tp(pid), -1, 0).astype(np.int16) * np.ones(n, np.int16)
     for s_tp in R.tp_sicher.get(pid, []):
@@ -731,7 +758,7 @@ def aktion_flags(R: Raster, pid: int, sek: np.ndarray, spiegel: bool = False, fr
     z0, z60, z120 = zone_np(b0), zone_np(b60), zone_np(b120)
     lebt60 = R.lebt[pid, e60] & R.lebt[pid, sek]
     # Rotation: Zonenwechsel, der 2 min haelt; nicht Jungler, keine Basis, lebend (wie Phase 0)
-    rot = (rolle != "JUNGLE") & (z0 > 0) & (z60 > 0) & (z0 != z60) & (z120 == z60) & lebt60 & (tot_s == 0)
+    rot = (rolle != "JUNGLE") & (z0 > 0) & (z60 > 0) & (z0 != z60) & ((z120 == z60) | (td_erst <= sek + 120)) & lebt60
     setze(4, rot)
     ziel[rot & (ziel == 0)] = z60[rot & (ziel == 0)]
     # Mitspieler
@@ -782,7 +809,53 @@ def aktion_flags(R: Raster, pid: int, sek: np.ndarray, spiegel: bool = False, fr
     # Unterwegs: lebt, keine Regel trifft (laeuft irgendwohin, kaempft ohne Objective, ...). Stirbt er im Fenster,
     # ist das Folge, nicht Aktion.
     setze(10, (flags == 0) & lebt0)
-    return flags, ziel, zustand, tp
+    # Wohin: erstes eigenes Ereignis im Fenster (Ort + Zeit), sonst der Ort bei +60
+    wx, wy, ws = x60.copy(), y60.copy(), e60.copy()
+    ort = sorted(R.beteiligt_ort.get(pid, []))
+    if ort:
+        zt = np.array([o[0] for o in ort])
+        k = np.searchsorted(zt, sek, side="right")
+        hat = (k < len(zt)) & (zt[np.minimum(k, len(zt) - 1)] <= sek + 60)
+        kk = np.minimum(k, len(zt) - 1)
+        ex = np.array([o[1] for o in ort])[kk]
+        ey = np.array([o[2] for o in ort])[kk]
+        if spiegel:
+            ex, ey = ey, ex
+        wx, wy, ws = np.where(hat, ex, wx), np.where(hat, ey, wy), np.where(hat, zt[kk], ws)
+    wohin = wohin_code(wx, wy, ich)
+    wohin_mit = np.zeros(n, np.int16)
+    best = np.full(n, 2500.0)
+    for q in mit:
+        d = np.where(R.lebt[q, np.minimum(ws, S - 1)],
+                     np.hypot(R.x[q, np.minimum(ws, S - 1)] - wx, R.y[q, np.minimum(ws, S - 1)] - wy), np.inf)
+        besser = d <= best
+        wohin_mit[besser] = ROLLEN.index(p.rolle(q)) + 1
+        best = np.minimum(best, d)
+    unterwegs = primaer(flags) == 10
+    ziel[unterwegs] = wohin[unterwegs]
+    return flags, ziel, zustand, tp, wohin, wohin_mit
+
+
+def wohin_code(x, y, team: int) -> np.ndarray:
+    """Ort -> WOHIN-Code, relativ zum eigenen Team (team 0 = Blau)."""
+    ber = bereich_np(x, y)
+    eig = {0: 1, 1: 13} if team == 0 else {0: 13, 1: 1}
+    code = np.zeros(len(ber), np.int16)
+    tab = {2: 2, 3: 3, 4: 4, 5: 11, 6: 12}
+    for b, c in tab.items():
+        code[ber == b] = c
+    for b, c in eig.items():
+        code[ber == b] = c
+    blau_j = {7: "oben", 8: "unten"}
+    rot_j = {9: "oben", 10: "unten"}
+    for b, seite in blau_j.items():
+        code[ber == b] = (7 if seite == "oben" else 8) if team == 0 else (9 if seite == "oben" else 10)
+    for b, seite in rot_j.items():
+        code[ber == b] = (7 if seite == "oben" else 8) if team == 1 else (9 if seite == "oben" else 10)
+    code[np.hypot(x - g.DRACHE[0], y - g.DRACHE[1]) <= 2000] = 5
+    code[np.hypot(x - g.BARON[0], y - g.BARON[1]) <= 2000] = 6
+    code[np.isnan(x)] = 0
+    return code
 
 
 def primaer(flags: np.ndarray) -> np.ndarray:
@@ -835,14 +908,14 @@ def baue_partie(args):
     for x in abl.tps(p, "sicher"):
         R.tp_sicher.setdefault(x["pid"], []).append(int(math.ceil(x["t"])))
     spaet = p.k["start"] >= auft["stichtag_ms"]
-    Xs, Ms, As, Fs = [], [], [], []
+    Xs, Ms, As, Fs, Vs = [], [], [], [], []
     for pid in range(1, 11):
         zp = zeitpunkte(R, pid)
         if not zp:
             continue
         sek = np.array([s for s, _ in zp], np.int64)
         X = lage(R, pid, sek)
-        fl, ziel, zst, tp = aktion_flags(R, pid, sek)
+        fl, ziel, zst, tp, wohin, wohin_mit = aktion_flags(R, pid, sek)
         a = [primaer(fl)]
         for k in (60, 120, 180):
             s2 = np.minimum(sek + k, R.S - 1)
@@ -850,7 +923,16 @@ def baue_partie(args):
             a2 = primaer(f2)
             a2[sek + k > p.dauer - 10] = -1
             a.append(a2)
-        A = np.stack(a + [fl.astype(np.int16), ziel, zst, tp], 1).astype(np.int16)
+        A = np.stack(a + [fl.astype(np.int16), ziel, zst, tp, wohin, wohin_mit], 1).astype(np.int16)
+        # verdeckt: nur fuer Vergleich und als Ziel der Jungler-Karte, nie Lage
+        V = np.zeros((len(sek), len(VERDECKT)), np.float32)
+        V[:, 0] = R.T["gold"][R.team[pid]][sek] - R.T["gold"][1 - R.team[pid]][sek]
+        jg = next((q for q in range(1, 11) if R.team[q] != R.team[pid] and p.rolle(q) == "JUNGLE"), None)
+        if jg:
+            V[:, 1] = np.where(R.lebt[jg, sek], bereich_np(R.x[jg, sek], R.y[jg, sek]), 11)
+        else:
+            V[:, 1] = -1
+        Vs.append(V)
         s = p.sp[pid]
         pru = pruefspieler(s["puuid"], auft["salz"])
         M = np.zeros((len(sek), len(META)), np.int32)
@@ -870,7 +952,7 @@ def baue_partie(args):
         Fs.append(folge(R, pid, sek))
     O = np.array([(nr, s_, art, team, zst, nk, nah) for (s_, art, team, zst, nk, nah, *_r) in R.obj_tab],
                  np.int32).reshape(-1, len(OBJ))
-    return nr, np.concatenate(Xs), np.concatenate(Ms), np.concatenate(As), np.concatenate(Fs), O
+    return nr, np.concatenate(Xs), np.concatenate(Ms), np.concatenate(As), np.concatenate(Fs), O, np.concatenate(Vs)
 
 
 # ---------------------------------------------------------------- alles
@@ -882,7 +964,8 @@ def merkmale_md() -> None:
          "was unbekannt ist, steht gar nicht in der Lage). Gegner: nur tot + Restzeit, zuletzt gesehen (angesagtes "
          "Ereignis) oder der Lane-Gegner nahe sichtbar (<= 1200) - sonst keine Gegnerposition.", ""]
     for titel, liste in (("meta (int32)", META), ("X – Lage (float32)", MERKMALE), ("aktion (int16)", AKTION),
-                         ("folge (float32)", FOLGE), ("obj (int32)", OBJ)):
+                         ("folge (float32)", FOLGE), ("obj (int32)", OBJ),
+                         ("verdeckt (float32) – NIE Lage, nur Vergleich/Ziel", VERDECKT)):
         z += [f"## {titel}", "", "| # | Name | Bedeutung | Quelle | |", "|---:|---|---|---|---|"]
         z += [f"| {i} | `{n}` | {b} | {q} | [{m}] |" for i, (n, b, q, m) in enumerate(liste)]
         z.append("")
@@ -890,11 +973,15 @@ def merkmale_md() -> None:
           "z. B. kurz tot)", f"- BEREICHE: {', '.join(f'{i} {a}' for i, a in enumerate(BEREICHE))}",
           f"- ANLAESSE: {', '.join(f'{i} {a}' for i, a in enumerate(ANLAESSE))}",
           f"- MONSTER (ziel): {', '.join(f'{i} {a}' for i, a in enumerate(MONSTER))}",
+          f"- WOHIN (wohin; bei Unterwegs auch ziel): {', '.join(f'{i} {a}' for i, a in enumerate(WOHIN))}",
           "", "## Aktionsregeln (Fenster = die naechsten 60 s)", "",
-          "- **Tot:** jetzt tot oder mind. 30 s des Fensters tot.",
+          "- **Fenster und Tod (031):** stirbt der Spieler im Fenster, endet es mit dem Tod - alle Orts-Regeln nehmen "
+          "den letzten Ort davor. Keine Aktion setzt Ueberleben voraus (sonst misst der Aktionswert Glueck).",
+          "- **Tot:** nur wer jetzt schon tot ist.",
           "- **Back:** ein Ladenbesuch beginnt (Kauf, nicht bis 45 s nach dem Tod).",
-          "- **Objective:** ein Monster faellt und du stehst <= 3000 an der Grube (oder bist beteiligt), oder es "
-          "spawnt und du stehst <= 3000 dort. `ziel` = Monster, `ziel_zustand` = frei/bestritten/umkaempft.",
+          "- **Objective (hingehen, 031):** du stehst <= 3000 an der Grube, waehrend dort ein Monster offen ist - bei +60, "
+          "wenn es dann steht (auch frisch gespawnt), oder in dem Moment, in dem es faellt, egal welches Team es nimmt. "
+          "`ziel` = Monster, `ziel_zustand` = frei/bestritten/umkaempft (nur wenn es im Fenster faellt).",
           "- **TP:** Positionssprung, der zu Fuss und per Recall nicht geht (Phase 0, Stufe sicher). Sonst `tp` = -1 "
           "(unbekannt), nie \"kein TP\", ausser der Spieler hat keinen TP.",
           "- **Rotation:** Zone (oben/mid/unten) bei +60 anders als jetzt und bei +120 noch dieselbe; nicht Jungler, "
@@ -906,7 +993,9 @@ def merkmale_md() -> None:
           "- **Warten:** lebt, bleibt im selben Bereich (<= 2500 bewegt), an keinem Kill/Gebaeude/Monster beteiligt, "
           "keine andere Regel.",
           "- **Unterwegs:** lebt, keine Regel trifft (laeuft, kaempft ohne Objective). Stirbt er im Fenster, ist das "
-          "Folge, nicht Aktion.",
+          "Folge, nicht Aktion. `ziel` = WOHIN-Code (Entscheidung 031/0.1).",
+          "- **wohin / wohin_mit** (jede Aktion): Ort am Ende des Fensters bzw. des ersten eigenen Ereignisses darin "
+          "(Kill, Tod, Gebaeude, Platte, Monster); Grube = <= 2000 an Drache/Baron; dazu der naechste Mitspieler <= 2500.",
           "- `a0` = erste zutreffende in der Reihenfolge Tot, Back, Objective, TP, Rotation, Split, Gruppe, Jungle, "
           "Lane, Warten, Unterwegs; `flags` hat alle."]
     (g.BUCH / "merkmale.md").write_text("\n".join(z) + "\n", encoding="utf-8")
@@ -940,7 +1029,7 @@ def bauen(neu: bool = False, prozesse: int = 20) -> int:
         np.savez(ZIEL / f"teil_{teil:03d}.npz",
                  X=np.concatenate([r[1] for r in res]), meta=np.concatenate([r[2] for r in res]),
                  aktion=np.concatenate([r[3] for r in res]), folge=np.concatenate([r[4] for r in res]),
-                 obj=np.concatenate([r[5] for r in res]))
+                 obj=np.concatenate([r[5] for r in res]), verdeckt=np.concatenate([r[6] for r in res]))
         teil += 1
         pf.write_text(json.dumps(partien[:start_nr + a + len(stueck)]), encoding="utf-8")
         print(f"  Teil {teil}: {start_nr + a + len(stueck)} Partien", flush=True)

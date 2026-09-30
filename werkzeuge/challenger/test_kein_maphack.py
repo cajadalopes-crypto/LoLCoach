@@ -1,5 +1,5 @@
 """Auftrag 030, Pruefung "kein Maphack": keine Gegnerposition kommt in eine Lage, ausser tot, zuletzt gesehen (angesagtes
-Ereignis) oder der Lane-Gegner nahe sichtbar (<= 1200).
+Ereignis) oder der Lane-Gegner nahe sichtbar (<= 1200; Lane-Phase in der Lane <= 1800).
 
     python werkzeuge/challenger/test_kein_maphack.py [anzahl_partien]
 
@@ -42,10 +42,14 @@ def pruefe_partie(mid: str, rnd: np.random.Generator) -> dict:
             out["verletzt"] += int((~gleich[:, andere]).any(1).sum())
             out["lg_geaendert"] += int((~gleich[:, sorted(ERLAUBT)]).any(1).sum())
             # wo ein Lane-Gegner-Ort steht, muss er <= 1200 neben dem Spieler sein
+            lane = f.LANE_DER_ROLLE.get(p.rolle(pid), -1)
             for X in (a, b):
                 m = ~np.isnan(X[:, f.SP["lg_x"]])
                 d = np.hypot(X[m, f.SP["lg_x"]] - X[m, f.SP["x"]], X[m, f.SP["lg_y"]] - X[m, f.SP["y"]])
-                out["lg_zu_weit"] += int((d > f.NAHE_SICHTBAR + 1e-3).sum())
+                lanephase = (X[m, f.SP["minute"]] * 60 < f.LANE_PHASE_BIS) & (lane > 0) & \
+                    (X[m, f.SP["bereich"]] == lane) & (f.bereich_np(X[m, f.SP["lg_x"]], X[m, f.SP["lg_y"]]) == lane)
+                erlaubt = np.where(lanephase, f.NAHE_SICHTBAR_LANE, f.NAHE_SICHTBAR)
+                out["lg_zu_weit"] += int((d > erlaubt + 1e-3).sum())
     return out
 
 

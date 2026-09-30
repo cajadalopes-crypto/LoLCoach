@@ -89,7 +89,7 @@ Erzeugt von `werkzeuge/challenger/phase1.py --merkmale`. Marke: **[B]** beobacht
 | 65 | `diff_itemwert_lane` | dein Item-Wert - Lane-Gegner | Scoreboard | [B] |
 | 66 | `diff_level_lane` | dein Level - Lane-Gegner | Scoreboard | [B] |
 | 67 | `diff_cs_lane` | deine CS - Lane-Gegner | Scoreboard (Minute, linear) | [G] |
-| 68 | `lg_nahe_sichtbar` | Lane-Gegner lebt und steht <= 1200 neben dir ("nahe sichtbar") | Minute, linear | [G] |
+| 68 | `lg_nahe_sichtbar` | Lane-Gegner lebt und steht <= 1200 neben dir ("nahe sichtbar"); bis 14:00, beide in der Lane der Rolle: <= 1800 | Minute, linear | [G] |
 | 69 | `lg_x` | Lane-Gegner x, nur wenn nahe sichtbar, sonst NaN | Minute, linear | [G] |
 | 70 | `lg_y` | Lane-Gegner y, nur wenn nahe sichtbar, sonst NaN | Minute, linear | [G] |
 | 71 | `geg0_tot` | Gegner Top: tot | Scoreboard | [B] |
@@ -139,6 +139,8 @@ Erzeugt von `werkzeuge/challenger/phase1.py --merkmale`. Marke: **[B]** beobacht
 | 5 | `ziel` | bei Objective: 1 Drache, 2 Baron, 3 Herold, 4 Larven, 5 Elder; bei Rotation: Zielzone 1-3 | Regeln | [G] |
 | 6 | `ziel_zustand` | bei Objective-Kill: 0 frei, 1 bestritten, 2 umkaempft; -1 = Spawn/kein Kill | Entscheidung 3 | [G] |
 | 7 | `tp` | 1 = TP sicher erkannt, -1 = TP unbekannt (hat TP), 0 = hat kein TP | Positionssprung, Phase 0 | [G] |
+| 8 | `wohin` | Ort am Ende des Fensters bzw. des ersten eigenen Ereignisses darin (Code aus WOHIN) | Minute/Ereignis | [G] |
+| 9 | `wohin_mit` | dort bei Mitspieler (Rolle 1-5, 0 = allein) | Minimap | [G] |
 
 ## folge (float32)
 
@@ -193,18 +195,27 @@ Erzeugt von `werkzeuge/challenger/phase1.py --merkmale`. Marke: **[B]** beobacht
 | 5 | `kills` | Kills +-30 s, <= 3000 |  | [B] |
 | 6 | `gegner_nah` | Gegner des Nehmers <= 3000 (Position interpoliert) |  | [G] |
 
+## verdeckt (float32) – NIE Lage, nur Vergleich/Ziel
+
+| # | Name | Bedeutung | Quelle | |
+|---:|---|---|---|---|
+| 0 | `teamgold_diff` | echter Team-Gold-Abstand (im Spiel NICHT sichtbar - nur Vergleich) | Minute, linear | [G] |
+| 1 | `jgl_bereich` | wo der Gegner-Jungler wirklich ist (Bereich 0-10, 11 = tot) - nur Ziel der Jungler-Karte | Minute, linear | [G] |
+
 ## Codes
 
 - AKTIONEN: 0 Tot, 1 Back, 2 Objective, 3 TP, 4 Rotation, 5 Split, 6 Gruppe, 7 Jungle, 8 Lane, 9 Warten, 10 Unterwegs (-1 = keine Regel, z. B. kurz tot)
 - BEREICHE: 0 basis_blau, 1 basis_rot, 2 top, 3 mid, 4 bot, 5 fluss_oben, 6 fluss_unten, 7 jungle_blau_oben, 8 jungle_blau_unten, 9 jungle_rot_oben, 10 jungle_rot_unten
 - ANLAESSE: 0 Minute, 1 Kill, 2 eigener Tod, 3 Respawn, 4 Back, 5 Gebaeude, 6 Monster, 7 Monster-Spawn
 - MONSTER (ziel): 0 –, 1 Drache, 2 Baron, 3 Herold, 4 Larven, 5 Elder
+- WOHIN (wohin; bei Unterwegs auch ziel): 0 –, 1 eigene Basis, 2 Toplane, 3 Midlane, 4 Botlane, 5 Drachengrube, 6 Barongrube, 7 eigener Jungle oben, 8 eigener Jungle unten, 9 gegn. Jungle oben, 10 gegn. Jungle unten, 11 Fluss oben, 12 Fluss unten, 13 gegn. Basis
 
 ## Aktionsregeln (Fenster = die naechsten 60 s)
 
-- **Tot:** jetzt tot oder mind. 30 s des Fensters tot.
+- **Fenster und Tod (031):** stirbt der Spieler im Fenster, endet es mit dem Tod - alle Orts-Regeln nehmen den letzten Ort davor. Keine Aktion setzt Ueberleben voraus (sonst misst der Aktionswert Glueck).
+- **Tot:** nur wer jetzt schon tot ist.
 - **Back:** ein Ladenbesuch beginnt (Kauf, nicht bis 45 s nach dem Tod).
-- **Objective:** ein Monster faellt und du stehst <= 3000 an der Grube (oder bist beteiligt), oder es spawnt und du stehst <= 3000 dort. `ziel` = Monster, `ziel_zustand` = frei/bestritten/umkaempft.
+- **Objective (hingehen, 031):** du stehst <= 3000 an der Grube, waehrend dort ein Monster offen ist - bei +60, wenn es dann steht (auch frisch gespawnt), oder in dem Moment, in dem es faellt, egal welches Team es nimmt. `ziel` = Monster, `ziel_zustand` = frei/bestritten/umkaempft (nur wenn es im Fenster faellt).
 - **TP:** Positionssprung, der zu Fuss und per Recall nicht geht (Phase 0, Stufe sicher). Sonst `tp` = -1 (unbekannt), nie "kein TP", ausser der Spieler hat keinen TP.
 - **Rotation:** Zone (oben/mid/unten) bei +60 anders als jetzt und bei +120 noch dieselbe; nicht Jungler, nicht Basis, lebend. `ziel` = neue Zone.
 - **Split:** ab 14:00, bei +30 und +60 allein in derselben Seitenlane (Mitspieler >= 5000, >= 3 draussen).
@@ -212,5 +223,6 @@ Erzeugt von `werkzeuge/challenger/phase1.py --merkmale`. Marke: **[B]** beobacht
 - **Jungle:** Monster-CS +2.
 - **Lane:** bei +30 und +60 in der Lane der Rolle und CS +3 (Support ohne CS).
 - **Warten:** lebt, bleibt im selben Bereich (<= 2500 bewegt), an keinem Kill/Gebaeude/Monster beteiligt, keine andere Regel.
-- **Unterwegs:** lebt, keine Regel trifft (laeuft, kaempft ohne Objective). Stirbt er im Fenster, ist das Folge, nicht Aktion.
+- **Unterwegs:** lebt, keine Regel trifft (laeuft, kaempft ohne Objective). Stirbt er im Fenster, ist das Folge, nicht Aktion. `ziel` = WOHIN-Code (Entscheidung 031/0.1).
+- **wohin / wohin_mit** (jede Aktion): Ort am Ende des Fensters bzw. des ersten eigenen Ereignisses darin (Kill, Tod, Gebaeude, Platte, Monster); Grube = <= 2000 an Drache/Baron; dazu der naechste Mitspieler <= 2500.
 - `a0` = erste zutreffende in der Reihenfolge Tot, Back, Objective, TP, Rotation, Split, Gruppe, Jungle, Lane, Warten, Unterwegs; `flags` hat alle.
