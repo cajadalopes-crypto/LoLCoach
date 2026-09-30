@@ -1,0 +1,290 @@
+{
+ "kennzahlen": {
+  "flash": "7/8 (88 %)",
+  "jungler": "10/10 (100 %)",
+  "i4": "2/2 (100 %)",
+  "backs": "4/4 (100 %)",
+  "back_rufe": "9/12 (75 %)",
+  "stille": "45 s",
+  "sicherheit": 0,
+  "widersprueche": 1,
+  "fuellsaetze": "0/107 (0.0 %)",
+  "latenz": "1.75 / 3.73 s (n = 46)",
+  "erster_satz": 1.471147199976258,
+  "cache": "55/70"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 106.92284393310547,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 311.25311279296875,
+    "champion": "Sona",
+    "gesagt": "Sona Flash weg.",
+    "nach_s": 0.2
+   },
+   {
+    "zeit": 351.8541259765625,
+    "champion": "Twitch",
+    "gesagt": "Twitch Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 471.34893798828125,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.6
+   },
+   {
+    "zeit": 620.31982421875,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 824.5009765625,
+    "champion": "Sona",
+    "gesagt": "Sona Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 878.6018676757812,
+    "champion": "Twitch",
+    "gesagt": "Twitch Flash weg.",
+    "nach_s": 0.5
+   },
+   {
+    "zeit": 1035.1312255859375,
+    "champion": "Lux",
+    "gesagt": null,
+    "nach_s": null
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 236.2,
+    "name": "Teemo",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Teemo oberer Fluss."
+   },
+   {
+    "zeit": 298.5,
+    "name": "Teemo",
+    "ort": "unten",
+    "ohne_s": 29,
+    "tot_ich": false,
+    "gesagt": "Teemo unten."
+   },
+   {
+    "zeit": 362.7,
+    "name": "Teemo",
+    "ort": "oben",
+    "ohne_s": 59,
+    "tot_ich": false,
+    "gesagt": "Teemo oben, 4 Sekunden."
+   },
+   {
+    "zeit": 483.8,
+    "name": "Teemo",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 86,
+    "tot_ich": false,
+    "gesagt": "Teemo Mid."
+   },
+   {
+    "zeit": 588.0,
+    "name": "Teemo",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 63,
+    "tot_ich": false,
+    "gesagt": "Teemo Mid."
+   },
+   {
+    "zeit": 704.8,
+    "name": "Teemo",
+    "ort": "oben",
+    "ohne_s": 74,
+    "tot_ich": false,
+    "gesagt": "Teemo oben, 1 Sekunde."
+   },
+   {
+    "zeit": 750.1,
+    "name": "Teemo",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle oben."
+   },
+   {
+    "zeit": 803.9,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 52,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle unten."
+   },
+   {
+    "zeit": 895.3,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 66,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle unten."
+   },
+   {
+    "zeit": 953.2,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle unten."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 256.5,
+    "gesagt": "Top-Welle rein, dann back: 1250 Gold für Caulfields Kriegshammer, Poppy ist tot. Danach Top.",
+    "saetze": [
+     "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 4:57.",
+     "Volibear kämpft: nicht hin, 20 Sekunden weg.",
+     "Nicht hin, du brauchst 15 Sekunden und dein Leben ist zu niedrig"
+    ]
+   },
+   {
+    "zeit": 433.4,
+    "gesagt": "Der Brutalisierer jetzt, dann sofort Top zur Kanonenwelle in 41 Sekunden Axiombogen-Spike und die Welle crashen, bevor Lux in 22 Sekunden kommt.",
+    "saetze": [
+     "Zurück unter deinen äußeren Top-Turm: zwei kommen.",
+     "Der Brutalisierer jetzt, dann sofort Top zur Kanonenwelle in 41 Sekunden Axiombogen-Spike und die Welle crashen, bevor Lux in 22 Sekunden kommt."
+    ]
+   },
+   {
+    "zeit": 769.9,
+    "gesagt": "Back jetzt für Axiombogen, dann Quest-TP zu deiner Top-Welle – Lux und Sona sind beide oben, Poppy kann jeden Moment kommen.",
+    "saetze": [
+     "Blitzcrank kämpft: nicht hin, 18 Sekunden weg.",
+     "Jetzt, wo Drache drin aufgetaucht ist: Axiombogen und Kontroll-Auge kaufen, dann per Quest-TP zur Top-Welle zurück, weil Sona und Lux oben sind und du mit dem Axiombogen dort sofort wieder fighten kannst.",
+     "Sona euer Jungle oben: Büsche meiden."
+    ]
+   },
+   {
+    "zeit": 967.9,
+    "gesagt": "Jetzt, wo Herold drin aufgetaucht ist: Back jetzt: Caulfields Kriegshammer für 1050 Gold, dann mit Quest-TP zu deinem Team zur Bot-Welle – ihr seid vier mit Herold-Buff gegen drei, gewinnt den Kampf.",
+    "saetze": [
+     "Teemo sein Jungle unten.",
+     "Jetzt, wo Herold drin aufgetaucht ist: Back jetzt: Caulfields Kriegshammer für 1050 Gold, dann mit Quest-TP zu deinem Team zur Bot-Welle – ihr seid vier mit Herold-Buff gegen drei, gewinnt den Kampf.",
+     "Jetzt, wo Twitch in 9 Sekunden lebt und unten Kampf läuft: Drache in 91 Sekunden, vier gegen drei mit Herold-Buff – crash deine Kanone in 35 Sekunden, dann Quest-TP zu Blitzcrank, ihr nehmt den Drachen."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 241.6426544189453,
+    "text": "Top-Welle rein, dann back: 1250 Gold für Caulfields Kriegshammer, Poppy ist tot. Danach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 242.47628784179688,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 4:57.",
+    "kette": false
+   },
+   {
+    "zeit": 510.933349609375,
+    "text": "Jetzt, wo Teemo im oberen Fluss ist und dein Lane-Gegner weg bleibt: Crash die Welle schnell rein, dann Back für Axiombogen, danach sofort zurück nach Top – das Fenster schließt in 40 Sekunden.",
+    "kette": true
+   },
+   {
+    "zeit": 512.5421142578125,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 9:27.",
+    "kette": false
+   },
+   {
+    "zeit": 528.00048828125,
+    "text": "Jetzt, wo Poppy euer Jungle oben aufgetaucht ist: Lux könnte zu dir nach Top kommen fahre jetzt Back für Axiombogen, bleib danach hinter der Welle bis Teemo und Poppy wieder sichtbar sind.",
+    "kette": true
+   },
+   {
+    "zeit": 544.34228515625,
+    "text": "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Deine Welle läuft zu dir, crash sie jetzt vor der Kanone in 22 Sekunden, dann sofort Back für Axiombogen – danach zurück zur Lane, weil Poppy und Teemo noch unbekannt sind und du nicht allein im oberen Jungle farmen kannst.",
+    "kette": true
+   },
+   {
+    "zeit": 575.8848266601562,
+    "text": "Jetzt, wo die Welle kippt und jetzt zu ihm läuft: Crash die Welle jetzt in den Turm, dann sofort Back für Axiombogen und zur Lane zurück – Poppy sitzt im Fluss und Teemo ist unbekannt, du brauchst das Item und Sicherheit.",
+    "kette": true
+   },
+   {
+    "zeit": 602.39453125,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 10:57.",
+    "kette": false
+   },
+   {
+    "zeit": 630.7946166992188,
+    "text": "Back jetzt, Axiombogen kaufen, dann zur Lane zurück – Poppy kann jederzeit kommen und du brauchst das Item.",
+    "kette": true
+   },
+   {
+    "zeit": 671.4708251953125,
+    "text": "Jetzt, wo Poppy unten ist und deine Welle in den Turm läuft: Hol die 6 Vasallen, dann crash die Kanonenwelle und back für Axiombogen – danach sofort zurück, weil Poppy in 10 Sekunden wieder oben sein kann.",
+    "kette": true
+   },
+   {
+    "zeit": 714.8889770507812,
+    "text": "Jetzt, wo Teemo tot ist: Back jetzt für Axiombogen, dann direkt zurück Top – Poppy respawnt in 24 Sekunden und deine Welle crasht gerade in den inneren Turm.",
+    "kette": true
+   },
+   {
+    "zeit": 956.328857421875,
+    "text": "Jetzt, wo Herold drin aufgetaucht ist: Back jetzt: Caulfields Kriegshammer für 1050 Gold, dann mit Quest-TP zu deinem Team zur Bot-Welle – ihr seid vier mit Herold-Buff gegen drei, gewinnt den Kampf.",
+    "kette": true
+   }
+  ],
+  "stille_max": 45,
+  "stille_lang": [
+   [
+    148,
+    193
+   ]
+  ],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 510.933349609375,
+    "von": "zurueck",
+    "nach": "welle",
+    "vorher": "Stopp – Teemo oben gesehen: zurück hinter die Welle.",
+    "text": "Jetzt, wo Teemo im oberen Fluss ist und dein Lane-Gegner weg bleibt: Crash die Welle schnell rein, dann Back für Axiombogen, danach sofort zurück nach Top – das Fenster schließt in 40 Sekunden."
+   }
+  ],
+  "fuellsaetze": [],
+  "saetze_n": 107,
+  "i4": [
+   {
+    "zeit": 341.3,
+    "name": "Poppy",
+    "ort": "im unteren Fluss",
+    "gesagt": "Poppy unten: Welle drücken."
+   },
+   {
+    "zeit": 651.1,
+    "name": "Poppy",
+    "ort": "unten",
+    "gesagt": "Back jetzt, Axiombogen kaufen, dann zur Lane zurück – Poppy kann jederzeit kommen und du brauchst das Item."
+   }
+  ],
+  "latenz": {
+   "n": 46,
+   "median": 1.75,
+   "p90": 3.73,
+   "erster_satz_median": 1.471147199976258,
+   "cache_treffer": "55/70"
+  }
+ }
+}

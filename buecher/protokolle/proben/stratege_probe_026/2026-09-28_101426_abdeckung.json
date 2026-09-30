@@ -1,0 +1,475 @@
+{
+ "kennzahlen": {
+  "flash": "6/6 (100 %)",
+  "jungler": "19/19 (100 %)",
+  "i4": "1/1 (100 %)",
+  "backs": "8/10 (80 %)",
+  "back_rufe": "17/20 (85 %)",
+  "stille": "59 s",
+  "sicherheit": 0,
+  "widersprueche": 5,
+  "fuellsaetze": "0/160 (0.0 %)",
+  "latenz": "1.61 / 3.35 s (n = 60)",
+  "erster_satz": 1.4810478999861516,
+  "cache": "84/108"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 57.01681900024414,
+    "champion": "Viego",
+    "gesagt": "Viego Flash weg.",
+    "nach_s": 3.5
+   },
+   {
+    "zeit": 95.0675277709961,
+    "champion": "Sett",
+    "gesagt": "Sett Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 161.66900634765625,
+    "champion": "Aurora",
+    "gesagt": "Aurora Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 637.2230834960938,
+    "champion": "Aurora",
+    "gesagt": "Aurora Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1294.8575439453125,
+    "champion": "Aurora",
+    "gesagt": "Aurora Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1700.7767333984375,
+    "champion": "Viego",
+    "gesagt": "Viego Flash weg.",
+    "nach_s": 0.0
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 303.7,
+    "name": "Viego",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 246,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle oben."
+   },
+   {
+    "zeit": 440.8,
+    "name": "Viego",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 120,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle unten."
+   },
+   {
+    "zeit": 508.9,
+    "name": "Viego",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 67,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle oben."
+   },
+   {
+    "zeit": 585.5,
+    "name": "Viego",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 60,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle unten."
+   },
+   {
+    "zeit": 706.6,
+    "name": "Viego",
+    "ort": "in eurem oberen Jungle",
+    "ohne_s": 94,
+    "tot_ich": false,
+    "gesagt": "Viego euer Jungle oben."
+   },
+   {
+    "zeit": 816.3,
+    "name": "Viego",
+    "ort": "im unteren Fluss",
+    "ohne_s": 95,
+    "tot_ich": true,
+    "gesagt": "Viego unterer Fluss."
+   },
+   {
+    "zeit": 901.2,
+    "name": "Viego",
+    "ort": "in eurem oberen Jungle",
+    "ohne_s": 83,
+    "tot_ich": false,
+    "gesagt": "Viego euer Jungle oben, 6 Sekunden."
+   },
+   {
+    "zeit": 992.4,
+    "name": "Viego",
+    "ort": "im unteren Fluss",
+    "ohne_s": 83,
+    "tot_ich": false,
+    "gesagt": "Viego unterer Fluss."
+   },
+   {
+    "zeit": 1115.8,
+    "name": "Viego",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 120,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle unten."
+   },
+   {
+    "zeit": 1181.8,
+    "name": "Viego",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 51,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle oben."
+   },
+   {
+    "zeit": 1285.9,
+    "name": "Viego",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 101,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle unten."
+   },
+   {
+    "zeit": 1317.9,
+    "name": "Viego",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 30,
+    "tot_ich": false,
+    "gesagt": "Viego Mid."
+   },
+   {
+    "zeit": 1404.0,
+    "name": "Viego",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 35,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle oben."
+   },
+   {
+    "zeit": 1452.4,
+    "name": "Viego",
+    "ort": "im unteren Fluss",
+    "ohne_s": 47,
+    "tot_ich": false,
+    "gesagt": "Viego unterer Fluss."
+   },
+   {
+    "zeit": 1507.7,
+    "name": "Viego",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 42,
+    "tot_ich": false,
+    "gesagt": "Viego sein Jungle oben, 2 Sekunden."
+   },
+   {
+    "zeit": 1595.0,
+    "name": "Viego",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": 86,
+    "tot_ich": false,
+    "gesagt": "Viego euer Jungle unten."
+   },
+   {
+    "zeit": 1689.5,
+    "name": "Viego",
+    "ort": "in seiner Basis",
+    "ohne_s": 89,
+    "tot_ich": false,
+    "gesagt": "Viego in Basis."
+   },
+   {
+    "zeit": 1749.8,
+    "name": "Viego",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Viego Mid."
+   },
+   {
+    "zeit": 1888.0,
+    "name": "Viego",
+    "ort": "unten",
+    "ohne_s": 135,
+    "tot_ich": false,
+    "gesagt": "Viego unten."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 345.8,
+    "gesagt": "Kauf Caulfields Kriegshammer für den Axiombogen und ein Kontroll-Auge, dann Mid: du bist pünktlich zur Welle da.",
+    "saetze": [
+     "Kauf Caulfields Kriegshammer für den Axiombogen und ein Kontroll-Auge, dann Mid: du bist pünktlich zur Welle da.",
+     "Jetzt, wo Wendepunkt: Aus der Basis: Farm Mid, bei 1350 Gold back für den Brutalisierer. Danach Mid.",
+     "Yunara kämpft: nicht hin, 18 Sekunden weg."
+    ]
+   },
+   {
+    "zeit": 554.5,
+    "gesagt": "Jetzt, wo Plan: Back jetzt: 34 Prozent Leben. Heilen, dann Mid.",
+    "saetze": [
+     "Urgot kämpft: nicht hin, 11 Sekunden weg.",
+     "Zurück unter deinen äußeren Mid-Turm: drei kommen.",
+     "Jetzt, wo Aurora gerade verschwunden ist: Kontroll-Auge kaufen, dann sofort nach Mid, weil die Kanone in 3 Sekunden kommt und Aurora kann in 21 Sekunden bei dir sein."
+    ]
+   },
+   {
+    "zeit": 671.3,
+    "gesagt": "Jetzt, wo Bard tot ist und ihr oben kämpft: Welle crashen, sofort back für Brutalisierer und Stiefel, dann Mid pushen – ihr seid stärker, Drache in 240 Sekunden.",
+    "saetze": [
+     "Yunara kämpft: nicht hin, 19 Sekunden weg.",
+     "Jetzt, wo Bard tot ist und ihr oben kämpft: Welle crashen, sofort back für Brutalisierer und Stiefel, dann Mid pushen – ihr seid stärker, Drache in 240 Sekunden.",
+     "Drei von ihnen tot: Mid-Welle rein, dann back, 950 Gold für Axiombogen. Danach Mid."
+    ]
+   },
+   {
+    "zeit": 914.1,
+    "gesagt": null,
+    "saetze": [
+     "Nicht zum Baron – Aurora ist noch auf ihrer Lane, Level 12, Flash weg: crash deine Welle jetzt, dann mit Kayn zum Drachen in 40 Sekunden, weil die Drei reichen und Aurora kann nicht hin.",
+     "Viego euer Jungle oben, 6 Sekunden.",
+     "Ihr äußerer Bot-Turm ist weg. Geh zur Mid-Welle, dort kommt ihre nächste Welle."
+    ]
+   },
+   {
+    "zeit": 1064.6,
+    "gesagt": "Jetzt, wo ihr drei Türme gefallen habt und 2500 Gold vorn seid: Back jetzt, Spitzhacke kaufen, dann mit Team zum Baron in 160 Sekunden – ihr erzwingt ihn mit Vorsprung vor ihrem Respawn.",
+    "saetze": [
+     "Noch 5 Sekunden.",
+     "Raus jetzt: Aurora in 6 Sekunden.",
+     "Geh zur Mid-Welle: sie läuft sonst in deinen Turm, nimm ein Kontroll-Auge mit."
+    ]
+   },
+   {
+    "zeit": 1176.3,
+    "gesagt": "Jetzt, wo Aurora und Viego tot sind: Kanone in 11 Sekunden noch rein, dann back für Spitzhacke, danach zu deinem Team zum Baron in 40 Sekunden, weil ihr drei tot habt und vier Items vorn seid.",
+    "saetze": [
+     "Jetzt, wo du in der Basis bist: Spitzhacke und Langschwert kaufen, dann sofort zum Baron mit Kayn und Urgot, weil ihr drei gegen zwei nehmt und Baron in 18 Sekunden spawnt – Twitch und Bard kommen nicht rechtzeitig hin.",
+     "Yunara kämpft: nicht hin, 15 Sekunden weg.",
+     "Jetzt, wo Wendepunkt: Aus der Basis: Zu Yunara und Xerath in ihren oberen Jungle, mit dir drei gegen zwei."
+    ]
+   },
+   {
+    "zeit": 1436.8,
+    "gesagt": "Langschwert und Kontroll-Auge kaufen, dann sofort zu Kayn und Yunara unten in den Jungle: Sett kann in 20 Sekunden hier sein, aber mit euch dreien nehmt ihr den Drachen in 234 Sekunden sicher.",
+    "saetze": [
+     "Langschwert und Kontroll-Auge kaufen, dann sofort zu Kayn und Yunara unten in den Jungle: Sett kann in 20 Sekunden hier sein, aber mit euch dreien nehmt ihr den Drachen in 234 Sekunden sicher.",
+     "Viego unterer Fluss.",
+     "Sett euer Jungle oben: Büsche meiden."
+    ]
+   },
+   {
+    "zeit": 1463.6,
+    "gesagt": "Langschwert und Kontroll-Auge kaufen, dann sofort zu Kayn und Yunara unten in den Jungle: Sett kann in 20 Sekunden hier sein, aber mit euch dreien nehmt ihr den Drachen in 234 Sekunden sicher.",
+    "saetze": [
+     "Viego unterer Fluss.",
+     "Sett euer Jungle oben: Büsche meiden.",
+     "Nicht hin, dein Weg dauert 6 s und Sett kommt in 3 s zu dir"
+    ]
+   },
+   {
+    "zeit": 1717.8,
+    "gesagt": "Jetzt, wo Viego in 6 Sekunden lebt und Bard bei dir sein kann: Back jetzt, Caulfields Kriegshammer kaufen, dann zu deinem inneren Turm, weil du 15 Prozent Leben hast und Sett in 14 Sekunden bei dir ist.",
+    "saetze": [
+     "Viego in Basis.",
+     "Viego Flash weg.",
+     "Jetzt, wo Aurora in 7 Sekunden lebt und Viego unbekannt ist: Kauf Tiamat, dann zu deinem inneren Turm Mid, weil du 74 Prozent Leben hast und die Welle zu dir läuft – Mid-Inhibitor hält noch."
+    ]
+   },
+   {
+    "zeit": 1851.8,
+    "gesagt": null,
+    "saetze": [
+     "Aurora und Bard Mitte, Twitch in ihrer Basis. Zwei in der Mitte: nicht allein nach vorn.",
+     "Bard euer Jungle unten: Büsche meiden.",
+     "Dann zur Mid-Welle: dort kommt ihre nächste Welle."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 208.14569091796875,
+    "text": "Drache in 92 Sekunden, aber Sett oben, Viego unbekannt – crash die Welle jetzt mit der Kanone, back sofort mit Gold für Axiombogen, dann zur Bot-Lane zum Drachen.",
+    "kette": true
+   },
+   {
+    "zeit": 267.2301025390625,
+    "text": "Drache in 32 Sekunden, Kanone kommt in 22 Sekunden: crash jetzt, back sofort, dann mit Axiombogen zu Bot zum Drachen – ihr seid stärker, Sett Flash weg.",
+    "kette": true
+   },
+   {
+    "zeit": 334.0485534667969,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 6:20.",
+    "kette": false
+   },
+   {
+    "zeit": 359.7742919921875,
+    "text": "Jetzt, wo Wendepunkt: Aus der Basis: Farm Mid, bei 1350 Gold back für den Brutalisierer. Danach Mid.",
+    "kette": true
+   },
+   {
+    "zeit": 418.5090637207031,
+    "text": "Welle crashen jetzt mit Kanone, dann back Stiefel und Caulfields, danach Mid farmen bis Axiombogen – Aurora Flash weg noch 42 Sekunden, das ist unser Fenster.",
+    "kette": true
+   },
+   {
+    "zeit": 422.15899658203125,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 7:50.",
+    "kette": false
+   },
+   {
+    "zeit": 478.5106506347656,
+    "text": "Jetzt, wo Sett und Viego tot sind: Kanonenwelle sofort crashen, dann back Stiefel und Caulfields, danach Mid farmen bis Axiombogen – ihr seid 800 Gold vorn und Drache kommt, Bard kann zu dir roamen.",
+    "kette": true
+   },
+   {
+    "zeit": 513.628173828125,
+    "text": "Jetzt, wo Plan: Back jetzt: 34 Prozent Leben. Heilen, dann Mid.",
+    "kette": true
+   },
+   {
+    "zeit": 588.6799926757812,
+    "text": "Jetzt, wo Aurora gerade weg ist: Kanonenwelle crashen, dann back für Stiefel, weil du sonst zu langsam gegen ihre Rückkehr bist und Axiombogen dauert noch zu lange.",
+    "kette": true
+   },
+   {
+    "zeit": 602.0892333984375,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 10:50.",
+    "kette": false
+   },
+   {
+    "zeit": 648.9402465820312,
+    "text": "Jetzt, wo Bard tot ist und ihr oben kämpft: Welle crashen, sofort back für Brutalisierer und Stiefel, dann Mid pushen – ihr seid stärker, Drache in 240 Sekunden.",
+    "kette": true
+   },
+   {
+    "zeit": 662.4736938476562,
+    "text": "Drei von ihnen tot: Mid-Welle rein, dann back, 950 Gold für Axiombogen. Danach Mid.",
+    "kette": true
+   },
+   {
+    "zeit": 731.1256713867188,
+    "text": "Jetzt, wo Aurora in 4 s bei dir ist und ihre Welle zu dir läuft: Back jetzt, Langschwert kaufen, dann zu deinem Turm für die Kanone in 8 s – Viego kommt in 20 s wieder und Aurora hat Flash weg, das ist dein Fenster.",
+    "kette": true
+   },
+   {
+    "zeit": 1035.359619140625,
+    "text": "Jetzt, wo ihr drei Türme gefallen habt und 2500 Gold vorn seid: Back jetzt, Spitzhacke kaufen, dann mit Team zum Baron in 160 Sekunden – ihr erzwingt ihn mit Vorsprung vor ihrem Respawn.",
+    "kette": true
+   },
+   {
+    "zeit": 1130.544921875,
+    "text": "Hilf jetzt: Aurora vier Prozent, dein Combo reicht, Urgot hält bis du ankommst, dann Back für Langschwert zu Mid-Lane, weil Eklipse braucht.",
+    "kette": true
+   },
+   {
+    "zeit": 1148.1954345703125,
+    "text": "Jetzt, wo Aurora und Viego tot sind: Kanone in 11 Sekunden noch rein, dann back für Spitzhacke, danach zu deinem Team zum Baron in 40 Sekunden, weil ihr drei tot habt und vier Items vorn seid.",
+    "kette": true
+   },
+   {
+    "zeit": 1167.12939453125,
+    "text": "Jetzt, wo Aurora und Viego tot sind: Kanone in 42 Sekunden noch crashen, dann back für Spitzhacke, danach mit Kayn und Urgot zum Baron in 33 Sekunden, weil ihr drei gegen zwei nehmt und vier Items vorn seid – Twitch und Bard können nicht schnell genug hin.",
+    "kette": true
+   },
+   {
+    "zeit": 1363.1595458984375,
+    "text": "Back jetzt: 850 Gold für Spitzhacke. Danach nach Mid.",
+    "kette": true
+   },
+   {
+    "zeit": 1679.0848388671875,
+    "text": "Jetzt, wo Viego in 6 Sekunden lebt und Bard bei dir sein kann: Back jetzt, Caulfields Kriegshammer kaufen, dann zu deinem inneren Turm, weil du 15 Prozent Leben hast und Sett in 14 Sekunden bei dir ist.",
+    "kette": true
+   },
+   {
+    "zeit": 2069.17041015625,
+    "text": "Ihr Bot-Inhibitor-Turm ist weg. Kanone kommt 34 35, die noch rein, dann back. 1350 Gold für Caulfields Kriegshammer. Danach auf ihren Bot-Inhibitor.",
+    "kette": true
+   }
+  ],
+  "stille_max": 59,
+  "stille_lang": [
+   [
+    95,
+    149
+   ],
+   [
+    208,
+    267
+   ],
+   [
+    361,
+    419
+   ]
+  ],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 208.14569091796875,
+    "von": "welle",
+    "nach": "drache",
+    "vorher": "Aurora ist vermutlich oben zum Urgot, farme deine Welle bis zur Kanone in 16 Sekunden, dann zurück zur Sicherheit.",
+    "text": "Drache in 92 Sekunden, aber Sett oben, Viego unbekannt – crash die Welle jetzt mit der Kanone, back sofort mit Gold für Axiombogen, dann zur Bot-Lane zum Drachen."
+   },
+   {
+    "zeit": 279.7720947265625,
+    "von": "welle",
+    "nach": "gruppe",
+    "vorher": "Drache in 32 Sekunden, Kanone kommt in 22 Sekunden: crash jetzt, back sofort, dann mit Axiombogen zu Bot zum Drachen – ihr seid stärker, Sett Flash weg.",
+    "text": "Aurora ist Level 6: Kämpfe gegen Aurora nur mit Team."
+   },
+   {
+    "zeit": 359.7742919921875,
+    "von": "welle:mid",
+    "nach": "welle",
+    "vorher": "Kauf Caulfields Kriegshammer für den Axiombogen und ein Kontroll-Auge, dann Mid: du bist pünktlich zur Welle da.",
+    "text": "Jetzt, wo Wendepunkt: Aus der Basis: Farm Mid, bei 1350 Gold back für den Brutalisierer. Danach Mid."
+   },
+   {
+    "zeit": 581.6549682617188,
+    "von": "welle:mid",
+    "nach": "welle",
+    "vorher": "Jetzt, wo Aurora gerade verschwunden ist: Kontroll-Auge kaufen, dann sofort nach Mid, weil die Kanone in 3 Sekunden kommt und Aurora kann in 21 Sekunden bei dir sein.",
+    "text": "Aurora weg: Welle rein, dann Platten."
+   },
+   {
+    "zeit": 1992.7431640625,
+    "von": "welle",
+    "nach": "zurueck",
+    "vorher": "Jetzt, wo Wendepunkt: Aus der Basis: Farm Bot, ihr Mid-Inhibitor steht wieder in 5 Sekunden.",
+    "text": "Raus jetzt: Sett in 7 Sekunden."
+   }
+  ],
+  "fuellsaetze": [],
+  "saetze_n": 160,
+  "i4": [
+   {
+    "zeit": 1971.7,
+    "name": "Aurora",
+    "ort": "in seiner Basis",
+    "gesagt": "Aurora in Basis: Welle drücken."
+   }
+  ],
+  "latenz": {
+   "n": 60,
+   "median": 1.61,
+   "p90": 3.35,
+   "erster_satz_median": 1.4810478999861516,
+   "cache_treffer": "84/108"
+  }
+ }
+}

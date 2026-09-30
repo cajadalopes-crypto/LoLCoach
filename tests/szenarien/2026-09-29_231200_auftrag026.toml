@@ -1,0 +1,22 @@
+# Auftrag 026: die Pakete aus Buch 15 an der Udyr-Partie 231200 - Chance "Lane-Gegner weg" und Back nach der Frist.
+# Beide waren auf 3f090ad (Stand 025) rot: der Kern sagte dort nichts davon.
+
+aufnahme = "2026-09-29_231200"
+spielmodus = "PRACTICETOOL"
+bots = true
+
+[[szenario]]
+id = "0118-udyr-weg-platten"
+fenster = ["1:17", "1:35"]
+quelle = "Event LANE_WEG 1:18 (werkzeuge/pakete_messen.py): Udyr verlaesst die Lane, der Kern schwieg"
+lage = "Lane-Phase, Udyr seit 5 s ausserhalb seiner Lane gesehen."
+muss_nennen_eins = ["Platten"]
+warum = "Buch 15, 5 / Auftrag 026, 6: Lane-Gegner weg -> Welle rein, dann Platten (pakete._lane_weg)."
+
+[[szenario]]
+id = "0402-back-zur-frist"
+fenster = ["4:00", "4:10"]
+quelle = "Wellen-Uhr: Back-Frist 4:13, Gold fuer ein Item - 025 sagte nichts, der Back kam nach der Frist"
+lage = "Riven auf der Lane, Gold fuer den naechsten Kauf, Kanone um 4:57."
+muss_nennen_eins = ["pünktlich zur Kanone"]
+warum = "Auftrag 026, 1: rechtzeitig vorher ansagen (pakete._vor_back)."

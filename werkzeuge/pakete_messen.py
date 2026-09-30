@@ -31,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 TESTPARTIEN = ("2026-09-28_101426", "2026-09-28_192113", "2026-09-29_133448", "2026-09-29_183125",
                "2026-09-26_125902", "2026-09-26_164809", "2026-09-26_120049", "2026-09-29_231200")
 WICHTIG = ("OBJ_BALD", "OBJ_DA", "TURM_FAELLT", "FLASH_WEG", "TP_WEG", "LANE_WEG", "KAMPF")
-AUS = Path(__file__).resolve().parent.parent / "buecher" / "protokolle" / "proben" / "pakete_025"
+AUS = Path(__file__).resolve().parent.parent / "buecher" / "protokolle" / "proben" / "pakete_026"   # 025: pakete_025
 
 
 def _lauf(stamm: str) -> dict:
@@ -60,7 +60,12 @@ def _lauf(stamm: str) -> dict:
                    and b.pos is not None), default=None)
         pl = kern.fuehrer.plan
         takte.append({"t": round(p.zeit, 2), "modus": modus, "tot": bool(m.tot), "leben": m.leben,
-                      "plan": pl.art if pl is not None else None,
+                      "plan": pl.art if pl is not None else None, "lane_phase": bool(m.lane_phase),
+                      "front": m.welle.front if m.welle is not None else None, "lane_hier": m.lane_hier,
+                      "wir_nah": 1 + sum(1 for s, wo, *_ in b.mitspieler or [] if wo is not None and not s.tot
+                                         and b.pos is not None and abstand(wo, b.pos) <= 1500),
+                      "sie_nah": sum(1 for g in b.gegner if g.sichtbar and not g.s.tot and g.abstand is not None
+                                     and g.abstand <= 1500),
                       "basis": m.bereich == "basis_eigen", "paket": kern.pakete.stand(p.zeit),
                       "fenster": None if u is None else u.fenster, "wer": None if u is None else u.wer,
                       "back_bis": None if u is None else u.back_spaetestens, "nah": nah, "hilfe": hilfe,
@@ -95,11 +100,11 @@ def auswerten(d: dict) -> dict:
     # Paket-Abdeckung
     frei = [x for x in takte if not x["tot"] and x["modus"] not in ("KAMPF", "TOT") and not x["basis"]]
     mit = [x for x in frei if x["paket"] is not None]
-    gesagt_p = [x for x in mit if x["paket"].get("gesagt")]
+    gesagt_p = [x for x in mit if x["paket"].get("gesagt") or x["paket"].get("fortsetzung")]   # 026, 4: Fortsetzung zaehlt
     # Abbruch-Reaktion. Wahrheit aus dem Bild, nicht aus der eigenen Uhr: waehrend eines Vorwaerts-Pakets kommt ein
     # sichtbarer Gegner neu auf <= 1000 an dich heran. Reagiert: das Paket endet oder eine Warnung kommt in [-3, +2] s.
     faelle, ok = 0, 0
-    vorn = ("TURM", "OBJECTIVE", "HILFE")
+    vorn = ("TURM", "OBJECTIVE")      # 026: bei HILFE ist ein naher Gegner der Kampf selbst, kein Abbruchgrund
     for i in range(1, len(takte)):
         x, v = takte[i], takte[i - 1]
         pk = v["paket"]
@@ -107,6 +112,8 @@ def auswerten(d: dict) -> dict:
             continue
         if not (x["nah"] is not None and x["nah"] <= 1000 and (v["nah"] is None or v["nah"] > 1000)):
             continue
+        if x.get("sie_nah", 1) < x.get("wir_nah", 1):
+            continue                      # 026: ihr seid dort mehr - der Gegner, der kommt, ist kein Abbruchgrund
         faelle += 1
         t = x["t"]
         ende = any(t - 3.0 <= y["t"] <= t + 2.0 and (y["paket"] is None or y["paket"]["art"] != pk["art"])
@@ -140,16 +147,23 @@ def auswerten(d: dict) -> dict:
             if any(x["tot"] for x in takte if pk["start"] < x["t"] <= bis + 5.0):
                 budget_g += 1
     # Back-Puenktlichkeit
-    back_n = back_ok = 0
+    back_n = back_ok = back_erzw = 0
     for pk in pakete:
         if pk["typ"] != "BACK" or pk["ende"] != "ERLEDIGT":
             continue
         start = next((x for x in takte if x["t"] >= pk["start"]), None)
         if start is None or start["back_bis"] is None:
             continue
+        if (start["leben"] or 1.0) < 0.4:
+            back_erzw += 1                # Auftrag 026, 1: ein Back fuers Leben ist keine Timing-Entscheidung
+            continue
+        if not start.get("lane_phase") and not start.get("lane_hier"):
+            back_erzw += 1                # ... und abseits jeder Lane (133448 15:56 an der Baron-Grube) verliert der
+            continue                      # Back keine Welle, die du sonst gehabt haettest
         back_n += 1
         ankunft = pk["verlauf"][-1][0]
-        back_ok += ankunft <= start["back_bis"] + 8.0 + 1.0
+        # puenktlich: vor der Kanone zurueck (Frist + Kanal) - oder die Welle lag bei ihm, dann geht nichts verloren
+        back_ok += ankunft <= start["back_bis"] + 8.0 + 1.0 or (start.get("front") or 0.0) >= 0.55
     # Chancen genutzt: Episoden mit HILFE-Kandidat
     ch_n = ch_ok = 0
     letzte = -1e9
@@ -157,7 +171,7 @@ def auswerten(d: dict) -> dict:
         if x["hilfe"] and x["t"] - letzte > 20.0:
             ch_n += 1
             letzte = x["t"]
-            ch_ok += any(x["t"] <= y["t"] <= x["t"] + 5.0 and y["paket"] is not None and y["paket"]["typ"] == "HILFE"
+            ch_ok += any(x["t"] <= y["t"] <= x["t"] + 5.0 and (y["plan"] in ("HILFE", "ZUR_GRUPPE", "MIT_GRUPPE", "ANNEHMEN", "REIN"))
                          for y in takte) or any(x["t"] <= s["t"] <= x["t"] + 5.0 and s["schl"] == "kern:PAKET_WARUM_NICHT"
                                                 for s in gesagt)
     # Event-Abdeckung
@@ -165,6 +179,11 @@ def auswerten(d: dict) -> dict:
     for e in events:
         if e["typ"] not in WICHTIG or (e["typ"] == "KAMPF" and (e.get("weg") or 99) > 20):
             continue
+        if e["typ"] == "LANE_WEG":
+            # 026: "Lane-Gegner weg" ist ein wichtiges Event der Lane-Phase - danach steht keiner mehr gegen dich
+            x = next((y for y in takte if y["t"] >= e["t"]), None)
+            if x is None or not x.get("lane_phase"):
+                continue
         ev_n += 1
         worte = [w for w in e["wer"] if w] + ([e["ort"]] if e["typ"].startswith("OBJ") and e["ort"] else [])
         worte = [{"drache": "Drache", "herold": "Herold", "baron": "Baron", "larven": "Larven"}.get(w, w) for w in worte]
@@ -195,7 +214,7 @@ def auswerten(d: dict) -> dict:
         erahnt[e["typ"]] = (n + 1, j + ja)
     return {"stamm": d["stamm"], "abdeckung": _quote(len(mit), len(frei)), "abdeckung_gesagt": _quote(len(gesagt_p), len(frei)),
             "abbruch": _quote(ok, faelle), "budget": f"{budget_f}/{budget_n} Fehler, {budget_g} gefährlich",
-            "back": _quote(back_ok, back_n), "chancen": _quote(ch_ok, ch_n), "events": _quote(ev_ok, ev_n),
+            "back": _quote(back_ok, back_n) + f" (+{back_erzw} fuers Leben oder abseits der Lane)", "chancen": _quote(ch_ok, ch_n), "events": _quote(ev_ok, ev_n),
             "erahnt": {k: list(v) for k, v in erahnt.items()},
             "roh": {"frei": len(frei), "mit": len(mit), "gesagt": len(gesagt_p), "abbruch": [ok, faelle],
                     "budget": [budget_f, budget_n, budget_g], "back": [back_ok, back_n], "chancen": [ch_ok, ch_n],

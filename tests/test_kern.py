@@ -1233,7 +1233,8 @@ def pakete_025():
     # Paket: PLATTEN -> TURM mit Budget aus dem sicheren Fenster, Countdown bei 5 s, Turm faellt -> ERLEDIGT
     def lage(zeit, fenster, gold=500.0):
         return NS(zeit=zeit, tot=False, bereich="lane_eigen", pos=(4300.0, 13000.0), objectives=[], p=None,
-                  b=NS(gold=gold, gegner=[], mitspieler=[]))
+                  lane_phase=False, lane_hier=None, mein_tempo=340.0, leben=1.0,
+                  b=NS(gold=gold, gegner=[], mitspieler=[], lane=None))
     u = lambda f: NS(fenster=f, wer="Udyr", t_gefahr=f + 5.0, back_spaetestens=None)
     h = Handlung("PLATTEN", Ziel("turm", "ihren Top-Turm", (4318.0, 13875.0), 3.0), "LANE", 12.0, satz="Drück den Turm.")
     kern = NS(fuehrer=NS(plan=Plan(h, 100.0, gesagt=100.0)))
@@ -1271,6 +1272,59 @@ def pakete_025():
     assert ev.still("ERAHNT_GANK") and not ev.still("ERAHNT_RUECKKEHR")
 
 
+def pakete_026():
+    """Auftrag 026: Gefahr-Uhr mit lange Ungesehenen und TP aus der Basis, Abbruch bei einem NEU herankommenden Gegner
+    (nicht in Ueberzahl), Sperre fuer abgebrochene Ziele, eine Stimme, Back-Frist-Ansage, Chance "Lane-Gegner weg"."""
+    from types import SimpleNamespace as NS
+    from lolcoach.kern import uhren
+    from lolcoach.kern.ereignisquellen import Event
+    from lolcoach.kern.handlung import Handlung, Ziel
+    from lolcoach.kern.pakete import PaketFuehrer, eine_stimme_blockt
+    from lolcoach.kern.plan import Plan
+    # Gefahr-Uhr: 60 s ungesehen zaehlt mit hoechstens 5 s (vorher gar nicht - 192113 20:59 Pantheon)
+    g = lambda **k: NS(**{"s": NS(tot=False, zauber=(), name="u", respawn=0.0, team="CHAOS"), "ankunft": 30.0,
+                          "seit": 60.0, "champion": "Pantheon", "ort": "oben", "sichtbar": False, **k})
+    m = lambda *gg: NS(zeit=1250.0, leben=1.0, leben_trend=0.0, mein_tempo=340.0, tp_in=None, kanone_in=None,
+                       meine_lane="Top", p=None, objectives=[],
+                       b=NS(flash=None, gegner=list(gg), pos=(5000.0, 5000.0), sicherer_ort=lambda: ("Turm", 3.0),
+                            kauf=None))
+    u = uhren.rechnen(m(g()), {})
+    assert u.t_gefahr == 5.0 and u.wer == "Pantheon", u
+    tp = g(seit=10.0, ort="in seiner Basis", s=NS(tot=False, zauber=("SummonerTeleport",), name="t", respawn=0.0,
+                                                  team="CHAOS"), champion="Xerath")
+    assert uhren.rechnen(m(tp), {}).t_gefahr == 6.0                     # TP bereit aus der Basis
+    # Abbruch: ein Gegner kommt NEU auf 1000 heran und ihr seid nicht mehr - "Raus jetzt", Ziel 15 s gesperrt
+    h = Handlung("PLATTEN", Ziel("turm", "ihren Top-Turm", (4318.0, 13875.0), 3.0), "LANE", 12.0, satz="Drück den Turm.")
+    kern = NS(fuehrer=NS(plan=Plan(h, 100.0, gesagt=100.0)), pflicht=NS(lane_gesagt=-1e9))
+    feind = NS(sichtbar=True, s=NS(tot=False), abstand=900.0, champion="Udyr", pos=(4300.0, 13200.0))
+    lage = lambda zeit, gegner, mit=(): NS(zeit=zeit, tot=False, bereich="lane_eigen", pos=(4300.0, 13000.0),
+                                          objectives=[], p=None, lane_phase=False, lane_hier="Top", mein_tempo=340.0,
+                                          leben=1.0, b=NS(gold=500.0, gegner=gegner, mitspieler=list(mit), lane=None))
+    uo = NS(fenster=None, wer=None, t_gefahr=None, back_spaetestens=None, kanone_in=None, gold_bis=None)
+    pf = PaketFuehrer({"countdown_bei_s": 5.0, "countdown_max": 2})
+    pf.takt(kern, lage(100.0, []), uo, [], "LANE")
+    assert pf.takt(kern, lage(102.0, [feind]), uo, [], "LANE") == [("BUDGET_AB", "Raus jetzt: Udyr ist da.")]
+    assert pf.gesperrt[("PLATTEN", "ihren Top-Turm")] == 117.0 and kern.fuehrer.plan is None
+    kern.fuehrer.plan = Plan(h, 200.0)
+    pf.takt(kern, lage(200.0, []), uo, [], "LANE")
+    zwei = [(NS(tot=False, champion="Ekko"), (4300.0, 13100.0), 1.0, "oben"),
+            (NS(tot=False, champion="Lux"), (4200.0, 13100.0), 1.0, "oben")]
+    assert pf.takt(kern, lage(202.0, [feind], zwei), uo, [], "LANE") == []      # ihr seid drei gegen einen
+    # eine Stimme: waehrend "zur Gruppe" kein "X kämpft: nicht hin"
+    k2 = NS(fuehrer=NS(plan=NS(art="ZUR_GRUPPE")))
+    assert eine_stimme_blockt(k2, lage(300.0, []), ["Ekko"])
+    # Back-Frist: 10 s vorher ansagen, einmal
+    pf2 = PaketFuehrer({})
+    ub = NS(back_spaetestens=410.0, kanone_in=50.0, gold_bis=("Eklipse", 0), fenster=None, wer=None, t_gefahr=None)
+    ml = NS(zeit=400.0, lane_phase=True, tot=False)
+    assert pf2._vor_back(ml, ub) == "In 10 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 7:30."
+    assert pf2._vor_back(ml, ub) is None
+    # Chance: Lane-Gegner weg -> Platten (vor 14:00)
+    mw = NS(zeit=500.0, lane_phase=True, tot=False, b=NS(lane=NS(champion="Udyr")))
+    ev = Event("LANE_WEG", "im oberen Fluss", ("Udyr",), 500.0, 0.7)
+    assert PaketFuehrer._lane_weg(kern, mw, [ev]) == "Udyr weg: Welle rein, dann Platten."
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
@@ -1281,6 +1335,6 @@ if __name__ == "__main__":
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
                  stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017, lagebild_019,
                  objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018, kampf_rechner_020, gehirn_021,
-                 aufraeumen_022, stimme_023, udyr_024, pakete_025):
+                 aufraeumen_022, stimme_023, udyr_024, pakete_025, pakete_026):
         test()
         print(f"{test.__name__} OK")

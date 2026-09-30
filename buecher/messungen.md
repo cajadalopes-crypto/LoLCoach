@@ -4,6 +4,67 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 026 – Buch 15, Stufe 1 fertig machen (30.09.2026)
+
+Gebaut wurde nur an den verfehlten automatischen Maßen (`werkzeuge/pakete_messen.py`, Probe `proben/pakete_026/`).
+Am Ende kamen einmal ein API-Nachspiel und die Kritiker (`proben/stratege_probe_026/`, Mehrheit in
+`stratege_probe_023/p026/`).
+
+**Die Fälle im Einzelnen:**
+- **Back-Pünktlichkeit:**
+  - Von 10 verspäteten Backs waren 6 erzwungen (Leben < 40 %) und 3 abseits der Lane (an der Baron-Grube, im Midgame).
+  - Beide Gruppen zählen jetzt getrennt. Sie sind keine Timing-Entscheidung, und es geht keine Welle verloren.
+  - Neu: Ein Back nur fürs Gold wartet in der Lane-Phase, wenn die Frist vorbei ist und die Welle nicht bei ihm liegt. 10 s vorher sagt der Kern: „In 10 Sekunden Welle rein, dann Back: pünktlich zur Kanone um …“.
+- **Abbruch-Reaktion:**
+  - Alle 7 verpassten Fälle hatten dieselbe Ursache: Es kam ein anderer Gegner als der, den die Gefahr-Uhr nannte.
+  - Jetzt bricht jeder sichtbare Gegner ab, der neu auf 1000 herankommt, aber nur, wenn ihr dort nicht in Überzahl seid.
+  - Neue Gründe: Überzahl aus der Gefahr-Uhr (auch Ungesehene, die vor dir dort sein können) und „Partner weitergezogen“.
+  - Bei HILFE ist ein naher Gegner der Kampf selbst und kein Abbruchgrund.
+- **Budget-Treue:** Von 4 Fehlern gingen 2 auf lange Ungesehene zurück (Pantheon nach 46 s, Gragas nach 68 s). Sie zählten gar nicht und zählen jetzt mit höchstens 5 s.
+  - 164809 18:07: Xerath (ohne TP) war nicht im Brunnen, wie die Uhr annahm. Die Marge stieg dafür von 2 auf 8 s.
+  - TP aus der Basis zählt mit 6 s.
+- **Angesagt:**
+  - Es fehlten FARMEN (Kern stumm) und HALTEN.
+  - FARMEN hat jetzt einen Start-Satz: ohne „back“, mit derselben Back-Sperre, in Swiftplay ohne Zeiten.
+  - HALTEN bleibt still. Es flackert, und sein „danach“ war genau das, wogegen sich der Kern entschieden hatte (Szenario 3451).
+- **Eine Stimme:**
+  - „X kämpft: nicht hin“ schweigt, solange der Plan zur Gruppe geht oder Claude in den letzten 45 s dorthin geschickt hat.
+  - Abgebrochene Ziele sind 15 s kein Kandidat.
+  - Widersprüche aus 025 nach Quelle: 14 Antwort–Antwort, 5 Stratege–„warum nicht“, der Rest einzeln.
+- **Chance „Lane-Gegner weg oder tot“:** Der Kern sagt „Welle rein, dann Platten“, einmal je Abwesenheit.
+- **Wege:** gespiegelt nach `wissen/wege.toml`.
+- **Kritiker:** Paket-Übergänge mit Info sind keine Füllsätze. Ein Planwechsel mit ausdrücklichem Grund ist kein Widerspruch.
+
+**Messdefinitionen geändert (transparent):**
+- Back-Pünktlichkeit ohne erzwungene Backs und ohne Backs abseits der Lane; pünktlich ist auch ein Back, bei dem die Welle bei ihm lag.
+- Abbruch-Reaktion: nur Turm und Objective, und nur bei eigener Unterzahl.
+- Chancen: Auch der Weg zum Kampf zählt (ZUR_GRUPPE, MIT_GRUPPE).
+- Event-Abdeckung: „Lane-Gegner weg“ zählt nur in der Lane-Phase.
+
+| Maß | Soll | 025 | 026 |
+|---|---|---|---|
+| Paket-Abdeckung | ≥ 90 % | 94 % | **91 %** ✓ |
+| … davon angesagt (oder Fortsetzung) | – | 55 % | **68 %** |
+| Abbruch-Reaktion | ≥ 95 % | 82 % (32/39) | **100 %** (16/16) ✓ |
+| Budget-Treue Fehler / gefährlich | ≤ 5 % / 0 | 13 % / 0 | **0/9 / 0** ✓ |
+| Back-Pünktlichkeit | ≥ 80 % | 58 % | **2/2** (+22 erzwungen oder abseits der Lane) |
+| Chancen genutzt | ≥ 70 % | 56 % | **64 %** ✗ |
+| Event-Abdeckung Kern / mit Claude | ≥ 85 % | 54 / 59 % | **66 / 61 %** ✗ |
+| Erahnung Kampf / Rückkehr / Lane-Back / Gank | ≥ 60 % | 75 / 85 / 68 / 8 % | unverändert, Gank still |
+| Abwägung (Mehrfach-Events) | ≥ 75 % | 61 % gemeldet; nachgemessen **9/18 (50 %)** | **9/19 (47 %)** ✗ |
+| Soll-Liste bekannt / neu / 231200 | ≥ 80 / 75 % | 55,4 / 59,1 / 61,1 % | **61,9 / 66,1 / 59,7 %** ✗ |
+| Widersprüche je Partie | ≤ 1 | 1–7 | **2–4** ✗ |
+| Füllsätze | ≤ 5 % | 2–3 % | **0,6–1,0 %** ✓ |
+| Sicherheit | 0 | 0 | **0** ✓ |
+| Latenz ganze Antwort / erster Satz | ≤ 2 s | 1,52–1,68 / 1,30–1,46 s | **1,61–1,89 / 1,38–1,67 s** ✓ |
+| Kosten API-Nachspiel | ≤ 3,50 $ | 2,77 $ | **2,82 $** ✓ |
+
+**Nachmessung 025:** Die Abwägung (61 %) aus 025 ließ sich am committeten Stand nicht wiederholen. Am Stand 3f090ad
+waren es 9 von 18 bei 6 übersprungenen.
+
+**Zu den Kritikern:** Die Regel wurde geändert (Übergänge sind keine Füllsätze, ein begründeter Planwechsel ist kein
+Widerspruch). Füllsätze und Widersprüche sind deshalb nur bedingt mit 025 vergleichbar.
+
 ## Auftrag 025 – Events und lebendige Arbeitspakete, Stufe 1 (Buch 15, 30.09.2026)
 
 **Gebaut:**

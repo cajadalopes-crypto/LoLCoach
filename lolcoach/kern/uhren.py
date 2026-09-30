@@ -91,7 +91,7 @@ class Uhren:
         return f"{int(max(0, self.fenster))} Sekunden sicher, dann {self.wer}"
 
 
-def rechnen(m, kern_cfg: dict | None = None) -> Uhren | None:
+def rechnen(m, kern_cfg: dict | None = None, lagebild=None) -> Uhren | None:
     b = m.b if m is not None else None
     if b is None:
         return None
@@ -101,6 +101,10 @@ def rechnen(m, kern_cfg: dict | None = None) -> Uhren | None:
     # Gefahr-Uhr
     kandidaten = []
     tempo = m.mein_tempo or 340.0
+    tp_weg = {}
+    z = getattr(lagebild, "zauber", None)
+    if z is not None:
+        tp_weg = {t.name: True for t in z.aktiv(m.zeit) if t.zauber == "SummonerTeleport"}
     for g in b.gegner:
         if g.s.tot:
             u.tote_gegner.append((g.champion, float(g.s.respawn or 0.0)))
@@ -110,9 +114,18 @@ def rechnen(m, kern_cfg: dict | None = None) -> Uhren | None:
                     kandidaten.append((float(g.s.respawn or 0.0) + abstand(brunnen, b.pos) * WEGFAKTOR / 380.0,
                                        g.champion))
             continue
-        if g.ankunft is None or (g.seit or 0.0) > float(c.get("unbekannt_s", 45.0)):
+        if g.ankunft is None:
             continue
-        kandidaten.append((g.ankunft, g.champion))
+        a = g.ankunft
+        # Auftrag 026, 3 (Budget-Treue 13 %): wer lange ungesehen ist, kann nah sein - vorher zaehlte er gar nicht
+        # (192113 20:59 Pantheon nach 46 s, 231200 24:29 Gragas nach 68 s); er zaehlt jetzt mit hoechstens
+        # unbekannt_min_s. Und ein TP aus der Basis ist in tp_s da (164809 18:19 Xerath)
+        if (g.seit or 0.0) > float(c.get("unbekannt_s", 45.0)):
+            a = min(max(a, float(c.get("unbekannt_min_s", 5.0))), float(c.get("unbekannt_min_s", 5.0)))
+        if g.ort and "Basis" in g.ort and not g.sichtbar and "SummonerTeleport" in (g.s.zauber or ()) \
+                and not tp_weg.get(g.s.name):
+            a = min(a, float(c.get("tp_s", 6.0)))
+        kandidaten.append((a, g.champion))
     if kandidaten:
         u.t_gefahr, u.wer = min(kandidaten)
     ort, t = b.sicherer_ort()

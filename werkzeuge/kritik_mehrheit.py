@@ -37,9 +37,12 @@ Aufgabe:
    zaehlen)? Urteil "gesagt", "teilweise" (Kern stimmt, ein Teil fehlt) oder "fehlt"; Grund hoechstens 12 Woerter mit
    Uhrzeit. Nur was inhaltlich dasselbe raet oder meldet, zaehlt.
 2. Fuellsaetze: gesprochene Coach-Saetze ohne neue Info und ohne Handlung ("Notiert." zaehlt nicht). Zahl, Uhrzeiten,
-   dazu die Zahl aller gesprochenen Coach-Saetze.
+   dazu die Zahl aller gesprochenen Coach-Saetze. Uebergaenge eines laufenden Auftrags sind KEINE Fuellsaetze, wenn
+   sie eine neue Info oder Handlung enthalten: Countdown ("Noch 5 Sekunden."), Abbruch mit Grund ("Drache weg: nicht
+   hin."), "Kampf vorbei" mit naechstem Ziel, "X kaempft: nicht hin" mit Grund. Nur leere Bestaetigungen zaehlen.
 3. Widersprueche: zwei Coach-Saetze innerhalb von 30 s, die Gegenteiliges raten, ohne dass sich die Lage geaendert hat.
-   Zahl und Faelle (Uhrzeiten und je ein Stichwort).
+   Ein Planwechsel, der seinen Grund ausdruecklich nennt ("Jetzt, wo ...", "Stopp - ...", "Raus jetzt: X ist da"),
+   oder eine Antwort auf eine Korrektur des Spielers ist KEIN Widerspruch. Zahl und Faelle (Uhrzeiten, je ein Stichwort).
 
 Ausgabe (UTF-8): {aus}
 {{"minuten": {{"<Minute>": [{{"soll": "...", "urteil": "gesagt|teilweise|fehlt", "grund": "..."}}]}}, "fuellsaetze":

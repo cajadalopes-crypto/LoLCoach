@@ -1,0 +1,141 @@
+{"minuten": {
+"1": [
+{"soll": "Urgot hat dich 1:20 getötet; ab 1:30 zurück an die Toplane, Welle sichern.", "urteil": "gesagt", "grund": "1:20 zum Top-Turm, 1:37 bleib am Turm, farm sicher."}
+],
+"2": [
+{"soll": "Urgot 2:17 getötet, 734 Gold: bei nächster Welle in die Basis, Items kaufen.", "urteil": "fehlt", "grund": "2:36 nur Welle rein, Platten; kein Back trotz 746 Gold."},
+{"soll": "Drache in 149 s: Karthus und Ziggs unten, Swain nur L2 - Bot Sicht geben.", "urteil": "fehlt", "grund": "Kein Drachen-/Bot-Hinweis in Minute 2."}
+],
+"3": [
+{"soll": "Leben 9 %, Warwick L4 im oberen Fluss: sofort in die Basis, 1062 Gold ausgeben.", "urteil": "teilweise", "grund": "3:31 Warwick oberer Fluss; Basis/Kauf fehlt (3:28 verworfen)."},
+{"soll": "Drache in 88 s: Xerath, Karthus, Ziggs sammeln sich bei der Botlane.", "urteil": "fehlt", "grund": "Nichts zu Drache oder Botlane-Sammlung."}
+],
+"4": [
+{"soll": "Drache in 32 s: Swain und Warwick zuletzt in eurem unteren Bereich - Bot vorwarnen.", "urteil": "fehlt", "grund": "4:01-4:50 still; 4:49 nur Back und Top-Welle."}
+],
+"5": [
+{"soll": "Urgot tot, Welle bei dir: Welle schieben, dann mit 1267 Gold in die Basis.", "urteil": "gesagt", "grund": "5:39 Welle rein; 5:51 Crash, danach back für Brutalisierer."},
+{"soll": "Warwick war 5:48 in eurem oberen Jungle: nicht unbewacht an Top stehen bleiben.", "urteil": "gesagt", "grund": "5:48 Warwick Jungle oben; 5:51 Fenster vor seiner Ankunft nutzen."}
+],
+"6": [
+{"soll": "Warwick war vor 10 s in eurem oberen Jungle: Sicht prüfen, nicht weit vorschieben.", "urteil": "gesagt", "grund": "6:36 Warwick wahrscheinlich bei dir; 6:43 du stehst tief."},
+{"soll": "Larven in 90 s: Team beim Kill-Vorsprung 5:3 auf Objective sammeln.", "urteil": "fehlt", "grund": "Keine Larven-/Team-Aussage in Minute 6."}
+],
+"7": [
+{"soll": "Larven in 28 s: Warwick und Vex im oberen Fluss - nicht allein hingehen.", "urteil": "gesagt", "grund": "7:34 Larven in 32 s, Warwick 13 s: du nicht hin."},
+{"soll": "Karthus und Ziggs starben unten an Swain: Bot soll sicher spielen.", "urteil": "fehlt", "grund": "Kein Wort zu Bot oder Swain-Kills."}
+],
+"8": [
+{"soll": "Urgot L6 in seiner Basis, Welle gecrasht bei dir: Welle nehmen, dann Basis mit 1031 Gold.", "urteil": "gesagt", "grund": "8:11 Welle rein; 8:39 Crash, dann back für Eklipse und Stiefel."},
+{"soll": "Warwick L6 im oberen Fluss: Gank-Weg nach Top beachten.", "urteil": "gesagt", "grund": "8:47 Warwick oberer Fluss."}
+],
+"9": [
+{"soll": "Leben 16 %: sofort in die Basis, 1455 Gold ausgeben.", "urteil": "fehlt", "grund": "8:47-9:52 still; 9:52 nur unter Turm, kein Back."},
+{"soll": "Karthus und Xerath tot, Warwick unten: keine Objectives ohne volles Team.", "urteil": "fehlt", "grund": "Nichts dazu in Minute 9."}
+],
+"10": [
+{"soll": "Gegner nahmen den Drachen 10:52: Top-Welle schieben, Swain und Warwick sind unten.", "urteil": "teilweise", "grund": "10:52 Welle rein; Drachen und Swain/Warwick unten fehlen."},
+{"soll": "Larven lebt: mit Eklipse und Stiefeln Vorteil auf Top nutzen, Welle zuerst.", "urteil": "gesagt", "grund": "10:25 Eklipse und Stiefel, dann Top; 10:52 Welle rein."}
+],
+"11": [
+{"soll": "Gegner nehmen Larven (11:19, 11:31, 11:50): Team nach Swain-Kills sichern.", "urteil": "fehlt", "grund": "11:52 nur Crash und Back; Team nicht erwähnt."},
+{"soll": "Swain tötete Ziggs, Karthus, Xerath in 8 s: Kämpfe unten vermeiden.", "urteil": "fehlt", "grund": "Kein Hinweis auf Swain-Kills; 12:22 nur Ziggs kämpft."}
+],
+"12": [
+{"soll": "Warwick 12:53 getötet: Druck nutzen, mit Ziggs Turm oder Welle pushen.", "urteil": "fehlt", "grund": "12:50 Warwick unterer Fluss, 12:56 du stehst tief; kein Druck."},
+{"soll": "Herold in 152 s: Team vorher mit Swain L8 unten abstimmen.", "urteil": "fehlt", "grund": "Kein Herold-Hinweis in Minute 12."}
+],
+"13": [
+{"soll": "Herold in 91 s, Urgot tot: Welle schieben und Turm Top angreifen.", "urteil": "teilweise", "grund": "13:23 Urgot tot, crash Welle; 13:37 Herold 15:00; Turm fehlt."},
+{"soll": "Vex L8 tötete Xerath 13:49: Mid nicht allein verteidigen.", "urteil": "fehlt", "grund": "13:52 nur Back wegen Vex; Xerath-Tod, Mid unerwähnt."}
+],
+"14": [
+{"soll": "Urgot und Vex tot: Herold in 29 s mit Xerath und Karthus nehmen.", "urteil": "fehlt", "grund": "14:27 Top-Welle, back; Herold nicht genannt."},
+{"soll": "Drache in 81 s: Swain seit 129 s unten unsichtbar, Sicht bauen.", "urteil": "fehlt", "grund": "Kein Drachen- oder Swain-Hinweis."}
+],
+"15": [
+{"soll": "Drache in 20 s: Swain seit 190 s unsichtbar, Alistar unten - nicht ohne Team hin.", "urteil": "teilweise", "grund": "15:23 Alistar unten, Swain fehlt, nicht allein; Drache fehlt."},
+{"soll": "Leben 53 %, 2635 Gold: kurz in die Basis, Item kaufen.", "urteil": "gesagt", "grund": "15:42 Back Tanz des Todes, dann Top."}
+],
+"16": [
+{"soll": "Warwick und Alistar in eurem unteren Jungle: Kämpfe dort nur mit Team.", "urteil": "teilweise", "grund": "16:16 Warwick Jungle unten; Alistar, Nur-mit-Team fehlt."},
+{"soll": "Herold lebt, Vex tot 16:03: Herold jetzt nehmen.", "urteil": "fehlt", "grund": "Kein Herold; 16:28 nur Team nicht beisammen."}
+],
+"17": [
+{"soll": "Swain in eurem unteren Jungle: Basis-Turm im Blick, mit Team verteidigen.", "urteil": "teilweise", "grund": "17:06 Swain unten, nicht allein vor; kein Verteidigen."},
+{"soll": "Baron in 151 s: Vex tot, Sicht am Baron vorbereiten.", "urteil": "fehlt", "grund": "Kein Baron-Hinweis in Minute 17."}
+],
+"18": [
+{"soll": "Baron in 90 s: Urgot tot, Sicht an Baron legen, Warwick seit 133 s weg.", "urteil": "fehlt", "grund": "18:15 und 18:27 Inhibitor push; Baron-Sicht fehlt."},
+{"soll": "Herold lebt: mit dir oben, Herold nehmen bevor Baron.", "urteil": "fehlt", "grund": "Kein Herold gesagt."}
+],
+"19": [
+{"soll": "Baron in 29 s: Warwick auf Mid tötete Xerath - nicht starten ohne volles Team.", "urteil": "fehlt", "grund": "19:27 Baron bereit, 19:49 Drache mit vier; Warnung fehlt."},
+{"soll": "Urgot tot, Vex oben sichtbar: Team-Position vor Baron abstimmen.", "urteil": "fehlt", "grund": "Keine Team-Abstimmung genannt."}
+],
+"20": [
+{"soll": "Warwick 4 s vor dir in der Flussmitte, Xerath tot: nicht allein laufen.", "urteil": "teilweise", "grund": "20:02 Warwick Mid; Xerath tot und Warnung fehlen."},
+{"soll": "Urgot 20:27 getötet: Baron lebt, Team zum Baron sammeln.", "urteil": "gesagt", "grund": "20:33 Urgot tot, Quest-TP zur Mid für Baron-Gruppe."}
+],
+"21": [
+{"soll": "Du, Karthus und Ziggs tot: Baron und Angriff stoppen, Basis verteidigen.", "urteil": "teilweise", "grund": "21:47 drei fehlen: nicht tief gehen; Basis verteidigen fehlt."},
+{"soll": "Urgot L12 und Vex L12 stark: nach Respawn erst mit Team gruppieren.", "urteil": "fehlt", "grund": "21:47 und 21:59 nur Gegnerlage und Respawn."}
+],
+"22": [
+{"soll": "Urgot tötete Karthus 22:37: mit Karthus und Ziggs gruppieren, nicht allein.", "urteil": "fehlt", "grund": "22:50 Urgot in Basis: Welle drücken; kein Gruppieren."},
+{"soll": "Baron lebt: Swain L12 unten, Urgot oben - Baron nur mit Sicht.", "urteil": "fehlt", "grund": "Kein Baron- oder Swain-Hinweis."}
+],
+"23": [
+{"soll": "Urgot und Swain töten euch einzeln: Ziggs, Xerath, Riven, Karthus tot.", "urteil": "teilweise", "grund": "23:29 drei kommen, zurück; 23:41 Urgot und Swain erreichten dich."},
+{"soll": "Leben 6 % Top: sofort zurückziehen, nicht gegen Urgot kämpfen.", "urteil": "gesagt", "grund": "23:29 zurück unter deinen äußeren Top-Turm."}
+],
+"24": [
+{"soll": "Urgot L14 oben, Warwick vor 13 s oben: nicht allein Top gehen.", "urteil": "teilweise", "grund": "24:17 Warwick oben, 24:30 Urgot oben; Warnung fehlt, Welle drücken."},
+{"soll": "Baron lebt: mit Xerath, Karthus, Ziggs auf Mid sammeln.", "urteil": "fehlt", "grund": "Kein Mid-Sammeln in Minute 24."}
+],
+"25": [
+{"soll": "Swain und Alistar tot: Turm angreifen oder Baron, solange sie tot sind.", "urteil": "fehlt", "grund": "25:01 Alistar tot, aber: drei fehlen, nicht tief gehen."},
+{"soll": "Warwick auf Mid, Vex Mid, Urgot oben: nur mit ganzem Team starten.", "urteil": "fehlt", "grund": "25:08 Warwick unterer Fluss; kein Team-Start-Rat."}
+],
+"26": [
+{"soll": "Gegner nahmen Drachen 26:56, Vex tot: Druck Top nutzen, Baron im Blick.", "urteil": "teilweise", "grund": "26:48 Vex tot, Druck, aber Bot statt Top; Baron fehlt."},
+{"soll": "Swain seit 233 s nicht gesehen: mit Sicht Baron prüfen.", "urteil": "fehlt", "grund": "Kein Swain-/Baron-Hinweis."}
+],
+"27": [
+{"soll": "Fast alle Gegner tot ab 27:47: Baron nehmen oder Inhibitor pushen.", "urteil": "teilweise", "grund": "27:07-27:24 Inhibitor, Nexus-Turm; nach 27:47 nur Bot-Turm-Plan."},
+{"soll": "Urgot tötete dich 27:59: nach Ace nicht einzeln vorlaufen.", "urteil": "fehlt", "grund": "27:59 nur Nachruf, keine Warnung vorher."}
+],
+"28": [
+{"soll": "Du lebst ab 28:58: Urgot, Warwick, Alistar oben/Mid - mit Team gruppieren.", "urteil": "teilweise", "grund": "28:33 nicht tief gehen; kein Gruppieren, keine Lage ab 28:58."}
+],
+"29": [
+{"soll": "Swain 29:54 getötet, Vex 122 s weg: Botturm jetzt pushen.", "urteil": "gesagt", "grund": "29:59 Drück ihren äußeren Bot-Turm."},
+{"soll": "Warwick tötete Karthus, Urgot oben: nicht oben einzeln laufen.", "urteil": "teilweise", "grund": "29:25 Warwick oben, 29:45 Karthus getötet, Warte; Einzeln-Warnung fehlt."}
+],
+"30": [
+{"soll": "Urgot und Swain tot: Bot-Druck, Drache in 87 s vorbereiten.", "urteil": "gesagt", "grund": "29:59 Bot-Turm drücken; 31:15 Drache in 40 s, Team."},
+{"soll": "Vex vor 5 s in Basis: Team beim Drachen sammeln.", "urteil": "gesagt", "grund": "31:15 mit Team zum Drachen; Vex-Basis fehlt."}
+],
+"31": [
+{"soll": "Drache in 25 s, Vex und Swain tot: Drachen sichern.", "urteil": "gesagt", "grund": "31:15 Drache in 40 s: mit Team hin."},
+{"soll": "Warwick Mid, Alistar unten, Urgot Basis: Sicht vor Drachenstart.", "urteil": "teilweise", "grund": "31:16 Warwick unterer Fluss, 31:29 Urgot Basis; Sicht fehlt."}
+],
+"32": [
+{"soll": "Urgot tötete dich 32:41 auf Mid: nicht allein Mid gehen.", "urteil": "teilweise", "grund": "32:29 Back jetzt; 32:41 nur Nachruf geblieben gegen Urgot."},
+{"soll": "Urgot L17 tötete Karthus 32:56: nur mit Gruppe kämpfen.", "urteil": "fehlt", "grund": "32:58 nur Warwick unterer Fluss."}
+],
+"33": [
+{"soll": "Gegner nahmen Drachen 33:44: Team beisammen halten, Baron mit Sicht absichern.", "urteil": "fehlt", "grund": "33:41 Welle drücken, 33:48 Quest-TP; Drache und Baron fehlen."},
+{"soll": "Urgot 33:57 getötet: Druck nutzen, Warwick und Alistar unten im Fluss.", "urteil": "gesagt", "grund": "34:05 Urgot tot: crash, Quest-TP Mid; 34:01 Warwick unten."}
+],
+"34": [
+{"soll": "Alistar steht in eurer Basis: Basis verteidigen.", "urteil": "teilweise", "grund": "34:31 Alistar in Basis, aber Inhibitor-Türme statt Basis halten."},
+{"soll": "Swain tötete Karthus und Ziggs: nicht einzeln kämpfen, in der Basis gruppieren.", "urteil": "fehlt", "grund": "34:39 nur zurück unter Turm; kein Gruppieren."}
+],
+"35": [
+{"soll": "Swain vor 30 s in eurer Basis: Basis und Nexus mit Team verteidigen.", "urteil": "fehlt", "grund": "35:00 Alistar bei dir, 35:10 zurück unter Turm; Nexus fehlt."},
+{"soll": "Urgot tötete dich 35:20, Warwick tot: nach Respawn nicht allein raus.", "urteil": "fehlt", "grund": "35:23 nur Nachruf, keine Respawn-Anweisung."}
+]
+},
+"fuellsaetze": {"anzahl": 0, "saetze_gesamt": 135, "zeiten": []},
+"widersprueche": {"anzahl": 3, "faelle": ["11:31/11:33 Freeze am Turm gegen Welle rein", "29:45/29:59 Warte, sie kommen gegen Bot-Turm drücken", "31:15/31:41 mit Team zum Drachen gegen Farm Bot"]}}

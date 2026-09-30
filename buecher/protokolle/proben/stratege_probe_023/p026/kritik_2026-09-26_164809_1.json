@@ -1,0 +1,350 @@
+{
+ "minuten": {
+  "1": [
+   {
+    "soll": "First Blood auf Wukong, Leben 32 %: Welle schieben, dann mit 453 Gold zurück.",
+    "urteil": "gesagt",
+    "grund": "1:37 Welle crashen, danach mit 521 Gold Stiefel kaufen"
+   },
+   {
+    "soll": "Ahri und Xerath auf Level 1 sichtbar, Flash bereit: nicht zu weit vorgehen.",
+    "urteil": "fehlt",
+    "grund": "Nichts zu Ahri/Xerath; still 0:57 bis 2:33"
+   }
+  ],
+  "2": [
+   {
+    "soll": "Level 3, Leben 39 %: Welle liegt bei dir gecrasht, Wukong L2 oben sichtbar, nicht überextenden.",
+    "urteil": "teilweise",
+    "grund": "2:42 zurück unter Turm; Welle gecrasht/Level nicht genannt"
+   },
+   {
+    "soll": "808 Gold: bei nächster Gelegenheit zurück und Items kaufen, Drache in 149 s.",
+    "urteil": "teilweise",
+    "grund": "2:33 Back jetzt; Gold und Drache-Timer fehlen"
+   }
+  ],
+  "3": [
+   {
+    "soll": "Vi 3:51 im oberen Fluss gesehen, dein Flash ist weg: Fluss meiden, Vision setzen.",
+    "urteil": "teilweise",
+    "grund": "3:51 Vi oberer Fluss; Fluss meiden/Vision fehlt"
+   },
+   {
+    "soll": "1300 Gold, du bist in der Basis: Items kaufen, Drache in 88 s.",
+    "urteil": "gesagt",
+    "grund": "3:28 Back, Caulfields, Drache in 91 Sekunden"
+   }
+  ],
+  "4": [
+   {
+    "soll": "Drache in 32 s: Vi steht Mid, Vi-Flash seit 4:06 weg, Bot und Mid reagieren.",
+    "urteil": "teilweise",
+    "grund": "4:06 Vi Flash weg; Drache-Timer, Mid, Reaktion fehlen"
+   },
+   {
+    "soll": "Welle 2 gegen 0 zu ihm geschoben: Kanone in 29 s abwarten und clearen.",
+    "urteil": "fehlt",
+    "grund": "still 4:07 bis 5:05, nichts zur Kanone"
+   }
+  ],
+  "5": [
+   {
+    "soll": "Level 6, Wukong tot: Welle 6 eigene gegen 0 nutzen, Turm unter Druck setzen.",
+    "urteil": "gesagt",
+    "grund": "5:21 Wukong tot: Welle rein, dann Platten"
+   },
+   {
+    "soll": "742 Gold: nach Welle-Crash zurück, Item kaufen; Larven in 151 s.",
+    "urteil": "teilweise",
+    "grund": "5:05 Crash, dann Stiefel backen; Larven-Timer fehlt"
+   }
+  ],
+  "6": [
+   {
+    "soll": "Cassiopeia 6:20 durch Xerath gestorben, Vi 6:47 Mid gesehen: Bot warnen.",
+    "urteil": "teilweise",
+    "grund": "6:47 Vi Mid; Cassiopeia-Tod und Bot warnen fehlen"
+   }
+  ],
+  "7": [
+   {
+    "soll": "Xerath steht sichtbar in eurem unteren Jungle, Cassiopeia gestorben: Bot-Team warnen.",
+    "urteil": "fehlt",
+    "grund": "7:09 nichts zu Xerath im Jungle; still 7:10-8:00"
+   },
+   {
+    "soll": "Welle 4 gegen 5 Vasallen auf dir, Kanone in 26 s: clearen, Larven in 29 s.",
+    "urteil": "teilweise",
+    "grund": "7:09 Kanonenwelle absichern; Clearen und Larven-Timer fehlen"
+   }
+  ],
+  "8": [
+   {
+    "soll": "Wukong zweimal getötet, Kills 7:8: Welle 1 gegen 0, Turmdruck aufbauen.",
+    "urteil": "gesagt",
+    "grund": "8:01 Wukong tot: Welle rein, dann Platten"
+   },
+   {
+    "soll": "717 Gold: zurück und Item kaufen; Vi zuletzt im unteren Jungle gesehen.",
+    "urteil": "gesagt",
+    "grund": "8:33 Welle rein, dann Back; 8:42 Vi Jungle unten"
+   }
+  ],
+  "9": [
+   {
+    "soll": "Gegner holt Larven (9:38, 9:46), Vi und Wukong im oberen Fluss: nicht allein in den Fluss.",
+    "urteil": "teilweise",
+    "grund": "9:29 Vi oben, zurück hinter Welle; Larven nicht genannt"
+   },
+   {
+    "soll": "1262 Gold, Turm 9:47 gefallen: zurück, Item kaufen, dann Welle 5 gegen 1 pushen.",
+    "urteil": "gesagt",
+    "grund": "10:14 Kauf Caulfields, dann sofort zur Top-Welle"
+   }
+  ],
+  "10": [
+   {
+    "soll": "Vi tötete Zaahen 10:13 und Sion 10:52, steht unten: Mid und Bot warnen.",
+    "urteil": "teilweise",
+    "grund": "11:05 Vi unterer Fluss; Kills und Warnung Mid/Bot fehlen"
+   },
+   {
+    "soll": "Wukong 10:54 tot: Welle 2 eigene für Turm-Druck nutzen.",
+    "urteil": "teilweise",
+    "grund": "10:47 Farm Top-Welle; Wukong-Tod und Turmdruck fehlen"
+   }
+  ],
+  "11": [
+   {
+    "soll": "Vi 11:52 tot, Ahri 11:39 tot, Drache lebt: Objective mit Sion und Ashe nehmen.",
+    "urteil": "fehlt",
+    "grund": "11:49 nur Vi Jungle oben; kein Objective mit Team"
+   },
+   {
+    "soll": "1029 Gold, du im gegnerischen oberen Jungle: nach Kill zurück, Item kaufen.",
+    "urteil": "fehlt",
+    "grund": "11:32 nur Tief-Warnung; kein Back oder Kauf"
+   }
+  ],
+  "12": [
+   {
+    "soll": "2051 Gold unverbaut, Wukong und Xerath tot: jetzt zurück, Item kaufen.",
+    "urteil": "gesagt",
+    "grund": "13:28 Back jetzt, Eklipse kaufen (verspätet, im Fenster)"
+   },
+   {
+    "soll": "Turm 12:40 gefallen, Herold in 149 s: Top-Druck halten, Vi in Basis.",
+    "urteil": "teilweise",
+    "grund": "13:12 Welle drücken; Turm, Herold, Vi-Basis fehlen"
+   }
+  ],
+  "13": [
+   {
+    "soll": "Leben 22 %, 3315 Gold: sofort in die Basis, mehrere Items kaufen.",
+    "urteil": "gesagt",
+    "grund": "13:28 Back jetzt, Eklipse kaufen bei Leben 19 %"
+   },
+   {
+    "soll": "Herold in 88 s: Ahri und Ashe oben, Vi unten: nicht allein oben.",
+    "urteil": "teilweise",
+    "grund": "13:28 Herold in 90 s, Ahri kommt; Ashe/Vi-Lage fehlt"
+   }
+  ],
+  "14": [
+   {
+    "soll": "Herold in 32 s: Vi und Xerath unten, Ahri Flussmitte: Team vorher sammeln.",
+    "urteil": "teilweise",
+    "grund": "14:25 Vi, Xerath unten, Ahri Mitte; Herold und Sammeln fehlen"
+   },
+   {
+    "soll": "Wukong tot, Turm 14:53 gefallen: Top-Welle weiter schieben, 640 Gold.",
+    "urteil": "gesagt",
+    "grund": "14:25 Wukong tot: Welle drücken"
+   }
+  ],
+  "15": [
+   {
+    "soll": "Du bist tot (Vi 15:26): 1758 Gold nach Respawn sofort in Items umsetzen.",
+    "urteil": "teilweise",
+    "grund": "15:31 Gank von Vi; keine Ansage Gold umsetzen"
+   },
+   {
+    "soll": "Ahri und Xerath tot, Wukong in Basis: Team soll Herold oder Turm nehmen.",
+    "urteil": "fehlt",
+    "grund": "nichts zu Herold oder Turm nehmen"
+   }
+  ],
+  "16": [
+   {
+    "soll": "Gegner nahm Drache 16:30, Ahri tot: nicht ohne Team Mid in den Kampf.",
+    "urteil": "teilweise",
+    "grund": "16:32 Sion kämpft: nicht hin; Drache und Ahri fehlen"
+   },
+   {
+    "soll": "Herold lebt und Ahri tot: Team zum Herold sammeln, 782 Gold kaufen.",
+    "urteil": "teilweise",
+    "grund": "16:51 Back für Caulfields; Herold-Sammeln fehlt"
+   }
+  ],
+  "17": [
+   {
+    "soll": "Herold 17:50 genommen, Baron in 148 s: Leben 32 %, kurz zurück und heilen.",
+    "urteil": "gesagt",
+    "grund": "18:05 Back jetzt, Tanz des Todes bei Leben 41 %"
+   },
+   {
+    "soll": "Wukong, Xerath und Vi gefallen: Vision am Baron vorbereiten.",
+    "urteil": "fehlt",
+    "grund": "keine Vision-Ansage am Baron"
+   }
+  ],
+  "18": [
+   {
+    "soll": "Ahri und Xerath tot, Baron in 92 s: Team sammeln, Vision am Baron.",
+    "urteil": "teilweise",
+    "grund": "18:32 Mit der Gruppe zum Mid-Turm; Baron/Vision fehlen"
+   },
+   {
+    "soll": "2758 Gold: Item kaufen, Türme 18:22 und 18:48 gefallen, Druck halten.",
+    "urteil": "gesagt",
+    "grund": "18:05 und 18:58 Back, Tanz kaufen; Mid-Inhibitor drücken"
+   }
+  ],
+  "19": [
+   {
+    "soll": "Gegner bis auf Wukong tot, Inhibitor 19:25 gefallen: Baron in 31 s nehmen.",
+    "urteil": "fehlt",
+    "grund": "19:28 Rückzug unter Turm statt Baron in 31 s"
+   },
+   {
+    "soll": "4805 Gold: nach Respawn Items kaufen, Drache in 122 s.",
+    "urteil": "fehlt",
+    "grund": "kein Kauf nach Respawn bis 21:10; Drache-Timer fehlt"
+   }
+  ],
+  "20": [
+   {
+    "soll": "Respawn 20:48 mit 5186 Gold: zuerst Items kaufen, dann zum Team.",
+    "urteil": "gesagt",
+    "grund": "21:10 Kauf Tanz des Todes, dann zur Top-Welle"
+   },
+   {
+    "soll": "Drache in 60 s, Vi in Flussmitte: nicht allein Fluss betreten.",
+    "urteil": "teilweise",
+    "grund": "20:11 Vi Mid; Drache-Timer und Fluss-Warnung fehlen"
+   }
+  ],
+  "21": [
+   {
+    "soll": "5311 Gold unverbaut, Wukong tot: Basis, Items kaufen.",
+    "urteil": "gesagt",
+    "grund": "21:22 Wukong tot: Back, Tanz des Todes"
+   },
+   {
+    "soll": "Vi tötete Sion 21:32, Drache lebt: Vi und Ashe Mid, Team zusammenhalten.",
+    "urteil": "fehlt",
+    "grund": "21:36 rät Drache statt Team zusammenhalten; Sion-Tod fehlt"
+   }
+  ],
+  "22": [
+   {
+    "soll": "Du starbst 22:15 am Turm; 5554 Gold: nach Respawn zuerst kaufen.",
+    "urteil": "gesagt",
+    "grund": "23:09 Tanz des Todes kaufen; 22:16 Gank von Vi"
+   },
+   {
+    "soll": "Wukong und Xerath Mid, Vi unten: nicht allein pushen.",
+    "urteil": "teilweise",
+    "grund": "22:25 Vi Jungle unten; Nicht-allein-pushen fehlt"
+   }
+  ],
+  "23": [
+   {
+    "soll": "Xerath tot, Wukong in Basis, Sion 23:16 gestorben: nicht ohne Team Mid pushen.",
+    "urteil": "teilweise",
+    "grund": "23:26 zurück unter Mid-Turm; erst 23:24 Mid-Welle rein"
+   },
+   {
+    "soll": "5668 Gold, Flash bereit: zurück, Items kaufen.",
+    "urteil": "gesagt",
+    "grund": "23:24 Mid-Welle rein, dann back, Tanz des Todes"
+   }
+  ],
+  "24": [
+   {
+    "soll": "Alle fünf Gegner zuletzt Mid: nicht allein hinein, Team sammeln.",
+    "urteil": "teilweise",
+    "grund": "24:39 zurück unter Mid-Turm; Team sammeln fehlt"
+   },
+   {
+    "soll": "Gegner nahm Drache 24:51; 5793 Gold weiter unverbaut: Basis.",
+    "urteil": "gesagt",
+    "grund": "24:53 Back sofort, Tanz des Todes kaufen"
+   }
+  ],
+  "25": [
+   {
+    "soll": "Wukong tot, Vi, Ahri und Ashe in Basis: Inhibitor 25:09 gefallen, Druck halten.",
+    "urteil": "gesagt",
+    "grund": "25:12 Drache und Türme als Gruppe erzwingen"
+   },
+   {
+    "soll": "6791 Gold: dringend zurück, Items kaufen.",
+    "urteil": "gesagt",
+    "grund": "25:58 Back jetzt, kauf Tanz des Todes"
+   }
+  ],
+  "26": [
+   {
+    "soll": "Ahri tot, Inhibitor 26:27 und Turm 26:38 gefallen: Team sammeln, weiter drücken.",
+    "urteil": "teilweise",
+    "grund": "26:58 zur Top-Welle; Sammeln und Inhibitor-Lage fehlen"
+   },
+   {
+    "soll": "7619 Gold: in Basis 26:56 alles verbauen.",
+    "urteil": "gesagt",
+    "grund": "26:58 Kauf Eklipse, dann zur Top-Welle"
+   }
+  ],
+  "27": [
+   {
+    "soll": "Vi 27:54 und Wukong tot, Drache in 143 s: Baron oder Drache nehmen.",
+    "urteil": "teilweise",
+    "grund": "27:32 Drache braucht noch 142; Baron/Drache nehmen fehlt"
+   },
+   {
+    "soll": "Ashe in eurem unteren Jungle: Bot-Seite absichern.",
+    "urteil": "fehlt",
+    "grund": "keine Ansage zu Ashe im unteren Jungle"
+   }
+  ],
+  "28": [
+   {
+    "soll": "Vi und Xerath tot: jetzt Baron oder Basis pushen, Drache in 97 s.",
+    "urteil": "fehlt",
+    "grund": "28:01 nur Ashe Flash weg; kein Baron/Basis-Push"
+   },
+   {
+    "soll": "Wukong und Ashe zuletzt in ihrer Basis: nicht überextenden.",
+    "urteil": "fehlt",
+    "grund": "28:01 kein Wort zu Überextenden"
+   }
+  ]
+ },
+ "fuellsaetze": {
+  "anzahl": 1,
+  "saetze_gesamt": 115,
+  "zeiten": [
+   "27:38"
+  ]
+ },
+ "widersprueche": {
+  "anzahl": 3,
+  "faelle": [
+   "8:00/8:01 Wukong Gefahr vs Wukong tot: Welle rein",
+   "8:28/8:33 Freeze am Turm vs Welle rein",
+   "24:23/24:30 Top-Welle bringt mehr vs Mid-Welle bringt mehr"
+  ]
+ }
+}

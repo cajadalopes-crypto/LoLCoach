@@ -17,6 +17,10 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 026 (Buch 15 Stufe 1 fertig) - TOR NICHT ERREICHT** - Abbruch 100 %, Budget-Treue 0 Fehler, Back zur Frist,
+eine Stimme; offen: Abwaegung 47 % (Kritiker will Back, Kern farmt - Entscheidung Carlos), Soll-Liste 62/66 %,
+Widersprueche 2-4, Event-Abdeckung 61 %. Messdefinitionen in messungen.md offengelegt.
+
 **Auftrag 025 (Buch 15, Events und lebendige Arbeitspakete, Stufe 1) gebaut - TOR NICHT ERREICHT** -
 kern/events.py, kern/uhren.py, kern/pakete.py; Paket-Abdeckung 94 %, Sicherheit 0, Latenz 1,5-1,7 s, 0,35 $/Partie;
 offen: Soll-Liste 55/59 %, Abwaegung 61 %, Back-Puenktlichkeit 58 %, Widersprueche 1-7 (warum-nicht gegen Claude).

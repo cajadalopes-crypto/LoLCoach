@@ -38,6 +38,11 @@ VORN = frozenset(("TURM", "WELLE", "OBJECTIVE", "HILFE", "WARTEN"))   # Pakete, 
 # Lane-Gegner immer in Reichweite (Messung 025: 60-76 "Raus jetzt" je Partie) - dort sprechen die Gefahr-Regeln
 BUDGET_TYPEN = frozenset(("TURM", "OBJECTIVE", "HILFE"))
 LANE_ORTE = ("oben", "unten", "auf der Mid-Lane")
+# 026, 4: HALTEN wird NICHT angesagt - es flackert (alle paar Sekunden neu), und sein "danach" ist genau das, wogegen
+# der Kern sich entschied (Szenario 3451: "Auf ihren Mid-Inhibitor-Turm" an der Drachengrube)
+HALTEN_ANSAGEN = False
+SPERRE_S = 15.0            # 026: so lange ist ein abgebrochenes Ziel kein Kandidat
+START_NACH_S = 1.0         # 026, 4: so lange darf der Plan-Satz (Kern oder Claude) den Start sagen, dann der Paket-Kern
 WARUM_NICHT_S = 30.0       # hoechstens ein "warum nicht" je so viele Sekunden (Buch 15, 0.3: "einmal kurz")
 OBJ_WORT = {"drache": "Drache", "herold": "Herold", "baron": "Baron", "larven": "Larven"}
 ENDE = ("ERLEDIGT", "ABGEBROCHEN", "BUDGET_AB", "ERSETZT")
@@ -59,6 +64,9 @@ class Paket:
     gesagt: bool = False                 # wurde der Start gesprochen (Plan-Satz)?
     countdowns: int = 0
     budget_start: float | None = None    # sicheres Fenster beim ersten Takt des Pakets
+    fortsetzung: bool = False            # setzt das vorige Paket fort (gleiches Ziel) - kein eigener Start-Satz
+    ohne_satz: bool = False              # stummer Plan ohne ehrlichen Start-Satz (HALTEN ohne "danach")
+    nah_start: frozenset = frozenset()   # Gegner, die beim Start schon <= 1000 standen (kein Abbruchgrund)
     verlauf: list = field(default_factory=list)    # (Spielzeit, Uebergang, Text)
     ende: str | None = None
 
@@ -79,6 +87,8 @@ class PaketFuehrer:
         self.fertig: deque = deque(maxlen=400)       # abgeschlossene Pakete (fuer Messung und Bericht)
         self._plan_id: int | None = None
         self._erledigt_id: int | None = None
+        self._vorback: set = set()
+        self.gesperrt: dict = {}                      # (Art, Ziel) -> bis: abgebrochene Ziele (026)
         self._gold: float | None = None
         self._warum_nicht: set = set()
 
@@ -101,7 +111,7 @@ class PaketFuehrer:
             typ = TYP_VON_ART.get(plan.art)
             z0 = plan.handlung.ziel.name if plan.handlung.ziel is not None else None
             eben = next((f for f in reversed(self.fertig) if m.zeit - (f.verlauf[-1][0] if f.verlauf else f.start) < 10.0
-                         and f.art == plan.art and f.ziel == z0 and f.ende == "ERLEDIGT"), None)
+                         and f.art == plan.art and f.ziel == z0 and f.ende in ("ERLEDIGT", "BUDGET_AB", "ABGEBROCHEN")), None)
             if eben is not None:
                 typ = None                  # eben erledigt: derselbe Plan ist kein neues Paket (kein Flackern)
             if typ is not None:
@@ -111,12 +121,28 @@ class PaketFuehrer:
                                    h.ev, m.zeit, grund=h.grund, partner=h.daten.get("partner"),
                                    obj=h.daten.get("objective"))
                 self.aktiv.eintrag(m.zeit, "START", h.satz or "")
+                self.aktiv.nah_start = frozenset(g.champion for g in (m.b.gegner if m.b is not None else [])
+                                                 if g.sichtbar and g.abstand is not None and g.abstand <= 1000)
+                # Ausnahme (026, 4): setzt es nur das vorige fort - gleiches Ziel -, braucht es keinen neuen Start-Satz
+                vor = self.fertig[-1] if self.fertig else None
+                self.aktiv.fortsetzung = bool(vor is not None and vor.ziel == self.aktiv.ziel and self.aktiv.ziel
+                                              and m.zeit - (vor.verlauf[-1][0] if vor.verlauf else vor.start) <= 2.0)
         p = self.aktiv
         if p is None:
             self._gold = self._gold_jetzt(m)
             return aus
         if plan is not None and plan.gesagt is not None:
             p.gesagt = True
+        elif plan is not None and not p.gesagt and m.zeit - p.start >= START_NACH_S and not p.fortsetzung and not p.ohne_satz:
+            # Auftrag 026, 4: jeder Paket-Start wird gesagt, spaetestens 2 s nach Beginn - auch FARMEN und HALTEN, die
+            # der Kern sonst schweigend hielt (025: 94 % der Zeit ein Paket, angesagt nur 55 %)
+            if (s := self._start_satz(kern, plan, m)):
+                plan.gesagt = m.zeit
+                p.gesagt = True
+                p.eintrag(m.zeit, "START_GESAGT", s)
+                aus.append(("START", s))
+            else:
+                p.ohne_satz = True                # nichts Ehrliches zu sagen (halten_satz leer): still
         self._frist(p, m, uhren)
         ueb = self._erledigt(p, m, events) or self._abbruch(p, m, uhren, events)
         if ueb is not None:
@@ -127,6 +153,10 @@ class PaketFuehrer:
             if text:
                 kern.fuehrer.plan = None              # der naechste Plan kommt sofort (Buch 15, 1)
                 self._plan_id = None
+                if art in ("ABGEBROCHEN", "BUDGET_AB"):
+                    # 026: ein abgebrochenes Ziel ist SPERRE_S lang kein Kandidat - sonst waehlte der Kern es im
+                    # naechsten Takt wieder und sagte es neu an (Szenarien 3451, a4: Plan-Saetze im Kreis)
+                    self.gesperrt[(p.art, p.ziel)] = m.zeit + SPERRE_S
             elif plan is not None:
                 self._erledigt_id = id(plan)          # still erledigt: dieser Plan bekommt kein neues Paket
             aus.append((art, text))
@@ -137,8 +167,88 @@ class PaketFuehrer:
             elif (cd := self._countdown(p, m)) is not None:
                 p.eintrag(m.zeit, "COUNTDOWN", cd)
                 aus.append(("COUNTDOWN", cd))
+        if (vb := self._vor_back(m, uhren)) is not None:
+            aus.append(("VORBACK", vb))
+        if (lw := self._lane_weg(kern, m, events)) is not None:
+            aus.append(("CHANCE", lw))
         self._gold = self._gold_jetzt(m)
         return [(a, t) for a, t in aus if t]
+
+    @staticmethod
+    def _lane_weg(kern, m, events: list) -> str | None:
+        """Auftrag 026, 6: der Lane-Gegner ist weg oder tot (Event) - die Chance auf der Lane: vor 14:00 Platten, danach
+        die Welle. Nicht, wenn die Pflicht-Info (INFO_LANE) es eben gesagt hat - dann nur einmal."""
+        if not getattr(m, "lane_phase", False) or m.tot or m.b is None or getattr(m.b, "lane", None) is None:
+            return None
+        name = m.b.lane.champion
+        e = next((e for e in events if (e.typ == "LANE_WEG" or (e.typ == "TOD" and name in e.beteiligte))
+                  and name in e.beteiligte), None)
+        if e is None:
+            return None
+        pf = getattr(kern, "pflicht", None)
+        if pf is not None and m.zeit - float(getattr(pf, "lane_gesagt", -1e9) or -1e9) < 20.0:
+            return None
+        zuletzt = getattr(kern, "_lane_chance", None)
+        if zuletzt is not None and zuletzt[0] == name and m.zeit - zuletzt[1] < 60.0:
+            return None                  # einmal je Abwesenheit ("Shen tot", 18 s spaeter "Shen weg")
+        try:
+            kern._lane_chance = (name, m.zeit)
+        except AttributeError:
+            pass
+        wie = "tot" if e.typ == "TOD" else "weg"
+        return f"{name} {wie}: Welle rein, dann Platten." if m.zeit < 840.0 else f"{name} {wie}: Welle drücken."
+
+    def _vor_back(self, m, u) -> str | None:
+        """Auftrag 026, 1: das Gold reicht fuer ein Item, die Back-Frist der Wellen-Uhr kommt in 8-12 s - einmal je
+        Frist ansagen: "In 10 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 9:30." """
+        p = self.aktiv
+        if u is None or getattr(u, "back_spaetestens", None) is None or getattr(u, "kanone_in", None) is None \
+                or not getattr(m, "lane_phase", False) or m.tot \
+                or (p is not None and p.typ in ("BACK", "KAUF")) or not (u.gold_bis and u.gold_bis[1] == 0):
+            return None
+        n = u.back_spaetestens - m.zeit
+        schl = round(u.back_spaetestens / 10.0)
+        if not 8.0 <= n <= 12.0 or schl in self._vorback:
+            return None
+        self._vorback.add(schl)
+        k = m.zeit + u.kanone_in
+        return (f"In {int(round(n))} Sekunden Welle rein, dann Back: pünktlich zur Kanone um "
+                f"{int(k // 60)}:{int(k % 60):02d}.")
+
+    @staticmethod
+    def _start_satz(kern, plan, m) -> str:
+        """Der Start-Satz eines stummen Plans: FARMEN mit Grund und Vorschau, HALTEN nur mit dem, was danach kommt."""
+        from . import fuehren
+        h = plan.handlung
+        if not h.stumm:
+            return ""        # die anderen sagt der Kern selbst - mit seinen Sperren (Szenarien wohin-kurz, 3451)
+        rufe = getattr(kern, "_back_rufe", None)
+        if rufe and m.zeit - rufe[-1] <= 30.0 and getattr(kern, "_back_recall", -1e9) < rufe[-1]:
+            return ""        # kein Farm-Satz gegen ein eben gesagtes Back (Szenario 2837, wie _ansage_zum_plan)
+        try:
+            if h.art == "FARMEN":
+                if m.p is not None and getattr(m.p, "modus", None) == "SWIFTPLAY":
+                    return fuehren.stumm_satz(h)        # Swiftplay hat eigene Zeiten (Szenario swiftplay-...)
+                s = fuehren.farmen_satz(h, m, kern.zeitleiste, kern.danach_text, kern.cfg)
+                # ein "dann back" darin unterliegt der Back-Sperre des Kerns (Szenario back-dauerton, 164326 25:01)
+                # den Back ruft der Kern selbst; der Start-Satz nennt ihn nicht (sonst vier "back" in 10 min)
+                if s and "back" in s.lower().split(" ") or (s and "back." in s.lower()):
+                    s = ""
+                return s or fuehren.stumm_satz(h)
+            if h.art in ("HALTEN", "HALTEN_UNTER_TURM", "WELLE_HALTEN") and HALTEN_ANSAGEN:
+                s = fuehren.halten_satz(m, kern.zeitleiste, kern.danach_text, kern.cfg)   # nie h.satz: der stumme Halte-Plan traegt dort Rechner-Text (Szenario s23)
+                if s:
+                    return s
+                # Buch 15, 3: WARTEN nur mit Ende - aus den Uhren: bis die Gefahr sich zeigt, oder bis die Welle da ist
+                u = getattr(kern, "uhren", None)
+                if u is not None and u.wer and u.t_gefahr is not None and u.t_gefahr <= 15.0:
+                    return f"Halten, bis {u.wer} sich zeigt."
+                if u is not None and u.kanone_in is not None and 5.0 <= u.kanone_in <= 40.0 and m.lane_hier:
+                    return f"Halten, bis die Kanone kommt: {int(u.kanone_in)} Sekunden."
+                return ""
+            return h.satz or ""
+        except Exception:
+            return ""
 
     def plan_zeile(self, text: str | None) -> None:
         """Auftrag 025, 2: das Plan-Objekt aus 021 geht im Paket auf."""
@@ -150,7 +260,7 @@ class PaketFuehrer:
         if p is None:
             return None
         return {"typ": p.typ, "art": p.art, "ziel": p.ziel, "rest": None if p.frist is None else round(p.frist - zeit, 1),
-                "gesagt": p.gesagt, "seit": round(p.start, 1)}
+                "gesagt": p.gesagt, "seit": round(p.start, 1), "fortsetzung": p.fortsetzung}
 
     # --- Budget, Erledigt, Abbruch ---------------------------------------------------------------------------------
 
@@ -207,18 +317,33 @@ class PaketFuehrer:
             return "BUDGET_AB", f"Raus jetzt: {u.wer} in {int(max(1, u.t_gefahr or 1))} Sekunden."
         # ... und ohne Budget: ein Gegner steht schon da (Messung 025, Abbruch-Reaktion 71 %: Turm-Pakete, die mit
         # negativem Fenster begannen, liefen weiter, als ein Gegner auf 1000 herankam)
-        if p.typ in ("TURM", "OBJECTIVE") and u is not None and u.t_gefahr is not None and u.t_gefahr <= 0.5 \
-                and u.wer and m.zeit - p.start >= 1.0 and m.b is not None and any(
-                    g.sichtbar and g.champion == u.wer and g.abstand is not None and g.abstand <= 1000
-                    for g in m.b.gegner):
-            return "BUDGET_AB", f"Raus jetzt: {u.wer} ist da."
+        # Auftrag 026, 2: nicht nur der, den die Gefahr-Uhr nennt - jeder sichtbare Gegner, der neu auf 1000 herankommt
+        # (101426 29:30, 192113 25:12, 231200 12:15/16:15: es kam ein anderer als "wer")
+        if p.typ in ("TURM", "OBJECTIVE") and m.zeit - p.start >= 1.0 and m.b is not None:
+            da = [g for g in m.b.gegner if g.sichtbar and not g.s.tot and g.abstand is not None and g.abstand <= 1000
+                  and g.champion not in p.nah_start]           # nur wer NEU herankommt
+            # ... und nur, wenn ihr dort nicht klar mehr seid (213624 16:31: drei von ihnen tot, einer kam - kein Raus)
+            wir = 1 + sum(1 for s, wo, *_ in m.b.mitspieler or [] if wo is not None and not s.tot and m.pos is not None
+                          and abstand(wo, m.pos) <= 1500)
+            sie = sum(1 for g in m.b.gegner if g.sichtbar and not g.s.tot and g.abstand is not None and g.abstand <= 1500)
+            if da and sie >= wir:
+                return "BUDGET_AB", f"Raus jetzt: {da[0].champion} ist da."
         if p.typ in ("OBJECTIVE", "HILFE") and p.ziel_pos is not None and m.b is not None:
-            sie = sum(1 for g in m.b.gegner if g.sichtbar and not g.s.tot and g.pos is not None
-                      and abstand(g.pos, p.ziel_pos) <= 2000)
+            # Ueberzahl aus der Gefahr-Uhr: sichtbare am Ziel UND Unsichtbare, die vor dir dort sein koennen
+            dein_weg = abstand(m.pos, p.ziel_pos) / (m.mein_tempo or 340.0) if m.pos is not None else None
+            sie = sum(1 for g in m.b.gegner if not g.s.tot and (
+                (g.sichtbar and g.pos is not None and abstand(g.pos, p.ziel_pos) <= 2000)
+                or (not g.sichtbar and dein_weg is not None and g.pos is not None and (g.seit or 99) <= 20
+                    and abstand(g.pos, p.ziel_pos) / (g.tempo or 340.0) - (g.seit or 0) <= dein_weg)))
             wir = 1 + sum(1 for s, wo, *_ in m.b.mitspieler or [] if wo is not None and not s.tot
                           and abstand(wo, p.ziel_pos) <= 2500)
             if sie >= wir + 2:
                 return "ABGEBROCHEN", f"Überzahl dort ({sie} gegen {wir}): nicht hin."
+        if p.typ == "HILFE" and p.partner and p.ziel_pos is not None and m.b is not None:
+            # Partner in anderem Kampf: er steht jetzt weit weg vom Ort, fuer den das Paket galt
+            wo = next((w for s, w, *_ in m.b.mitspieler or [] if s.champion == p.partner), None)
+            if wo is not None and abstand(wo, p.ziel_pos) > 2500:
+                return "ABGEBROCHEN", f"{p.partner} ist weitergezogen: nicht hin."
         return None
 
     def _meilenstein(self, p: Paket, m, u) -> str | None:
@@ -311,6 +436,28 @@ def kampf_auffaellig(m) -> tuple[float, list, list, str] | None:
     return weg, list(freunde), list(feinde), ort
 
 
+GRUPPEN_ZIELE = ("gruppe", "hilfe")
+GRUPPEN_ARTEN = frozenset(("ZUR_GRUPPE", "MIT_GRUPPE", "HILFE", "ANNEHMEN", "REIN"))
+
+
+def eine_stimme_blockt(kern, m, namen: list) -> bool:
+    """Auftrag 026, 5: "X kämpft: nicht hin" widerspricht nie dem aktiven Plan - weder dem des Kerns (zur Gruppe, mit
+    der Gruppe, hilf) noch dem, den Claude in den letzten 45 s gesagt hat (120049 24:08 "geh zu Lee Sin", 24:26 "Lee
+    Sin kämpft: nicht hin"). Kippen darf der Plan nur ueber das Paket (Planwechsel mit "Jetzt, wo ...")."""
+    pl = kern.fuehrer.plan
+    if pl is not None and pl.art in GRUPPEN_ARTEN:
+        return True
+    ms = getattr(kern, "makro_stratege", None)
+    sr = getattr(ms, "schiedsrichter", None)
+    a = getattr(sr, "aktiv", None)
+    if a is not None and m.zeit - a[1] <= 45.0:
+        text = a[2] or ""
+        if a[0] in GRUPPEN_ZIELE or any(n and n in text for n in namen) \
+                or any(w in text.lower() for w in ("zum team", "zu deinem team", "hilf", "kämpf", "gruppe")):
+            return True
+    return False
+
+
 def warum_nicht(kern, m, modus: str | None, fuehrer: PaketFuehrer) -> str | None:
     """Buch 15, 0.3: ein sichtbarer Kampf eines Mitspielers ist NICHT das Paket - einmal kurz der entscheidende Grund,
     hoechstens einer je WARUM_NICHT_S."""
@@ -323,6 +470,8 @@ def warum_nicht(kern, m, modus: str | None, fuehrer: PaketFuehrer) -> str | None
     if k is None:
         return None
     weg, freunde, feinde, _ = k
+    if eine_stimme_blockt(kern, m, freunde + feinde):
+        return None
     # eine echte Chance (HILFE waere moeglich) wird immer begruendet, ein ferner Kampf hoechstens je WARUM_NICHT_S
     chance = weg <= 8.0 and (m.leben or 0.0) >= 0.5 and hilfe_kandidat(kern, m, modus, None) is not None
     if chance:
@@ -350,5 +499,7 @@ def warum_nicht(kern, m, modus: str | None, fuehrer: PaketFuehrer) -> str | None
     elif hilfe_kandidat(kern, m, modus, None) is None:
         grund = "Rechner klar hinten"
     else:
-        grund = "dein Plan bringt mehr"
+        # 026, 7: der Plan beim Namen (025: "dein Plan bringt mehr" zaehlten die Kritiker als Fuellsatz)
+        ziel = p.ziel if p is not None and p.ziel and len(p.ziel.split()) <= 3 else None
+        grund = f"{ziel[:1].upper()}{ziel[1:]} bringt mehr" if ziel else "dein Plan bringt mehr"
     return f"{freunde[0]} kämpft: nicht hin, {grund}."

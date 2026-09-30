@@ -447,7 +447,10 @@ class Kern:
         # Auftrag 025: Paket-Uebergaenge (Countdown, Abbruch, Erledigt, "warum nicht") - ohne Sprechsperre, NEBEN allem
         # anderen (sie verdraengen nichts); der Plan-Satz selbst ist START oder ERSETZT
         for art, text in self._paket_saetze:
-            if (a := self.sprecher.ansage("PAKET", f"PAKET_{art}", text, m.zeit, None, gesagt)) is not None:
+            # der Start eines stummen Plans ist ein Plan-Satz (Budget, und Claude darf ihn formulieren - 026, 4)
+            kat = "PLAN" if art == "START" else "PAKET"
+            if (a := self.sprecher.ansage(kat, f"PAKET_{art}", text, m.zeit, None, gesagt)) is not None:
+                a._kategorie = kat
                 aus.append(a)
         self._paket_saetze = []
         self._modus_vorher = modus
@@ -463,7 +466,7 @@ class Kern:
             self._paket_saetze = []
             return
         try:
-            self.uhren = uhren.rechnen(m, self.cfg)
+            self.uhren = uhren.rechnen(m, self.cfg, self._lagebild)
             self.events_takt = self.events.takt(m, p if p is not None else m.p, self._lagebild)
             saetze = self.pakete.takt(self, m, self.uhren, self.events_takt, modus)
             if modus not in ("KAMPF", "TOT") and (w := warum_nicht(self, m, modus, self.pakete)) is not None:
@@ -1008,6 +1011,21 @@ class Kern:
         kand = [h for h in kand if not (h.daten.get("klein") and h.p_tod >= cfg["gefahr"]["p_min"])]
         if not gefahr and modus in MAKRO_MODI:
             kand += self._makro_ziele(m, modus, kand, tk)          # Auftrag 010, 1
+        # Auftrag 026, 1: auch ein Back-Kandidat aus anderen Modi (nach HALTEN, 133448 15:56, 231200 14:07) wartet fuers
+        # Gold auf die Back-Frist, wenn deine Welle nicht bei ihm liegt - "Welle rein, dann back" bleibt erlaubt
+        u, w = self.uhren, m.welle
+        if not gefahr and u is not None and u.back_spaetestens is not None and u.back_spaetestens < m.zeit \
+                and m.lane_phase and (m.leben or 0.0) >= cfg["recall"]["leben_back"] \
+                and not (w is not None and w.front is not None and w.front >= 0.55) \
+                and any(h.art != "BACK_JETZT" for h in kand):
+            kand = [h for h in kand if h.art != "BACK_JETZT"]
+        # Auftrag 026: ein eben abgebrochenes Paket-Ziel ist kein Kandidat (sonst im naechsten Takt wieder angesagt)
+        gs = getattr(getattr(self, "pakete", None), "gesperrt", None)
+        if gs:
+            weg = {k for k, bis in gs.items() if bis > m.zeit}
+            frei = [h for h in kand if (h.art, h.ziel.name if h.ziel is not None else None) not in weg]
+            if frei:
+                kand = frei
         # Auftrag 025, 3 (Buch 15, 5): der Chancen-Scanner - ein Mitspieler-Kampf in Reichweite wird Kandidat HILFE;
         # nicht in Gefahr und nicht kurz nach einer Gefahr-Ansage (Pruefung E4 wie oben)
         import os
@@ -1084,6 +1102,14 @@ class Kern:
         viel = k is not None and bool(k.kaufen) and (m.b.gold or 0) >= k.kosten + cr["back_vor_farmen_gold"]
         wenig = m.leben is not None and m.leben < cr["leben_back"]
         if not (viel or wenig):
+            return kand
+        # Auftrag 026, 1 (Buch 15, 2.2): ein Back nur fuers Gold kommt zur Back-Frist der Wellen-Uhr - ist sie schon
+        # vorbei und deine Welle nicht bei ihm, kommt die Kanone vor dir an deinen Turm: erst die Welle, dann Back
+        # (Messung 025: 5 von 10 verspaeteten Backs waren Gold-Backs nach der Frist)
+        u = self.uhren
+        w = m.welle
+        if viel and not wenig and m.lane_phase and u is not None and u.back_spaetestens is not None \
+                and u.back_spaetestens < m.zeit and not (w is not None and w.front is not None and w.front >= 0.55):
             return kand
         bald = any(e.art == "objective" and 0 <= e.in_s(m.zeit) <= 30 for e in self.zeitleiste or []) \
             or self._fenster_offen(m) is not None

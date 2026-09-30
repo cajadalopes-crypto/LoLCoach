@@ -6,6 +6,11 @@ tempo_median = 365.0    # Einheiten/s, n = 30086 Takte
 [brunnen_lane]      # s vom Basisrand bis zum eigenen aeusseren Turm
 blau_top = 13.3     # n = 38 (7 Aufnahmen; Streuung 10.3 .. 54)
 rot_mid = 9.1       # n = 5 (nur EINE Aufnahme, 2026-09-28_101426)
+# Auftrag 026, 3: gespiegelt (die Karte ist punktsymmetrisch: blau Top <-> rot Bot, blau Mid <-> rot Mid) - nicht gemessen
+rot_bot = 13.3      # gespiegelt aus blau_top
+blau_mid = 9.1      # gespiegelt aus rot_mid
+# Die Uhren (kern/uhren.brunnen_lane) rechnen den ganzen Weg ab dem Brunnen aus der Karte (Luftlinie x WEGFAKTOR /
+# tempo_median) - fuer alle Lanes gleich, die Symmetrie steckt in den Turmpositionen (bewertung.TUERME).
 
 # lane_objective: NICHT gemessen. Direkte Laeufe Lane -> Grube (<= 60 s, ohne TP, kaum Umweg) gab es in den 8 Aufnahmen
 # nur je: blau top -> herold n = 2 (8.6 und 16.3 s), rot mid -> drache n = 1 (6.6 s). Alle anderen (top_drache, mid_herold,

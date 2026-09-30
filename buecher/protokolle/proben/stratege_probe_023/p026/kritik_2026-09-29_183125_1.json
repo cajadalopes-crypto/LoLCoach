@@ -1,0 +1,427 @@
+{
+ "minuten": {
+  "1": [
+   {
+    "soll": "Fizz hat Pantheon getötet – Fizz roamt, oberen Fluss im Blick",
+    "urteil": "fehlt",
+    "grund": "Kein Wort zu Fizz/Pantheon; 1:17-1:36 nur Garen und Tryndamere"
+   }
+  ],
+  "2": [
+   {
+    "soll": "Welle kommt zu dir: am Turm farmen, Tryndamere noch nie gesehen – nicht vorlaufen",
+    "urteil": "teilweise",
+    "grund": "1:36 gleicher Rat, aber vor der Minute; 2:26 nur Welle"
+   }
+  ],
+  "3": [
+   {
+    "soll": "Garen tot, Welle bei ihm gecrasht, 30 % Leben: jetzt back, Langschwerter kaufen",
+    "urteil": "teilweise",
+    "grund": "3:07 Back ja, aber Heiltrank+Stiefel statt Langschwerter"
+   },
+   {
+    "soll": "Drache in 89 s",
+    "urteil": "fehlt",
+    "grund": "Kein Drachen-Timer in Minute 3"
+   }
+  ],
+  "4": [
+   {
+    "soll": "Tryndamere tot (4:36): Top-Welle einsammeln, 3 gegen 1, Kanone in 28 s",
+    "urteil": "teilweise",
+    "grund": "4:37 Welle crashen, Kanone 19 s; Tryndamere tot/3-gegen-1 fehlt"
+   },
+   {
+    "soll": "Drache in 31 s, Tryndamere tot: Udyr soll mit Bot zum Drachen",
+    "urteil": "fehlt",
+    "grund": "Kein Drache, kein Udyr-Ruf 4:37-4:53"
+   }
+  ],
+  "5": [
+   {
+    "soll": "Welle gecrasht: back, 805 Gold – Gezackter Langdolch + Kontroll-Auge",
+    "urteil": "teilweise",
+    "grund": "5:33 Back nach Welle, aber kein Kauf/805 Gold, kein Kontroll-Auge"
+   },
+   {
+    "soll": "Fizz Level 6 und 3:0 gegen Pantheon – Fizz kann Top roamen",
+    "urteil": "fehlt",
+    "grund": "Nichts zu Fizz Level 6/Top-Roam"
+   }
+  ],
+  "6": [
+   {
+    "soll": "Garen in deinem oberen Jungle – Büsche nicht blind betreten",
+    "urteil": "gesagt",
+    "grund": "6:24 Garen euer Jungle oben: Büsche meiden"
+   },
+   {
+    "soll": "Garen Flash weg (6:45) und tot: Top pushen, Platten holen",
+    "urteil": "gesagt",
+    "grund": "6:48 Flash weg, 6:53 Garen tot: Welle rein, Platten"
+   }
+  ],
+  "7": [
+   {
+    "soll": "Tryndamere tot (7:43): Welle 5 gegen 0 pushen",
+    "urteil": "fehlt",
+    "grund": "Nach 7:43 nichts zu Tryndamere tot/Welle pushen"
+   },
+   {
+    "soll": "Larven in 28 s: mit Udyr hochgehen",
+    "urteil": "fehlt",
+    "grund": "Keine Larven-Ansage, 7:31-8:14 nur Udyr kämpft"
+   }
+  ],
+  "8": [
+   {
+    "soll": "Tryndamere im oberen Fluss (8:54): Welle nicht überziehen, zurück Richtung Turm",
+    "urteil": "teilweise",
+    "grund": "8:55 Tryndamere oberer Fluss gemeldet, aber kein Rat zur Welle"
+   },
+   {
+    "soll": "Gegner haben Larven genommen – nicht allein reinlaufen",
+    "urteil": "fehlt",
+    "grund": "Keine Larven-Meldung in Minute 8"
+   }
+  ],
+  "9": [
+   {
+    "soll": "Garen tot: back, Überheblichkeit kaufen",
+    "urteil": "gesagt",
+    "grund": "9:17 Back, Überheblichkeit kaufen, Garen tot"
+   },
+   {
+    "soll": "Tryndamere, Fizz, Nautilus Flash weg (9:50)",
+    "urteil": "gesagt",
+    "grund": "9:52 und 9:59 Flash weg für alle drei"
+   }
+  ],
+  "10": [
+   {
+    "soll": "Garen in der Flussmitte, nicht Top: Welle pushen, Top-Turm schlagen",
+    "urteil": "fehlt",
+    "grund": "Kein Garen-Flussmitte; 10:57 Garen ist da"
+   },
+   {
+    "soll": "Turm gefallen: back mit 856 Gold",
+    "urteil": "fehlt",
+    "grund": "Kein Turm-gefallen-Back mit 856 Gold"
+   }
+  ],
+  "11": [
+   {
+    "soll": "1851 Gold: Gezackter Langdolch + Mantel des Geschicks (Richtung Der Sammler)",
+    "urteil": "gesagt",
+    "grund": "11:21 Gezackter Langdolch + Mantel des Geschicks kaufen"
+   },
+   {
+    "soll": "Tryndamere unten aktiv – Top ist sicher",
+    "urteil": "teilweise",
+    "grund": "11:08 Tryndamere unten, aber Rat unklar (TP zum Drachen)"
+   }
+  ],
+  "12": [
+   {
+    "soll": "Herold in 150 s: Top-Welle vorher pushen",
+    "urteil": "fehlt",
+    "grund": "Kein Herold-Timer, 12:21 nur Farm Top"
+   }
+  ],
+  "13": [
+   {
+    "soll": "1501 Gold: Der Sammler fertig bauen",
+    "urteil": "fehlt",
+    "grund": "13:35 nur 'nach Top', kein Sammler-Kauf"
+   },
+   {
+    "soll": "Herold in 88 s: Garen und Tryndamere tot – mit Udyr zum Herold",
+    "urteil": "fehlt",
+    "grund": "13:44-13:58 Drache statt Herold, kein Udyr"
+   }
+  ],
+  "14": [
+   {
+    "soll": "Drache geholt; Garen und Tryndamere tot: Herold jetzt mit Udyr",
+    "urteil": "fehlt",
+    "grund": "14:29 Farm Bot statt Herold mit Udyr"
+   }
+  ],
+  "15": [
+   {
+    "soll": "Tot bis 16:10: dann Letzter Atemzug kaufen (1687 Gold)",
+    "urteil": "fehlt",
+    "grund": "15:30 nur Todesgrund, kein Letzter-Atemzug-Kauf"
+   },
+   {
+    "soll": "Herold steht noch",
+    "urteil": "fehlt",
+    "grund": "Kein Herold-Status in Minute 15"
+   }
+  ],
+  "16": [
+   {
+    "soll": "Mission: Top-Welle nehmen, dann Herold mit Zyra – Fizz und Tryndamere oben, nicht allein rein",
+    "urteil": "teilweise",
+    "grund": "16:42 Top-Welle ja, Herold mit Zyra fehlt; 16:12 Herold mit Udyr"
+   }
+  ],
+  "17": [
+   {
+    "soll": "Herold steht noch (lila Symbol): Garen tot, Tryndamere in seiner Basis – Welle pushen, dann Herold mit Urgot",
+    "urteil": "teilweise",
+    "grund": "17:22-17:40 Herold steht, Welle pushen; Garen tot/Tryndamere Basis fehlt"
+   },
+   {
+    "soll": "Drache in 110 s, Baron in 149 s",
+    "urteil": "fehlt",
+    "grund": "Kein Drache/Baron-Timer, erst 18:36 Baron 83 s"
+   }
+  ],
+  "18": [
+   {
+    "soll": "Nach Respawn: Lord Dominiks Grüße fertig kaufen",
+    "urteil": "gesagt",
+    "grund": "18:36 Sonnenköcher für Lord Dominiks kaufen, Kanone"
+   },
+   {
+    "soll": "Dann unten zum Drachen, spawnt 19:21",
+    "urteil": "teilweise",
+    "grund": "18:48 Drache in 32 s, aber kein 'dort hin'"
+   }
+  ],
+  "19": [
+   {
+    "soll": "Nicht warten: Drache lebt, Tryndamere oben gesehen (19:10) – jetzt mit Zyra und Urgot zum Drachen",
+    "urteil": "teilweise",
+    "grund": "19:10 Tryndamere oben; 19:23 Drache erst nach Kanone, mit Udyr"
+   },
+   {
+    "soll": "Baron in 33 s – erst Drache",
+    "urteil": "teilweise",
+    "grund": "19:23 Baron in 36 s, aber Kanone vor Drache"
+   }
+  ],
+  "20": [
+   {
+    "soll": "Kog'Maw, Tryndamere, Fizz tot: Drache sofort starten, Garen ist oben",
+    "urteil": "gesagt",
+    "grund": "20:17 Kog'Maw tot: zum Drachen sofort"
+   },
+   {
+    "soll": "Drache geholt: Inhibitor egal, Baron lebt – mit Team Mid-Turm oder Baron",
+    "urteil": "fehlt",
+    "grund": "20:54 Kanone/Back statt Baron/Mid-Turm; 20:55 nur Mid-Turm zurück"
+   }
+  ],
+  "21": [
+   {
+    "soll": "Nach Respawn: 1448 Gold – Riesenschwert",
+    "urteil": "gesagt",
+    "grund": "22:02 Back, Riesenschwert kaufen nach Respawn"
+   }
+  ],
+  "22": [
+   {
+    "soll": "Garen tot, Kog'Maw in Basis: mit Udyr und Urgot Top-Turm schlagen",
+    "urteil": "teilweise",
+    "grund": "22:41 hoch zu Udyr und Urgot, aber Top-Turm schlagen fehlt"
+   },
+   {
+    "soll": "Danach back: 1971 Gold – Riesenschwert",
+    "urteil": "gesagt",
+    "grund": "22:41 Riesenschwert kaufen in Basis"
+   }
+  ],
+  "23": [
+   {
+    "soll": "Du hast recht: Bot verteidigen – Pantheon allein gegen Kog'Maw und Nautilus, Team ist oben am Inhibitor",
+    "urteil": "fehlt",
+    "grund": "23:24-23:53 Gegenteil: oben bleiben, Bot-Defense abgelehnt"
+   },
+   {
+    "soll": "Drache in 131 s",
+    "urteil": "fehlt",
+    "grund": "Kein Drachen-Timer; 23:24 nur Baron 134 s"
+   }
+  ],
+  "24": [
+   {
+    "soll": "Pantheon tot, Nautilus tot (24:29): Bot-Welle allein wegpushen",
+    "urteil": "fehlt",
+    "grund": "24:32/24:45 Gegenteil: Bot-Welle nicht, oben bleiben"
+   },
+   {
+    "soll": "Drache in 69 s: danach am Pit bleiben",
+    "urteil": "fehlt",
+    "grund": "Kein Drachen-Timer in Minute 24"
+   }
+  ],
+  "25": [
+   {
+    "soll": "Bot-Turm hält, 35 % Leben, 2290 Gold: back, Spitzhacke Richtung Klinge der Unendlichkeit",
+    "urteil": "teilweise",
+    "grund": "26:12 Back für Klinge; 25:31 riet Turm, Spitzhacke fehlt"
+   },
+   {
+    "soll": "Drache spawnt 25:39 – nach dem Kauf sofort hin",
+    "urteil": "fehlt",
+    "grund": "Kein Drachen-Spawn 25:39; erst 26:42 Drache"
+   }
+  ],
+  "26": [
+   {
+    "soll": "2468 Gold: Klinge der Unendlichkeit fertig",
+    "urteil": "gesagt",
+    "grund": "26:12 Back: 2400 Gold für Klinge der Unendlichkeit"
+   }
+  ],
+  "27": [
+   {
+    "soll": "Kog'Maw und Tryndamere tot: sofort unten zum Drachen, Pantheon hilft; Fizz in deinem unteren Jungle",
+    "urteil": "teilweise",
+    "grund": "28:20 Drache jetzt; 27:27 riet Top, Tote/Pantheon fehlt"
+   }
+  ],
+  "28": [
+   {
+    "soll": "Bot verteidigen: Tryndamere und Nautilus in deinem unteren Jungle, Kog'Maw tot – mit Urgot halten",
+    "urteil": "teilweise",
+    "grund": "28:34 Nautilus unten; 28:51 Bot verlassen statt halten"
+   }
+  ],
+  "29": [
+   {
+    "soll": "Drache geholt, 3 Gegner tot: mit Team Mid-Turm und Inhibitor",
+    "urteil": "teilweise",
+    "grund": "29:23 Drache, Mid-Turm/Inhibitor fehlt; 29:36 Bot-Turm"
+   },
+   {
+    "soll": "Garen allein in deinem oberen Jungle",
+    "urteil": "fehlt",
+    "grund": "Kein Garen allein oben; erst 30:52"
+   }
+  ],
+  "30": [
+   {
+    "soll": "Kaufen: Kontroll-Auge verkaufen, Stiefel zu Beschichteten Stahlkappen (Tryndamere, Kog'Maw), Rest in Schildbogen der Unsterblichkeit",
+    "urteil": "fehlt",
+    "grund": "30:04-30:40 'nichts zu kaufen' statt Stahlkappen/Schildbogen"
+   }
+  ],
+  "31": [
+   {
+    "soll": "Garen tot: ja, Inhibitor jetzt holen – Tryndamere im oberen Jungle",
+    "urteil": "fehlt",
+    "grund": "31:04 und 31:46 Gegenteil: Nein zum Inhibitor"
+   }
+  ],
+  "32": [
+   {
+    "soll": "4 Gegner tot: Team soll Baron nehmen",
+    "urteil": "fehlt",
+    "grund": "Kein Baron-Ruf; 32:16 verworfen, nur 32:20 tot"
+   },
+   {
+    "soll": "Nach Respawn: Kontroll-Auge verkaufen, Stahlkappen + Schildbogen kaufen",
+    "urteil": "teilweise",
+    "grund": "33:10 Kontroll-Auge verkaufen, aber Schutzengel statt Stahlkappen"
+   }
+  ],
+  "33": [
+   {
+    "soll": "Respawn: Stahlkappen + Schildbogen der Unsterblichkeit kaufen (4798 Gold)",
+    "urteil": "teilweise",
+    "grund": "33:10-33:39 Kaufen ja, aber Schutzengel statt Stahlkappen+Schildbogen"
+   },
+   {
+    "soll": "Drache in 66 s: dann unten zum Pit, Urgot und Pantheon sind dort",
+    "urteil": "teilweise",
+    "grund": "34:01 Drache in 32 s, kein Pit/Urgot-Pantheon"
+   }
+  ],
+  "34": [
+   {
+    "soll": "Ein Slot frei: Schildbogen der Unsterblichkeit kaufen",
+    "urteil": "teilweise",
+    "grund": "34:11 Platz frei: Schutzengel, nicht Schildbogen"
+   },
+   {
+    "soll": "Schwarzes Beil nicht nötig: Lord Dominiks deckt Rüstung gegen Garen und Nautilus schon ab",
+    "urteil": "fehlt",
+    "grund": "34:36 Frage abgelehnt; 37:14 Beil sogar empfohlen"
+   }
+  ],
+  "35": [
+   {
+    "soll": "Keine Tränke: Schildbogen kaufen, Rest behalten",
+    "urteil": "teilweise",
+    "grund": "35:43 kein Trank, aber 'nichts zu kaufen' statt Schildbogen"
+   },
+   {
+    "soll": "Alle Gegner in Basis, Garen tot: jetzt Drache mit Udyr, Zyra, Urgot",
+    "urteil": "fehlt",
+    "grund": "35:11 Top-Welle statt Drache mit Udyr/Zyra/Urgot"
+   }
+  ],
+  "36": [
+   {
+    "soll": "Elixiere egal: raus, Kog'Maw und Tryndamere tot – mit Udyr und Urgot Drache holen",
+    "urteil": "teilweise",
+    "grund": "36:27 Elixier unnötig, aber Top-Welle statt Drache"
+   }
+  ],
+  "37": [
+   {
+    "soll": "Schwarzes Beil: Rüstungsminderung gegen Garen und Nautilus – mit Lord Dominiks aber nicht kombinierbar, also richtig so",
+    "urteil": "fehlt",
+    "grund": "37:14 Beil hätte gut gewesen: Gegenteil"
+   },
+   {
+    "soll": "Garen, Kog'Maw, Tryndamere tot: jetzt Baron",
+    "urteil": "teilweise",
+    "grund": "37:27/37:48 Baron, aber erst Kanone/Bot, Tote fehlen"
+   }
+  ],
+  "38": [
+   {
+    "soll": "Anderes Macro: bei 2+ Toten Baron, dann zu fünft Mid statt Top-Split",
+    "urteil": "teilweise",
+    "grund": "38:08 Baron mit Udyr/Pantheon; Mid-Fünfer-Macro fehlt"
+   },
+   {
+    "soll": "Nach Respawn: Garen, Fizz tot – mit Team Baron",
+    "urteil": "fehlt",
+    "grund": "38:59 Top-Welle statt Baron mit Team"
+   }
+  ],
+  "39": [
+   {
+    "soll": "Alle 5 Gegner tot: sofort mit Team über Mid auf den Nexus",
+    "urteil": "fehlt",
+    "grund": "39:09 Top-Welle statt Mid auf den Nexus"
+   }
+  ]
+ },
+ "fuellsaetze": {
+  "anzahl": 5,
+  "saetze_gesamt": 214,
+  "zeiten": [
+   "13:58",
+   "14:11",
+   "22:00",
+   "29:53",
+   "34:36"
+  ]
+ },
+ "widersprueche": {
+  "anzahl": 4,
+  "faelle": [
+   "14:16/14:17 Raus vs Rein auf Tryndamere",
+   "20:54/20:55 Kanone-Back-Drache vs Stopp raus Mid-Turm",
+   "22:16/22:24 Rein auf Garen vs kein Kampf",
+   "26:02/26:12 Mid zur Kanone vs Back dann Top"
+  ]
+ }
+}
