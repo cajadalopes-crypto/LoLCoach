@@ -1,0 +1,164 @@
+{"minuten": {
+"1": [
+{"soll": "Guter Kill auf Malphite. In der Basis mit 410 Gold ein Langschwert kaufen und zurück; die Welle mit 4 Vasallen läuft zu dir, Kanone in 25 s.", "urteil": "teilweise", "grund": "Langschwert+zurück 1:19/1:27, Kanone erst 1:45; kein Kill-Lob"},
+{"soll": "Flash ist weg und Amumu wurde noch nie gesehen: nicht tief stehen, am eigenen Turm farmen.", "urteil": "teilweise", "grund": "1:35 nur Top-Welle farmen; kein Flash/Amumu-Hinweis"}
+],
+"2": [
+{"soll": "Malphite hat 8 % Leben: sofort nachsetzen und ihn töten, bevor er zurückkommt.", "urteil": "fehlt", "grund": "2:10 Farm Top, 2:32 zurück unter Turm; kein Nachsetzen"},
+{"soll": "Wer kommt? Amumu wurde noch nie gesehen, Gragas steht in der Flussmitte, Braum unten. Nach dem Kill nicht verfolgen, mit 34 % zurückziehen.", "urteil": "teilweise", "grund": "2:32 unter Turm, 2:42 Amumu unbekannt; Gragas/Braum fehlen"}
+],
+"3": [
+{"soll": "Welle ist bei ihm gecrasht, 42 % Leben, 520 Gold: jetzt recallen, Kontrollauge und Langschwert kaufen.", "urteil": "fehlt", "grund": "3:27 Farm Top, back erst bei 600 Gold; kein Recall"},
+{"soll": "Amumu 3:46 im oberen Fluss: nicht auf Malphite mit 4 % unter seinen Turm tauchen, Flash ist weg.", "urteil": "teilweise", "grund": "3:46 Amumu oberer Fluss gemeldet; keine Tauchwarnung"}
+],
+"4": [
+{"soll": "780 Gold: zwei Langschwerter kaufen, dann zurück; die Kanonenwelle in 25 s mitnehmen.", "urteil": "teilweise", "grund": "4:13 Back, 4:35 Kanone 21 s; Kauf aber Stiefel statt Langschwerter"},
+{"soll": "Amumu steht Mid, Malphite oben: Kontrollauge in den oberen Flussbusch, Drache in 28 s ist Sache des Bot-Teams.", "urteil": "teilweise", "grund": "4:53 Malphite oben, Auge gekauft 4:13; Amumu Mid erst 5:15, kein Platz"}
+],
+"5": [
+{"soll": "Malphite ist auf der Mid-Lane, Welle 6 gegen 0 läuft zu ihm: in seinen Turm drücken und Platten schlagen.", "urteil": "gesagt", "grund": "5:28 Malphite weg: Welle rein, dann Platten"},
+{"soll": "Beim Back mit 780 Gold die Langschwerter zu Caulfields Kriegshammer ausbauen. Larven in 148 s.", "urteil": "teilweise", "grund": "5:17/5:53 Caulfields kaufen; Larven nie genannt"}
+],
+"6": [
+{"soll": "Level 6 und Flash zurück, Amumu unten gesehen: Malphite mit 74 % an deiner 5er-Welle all-in nehmen, Ultimate nutzen.", "urteil": "fehlt", "grund": "6:09/6:10 nur Top farmen, 6:48 Bleib dabei; kein All-in"},
+{"soll": "Nach dem Kill Welle pushen und Platten nehmen, Larven in 90 s.", "urteil": "fehlt", "grund": "Kein Kill, keine Platten, keine Larven in Minute 6"}
+],
+"7": [
+{"soll": "1291 Gold in der Basis: den Brutalisierer kaufen, dann Top.", "urteil": "teilweise", "grund": "7:31/7:35 Basis-Kauf und Top, aber Spitzhacke statt Brutalisierer"},
+{"soll": "Amumu ist tot, Larven in 28 s: Kanonenwelle in 25 s pushen, dann mit Maokai die Larven holen.", "urteil": "teilweise", "grund": "7:35 Kanone in 23 s; Amumu lebt laut Coach, keine Larven"}
+],
+"8": [
+{"soll": "Was kaufen? Nichts, 113 Gold reichen nicht. Beim nächsten Back den Brutalisierer zum Axiombogen ausbauen.", "urteil": "fehlt", "grund": "8:08 Coach sagt Brutalisierer jetzt kaufen: Gegenteil"},
+{"soll": "Ja, zu den Larven: Akali und Maokai sind oben, Amumu und Malphite im oberen Fluss; deine Welle liegt am eigenen Turm und kostet wenig.", "urteil": "fehlt", "grund": "8:39 Nein, bleib am Turm: Gegenteil, Larven nicht empfohlen"}
+],
+"9": [
+{"soll": "Malphite und Amumu tot: Welle 5 gegen 3 jetzt in seinen Turm drücken und Platten schlagen.", "urteil": "teilweise", "grund": "9:04 Welle rein, Platten; 9:08 aber Bleib am Turm"},
+{"soll": "Ja, bei den Larven helfen war richtig: zwei Kills geholt. Jetzt mit 831 Gold recallen und Richtung Axiombogen kaufen.", "urteil": "teilweise", "grund": "9:40 back für Axiombogen; Lob fehlt, Larven-Verlust betont"}
+],
+"10": [
+{"soll": "Ja, Stiefel ausbauen: 722 Gold reichen für Ionische Stiefel der Deutlichkeit, das gibt Ultimate-Abklingzeit.", "urteil": "teilweise", "grund": "10:02/10:13 Ionische Stiefel, aber 'nicht ausbauen' verwirrt; kein Grund"},
+{"soll": "Danach Top, Malphite ist oben sichtbar: Welle 2 gegen 0 steht in der Mitte, Kanone in 27 s mitnehmen.", "urteil": "gesagt", "grund": "10:13/10:36 Top zur Kanone in 43/21 s"}
+],
+"11": [
+{"soll": "Larven und Turm geholt: raus aus seinem Jungle, Malphite war dort vor 7 s, Amumu 50 s nicht gesehen.", "urteil": "gesagt", "grund": "11:28 Du stehst tief, Amumu fehlt 32 s, zieh dich zurück"},
+{"soll": "Konkret: recallen, mit 937 Gold die Spitzhacke kaufen, dann Top-Welle mit Kanone in 55 s nehmen.", "urteil": "teilweise", "grund": "11:41/11:46 Spitzhacke kaufen, aber dann Drachen statt Top-Welle"}
+],
+"12": [
+{"soll": "Richtig, zum Drachen: Gragas ist tot, Amumu in seiner Basis, Cassiopeia in eurem unteren Jungle.", "urteil": "gesagt", "grund": "12:00 Geh zum Drachen; 12:21 Gragas angreifen, dann Cassiopeia/Drache"},
+{"soll": "1338 Gold: Spitzhacke plus Langschwert kaufen, danach Top-Welle 3 gegen 0 pushen. Herold in 150 s.", "urteil": "teilweise", "grund": "12:34/12:42 Caulfields bzw. Langschwert; dann Larven, kein Top-Push"}
+],
+"13": [
+{"soll": "Malphite tot: Top-Welle mit Kanone in 26 s nehmen und den Turm schlagen.", "urteil": "teilweise", "grund": "13:19/13:20 Top farmen, Kanone 37/36 s; Turm nicht genannt"},
+{"soll": "Danach unten helfen: Amumu jagt in eurem unteren Jungle, Drache lebt; Herold in 89 s oben.", "urteil": "teilweise", "grund": "13:36 Amumu, 13:40 Drache bestreiten; 13:12 aber nicht hin"}
+],
+"14": [
+{"soll": "Drache geholt, 48 % Leben: sofort raus aus der Grube, nicht weiterkämpfen.", "urteil": "teilweise", "grund": "14:29 Bleib am Drachen; erst 14:39/14:40 raus, spät"},
+{"soll": "Tot, was kaufen? 966 Gold: Langschwert zu Caulfields Kriegshammer ausbauen. Nach Respawn zum Herold, der kommt in 28 s.", "urteil": "teilweise", "grund": "14:51 Caulfields kaufen; 15:13 Team am Turm statt Herold"}
+],
+"15": [
+{"soll": "Du lebst: Braum und Ezreal sind tot, Herold lebt. Mit Maokai zum Herold, Amumu ist weit weg in eurem unteren Jungle.", "urteil": "fehlt", "grund": "15:13-15:39 Turm/Top-Welle, kein Herold, kein Maokai"},
+{"soll": "385 Gold: Kontrollauge mitnehmen und damit den Herold-Busch sichern.", "urteil": "fehlt", "grund": "15:17/15:39 nur Langschwert; kein Auge, kein Herold-Busch"}
+],
+"16": [
+{"soll": "Malphite ist unten, Welle 6 gegen 0 läuft zu ihm: Top in seinen Turm drücken und den Turm schlagen.", "urteil": "gesagt", "grund": "16:06/16:25 inneren Top-Turm drücken, Malphite unten"},
+{"soll": "Danach Herold holen, Maokai ist in der Flussmitte. Innerer Turm: Top, da stehst du gerade.", "urteil": "teilweise", "grund": "16:31 innerer Top-Turm ja; Herold/Maokai fehlen"}
+],
+"17": [
+{"soll": "Du bist tot mit 1456 Gold: jetzt Eklipse fertigbauen, nicht mit vollem Beutel rauslaufen.", "urteil": "gesagt", "grund": "17:52 Kauf Eklipse und Vampirisches Zepter"},
+{"soll": "Nach Respawn: Top-Welle mit Kanone nehmen, dann zum Drachen in 113 s; Baron in 151 s.", "urteil": "teilweise", "grund": "18:05/18:23 Top-Welle, Kanone in 13 s; Drache/Baron fehlen"}
+],
+"18": [
+{"soll": "1634 Gold liegen ungenutzt: beim nächsten Back sofort Eklipse kaufen.", "urteil": "gesagt", "grund": "18:00/18:05 Kauf Eklipse und Vampirisches Zepter"},
+{"soll": "Amumu, Gragas und Ezreal tot: Malphite oben töten, dann Drache in 50 s mit dem Team.", "urteil": "fehlt", "grund": "18:18-18:34 nur Top-Inhibitor/Welle; kein Malphite, kein Drache"}
+],
+"19": [
+{"soll": "Herold geholt: mit 2369 Gold erst kaufen, Eklipse und Tiamat, dann laufen.", "urteil": "gesagt", "grund": "19:37 Back Eklipse, 19:51 Kauf Tiamat"},
+{"soll": "Malphite tot, Gragas und Ezreal in der Basis: danach Drache holen, Baron in 31 s.", "urteil": "teilweise", "grund": "19:24 Baron in 35 s mit Team; Drache und Toten fehlen"}
+],
+"20": [
+{"soll": "1979 Gold übrig: zurück und Tiamat plus Vampirisches Zepter kaufen, nicht mit vollem Beutel laufen.", "urteil": "teilweise", "grund": "Kein Back-Rat in 20; erst 21:03 Tiamat nach Tod"},
+{"soll": "Nicht Top: Malphite ist seit 88 s unsichtbar. Drache lebt und Amumu ist tot, also mit dem Team zum Drachen.", "urteil": "teilweise", "grund": "20:19 Drache bestreiten; kein Nicht-Top, 20:46 dann Baron"}
+],
+"21": [
+{"soll": "Tot mit 2099 Gold: Tiamat und Vampirisches Zepter kaufen.", "urteil": "gesagt", "grund": "21:03 Tiamat, 21:30 Tiamat und Vampirisches Zepter"},
+{"soll": "Recht, dein Team will den Drachen, nicht den Baron. Nach Respawn nicht allein zum Drachen, die Gegner stehen dort; Top-Welle 5 gegen 0 pushen.", "urteil": "teilweise", "grund": "21:14 Team will Drachen ja; aber Gruppe am Drachen, keine Top-Welle"}
+],
+"22": [
+{"soll": "Malphite mit 86 % oben, du hast Flash: Welle mit Kanone in 17 s nehmen und ihn duellieren.", "urteil": "teilweise", "grund": "22:43/22:57 Kanone nehmen, Malphite neben dir; kein Duell"},
+{"soll": "Vier Gegner tot: Baron sofort mit Maokai, er steht im oberen Fluss.", "urteil": "teilweise", "grund": "22:43/22:55 mit Maokai oben Druck; Baron nie genannt"}
+],
+"23": [
+{"soll": "Malphite, Amumu und Ezreal in der Basis: Top-Welle mit Kanone in 6 s drücken, dann den Inhibitor-Turm.", "urteil": "gesagt", "grund": "23:30 inneren Top-Turm, 23:51 Top-Inhibitor-Turm drücken"},
+{"soll": "Wo nicht hin: nicht allein nach unten, Braum war vor 7 s in eurem unteren Jungle.", "urteil": "fehlt", "grund": "23:45 nur Notiert; Braum nie erwähnt"}
+],
+"24": [
+{"soll": "Malphite, Amumu und Ezreal tot: jetzt Baron mit Maokai und Yorick, niemand kann smiten. Danach Inhibitor.", "urteil": "fehlt", "grund": "24:12/24:15 Amumu da, raus; 24:28 nach Top; kein Baron"},
+{"soll": "Braum steht allein in seinem oberen Jungle: nicht am Turm mit ihm tauschen. Nach Baron mit 1793 Gold Hydra kaufen.", "urteil": "teilweise", "grund": "24:29 Braum 2 s weg; 24:49 Hydra kaufen; kein Baron"}
+],
+"25": [
+{"soll": "Tot mit 2268 Gold: Tiamat zur Gefräßigen Hydra ausbauen, den Rest in Stahlsiegel.", "urteil": "teilweise", "grund": "25:05 Hydra kaufen, Stahlsiegel erst 25:54 mit anderer Goldlage"},
+{"soll": "Nach Respawn direkt zur Drachengrube: Drache in 80 s, Top-Welle ignorieren.", "urteil": "teilweise", "grund": "26:18 Drache mit Yorick/Cassiopeia; 26:06/26:27 aber Top"}
+],
+"26": [
+{"soll": "Drache in 22 s: rein in die Grube, Yorick ist unten, Amumu im unteren Fluss gesehen.", "urteil": "teilweise", "grund": "26:18 Drache in 32 s, 26:37 Amumu unterer Fluss; keine Grube"},
+{"soll": "Amumu ist tot: Drache ohne gegnerischen Smite jetzt sofort nehmen.", "urteil": "teilweise", "grund": "26:48 Amumu fast tot, 27:06 Bleib am Drachen; kein sofort"}
+],
+"27": [
+{"soll": "Drache schnell sichern, Amumu ist in seiner Basis: kein Smite gegen euch.", "urteil": "gesagt", "grund": "27:06 Bleib am Drachen, 27:42 Drache jetzt, 27:48 genommen"},
+{"soll": "Ja, das ist euer zweiter Drache. Danach Baron prüfen, Malphite steht oben sichtbar.", "urteil": "fehlt", "grund": "27:48 nur Drache genommen; Baron und Malphite nicht genannt"}
+],
+"28": [
+{"soll": "Malphite, Amumu und Gragas tot: Baron jetzt, nur Braum und Ezreal leben.", "urteil": "fehlt", "grund": "28:06 Malphite lebt laut Coach, 28:15 Mid-Welle; kein Baron"},
+{"soll": "Geht das Team nicht mit: Top-Welle 4 gegen 0 in den Turm drücken. Nicht allein zu Braum mit 92 % in euren Jungle, Flash ist weg.", "urteil": "teilweise", "grund": "28:33 Braum-Büsche meiden; Mid-Welle statt Top-Welle"}
+],
+"29": [
+{"soll": "Amumu und Gragas tot: nicht unterm Mid-Turm warten, mit Maokai zum Baron.", "urteil": "fehlt", "grund": "28:58 Bleib unter Mid-Turm, 29:19 Mid-Welle; kein Baron"},
+{"soll": "Sonst Top-Welle 6 gegen 0 mit Kanone in 24 s in den Turm drücken. Mit 61 % und 1203 Gold danach recallen.", "urteil": "fehlt", "grund": "29:19 Mid-Welle, 29:32 Bot-Lane; kein Top, kein Recall"}
+],
+"30": [
+{"soll": "Gragas tot, Ezreal in der Basis: Bot-Turm schlagen, dann recallen, 1686 Gold für Schutzengel.", "urteil": "gesagt", "grund": "30:09 inneren Bot-Turm, 31:09/31:16 back, Schutzengel"},
+{"soll": "Malphite steht allein oben: nach dem Back die Top-Seitenlane drücken. Drache in 138 s.", "urteil": "gesagt", "grund": "30:27 Malphite oben: Welle drücken; 31:16 Top-Welle; Drache fehlt"}
+],
+"31": [
+{"soll": "889 Gold: Spitzhacke kaufen, dann Top, Malphite steht mit 55 % allein an der Welle.", "urteil": "teilweise", "grund": "31:31 Spitzhacke kaufen; dann zum Team statt Top"},
+{"soll": "Drache in 76 s: 15 Sekunden vorher zu Cassiopeia und Yorick unten.", "urteil": "gesagt", "grund": "31:31 zu Cassiopeia/Yorick; 31:45 mit Team zum Drachen"}
+],
+"32": [
+{"soll": "Drache in 19 s: in die Grube, Maokai und Yorick sind unten, Amumu in seinem unteren Jungle.", "urteil": "gesagt", "grund": "32:05 zum Drachen 32:47, 32:26 Amumu Jungle unten"},
+{"soll": "Braum 83 s und Malphite 37 s unsichtbar: auf die Flanke achten.", "urteil": "gesagt", "grund": "32:31 Ezreal, Malphite, Braum fehlen 28 s, zieh dich zurück"}
+],
+"33": [
+{"soll": "Amumu, Braum und Ezreal tot: Drache nehmen, dann sofort Mid-Inhibitor, nur Malphite und Gragas leben.", "urteil": "teilweise", "grund": "33:12 zum Drachen; 33:28 widersprüchlich, kein Mid-Inhibitor"}
+],
+"34": [
+{"soll": "Malphite tot, Inhibitor gefallen: nächsten Inhibitor schlagen, Amumu ist in seiner Basis.", "urteil": "teilweise", "grund": "34:03 Bot-Turm, 34:45 Bot-Inhibitor; Amumu-Ort fehlt"},
+{"soll": "1290 Gold: beim nächsten Back Tanz des Todes.", "urteil": "teilweise", "grund": "34:45 danach back; Tanz des Todes erst 35:51"}
+],
+"35": [
+{"soll": "Malphite hat 47 %, sonst lebt nur Ezreal: Malphite töten, dann Nexus-Türme und Nexus, nicht recallen.", "urteil": "teilweise", "grund": "35:01/35:02 Nexus; 35:13/35:38 aber back, Malphite raus"}
+],
+"36": [
+{"soll": "Ja: Teleport zu deinem Team in seiner Basis, drei Gegner tot, Spiel beenden. Nicht zum Drachen in 138 s.", "urteil": "gesagt", "grund": "36:31 zum Team in seiner Basis; 36:37 zusammen rein"}
+],
+"37": [
+{"soll": "Alle fünf Gegner leben in ihrer Basis, Flash weg: nicht allein rein, raus und neu sammeln.", "urteil": "teilweise", "grund": "37:22 Zieh dich zurück; 37:11 Welle drücken, Lage nicht genannt"},
+{"soll": "Baron lebt: mit dem Team Baron nehmen und mit dem Buff beenden.", "urteil": "fehlt", "grund": "Baron in Minute 37 nie erwähnt"}
+]
+},
+"fuellsaetze": {"anzahl": 8, "saetze_gesamt": 282, "zeiten": ["5:06", "6:48", "9:27", "11:36", "12:29", "28:43", "31:39", "37:28"]},
+"widersprueche": {"anzahl": 14, "faelle": [
+"13:40/13:52 Drache bestreiten vs. nach Top",
+"15:13/15:17 äußerer vs. innerer Top-Turm warten",
+"16:03/16:06 Bot-Lane zu Yorick vs. Top-Turm drücken",
+"19:00/19:08 nichts erzwingen vs. Herold jetzt",
+"19:37/19:51 Baron mit Gruppe vs. Back und nach Top",
+"20:19/20:46 Drache bestreiten vs. am Baron bleiben",
+"21:44/21:45 zum Team vs. Top-Welle drücken",
+"22:57/23:02 inneren Top-Turm vs. inneren Mid-Turm",
+"23:26/23:30 Raus (Amumu kommt) vs. Top-Turm drücken",
+"26:18/26:27 zum Drachen vs. nach Top",
+"29:19/29:32 Mid-Welle drücken vs. Bot-Lane",
+"30:35/30:53 zum Baron vs. Farm Bot",
+"33:12/33:28 zum Drachen; Hilf vs. nicht hin im selben Satz",
+"35:38/35:44 Back jetzt vs. alle auf den Nexus"
+]}}

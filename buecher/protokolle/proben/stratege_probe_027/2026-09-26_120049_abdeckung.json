@@ -1,0 +1,356 @@
+{
+ "kennzahlen": {
+  "flash": "– (keine)",
+  "jungler": "17/17 (100 %)",
+  "i4": "1/1 (100 %)",
+  "backs": "1/2 (50 %)",
+  "back_rufe": "7/21 (33 %)",
+  "stille": "29 s",
+  "sicherheit": 0,
+  "widersprueche": 7,
+  "fuellsaetze": "0/148 (0.0 %)",
+  "latenz": "1.51 / 2.29 s (n = 36)",
+  "erster_satz": 1.2139764999737963,
+  "cache": "30/53"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [],
+  "jungler": [
+   {
+    "zeit": 194.5,
+    "name": "Vi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle oben."
+   },
+   {
+    "zeit": 242.3,
+    "name": "Vi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 43,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle oben."
+   },
+   {
+    "zeit": 388.7,
+    "name": "Vi",
+    "ort": "oben",
+    "ohne_s": 125,
+    "tot_ich": false,
+    "gesagt": "Zurück unter deinen äußeren Top-Turm: Vi kommt."
+   },
+   {
+    "zeit": 439.5,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 32,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 482.2,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 25,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 564.6,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 64,
+    "tot_ich": false,
+    "gesagt": "Vi unterer Fluss."
+   },
+   {
+    "zeit": 728.9,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 145,
+    "tot_ich": false,
+    "gesagt": "Vi unterer Fluss."
+   },
+   {
+    "zeit": 797.2,
+    "name": "Vi",
+    "ort": "oben",
+    "ohne_s": 60,
+    "tot_ich": false,
+    "gesagt": "Vi oben."
+   },
+   {
+    "zeit": 895.0,
+    "name": "Vi",
+    "ort": "im oberen Fluss",
+    "ohne_s": 53,
+    "tot_ich": false,
+    "gesagt": "Vi oberer Fluss, 7 Sekunden."
+   },
+   {
+    "zeit": 1108.2,
+    "name": "Vi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 203,
+    "tot_ich": false,
+    "gesagt": "Vi Mid, 4 Sekunden."
+   },
+   {
+    "zeit": 1162.3,
+    "name": "Vi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Vi Mid, 1 Sekunde."
+   },
+   {
+    "zeit": 1218.4,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 47,
+    "tot_ich": true,
+    "gesagt": "Vi unterer Fluss."
+   },
+   {
+    "zeit": 1262.4,
+    "name": "Vi",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": 35,
+    "tot_ich": false,
+    "gesagt": "Vi euer Jungle unten."
+   },
+   {
+    "zeit": 1312.3,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 39,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten, 8 Sekunden."
+   },
+   {
+    "zeit": 1362.2,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 39,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten, 1 Sekunde."
+   },
+   {
+    "zeit": 1411.0,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 1445.7,
+    "name": "Vi",
+    "ort": "in seiner Basis",
+    "ohne_s": 33,
+    "tot_ich": false,
+    "gesagt": "Vi in Basis."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 420.2,
+    "gesagt": null,
+    "saetze": [
+     "In 11 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 7:57.",
+     "Jetzt, wo Rakan tot ist: Lee Sin geht sofort Drache mit Varus und Alistar, ihr habt 11 Sekunden bis Rakan kommt – du farmst die Kanonenwelle oben zu Ende.",
+     "Vi sein Jungle unten."
+    ]
+   },
+   {
+    "zeit": 610.5,
+    "gesagt": "Jetzt, wo Brand tot ist: Back sofort, Eklipse und Ionische Stiefel, dann zur Top-Welle—Vi kommt in 6 Sekunden, du brauchst Items.",
+    "saetze": [
+     "Kauf Eklipse, Stiefel, Ionische Stiefel der Deutlichkeit und Caulfields Kriegshammer, dann zum Drachen.",
+     "Jetzt, wo du in der Basis bist: Kauf Der Brutalisierer für den Axiombogen, Langschwert und ein Kontroll-Auge, dann nach Top.",
+     "Kauf Langschwert für die Gefräßige Hydra und Langschwert, dann nach Top."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 30.868732452392578,
+    "text": "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer.",
+    "kette": false
+   },
+   {
+    "zeit": 120.22039031982422,
+    "text": "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer. Nicht zu Diana.",
+    "kette": false
+   },
+   {
+    "zeit": 200.5563507080078,
+    "text": "Farm Top, Spitzhacke ist schon bezahlbar: nach der Welle back. Nicht zu Diana.",
+    "kette": false
+   },
+   {
+    "zeit": 247.34213256835938,
+    "text": "Back jetzt: 1300 Gold für den Brutalisierer.",
+    "kette": false
+   },
+   {
+    "zeit": 300.083740234375,
+    "text": "Farm Top, bei 500 Gold back für den Brutalisierer. Nicht zu Diana.",
+    "kette": false
+   },
+   {
+    "zeit": 332.6430358886719,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 6:27.",
+    "kette": false
+   },
+   {
+    "zeit": 351.9436340332031,
+    "text": "Jetzt, wo Brand tot ist: Back jetzt: Brutalisierer, dann zur Welle oben, Kanone in 35 Sekunden kommt und Shen ist unsichtbar.",
+    "kette": true
+   },
+   {
+    "zeit": 369.3359375,
+    "text": "Back jetzt: 33 Prozent Leben, Kanone in 17 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 429.3460388183594,
+    "text": "In 11 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 7:57.",
+    "kette": false
+   },
+   {
+    "zeit": 513.748046875,
+    "text": "In 11 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 9:27.",
+    "kette": false
+   },
+   {
+    "zeit": 519.9481201171875,
+    "text": "Top-Welle rein, dann back: 1350 Gold für Eklipse, Shen ist tot.",
+    "kette": false
+   },
+   {
+    "zeit": 591.1758422851562,
+    "text": "Jetzt, wo Brand tot ist: Back sofort, Eklipse und Ionische Stiefel, dann zur Top-Welle—Vi kommt in 6 Sekunden, du brauchst Items.",
+    "kette": true
+   },
+   {
+    "zeit": 648.4187622070312,
+    "text": "Jetzt, wo Vi tot ist: Back sofort, Langschwert kaufen, dann zur Top-Welle schieben—Vi respawnt in 15 Sekunden, danach wird es eng.",
+    "kette": true
+   },
+   {
+    "zeit": 770.7886352539062,
+    "text": "Back jetzt, Gefräßige Hydra kaufen, dann zur Top-Welle crashen – Shen respawnt in 4 Sekunden und Vi kann jede Sekunde hier sein, deine Lane ist die einzige sichere Position jetzt.",
+    "kette": true
+   },
+   {
+    "zeit": 1024.821533203125,
+    "text": "Back jetzt: 3350 Gold für Axiombogen. Nicht zu Diana: 13 Sekunden weg.",
+    "kette": false
+   },
+   {
+    "zeit": 1030.904541015625,
+    "text": "Drache in 90 Sekunden, aber Brand kommt in 7 Sekunden zu dir – back jetzt mit deinen 3395 Gold, Axiombogen kaufen, dann mit Quest-TP zum Herold, weil Rakan und Varus noch weg sind und das Fenster nicht lange hält.",
+    "kette": true
+   },
+   {
+    "zeit": 1119.448974609375,
+    "text": "Vi ist 2 Sekunden weg und kann dich treffen back sofort mit der Welle, Axiombogen kaufen, dann zum Drachen, weil Shen tot ist und ihr 5-gegen-4 seid in 17 Sekunden.",
+    "kette": true
+   },
+   {
+    "zeit": 1268.5025634765625,
+    "text": "Back jetzt: 1050 Gold für Caulfields Kriegshammer. Nicht zu Lee Sin: 8 Sekunden weg.",
+    "kette": false
+   },
+   {
+    "zeit": 1301.1119384765625,
+    "text": "Nein – Rakan kommt in 6 Sekunden, Brand in 13: Drache jetzt nehmen geht nicht, wir sind zu nah beieinander und Brand sprengt uns auseinander, stattdessen Back jetzt und Caulfields kaufen, dann mit Quest-TP zu Mid, weil die zwei dort fallen könnten.",
+    "kette": true
+   },
+   {
+    "zeit": 1448.682861328125,
+    "text": "Back jetzt: 4200 Gold für Axiombogen, Kanone in 18 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1515.8865966796875,
+    "text": "Back, Kanone in 26 Sekunden.",
+    "kette": false
+   }
+  ],
+  "stille_max": 29,
+  "stille_lang": [],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 150.8712921142578,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Geh zu deiner Top-Welle und farm sie.",
+    "text": "Freeze am Turm, lass drei gegnerische Caster leben und lasthitte nur Vi ist noch nie gesehen und Brand unbekannt, du brauchst Sicht bevor die Kanone kommt."
+   },
+   {
+    "zeit": 257.4742126464844,
+    "von": "back",
+    "nach": "welle",
+    "vorher": "Back jetzt: 1300 Gold für den Brutalisierer.",
+    "text": "Shen weg: Welle rein, dann Platten."
+   },
+   {
+    "zeit": 642.1935424804688,
+    "von": "welle:top",
+    "nach": "drache",
+    "vorher": "Kauf Langschwert für die Gefräßige Hydra und Langschwert, dann nach Top.",
+    "text": "Geh zum Drachen: ihr seid vier. Nicht zu Diana: 13 Sekunden weg."
+   },
+   {
+    "zeit": 772.80517578125,
+    "von": "back",
+    "nach": "welle:top",
+    "vorher": "Back jetzt, Gefräßige Hydra kaufen, dann zur Top-Welle crashen – Shen respawnt in 4 Sekunden und Vi kann jede Sekunde hier sein, deine Lane ist die einzige sichere Position jetzt.",
+    "text": "Kauf Gefräßige Hydra und Langschwert, dann nach Top."
+   },
+   {
+    "zeit": 1030.904541015625,
+    "von": "back",
+    "nach": "drache",
+    "vorher": "Back jetzt: 3350 Gold für Axiombogen. Nicht zu Diana: 13 Sekunden weg.",
+    "text": "Drache in 90 Sekunden, aber Brand kommt in 7 Sekunden zu dir – back jetzt mit deinen 3395 Gold, Axiombogen kaufen, dann mit Quest-TP zum Herold, weil Rakan und Varus noch weg sind und das Fenster nicht lange hält."
+   },
+   {
+    "zeit": 1090.9228515625,
+    "von": "welle:mid",
+    "nach": "herold",
+    "vorher": "Die Mid-Welle drücken: 4 gegen einen Vasallen.",
+    "text": "Geh zum Herold: ihr seid vier, Kanone in 26 Sekunden."
+   },
+   {
+    "zeit": 1159.266357421875,
+    "von": "drache",
+    "nach": "turm",
+    "vorher": "Geh zum Drachen: ihr seid fünf, Kanone in 18 Sekunden.",
+    "text": "Geh auf ihren Mid-Inhibitor-Turm: Brand kommt vorher, Kanone in 7 Sekunden."
+   }
+  ],
+  "fuellsaetze": [],
+  "saetze_n": 148,
+  "i4": [
+   {
+    "zeit": 789.1,
+    "name": "Shen",
+    "ort": "oben",
+    "gesagt": "Back jetzt, Gefräßige Hydra kaufen, dann zur Top-Welle crashen – Shen respawnt in 4 Sekunden und Vi kann jede Sekunde hier sein, deine Lane ist die einzige sichere Position jetzt."
+   }
+  ],
+  "latenz": {
+   "n": 36,
+   "median": 1.51,
+   "p90": 2.29,
+   "erster_satz_median": 1.2139764999737963,
+   "cache_treffer": "30/53"
+  }
+ }
+}

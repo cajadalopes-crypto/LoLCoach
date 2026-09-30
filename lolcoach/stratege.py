@@ -252,7 +252,42 @@ def pruef_lage(kern, p) -> dict:
         "lane_gegner": _lane_gegner(b),
         # Auftrag 024, 5.5: reicht das Gold fuer ein Item (dann ist Back die Voreinstellung)?
         "kauf_bereit": bool(b is not None and getattr(b, "kauf", None) is not None and b.kauf.kaufen),
+        # Auftrag 027, 3 (091311 20:17-21:19 "dein Team startet den Baron", es kaempfte am Drachen): wie viele
+        # Mitspieler stehen laut Minimap an jeder Grube - und von wie vielen kennen wir den Ort
+        "team_am": _team_am_mit_gedaechtnis(kern, b, m.zeit if m is not None else None),
     }
+
+
+def _team_am_mit_gedaechtnis(kern, b, zeit) -> dict | None:
+    """Im Tod liest der Coach die Minimap nicht (091311 21:00-21:19: keine Mitspieler) - dann gilt das letzte Bild
+    mit Mitspielern, hoechstens 30 s alt."""
+    ta = _team_am(b)
+    if zeit is None:
+        return ta
+    if ta is not None and ta["bekannt"] >= 2:
+        kern._team_am_letzt = (zeit, ta)
+        return ta
+    alt = getattr(kern, "_team_am_letzt", None)
+    return alt[1] if alt is not None and 0 <= zeit - alt[0] <= 30.0 else ta
+
+
+TEAM_NAH_GRUBE = 3000.0
+
+
+def _team_am(b) -> dict | None:
+    from .bewertung import GRUBEN, abstand, einheiten
+    if b is None:
+        return None
+    orte = [wo for s, wo, *_ in b.mitspieler if wo is not None and not getattr(s, "tot", False)]
+    am = {g: sum(1 for wo in orte if abstand(wo, einheiten(*GRUBEN[g])) <= TEAM_NAH_GRUBE)
+          for g in ("drache", "baron")}
+    return {"bekannt": len(orte), **am}
+
+
+# "dein Team startet den Baron", "Jetzt, wo dein Team den Baron startet", "euer Team ist am Drachen"
+TEAM_OBJ = _re.compile(r"\b(?:dein|euer)\s+team\b(?P<mitte>[^.;:!?]{0,30}?)\b(?P<obj>baron|drache\w*|herold|larven)\b"
+                       r"(?P<nach>[^.;:!?,]{0,15})", _re.I)
+TEAM_OBJ_TUT = _re.compile(r"start|mach|nimmt|nehm|hol|\bist\b|\bsteh|kämpf|beginn|\bam\b|\bbeim\b|schlag|\bhau", _re.I)
 
 
 # Auftrag 024, 5.5 (231200 7:10 "Ja, Freeze am Turm statt Reset", 7:23 "Udyr steht oben im Fluss" auf "Wieso? Ich habe
@@ -299,6 +334,19 @@ def fakten(s: str, lage: dict) -> list[str]:
     if lg.get("anwesend") in ("da", "vermutlich da") and \
             _re.search(rf"\b{_re.escape(lg['name'])}\b\s+{WEG_WORT}", s, _re.I):
         gruende.append(f"{lg['name']} ist nicht weg ({lg['anwesend']})")
+    # Auftrag 027, 3: "dein Team startet den Baron" nur, wenn die Minimap Mitspieler dort zeigt
+    ta = lage.get("team_am") or {}
+    if ta.get("bekannt", 0) >= 2:
+        for m_ in TEAM_OBJ.finditer(s):
+            if not TEAM_OBJ_TUT.search(m_.group("mitte") + " " + m_.group("nach")):
+                continue
+            if _re.search(r"\b(wenn|falls|sobald|bevor|bis|ob)\b", s[max(0, m_.start() - 25):m_.start()], _re.I):
+                continue
+            grube = "drache" if m_.group("obj").lower().startswith("drache") else "baron"
+            if ta.get(grube, 0) == 0:
+                gruende.append(f"kein Mitspieler an der Grube ({grube}, Minimap: {ta['bekannt']} gesehen, "
+                               f"{ta.get('drache', 0)} am Drachen, {ta.get('baron', 0)} am Baron)")
+                break
     return gruende
 
 

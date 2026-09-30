@@ -1,0 +1,554 @@
+{
+ "kennzahlen": {
+  "flash": "8/9 (89 %)",
+  "jungler": "19/21 (90 %)",
+  "i4": "– (keine)",
+  "backs": "5/6 (83 %)",
+  "back_rufe": "5/25 (20 %)",
+  "stille": "27 s",
+  "sicherheit": 0,
+  "widersprueche": 15,
+  "fuellsaetze": "1/161 (0.6 %)",
+  "latenz": "1.55 / 2.11 s (n = 36)",
+  "erster_satz": 1.2850823000189848,
+  "cache": "38/62"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 159.56100463867188,
+    "champion": "Wukong",
+    "gesagt": "Wukong Flash weg.",
+    "nach_s": 2.0
+   },
+   {
+    "zeit": 228.58799743652344,
+    "champion": "Ahri",
+    "gesagt": "Ahri Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 246.90513610839844,
+    "champion": "Vi",
+    "gesagt": "Vi Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 379.7018127441406,
+    "champion": "Wukong",
+    "gesagt": null,
+    "nach_s": null
+   },
+   {
+    "zeit": 393.935546875,
+    "champion": "Ashe",
+    "gesagt": "Ashe Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1011.9953002929688,
+    "champion": "Ashe",
+    "gesagt": "Ashe Flash weg.",
+    "nach_s": 3.0
+   },
+   {
+    "zeit": 1187.05908203125,
+    "champion": "Xerath",
+    "gesagt": "Xerath Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1630.1812744140625,
+    "champion": "Xerath",
+    "gesagt": "Xerath Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 1680.1160888671875,
+    "champion": "Ashe",
+    "gesagt": "Ashe Flash weg.",
+    "nach_s": 1.0
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 231.6,
+    "name": "Vi",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 407.1,
+    "name": "Vi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 144,
+    "tot_ich": false,
+    "gesagt": "Vi Mid."
+   },
+   {
+    "zeit": 522.1,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 111,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 566.9,
+    "name": "Vi",
+    "ort": "im oberen Fluss",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Vi oberer Fluss."
+   },
+   {
+    "zeit": 596.4,
+    "name": "Vi",
+    "ort": "in der Flussmitte",
+    "ohne_s": 26,
+    "tot_ich": false,
+    "gesagt": "Vi Flussmitte."
+   },
+   {
+    "zeit": 665.6,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 51,
+    "tot_ich": false,
+    "gesagt": "Vi unterer Fluss."
+   },
+   {
+    "zeit": 709.4,
+    "name": "Vi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle oben, 1 Sekunde."
+   },
+   {
+    "zeit": 787.8,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 76,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 919.1,
+    "name": "Vi",
+    "ort": "in seiner Basis",
+    "ohne_s": 63,
+    "tot_ich": false,
+    "gesagt": "Vi in Basis."
+   },
+   {
+    "zeit": 970.2,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 34,
+    "tot_ich": false,
+    "gesagt": "Vi unterer Fluss."
+   },
+   {
+    "zeit": 1008.9,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 30,
+    "tot_ich": false,
+    "gesagt": "Vi unterer Fluss, 6 Sekunden."
+   },
+   {
+    "zeit": 1103.6,
+    "name": "Vi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 45,
+    "tot_ich": false,
+    "gesagt": "Vi Mid, 3 Sekunden."
+   },
+   {
+    "zeit": 1146.4,
+    "name": "Vi",
+    "ort": "in seiner Basis",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Vi in Basis."
+   },
+   {
+    "zeit": 1208.4,
+    "name": "Vi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 53,
+    "tot_ich": true,
+    "gesagt": "Vi Mid."
+   },
+   {
+    "zeit": 1284.1,
+    "name": "Vi",
+    "ort": "oben",
+    "ohne_s": 46,
+    "tot_ich": false,
+    "gesagt": "Vi oben."
+   },
+   {
+    "zeit": 1345.3,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 22,
+    "tot_ich": true,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 1401.4,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 32,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten."
+   },
+   {
+    "zeit": 1480.9,
+    "name": "Vi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Vi unterer Fluss."
+   },
+   {
+    "zeit": 1524.9,
+    "name": "Vi",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 36,
+    "tot_ich": false,
+    "gesagt": "Vi sein Jungle unten, 7 Sekunden."
+   },
+   {
+    "zeit": 1585.3,
+    "name": "Vi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 42,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 1659.7,
+    "name": "Vi",
+    "ort": "in seiner Basis",
+    "ohne_s": 39,
+    "tot_ich": false,
+    "gesagt": "Vi in Basis."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 237.8,
+    "gesagt": "Kauf Der Brutalisierer für den Axiombogen, dann zu deinem äußeren Top-Turm.",
+    "saetze": [
+     "Geh zu deiner Top-Welle und farm sie.",
+     "Der Brutalisierer und Kontroll-Auge kaufen, dann sofort Top – Kanone kommt in 57 Sekunden und du musst sie mit der Welle haben, bevor Vi oder Ahri nachrücken.",
+     "Vi Flash weg."
+    ]
+   },
+   {
+    "zeit": 427.5,
+    "gesagt": "Kauf Caulfields Kriegshammer für den Axiombogen und Stiefel, dann zu deinem äußeren Top-Turm.",
+    "saetze": [
+     "Kauf Caulfields Kriegshammer und Stiefel, dann zu deinem Top-Turm: Vi kann in 11 Sekunden bei dir sein, Wukong unbekannt – bleib dort und freez.",
+     "Geh zu deiner Top-Welle und farm sie, Kanone in 40 Sekunden.",
+     "Kauf Axiombogen, dann Top: du bist pünktlich zur Welle da, Kanone in 32 Sekunden."
+    ]
+   },
+   {
+    "zeit": 439.7,
+    "gesagt": "Kauf Caulfields Kriegshammer für den Axiombogen und Stiefel, dann zu deinem äußeren Top-Turm.",
+    "saetze": [
+     "Kauf Caulfields Kriegshammer und Stiefel, dann zu deinem Top-Turm: Vi kann in 11 Sekunden bei dir sein, Wukong unbekannt – bleib dort und freez.",
+     "Geh zu deiner Top-Welle und farm sie, Kanone in 40 Sekunden.",
+     "Kauf Axiombogen, dann Top: du bist pünktlich zur Welle da, Kanone in 32 Sekunden."
+    ]
+   },
+   {
+    "zeit": 612.7,
+    "gesagt": null,
+    "saetze": [
+     "Back jetzt: 1850 Gold für Ionische Stiefel der Deutlichkeit.",
+     "Kauf Ionische Stiefel der Deutlichkeit, Stiefel für Ionische Stiefel der Deutlichkeit und Langschwert.",
+     "Geh zur Top-Welle und farm sie, Kanone in 32 Sekunden."
+    ]
+   },
+   {
+    "zeit": 815.3,
+    "gesagt": "Kauf Eklipse und Tiamat, dann zur Top-Welle.",
+    "saetze": [
+     "Kauf Eklipse und Tiamat, dann zur Top-Welle.",
+     "Eklipse und Tiamat kaufen, dann Quest-TP zur Top-Welle – Herold in 80 Sekunden und dein Team braucht dich unten, aber die Welle crasht jetzt.",
+     "Geh nach Top: dort kommt ihre nächste Welle, Kanone in 10 Sekunden."
+    ]
+   },
+   {
+    "zeit": 1616.9,
+    "gesagt": "Kauf Tanz des Todes und Eklipse, dann nach Top.",
+    "saetze": [
+     "Eklipse kaufen, dann zur Top-Welle dort kommt ihre Welle in 23 s und Wukong ist gerade aus seiner Basis raus.",
+     "Xerath Flash weg.",
+     "Jetzt, wo Sion neben dir kämpft: Nicht hin: Sion fällt in 14 Sekunden trotz Xerath ohne Flash, du brauchst den gleichen Weg – crashe die Top-Welle mit fünf Minions stattdessen."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 57.0328369140625,
+    "text": "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer. Nicht zu Sion.",
+    "kette": false
+   },
+   {
+    "zeit": 153.49456787109375,
+    "text": "Wukong ist 9 Sekunden weg: Back jetzt, 37 Prozent Leben. Kauf Spitzhacke für den Axiombogen, dann Top.",
+    "kette": true
+   },
+   {
+    "zeit": 216.42080688476562,
+    "text": "Back jetzt: 1300 Gold für den Brutalisierer.",
+    "kette": false
+   },
+   {
+    "zeit": 332.3507385253906,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 6:27.",
+    "kette": false
+   },
+   {
+    "zeit": 383.7603454589844,
+    "text": "Farm Top, Caulfields Kriegshammer ist schon bezahlbar: nach der Welle back.",
+    "kette": false
+   },
+   {
+    "zeit": 415.2697448730469,
+    "text": "Back jetzt: 23 Prozent Leben.",
+    "kette": false
+   },
+   {
+    "zeit": 512.9727783203125,
+    "text": "In 11 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 9:27.",
+    "kette": false
+   },
+   {
+    "zeit": 538.4647216796875,
+    "text": "Top-Welle rein, dann back: 950 Gold für Ionische Stiefel der Deutlichkeit, Wukong ist tot.",
+    "kette": false
+   },
+   {
+    "zeit": 576.0984497070312,
+    "text": "Farm Top, Ionische Stiefel der Deutlichkeit ist schon bezahlbar: nach der Welle back.",
+    "kette": false
+   },
+   {
+    "zeit": 608.6328735351562,
+    "text": "Back jetzt: 1850 Gold für Ionische Stiefel der Deutlichkeit.",
+    "kette": false
+   },
+   {
+    "zeit": 654.4345092773438,
+    "text": "Farm Top, bei 350 Gold back für Langschwert.",
+    "kette": false
+   },
+   {
+    "zeit": 728.7454223632812,
+    "text": "Top-Welle rein, dann back: 1550 Gold für Caulfields Kriegshammer, Kanone in 18 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 735.8704833984375,
+    "text": "Back jetzt: Caulfields Kriegshammer, dann Top-Welle pushen, Kanone kommt in elf Sekunden, vier gegen null oben.",
+    "kette": true
+   },
+   {
+    "zeit": 811.197509765625,
+    "text": "Back jetzt: 20 Prozent Leben, Kanone in 26 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1072.080810546875,
+    "text": "Back jetzt: 40 Prozent Leben, Kanone in 44 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1151.474609375,
+    "text": "Mid-Welle rein, dann back: 4250 Gold für Tanz des Todes, Kanone in 17 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1167.7333984375,
+    "text": "Jetzt, wo Ahri gleich lebt und Vi in 21 Sekunden kommt: Back fertig, Tanz des Todes kaufen, dann mit Quest-TP sofort zu Sion auf Mid – ihr crasht die Kanone, danach fünf zum Baron, weil Ashe noch 12 Sekunden tot ist und ihr das Fenster habt.",
+    "kette": true
+   },
+   {
+    "zeit": 1393.216552734375,
+    "text": "Warte – Sion kämpft unten jetzt 68 % gegen Ashe, Xerath ist weg: Back jetzt, kauf Tanz des Todes und Eklipse, dann zum Drachen in 40 Sekunden, weil Xerath weg ist und Zaahen in 14 s respawnt – das ist euer Fenster für Kontrolle.",
+    "kette": true
+   },
+   {
+    "zeit": 1415.6590576171875,
+    "text": "Back.",
+    "kette": false
+   },
+   {
+    "zeit": 1436.06787109375,
+    "text": "Mid-Welle rein, dann back: 5700 Gold für Tanz des Todes, Kanone in 30 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1504.4197998046875,
+    "text": "Back jetzt: 6650 Gold für Tanz des Todes. Nicht zu Ashe: 15 Sekunden weg.",
+    "kette": false
+   },
+   {
+    "zeit": 1558.6956787109375,
+    "text": "Jetzt, wo Ahri tot ist: Back jetzt für Tanz des Todes, dann zu deinem äußeren Top-Turm mit der Welle, weil Vi und Ashe unbekannt sind und in null Sekunden kommen.",
+    "kette": true
+   },
+   {
+    "zeit": 1584.229736328125,
+    "text": "Top-Welle rein, dann back: 7550 Gold für Tanz des Todes, Kanone in 7 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1606.7386474609375,
+    "text": "Back jetzt: 18 Prozent Leben, Kanone in 10 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1687.251220703125,
+    "text": "Back jetzt: 1600 Gold im Beutel.",
+    "kette": false
+   }
+  ],
+  "stille_max": 27,
+  "stille_lang": [],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 57.0328369140625,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Geh zu deiner Top-Welle und farm sie.",
+    "text": "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer. Nicht zu Sion."
+   },
+   {
+    "zeit": 365.4183654785156,
+    "von": "turm",
+    "nach": "welle:top",
+    "vorher": "Ashe kommt wahrscheinlich zu dir nach oben bleib am Turm, nimm die Kanone in 49 Sekunden, Flash kommt in 114 Sekunden.",
+    "text": "Geh zu deiner Top-Welle und farm sie, Kanone in 21 Sekunden."
+   },
+   {
+    "zeit": 472.3135986328125,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Kauf Axiombogen, dann Top: du bist pünktlich zur Welle da, Kanone in 32 Sekunden.",
+    "text": "Farm Top, Larven in 8 Sekunden."
+   },
+   {
+    "zeit": 608.6328735351562,
+    "von": "baron",
+    "nach": "back",
+    "vorher": "Bleib am Baron bei deinem Team und halte die Sicht.",
+    "text": "Back jetzt: 1850 Gold für Ionische Stiefel der Deutlichkeit."
+   },
+   {
+    "zeit": 647.3260498046875,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Geh zur Top-Welle und farm sie, Kanone in 32 Sekunden.",
+    "text": "Farm deine Top-Welle."
+   },
+   {
+    "zeit": 740.9625854492188,
+    "von": "back",
+    "nach": "welle:top",
+    "vorher": "Back jetzt: Caulfields Kriegshammer, dann Top-Welle pushen, Kanone kommt in elf Sekunden, vier gegen null oben.",
+    "text": "Kauf Caulfields Kriegshammer für die Eklipse und Langschwert, dann zur Top-Welle."
+   },
+   {
+    "zeit": 749.12939453125,
+    "von": "welle:top",
+    "nach": "turm",
+    "vorher": "Kauf Caulfields Kriegshammer für die Eklipse und Langschwert, dann zur Top-Welle.",
+    "text": "Platte."
+   },
+   {
+    "zeit": 752.1709594726562,
+    "von": "turm",
+    "nach": "zurueck",
+    "vorher": "Platte.",
+    "text": "Raus jetzt: Wukong ist da."
+   },
+   {
+    "zeit": 756.2047119140625,
+    "von": "zurueck",
+    "nach": "welle:top",
+    "vorher": "Raus jetzt: Wukong ist da.",
+    "text": "Geh nach Top: dort kommt ihre nächste Welle."
+   },
+   {
+    "zeit": 781.6885375976562,
+    "von": "turm",
+    "nach": "zurueck",
+    "vorher": "Platte.",
+    "text": "Raus jetzt: Wukong ist da."
+   },
+   {
+    "zeit": 815.2726440429688,
+    "von": "back",
+    "nach": "welle:top",
+    "vorher": "Back jetzt: 20 Prozent Leben, Kanone in 26 Sekunden.",
+    "text": "Kauf Eklipse und Tiamat, dann zur Top-Welle."
+   },
+   {
+    "zeit": 837.6904296875,
+    "von": "welle:top",
+    "nach": "welle:mid",
+    "vorher": "Geh nach Top: dort kommt ihre nächste Welle, Kanone in 10 Sekunden.",
+    "text": "Drück die Mid-Welle: 4 gegen 3 Vasallen. Nicht zu Sion: 20 Sekunden weg."
+   },
+   {
+    "zeit": 1122.8988037109375,
+    "von": "zurueck",
+    "nach": "turm",
+    "vorher": "Raus jetzt: Ahri in 6 Sekunden.",
+    "text": "Geh auf ihren inneren Mid-Turm: Ahri kommt vorher."
+   },
+   {
+    "zeit": 1287.0953369140625,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Geh nach Top: dort kommt ihre nächste Welle, Kanone in 34 Sekunden.",
+    "text": "Farm Top, Wukong lebt in 34 Sekunden wieder. Nicht zu Sion: 20 Sekunden weg."
+   },
+   {
+    "zeit": 1436.06787109375,
+    "von": "back",
+    "nach": "welle:mid",
+    "vorher": "Back.",
+    "text": "Mid-Welle rein, dann back: 5700 Gold für Tanz des Todes, Kanone in 30 Sekunden."
+   }
+  ],
+  "fuellsaetze": [
+   {
+    "zeit": 647.3260498046875,
+    "text": "Farm deine Top-Welle.",
+    "schluessel": "kern:PAKET_START"
+   }
+  ],
+  "saetze_n": 161,
+  "i4": [],
+  "latenz": {
+   "n": 36,
+   "median": 1.55,
+   "p90": 2.11,
+   "erster_satz_median": 1.2850823000189848,
+   "cache_treffer": "38/62"
+  }
+ }
+}

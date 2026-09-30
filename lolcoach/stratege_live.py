@@ -1077,6 +1077,17 @@ class MakroStratege:
                                                     if z in art.lower().replace("ä", "ae"))))
             ok, text, _ = self.schiedsrichter.pruefe(a.text, max(self._zeit, zeit0), warnung=warnung)
             if ok:
+                # Auftrag 027, 1.2: auch der Stratege sagt nie nur, was man NICHT tun soll ("Nicht hin, Sett hat 1410
+                # Leben ...", API-Nachspiel 101426) - die positive Anweisung des Kerns kommt dazu, sonst entfaellt er
+                from .kern.herzschlag import negativ_allein, vorlage
+                if negativ_allein(text):
+                    try:
+                        v = vorlage(self.kern, self.kern.m) if getattr(self.kern, "m", None) is not None else None
+                    except Exception:
+                        v = None
+                    if not v or negativ_allein(v):
+                        return False
+                    text = f"{text.rstrip()} {v}"
                 a.text = text
                 self.plan.einwerfen(a)
             return ok

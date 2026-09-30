@@ -17,6 +17,12 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 027 (Herzschlag: immer eine gesprochene Anweisung) - TOR NICHT ERREICHT** - Luecke p90 12/10 s, Stillstand
+95/98 %, Basis 97 %, Kauf gibt alles Gold aus, Faktencheck "Team am Baron", Back-Regel neu; offen: Stratege-Neins
+(10 im API-Nachspiel, danach behoben, nicht nachgemessen), Hin und Her 1 (Wendepunkt), Sicherheit 1 (Claude-Antwort),
+Fuellsaetze/Widersprueche hoeher, Chancen 53 %, zehn alte Szenarien rot (Zielkonflikt - Entscheidung Carlos).
+Hoer-Masse: python werkzeuge/pakete_messen.py (70 s).
+
 **Auftrag 026 (Buch 15 Stufe 1 fertig) - TOR NICHT ERREICHT** - Abbruch 100 %, Budget-Treue 0 Fehler, Back zur Frist,
 eine Stimme; offen: Abwaegung 47 % (Kritiker will Back, Kern farmt - Entscheidung Carlos), Soll-Liste 62/66 %,
 Widersprueche 2-4, Event-Abdeckung 61 %. Messdefinitionen in messungen.md offengelegt.

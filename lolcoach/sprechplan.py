@@ -72,7 +72,9 @@ PFLICHT_INFOS = ("kern:INFO_FLASH", "kern:INFO_JUNGLER", "kern:INFO_LANE", "kern
 
 
 def pflicht_info(a: Ansage) -> bool:
-    return a.schluessel in PFLICHT_INFOS or a.schluessel.startswith("kern:PAKET_")   # Auftrag 025
+    # Auftrag 025: Paket-Uebergaenge mit Vorrang; der Herzschlag (027) und der Start-Satz unterbrechen nichts
+    return a.schluessel in PFLICHT_INFOS or (a.schluessel.startswith("kern:PAKET_")
+                                             and a.schluessel not in ("kern:PAKET_HERZ", "kern:PAKET_START"))
 
 
 def gefahr(a: Ansage) -> bool:
@@ -277,8 +279,11 @@ class Sprechplan:
         # "Du stehst tief, Varus und Rakan seit 32 s weg" - 16 s vor dem Tod)
         # Auftrag 004, Teil A 2: ein Wendepunkt stellt sich vor alle wartenden PLAN-Saetze (er unterbricht nicht)
         # Auftrag 023, 2: Pflicht-Infos (Flash, Jungler, Lane-Gegner weg) gleich nach der Gefahr, vor jedem Plan-Satz
-        a = max(kandidaten, key=lambda a: (a.prio, a.thema == "gefahr", pflicht_info(a), a.thema == "wendepunkt",
-                                           a.zeit))
+        # Auftrag 027, 1.3: wer still steht und wartet oder im Brunnen ankommt, hoert seine Anweisung vor der naechsten
+        # Info (091311 27:06 hinter zwei "Büsche meiden"; 125902 15:39 der Kauf hinter "Warwick Mid")
+        a = max(kandidaten, key=lambda a: (a.prio, a.thema == "gefahr",
+                                           a.schluessel in ("kern:PAKET_STILL", "kern:PAKET_KAUF"), pflicht_info(a),
+                                           a.thema == "wendepunkt", a.zeit))
         frei = self.frei_ab + ((RUHE_VOR_FLASH if a.schluessel == "kern:INFO_FLASH" else RUHE_VOR_HINWEIS)
                                if a.prio == HINWEIS else 0.0)
         # Live 26.09. 21:21: das Briefing (~50 s) hielt "Gragas hat Flash benutzt" 9 s und Vaynes Flash 16 s auf.
@@ -296,6 +301,13 @@ class Sprechplan:
         # sie ihn ab (nie eine Gefahr, nie eine andere Info)
         if not abbrechen and pflicht_info(a) and laeuft is not None and not gefahr(laeuft) \
                 and not pflicht_info(laeuft) and self.frei_ab - zeit > INFO_WARTEN_S:
+            abbrechen = True
+        # Auftrag 027, 1.3: in der Basis kommt der Kauf sofort - er bricht eine Jungler-Info oder einen Satz ab, dessen
+        # Handlung schon heraus ist (091311 12:34: "Amumu unterer Fluss" hielt den Kauf 4 s auf), nie eine Gefahr
+        if not abbrechen and a.schluessel == "kern:PAKET_KAUF" and laeuft is not None and zeit < self.frei_ab \
+                and not gefahr(laeuft) and laeuft.schluessel != a.schluessel \
+                and (laeuft.schluessel.startswith(("kern:INFO_", "kern:PAKET_"))
+                     or (laeuft.gesprochen is not None and zeit - laeuft.gesprochen >= GESAGT_NACH)):
             abbrechen = True
         if zeit < frei and a.prio < SOFORT and not abbrechen:
             self._vorbereiten(a)

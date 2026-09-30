@@ -1,0 +1,559 @@
+{
+ "kennzahlen": {
+  "flash": "– (keine)",
+  "jungler": "23/24 (96 %)",
+  "i4": "1/1 (100 %)",
+  "backs": "5/5 (100 %)",
+  "back_rufe": "6/31 (19 %)",
+  "stille": "28 s",
+  "sicherheit": 0,
+  "widersprueche": 17,
+  "fuellsaetze": "0/185 (0.0 %)",
+  "latenz": "1.55 / 1.92 s (n = 46)",
+  "erster_satz": 1.2887054000166245,
+  "cache": "55/82"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [],
+  "jungler": [
+   {
+    "zeit": 211.8,
+    "name": "Warwick",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Warwick oberer Fluss."
+   },
+   {
+    "zeit": 348.7,
+    "name": "Warwick",
+    "ort": "in eurem oberen Jungle",
+    "ohne_s": 100,
+    "tot_ich": false,
+    "gesagt": "Warwick euer Jungle oben."
+   },
+   {
+    "zeit": 412.9,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 31,
+    "tot_ich": false,
+    "gesagt": "Warwick sein Jungle oben."
+   },
+   {
+    "zeit": 437.4,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 22,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 461.8,
+    "name": "Warwick",
+    "ort": "in eurem oberen Jungle",
+    "ohne_s": 21,
+    "tot_ich": false,
+    "gesagt": "Warwick euer Jungle oben, 2 Sekunden."
+   },
+   {
+    "zeit": 527.2,
+    "name": "Warwick",
+    "ort": "im oberen Fluss",
+    "ohne_s": 51,
+    "tot_ich": false,
+    "gesagt": "Warwick oberer Fluss."
+   },
+   {
+    "zeit": 660.6,
+    "name": "Warwick",
+    "ort": "in der Flussmitte",
+    "ohne_s": 122,
+    "tot_ich": false,
+    "gesagt": "Warwick Flussmitte."
+   },
+   {
+    "zeit": 770.5,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 107,
+    "tot_ich": false,
+    "gesagt": "Warwick unterer Fluss."
+   },
+   {
+    "zeit": 826.7,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 53,
+    "tot_ich": false,
+    "gesagt": "Warwick unterer Fluss."
+   },
+   {
+    "zeit": 860.5,
+    "name": "Warwick",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 30,
+    "tot_ich": false,
+    "gesagt": "Warwick Mid."
+   },
+   {
+    "zeit": 939.2,
+    "name": "Warwick",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 41,
+    "tot_ich": false,
+    "gesagt": "Warwick Mid."
+   },
+   {
+    "zeit": 976.8,
+    "name": "Warwick",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": 32,
+    "tot_ich": false,
+    "gesagt": "Warwick euer Jungle unten."
+   },
+   {
+    "zeit": 1144.9,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 166,
+    "tot_ich": false,
+    "gesagt": "Warwick unterer Fluss."
+   },
+   {
+    "zeit": 1202.9,
+    "name": "Warwick",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Warwick Mid."
+   },
+   {
+    "zeit": 1400.1,
+    "name": "Warwick",
+    "ort": "oben",
+    "ohne_s": 170,
+    "tot_ich": false,
+    "gesagt": "Warwick oben."
+   },
+   {
+    "zeit": 1457.6,
+    "name": "Warwick",
+    "ort": "oben",
+    "ohne_s": 50,
+    "tot_ich": true,
+    "gesagt": "Warwick oben."
+   },
+   {
+    "zeit": 1508.5,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 49,
+    "tot_ich": false,
+    "gesagt": "Warwick unterer Fluss, 5 Sekunden."
+   },
+   {
+    "zeit": 1624.4,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 66,
+    "tot_ich": false,
+    "gesagt": "Warwick unterer Fluss."
+   },
+   {
+    "zeit": 1765.9,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 133,
+    "tot_ich": false,
+    "gesagt": "Warwick sein Jungle oben."
+   },
+   {
+    "zeit": 1846.5,
+    "name": "Warwick",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 26,
+    "tot_ich": false,
+    "gesagt": "Warwick sein Jungle oben."
+   },
+   {
+    "zeit": 1876.2,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 22,
+    "tot_ich": false,
+    "gesagt": "Warwick unterer Fluss."
+   },
+   {
+    "zeit": 1936.5,
+    "name": "Warwick",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Warwick sein Jungle unten, 6 Sekunden."
+   },
+   {
+    "zeit": 1978.2,
+    "name": "Warwick",
+    "ort": "im unteren Fluss",
+    "ohne_s": 37,
+    "tot_ich": true,
+    "gesagt": "Warwick unterer Fluss."
+   },
+   {
+    "zeit": 2040.9,
+    "name": "Warwick",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 34,
+    "tot_ich": false,
+    "gesagt": "Warwick sein Jungle unten."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 238.5,
+    "gesagt": "Kauf Caulfields Kriegshammer für den Axiombogen, dann Top.",
+    "saetze": [
+     "Kauf Caulfields Kriegshammer für den Axiombogen, dann Top.",
+     "Bleib dabei.",
+     "Caulfields Kriegshammer und Kontroll-Auge kaufen, dann sofort Top zur Welle: Warwick ist in 27 Sekunden bei dir, du musst vor ihm da sein und die Kanonenwelle in 56 Sekunden crashen."
+    ]
+   },
+   {
+    "zeit": 350.7,
+    "gesagt": "Jetzt, wo du in der Basis bist: Brutalisierer und Kontroll-Auge, dann sofort Top zur Welle, weil Warwick oben im Fluss ist und die Kanone in 34 Sekunden kommt – du brauchst die Welle gehalten, nicht den Drachen ohne dich.",
+    "saetze": [
+     "Kauf Der Brutalisierer für den Axiombogen.",
+     "Warwick euer Jungle oben.",
+     "Jetzt, wo du in der Basis bist: Brutalisierer und Kontroll-Auge, dann sofort Top zur Welle, weil Warwick oben im Fluss ist und die Kanone in 34 Sekunden kommt – du brauchst die Welle gehalten, nicht den Drachen ohne dich."
+    ]
+   },
+   {
+    "zeit": 623.1,
+    "gesagt": "Jetzt, wo du in der Basis bist: Kauf Eklipse, Ionische Stiefel und Kontroll-Auge, dann Top zur Kanonenwelle in 31 Sekunden – die Welle läuft zu dir, du spielst Freeze am Turm.",
+    "saetze": [
+     "Bleib dabei, Kanone in 28 Sekunden.",
+     "Jetzt, wo du in der Basis bist: Kauf Eklipse, Ionische Stiefel und Kontroll-Auge, dann Top zur Kanonenwelle in 31 Sekunden – die Welle läuft zu dir, du spielst Freeze am Turm.",
+     "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer. Nicht zu Xerath."
+    ]
+   },
+   {
+    "zeit": 939.2,
+    "gesagt": "Kauf Tanz des Todes und Langschwert, dann nach Top.",
+    "saetze": [
+     "Warwick Mid.",
+     "Kauf Tanz des Todes und Langschwert für Tanz des Todes, dann nach Top.",
+     "Warwick kann in 7 Sekunden bei dir sein und Drache ist für euch jetzt zu riskant"
+    ]
+   },
+   {
+    "zeit": 1643.9,
+    "gesagt": "Verkauf Dorans Klinge, dann kauf Caulfields Kriegshammer für den Axiombogen, dann zu deinem Team.",
+    "saetze": [
+     "Verkauf Dorans Klinge, dann kauf Caulfields Kriegshammer für den Axiombogen, dann zu deinem Team.",
+     "Jetzt beenden: alle auf den Nexus, 3 von ihnen sind tot. Per TP, wenn bereit.",
+     "Raus jetzt, auf ihren äußeren Bot-Turm."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 39.153289794921875,
+    "text": "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer.",
+    "kette": false
+   },
+   {
+    "zeit": 123.11359405517578,
+    "text": "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer.",
+    "kette": false
+   },
+   {
+    "zeit": 152.81405639648438,
+    "text": "In 11 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 3:27.",
+    "kette": false
+   },
+   {
+    "zeit": 214.8904571533203,
+    "text": "Back jetzt: 10 Prozent Leben.",
+    "kette": false
+   },
+   {
+    "zeit": 289.71771240234375,
+    "text": "Jetzt, wo du Urgot getötet hast: Back jetzt für Stiefel, dann sofort Top zur Welle vor der Kanone in 7 Sekunden, weil Warwick vermutlich noch unten ist und du vor ihm da sein musst.",
+    "kette": true
+   },
+   {
+    "zeit": 333.3354187011719,
+    "text": "In 11 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 6:27.",
+    "kette": false
+   },
+   {
+    "zeit": 345.61077880859375,
+    "text": "Top-Welle rein, dann back: 1400 Gold für den Brutalisierer, Urgot ist gebackt.",
+    "kette": false
+   },
+   {
+    "zeit": 384.3287658691406,
+    "text": "Farm Top, bei 650 Gold back für Eklipse.",
+    "kette": false
+   },
+   {
+    "zeit": 422.9961853027344,
+    "text": "In 11 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 7:57.",
+    "kette": false
+   },
+   {
+    "zeit": 512.9567260742188,
+    "text": "In 11 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 9:27.",
+    "kette": false
+   },
+   {
+    "zeit": 547.657470703125,
+    "text": "Top-Welle rein, dann back: 1200 Gold für Eklipse, Kanone in 19 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 564.1246948242188,
+    "text": "Back jetzt: 21 Prozent Leben.",
+    "kette": false
+   },
+   {
+    "zeit": 636.3097534179688,
+    "text": "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer. Nicht zu Xerath.",
+    "kette": false
+   },
+   {
+    "zeit": 692.403076171875,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 12:27.",
+    "kette": false
+   },
+   {
+    "zeit": 726.295654296875,
+    "text": "Top-Welle rein, dann back: 1800 Gold für den Brutalisierer, Urgot ist tot.",
+    "kette": false
+   },
+   {
+    "zeit": 840.0989379882812,
+    "text": "Jetzt, wo Vex und Warwick beide unten sind und Urgot oben sichtbar ist: back jetzt, Caulfields kaufen, dann zur Lane zurück und Welle halten – dein Level-Vorteil nutzt du erst, wenn die Gegner-Verstärkungen weg sind.",
+    "kette": true
+   },
+   {
+    "zeit": 867.6411743164062,
+    "text": "Jetzt, wo Warwick Mid aufgetaucht ist: Herold in 32 Sekunden Urgot und Vex tot, aber Warwick bei euch: crash die Kanonenwelle jetzt, dann back mit Tanz des Todes, nicht zum Herold, weil Warwick dich finden könnte.",
+    "kette": true
+   },
+   {
+    "zeit": 918.884521484375,
+    "text": "Back jetzt: 2600 Gold für Tanz des Todes.",
+    "kette": false
+   },
+   {
+    "zeit": 1083.0469970703125,
+    "text": "Back jetzt: 1900 Gold für Riesenschwert. Nicht zu Karthus: Basis bringt mehr.",
+    "kette": false
+   },
+   {
+    "zeit": 1181.5330810546875,
+    "text": "Back jetzt: 3150 Gold für Schutzengel, Kanone in 35 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1265.7685546875,
+    "text": "Kanone kommt 21 07: die noch rein, dann back. 1800 Gold für den Brutalisierer.",
+    "kette": false
+   },
+   {
+    "zeit": 1271.9105224609375,
+    "text": "Jetzt, wo euer Mid-Inhibitor weg ist: Top-Welle rein, back für Brutalisierer, dann Quest-TP zum Baron in 90 Sekunden mit vollem Team – ihr seid vorn an Kills und müsst das Fenster vor ihrer Skalierung nutzen.",
+    "kette": true
+   },
+   {
+    "zeit": 1342.220458984375,
+    "text": "Back jetzt: 1950 Gold für den Brutalisierer. Nicht zu Karthus: 19 Sekunden weg.",
+    "kette": false
+   },
+   {
+    "zeit": 1497.291259765625,
+    "text": "Back jetzt, Dorans verkaufen und Caulfields kaufen, dann Mid-Inhibitor mit deiner Welle pushen – Alistar kommt in 37 Sekunden.",
+    "kette": true
+   },
+   {
+    "zeit": 1533.9759521484375,
+    "text": "Jetzt, wo der Nexus-Turm unten weg ist: Back jetzt, Gespaltener Himmel kaufen, dann die Bot-Welle in deinen Inhibitor reinschieben – ohne Items sind sie lahm, Drache wartet bis 30:31.",
+    "kette": true
+   },
+   {
+    "zeit": 1563.7431640625,
+    "text": "Back jetzt: 2100 Gold für Gespaltener Himmel.",
+    "kette": false
+   },
+   {
+    "zeit": 1608.9276123046875,
+    "text": "Alistar Mitte, Vex tot, Urgot, Warwick und Swain fehlen. Drei fehlen: nicht tief gehen. Farm Top, Vex lebt in 2 Sekunden wieder, dann back.",
+    "kette": false
+   },
+   {
+    "zeit": 1835.2003173828125,
+    "text": "Kanone kommt 30 42: die noch rein, dann back. 2100 Gold im Beutel.",
+    "kette": false
+   },
+   {
+    "zeit": 1887.3935546875,
+    "text": "Bot-Welle rein, dann back: 3700 Gold im Beutel, Urgot ist tot.",
+    "kette": false
+   },
+   {
+    "zeit": 1956.8118896484375,
+    "text": "Back jetzt: 4800 Gold im Beutel, Kanone in 5 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 2051.106201171875,
+    "text": "Kanone kommt 34 22: die noch rein, dann back. 5900 Gold im Beutel. Nicht zu Xerath.",
+    "kette": false
+   }
+  ],
+  "stille_max": 28,
+  "stille_lang": [],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 123.11359405517578,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Deine Top-Welle läuft zu Urgot, aber er ist im Fluss – crash die Kanonenwelle jetzt rein, weil danach dein Flash wieder da ist und du sauber zurück kannst.",
+    "text": "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer."
+   },
+   {
+    "zeit": 302.8595275878906,
+    "von": "back",
+    "nach": "drache",
+    "vorher": "Jetzt, wo du Urgot getötet hast: Back jetzt für Stiefel, dann sofort Top zur Welle vor der Kanone in 7 Sekunden, weil Warwick vermutlich noch unten ist und du vor ihm da sein musst.",
+    "text": "Jetzt, wo Warwick vermutlich noch unten ist: Drache in 55 Sekunden, Alistar lebt oben im Fluss – crash die Welle schnell rein, dann mit Stiefel-Kauf sofort zu deinem Team zum Drachen, weil ihr sonst drei gegen vier kämpft und Warwick überrascht."
+   },
+   {
+    "zeit": 339.42718505859375,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Geh zu deiner Top-Welle und farm sie.",
+    "text": "Urgot weg: Welle rein, dann Platten."
+   },
+   {
+    "zeit": 345.61077880859375,
+    "von": "welle",
+    "nach": "welle:top",
+    "vorher": "Urgot weg: Welle rein, dann Platten.",
+    "text": "Top-Welle rein, dann back: 1400 Gold für den Brutalisierer, Urgot ist gebackt."
+   },
+   {
+    "zeit": 384.3287658691406,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Jetzt, wo du in der Basis bist: Brutalisierer und Kontroll-Auge, dann sofort Top zur Welle, weil Warwick oben im Fluss ist und die Kanone in 34 Sekunden kommt – du brauchst die Welle gehalten, nicht den Drachen ohne dich.",
+    "text": "Farm Top, bei 650 Gold back für Eklipse."
+   },
+   {
+    "zeit": 480.1643981933594,
+    "von": "welle:top",
+    "nach": "larven",
+    "vorher": "Geh zu deiner Top-Welle und farm sie.",
+    "text": "Larven in 8 Minuten, ihr habt Mid-Prio aber Top-Welle läuft zu dir – crash die Kanone jetzt rein, dann mit Shen zum Drachen, weil Warwick unten bound ist und Vex noch oben im Fluss war."
+   },
+   {
+    "zeit": 636.3097534179688,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Jetzt, wo du in der Basis bist: Kauf Eklipse, Ionische Stiefel und Kontroll-Auge, dann Top zur Kanonenwelle in 31 Sekunden – die Welle läuft zu dir, du spielst Freeze am Turm.",
+    "text": "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer. Nicht zu Xerath."
+   },
+   {
+    "zeit": 809.48974609375,
+    "von": "welle",
+    "nach": "turm",
+    "vorher": "Farm Top, Urgot lebt in 24 Sekunden wieder, Kanone in 34 Sekunden.",
+    "text": "Drück ihren inneren Top-Turm: Level 12 gegen 8."
+   },
+   {
+    "zeit": 921.9511108398438,
+    "von": "back",
+    "nach": "welle:top",
+    "vorher": "Back jetzt: 2600 Gold für Tanz des Todes.",
+    "text": "Kauf Tanz des Todes und Langschwert, dann nach Top."
+   },
+   {
+    "zeit": 952.4104614257812,
+    "von": "welle:top",
+    "nach": "drache",
+    "vorher": "Kauf Tanz des Todes und Langschwert für Tanz des Todes, dann nach Top.",
+    "text": "Warwick kann in 7 Sekunden bei dir sein und Drache ist für euch jetzt zu riskant"
+   },
+   {
+    "zeit": 1089.138916015625,
+    "von": "back",
+    "nach": "drache",
+    "vorher": "Back jetzt: 1900 Gold für Riesenschwert. Nicht zu Karthus: Basis bringt mehr.",
+    "text": "Verkauf Nachfüllbarer Trank, dann kauf Riesenschwert für Schutzengel, dann zum Drachen."
+   },
+   {
+    "zeit": 1181.5330810546875,
+    "von": "welle",
+    "nach": "back",
+    "vorher": "Farm Top, dein TP in 17 Sekunden, Kanone in 11 Sekunden.",
+    "text": "Back jetzt: 3150 Gold für Schutzengel, Kanone in 35 Sekunden."
+   },
+   {
+    "zeit": 1265.7685546875,
+    "von": "turm",
+    "nach": "back",
+    "vorher": "Ihr Top-Inhibitor-Turm fällt.",
+    "text": "Kanone kommt 21 07: die noch rein, dann back. 1800 Gold für den Brutalisierer."
+   },
+   {
+    "zeit": 1342.220458984375,
+    "von": "drache",
+    "nach": "back",
+    "vorher": "Geh zum Drachen: ihr seid vier, Kanone in 31 Sekunden.",
+    "text": "Back jetzt: 1950 Gold für den Brutalisierer. Nicht zu Karthus: 19 Sekunden weg."
+   },
+   {
+    "zeit": 1568.868408203125,
+    "von": "back",
+    "nach": "welle:top",
+    "vorher": "Back jetzt: 2100 Gold für Gespaltener Himmel.",
+    "text": "Kauf Gespaltener Himmel, dann nach Top."
+   },
+   {
+    "zeit": 1643.8619384765625,
+    "von": "turm",
+    "nach": "gruppe",
+    "vorher": "Ihr Top-Inhibitor fällt.",
+    "text": "Verkauf Dorans Klinge, dann kauf Caulfields Kriegshammer für den Axiombogen, dann zu deinem Team."
+   },
+   {
+    "zeit": 1826.009521484375,
+    "von": "turm",
+    "nach": "welle",
+    "vorher": "Drück ihren äußeren Bot-Turm: Level 19 gegen 16.",
+    "text": "Farm Bot, Swain lebt in 16 Sekunden wieder, Kanone in 15 Sekunden."
+   }
+  ],
+  "fuellsaetze": [],
+  "saetze_n": 185,
+  "i4": [
+   {
+    "zeit": 1470.9,
+    "name": "Urgot",
+    "ort": "oben",
+    "gesagt": "Urgot oben: Welle drücken."
+   }
+  ],
+  "latenz": {
+   "n": 46,
+   "median": 1.55,
+   "p90": 1.92,
+   "erster_satz_median": 1.2887054000166245,
+   "cache_treffer": "55/82"
+  }
+ }
+}

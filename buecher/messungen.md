@@ -4,6 +4,55 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 027 – Der Herzschlag: immer eine gesprochene Anweisung (30.09.2026)
+
+Neues Hauptmaß „was Carlos hört“ in `werkzeuge/pakete_messen.py` (`hoeren()`), Probe `proben/pakete_027/`,
+9 Testpartien (neu: 091311). Vorher = derselbe Messcode auf dem Kern von a5f0a6a (Stand 026).
+
+| Maß | Soll | vorher (Stub) | nachher Stub | nachher API (8) + Abo (091311) |
+|---|---|---|---|---|
+| Anweisungs-Lücke p90 (schlechteste Partie) / max | ≤ 20 s / ≤ 35 s | 44,0 / 116,8 s | 12,1 / 20,6 s | 10,4 / 26,0 s |
+| Stillstand-Reaktion | ≥ 95 % | 24 % (40/165) | 95 % (107/113) | 98 % (112/114) |
+| Basis-Reaktion | ≥ 95 % | 43 % (35/82) | 97 % (88/91) | 97 % (88/91) |
+| Negativ allein | 0 | 232 | 0 | 10 (alle Stratege; danach behoben, nicht nachgemessen) |
+| Hin und Her | 0 | 6 | 1 (Wendepunkt) | 1 (Wendepunkt) |
+| Chancen genutzt (025/026-Maß) | – | 68 % | 53 % (schlechter) | – |
+| Event-Abdeckung (Kern) | – | 67 % | 83 % | – |
+
+**API-Nachspiel** (`proben/stratege_probe_027/`, 8 Partien, 2,60 $; 091311 per Abo): Sicherheit 2 (231200:
+„Jetzt beenden“ unter R1 – behoben, Test in `herz_027`; eine Claude-Antwort „Xerath töten sofort“), Latenz Median
+1,51–1,61 s, erster Satz 1,21–1,44 s. Kritiker (`stratege_probe_023/p027/`, je drei, Mehrheit, kein Punkt
+strittig): Soll-Liste 68,1 % über die 8 Partien (026: 63,2 %), 091311 77,5 % (neue blinde Soll-Liste
+`soll_023/soll_2026-09-30_091311.json`, 71 Aussagen); Füllsätze 5–14 je Partie (026: 0–5), fast alle ein nacktes
+„Bleib dabei.“ – danach geändert; Widersprüche 7–20 (026: 2–4). Die Hör-Maße im API-Nachspiel rechnet
+`hoeren(stub, gesagt)` mit den gesprochenen Sätzen des API-Laufs und den Takten des Stub-Laufs.
+
+**Messdefinitionen (alle offen, alle in `hoeren()` kommentiert):**
+- Lücke: lebend, nicht KAMPF/TOT, ohne positive gesprochene Anweisung, die jünger als 30 s ist und nach der kein
+  Paket endete (ERLEDIGT/ABGEBROCHEN/BUDGET_AB).
+- Stillstand: ≥ 5 s innerhalb 120 Einheiten; ausgenommen Tod, Kampf, die ersten 30 s, der Recall-Kanal (16 s nach
+  einem Back-Ruf) und der Einkauf (Brunnen, 10 s nach einer Kauf-Anweisung). Die Basis zählt sonst mit. Treffer:
+  ein positiver Satz, der ab 1,5 s vor dem Stehenbleiben bis 2 s nach den 5 s beginnt (die Takte des Maßes liegen
+  ~1 s auseinander). Diese Grenzen wurden während der Arbeit gesetzt – zuerst war es [+2 s, +7 s] ohne Basis; mit
+  der ersten Fassung lag der alte Stand bei 8 %, der neue bei 84–94 %.
+- Basis: Ankunft oder Respawn im Brunnen mit etwas zu kaufen (ab 30 s) → ein Satz mit „Kauf“ zwischen 14 s vorher
+  (Tod, Kanal) und 2 s danach.
+- Negativ allein: `herzschlag.negativ_allein` – der Satz ohne seine verneinten Teile enthält keine Handlung.
+- Hin und Her: zwei positive Plan-Sätze mit verschiedenem Ziel (`herzschlag.plan_ziel_von`) in < 5 s; die
+  Kauf-Kette und der Rückzug haben kein eigenes Ziel, eine Gefahr darf immer umwerfen.
+
+**Szenarien:** 337 grün / 358 geprüft (026: 332 / 346). 091311 neu mit 14 Szenarien (9 davon auf a5f0a6a rot,
+2046 kam nach dem Abo-Nachspiel dazu; das Fenster von 2217 endet am Kampf 24:36, dort schweigt der Herzschlag; die
+beiden Stillstand-Szenarien sind im Stub-Nachspiel schon auf 026 grün: das Stub-Nachspiel sagt dort 15:25
+„Verkauf Dorans Klinge, dann kauf Langschwert …“, live kam zwischen 14:49 und 15:41 nur eine Antwort auf eine Frage (15:09) – das
+Kern-Protokoll zeigt den Plan KAUFEN, ungesprochen; den Grund gibt das Stub-Nachspiel ohne Fragen nicht her). Neu rot gegenüber 026 sind zehn
+ältere Szenarien (dazu a4-lagebild: ein Lagebild statt zwei), alle aus dem Zielkonflikt „immer eine Anweisung“ gegen „nicht wiederholen / wenig reden“:
+0137 (Schutzplan 5× statt ≤ 3), 1204 (Spitzhacke 4× statt ≤ 2), back-dauerton (2×), wohin-kurz („nimmt sie sonst
+niemand“ 2×), 1247 (Drachen 2×), 1453 und 0806 (ein Herzschlag-Satz mehr im Fenster), s23 (zwei Sätze über 14
+Wörter). 2751 wurde angepasst (die Prüfung suchte wörtlich „Danach back“, gemeint war „Back. Danach back.“).
+
+---
+
 ## Auftrag 026 – Buch 15, Stufe 1 fertig machen (30.09.2026)
 
 Gebaut wurde nur an den verfehlten automatischen Maßen (`werkzeuge/pakete_messen.py`, Probe `proben/pakete_026/`).

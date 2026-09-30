@@ -16,6 +16,7 @@ from lolcoach.kern import Kern, ansage_richtung, gefahr  # noqa: E402
 
 AUFNAHMEN = aufzeichnung.ORDNER
 LUECKE_AB = 5.0        # Sekunden ohne Schnappschuss (Wanduhr) = Datenluecke (Kapitel 12.3)
+AKTUELL = None         # der laufende Lauf (durchspielen) - Rueckrufe brauchen seinen Kern
 
 # Kehrtwende (Kapitel 9.4 Punkt 5) im alten System, nur am Text
 ZURUECK = (regeln.RUECKZUG, regeln.BACK)
@@ -163,6 +164,8 @@ def durchspielen(pfad: Path, halte_bei=(), proben: bool = False, rueckruf=None, 
     werk.kern = plan.kern = kern
     kern.transport = plan
     lauf.kern = kern
+    global AKTUELL
+    AKTUELL = lauf              # Auftrag 027, 3: fuer Rueckrufe, die den Kern brauchen (szenarien: satz_pruefen)
     ms = None
     if stratege == "stub":
         # Auftrag 015, B5: die Stratege-Wege im Nachspielen, mit Aufzeichnungs-Stub statt Abo, synchron

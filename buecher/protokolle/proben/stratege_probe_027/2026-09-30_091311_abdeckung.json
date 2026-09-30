@@ -1,0 +1,604 @@
+{
+ "kennzahlen": {
+  "flash": "– (keine)",
+  "jungler": "28/29 (97 %)",
+  "i4": "2/2 (100 %)",
+  "backs": "12/12 (100 %)",
+  "back_rufe": "6/21 (29 %)",
+  "stille": "38 s",
+  "sicherheit": 0,
+  "widersprueche": 15,
+  "fuellsaetze": "0/279 (0.0 %)",
+  "latenz": "7.09 / 10.4 s (n = 105)",
+  "erster_satz": 6.821323000011034,
+  "cache": "129/132"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [],
+  "jungler": [
+   {
+    "zeit": 226.8,
+    "name": "Amumu",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Amumu oberer Fluss."
+   },
+   {
+    "zeit": 315.6,
+    "name": "Amumu",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 39,
+    "tot_ich": false,
+    "gesagt": "Amumu Mid."
+   },
+   {
+    "zeit": 365.8,
+    "name": "Amumu",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 24,
+    "tot_ich": false,
+    "gesagt": "Amumu Mid."
+   },
+   {
+    "zeit": 426.7,
+    "name": "Amumu",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 49,
+    "tot_ich": false,
+    "gesagt": "Amumu sein Jungle unten."
+   },
+   {
+    "zeit": 512.2,
+    "name": "Amumu",
+    "ort": "im oberen Fluss",
+    "ohne_s": 73,
+    "tot_ich": false,
+    "gesagt": "Amumu oberer Fluss."
+   },
+   {
+    "zeit": 553.0,
+    "name": "Amumu",
+    "ort": "im oberen Fluss",
+    "ohne_s": 35,
+    "tot_ich": false,
+    "gesagt": "Amumu oberer Fluss, 4 Sekunden."
+   },
+   {
+    "zeit": 603.6,
+    "name": "Amumu",
+    "ort": "im oberen Fluss",
+    "ohne_s": 40,
+    "tot_ich": false,
+    "gesagt": "Amumu oberer Fluss."
+   },
+   {
+    "zeit": 707.9,
+    "name": "Amumu",
+    "ort": "im unteren Fluss",
+    "ohne_s": 64,
+    "tot_ich": false,
+    "gesagt": "Amumu unterer Fluss."
+   },
+   {
+    "zeit": 753.9,
+    "name": "Amumu",
+    "ort": "im unteren Fluss",
+    "ohne_s": 38,
+    "tot_ich": false,
+    "gesagt": "Amumu unterer Fluss, 1 Sekunde."
+   },
+   {
+    "zeit": 784.0,
+    "name": "Amumu",
+    "ort": "im unteren Fluss",
+    "ohne_s": 28,
+    "tot_ich": false,
+    "gesagt": "Amumu unterer Fluss."
+   },
+   {
+    "zeit": 816.1,
+    "name": "Amumu",
+    "ort": "im unteren Fluss",
+    "ohne_s": 24,
+    "tot_ich": false,
+    "gesagt": "Amumu unterer Fluss."
+   },
+   {
+    "zeit": 901.8,
+    "name": "Amumu",
+    "ort": "im unteren Fluss",
+    "ohne_s": 65,
+    "tot_ich": true,
+    "gesagt": "Amumu unterer Fluss."
+   },
+   {
+    "zeit": 999.0,
+    "name": "Amumu",
+    "ort": "in der Flussmitte",
+    "ohne_s": 45,
+    "tot_ich": false,
+    "gesagt": "Amumu Mid."
+   },
+   {
+    "zeit": 1037.9,
+    "name": "Amumu",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 26,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 1077.3,
+    "name": "Amumu",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 34,
+    "tot_ich": true,
+    "gesagt": "Amumu Mid."
+   },
+   {
+    "zeit": 1168.8,
+    "name": "Amumu",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 46,
+    "tot_ich": false,
+    "gesagt": "Amumu sein Jungle oben, 8 Sekunden."
+   },
+   {
+    "zeit": 1211.7,
+    "name": "Amumu",
+    "ort": "im unteren Fluss",
+    "ohne_s": 30,
+    "tot_ich": false,
+    "gesagt": "Amumu unterer Fluss."
+   },
+   {
+    "zeit": 1259.1,
+    "name": "Amumu",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 43,
+    "tot_ich": true,
+    "gesagt": "Amumu sein Jungle unten."
+   },
+   {
+    "zeit": 1336.7,
+    "name": "Amumu",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": 54,
+    "tot_ich": false,
+    "gesagt": "Amumu euer Jungle unten."
+   },
+   {
+    "zeit": 1452.4,
+    "name": "Amumu",
+    "ort": "oben",
+    "ohne_s": 93,
+    "tot_ich": false,
+    "gesagt": "Amumu oben, 2 Sekunden."
+   },
+   {
+    "zeit": 1510.4,
+    "name": "Amumu",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 47,
+    "tot_ich": false,
+    "gesagt": "Amumu Mid, 7 Sekunden."
+   },
+   {
+    "zeit": 1597.4,
+    "name": "Amumu",
+    "ort": "im unteren Fluss",
+    "ohne_s": 82,
+    "tot_ich": false,
+    "gesagt": "Amumu unterer Fluss, 3 Sekunden."
+   },
+   {
+    "zeit": 1669.8,
+    "name": "Amumu",
+    "ort": "im unteren Fluss",
+    "ohne_s": 62,
+    "tot_ich": false,
+    "gesagt": "Amumu unterer Fluss, 3 Sekunden."
+   },
+   {
+    "zeit": 1729.4,
+    "name": "Amumu",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 53,
+    "tot_ich": false,
+    "gesagt": "Amumu Mid."
+   },
+   {
+    "zeit": 1814.8,
+    "name": "Amumu",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 47,
+    "tot_ich": false,
+    "gesagt": "Amumu Mid, 3 Sekunden."
+   },
+   {
+    "zeit": 1944.3,
+    "name": "Amumu",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 73,
+    "tot_ich": false,
+    "gesagt": "Amumu sein Jungle unten."
+   },
+   {
+    "zeit": 2036.0,
+    "name": "Amumu",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 58,
+    "tot_ich": false,
+    "gesagt": "Amumu sein Jungle oben."
+   },
+   {
+    "zeit": 2146.9,
+    "name": "Amumu",
+    "ort": "in seiner Basis",
+    "ohne_s": 45,
+    "tot_ich": false,
+    "gesagt": "Amumu in Basis."
+   },
+   {
+    "zeit": 2232.3,
+    "name": "Amumu",
+    "ort": "in seiner Basis",
+    "ohne_s": 48,
+    "tot_ich": false,
+    "gesagt": "Amumu in Basis."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 95.0,
+    "gesagt": "Back jetzt: Langschwert kaufen, dann zurück auf die Top-Lane, weil Malphite noch 8 Sekunden tot ist und du mit 14 Prozent nicht bleiben kannst.",
+    "saetze": [
+     "Geh zu deiner Top-Welle und farm sie. Nicht zu Akali: 15 Sekunden weg.",
+     "Malphite weg: Welle rein, dann Platten.",
+     "Kauf Langschwert für den Axiombogen und ein Kontroll-Auge, dann Top, Kanone in 14 Sekunden."
+    ]
+   },
+   {
+    "zeit": 249.7,
+    "gesagt": "Kauf Ionische Stiefel der Deutlichkeit und ein Kontroll-Auge, dann nach Top.",
+    "saetze": [
+     "In 9 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 4:57.",
+     "Kauf Ionische Stiefel der Deutlichkeit.",
+     "Kauf Ionische Stiefel der Deutlichkeit und ein Kontroll-Auge, dann nach Top."
+    ]
+   },
+   {
+    "zeit": 353.8,
+    "gesagt": "Crash die Welle jetzt schnell rein, dann back: Caulfields kaufen, danach zurück nach Top, weil Malphite gerade tot ist und die Welle sauber zurücksetzt.",
+    "saetze": [
+     "Amumu Mid.",
+     "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Geh nach Top, farm die Welle am eigenen Turm, danach die Kanone in 21 s, weil Malphite in 20 s bei dir sein kann.",
+     "Farm Top, bei 1350 Gold back für den Brutalisierer. Nicht zu Akali."
+    ]
+   },
+   {
+    "zeit": 451.9,
+    "gesagt": "Amumu ist unten zu sehen, also schieb die Welle jetzt schnell rein. Dann back: Spitzhacke kaufen und zurück nach Top, bevor die Kanonenwelle in 50 s ankommt.",
+    "saetze": [
+     "Kauf Spitzhacke für den Axiombogen.",
+     "Kauf Spitzhacke für den Axiombogen und ein Kontroll-Auge, dann per Fuß nach Top, weil die Kanone in 23 Sekunden kommt und Amumu wieder lebt: Malphite steht oben, Gragas kann in 25 Sekunden bei dir sein.",
+     "Raus jetzt, nach Top."
+    ]
+   },
+   {
+    "zeit": 595.8,
+    "gesagt": "Die Larven sind weg, das stimmt. Jetzt, wo Malphite tot ist: Welle crashen, back für Axiombogen und Ionische Stiefel, dann Mid zu Cassiopeia, weil sie nur 23 Prozent hat.",
+    "saetze": [
+     "Kauf Axiombogen und Ionische Stiefel der Deutlichkeit.",
+     "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 10:57.",
+     "Amumu oberer Fluss."
+    ]
+   },
+   {
+    "zeit": 701.7,
+    "gesagt": "Kauf Spitzhacke für die Eklipse, dann zum Drachen.",
+    "saetze": [
+     "Jetzt, wo du in der Basis bist: Kauf Spitzhacke für die Eklipse und ein Kontroll-Auge, dann zum Drachen: ihr seid fünf.",
+     "Amumu unterer Fluss.",
+     "Geh zum Drachen: ihr seid zwei, Kanone in 26 Sekunden."
+    ]
+   },
+   {
+    "zeit": 754.5,
+    "gesagt": "Kauf Caulfields Kriegshammer für die Eklipse, dann zu den Larven.",
+    "saetze": [
+     "Amumu unterer Fluss, 1 Sekunde.",
+     "Kauf Caulfields Kriegshammer für die Eklipse, dann zu den Larven.",
+     "Kauf Langschwert für die Eklipse, dann zu den Larven: ihr seid fünf."
+    ]
+   },
+   {
+    "zeit": 1191.4,
+    "gesagt": "Jetzt, wo Amumu in 6 Sekunden bei dir sein kann: Back, Eklipse kaufen, dann zu Maokai und Yorick, damit ihr Baron zusammen angeht.",
+    "saetze": [
+     "Bleib am Baron bei deinem Team und halte die Sicht, Kanone in 43 Sekunden.",
+     "Kauf Tiamat für die Gefräßige Hydra und Langschwert, dann nach Top.",
+     "Geh nach Top: dort kommt ihre nächste Welle, Kanone in 20 Sekunden."
+    ]
+   },
+   {
+    "zeit": 1382.5,
+    "gesagt": "Jetzt, wo 297 Gold nichts kaufen: kein Back, nimm die Kanone. Danach mit Maokai oben Druck, weil Amumu und Gragas noch 26 Sekunden tot sind.",
+    "saetze": [
+     "Kauf Langschwert für die Gefräßige Hydra, dann auf ihren inneren Mid-Turm.",
+     "Geh auf ihren inneren Mid-Turm: Braum kommt vorher, Kanone in 26 Sekunden.",
+     "Bleib dabei. Nicht zu Cassiopeia: 14 Sekunden weg."
+    ]
+   },
+   {
+    "zeit": 1887.0,
+    "gesagt": "Kauf Schutzengel und Langschwert, dann zur Top-Welle.",
+    "saetze": [
+     "Malphite euer Jungle oben: Büsche meiden.",
+     "Bleib dabei.",
+     "Jetzt, wo Drache in 59 Sekunden aufgetaucht ist: Drache in 56 Sekunden: Welle crashen, dann mit Team zum Drachen."
+    ]
+   },
+   {
+    "zeit": 1931.7,
+    "gesagt": "Verstanden, Malphite steht oben. Kauf Spitzhacke für Tanz des Todes, dann lauf zu Cassiopeia und Yorick in die Flussmitte, weil Braum noch tot ist.",
+    "saetze": [
+     "Jetzt, wo Drache in 31 Sekunden aufgetaucht ist: Drache in 29 Sekunden: Welle rein, dann mit Team zum Drachen.",
+     "Bleib dabei. Nicht zu Akali: 15 Sekunden weg.",
+     "Amumu sein Jungle unten."
+    ]
+   },
+   {
+    "zeit": 2163.4,
+    "gesagt": "Kauf Tanz des Todes, dann auf ihren Top-Inhibitor.",
+    "saetze": [
+     "Bleib dabei. Nicht zu Maokai: Deine Top-Welle bringt mehr.",
+     "Dann nach Top: dort kommt ihre nächste Welle.",
+     "Raus jetzt, nach Top."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 49.37055969238281,
+    "text": "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer.",
+    "kette": false
+   },
+   {
+    "zeit": 79.36349487304688,
+    "text": "Back jetzt: Langschwert kaufen, dann zurück auf die Top-Lane, weil Malphite noch 8 Sekunden tot ist und du mit 14 Prozent nicht bleiben kannst.",
+    "kette": true
+   },
+   {
+    "zeit": 130.48150634765625,
+    "text": "Farm Top, bei 250 Gold back für Glühendes Partikel.",
+    "kette": false
+   },
+   {
+    "zeit": 207.47552490234375,
+    "text": "Farm Top, bei 600 Gold back für Ionische Stiefel der Deutlichkeit.",
+    "kette": false
+   },
+   {
+    "zeit": 248.83511352539062,
+    "text": "In 9 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 4:57.",
+    "kette": false
+   },
+   {
+    "zeit": 317.5291442871094,
+    "text": "Crash die Welle jetzt schnell rein, dann back: Caulfields kaufen, danach zurück nach Top, weil Malphite gerade tot ist und die Welle sauber zurücksetzt.",
+    "kette": true
+   },
+   {
+    "zeit": 332.896484375,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 6:27.",
+    "kette": false
+   },
+   {
+    "zeit": 370.256103515625,
+    "text": "Farm Top, bei 1350 Gold back für den Brutalisierer. Nicht zu Akali.",
+    "kette": false
+   },
+   {
+    "zeit": 422.4577941894531,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 7:57.",
+    "kette": false
+   },
+   {
+    "zeit": 435.55810546875,
+    "text": "Amumu ist unten zu sehen, also schieb die Welle jetzt schnell rein. Dann back: Spitzhacke kaufen und zurück nach Top, bevor die Kanonenwelle in 50 s ankommt.",
+    "kette": true
+   },
+   {
+    "zeit": 447.0834045410156,
+    "text": "Top-Welle rein, dann back: 1250 Gold für Spitzhacke, Kanone in 30 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 602.4381713867188,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 10:57.",
+    "kette": false
+   },
+   {
+    "zeit": 661.1246337890625,
+    "text": "Farm Top, bei 350 Gold back für Langschwert.",
+    "kette": false
+   },
+   {
+    "zeit": 988.4425048828125,
+    "text": "Euer äußerer Bot-Turm ist weg. Farm Top, bei 650 Gold back für Eklipse. Danach zur Top-Welle.",
+    "kette": true
+   },
+   {
+    "zeit": 1035.994140625,
+    "text": "Back jetzt: 1100 Gold für Eklipse. Nicht zu Yorick: 10 Sekunden weg.",
+    "kette": false
+   },
+   {
+    "zeit": 1318.0025634765625,
+    "text": "Sie haben den Drachen. Back jetzt, 950 Gold für Vampirisches Zepter. Danach zu deinem Team.",
+    "kette": true
+   },
+   {
+    "zeit": 1853.5123291015625,
+    "text": "Farm Bot, Riesenschwert ist schon bezahlbar: nach der Welle back, Kanone in 8 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1869.62939453125,
+    "text": "Kanone kommt 31 22: die noch rein, dann back. 2900 Gold für Schutzengel.",
+    "kette": false
+   },
+   {
+    "zeit": 2085.677734375,
+    "text": "Drei von ihnen tot: Baron mit Akali und Yorick, Level 18 gegen 13, ihr seid fünf gegen zwei. Danach back. Heilen, dann auf ihren Bot-Inhibitor-Turm.",
+    "kette": true
+   },
+   {
+    "zeit": 2113.320556640625,
+    "text": "Kanone kommt 35 22: die noch rein, dann back. 1800 Gold im Beutel.",
+    "kette": false
+   },
+   {
+    "zeit": 2138.637939453125,
+    "text": "Back jetzt: 2200 Gold im Beutel. Nicht zu Cassiopeia: 15 Sekunden weg.",
+    "kette": false
+   }
+  ],
+  "stille_max": 38,
+  "stille_lang": [],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 105.39722442626953,
+    "von": "welle",
+    "nach": "welle:top",
+    "vorher": "Malphite weg: Welle rein, dann Platten.",
+    "text": "Kauf Langschwert für den Axiombogen und ein Kontroll-Auge, dann Top, Kanone in 14 Sekunden."
+   },
+   {
+    "zeit": 272.4197692871094,
+    "von": "welle:top",
+    "nach": "zurueck",
+    "vorher": "Kauf Ionische Stiefel der Deutlichkeit und ein Kontroll-Auge, dann nach Top.",
+    "text": "Raus jetzt, nach Top."
+   },
+   {
+    "zeit": 288.12835693359375,
+    "von": "zurueck",
+    "nach": "welle",
+    "vorher": "Raus jetzt, nach Top.",
+    "text": "Farm Top, Drache in 12 Sekunden. Nicht zu Akali: 12 Sekunden weg."
+   },
+   {
+    "zeit": 370.256103515625,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Geh nach Top, farm die Welle am eigenen Turm, danach die Kanone in 21 s, weil Malphite in 20 s bei dir sein kann.",
+    "text": "Farm Top, bei 1350 Gold back für den Brutalisierer. Nicht zu Akali."
+   },
+   {
+    "zeit": 496.6347351074219,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Kauf Der Brutalisierer für den Axiombogen, dann Top: du bist pünktlich zur Welle da.",
+    "text": "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Freeze am Turm, nur Last-Hits, dann mit Maokai und Akali im oberen Jungle zusammenspielen, weil Malphite in 5 Sekunden hier sein kann."
+   },
+   {
+    "zeit": 544.5196533203125,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Geh zu deiner Top-Welle und farm sie, Kanone in 22 Sekunden.",
+    "text": "Malphite weg: Welle rein, dann Platten."
+   },
+   {
+    "zeit": 548.6529541015625,
+    "von": "welle",
+    "nach": "turm",
+    "vorher": "Malphite weg: Welle rein, dann Platten.",
+    "text": "Jetzt, wo zwei Kills in 10 s: Malphite kann aus dem oberen Fluss kommen: Bleib am Turm, nur Last-Hits, geh nicht vor."
+   },
+   {
+    "zeit": 636.1066284179688,
+    "von": "zurueck",
+    "nach": "welle:top",
+    "vorher": "Raus jetzt, nach Top.",
+    "text": "Kauf Ionische Stiefel der Deutlichkeit und ein Kontroll-Auge, dann Top, Kanone in 21 Sekunden."
+   },
+   {
+    "zeit": 840.2217407226562,
+    "von": "welle:top",
+    "nach": "drache",
+    "vorher": "Geh nach Top: dort kommt ihre nächste Welle. Nicht zu Cassiopeia.",
+    "text": "4500 Gold vorn und jetzt stärker: Drache und ihre Türme als Gruppe erzwingen."
+   },
+   {
+    "zeit": 1406.3814697265625,
+    "von": "turm",
+    "nach": "zurueck",
+    "vorher": "Geh auf ihren inneren Mid-Turm: Braum kommt vorher, Kanone in 26 Sekunden.",
+    "text": "Raus jetzt: Amumu in 21 Sekunden."
+   },
+   {
+    "zeit": 1410.0562744140625,
+    "von": "zurueck",
+    "nach": "turm",
+    "vorher": "Raus jetzt: Amumu in 21 Sekunden.",
+    "text": "Drück ihren inneren Top-Turm: Level 14 gegen 9, ihr seid vier gegen eins."
+   },
+   {
+    "zeit": 1853.5123291015625,
+    "von": "baron",
+    "nach": "welle",
+    "vorher": "Geh zum Baron: ihr seid vier, Kanone in 6 Sekunden.",
+    "text": "Farm Bot, Riesenschwert ist schon bezahlbar: nach der Welle back, Kanone in 8 Sekunden."
+   },
+   {
+    "zeit": 1876.99609375,
+    "von": "back",
+    "nach": "welle:top",
+    "vorher": "Kanone kommt 31 22: die noch rein, dann back. 2900 Gold für Schutzengel.",
+    "text": "Kauf Schutzengel und Langschwert, dann zur Top-Welle."
+   },
+   {
+    "zeit": 2113.320556640625,
+    "von": "zurueck",
+    "nach": "back",
+    "vorher": "Raus jetzt: Malphite ist da.",
+    "text": "Kanone kommt 35 22: die noch rein, dann back. 1800 Gold im Beutel."
+   },
+   {
+    "zeit": 2169.297119140625,
+    "von": "welle:top",
+    "nach": "zurueck",
+    "vorher": "Dann nach Top: dort kommt ihre nächste Welle.",
+    "text": "Raus jetzt, nach Top."
+   }
+  ],
+  "fuellsaetze": [],
+  "saetze_n": 279,
+  "i4": [
+   {
+    "zeit": 653.1,
+    "name": "Malphite",
+    "ort": "im unteren Fluss",
+    "gesagt": "Malphite unten: Welle drücken."
+   },
+   {
+    "zeit": 959.4,
+    "name": "Malphite",
+    "ort": "unten",
+    "gesagt": "Malphite unten: Welle drücken."
+   }
+  ],
+  "latenz": {
+   "n": 105,
+   "median": 7.09,
+   "p90": 10.4,
+   "erster_satz_median": 6.821323000011034,
+   "cache_treffer": "129/132"
+  }
+ }
+}

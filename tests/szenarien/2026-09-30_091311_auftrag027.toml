@@ -1,0 +1,123 @@
+# Auftrag 027: die Riven-Partie 091311 (Uebungsmodus, Bots) - Carlos: "extrem passiv, gibt keine Kommandos".
+# Jede Notiz ist ein Szenario; das Stillstehen ab 15:41 ist Pflicht. Alle waren auf a5f0a6a (Stand 026) rot.
+
+aufnahme = "2026-09-30_091311"
+spielmodus = "PRACTICETOOL"
+bots = true
+
+[[szenario]]
+id = "1033-stiefel-ausbauen"
+fenster = ["9:55", "10:39"]
+quelle = "Notiz 10:33: 'er weiss nicht mal, was ausgebaute Schuhe sind' - 700 Gold im Brunnen, einfache Stiefel"
+lage = "Riven im Brunnen, Axiombogen und einfache Stiefel, rund 700 Gold."
+muss_nennen_eins = ["Ionische"]
+warum = "Auftrag 027, 2: Stiefel auf Stufe 2 (wissen/build_carlos.toml, Riven: Ionische Stiefel)."
+
+[[szenario]]
+id = "1139-tief-mit-anweisung"
+fenster = ["11:25", "11:50"]
+quelle = "Notiz 11:39: 'du sagst, ich stehe tief, jemand fehlt, aber nicht, was ich lieber machen soll'"
+lage = "Riven auf der Top-Lane, zwei Gegner seit langem unsichtbar."
+negativ_allein_max = 0
+positiv_abstand_max = 20
+warum = "Auftrag 027, 1.2: 'Du stehst tief' nie allein - immer mit der positiven Anweisung."
+
+[[szenario]]
+id = "1541-stillstand-pflicht"
+fenster = ["15:22", "15:51"]
+quelle = "Notiz 15:41: 'Ich bleib so lange ab jetzt stehen, bis du mir konkrete Arbeitspakete gibst' - 34 s im Brunnen"
+lage = "Riven nach dem Respawn im Brunnen, steht still und wartet."
+positiv_abstand_max = 26
+negativ_allein_max = 0
+warum = "Auftrag 027, 1 (Pflicht-Szenario): wer steht, hoert in <= 2 s, was jetzt zu tun ist - und danach alle 25 s."
+
+[[szenario]]
+id = "1518-stillstand-erste-reaktion"
+fenster = ["15:18", "15:25"]
+quelle = "Pflicht-Szenario 15:41, der Anfang: Riven steht ab 15:18 still im Brunnen"
+lage = "Riven respawnt, kauft nicht und steht."
+positiv_abstand_max = 7
+warum = "Auftrag 027, 5: >= 5 s still -> Anweisung in <= 2 s, also spaetestens 7 s nach dem Stehenbleiben."
+
+[[szenario]]
+id = "1753-tot-kauf-vor-respawn"
+fenster = ["17:50", "18:05"]
+quelle = "Notiz 19:10: 'Du sagst, ich lebe in 11 Sekunden, anstatt dass du mir sagst, was ich kaufen soll'"
+lage = "Riven tot, Respawn 18:05, Gold fuer einen Kauf."
+muss_nennen_eins = ["Kauf"]
+warum = "Auftrag 027, 1.3 und 2: 12 s vor dem Respawn Kauf und Ziel (im Laden geht das schon im Tod)."
+
+[[szenario]]
+id = "1805-brunnen-erst-kaufen"
+fenster = ["18:05", "18:12"]
+quelle = "Notiz 19:10: 'du schickst mich zuerst zur Toplane, obwohl ich 1700 Gold hatte, ich war im Fountain'"
+lage = "Riven respawnt im Brunnen mit Gold fuer Eklipse."
+muss_nennen_eins = ["Kauf"]
+warum = "Auftrag 027, 1.3: im Brunnen sofort die Kauf-Kette, dann das Ziel."
+
+[[szenario]]
+id = "1951-alles-gold"
+fenster = ["19:45", "19:58"]
+quelle = "Notiz 20:09: 'Ich habe mir Eclipse gekauft, habe immer noch 1800 Gold uebrig'"
+lage = "Riven im Brunnen, Eklipse gekauft, rund 1800 Gold."
+satz_mit = [["Tiamat"], ["Langschwert"]]
+warum = "Auftrag 027, 2: alles Gold ausgeben - Tiamat und das Langschwert fuers Zepter."
+
+[[szenario]]
+id = "2105-team-baron-behauptung"
+zeit = "21:05"
+quelle = "091311 21:00-21:19: 'dein Team startet den Baron' - Carlos: 'Mein Team startet ueberhaupt kein Baron. Die wollen den Drachen'"
+lage = "Riven tot; die Mitspieler standen zuletzt alle am Drachen, keiner am Baron."
+satz_pruefen = ["Jetzt, wo du tot bist und dein Team den Baron startet: back sofort, Tiamat kaufen, dann zum Baron."]
+verwerfen = true
+warum = "Auftrag 027, 3: eine Objective-Aussage ueber das Team gegen die Minimap-Positionen pruefen."
+
+[[szenario]]
+id = "2040-team-drache-stimmt"
+zeit = "20:40"
+quelle = "Gegenprobe zu 2105: am Drachen standen die Mitspieler wirklich"
+lage = "Riven lebt, die Mitspieler stehen am Drachen."
+satz_pruefen = ["Dein Team ist am Drachen: geh zu ihnen, ihr seid vier."]
+verwerfen = false
+warum = "Auftrag 027, 3: die Pruefung verwirft nur, was nicht stimmt."
+
+[[szenario]]
+id = "2321-kein-hin-und-her"
+fenster = ["23:10", "23:40"]
+quelle = "Notiz 23:21: 'du sagst mir, geh die Top-Wave crashen ... eine Sekunde spaeter: jetzt zum Bot-Turm'"
+lage = "Riven verlaesst den Brunnen Richtung Top."
+hin_und_her_max = 0
+negativ_allein_max = 0
+warum = "Auftrag 027, 1.4: zwei Plan-Saetze mit verschiedenem Ziel in < 5 s gibt es nicht."
+
+[[szenario]]
+id = "2554-kauf-im-tod"
+fenster = ["25:40", "26:06"]
+quelle = "Notiz 25:31: 'man kann auch waehrend man tot ist bereits Gegenstaende kaufen'"
+lage = "Riven tot bis 26:06, Gold fuer die Hydra."
+muss_nennen_eins = ["Kauf"]
+warum = "Auftrag 027, 2: Kauf im Tod ansagen."
+
+[[szenario]]
+id = "1243-luecke-lane"
+fenster = ["12:43", "14:40"]
+quelle = "Notiz 15:09: 'Das gibt's ja gar nicht, dass du die ganze Zeit so still bist'"
+lage = "Riven lebt und spielt die Top-Lane, zwei Minuten ohne Tod."
+positiv_abstand_max = 35
+warum = "Auftrag 027, 5: nie mehr als 35 s ohne gueltige positive Anweisung."
+
+[[szenario]]
+id = "2217-luecke-mitte"
+fenster = ["22:17", "24:36"]      # bis zum Kampf 24:36-25:01 (im Kampf schweigt der Herzschlag, Auftrag 027, 5)
+quelle = "Auftrag 027, 5 - drei Minuten Midgame zwischen zwei Toden"
+lage = "Riven lebt, Midgame, bis zum Kampf 24:36."
+positiv_abstand_max = 35
+warum = "Auftrag 027, 5: nie mehr als 35 s ohne gueltige positive Anweisung."
+
+[[szenario]]
+id = "2046-kein-team-am-baron"
+fenster = ["20:40", "20:57"]
+quelle = "Nachspiel 027 (Abo) 20:46: 'Bleib am Baron bei deinem Team' - das Team kaempfte am Drachen"
+lage = "Riven an der Baron-Grube, die Mitspieler laut Minimap am Drachen."
+darf_nicht_sagen = ["Bleib am Baron", "Team den Baron", "Team startet den Baron"]
+warum = "Auftrag 027, 3: eine Aussage ueber das Team am Objective nur, wenn die Minimap es zeigt."

@@ -1,0 +1,645 @@
+{
+ "gesamt": {
+  "abdeckung": "29024/31935 (91 %)",
+  "abdeckung_gesagt": "20753/31935 (65 %)",
+  "abbruch": "16/16 (100 %)",
+  "budget": "0/11 Fehler, 0 gefährlich",
+  "back": "2/2 (100 %)",
+  "chancen": "41/77 (53 %)",
+  "events": "601/724 (83 %)",
+  "erahnt": {
+   "ERAHNT_LANE_BACK": "31/45 (69 %)",
+   "ERAHNT_RUECKKEHR": "94/110 (85 %)",
+   "ERAHNT_GANK": "3/27 (11 %)",
+   "ERAHNT_KAMPF": "104/135 (77 %)"
+  },
+  "hoeren": {
+   "luecke_p90_max": 12.1,
+   "luecke_max": 20.6,
+   "stillstand": "107/113 (95 %)",
+   "basis": "88/91 (97 %)",
+   "negativ_allein": 0,
+   "hin_und_her": 1
+  }
+ },
+ "je_partie": [
+  {
+   "stamm": "2026-09-28_101426",
+   "abdeckung": "5411/6076 (89 %)",
+   "abdeckung_gesagt": "3533/6076 (58 %)",
+   "abbruch": "- (keine)",
+   "budget": "0/3 Fehler, 0 gefährlich",
+   "back": "- (keine) (+3 fuers Leben oder abseits der Lane)",
+   "chancen": "9/14 (64 %)",
+   "events": "71/93 (76 %)",
+   "erahnt": {
+    "ERAHNT_LANE_BACK": [
+     5,
+     4
+    ],
+    "ERAHNT_RUECKKEHR": [
+     9,
+     9
+    ],
+    "ERAHNT_GANK": [
+     5,
+     0
+    ],
+    "ERAHNT_KAMPF": [
+     11,
+     11
+    ]
+   },
+   "roh": {
+    "frei": 6076,
+    "mit": 5411,
+    "gesagt": 3533,
+    "abbruch": [
+     0,
+     0
+    ],
+    "budget": [
+     0,
+     3,
+     0
+    ],
+    "back": [
+     0,
+     0
+    ],
+    "chancen": [
+     9,
+     14
+    ],
+    "events": [
+     71,
+     93
+    ]
+   },
+   "pakete_n": 185,
+   "hoeren": {
+    "luecke_p90": 3.1,
+    "luecke_max": 5.9,
+    "still": [
+     8,
+     8
+    ],
+    "basis": [
+     8,
+     9
+    ],
+    "negativ": 0,
+    "hin_her": 1,
+    "negativ_beispiele": []
+   }
+  },
+  {
+   "stamm": "2026-09-28_192113",
+   "abdeckung": "4207/4611 (91 %)",
+   "abdeckung_gesagt": "3113/4611 (68 %)",
+   "abbruch": "3/3 (100 %)",
+   "budget": "0/2 Fehler, 0 gefährlich",
+   "back": "1/1 (100 %) (+3 fuers Leben oder abseits der Lane)",
+   "chancen": "0/3 (0 %)",
+   "events": "46/57 (81 %)",
+   "erahnt": {
+    "ERAHNT_LANE_BACK": [
+     8,
+     6
+    ],
+    "ERAHNT_RUECKKEHR": [
+     16,
+     13
+    ],
+    "ERAHNT_KAMPF": [
+     15,
+     10
+    ],
+    "ERAHNT_GANK": [
+     3,
+     0
+    ]
+   },
+   "roh": {
+    "frei": 4611,
+    "mit": 4207,
+    "gesagt": 3113,
+    "abbruch": [
+     3,
+     3
+    ],
+    "budget": [
+     0,
+     2,
+     0
+    ],
+    "back": [
+     1,
+     1
+    ],
+    "chancen": [
+     0,
+     3
+    ],
+    "events": [
+     46,
+     57
+    ]
+   },
+   "pakete_n": 171,
+   "hoeren": {
+    "luecke_p90": 5.9,
+    "luecke_max": 11.8,
+    "still": [
+     11,
+     11
+    ],
+    "basis": [
+     9,
+     9
+    ],
+    "negativ": 0,
+    "hin_her": 0,
+    "negativ_beispiele": []
+   }
+  },
+  {
+   "stamm": "2026-09-29_133448",
+   "abdeckung": "2601/2850 (91 %)",
+   "abdeckung_gesagt": "1768/2850 (62 %)",
+   "abbruch": "2/2 (100 %)",
+   "budget": "0/0 Fehler, 0 gefährlich",
+   "back": "- (keine) (+3 fuers Leben oder abseits der Lane)",
+   "chancen": "2/3 (67 %)",
+   "events": "48/52 (92 %)",
+   "erahnt": {
+    "ERAHNT_LANE_BACK": [
+     4,
+     2
+    ],
+    "ERAHNT_RUECKKEHR": [
+     5,
+     5
+    ],
+    "ERAHNT_KAMPF": [
+     5,
+     4
+    ],
+    "ERAHNT_GANK": [
+     3,
+     1
+    ]
+   },
+   "roh": {
+    "frei": 2850,
+    "mit": 2601,
+    "gesagt": 1768,
+    "abbruch": [
+     2,
+     2
+    ],
+    "budget": [
+     0,
+     0,
+     0
+    ],
+    "back": [
+     0,
+     0
+    ],
+    "chancen": [
+     2,
+     3
+    ],
+    "events": [
+     48,
+     52
+    ]
+   },
+   "pakete_n": 72,
+   "hoeren": {
+    "luecke_p90": 12.1,
+    "luecke_max": 13.8,
+    "still": [
+     8,
+     9
+    ],
+    "basis": [
+     5,
+     5
+    ],
+    "negativ": 0,
+    "hin_her": 0,
+    "negativ_beispiele": []
+   }
+  },
+  {
+   "stamm": "2026-09-29_183125",
+   "abdeckung": "3848/4417 (87 %)",
+   "abdeckung_gesagt": "3097/4417 (70 %)",
+   "abbruch": "4/4 (100 %)",
+   "budget": "0/0 Fehler, 0 gefährlich",
+   "back": "1/1 (100 %) (+2 fuers Leben oder abseits der Lane)",
+   "chancen": "5/10 (50 %)",
+   "events": "92/108 (85 %)",
+   "erahnt": {
+    "ERAHNT_LANE_BACK": [
+     10,
+     6
+    ],
+    "ERAHNT_RUECKKEHR": [
+     16,
+     11
+    ],
+    "ERAHNT_KAMPF": [
+     19,
+     15
+    ],
+    "ERAHNT_GANK": [
+     4,
+     0
+    ]
+   },
+   "roh": {
+    "frei": 4417,
+    "mit": 3848,
+    "gesagt": 3097,
+    "abbruch": [
+     4,
+     4
+    ],
+    "budget": [
+     0,
+     0,
+     0
+    ],
+    "back": [
+     1,
+     1
+    ],
+    "chancen": [
+     5,
+     10
+    ],
+    "events": [
+     92,
+     108
+    ]
+   },
+   "pakete_n": 175,
+   "hoeren": {
+    "luecke_p90": 8.9,
+    "luecke_max": 11.0,
+    "still": [
+     25,
+     25
+    ],
+    "basis": [
+     14,
+     14
+    ],
+    "negativ": 0,
+    "hin_her": 0,
+    "negativ_beispiele": []
+   }
+  },
+  {
+   "stamm": "2026-09-26_125902",
+   "abdeckung": "1574/1636 (96 %)",
+   "abdeckung_gesagt": "1135/1636 (69 %)",
+   "abbruch": "1/1 (100 %)",
+   "budget": "0/0 Fehler, 0 gefährlich",
+   "back": "- (keine) (+2 fuers Leben oder abseits der Lane)",
+   "chancen": "4/7 (57 %)",
+   "events": "58/69 (84 %)",
+   "erahnt": {
+    "ERAHNT_RUECKKEHR": [
+     17,
+     15
+    ],
+    "ERAHNT_KAMPF": [
+     26,
+     14
+    ],
+    "ERAHNT_GANK": [
+     3,
+     0
+    ]
+   },
+   "roh": {
+    "frei": 1636,
+    "mit": 1574,
+    "gesagt": 1135,
+    "abbruch": [
+     1,
+     1
+    ],
+    "budget": [
+     0,
+     0,
+     0
+    ],
+    "back": [
+     0,
+     0
+    ],
+    "chancen": [
+     4,
+     7
+    ],
+    "events": [
+     58,
+     69
+    ]
+   },
+   "pakete_n": 188,
+   "hoeren": {
+    "luecke_p90": 7.0,
+    "luecke_max": 16.0,
+    "still": [
+     7,
+     8
+    ],
+    "basis": [
+     10,
+     10
+    ],
+    "negativ": 0,
+    "hin_her": 0,
+    "negativ_beispiele": []
+   }
+  },
+  {
+   "stamm": "2026-09-26_164809",
+   "abdeckung": "1141/1213 (94 %)",
+   "abdeckung_gesagt": "935/1213 (77 %)",
+   "abbruch": "2/2 (100 %)",
+   "budget": "0/3 Fehler, 0 gefährlich",
+   "back": "- (keine) (+5 fuers Leben oder abseits der Lane)",
+   "chancen": "2/5 (40 %)",
+   "events": "41/51 (80 %)",
+   "erahnt": {
+    "ERAHNT_RUECKKEHR": [
+     12,
+     10
+    ],
+    "ERAHNT_KAMPF": [
+     12,
+     7
+    ],
+    "ERAHNT_GANK": [
+     2,
+     0
+    ]
+   },
+   "roh": {
+    "frei": 1213,
+    "mit": 1141,
+    "gesagt": 935,
+    "abbruch": [
+     2,
+     2
+    ],
+    "budget": [
+     0,
+     3,
+     0
+    ],
+    "back": [
+     0,
+     0
+    ],
+    "chancen": [
+     2,
+     5
+    ],
+    "events": [
+     41,
+     51
+    ]
+   },
+   "pakete_n": 145,
+   "hoeren": {
+    "luecke_p90": 6.0,
+    "luecke_max": 6.0,
+    "still": [
+     5,
+     5
+    ],
+    "basis": [
+     11,
+     11
+    ],
+    "negativ": 0,
+    "hin_her": 0,
+    "negativ_beispiele": []
+   }
+  },
+  {
+   "stamm": "2026-09-26_120049",
+   "abdeckung": "1092/1226 (89 %)",
+   "abdeckung_gesagt": "778/1226 (63 %)",
+   "abbruch": "- (keine)",
+   "budget": "0/0 Fehler, 0 gefährlich",
+   "back": "- (keine) (+1 fuers Leben oder abseits der Lane)",
+   "chancen": "1/6 (17 %)",
+   "events": "44/52 (85 %)",
+   "erahnt": {
+    "ERAHNT_RUECKKEHR": [
+     12,
+     9
+    ],
+    "ERAHNT_GANK": [
+     3,
+     1
+    ],
+    "ERAHNT_KAMPF": [
+     19,
+     17
+    ]
+   },
+   "roh": {
+    "frei": 1226,
+    "mit": 1092,
+    "gesagt": 778,
+    "abbruch": [
+     0,
+     0
+    ],
+    "budget": [
+     0,
+     0,
+     0
+    ],
+    "back": [
+     0,
+     0
+    ],
+    "chancen": [
+     1,
+     6
+    ],
+    "events": [
+     44,
+     52
+    ]
+   },
+   "pakete_n": 151,
+   "hoeren": {
+    "luecke_p90": 9.0,
+    "luecke_max": 11.0,
+    "still": [
+     9,
+     9
+    ],
+    "basis": [
+     4,
+     5
+    ],
+    "negativ": 0,
+    "hin_her": 0,
+    "negativ_beispiele": []
+   }
+  },
+  {
+   "stamm": "2026-09-29_231200",
+   "abdeckung": "4045/4383 (92 %)",
+   "abdeckung_gesagt": "2868/4383 (65 %)",
+   "abbruch": "2/2 (100 %)",
+   "budget": "0/1 Fehler, 0 gefährlich",
+   "back": "- (keine) (+4 fuers Leben oder abseits der Lane)",
+   "chancen": "9/13 (69 %)",
+   "events": "105/122 (86 %)",
+   "erahnt": {
+    "ERAHNT_RUECKKEHR": [
+     12,
+     12
+    ],
+    "ERAHNT_LANE_BACK": [
+     10,
+     7
+    ],
+    "ERAHNT_KAMPF": [
+     10,
+     10
+    ],
+    "ERAHNT_GANK": [
+     1,
+     0
+    ]
+   },
+   "roh": {
+    "frei": 4383,
+    "mit": 4045,
+    "gesagt": 2868,
+    "abbruch": [
+     2,
+     2
+    ],
+    "budget": [
+     0,
+     1,
+     0
+    ],
+    "back": [
+     0,
+     0
+    ],
+    "chancen": [
+     9,
+     13
+    ],
+    "events": [
+     105,
+     122
+    ]
+   },
+   "pakete_n": 180,
+   "hoeren": {
+    "luecke_p90": 6.7,
+    "luecke_max": 8.9,
+    "still": [
+     14,
+     15
+    ],
+    "basis": [
+     8,
+     9
+    ],
+    "negativ": 0,
+    "hin_her": 0,
+    "negativ_beispiele": []
+   }
+  },
+  {
+   "stamm": "2026-09-30_091311",
+   "abdeckung": "5105/5523 (92 %)",
+   "abdeckung_gesagt": "3526/5523 (64 %)",
+   "abbruch": "2/2 (100 %)",
+   "budget": "0/2 Fehler, 0 gefährlich",
+   "back": "- (keine) (+1 fuers Leben oder abseits der Lane)",
+   "chancen": "9/16 (56 %)",
+   "events": "96/120 (80 %)",
+   "erahnt": {
+    "ERAHNT_RUECKKEHR": [
+     11,
+     10
+    ],
+    "ERAHNT_LANE_BACK": [
+     8,
+     6
+    ],
+    "ERAHNT_KAMPF": [
+     18,
+     16
+    ],
+    "ERAHNT_GANK": [
+     3,
+     1
+    ]
+   },
+   "roh": {
+    "frei": 5523,
+    "mit": 5105,
+    "gesagt": 3526,
+    "abbruch": [
+     2,
+     2
+    ],
+    "budget": [
+     0,
+     2,
+     0
+    ],
+    "back": [
+     0,
+     0
+    ],
+    "chancen": [
+     9,
+     16
+    ],
+    "events": [
+     96,
+     120
+    ]
+   },
+   "pakete_n": 199,
+   "hoeren": {
+    "luecke_p90": 6.3,
+    "luecke_max": 20.6,
+    "still": [
+     20,
+     23
+    ],
+    "basis": [
+     19,
+     19
+    ],
+    "negativ": 0,
+    "hin_her": 0,
+    "negativ_beispiele": []
+   }
+  }
+ ]
+}

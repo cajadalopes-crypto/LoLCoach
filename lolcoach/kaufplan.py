@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 import re
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
 
@@ -103,6 +103,9 @@ class Kauf:
     kosten: int
     naechstes: tuple[str, int] | None   # (Bauteil oder Item, fehlendes Gold), das als naechstes erreichbar wird
     verkaufen: str | None = None        # Inventar voll: dieses Item zuerst verkaufen (Start-Item)
+    # Auftrag 027, 2: was vom Gold uebrig bleibt, geht in die naechsten Ziele - [(Ziel, [Stuecke])], die Stuecke
+    # stehen auch in `kaufen` (hinten)
+    weitere: list = field(default_factory=list)
 
     def satz(self) -> str:
         if self.kaufen:
@@ -274,9 +277,23 @@ def schritte(champion_id: str) -> list[tuple[int, ...]]:
     schon nennt."""
     it = ddragon.items()
     eigen = list(carlos_build(champion_id))
+    # Auftrag 027, 2 (091311 10:33): die Stiefel aus Carlos' Build (Riven: Ionische) nach dem ersten Item - die
+    # einfachen Stiefel bleiben sonst die ganze Partie liegen
+    if (st := carlos_stiefel(champion_id)) is not None and eigen:
+        eigen.insert(1, (st,))
     schon = {i for s in eigen for i in s}
     return eigen + [(i,) for i in (*kern(champion_id), *folge(champion_id))
                     if i not in schon and "Boots" not in it.get(i, {}).get("tags", [])]
+
+
+@lru_cache(maxsize=64)
+def carlos_stiefel(champion_id: str) -> int | None:
+    """Die Stiefel der zweiten Stufe aus Carlos' Build - None ohne Eintrag."""
+    try:
+        eintrag = tomllib.loads(BUILD.read_text(encoding="utf-8")).get(champion_id) or {}
+    except (OSError, ValueError):
+        return None
+    return _nach_name().get(eintrag.get("stiefel") or "")
 
 
 def _tags(i: int) -> set:
@@ -294,8 +311,9 @@ def _start_item(items) -> int | None:
             and it[i]["gold"]["total"] <= 500 and not {"Trinket", "Consumable", "Boots"} & _tags(i)]
     # Auftrag 017, 0.5 (192113 28:24: "Gerade nichts zu kaufen" bei 4130 Gold und sechs Plaetzen mit Nachfuellbarem
     # Trank): ein Trank, der einen Platz belegt und nicht verbraucht wird, geht zuerst
-    trank = [i for i in items if i in it and "Consumable" in _tags(i) and not it[i].get("consumed")
-             and i != 2055 and "Trinket" not in _tags(i)]
+    # Auftrag 027, 2: auch Heiltraenke und die Trinkflasche gehen vor Dorans (sie belegen einen Platz wie er)
+    trank = [i for i in items if i in it and "Consumable" in _tags(i)
+             and (not it[i].get("consumed") or i in TRAENKE) and i != 2055 and "Trinket" not in _tags(i)]
     return min(trank or kand, key=lambda i: it[i]["gold"]["total"], default=None)
 
 
@@ -407,9 +425,13 @@ def _versuch(ziel: int, items: tuple[int, ...], gold: float, frei: int, stiefel_
     # Caulfields und Zepter "verbrauchten" beide dasselbe Langschwert - 1518 Gold sollten fuer 1600 reichen)
     kandidaten = [(_baum_kosten(f, list(items))[0], f, _verbraucht(f, items)) for f in fehlend]
     kaufen, kosten, geld, plaetze, uebrig = [], 0, gold, frei, list(items)
-    for _, f, v_jetzt in sorted(kandidaten, reverse=True):
+    # Auftrag 027, 2: ist ein Bauteil zu teuer, zaehlen seine Bauteile (091311 19:52, 1792 Gold: "Kauf Tiamat" -
+    # 592 blieben liegen; das Langschwert im Vampirischen Zepter haette gepasst)
+    offen = sorted(kandidaten, reverse=True)
+    while offen:
+        _, f, v_jetzt = offen.pop(0)
         probe = list(uebrig)
-        k, _ = _baum_kosten(f, probe)
+        k, unter = _baum_kosten(f, probe)
         v = len(uebrig) - len(probe)
         if 0 < k <= geld and k >= 300 and plaetze + v >= 1 and frei + v_jetzt >= 1:
             kaufen.append(it[f]["name"])
@@ -417,6 +439,9 @@ def _versuch(ziel: int, items: tuple[int, ...], gold: float, frei: int, stiefel_
             geld -= k
             plaetze += v - 1
             uebrig = probe
+        elif k > geld and unter:
+            offen = sorted(offen + [(_baum_kosten(u, list(uebrig))[0], u, _verbraucht(u, uebrig)) for u in unter],
+                           reverse=True)
     if stiefel_fehlt and geld >= 300 and plaetze >= 1 and frei >= 1 and (kaufen or gold < 700):
         kaufen.append("Stiefel")
         kosten += 300
@@ -436,6 +461,45 @@ def _erster(reihe: list[int], items: tuple[int, ...], gold: float, frei: int, st
         if (k := _versuch(ziel, items, gold, frei, stiefel_fehlt)) is not None:
             return k
     return None
+
+
+def _nach_kauf(items: tuple[int, ...], namen: list[str]) -> tuple[int, ...]:
+    """Das Inventar nach dem Kauf der genannten Stuecke (eigene Bauteile verschmelzen)."""
+    inv = list(items)
+    for name in namen:
+        i = _nach_name().get(name)
+        if i is None:
+            continue
+        for f in ddragon.items().get(i, {}).get("from") or []:
+            _baum_kosten(int(f), inv)
+        inv.append(i)
+    return tuple(inv)
+
+
+def _auffuellen(k: Kauf | None, champion_id: str, items: tuple[int, ...], gold: float,
+                stiefel_fehlt: bool) -> Kauf | None:
+    """Auftrag 027, 2: alles Gold ausgeben - was nach dem ersten Ziel uebrig bleibt, geht ins naechste ("Kauf Eklipse
+    und Langschwert, dann Top"; 091311 20:09 standen 1800 Gold ungenutzt)."""
+    for _ in range(2):
+        if k is None or not k.kaufen:
+            return k
+        rest = gold - k.kosten
+        if rest < 300:
+            return k
+        inv = _nach_kauf(items, k.kaufen)
+        frei = PLAETZE - _belegt(inv)
+        if frei <= 0:
+            return k
+        # die Reihe neu: ein Schritt mit dem eben gekauften Item ist erledigt (Eklipse ODER Endloser Hunger), und
+        # eine zweite Hydra gibt es nicht
+        weiter = _reihe(champion_id, inv)
+        stiefel = stiefel_fehlt and "Stiefel" not in k.kaufen
+        dazu = _erster(weiter, inv, rest, frei, stiefel)
+        if dazu is None or not dazu.kaufen:
+            return k
+        k = Kauf(k.item, k.kaufen + dazu.kaufen, k.kosten + dazu.kosten, None, k.verkaufen,
+                 k.weitere + [(dazu.item, list(dazu.kaufen))])
+    return k
 
 
 ELIXIER_AB_LEVEL = 9
@@ -474,7 +538,7 @@ def _plan(champion_id: str, items: tuple[int, ...], gold: float) -> Kauf | None:
     frei = PLAETZE - _belegt(items)
     stiefel_fehlt = not any("Boots" in _tags(i) for i in items)
     reihe = _reihe(champion_id, items)
-    ohne = _erster(reihe, items, gold, frei, stiefel_fehlt)
+    ohne = _auffuellen(_erster(reihe, items, gold, frei, stiefel_fehlt), champion_id, items, gold, stiefel_fehlt)
     start = _start_item(items) if frei <= 0 else None
     if start is not None and (ohne is None or not ohne.kaufen):
         # Inventar voll: fuer den PLATZ das Start-Item verkaufen - 164326 29:15 hat Carlos genau das getan (Dorans
@@ -503,3 +567,4 @@ def _plan(champion_id: str, items: tuple[int, ...], gold: float) -> Kauf | None:
 
 
 KONTROLLAUGE = 2055
+TRAENKE = (2003, 2031, 2033)          # Heiltrank, Nachfuellbarer Trank, Verderbnistrank

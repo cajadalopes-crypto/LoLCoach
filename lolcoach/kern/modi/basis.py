@@ -485,10 +485,13 @@ def kaufen(m, cfg: dict, modus: str, ziel: Handlung) -> Handlung | None:
     if k is None or not k.kaufen:
         return None
     from ...kaufplan import mit_ziel
-    teile = [_akk(x) for x in k.kaufen[:2]]
-    # Auftrag 009, 4: das (erste) Bauteil mit seinem Ziel - "Kauf Langschwert fuer die Gefraessige Hydra"
+    # Auftrag 027, 2: alles Gold - bis zu vier Stuecke (vorher zwei: 091311 20:09 blieben 1800 Gold liegen)
+    teile = [_akk(x) for x in k.kaufen[:4]]
+    # Auftrag 009, 4: das (erste) Bauteil mit seinem Ziel - "Kauf Langschwert fuer die Gefraessige Hydra"; nur fuer
+    # das erste Ziel (die Auffuellung gehoert zu weiteren)
     ziel_item = getattr(k, "item", None)
-    i = next((j for j, x in enumerate(k.kaufen[:2]) if mit_ziel(x, ziel_item) != x), None)
+    eigen = len(k.kaufen) - sum(len(s) for _, s in getattr(k, "weitere", None) or [])
+    i = next((j for j, x in enumerate(k.kaufen[:min(2, eigen)]) if mit_ziel(x, ziel_item) != x), None)
     if i is not None:
         teile[i] = mit_ziel(k.kaufen[i], ziel_item)
     if kontrollauge_dazu(m):
@@ -496,7 +499,7 @@ def kaufen(m, cfg: dict, modus: str, ziel: Handlung) -> Handlung | None:
             teile = ["ein Kontroll-Auge"] + teile
         else:
             teile.append("ein Kontroll-Auge")
-    teile = teile[:3]
+    teile = teile[:5]
     was = liste(teile)
     verkauf = f"Verkauf {k.verkaufen}, dann k" if k.verkaufen else "K"
     # Pruefung c, R6: kein sicheres Ziel - Auftrag 016, 2 (die Kette immer): dann der sichere Platz, dein Turm

@@ -1,0 +1,389 @@
+{
+ "kennzahlen": {
+  "flash": "7/8 (88 %)",
+  "jungler": "10/10 (100 %)",
+  "i4": "2/2 (100 %)",
+  "backs": "4/4 (100 %)",
+  "back_rufe": "6/23 (26 %)",
+  "stille": "25 s",
+  "sicherheit": 0,
+  "widersprueche": 7,
+  "fuellsaetze": "1/149 (0.7 %)",
+  "latenz": "1.59 / 3.52 s (n = 44)",
+  "erster_satz": 1.4421138999750838,
+  "cache": "57/74"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 106.92284393310547,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 311.25311279296875,
+    "champion": "Sona",
+    "gesagt": "Sona Flash weg.",
+    "nach_s": 0.2
+   },
+   {
+    "zeit": 351.8541259765625,
+    "champion": "Twitch",
+    "gesagt": "Twitch Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 471.34893798828125,
+    "champion": "Lux",
+    "gesagt": "Lux Flash weg.",
+    "nach_s": 2.0
+   },
+   {
+    "zeit": 620.31982421875,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 824.5009765625,
+    "champion": "Sona",
+    "gesagt": "Sona Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 878.6018676757812,
+    "champion": "Twitch",
+    "gesagt": "Twitch Flash weg.",
+    "nach_s": 1.0
+   },
+   {
+    "zeit": 1035.1312255859375,
+    "champion": "Lux",
+    "gesagt": null,
+    "nach_s": null
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 236.2,
+    "name": "Teemo",
+    "ort": "im oberen Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Teemo oberer Fluss."
+   },
+   {
+    "zeit": 298.5,
+    "name": "Teemo",
+    "ort": "unten",
+    "ohne_s": 29,
+    "tot_ich": false,
+    "gesagt": "Teemo unten."
+   },
+   {
+    "zeit": 362.7,
+    "name": "Teemo",
+    "ort": "oben",
+    "ohne_s": 59,
+    "tot_ich": false,
+    "gesagt": "Teemo oben, 4 Sekunden."
+   },
+   {
+    "zeit": 483.8,
+    "name": "Teemo",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 86,
+    "tot_ich": false,
+    "gesagt": "Teemo Mid."
+   },
+   {
+    "zeit": 588.0,
+    "name": "Teemo",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 63,
+    "tot_ich": false,
+    "gesagt": "Teemo Mid."
+   },
+   {
+    "zeit": 704.8,
+    "name": "Teemo",
+    "ort": "oben",
+    "ohne_s": 74,
+    "tot_ich": false,
+    "gesagt": "Teemo oben, 1 Sekunde."
+   },
+   {
+    "zeit": 750.1,
+    "name": "Teemo",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle oben."
+   },
+   {
+    "zeit": 803.9,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 52,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle unten."
+   },
+   {
+    "zeit": 895.3,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 66,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle unten."
+   },
+   {
+    "zeit": 953.2,
+    "name": "Teemo",
+    "ort": "in seinem unteren Jungle",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Teemo sein Jungle unten."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 256.5,
+    "gesagt": "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Nein – Back jetzt mit Langschwert, dann zum Drachen laufen, weil Yorick und Blitzcrank unter 40 % sind und wir in 66 Sekunden Prio haben.",
+    "saetze": [
+     "Jetzt, wo Volibear neben dir kämpft: Nicht hin – Volibear fällt, du brauchst 15 Sekunden; stattdessen Welle crashen mit Kanone in 47 Sekunden, dann back mit Langschwert zum Drachen.",
+     "Raus jetzt, nach Top.",
+     "Kauf Stiefel, dann Top: du bist pünktlich zur Welle da, Kanone in 22 Sekunden."
+    ]
+   },
+   {
+    "zeit": 433.4,
+    "gesagt": "Der Brutalisierer, dann sofort Top zur Kanonenwelle in 41 Sekunden Lux ist in 22 s bei dir, aber die Welle crashen und mit Poppy trades vor Platte ist dein Gewinn.",
+    "saetze": [
+     "Kauf Der Brutalisierer für den Axiombogen.",
+     "Der Brutalisierer, dann sofort Top zur Kanonenwelle in 41 Sekunden Lux ist in 22 s bei dir, aber die Welle crashen und mit Poppy trades vor Platte ist dein Gewinn.",
+     "Raus jetzt, nach Top."
+    ]
+   },
+   {
+    "zeit": 769.9,
+    "gesagt": "Jetzt, wo Lux in 3 Sekunden bei dir ist und Sona auch: Quest-TP sofort zur Lane unter deinen äußeren Turm, dann back im Turm – Axiombogen kaufen, weil Poppy in 6 Sekunden lebt und du mit dem Item wieder fighten kannst.",
+    "saetze": [
+     "Kauf Axiombogen, Ionische Stiefel der Deutlichkeit, Caulfields Kriegshammer und Spitzhacke.",
+     "Sona euer Jungle oben: Büsche meiden.",
+     "Jetzt, wo der Drache drin ist: Axiombogen, Ionische Stiefel, Caulfields Kriegshammer und Spitzhacke kaufen, dann zum äußeren Top-Turm, weil dein Team in 40 Sekunden den nächsten Drachen nimmt und du mit Axiombogen dort wieder fighten kannst."
+    ]
+   },
+   {
+    "zeit": 967.9,
+    "gesagt": "Jetzt, wo Lux unbekannt ist und in der Nähe sein kann: Back trotzdem, Ionische Stiefel kaufen, dann direkt zum Herold – Yorick wartet, ihr geht rein, sobald Veigar in 10 Sekunden lebt.",
+    "saetze": [
+     "Bleib dabei, Kanone in 40 Sekunden.",
+     "Drache in 92 Sekunden",
+     "Jetzt, wo Wendepunkt: Aus der Basis: Farm Top, Twitch lebt in 4 Sekunden wieder."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 80.96375274658203,
+    "text": "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer, Kanone in 42 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 208.1250762939453,
+    "text": "Drache in 92 Sekunden, Yorick 45 % Mid: crash die Kanone jetzt, dann back mit Langschwert und lauf zum Drachen – ihr habt oben kein Gegner.",
+    "kette": true
+   },
+   {
+    "zeit": 220.2256622314453,
+    "text": "Jetzt, wo die Welle kippt und jetzt zu dir läuft: Nein – Back jetzt mit Langschwert, dann zum Drachen laufen, weil Yorick und Blitzcrank unter 40 % sind und wir in 66 Sekunden Prio haben.",
+    "kette": true
+   },
+   {
+    "zeit": 242.47628784179688,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 4:57.",
+    "kette": false
+   },
+   {
+    "zeit": 248.2930908203125,
+    "text": "Top-Welle rein, dann back: 1250 Gold für Caulfields Kriegshammer, Poppy ist tot. Nicht zu Volibear.",
+    "kette": false
+   },
+   {
+    "zeit": 258.0847473144531,
+    "text": "Jetzt, wo Volibear neben dir kämpft: Nicht hin – Volibear fällt, du brauchst 15 Sekunden; stattdessen Welle crashen mit Kanone in 47 Sekunden, dann back mit Langschwert zum Drachen.",
+    "kette": true
+   },
+   {
+    "zeit": 301.01129150390625,
+    "text": "Farm Top, bei 1350 Gold back für den Brutalisierer.",
+    "kette": false
+   },
+   {
+    "zeit": 375.9130554199219,
+    "text": "Farm Top, bei 1350 Gold back für den Brutalisierer, Kanone in 11 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 405.64715576171875,
+    "text": "Back jetzt: 35 Prozent Leben.",
+    "kette": false
+   },
+   {
+    "zeit": 475.7323303222656,
+    "text": "Jetzt, wo ein gegnerischer Flash weg ist: Lux Flash ist weg, deine Welle läuft zu Poppy – crash sie jetzt mit der Kanone in 5 Sekunden, dann sofort back für Axiombogen, weil du danach mit Poppy trades gewinnst und die nächste Welle kontrollierst.",
+    "kette": true
+   },
+   {
+    "zeit": 512.5421142578125,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 9:27.",
+    "kette": false
+   },
+   {
+    "zeit": 544.0424194335938,
+    "text": "Farm Top, Axiombogen ist schon bezahlbar: nach der Welle back, Kanone in 22 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 594.6856689453125,
+    "text": "Back jetzt: 1250 Gold für Axiombogen.",
+    "kette": false
+   },
+   {
+    "zeit": 602.39453125,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 10:57.",
+    "kette": false
+   },
+   {
+    "zeit": 622.8446044921875,
+    "text": "Jetzt, wo Yorick in 20 % Leben unten ist: back jetzt, Axiombogen kaufen, dann mit Quest-TP zu dir selbst zurück auf die Lane – Poppy kommt in 2 Sekunden und Sona vermutlich gleich, deine Kanone crasht gerade bei ihnen.",
+    "kette": true
+   },
+   {
+    "zeit": 631.8948974609375,
+    "text": "Top-Welle rein, dann back: 1950 Gold für Axiombogen, Kanone in 25 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 654.4036865234375,
+    "text": "Kanone kommt 10 57: die noch rein, dann back. 1950 Gold für Axiombogen.",
+    "kette": false
+   },
+   {
+    "zeit": 671.4708251953125,
+    "text": "Jetzt, wo Poppy und Twitch beide unten sind (können in 10 Sekunden kommen): Back jetzt, Axiombogen kaufen, dann mit Quest-TP direkt zur Welle zurück – die Kanone crasht bald und die Gegner sind zu weit weg, um dich zu stoppen.",
+    "kette": true
+   },
+   {
+    "zeit": 725.9556274414062,
+    "text": "Top-Welle rein, dann back: 3050 Gold für Axiombogen, Kanone in 21 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 764.9071044921875,
+    "text": "Back jetzt: 17 Prozent Leben.",
+    "kette": false
+   },
+   {
+    "zeit": 898.260498046875,
+    "text": "Mid-Welle rein, dann back: 800 Gold für Ionische Stiefel der Deutlichkeit.",
+    "kette": false
+   },
+   {
+    "zeit": 913.8610229492188,
+    "text": "Back. Nicht zu Veigar: 17 Sekunden weg.",
+    "kette": false
+   },
+   {
+    "zeit": 960.4539794921875,
+    "text": "Back jetzt: 1150 Gold für Ionische Stiefel der Deutlichkeit, Kanone in 6 Sekunden.",
+    "kette": false
+   }
+  ],
+  "stille_max": 25,
+  "stille_lang": [],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 68.69666290283203,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Geh zu deiner Top-Welle und farm sie. Nicht zu Yorick: 10 Sekunden weg.",
+    "text": "Poppy ist oben im Fluss, kann in 0 Sekunden bei dir sein: Welle nicht drücken, hinten bleiben und Sicht auf den Fluss halten, bis Teemo auftaucht oder dein Jungler kommt."
+   },
+   {
+    "zeit": 136.14862060546875,
+    "von": "welle",
+    "nach": "welle:top",
+    "vorher": "Poppy weg: Welle rein, dann Platten.",
+    "text": "Geh zu deiner Top-Welle und farm sie."
+   },
+   {
+    "zeit": 267.534912109375,
+    "von": "welle",
+    "nach": "zurueck",
+    "vorher": "Jetzt, wo Volibear neben dir kämpft: Nicht hin – Volibear fällt, du brauchst 15 Sekunden; stattdessen Welle crashen mit Kanone in 47 Sekunden, dann back mit Langschwert zum Drachen.",
+    "text": "Raus jetzt, nach Top."
+   },
+   {
+    "zeit": 274.36871337890625,
+    "von": "zurueck",
+    "nach": "welle:top",
+    "vorher": "Raus jetzt, nach Top.",
+    "text": "Kauf Stiefel, dann Top: du bist pünktlich zur Welle da, Kanone in 22 Sekunden."
+   },
+   {
+    "zeit": 392.0052795410156,
+    "von": "welle",
+    "nach": "welle:top",
+    "vorher": "Farm Top, bei 1350 Gold back für den Brutalisierer, Kanone in 11 Sekunden.",
+    "text": "Geh zu deiner Top-Welle und farm sie."
+   },
+   {
+    "zeit": 904.4776611328125,
+    "von": "welle:mid",
+    "nach": "herold",
+    "vorher": "Mid-Welle rein, dann back: 800 Gold für Ionische Stiefel der Deutlichkeit.",
+    "text": "Jetzt, wo Teemo sein Jungle unten aufgetaucht ist: Herold jetzt in 15 Sekunden: Yorick und du crasht die Mid-Welle, dann zusammen rein, Volibear folgt – Lux kommt in 12 Sekunden, danach müsst ihr weg und zu eurem Jungler zurück."
+   },
+   {
+    "zeit": 907.2857666015625,
+    "von": "herold",
+    "nach": "welle:top",
+    "vorher": "Jetzt, wo Teemo sein Jungle unten aufgetaucht ist: Herold jetzt in 15 Sekunden: Yorick und du crasht die Mid-Welle, dann zusammen rein, Volibear folgt – Lux kommt in 12 Sekunden, danach müsst ihr weg und zu eurem Jungler zurück.",
+    "text": "Kauf Ionische Stiefel der Deutlichkeit, dann zur Top-Welle."
+   }
+  ],
+  "fuellsaetze": [
+   {
+    "zeit": 659.42041015625,
+    "text": "Farm deine Top-Welle. Oder auf ihren inneren Top-Turm, aber mit Kampf - unsicher.",
+    "schluessel": "antwort"
+   }
+  ],
+  "saetze_n": 149,
+  "i4": [
+   {
+    "zeit": 341.3,
+    "name": "Poppy",
+    "ort": "im unteren Fluss",
+    "gesagt": "Poppy unten: Welle drücken."
+   },
+   {
+    "zeit": 651.1,
+    "name": "Poppy",
+    "ort": "unten",
+    "gesagt": "Jetzt, wo Yorick in 20 % Leben unten ist: back jetzt, Axiombogen kaufen, dann mit Quest-TP zu dir selbst zurück auf die Lane – Poppy kommt in 2 Sekunden und Sona vermutlich gleich, deine Kanone crasht gerade bei ihnen."
+   }
+  ],
+  "latenz": {
+   "n": 44,
+   "median": 1.59,
+   "p90": 3.52,
+   "erster_satz_median": 1.4421138999750838,
+   "cache_treffer": "57/74"
+  }
+ }
+}

@@ -349,7 +349,9 @@ def vorsicht_statt_raus():
     assert k._vorsicht(m(900.0, "jungle_eigen_oben"), "SEITE", []) is None   # nicht jenseits des Flusses
     assert k._vorsicht(m(900.0), "KAMPF", []) is None
     a = k._vorsicht(m(900.0), "SEITE", [])
-    assert a is not None and a.text == "Du stehst tief: Viego und Twitch fehlen seit 30 Sekunden.", a
+    # Auftrag 027, 1.2 (091311 11:39 "aber du sagst nicht, was ich lieber machen soll"): mit der positiven Anweisung
+    # (in der Wortgrenze von 14: die kurze Form)
+    assert a is not None and a.text == "Du stehst tief: Viego und Twitch fehlen seit 30 Sekunden. Zieh dich zurück.", a
     assert k._vorsicht(m(960.0), "SEITE", []) is None                         # hoechstens einer je 90 s
     assert k._vorsicht(m(995.0), "SEITE", []) is None                         # dieselben Fehlenden: 180 s
     assert k._vorsicht(m(1085.0), "SEITE", []) is not None
@@ -1325,6 +1327,79 @@ def pakete_026():
     assert PaketFuehrer._lane_weg(kern, mw, [ev]) == "Udyr weg: Welle rein, dann Platten."
 
 
+def herz_027():
+    """Auftrag 027 (091311, "extrem passiv, gibt keine Kommandos"): der Herzschlag - Stillstand, Auffrischung, Kauf
+    im Tod und im Brunnen; "warum nicht" nie allein; kein Hin und Her; die Kette im Tod wird nicht gekuerzt."""
+    from types import SimpleNamespace as NS
+    from lolcoach.kern.herzschlag import (Herzschlag, negativ_allein, nachsatz, plan_ziel_von, positiv, vorlage,
+                                          ziele_vertraeglich)
+    from lolcoach.kern.modi import kuerze, liste
+    from lolcoach import stratege
+    kern = NS(fuehrer=NS(plan=None), danach_text="Karthus", uhren=None, cfg={}, _back_rufe=[], _stand=None,
+              pakete=NS(fertig=[]))
+    def lage(z, pos=(1000.0, 1000.0), bereich="lane_eigen", tot=False, respawn=0.0, kaufen=()):
+        return NS(zeit=z, b=NS(kauf=NS(kaufen=list(kaufen), verkaufen=None)), tot=tot, respawn=respawn, pos=pos,
+                  bereich=bereich, meine_lane="Top", lane_hier="Top", p=None, tp_in=None)
+    # vorlage: nie ein nackter Name ("Karthus. Nicht zu Karthus: ...", 026) - dann die Welle der Lane
+    assert vorlage(kern, lage(10.0)) == "Geh zu deiner Top-Welle und farm sie."
+    assert nachsatz(vorlage(kern, lage(10.0)), "Yorick kämpft: nicht hin, 10 Sekunden weg.") == \
+        "Geh zu deiner Top-Welle und farm sie. Nicht zu Yorick: 10 Sekunden weg."
+    # 091311 11:39 und 23:42: nur ein Nein ist keine Anweisung
+    assert negativ_allein("Du stehst tief: Amumu und Braum fehlen seit 32 Sekunden.")
+    assert negativ_allein("Cassiopeia kämpft: nicht hin, 14 Sekunden weg.")
+    assert not negativ_allein("Du stehst tief. Zurück zu deinem äußeren Top-Turm.")
+    assert positiv(NS(schluessel="kern:PAKET_WARUM_NICHT", text="Crash die Welle. Nicht zu Yorick: 10 s weg."))
+    # Stillstand (15:41): nach 3,5 s am selben Fleck die Anweisung - mit Vorrang (STILL)
+    h = Herzschlag()
+    farm = [NS(gesprochen=99.0, zeit=99.0, schluessel="kern:FARMEN", text="Farm Top.")]
+    assert h.takt(kern, lage(100.0), "LANE", farm) is None
+    s = h.takt(kern, lage(103.6), "LANE", farm)
+    assert s and h.still and not negativ_allein(s), s
+    # Auffrischung: 25 s ohne positive Anweisung - eine neue
+    assert h.takt(kern, lage(120.0, pos=(3000.0, 3000.0)), "LANE", farm) is None
+    assert h.takt(kern, lage(129.0, pos=(5000.0, 3000.0)), "LANE", farm) is not None
+    # im Tod 12 s vor dem Respawn: Kauf (im Laden geht das schon) - nicht nur "Du lebst in 11 Sekunden" (19:10)
+    h = Herzschlag()
+    s = h.takt(kern, lage(200.0, tot=True, respawn=11.0, kaufen=["Langschwert"]), "TOT", [])
+    assert s and s.startswith("Du lebst in 11 Sekunden. Kauf Langschwert") and h.kauf, s
+    # im Brunnen: sofort die Kauf-Kette (19:10: erst "Top", dann nichts vom Kauf)
+    h = Herzschlag()
+    s = h.takt(kern, lage(300.0, bereich="basis_eigen", kaufen=["Tiamat", "Langschwert"]), "BASIS", [])
+    assert s == "Kauf Tiamat und Langschwert." and h.kauf, s
+    assert liste(["Langschwert", "Langschwert"]) == "zweimal Langschwert"
+    # die Kette im Tod wird gekuerzt, nicht weggeschnitten (091311 15:17: nur "Du lebst in 3 Sekunden.")
+    lang = "Du lebst in 4 Sekunden: verkauf Dorans Klinge, dann kauf Langschwert für die Eklipse, dann warte an " \
+           "deinem äußeren Top-Turm auf dein Team."
+    assert kuerze(lang, 14) == lang
+    # kein Hin und Her: Welle und Top-Welle sind dasselbe Ziel, Welle und Bot-Turm nicht (23:21)
+    assert ziele_vertraeglich("welle", "welle:top") and not ziele_vertraeglich("welle:top", "turm")
+    assert plan_ziel_von(NS(schluessel="kern:PAKET_KAUF", text="Kauf Tiamat, dann Top.")) is None
+    # 091311 21:00: "dein Team startet den Baron" - die Minimap zeigt alle am Drachen
+    am_drachen = {"team_am": {"bekannt": 4, "drache": 4, "baron": 0}}
+    assert stratege.fakten("Jetzt, wo dein Team den Baron startet: back sofort.", am_drachen)
+    assert not stratege.fakten("Dein Team ist am Drachen: geh hin.", am_drachen)
+    assert not stratege.fakten("Wenn dein Team den Baron startet, geh mit.", am_drachen)
+    # an der Baron-Grube, das Team laut Minimap am Drachen: kein "Bleib am Baron bei deinem Team" (091311 20:46)
+    am_baron = lage(1246.0, bereich="grube:baron")
+    k_team = NS(**{**vars(kern), "_team_am_letzt": (1240.0, {"bekannt": 4, "drache": 4, "baron": 0})})
+    assert "Baron" not in (vorlage(k_team, am_baron) or ""), vorlage(k_team, am_baron)
+    k_team._team_am_letzt = (1240.0, {"bekannt": 4, "drache": 0, "baron": 3})
+    assert "Bleib am Baron" in vorlage(k_team, am_baron)
+    # Spielende (1.5): Inhibitor offen, drei lange tot - aber nie unter R1 (231200 24:44 im API-Nachspiel)
+    from lolcoach.kern import herzschlag
+    alt = herzschlag.ende_satz
+    herzschlag.ende_satz = lambda m: "Jetzt beenden: alle auf den Nexus, 3 von ihnen sind tot."
+    try:
+        for leben, soll in ((0.2, False), (0.9, True)):
+            h = Herzschlag()
+            m_ = lage(1500.0)
+            m_.leben = leben
+            s = h.takt(NS(**{**vars(kern), "cfg": {"schranken": {"vor_leben_min": 0.4}}}), m_, "SEITE", farm)
+            assert (s is not None and s.startswith("Jetzt beenden")) == soll, (leben, s)
+    finally:
+        herzschlag.ende_satz = alt
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (konstruierte_lagen, neuer_plan_ist_der_beste, plan_haelt_bei_kurzer_luecke, fenster_gruende_sprechen_dafuer,
@@ -1335,6 +1410,6 @@ if __name__ == "__main__":
                  warnung_nur_mit_neuer_lage, timer_zur_sprechzeit, absicht_aus_langem_satz,
                  stratege_pruefung, stratege_pruefung_015, makro_stratege_wege, pflichtenheft_016, inhalt_017, lagebild_019,
                  objsymbole_018, respawn_018, kauf_018, tod_018, turm_und_kampf_018, kampf_rechner_020, gehirn_021,
-                 aufraeumen_022, stimme_023, udyr_024, pakete_025, pakete_026):
+                 aufraeumen_022, stimme_023, udyr_024, pakete_025, pakete_026, herz_027):
         test()
         print(f"{test.__name__} OK")

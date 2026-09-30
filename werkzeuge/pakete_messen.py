@@ -29,9 +29,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 TESTPARTIEN = ("2026-09-28_101426", "2026-09-28_192113", "2026-09-29_133448", "2026-09-29_183125",
-               "2026-09-26_125902", "2026-09-26_164809", "2026-09-26_120049", "2026-09-29_231200")
+               "2026-09-26_125902", "2026-09-26_164809", "2026-09-26_120049", "2026-09-29_231200", "2026-09-30_091311")
 WICHTIG = ("OBJ_BALD", "OBJ_DA", "TURM_FAELLT", "FLASH_WEG", "TP_WEG", "LANE_WEG", "KAMPF")
-AUS = Path(__file__).resolve().parent.parent / "buecher" / "protokolle" / "proben" / "pakete_026"   # 025: pakete_025
+AUS = Path(__file__).resolve().parent.parent / "buecher" / "protokolle" / "proben" / "pakete_027"   # 025/026: pakete_025/026
 
 
 def _lauf(stamm: str) -> dict:
@@ -62,6 +62,10 @@ def _lauf(stamm: str) -> dict:
         takte.append({"t": round(p.zeit, 2), "modus": modus, "tot": bool(m.tot), "leben": m.leben,
                       "plan": pl.art if pl is not None else None, "lane_phase": bool(m.lane_phase),
                       "front": m.welle.front if m.welle is not None else None, "lane_hier": m.lane_hier,
+                      "pos": list(b.pos) if b.pos is not None else None,
+                      "kauf": bool(getattr(b, "kauf", None) is not None and b.kauf.kaufen),
+                      # der Recall-Kanal: 16 s nach dem Back-Ruf (wie herzschlag - er beginnt oft erst nach der Welle)
+                      "back_ruf": bool(getattr(kern, "_back_rufe", None)) and p.zeit - kern._back_rufe[-1] <= 16.0,
                       "wir_nah": 1 + sum(1 for s, wo, *_ in b.mitspieler or [] if wo is not None and not s.tot
                                          and b.pos is not None and abstand(wo, b.pos) <= 1500),
                       "sie_nah": sum(1 for g in b.gegner if g.sichtbar and not g.s.tot and g.abstand is not None
@@ -86,9 +90,101 @@ def _lauf(stamm: str) -> dict:
 
     t0 = time.monotonic()
     lauf = ns.durchspielen(ns.pfad_zu(stamm), beim_takt=bt)
-    gesagt = [{"t": round(ns.gesprochen_um(a), 1), "text": a.text, "schl": a.schluessel} for a in lauf.gesagt]
+    gesagt = [{"t": round(ns.gesprochen_um(a), 1), "text": a.text, "schl": a.schluessel, "thema": a.thema}
+              for a in lauf.gesagt]
     return {"stamm": stamm, "takte": takte, "events": events, "pakete": pakete, "gesagt": gesagt,
             "dauer_s": round(time.monotonic() - t0)}
+
+
+def hoeren(d: dict, gesagt: list | None = None) -> dict:
+    """Auftrag 027, 5: das Hauptmass - was Carlos HOERT (nicht das interne Paket).
+      - Anweisungs-Luecke: Zeit (lebend, nicht KAMPF) ohne gueltige gesprochene positive Anweisung (gueltig bis ein
+        Paket endet oder 30 s alt) - p90 und laengste Luecke.
+      - Stillstand-Reaktion: >= 5 s am selben Fleck (nicht Kampf, nicht Recall-Kanal, nicht Basis) -> positive
+        Anweisung in <= 2 s.
+      - Basis-Reaktion: Brunnen (Ankunft oder Respawn) mit Gold fuer einen Kauf -> Kauf-Anweisung in <= 2 s.
+      - Negativ allein: Saetze, die nur sagen, was man NICHT tun soll.
+      - Hin und Her: zwei Plan-Saetze mit verschiedenem Ziel in < 5 s.
+    `gesagt`: die gesprochenen Saetze eines anderen Laufs (API-Nachspiel), sonst die des Stub-Laufs."""
+    from types import SimpleNamespace as NS
+    from lolcoach.kern.herzschlag import START_S, negativ_allein, positiv
+    from lolcoach.bewertung import abstand
+    takte = d["takte"]
+    g = gesagt if gesagt is not None else d["gesagt"]
+    pos = sorted(s["t"] for s in g if positiv(NS(schluessel=s["schl"], text=s["text"])))
+    enden = sorted(v[0] for pk in d["pakete"] for v in pk["verlauf"] if v[1] in ("ERLEDIGT", "ABGEBROCHEN", "BUDGET_AB"))
+    luecken, cur, vor_t = [], 0.0, None
+    import bisect
+    for x in takte:
+        # (die ersten 30 s zaehlen nicht: Einkauf und Briefing vor dem Spielbeginn, wie beim Stillstand)
+        frei = not x["tot"] and x["modus"] not in ("KAMPF", "TOT") and x["t"] >= START_S
+        dt = 0.0 if vor_t is None else min(1.0, x["t"] - vor_t)
+        vor_t = x["t"]
+        if not frei:
+            if cur > 0:
+                luecken.append(cur)
+            cur = 0.0
+            continue
+        i = bisect.bisect_right(pos, x["t"]) - 1
+        gueltig = False
+        if i >= 0 and x["t"] - pos[i] <= 30.0:
+            j = bisect.bisect_right(enden, pos[i])
+            gueltig = not (j < len(enden) and enden[j] <= x["t"])
+        if gueltig:
+            if cur > 0:
+                luecken.append(cur)
+            cur = 0.0
+        else:
+            cur += dt
+    if cur > 0:
+        luecken.append(cur)
+    lsort = sorted(luecken)
+    p90 = lsort[int(0.9 * (len(lsort) - 1))] if lsort else 0.0
+    # Stillstand
+    still_n = still_ok = 0
+    kauf_t = [s["t"] for s in g if "kauf" in s["text"].lower()]
+    seit = None
+    gemeldet = False
+    for x in takte:
+        # (die Basis zaehlt mit - Auftrag 027, 5: "ausserhalb von Kampf, Recall und Kanal"; 091311 15:41 stand er dort)
+        # der Einkauf ist wie der Kanal: im Brunnen die 10 s nach einer Kauf-Anweisung (dann kauft er)
+        einkauf = x["basis"] and any(x["t"] - 10.0 <= t <= x["t"] for t in kauf_t)
+        if x["tot"] or x["modus"] in ("KAMPF", "TOT") or x.get("back_ruf") or x.get("pos") is None \
+                or x["t"] < START_S or einkauf:
+            seit, gemeldet = None, False
+            continue
+        if seit is None or abstand(tuple(seit[1]), tuple(x["pos"])) > 120.0:
+            seit, gemeldet = (x["t"], x["pos"]), False
+        elif not gemeldet and x["t"] - seit[0] >= 5.0:
+            gemeldet = True
+            still_n += 1
+            # die Anweisung zaehlt, wenn sie waehrend des Stehens beginnt, bis 2 s nach den 5 s (ein Kauf-Satz beim
+            # Ankommen im Brunnen ist die Anweisung fuers Stehen dort - 125902 27:24, 133448 13:11)
+            # (1,5 s Spiel: die Takte hier liegen rund 1 s auseinander, der Kern sieht jeden - 091311 20:46 kam der
+            # Satz im selben Moment, in dem Carlos stehen blieb)
+            still_ok += any(seit[0] - 1.5 <= t <= x["t"] + 2.0 for t in pos)
+    # Basis
+    basis_n = basis_ok = 0
+    war = False
+    for x in takte:
+        b = x["basis"] and not x["tot"]
+        if b and not war and x.get("kauf") and x["t"] >= START_S:       # vor dem Spielbeginn: Startkauf, Briefing
+            basis_n += 1
+            basis_ok += any(x["t"] - 14.0 <= t <= x["t"] + 2.0 for t in kauf_t)   # im Tod 12 s vor dem Respawn gesagt, im Recall-Kanal davor
+        war = b
+    neg = [s for s in g if s["schl"] != "antwort" and negativ_allein(s["text"])]
+    hin = 0
+    # dieselbe Zielbestimmung wie die Regel im Kern (herzschlag.plan_ziel_von): Kauf-Kette und Rueckzug ohne eigenes
+    # Ziel, ein Ereignis vorn ("Sie haben den Herold.") ist kein Ziel; eine Gefahr darf immer umwerfen
+    from lolcoach.kern.herzschlag import plan_ziel_von, ziele_vertraeglich
+    plan_s = [(s["t"], plan_ziel_von(NS(schluessel=s["schl"], text=s["text"]))) for s in g
+              if s.get("thema") != "gefahr"]
+    plan_s = [(t, z) for t, z in plan_s if z]
+    for (t1, z1), (t2, z2) in zip(plan_s, plan_s[1:]):
+        hin += t2 - t1 < 5.0 and not ziele_vertraeglich(z1, z2)
+    return {"luecke_p90": round(p90, 1), "luecke_max": round(max(lsort) if lsort else 0.0, 1),
+            "still": [still_ok, still_n], "basis": [basis_ok, basis_n], "negativ": len(neg), "hin_her": hin,
+            "negativ_beispiele": [s["text"][:70] for s in neg[:3]]}
 
 
 def _quote(ja: int, n: int) -> str:
@@ -246,6 +342,17 @@ def main() -> None:
         for typ, (n, j) in r["erahnt"].items():
             a, b = erahnt.get(typ, (0, 0))
             erahnt[typ] = (a + n, b + j)
+        h = hoeren(d)
+        r["hoeren"] = h
+        for k in ("still", "basis"):
+            summe.setdefault(k, [0, 0])
+            summe[k] = [a + b for a, b in zip(summe[k], h[k])]
+        summe["negativ"] = summe.get("negativ", 0) + h["negativ"]
+        summe["hin_her"] = summe.get("hin_her", 0) + h["hin_her"]
+        summe.setdefault("luecken", []).append((h["luecke_p90"], h["luecke_max"]))
+        print(f"{r['stamm']}: HOEREN Luecke p90 {h['luecke_p90']} s / max {h['luecke_max']} s, Stillstand "
+              f"{_quote(*h['still'])}, Basis {_quote(*h['basis'])}, negativ allein {h['negativ']}, hin und her "
+              f"{h['hin_her']}", flush=True)
         print(f"{r['stamm']}: Abdeckung {r['abdeckung']} (angesagt {r['abdeckung_gesagt']}), Abbruch {r['abbruch']}, "
               f"Budget {r['budget']}, Back {r['back']}, Chancen {r['chancen']}, Events {r['events']}, "
               f"Pakete {r['pakete_n']}", flush=True)
@@ -253,7 +360,10 @@ def main() -> None:
          "abbruch": _quote(*summe["abbruch"]),
          "budget": f"{summe['budget'][0]}/{summe['budget'][1]} Fehler, {summe['budget'][2]} gefährlich",
          "back": _quote(*summe["back"]), "chancen": _quote(*summe["chancen"]), "events": _quote(*summe["events"]),
-         "erahnt": {k: _quote(j, n) for k, (n, j) in erahnt.items()}}
+         "erahnt": {k: _quote(j, n) for k, (n, j) in erahnt.items()},
+         "hoeren": {"luecke_p90_max": max(p for p, _ in summe["luecken"]), "luecke_max": max(x for _, x in summe["luecken"]),
+                    "stillstand": _quote(*summe["still"]), "basis": _quote(*summe["basis"]),
+                    "negativ_allein": summe["negativ"], "hin_und_her": summe["hin_her"]}}
     print("GESAMT:", json.dumps(g, ensure_ascii=False), f"({time.monotonic() - t0:.0f} s)")
     (AUS / "ergebnis.json").write_text(json.dumps({"gesamt": g, "je_partie": ergebnisse}, ensure_ascii=False, indent=1),
                                        encoding="utf-8")

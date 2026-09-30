@@ -1,0 +1,450 @@
+{
+ "kennzahlen": {
+  "flash": "6/7 (86 %)",
+  "jungler": "14/14 (100 %)",
+  "i4": "2/2 (100 %)",
+  "backs": "9/10 (90 %)",
+  "back_rufe": "4/19 (21 %)",
+  "stille": "25 s",
+  "sicherheit": 0,
+  "widersprueche": 8,
+  "fuellsaetze": "0/248 (0.0 %)",
+  "latenz": "1.61 / 3.58 s (n = 84)",
+  "erster_satz": 1.4171746000065468,
+  "cache": "118/141"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 69.02359008789062,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 2.5
+   },
+   {
+    "zeit": 388.9655456542969,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 838.0535278320312,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 3.7
+   },
+   {
+    "zeit": 847.7702026367188,
+    "champion": "Cassiopeia",
+    "gesagt": "Cassiopeia Flash weg.",
+    "nach_s": 2.9
+   },
+   {
+    "zeit": 1151.1043701171875,
+    "champion": "Teemo",
+    "gesagt": null,
+    "nach_s": null
+   },
+   {
+    "zeit": 1536.1158447265625,
+    "champion": "Teemo",
+    "gesagt": "Teemo Flash weg.",
+    "nach_s": 9.3
+   },
+   {
+    "zeit": 1679.8330078125,
+    "champion": "Cassiopeia",
+    "gesagt": "Cassiopeia Flash weg.",
+    "nach_s": 0.0
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 214.7,
+    "name": "Master Yi",
+    "ort": "im unteren Fluss",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Master Yi unterer Fluss."
+   },
+   {
+    "zeit": 287.3,
+    "name": "Master Yi",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": 72,
+    "tot_ich": false,
+    "gesagt": "Master Yi euer Jungle unten."
+   },
+   {
+    "zeit": 599.0,
+    "name": "Master Yi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 304,
+    "tot_ich": false,
+    "gesagt": "Master Yi Mid."
+   },
+   {
+    "zeit": 760.0,
+    "name": "Master Yi",
+    "ort": "im unteren Fluss",
+    "ohne_s": 145,
+    "tot_ich": false,
+    "gesagt": "Master Yi unterer Fluss."
+   },
+   {
+    "zeit": 890.6,
+    "name": "Master Yi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 88,
+    "tot_ich": false,
+    "gesagt": "Master Yi sein Jungle oben, 4 Sekunden."
+   },
+   {
+    "zeit": 961.3,
+    "name": "Master Yi",
+    "ort": "oben",
+    "ohne_s": 54,
+    "tot_ich": false,
+    "gesagt": "Master Yi oben."
+   },
+   {
+    "zeit": 1063.3,
+    "name": "Master Yi",
+    "ort": "im oberen Fluss",
+    "ohne_s": 71,
+    "tot_ich": false,
+    "gesagt": "Master Yi oberer Fluss."
+   },
+   {
+    "zeit": 1170.9,
+    "name": "Master Yi",
+    "ort": "in der Flussmitte",
+    "ohne_s": 42,
+    "tot_ich": false,
+    "gesagt": "Master Yi Flussmitte."
+   },
+   {
+    "zeit": 1257.8,
+    "name": "Master Yi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 72,
+    "tot_ich": false,
+    "gesagt": "Master Yi sein Jungle oben."
+   },
+   {
+    "zeit": 1324.8,
+    "name": "Master Yi",
+    "ort": "in seiner Basis",
+    "ohne_s": 37,
+    "tot_ich": false,
+    "gesagt": "Master Yi in Basis."
+   },
+   {
+    "zeit": 1381.4,
+    "name": "Master Yi",
+    "ort": "oben",
+    "ohne_s": 49,
+    "tot_ich": true,
+    "gesagt": "Master Yi oben."
+   },
+   {
+    "zeit": 1549.4,
+    "name": "Master Yi",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 162,
+    "tot_ich": false,
+    "gesagt": "Master Yi sein Jungle oben."
+   },
+   {
+    "zeit": 1708.3,
+    "name": "Master Yi",
+    "ort": "auf der Mid-Lane",
+    "ohne_s": 115,
+    "tot_ich": false,
+    "gesagt": "Master Yi Mid."
+   },
+   {
+    "zeit": 1774.9,
+    "name": "Master Yi",
+    "ort": "in seiner Basis",
+    "ohne_s": 29,
+    "tot_ich": false,
+    "gesagt": "Master Yi in Basis."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 120.3,
+    "gesagt": null,
+    "saetze": [
+     "Bleib dabei, Kanone in 17 Sekunden.",
+     "Bleib dabei.",
+     "Lauf direkt nach Top, sonst verpasst du die Welle, nimm ein Kontroll-Auge mit."
+    ]
+   },
+   {
+    "zeit": 259.3,
+    "gesagt": "Back jetzt: Caulfields Kriegshammer, dann zurück auf Top, weil Teemo gleich wiederkommt und du Leben brauchst.",
+    "saetze": [
+     "Back.",
+     "Kauf Caulfields Kriegshammer für den Axiombogen.",
+     "Aus der Basis: Farm Top, Drache in 28 Sekunden."
+    ]
+   },
+   {
+    "zeit": 410.3,
+    "gesagt": "Welle rein, crash die Kanonenwelle jetzt, dann back für Spitzhacke und Stiefel – in 91 Sekunden Larven, aber ihr habt vier Kills und Gold vorn, also erzwingt ihr den Drachen danach mit eurer Gruppe während Teemo oben splittet.",
+    "saetze": [
+     "Back jetzt: 1500 Gold für den Brutalisierer.",
+     "Kauf Der Brutalisierer für den Axiombogen.",
+     "Der Brutalisierer, dann nach Top die Welle crasht gerade bei ihm, du bist mit dem Item pünktlich da und drückst weiter, weil Teemo weg ist und ihr vier Kills habt."
+    ]
+   },
+   {
+    "zeit": 581.4,
+    "gesagt": "Kauf Caulfields Kriegshammer, dann Quest-TP zu Top: dort kommt ihre nächste Welle und Teemo respawnt gerade.",
+    "saetze": [
+     "Bleib dabei.",
+     "Ionische Stiefel der Deutlichkeit, Stiefel und Langschwert kaufen, dann sofort mit Quest-TP zu Top zur nächsten Welle, weil Teemo in 2 Sekunden respawnt und du dort mit Vorsprung die Welle crashen musst, bevor er zurückkommt.",
+     "Master Yi Mid."
+    ]
+   },
+   {
+    "zeit": 624.3,
+    "gesagt": "Kauf Caulfields Kriegshammer, dann Quest-TP zu Top: dort kommt ihre nächste Welle und Teemo respawnt gerade.",
+    "saetze": [
+     "Teemo oben: Welle drücken.",
+     "Farm Bot, Caulfields Kriegshammer ist schon bezahlbar: nach der Welle back. Nicht zu Brand.",
+     "Jetzt, wo Brand neben dir kämpft: Nicht hin: ihr Burst 410 gegen Yis 1150, Brand stirbt sonst – Back jetzt, Caulfields kaufen, dann Quest-TP zu Top."
+    ]
+   },
+   {
+    "zeit": 775.2,
+    "gesagt": "Kauf Spitzhacke für die Eklipse und Langschwert, dann zur Top-Welle.",
+    "saetze": [
+     "Kauf Spitzhacke für die Eklipse und Langschwert, dann zur Top-Welle.",
+     "Bleib dabei.",
+     "Spitzhacke und Langschwert kaufen, dann Quest-TP zur Top-Welle, weil sie in 10 Sekunden in deinen Turm läuft und Master Yi vermutlich unten ist – freie Lane zum Farmen."
+    ]
+   },
+   {
+    "zeit": 926.8,
+    "gesagt": "Kauf Eklipse und zweimal Langschwert, dann zur Top-Welle.",
+    "saetze": [
+     "Bleib dabei.",
+     "Kauf Eklipse und zweimal Langschwert.",
+     "Kauf Eklipse und Vampirisches Zepter, dann zur Top-Welle: sie läuft sonst in deinen Turm."
+    ]
+   },
+   {
+    "zeit": 1093.5,
+    "gesagt": "Jetzt, wo Yi in eurem unteren Jungle war und Master Yi in 0 s bei dir sein kann: Back jetzt in eure Basis, Tiamat und Caulfields kaufen, dann zu eurem Bot-Turm zurück und dort verteidigen – Yi kann dich dort treffen, und du brauchst Leben.",
+    "saetze": [
+     "Bleib dabei, Kanone in 28 Sekunden.",
+     "Kauf Tiamat für die Gefräßige Hydra und Caulfields Kriegshammer, dann nach Top.",
+     "Jetzt, wo du in der Basis bist: Tiamat und Caulfields kaufen, dann sofort nach Top zur Welle – Yi kann jeden Moment oben sein, und die Kanonenwelle in 21 Sekunden brauchst du mit dem neuen Schaden."
+    ]
+   },
+   {
+    "zeit": 1160.6,
+    "gesagt": "Jetzt, wo Yi zuletzt unten war und du auf Mid bist: Back sofort für Langschwert, dann Quest-TP zu Top, weil Yi dich dort hätte treffen können und dein Plan braucht dich beim Baron in 58 Sekunden.",
+    "saetze": [
+     "Bleib dabei.",
+     "Raus jetzt, zum Herold.",
+     "Master Yi Flussmitte."
+    ]
+   },
+   {
+    "zeit": 1236.2,
+    "gesagt": "Kauf Gefräßige Hydra, dann nach Top: dort kommt ihre nächste Welle.",
+    "saetze": [
+     "Du stehst tief: Master Yi, Teemo und Pantheon fehlen seit 23 Sekunden. Zieh dich zurück.",
+     "Jetzt, wo Kai'Sa neben dir kämpft: Hilf jetzt: dein Burst reicht, Teemo hat kein Flash und Kai'Sa braucht dich – danach sofort zurück zur Welle unten, weil Yi überall sein kann.",
+     "Bleib dabei."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 74.33207702636719,
+    "text": "Farm Top, bei 1050 Gold back für Caulfields Kriegshammer.",
+    "kette": false
+   },
+   {
+    "zeit": 243.7779083251953,
+    "text": "Back.",
+    "kette": false
+   },
+   {
+    "zeit": 332.3306884765625,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 6:27.",
+    "kette": false
+   },
+   {
+    "zeit": 360.6398620605469,
+    "text": "Top-Welle rein, dann back: 950 Gold für Spitzhacke, Teemo ist gebackt.",
+    "kette": false
+   },
+   {
+    "zeit": 388.1572265625,
+    "text": "Welle rein, crash die Kanonenwelle jetzt, dann back für Spitzhacke und Stiefel – in 91 Sekunden Larven, aber ihr habt vier Kills und Gold vorn, also erzwingt ihr den Drachen danach mit eurer Gruppe während Teemo oben splittet.",
+    "kette": true
+   },
+   {
+    "zeit": 404.6564025878906,
+    "text": "Back jetzt: 1500 Gold für den Brutalisierer.",
+    "kette": false
+   },
+   {
+    "zeit": 512.3606567382812,
+    "text": "In 12 Sekunden Welle rein, dann Back: pünktlich zur Kanone um 9:27.",
+    "kette": false
+   },
+   {
+    "zeit": 604.8133544921875,
+    "text": "Farm Bot, Caulfields Kriegshammer ist schon bezahlbar: nach der Welle back. Nicht zu Brand.",
+    "kette": false
+   },
+   {
+    "zeit": 612.2387084960938,
+    "text": "Jetzt, wo Brand neben dir kämpft: Nicht hin: ihr Burst 410 gegen Yis 1150, Brand stirbt sonst – Back jetzt, Caulfields kaufen, dann Quest-TP zu Top.",
+    "kette": true
+   },
+   {
+    "zeit": 651.7064208984375,
+    "text": "Farm Top, bei 350 Gold back für Langschwert. Nicht zu Brand: 14 Sekunden weg.",
+    "kette": false
+   },
+   {
+    "zeit": 722.625244140625,
+    "text": "Back jetzt: 30 Prozent Leben, Kanone in 24 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 899.6718139648438,
+    "text": "Back jetzt: 17 Prozent Leben, Kanone in 17 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1032.651611328125,
+    "text": "Bot-Welle rein, dann back: 1750 Gold für Tiamat, Kanone in 37 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1047.410400390625,
+    "text": "Back jetzt: 31 Prozent Leben, Kanone in 19 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1139.0870361328125,
+    "text": "Back jetzt: Welle ist drin, 700 Gold für Langschwert, Kanone in 27 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1278.2410888671875,
+    "text": "Jetzt, wo Sona tot ist und Yi gerade Brand angegriffen hat: Back sofort für Langschwert, dann zu Bot zur Kanone in 30 Sekunden – ihr seid immer noch 4-zu-1, Inhibitor fällt trotzdem.",
+    "kette": true
+   },
+   {
+    "zeit": 1291.383056640625,
+    "text": "Back jetzt: 1100 Gold für Stahlsiegel, Kanone in 27 Sekunden.",
+    "kette": false
+   },
+   {
+    "zeit": 1582.5499267578125,
+    "text": "Jetzt, wo Brand neben dir kämpft: Nicht hin – Alistar kommt in 2 Sekunden zu dir, Back jetzt Schutzengel, dann Quest-TP zum Pit, weil dein Leben zu niedrig ist.",
+    "kette": true
+   },
+   {
+    "zeit": 1858.0596923828125,
+    "text": "Back jetzt: 3400 Gold im Beutel.",
+    "kette": false
+   }
+  ],
+  "stille_max": 25,
+  "stille_lang": [],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 56.34000015258789,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Geh nach Top: du bist pünktlich zur Welle da.",
+    "text": "Pantheon in 20 Sekunden bei dir: Welle nicht weiter drücken, freezen nah am Turm, weil Jungler unbekannt und du allein bist."
+   },
+   {
+    "zeit": 366.7066345214844,
+    "von": "welle:top",
+    "nach": "welle",
+    "vorher": "Top-Welle rein, dann back: 950 Gold für Spitzhacke, Teemo ist gebackt.",
+    "text": "Teemo weg: Welle rein, dann Platten."
+   },
+   {
+    "zeit": 486.26007080078125,
+    "von": "welle",
+    "nach": "welle:top",
+    "vorher": "Teemo weg: Welle rein, dann Platten.",
+    "text": "Geh nach Top: du bist pünktlich zur Welle da."
+   },
+   {
+    "zeit": 612.2387084960938,
+    "von": "welle",
+    "nach": "back",
+    "vorher": "Farm Bot, Caulfields Kriegshammer ist schon bezahlbar: nach der Welle back. Nicht zu Brand.",
+    "text": "Jetzt, wo Brand neben dir kämpft: Nicht hin: ihr Burst 410 gegen Yis 1150, Brand stirbt sonst – Back jetzt, Caulfields kaufen, dann Quest-TP zu Top."
+   },
+   {
+    "zeit": 811.5611572265625,
+    "von": "zurueck",
+    "nach": "welle:top",
+    "vorher": "Raus jetzt, nach Top.",
+    "text": "Geh nach Top: dort kommt ihre nächste Welle, Kanone in 25 Sekunden."
+   },
+   {
+    "zeit": 1032.651611328125,
+    "von": "zurueck",
+    "nach": "welle:bot",
+    "vorher": "Raus jetzt: Cassiopeia ist da.",
+    "text": "Bot-Welle rein, dann back: 1750 Gold für Tiamat, Kanone in 37 Sekunden."
+   },
+   {
+    "zeit": 1448.83837890625,
+    "von": "zurueck",
+    "nach": "drache",
+    "vorher": "Raus jetzt: Pantheon in 15 Sekunden.",
+    "text": "Kai'Sa lebt in 17 Sekunden, ihr seid vier gegen fünf: Drache in 91 Sekunden – crash die zwei Gegner-Vasallen hier jetzt, dann Quest-TP zum Pit, damit ihr mit Kai'Sa zusammen reingeht, sobald sie spawnt."
+   },
+   {
+    "zeit": 1770.6854248046875,
+    "von": "welle:top",
+    "nach": "baron",
+    "vorher": "Geh nach Top: dort kommt ihre nächste Welle, Kanone in 10 Sekunden.",
+    "text": "Baron jetzt: Level 18 gegen 12, ihr seid vier gegen eins."
+   }
+  ],
+  "fuellsaetze": [],
+  "saetze_n": 248,
+  "i4": [
+   {
+    "zeit": 599.6,
+    "name": "Teemo",
+    "ort": "oben",
+    "gesagt": "Kauf Caulfields Kriegshammer, dann Quest-TP zu Top: dort kommt ihre nächste Welle und Teemo respawnt gerade."
+   },
+   {
+    "zeit": 749.6,
+    "name": "Teemo",
+    "ort": "unten",
+    "gesagt": "Teemo unten: unterm Turm farmen."
+   }
+  ],
+  "latenz": {
+   "n": 84,
+   "median": 1.61,
+   "p90": 3.58,
+   "erster_satz_median": 1.4171746000065468,
+   "cache_treffer": "118/141"
+  }
+ }
+}

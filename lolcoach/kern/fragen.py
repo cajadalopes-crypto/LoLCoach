@@ -279,7 +279,7 @@ def _respawn_plan(kern) -> str:
     if k is not None and getattr(k, "kaufen", None):
         from ..kaufplan import mit_ziel
         ziel = getattr(k, "item", None)
-        return f"{zeit}: kauf {' und '.join(mit_ziel(x, ziel) for x in k.kaufen[:2])}, dann zurück auf {lane}."
+        return f"{zeit}: kauf {' und '.join(mit_ziel(x, ziel) for x in k.kaufen[:4])}, dann zurück auf {lane}."
     return f"{zeit}, dann zurück auf {lane}."
 
 

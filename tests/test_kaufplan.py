@@ -21,7 +21,11 @@ def inv(*namen) -> tuple[int, ...]:
 
 
 def genannt(k) -> list[str]:
-    return list(k.kaufen) + ([k.naechstes[0]] if k.naechstes else []) if k else []
+    """Was der Plan fuer sein ERSTES Ziel nennt (die Auffuellung fuer weitere Ziele steht in k.weitere)."""
+    if not k:
+        return []
+    n = sum(len(s) for _, s in k.weitere)
+    return list(k.kaufen[:len(k.kaufen) - n]) + ([k.naechstes[0]] if k.naechstes else [])
 
 
 def build_aus_den_aufnahmen():
@@ -41,7 +45,8 @@ def befund_164326_kein_caulfields():
     for gold in range(0, 4000, 50):
         k = kaufplan.plan("Riven", lage, gold)
         assert k is not None and k.item == "Schutzengel", (gold, k)
-        assert not {"Caulfields Kriegshammer", "Langschwert", "Stiefel"} & set(genannt(k)), (gold, k)
+        # Auftrag 027, 2: das Langschwert im Stahlsiegel ist ein Schutzengel-Bauteil - es darf jetzt kommen
+        assert not {"Caulfields Kriegshammer", "Stiefel"} & set(genannt(k)), (gold, k)
     voll = inv("Dorans Klinge", "Axiombogen", "Eklipse", "Ionische Stiefel der Deutlichkeit", "Riesenschwert",
                "Gefräßige Hydra")
     k = kaufplan.plan("Riven", voll, 1580)
@@ -92,6 +97,8 @@ def befund_173159_keine_spitzhacke_ausser_im_ziel():
             ziel = N[k.item]
             if "Spitzhacke" in genannt(k):
                 assert N["Spitzhacke"] in kaufplan._baum(ziel), (n, gold, k)
+            for z, stuecke in k.weitere:             # Auftrag 027, 2: auch in der Auffuellung nur fuer ihr Ziel
+                assert "Spitzhacke" not in stuecke or N["Spitzhacke"] in kaufplan._baum(N[z]), (n, gold, k)
             if n < 2:
                 assert kaufplan.gruppe(ziel) == "Hydra" and "Spitzhacke" not in genannt(k), (n, gold, k)   # Tiamat da
             if N["Gottlose Hydra"] in lage:
@@ -99,7 +106,8 @@ def befund_173159_keine_spitzhacke_ausser_im_ziel():
     # 16:10: Caulfields und Zepter wollen beide DAS eine Langschwert - zusammen 1600, nicht 1250
     k = kaufplan.plan("Riven", inv("Dorans Klinge", "Axiombogen", "Langschwert", "Ionische Stiefel der Deutlichkeit",
                                    "Tiamat"), 1518)
-    assert k.kaufen == ["Caulfields Kriegshammer"] and k.kosten == 700, k
+    # Auftrag 027, 2: der Rest (818) kauft das zweite Langschwert fuers Zepter - das eigene verbraucht Caulfields
+    assert k.kaufen == ["Caulfields Kriegshammer", "Langschwert"] and k.kosten == 1050, k
     # 16:16: Inventar voll, aber Caulfields verbraucht das Langschwert - kein "Verkauf Dorans" fuer 68 Gold
     k = kaufplan.plan("Riven", inv("Dorans Klinge", "Axiombogen", "Vampirisches Zepter", "Langschwert",
                                    "Ionische Stiefel der Deutlichkeit", "Tiamat"), 632)
@@ -135,6 +143,14 @@ def kaufbar_drei_regeln():
     assert not kaufplan.kaufbar("Quatsch", ())[0]
 
 
+def preis(i: int, rest: list) -> int:
+    """Was der Kauf von `i` kostet, wenn eigene Bauteile in `rest` verschmelzen (sie werden aus `rest` genommen)."""
+    c = IT[i]["gold"]["total"]
+    for f in IT[i].get("from") or []:
+        c -= IT[int(f)]["gold"]["total"] - kaufplan._baum_kosten(int(f), rest)[0]
+    return c
+
+
 def alles_genannte_ist_kaufbar():
     """Jede Lage: was der Plan nennt (kaufen und naechstes), besteht kaufbar() gegen sein Ziel-Item."""
     zufall = random.Random(5)
@@ -152,10 +168,32 @@ def alles_genannte_ist_kaufbar():
         for name in genannt(k):
             ok, grund = kaufplan.kaufbar(name, lage, k.item)
             assert ok, (name, grund, [IT[i]["name"] for i in lage], gold, k)
+        # Auftrag 027, 2: die Auffuellung - jedes Stueck kaufbar fuer SEIN Ziel, im Inventar nach dem Kauf davor
+        danach = kaufplan._nach_kauf(tuple(i for i in lage if not k.verkaufen or IT[i]["name"] != k.verkaufen),
+                                     genannt(k))
+        for ziel, stuecke in k.weitere:
+            for name in stuecke:
+                ok, grund = kaufplan.kaufbar(name, danach, ziel)
+                assert ok, (name, ziel, grund, [IT[i]["name"] for i in lage], gold, k)
+            danach = kaufplan._nach_kauf(danach, stuecke)
         rest, summe = [i for i in lage if not k.verkaufen or IT[i]["name"] != k.verkaufen], 0
         for name in k.kaufen:           # der Reihe nach gekauft: jedes eigene Bauteil nur einmal
-            summe += 300 if name == "Stiefel" else kaufplan._baum_kosten(N[name], rest)[0]
+            summe += 300 if name == "Stiefel" else preis(N[name], rest)
+            rest.append(N[name])         # 027: die Auffuellung baut auf dem Gekauften auf (Stiefel -> Ionische)
         assert summe == k.kosten <= gold, (summe, k, gold, [IT[i]["name"] for i in lage])
+
+
+def auftrag_027_alles_gold():
+    """091311: 19:52 mit 1792 Gold hiess es "Kauf Tiamat" (592 blieben), 20:09 standen 1800 Gold ungenutzt, 10:33
+    blieben die einfachen Stiefel liegen; Traenke gehen vor Dorans."""
+    k = kaufplan.plan("Riven", inv("Eklipse", "Ionische Stiefel der Deutlichkeit", "Axiombogen"), 1792)
+    assert k.kaufen == ["Tiamat", "Langschwert"] and k.kosten == 1550, k
+    k = kaufplan.plan("Riven", inv("Dorans Klinge", "Heiltrank", "Stiefel", "Axiombogen"), 729)
+    assert k.kaufen == ["Ionische Stiefel der Deutlichkeit"], k
+    k = kaufplan.plan("Riven", inv("Langschwert", "Ionische Stiefel der Deutlichkeit", "Axiombogen", "Spitzhacke",
+                                   "Caulfields Kriegshammer"), 2228)
+    assert k.kaufen[0] == "Eklipse" and k.weitere and 2228 - k.kosten < 300, k
+    assert kaufplan._start_item(inv("Dorans Klinge", "Heiltrank")) == N["Heiltrank"]
 
 
 def lexikon_bleibt_rueckfall():
@@ -169,6 +207,6 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     for test in (build_aus_den_aufnahmen, befund_164326_kein_caulfields, volles_inventar_kauft_nichts,
                  befund_173159_keine_spitzhacke_ausser_im_ziel, kaufbar_drei_regeln, alles_genannte_ist_kaufbar,
-                 lexikon_bleibt_rueckfall):
+                 auftrag_027_alles_gold, lexikon_bleibt_rueckfall):
         test()
         print(f"{test.__name__} OK")

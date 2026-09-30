@@ -26,6 +26,10 @@ class BackGrund:
 
 def liste(teile: list[str]) -> str:
     teile = [t for t in teile if t]
+    # Auftrag 027, 2 (183125 4:10: "Kauf Langschwert und Langschwert"): Gleiches einmal, mit der Anzahl
+    zahl = {2: "zweimal", 3: "dreimal", 4: "viermal"}
+    teile = [f"{zahl[teile.count(t)]} {t}" if teile.count(t) in zahl else t for i, t in enumerate(teile)
+             if t not in teile[:i]]
     return "" if not teile else teile[0] if len(teile) == 1 else ", ".join(teile[:-1]) + " und " + teile[-1]
 
 
@@ -114,9 +118,19 @@ def back_gruende(m, cfg: dict) -> list[BackGrund]:
     b, c, k = m.b, cfg["recall"], m.kauf
     gold, leben = b.gold, b.leben
     schwelle, nie_unter, ausser = recall_schwellen(b.ich.champion_id)
-    if nie_unter and gold < nie_unter and not (leben is not None and leben < (ausser or 0.0)):
+    # Auftrag 027, 4: Welle gecrasht - Back, auch ohne Gold fuer ein ganzes Item, mit der Kauf-Kette (Bauteile);
+    # nicht, wenn ein Objective in <= 20 s spawnt (ein Kampf-Event prueft der Kern, _back_vor_farmen)
+    w = m.welle
+    # (ist dein Gegner tot oder gebackt, sind erst die Platten dran - die Chance, Buch 15, 5)
+    gecrasht = w is not None and w.zustand == "GECRASHT_BEI_IHM" and k is not None and bool(k.kaufen) \
+        and not any(not o.lebt and o.spawn_in <= c.get("crash_objective_s", 20.0) for o in m.objectives or []) \
+        and not (b.lane is not None and (b.lane.s.tot or lane_im_brunnen(m)))
+    if nie_unter and gold < nie_unter and not (leben is not None and leben < (ausser or 0.0)) and not gecrasht:
         return []
     aus = []
+    if gecrasht and not k.lohnt:
+        aus.append(BackGrund("WELLE_GECRASHT", k.kosten * cfg["kauf"]["kauf_faktor"],
+                             f"Welle ist drin, {gold // 50 * 50} Gold für {_akk(k.kaufen[0])}"))
     if k is not None and k.lohnt:
         teil = k.kaufen[0] if k.kaufen else "den nächsten Kauf"
         g = k.kosten * cfg["kauf"]["kauf_faktor"] + (c["spike_bonus"] if k.kern_fertig else 0.0)
@@ -144,10 +158,10 @@ def back_gruende(m, cfg: dict) -> list[BackGrund]:
                              f"{g.champion} ist {'tot' if g.s.tot else 'gebackt'}"))
     # Pruefung c, R4: ein toter oder gebackter Lane-Gegner ist ein Grund fuer Platten oder Druecken - fuer einen Back
     # nur zusammen mit Gold oder Leben (173159 28:11: "Back ...: Cho'Gath ist tot")
-    if not any(x.art in ("LEBEN", "GOLD_STUFE", "GOLD_HORTEN") for x in aus):
+    if not any(x.art in ("LEBEN", "GOLD_STUFE", "GOLD_HORTEN", "WELLE_GECRASHT") for x in aus):
         aus = [x for x in aus if x.art != "GEGNER_ZURUECK"]
     # der tragende Grund zuerst: Leben, dann Gold, dann Tempo
-    reihe = ("LEBEN", "GOLD_STUFE", "GOLD_HORTEN", "OBJECTIVE_VORLAUF", "GEGNER_ZURUECK")
+    reihe = ("LEBEN", "GOLD_STUFE", "WELLE_GECRASHT", "GOLD_HORTEN", "OBJECTIVE_VORLAUF", "GEGNER_ZURUECK")
     return sorted(aus, key=lambda x: reihe.index(x.art))
 
 
@@ -179,6 +193,8 @@ def kuerze(satz: str, woerter: int) -> str:
     while len(satz.split()) > woerter and ": " in satz:
         kopf = satz.rsplit(": ", 1)[0]
         rest = kopf.split(": ", 1)[1] if kopf.startswith("Noch ") and ": " in kopf else kopf
+        if kopf.startswith("Du lebst in "):          # Auftrag 027, 2: 091311 15:17 blieb nur "Du lebst in 3 Sekunden."
+            rest = kopf.split(": ", 1)[1] if ": " in kopf else ""
         if len(rest.split()) < 3:
             break
         satz = kopf.rstrip(".,;") + "."

@@ -109,6 +109,14 @@ class PushToTalk(threading.Thread):
         self.bei_frage, self.beim_druecken, self.bei_abbruch = bei_frage, beim_druecken, bei_abbruch
         self.beim_loslassen = beim_loslassen   # die Taste ist die Stummtaste: los = der Coach darf wieder
         self.geraet, self.geraet_rate = _mikrofon()
+        # Auftrag 027, 0: welches Geraet mit welcher Host-API - beim WDM-KS-Fehler vom 30.09. fehlte genau das im Log
+        try:
+            import sounddevice as sd
+            d = sd.query_devices(self.geraet if self.geraet is not None else sd.default.device[0])
+            print(f"  (Mikrofon: {d['name']} - {sd.query_hostapis(d['hostapi'])['name']}, {self.geraet_rate} Hz)",
+                  flush=True)
+        except Exception:
+            pass
         self._halt = threading.Event()
 
     def run(self) -> None:
@@ -121,10 +129,17 @@ class PushToTalk(threading.Thread):
             if self.beim_druecken:
                 self.beim_druecken()
             stuecke: list[np.ndarray] = []
-            with sd.InputStream(device=self.geraet, samplerate=self.geraet_rate, channels=1, dtype="float32",
-                                callback=lambda d, *_: stuecke.append(d[:, 0].copy())):
+            strom = self._oeffne(sd, stuecke)
+            try:
                 while win32api.GetAsyncKeyState(self.vk) & 0x8000 and not self._halt.is_set():
                     time.sleep(0.02)
+            finally:
+                if strom is not None:
+                    try:
+                        strom.stop()
+                        strom.close()
+                    except Exception:
+                        pass
             if self.beim_loslassen:
                 self.beim_loslassen()
             # Nur angetippt: keine Frage - aber der Coach wurde beim Druecken stumm geschaltet und muss wieder frei
@@ -140,6 +155,42 @@ class PushToTalk(threading.Thread):
                     self.bei_abbruch()
                 continue
             threading.Thread(target=self.bei_frage, args=(audio,), daemon=True).start()
+
+    def _oeffne(self, sd, stuecke):
+        """Mikrofon oeffnen. Geht das gewaehlte Geraet nicht (Headset getrennt, Windows-Fehler), die uebrigen
+        Eingaenge der Reihe nach probieren: Windows-Standard, dann alle ausser WDM-KS. Hotfix 30.09.2026 (Carlos:
+        PortAudioError -9999 WDM-KS beim Druecken, der Sprech-Thread starb). Kein Mikrofon: None, die Frage entfaellt,
+        der Coach laeuft weiter."""
+        def rueckruf(d, *_):
+            stuecke.append(d[:, 0].copy())
+        kandidaten = [(self.geraet, self.geraet_rate)]
+        try:
+            kandidaten.append((None, int(sd.query_devices(kind="input")["default_samplerate"])))
+        except Exception:
+            pass
+        try:
+            for i, d in enumerate(sd.query_devices()):
+                if d["max_input_channels"] > 0 and "WDM-KS" not in sd.query_hostapis(d["hostapi"])["name"]:
+                    kandidaten.append((i, int(d["default_samplerate"])))
+        except Exception:
+            pass
+        gesehen = set()
+        for geraet, rate in kandidaten:
+            if (geraet, rate) in gesehen:
+                continue
+            gesehen.add((geraet, rate))
+            try:
+                strom = sd.InputStream(device=geraet, samplerate=rate, channels=1, dtype="float32", callback=rueckruf)
+                strom.start()
+            except Exception as e:
+                print(f"  (Mikrofon {geraet}: {type(e).__name__} - probiere das naechste)", flush=True)
+                continue
+            if (geraet, rate) != (self.geraet, self.geraet_rate):
+                print(f"  (Mikrofon gewechselt auf Geraet {geraet}, {rate} Hz)", flush=True)
+                self.geraet, self.geraet_rate = geraet, rate
+            return strom
+        print("  (Kein Mikrofon liess sich oeffnen - Headset angeschlossen?)", flush=True)
+        return None
 
     def halt(self) -> None:
         self._halt.set()

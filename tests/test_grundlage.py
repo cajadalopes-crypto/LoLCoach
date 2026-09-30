@@ -152,6 +152,40 @@ def echte_partie():
     assert not unbekannt, unbekannt
 
 
+def mikrofon_027():
+    """Auftrag 027, 0 (Hotfix 30.09.: PortAudioError -9999 beim Druecken, der Sprech-Thread starb): geht das gewaehlte
+    Geraet nicht, der Windows-Standard, dann jeder Eingang ausser WDM-KS; keins - None, kein Absturz."""
+    from types import SimpleNamespace as NS
+    from lolcoach.sprache import PushToTalk
+    geoeffnet = []
+
+    class Strom:
+        def __init__(self, device, samplerate, **_):
+            if device in sd.kaputt:
+                raise RuntimeError(f"PortAudioError -9999 ({device})")
+            self.device = device
+            geoeffnet.append((device, samplerate))
+
+        def start(self):
+            pass
+
+    geraete = [{"name": "Brio", "hostapi": 0, "max_input_channels": 1, "default_samplerate": 44100},
+               {"name": "CORSAIR KS", "hostapi": 2, "max_input_channels": 1, "default_samplerate": 48000},
+               {"name": "CORSAIR", "hostapi": 1, "max_input_channels": 1, "default_samplerate": 48000},
+               {"name": "Lautsprecher", "hostapi": 1, "max_input_channels": 0, "default_samplerate": 48000}]
+    apis = [{"name": "MME"}, {"name": "Windows WASAPI"}, {"name": "Windows WDM-KS"}]
+    sd = NS(InputStream=Strom, kaputt={2, None}, query_hostapis=lambda i: apis[i],
+            query_devices=lambda kind=None: {"default_samplerate": 44100} if kind else geraete)
+    ich = NS(geraet=2, geraet_rate=48000)
+    s = PushToTalk._oeffne(ich, sd, [])
+    # das Headset (2) und der Standard sind kaputt, 1 ist WDM-KS - also die Brio (0), und sie bleibt gewaehlt
+    assert s is not None and s.device == 0 and ich.geraet == 0 and ich.geraet_rate == 44100, (geoeffnet, ich)
+    sd.kaputt = {0, 1, 2, None}
+    assert PushToTalk._oeffne(NS(geraet=2, geraet_rate=48000), sd, []) is None
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     main()
+    mikrofon_027()
+    print("mikrofon_027 OK")

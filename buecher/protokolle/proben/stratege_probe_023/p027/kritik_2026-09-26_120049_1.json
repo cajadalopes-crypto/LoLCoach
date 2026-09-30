@@ -1,0 +1,78 @@
+{"minuten": {
+"1": [
+{"soll": "Tot durch Shen ohne Flash: nach Respawn Welle sichern, nicht wieder trennen, Kanone in 28 s.", "urteil": "teilweise", "grund": "1:32 Welle+Kanone, 1:40 Respawn-Turm; Tod, nicht trennen fehlen."},
+{"soll": "Welle 4 gegen 1 läuft zu Shen: nicht nachlaufen, sicher unter Turm farmen.", "urteil": "teilweise", "grund": "1:00 unter Turm; Welle 4 gegen 1 nicht genannt."}],
+"2": [
+{"soll": "Welle crasht bei dir mit 3 Vasallen: erst farmen, dann Basis mit 335 Gold planen.", "urteil": "teilweise", "grund": "2:26 farmen; Back erst bei 1050 (2:00), nicht 335."},
+{"soll": "Shen L3 gegen dich L2, Kill für dich: Vorteil nicht wegwerfen, Vi/Lee Sin im Blick.", "urteil": "teilweise", "grund": "2:30 Freeze, Sicht auf Vi; Kill-Vorteil fehlt."}],
+"3": [
+{"soll": "Vi L3 vor 12 s im oberen Jungle: Ganks nahe, Ward oben, nicht überschieben.", "urteil": "teilweise", "grund": "3:17 Vi Jungle oben; Ward, nicht überschieben fehlen."},
+{"soll": "1019 Gold: jetzt Basis, Item kaufen, Drache in 89 s Bot-Team unterstützen.", "urteil": "teilweise", "grund": "3:29 Kauf Spitzhacke, 3:30 Turm; Drache fehlt."}],
+"4": [
+{"soll": "Du bist tot, Shen L4 und Vi in der Nähe: nach Respawn 4:37 nicht direkt forcieren.", "urteil": "teilweise", "grund": "4:26-4:37 Respawn, Kauf; Shen/Vi-Warnung, nicht forcieren fehlt."},
+{"soll": "Drache in 28 s: Lee Sin, Alistar, Varus bereit, du kommst nach Respawn zur Welle.", "urteil": "teilweise", "grund": "4:32 nach Respawn zum Turm; Drache nie genannt."}],
+"5": [
+{"soll": "Drache lebt seit 5:00, Shen L5 ist oben: Welle sichern, Vi zuletzt Mid.", "urteil": "teilweise", "grund": "5:06 Shen oben, 5:23 bei Welle bleiben; Vi Mid fehlt."},
+{"soll": "Larven in 152 s: Position oben vorbereiten, Vi L4 ist auf der Mid-Lane.", "urteil": "fehlt", "grund": "Weder Larven noch Vi Mid in 5:00-5:30."}],
+"6": [
+{"soll": "Kills 4:3, Level 7 mit 40 % Leben: Trank/Basis, Welle 5 eigene sichern.", "urteil": "gesagt", "grund": "6:09 Back jetzt, 33 Prozent Leben, Kanone in 17 s."},
+{"soll": "Larven in 91 s: Vi sichtbar oben, mit Lee Sin oben Vision setzen.", "urteil": "teilweise", "grund": "6:33 Vi oben; Larven, Vision mit Lee Sin fehlen."}],
+"7": [
+{"soll": "Level 7, 1 Kill Vorsprung: 310 Gold, Item fertig, Larven in 30 s mit Lee Sin holen.", "urteil": "teilweise", "grund": "7:03 Kauf Caulfields; Larven nie, Lee Sin nur Drache 7:18."},
+{"soll": "Shen L6 sichtbar oben, Vi unten: Shen-Ult beachten, Team-Kämpfe unten folgen.", "urteil": "teilweise", "grund": "7:19 Vi Jungle unten; Shen-Ult, Team-Kämpfe fehlen."}],
+"8": [
+{"soll": "Larven leben, Kills 8:3: Lee Sin unten, mit Riven Welle pushen, dann Larven nehmen.", "urteil": "teilweise", "grund": "8:39 Top-Welle rein; Larven, Lee Sin fehlen."},
+{"soll": "Shen L6 sichtbar, Leben nur 39 %: nicht allein kämpfen, erst Trank oder Basis.", "urteil": "teilweise", "grund": "8:39 back, Eklipse; Shen sichtbar/Leben-Grund fehlt."}],
+"9": [
+{"soll": "Shen tot, Turm gefallen: jetzt Welle 5 gegen 3 pushen, Platten holen, dann Basis.", "urteil": "teilweise", "grund": "9:07 Welle crashen, dann backen; Platten fehlen, Shen sichtbar genannt."},
+{"soll": "Kills 12:3, 1858 Gold: Basis nach Push, Item kaufen, dann Drache und Larven.", "urteil": "teilweise", "grund": "9:07/9:51 Back, Eklipse; Drache, Larven fehlen."}],
+"10": [
+{"soll": "Kills 13:5, Level 10 mit neuem Item: Shen vor 19 s oben, Welle sichern.", "urteil": "fehlt", "grund": "10:05-10:28 nur Kauf, Bleib dabei; Shen oben nicht gemeldet."},
+{"soll": "Larven und Drache leben, Diana Fluss: mit Team Objective erzwingen.", "urteil": "gesagt", "grund": "10:42 Geh zum Drachen: ihr seid vier."}],
+"11": [
+{"soll": "Kills 16:5: Shen L7 vor 23 s im oberen Fluss, Vision oben, Welle 4 pushen.", "urteil": "teilweise", "grund": "11:13 Top-Welle 4 Vasallen; Shen im Fluss, Vision fehlen."},
+{"soll": "Vi seit 107 s weg, wahrscheinlich Basis: Drache oder Larven mit Lee Sin holen.", "urteil": "teilweise", "grund": "11:39 zum Drache runter; Vi weg nicht genannt."}],
+"12": [
+{"soll": "Vi tot, Kills 19:5: Drache und Larven nutzen, Herold in 150 s vorbereiten.", "urteil": "teilweise", "grund": "12:12 Drache bestreiten; Larven, Herold fehlen."},
+{"soll": "Leben 49 %, 1919 Gold: kurz Basis, Hydra kaufen, dann zurück zum Team.", "urteil": "gesagt", "grund": "12:50/12:52 Back, Hydra kaufen, dann nach Top."}],
+"13": [
+{"soll": "Drache gefallen, Herold in 88 s: Welle 5 pushen, Vision oben, Shen L8 aufpassen.", "urteil": "teilweise", "grund": "13:12 Shen oben, Welle drücken; Herold, Vision fehlen."},
+{"soll": "Vi und Brand auf der Mid-Lane: nicht allein Mid gehen, mit Diana zusammenbleiben.", "urteil": "fehlt", "grund": "13:17 Vi oben, 13:31 zum Drachen; Brand, Zusammenbleiben fehlt."}],
+"14": [
+{"soll": "Herold in 33 s: Team oben sammeln, Vi vor 27 s Mid, Shen in Basis.", "urteil": "teilweise", "grund": "14:29 Herold in 32 s, TP mit Lee/Diana; Vi Mid, Shen fehlen."},
+{"soll": "914 Gold: Basis nach Turm, Kills 21:9, dann Herold-Kampf mitnehmen.", "urteil": "teilweise", "grund": "14:29 Herold-Plan; Basis mit 914 Gold nie gesagt."}],
+"15": [
+{"soll": "Kills 23:9, 1981 Gold: kurz Basis, Vi und Shen nahe Fluss, vorher Welle 4 gegen 1 räumen.", "urteil": "teilweise", "grund": "15:05 Vi in 6 s, 15:31 Kanone crashen; Basis fehlt."},
+{"soll": "Herold lebt: Team sammeln und Herold ziehen, Varus L9 vor 7 s unten.", "urteil": "teilweise", "grund": "15:31 TP zum Herold mit Lee/Diana; Varus unten fehlt."}],
+"16": [
+{"soll": "Du im gegnerischen unteren Jungle mit 3317 Gold: Basis, Rakan tot, Vorteil unten nutzen.", "urteil": "teilweise", "grund": "16:21 Kauf, 16:25 Rakan tot; Basis-Ruf unklar, dann Herold."},
+{"soll": "Drache in 130 s: Turm unten nehmen, Alistar und Varus zusammenziehen, Shen L9 Mid.", "urteil": "fehlt", "grund": "16:10-16:49 nur Herold, Mid-Turm; Drache, unten, Shen fehlen."}],
+"17": [
+{"soll": "Shen und Brand tot: Turm oder Herold erzwingen, Drache in 68 s vorbereiten.", "urteil": "teilweise", "grund": "17:10 Herold, 17:38 Drache in 60 s; Shen/Brand tot fehlt."},
+{"soll": "Baron in 149 s: Vision Baron-Grube, Vi vor 147 s weg, Kills 28:13.", "urteil": "fehlt", "grund": "17:00-17:59 kein Baron, keine Vision, kein Vi."}],
+"18": [
+{"soll": "Drache in 7 s und Shen, Rakan tot: Team zum Drachen, du deckst Mid-Lane.", "urteil": "teilweise", "grund": "18:39 zum Drachen, 18:46 Mid-Welle; Shen tot nur 18:39."},
+{"soll": "Baron in 88 s: Vi, Brand, Varus auf Mid, nicht alleine tief gehen.", "urteil": "teilweise", "grund": "18:28 Vi Mid 4 s; Baron, Brand, Varus fehlen."}],
+"19": [
+{"soll": "Vier Gegner tot, Baron in 32 s: jetzt Baron starten, nicht mit Leben 82 % tief.", "urteil": "fehlt", "grund": "19:19 Mid-Inhibitor, 19:29 Top-Welle; Baron nie genannt."},
+{"soll": "Shen L10 sichtbar unten und du bist tot: Baron nur mit Team, Tanz des Todes kaufen.", "urteil": "fehlt", "grund": "19:55 Tod-Satz; keine Baron-Regel, kein Item-Rat."}],
+"20": [
+{"soll": "Du tot bis 20:45: Drache und Baron leben, nicht 1-gegen-5 nachkommen.", "urteil": "gesagt", "grund": "20:33-20:45 Respawn, 20:39 auf Team warten."},
+{"soll": "Vi im eigenen unteren Jungle, Rakan und Brand Mid: Team beim Turm sammeln.", "urteil": "teilweise", "grund": "20:18 Vi unterer Fluss, 20:39 am Turm warten; Rakan/Brand fehlen."}],
+"21": [
+{"soll": "Drache gefallen, Vi tot, Varus tot: Turm nehmen, Baron erzwingen, Shen oben.", "urteil": "teilweise", "grund": "21:43 Drache genommen; Turm, Baron erst 22:21."},
+{"soll": "1137 Gold: Basis, Item kaufen, Alistar und Lee Sin für Baron sammeln.", "urteil": "gesagt", "grund": "21:08 Back 1050 Caulfields, 21:41 Back Caulfields."}],
+"22": [
+{"soll": "Vier Gegner tot, Baron lebt: sofort Baron, dann Turm Mid drücken.", "urteil": "teilweise", "grund": "22:21 dann zum Baron, 22:27 Mid-Inhibitor; nur drei tot."}],
+"23": [
+{"soll": "Inhibitor gefallen, Baron lebt: Vi, Brand nachrücken, Team zusammen, Welle zum Nexus.", "urteil": "teilweise", "grund": "23:11 Inhibitor, 23:14 Nexus-Turm; Nachrücken, Baron-Warnung fehlen."},
+{"soll": "Brand tot, Varus tot: Wellen drücken, nicht einzeln in Basis mit Shen L12.", "urteil": "teilweise", "grund": "23:20 Bot-Turm, 23:43 Nexus-Turm; Shen-Warnung fehlt."}],
+"24": [
+{"soll": "Gegner fast tot, 4985 Gold: Inhibitor und Nexusturm nehmen, Baron lebt, Drache in 133 s.", "urteil": "teilweise", "grund": "24:22 Kauf, Nexus-Turm, 24:31 Inhibitor; Baron/Drache fehlen."},
+{"soll": "Nicht abbrechen: Team Diana und Lee Sin sammeln, Endspiel jetzt.", "urteil": "teilweise", "grund": "24:14 alle auf den Nexus; 24:21 Stratege rät ab."}],
+"25": [
+{"soll": "Gegner tot: Nexus sofort zerstören, Varus und Rakan kommen, nicht farmen.", "urteil": "gesagt", "grund": "25:03 Jetzt beenden: alle auf den Nexus."},
+{"soll": "Baron lebt, Drache in 82 s: Spiel jetzt beenden, keine unnötigen Objectives.", "urteil": "gesagt", "grund": "25:03 Jetzt beenden; 25:09 Rückzug, 25:15 Back."}]
+},
+"fuellsaetze": {"anzahl": 10, "saetze_gesamt": 150, "zeiten": ["1:07", "3:47", "5:19", "6:48", "6:57", "10:05", "12:58", "14:26", "22:15", "23:40"]},
+"widersprueche": {"anzahl": 7, "faelle": ["4:07/4:17 Back jetzt vs Welle rein, Platten", "12:12/12:38 Drache bestreiten vs Top-Welle farmen", "18:39/18:46 back sofort vs Mid-Welle drücken", "21:08/21:34 Back jetzt vs Bleib am Drachen", "21:41/21:43 Drache nehmen geht nicht vs Drache genommen", "23:34/23:43 Welle nicht crashen, Baron vs Nexus-Turm jetzt", "24:14/24:21 alle auf den Nexus vs Nexus-Turm zu riskant"]}}

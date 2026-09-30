@@ -304,7 +304,8 @@ def bewertung_und_plan():
     from lolcoach import kaufplan
     assert kaufplan.plan("Riven", (1055,), 1400).satz() == "reicht für den Brutalisierer"
     assert kaufplan.plan("Riven", (1055, 3158), 2800).satz() == "reicht für Axiombogen"
-    assert kaufplan.plan("Riven", (1055, 3158), 1000).satz() == "noch 50 bis Caulfields Kriegshammer"
+    # Auftrag 027, 2: das Gold wird ausgegeben - die Spitzhacke im Brutalisierer, statt auf Caulfields zu warten
+    assert kaufplan.plan("Riven", (1055, 3158), 1000).satz() == "reicht für Spitzhacke"
 
 
 def denkkette():

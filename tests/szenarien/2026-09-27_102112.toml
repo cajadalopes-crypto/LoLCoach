@@ -257,7 +257,7 @@ id = "2751-back-danach-back"
 fenster = ["27:48", "27:56"]
 quelle = "Kritiker R1 (unverstaendlich): 'Turm ist down: Back. Danach back.'"
 lage = "Turmfall, der Plan ist Back."
-darf_nicht_sagen = ["Danach back"]
+darf_nicht_sagen = ["Back. Danach back", "back. Danach back"]   # 027: "Drück die Top-Welle ... Danach back." ist ein anderer Plan, kein doppelter Schritt
 warum = "Danach nennt, was NACH dem Plan kommt - nie denselben Schritt noch einmal."
 
 # --- Auftrag 007 (Teil A 3-5, Teil B) ---

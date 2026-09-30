@@ -1,0 +1,457 @@
+{
+ "minuten": {
+  "1": [
+   {
+    "soll": "Du bist 1:01 im Level-1-Trade gegen Udyr gestorben und lebst ab 1:12 wieder: Geh direkt zurück auf die Lane, denn die Welle steht 2 gegen 1 in der Mitte und die Kanone kommt in 29 s.",
+    "urteil": "teilweise",
+    "grund": "1:01 lebt in 9 s, Top; Welle 2v1/Kanone fehlt"
+   },
+   {
+    "soll": "Lux hat 1:31 Flash benutzt: Merk dir den Ablauf als Zeitfenster, in dem sie bei Ganks nicht ausweichen kann.",
+    "urteil": "gesagt",
+    "grund": "1:31 Lux Flash weg angesagt"
+   }
+  ],
+  "2": [
+   {
+    "soll": "Du stehst bei 30 % Leben mit 435 Gold: Geh jetzt zurück und kauf ein Langschwert, denn Xerath ist gerade tot (2:41) und Lux ist unten, das ist der sicherste Moment für den Back.",
+    "urteil": "teilweise",
+    "grund": "2:46 Back+Xerath tot; Stiefel statt Langschwert, spaet"
+   },
+   {
+    "soll": "Kein Duell gegen Udyr (62 %) bei deinen 30 %: Udyr hat gerade den Kill 2:37 verloren, aber ein Fehltreffer kostet dich Level und Welle.",
+    "urteil": "teilweise",
+    "grund": "2:31 Rueckzug zum Turm, kein Duell-Grund"
+   }
+  ],
+  "3": [
+   {
+    "soll": "Xerath hat 3:26 Flash benutzt und lebt: Er ist nicht tot, plane weiter mit ihm als Gegner bei Ganks.",
+    "urteil": "teilweise",
+    "grund": "3:26 Flash weg; nicht-tot nur 3:08 Notiert"
+   },
+   {
+    "soll": "Du bist Level 4, 100 %, mit zwei Langschwertern gekauft: Die Welle steht 3 gegen 1 bei ihm, schieb sie weiter, Udyr steht im oberen Fluss und kann von dort ankommen.",
+    "urteil": "fehlt",
+    "grund": "3:36 Freeze statt schieben; Welle 3v1 fehlt"
+   },
+   {
+    "soll": "Drache in 89 s: Lux ist tot (3:40), das Team unten kann Druck machen, du hältst nur die Lane.",
+    "urteil": "teilweise",
+    "grund": "3:48 Lux lebt in 6 s, Farm Top; Drache fehlt"
+   }
+  ],
+  "4": [
+   {
+    "soll": "Gragas war 4:09 im oberen Fluss und 4:38 im unteren: Er ist jetzt unten, dein Top ist kurz sicher, Drache ist in 30 s.",
+    "urteil": "teilweise",
+    "grund": "4:08 oberer Fluss; unten 4:38 und Drache fehlen"
+   },
+   {
+    "soll": "Udyr steht bei 92 %, kein Trade: Er ist nicht angeschlagen. Bei 479 Gold beim nächsten Back die Caulfields Kriegshammer-Komponenten fertig kaufen.",
+    "urteil": "fehlt",
+    "grund": "4:02-4:37 kein Udyr-92%-Hinweis, kein Komponentenkauf"
+   }
+  ],
+  "5": [
+   {
+    "soll": "Du bist mit 1039 Gold in der Basis: Kauf jetzt Caulfields Kriegshammer und Kontroll-Auge, dann sofort zurück, denn die Welle steht 3 gegen 0 bei ihm.",
+    "urteil": "teilweise",
+    "grund": "5:32 Kauf und Top; Spitzhacke statt Caulfields/Auge"
+   },
+   {
+    "soll": "Gragas ist gerade unten (5:09-5:44) und hat 5:12 Nasus getötet: Er kann von dort nicht sofort nach oben, du hast Zeit für deinen Weg.",
+    "urteil": "fehlt",
+    "grund": "5:14 nur Xerath TP; Gragas-unten fehlt"
+   },
+   {
+    "soll": "Du bist Level 6: Deine Ult ist da, setz sie nur bei einem echten Kill-Check ein (Udyr niedrig UND Combo reicht).",
+    "urteil": "fehlt",
+    "grund": "kein Ult-Kill-Check-Hinweis, 5:14 verworfen"
+   }
+  ],
+  "6": [
+   {
+    "soll": "Udyr steht bei 58 % und du bei 68 %: Kein Alles-oder-nichts, nutz die Ult nur bei Udyr unter etwa 35 % bei sicherem Combo-Reach, sonst Welle halten.",
+    "urteil": "fehlt",
+    "grund": "6:00 Farm-Rat; keine Ult-Schwelle 35 %"
+   },
+   {
+    "soll": "Nach Udyr-Kill (6:32) sofort Welle zum Turm schieben und mit 939 Gold zurück, danach direkt wieder auf die Lane.",
+    "urteil": "teilweise",
+    "grund": "6:25 Welle rein, back 900 Gold; Kill 6:32 nicht aufgegriffen"
+   },
+   {
+    "soll": "Lissandra und Lux waren gerade unten, Nasus ist 6:24 gestorben: Unten bricht das Spiel, du musst nicht dorthin.",
+    "urteil": "fehlt",
+    "grund": "6:52 Gragas unten; Lissandra/Lux/Nasus-Hinweis fehlt"
+   }
+  ],
+  "7": [
+   {
+    "soll": "Du hast 1461 Gold und 47 %: Back jetzt, kauf Item und geh sofort zurück, denn die Welle steht mitte und die Kanone kommt in 29 s.",
+    "urteil": "teilweise",
+    "grund": "7:02 Welle rein, dann Back; 7:22 Bleib dabei widerspricht"
+   },
+   {
+    "soll": "Larven in 32 s: Udyr war vor 10 s im oberen Fluss und Lissandra ist in eurem unteren Jungle, Nasus ist 7:58 gestorben. Du gehst nicht allein zum Objective.",
+    "urteil": "teilweise",
+    "grund": "7:37 Udyr im Fluss; Larven/Lissandra/Nicht-allein fehlt"
+   }
+  ],
+  "8": [
+   {
+    "soll": "Du bist Level 8, 79 %, 253 Gold nach dem Kauf: Udyr (56 %) und Xerath haben Flash benutzt (8:34), gut merken, aber nur mit Kill-Check anfassen.",
+    "urteil": "teilweise",
+    "grund": "8:37 Udyr+Xerath Flash weg; Kill-Check-Hinweis fehlt"
+   },
+   {
+    "soll": "Udyr ist 8:48 gestorben: Welle zu ihm schieben und Turm treffen, während Lux (8:49 tot) und Udyr tot sind.",
+    "urteil": "gesagt",
+    "grund": "8:49 Udyr tot: Welle rein, Platten"
+   }
+  ],
+  "9": [
+   {
+    "soll": "Du bist bei 16 % Leben und Gragas, Udyr, Lux und Lissandra stehen im oberen Fluss: Sofort weg von der Lane, keinen Schritt nach vorn.",
+    "urteil": "gesagt",
+    "grund": "9:26 Raus zum Turm, 9:33 Back sofort; Gegner oben"
+   },
+   {
+    "soll": "Du hast 1142 Gold: Geh in die Basis und kauf komplett, dann zurück.",
+    "urteil": "gesagt",
+    "grund": "9:14/9:33 Back Basis, kaufen, dann zurueck"
+   }
+  ],
+  "10": [
+   {
+    "soll": "Udyr ist 10:27 tot, Lux 10:10 tot, Xerath 10:38 tot: Welle 4 gegen 2 mitte gegen den Turm schieben, du bist bei 58 % und hast Level 9.",
+    "urteil": "fehlt",
+    "grund": "10:38 Nicht hin; kein Push-Rat, Tode nicht genannt"
+   },
+   {
+    "soll": "Karthus und Heimerdinger sind 10:33 und 10:38 gestorben, Gegner haben 10:35 die Larven: Bleib nach dem Push nicht länger, geh mit 535 Gold zum Back und dann Mid.",
+    "urteil": "teilweise",
+    "grund": "10:51 Kanone rein, dann back 950 Gold; Mid fehlt"
+   }
+  ],
+  "11": [
+   {
+    "soll": "Udyr und Lux sind 11:41 tot: Schieb die Welle 4 gegen 0 zu ihm und triff den Turm, das Fenster gilt bis zu ihrem Respawn.",
+    "urteil": "fehlt",
+    "grund": "11:43 nur Lux Flash weg; Push 4v0 fehlt"
+   },
+   {
+    "soll": "Du hast 185 Gold und eine Spitzhacke: Spar für das nächste Item und kauf nichts Kleines.",
+    "urteil": "teilweise",
+    "grund": "11:19 erst farmen, dann back; Kern raet Spitzhacke"
+   }
+  ],
+  "12": [
+   {
+    "soll": "Lissandra und Udyr sind tot, Lux war 50 s in der Basis: Turm oben ist gefallen (12:20), drück die Welle 6 gegen 0 und nimm Druck mit.",
+    "urteil": "teilweise",
+    "grund": "12:44 Welle rein, Udyr tot; Turm oben/6v0 fehlt"
+   },
+   {
+    "soll": "Du hast 1309 Gold bei 64 % Leben: Back mit dem Kauf der Eklipse-Komponenten, dann zum Drachen, denn der lebt noch und Gragas ist unten.",
+    "urteil": "gesagt",
+    "grund": "12:32/12:48 Eklipse kaufen, dann Drache"
+   }
+  ],
+  "13": [
+   {
+    "soll": "Du stehst im gegnerischen Jungle: Gragas ist bei 41 % und du bei 100 % mit Level 11, Xerath ist tot: Kill-Check passt (Ult + Eklipse), Gragas-Kill 13:31 ist richtig.",
+    "urteil": "gesagt",
+    "grund": "13:26 Gragas nehmen, 13:30 Rein Gragas fast tot"
+   },
+   {
+    "soll": "Herold in 90 s: Sammel nach dem Kill das Team oben, denn Lissandra ist vor 61 s in der Basis gesehen worden.",
+    "urteil": "teilweise",
+    "grund": "13:19 Herold in 103 s; Team-Sammeln nach Kill fehlt"
+   },
+   {
+    "soll": "Du hast Stiefel im Slot: Bau sie beim nächsten Back zu Ionischen Stiefeln aus, weil du sie sonst nie aufwertest.",
+    "urteil": "gesagt",
+    "grund": "13:33 Back fuer Ionische Stiefel"
+   }
+  ],
+  "14": [
+   {
+    "soll": "Du bist in der Basis mit 1441 Gold: Kauf Tiamat und die Stiefel-Aufwertung und geh zurück, denn Drache (14:00) ist gefallen.",
+    "urteil": "teilweise",
+    "grund": "14:09 Stiefel+Langschwert, Top; Tiamat fehlt"
+   },
+   {
+    "soll": "Herold in 33 s: Nasus (14:42) und Swain (14:57) sind gestorben, Udyr und Lissandra stehen im Fluss. Nur mit dem ganzen Team ans Objective.",
+    "urteil": "teilweise",
+    "grund": "14:31 Herold in 28 s; Nasus/Swain tot, nur-mit-Team fehlt"
+   }
+  ],
+  "15": [
+   {
+    "soll": "Udyr ist 15:23 tot, Xerath 15:06, Lissandra 15:31, Lux 15:44: Herold jetzt mit dem Team nehmen (lebt), du bist bei 100 % oben im gegnerischen Jungle.",
+    "urteil": "gesagt",
+    "grund": "15:27 Geh zum Herold, ihr seid vier"
+   },
+   {
+    "soll": "Du hast 725 Gold: Kein Back nötig, hol zuerst Herold und Turm, dann Back.",
+    "urteil": "teilweise",
+    "grund": "15:27 Herold zuerst; kein-Back-noetig nicht gesagt"
+   }
+  ],
+  "16": [
+   {
+    "soll": "Nasus (16:38) und Swain (16:40) sind gestorben: Udyr steht bei 67 % oben, du bei 63 %: kein Duell, geh mit dem Team.",
+    "urteil": "fehlt",
+    "grund": "16:38 Udyr unten Welle druecken; kein Nicht-Duell-Rat"
+   },
+   {
+    "soll": "Du hast 1402 Gold: Back, Kauf die nächste Komponente, denn Drache spawnt in 149 s.",
+    "urteil": "gesagt",
+    "grund": "16:28 Welle rein, dann back Caulfields"
+   }
+  ],
+  "17": [
+   {
+    "soll": "Du bist mit 1930 Gold in der Basis: Kauf ein volles Item, denn Karthus hat 4 Gegner getötet (17:46-17:57): Sofort zurück und Turm/Inhib treffen.",
+    "urteil": "gesagt",
+    "grund": "17:08/17:49 kaufen, dann innerer Top-Turm mit Team"
+   },
+   {
+    "soll": "Baron in 148 s, Drache in 89 s: Kein Alleingang, Xerath hat Flash benutzt und steht unten.",
+    "urteil": "teilweise",
+    "grund": "17:34 Xerath Flash weg; Kein-Alleingang fehlt"
+   }
+  ],
+  "18": [
+   {
+    "soll": "Du hast 2101 Gold in der Basis: Kauf sofort ein Item (Riesenschwert + Rest) und bleib nicht stehen, denn Heimerdinger (18:48) und Nasus (18:56) sind tot.",
+    "urteil": "gesagt",
+    "grund": "18:38 Kauf Hydra in Basis; Item anders als Riesenschwert"
+   },
+   {
+    "soll": "Drache in 30 s, Baron in 89 s: Alle Gegner waren vor 5-19 s in ihrer Basis: Ihre Respawn-Zeit ist dein Fenster, geh mit dem Team.",
+    "urteil": "teilweise",
+    "grund": "18:42 Herold mit Team; Basis-Respawn-Fenster fehlt"
+   }
+  ],
+  "19": [
+   {
+    "soll": "Du hast 2786 Gold ungenutzt: Beim nächsten Back sofort volles Item, das steht seit Minuten offen.",
+    "urteil": "gesagt",
+    "grund": "19:04 Back jetzt fuer Hydra, 2550 Gold"
+   },
+   {
+    "soll": "Udyr und Lux sind tot, Lissandra 19:52 tot, Baron in 33 s: Formier das Team am Baron, nur wenn Gragas vorher nicht Flussmitte sichtbar bleibt, sonst Sicht klären.",
+    "urteil": "fehlt",
+    "grund": "19:39 Udyr Basis Welle druecken; Baron-Team fehlt"
+   }
+  ],
+  "20": [
+   {
+    "soll": "Du bist bei 36 % Leben und 3995 Gold: Nicht nach vorn, sofort Back und kaufen, die Gold liegt seit 5 Minuten.",
+    "urteil": "gesagt",
+    "grund": "20:27 zurueck zum Turm, 20:53 Kauf Hydra"
+   },
+   {
+    "soll": "Drache 20:53 gefallen, Xerath tot, Udyr vor 9 s oben: Erst kaufen, dann zum Team, bevor Baron beginnt.",
+    "urteil": "teilweise",
+    "grund": "20:57 Hydra, dann Top statt Team; Drache erwaehnt"
+   }
+  ],
+  "21": [
+   {
+    "soll": "Du bist mit 4377 Gold in der Basis und hast noch Doran's Klinge: Kauf jetzt zwei volle Items, das Gold macht dich sonst unnütz.",
+    "urteil": "teilweise",
+    "grund": "21:38 nur Hydra; zwei Items/Dorans-Klinge fehlt"
+   },
+   {
+    "soll": "Team steht Flussmitte, Baron lebt: Xerath (21:34) und Lissandra (21:41) sind tot, das ist dein Fenster.",
+    "urteil": "gesagt",
+    "grund": "21:34 Xerath tot, zum Team in Flussmitte"
+   }
+  ],
+  "22": [
+   {
+    "soll": "Du bist mit 4499 Gold noch in der Basis: Kauf jetzt sofort Hydra, Stiefel und Schwert, keine Sekunde mehr warten.",
+    "urteil": "teilweise",
+    "grund": "22:25 nur Hydra, spaet; Stiefel/Schwert fehlen"
+   },
+   {
+    "soll": "Lux ist tot, Turm ist gefallen (22:39): Geh mit dem Team über die Mitte, Gragas steht in eurem oberen Jungle.",
+    "urteil": "fehlt",
+    "grund": "22:40 Top-Welle splitten statt Mid mit Team"
+   }
+  ],
+  "23": [
+   {
+    "soll": "Du hast noch 857 Gold und volle Slots: Kauf beim nächsten Back das Rest-Item, dann auf den nächsten Turm.",
+    "urteil": "teilweise",
+    "grund": "23:16 Riesenschwert kaufen; naechster Turm fehlt"
+   },
+   {
+    "soll": "Karthus steht oben allein und Udyr hat ihn 23:38 getötet: Decke Karthus, denn Lissandra ist zweimal gestorben und ihr habt Mid-Turm gefällt (23:49).",
+    "urteil": "fehlt",
+    "grund": "23:45 Nicht rein; Karthus decken fehlt"
+   }
+  ],
+  "24": [
+   {
+    "soll": "Ihr habt drei Gegner getötet (Gragas 24:31, Lissandra und Xerath 24:41): Nutz den Inhib (24:23) und geh raus, bevor Udyr wieder kommt.",
+    "urteil": "teilweise",
+    "grund": "24:32 danach sofort weg; 24:44 Nexus widerspricht"
+   },
+   {
+    "soll": "Udyr hat 24:40 Heimerdinger und 24:45 dich getötet: Er steht vor 4 s oben, bei 90 % Leben bleib nicht allein in ihrer Basis.",
+    "urteil": "fehlt",
+    "grund": "24:44 Jetzt beenden statt nicht allein in Basis"
+   }
+  ],
+  "25": [
+   {
+    "soll": "Du hast 2541 Gold und lebst ab 25:34 wieder: Kauf sofort ein volles Item.",
+    "urteil": "gesagt",
+    "grund": "25:34 Kauf Schutzengel, dann Top-Welle"
+   },
+   {
+    "soll": "Baron ist noch lebendig und Gragas, Lissandra und Lux stehen in der Mitte: Nur mit dem ganzen Team zum Baron, nicht allein.",
+    "urteil": "teilweise",
+    "grund": "25:59 Nicht hin; Baron-nur-mit-Team nicht klar"
+   }
+  ],
+  "26": [
+   {
+    "soll": "Du bist bei 37 % Leben: Nicht nach vorn, Back jetzt (26:45 in Basis), Ergebnis: Swain/Karthus tot, aber Xerath und Lissandra sind auch tot.",
+    "urteil": "gesagt",
+    "grund": "26:30 Stopp back jetzt, heilen, innerer Top-Turm"
+   },
+   {
+    "soll": "Kauf beim Back mit 877 Gold den Schutzengel-Bau fertig und kehr bei mehr als 40 % zum Team zurück.",
+    "urteil": "fehlt",
+    "grund": "26:47 Nichts zu kaufen widerspricht Schutzengel-Kauf"
+   }
+  ],
+  "27": [
+   {
+    "soll": "Gragas und Lux sind tot, Lissandra ist vor 13 s Mid gesehen: Team steht unten, schließ auf und nimm den Turm.",
+    "urteil": "teilweise",
+    "grund": "27:21 Lux tot, mit Gruppe; Lissandra Mid/Turm fehlt"
+   },
+   {
+    "soll": "Kontroll-Auge belegt einen Slot: Verkauf es gegen ein Item, wenn du 994 Gold hast und den Slot brauchst.",
+    "urteil": "teilweise",
+    "grund": "27:10 Kontroll-Auge bringt nichts; Verkauf-Rat unklar"
+   }
+  ],
+  "28": [
+   {
+    "soll": "Du bist tot (28:29, Lissandra): Nutz die Wartezeit und plane den Kauf mit 1713 Gold.",
+    "urteil": "fehlt",
+    "grund": "28:29 nur Gragas-Jungle; kein Kaufplan im Tod"
+   },
+   {
+    "soll": "Drache und Turm sind gefallen (28:10, 28:22), Lissandra und Xerath sind tot (28:34, 28:44): Team drückt Mid, du kommst nach dem Respawn dazu, nicht allein.",
+    "urteil": "fehlt",
+    "grund": "28:42 Review-Satz; Team drueckt Mid fehlt"
+   }
+  ],
+  "29": [
+   {
+    "soll": "Alle Gegner sind in ihrer Basis (Lux 59 %), Udyr oben vor 3 s: Kauf mit 1831 Gold in der Basis und geh dann zum Team, Baron lebt.",
+    "urteil": "teilweise",
+    "grund": "29:29-29:54 zum Baron; 29:16 nichts kaufen widerspricht"
+   },
+   {
+    "soll": "Karthus ist 29:59 gestorben: Bleib bei Swain, kein Einzelweg durch den oberen Fluss.",
+    "urteil": "teilweise",
+    "grund": "30:00 Nicht hin; Karthus tot/bei Swain fehlt"
+   }
+  ],
+  "30": [
+   {
+    "soll": "Lux, Xerath, Lissandra und Udyr (3 %) sind tot: Ihr habt Inhib (30:54) gefällt, du bist bei 65 %: Push mit dem Team zum Nexus.",
+    "urteil": "teilweise",
+    "grund": "30:14 Mid-Inhibitor jetzt; Nexus-Push/Tode fehlen"
+   },
+   {
+    "soll": "Du hast 2399 Gold: Beim nächsten Back zuerst kaufen, denn Baron lebt und der Gegner kommt zurück.",
+    "urteil": "gesagt",
+    "grund": "30:36 zuerst back, 2500 Gold"
+   }
+  ],
+  "31": [
+   {
+    "soll": "Du bist bei 33 % Leben: Nicht nach vorn, Back mit 3435 Gold, kauf Item und komm zurück.",
+    "urteil": "teilweise",
+    "grund": "31:02 Back Ja; 31:20 Farm bei 38 % widerspricht"
+   },
+   {
+    "soll": "Gragas, Xerath, Lux, Lissandra sind tot, Udyr steht oben: Der Inhib (31:39) ist gefallen, Team drückt weiter.",
+    "urteil": "teilweise",
+    "grund": "31:07 Inhib weg; Tode und Team-Push fehlen"
+   }
+  ],
+  "32": [
+   {
+    "soll": "Du bist tot (32:08 Lissandra): 4 Gegner sind gestorben, Lissandra steht in der Basis, Drache in 40 s.",
+    "urteil": "teilweise",
+    "grund": "32:19 Lissandra lebt neben dir; Drache in 40 s fehlt"
+   },
+   {
+    "soll": "Du hast 1244 Gold: Nach dem Respawn kaufen und mit dem Team an den Nexus.",
+    "urteil": "teilweise",
+    "grund": "32:53 dann Top-Inhibitor; Kauf/Nexus fehlt"
+   }
+  ],
+  "33": [
+   {
+    "soll": "Team steht Mid mit Swain/Heimerdinger: Du bist bei 100 %, Lissandra und Gragas sind tot, Lux und Xerath stehen noch: Geh mit dem Team zusammen, kein Alleingang.",
+    "urteil": "gesagt",
+    "grund": "33:13 sofort zu Team auf Mid mit Swain/Heimerdinger"
+   },
+   {
+    "soll": "Turm ist gefallen (33:46), Lux und Udyr haben Flash benutzt: Nutz das Fenster, um Inhib und Nexus zu treffen.",
+    "urteil": "gesagt",
+    "grund": "33:42 Lux Flash, 33:52 Udyr Flash, 33:48 Nexus jetzt"
+   }
+  ],
+  "34": [
+   {
+    "soll": "Alle Gegner außer Udyr sind tot: Schlag jetzt zusammen mit dem Team den Nexus und bleib zusammen.",
+    "urteil": "gesagt",
+    "grund": "34:01 Jetzt beenden: alle auf den Nexus"
+   },
+   {
+    "soll": "Du bist in der fremden Basis bei 100 % Leben ohne Flash: Udyr steht in seiner Basis, greif nicht allein an.",
+    "urteil": "fehlt",
+    "grund": "34:01 Nexus-Aufruf; Udyr-in-Basis-Warnung fehlt"
+   }
+  ]
+ },
+ "fuellsaetze": {
+  "anzahl": 7,
+  "saetze_gesamt": 260,
+  "zeiten": [
+   "3:16",
+   "5:22",
+   "9:30",
+   "9:46",
+   "16:54",
+   "20:08",
+   "23:53"
+  ]
+ },
+ "widersprueche": {
+  "anzahl": 7,
+  "faelle": [
+   "5:32/5:41 Kauf Spitzhacke vs kauf nichts",
+   "7:22/7:25 Bleib dabei vs crash sofort und weg",
+   "11:07/11:19 Kauf Spitzhacke vs erst farmen",
+   "13:16-13:19 Raus/Nicht hin vs Drache bestreiten",
+   "22:56/23:02 Top-Welle farmen vs Hydra dann Team",
+   "25:59/26:23 Nicht hin vs Hilf jetzt",
+   "29:50-30:00 Raus/Geh zum Baron vs Hilf nicht hin"
+  ]
+ }
+}

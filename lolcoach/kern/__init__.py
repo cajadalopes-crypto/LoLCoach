@@ -195,6 +195,7 @@ class Kern:
         self._stumm_takt: str | None = None
         self._schranke_takt: list | None = None     # R1: was die Vorwaerts-Schranke in diesem Takt strich
         self._back_rufe: list[float] = []            # R4: Spielzeiten gesprochener Back-Rufe
+        self._back_sofort: float | None = None       # Auftrag 027: der letzte "Back jetzt" (nicht "dann back")
         self._back_stufe: bool = False               # R4: Ziel-Item beim letzten Back-Ruf komplett kaufbar?
         self._back_recall = -1e9                     # R4: zuletzt in die Basis gekommen
         self._sicher_weg: deque = deque()            # R5: (Zeit, Laufzeit zum sicheren Ort) der letzten Sekunden
@@ -245,6 +246,10 @@ class Kern:
         from .pakete import PaketFuehrer
         self.events = EventErkenner()
         self.pakete = PaketFuehrer()
+        from .herzschlag import Herzschlag
+        self.herzschlag = Herzschlag()                  # Auftrag 027, 1
+        self._letzt_ziel: tuple | None = None           # (Spielzeit, Ziel) des letzten Plan-Satzes - kein Hin und Her
+        self._kampf_ev_t: float | None = None           # letztes Kampf-Event (Auftrag 027, 4)
         self.uhren = None
         self.events_takt: list = []
         self._paket_saetze: list = []
@@ -300,9 +305,11 @@ class Kern:
         if m is not None and self.stellung in ("schatten", "neu"):
             try:
                 self.chronik.takt(p, m.b, lagebild)      # Auftrag 019: "seit dem letzten Aufruf" fuers Lagebild
+                from .. import stratege                  # Auftrag 027, 3: das letzte Minimap-Bild der Mitspieler
+                stratege._team_am_mit_gedaechtnis(self, m.b, m.zeit)
                 ansagen = self.schritt(m, self.modus.aktuell, p)
                 if ansagen:
-                    ansagen = [a for a in ansagen if not self._unsicher(a, m)]
+                    ansagen = [a for a in ansagen if not self._unsicher(a, m) or self._herz_sicher(a, m)]
             except Exception as e:     # der Kern darf die Partie nie mitreissen
                 if not self._fehler:
                     self._fehler = True
@@ -446,6 +453,7 @@ class Kern:
                 aus.append(a)
         # Auftrag 025: Paket-Uebergaenge (Countdown, Abbruch, Erledigt, "warum nicht") - ohne Sprechsperre, NEBEN allem
         # anderen (sie verdraengen nichts); der Plan-Satz selbst ist START oder ERSETZT
+        self._herz_nachher(m, modus, aus)                  # Auftrag 027, 1: nach der Planwahl
         for art, text in self._paket_saetze:
             # der Start eines stummen Plans ist ein Plan-Satz (Budget, und Claude darf ihn formulieren - 026, 4)
             kat = "PLAN" if art == "START" else "PAKET"
@@ -453,6 +461,41 @@ class Kern:
                 a._kategorie = kat
                 aus.append(a)
         self._paket_saetze = []
+        # Auftrag 027, 1.2: kein Satz sagt nur, was man NICHT tun soll - er bekommt die positive Anweisung dazu, sonst
+        # entfaellt er (091311: 26 "X kämpft: nicht hin", "Du stehst tief ..." ohne "was stattdessen")
+        from .herzschlag import HANDLUNG as HANDLUNG_RE, negativ_allein, vorlage
+        for a in list(aus):
+            if a.thema != "gefahr" and negativ_allein(a.text):
+                v = vorlage(self, m)
+                if v and not negativ_allein(v):
+                    # die Wortgrenze gilt fuer den ganzen Satz (s23: "Überzahl dort (3 gegen 1): nicht hin. Geh ...")
+                    from .modi import kuerze
+                    rest = self.cfg["sprechen"]["max_woerter"] - len(a.text.split())
+                    if len(v.split()) > rest and HANDLUNG_RE.search(k_ := kuerze(v, max(rest, 3))):
+                        v = k_
+                    a.text = f"{a.text.rstrip()} {v}"
+                else:
+                    aus.remove(a)
+        # Auftrag 027, 1.4: kein Hin und Her - zwei Plan-Saetze mit verschiedenem Ziel binnen 5 s gibt es nicht
+        # (091311 23:21: "Crash die Top-Welle", 1 s spaeter "Bot-Turm"); der zweite entfaellt, Gefahr ausgenommen
+        from .herzschlag import plan_ziel_von, ziele_vertraeglich
+        letzte = [(a.gesprochen if a.gesprochen is not None else a.zeit, plan_ziel_von(a)) for a in gesagt[-6:]]
+        letzte = [x for x in letzte if x[0] is not None and x[1]] + ([self._letzt_ziel] if self._letzt_ziel else [])
+        for a in list(aus):
+            z = plan_ziel_von(a)
+            if not z:
+                continue
+            # (ein Wendepunkt sagt sein Ereignis vorn - "Turm ist down: ..." - und darf den Plan wechseln: 213624 9:44
+            # fiel sonst "Turm ist down" gegen ein "Farm Top" von 2 s vorher weg)
+            wende = getattr(a, "_kategorie", None) == "WENDEPUNKT"
+            if a.thema != "gefahr" and not wende \
+                    and any(m.zeit - t < 5.0 and not ziele_vertraeglich(v, z) for t, v in letzte):
+                aus.remove(a)
+                if a.schluessel in ("kern:PAKET_HERZ", "kern:PAKET_STILL"):
+                    self.herzschlag.verworfen()   # nicht gesagt - der Herzschlag versucht es im naechsten Takt
+                continue
+            self._letzt_ziel = (m.zeit, z)
+            letzte.append(self._letzt_ziel)
         self._modus_vorher = modus
         return aus
 
@@ -460,24 +503,70 @@ class Kern:
         """Auftrag 025: Events dieses Takts, die vier Uhren, dann das Paket (erledigt? abbrechen? Countdown?). Die
         Saetze kommen in `_paket_saetze` und werden nach dem Plan-Satz gesprochen - in KAMPF und TOT nie."""
         from . import uhren
-        from .pakete import warum_nicht
         import os
+        self._paket_roh = []
         if os.environ.get("LOLCOACH_OHNE_PAKETE"):     # Gegenprobe: der Kern wie vor 025
-            self._paket_saetze = []
             return
         try:
             self.uhren = uhren.rechnen(m, self.cfg, self._lagebild)
             self.events_takt = self.events.takt(m, p if p is not None else m.p, self._lagebild)
-            saetze = self.pakete.takt(self, m, self.uhren, self.events_takt, modus)
-            if modus not in ("KAMPF", "TOT") and (w := warum_nicht(self, m, modus, self.pakete)) is not None:
-                saetze.append(("WARUM_NICHT", w))
-            self._paket_saetze = saetze if modus not in ("KAMPF", "TOT") else []
+            if any(e.typ in ("KAMPF", "ERAHNT_KAMPF") for e in self.events_takt):
+                self._kampf_ev_t = m.zeit            # Auftrag 027, 4: kein Back in einen Kampf hinein (<= 20 s)
+            self._paket_roh = self.pakete.takt(self, m, self.uhren, self.events_takt, modus)
         except Exception as e:                    # die Pakete duerfen den Kern nie mitreissen
-            self._paket_saetze = []
+            self._paket_roh = []
             if not getattr(self, "_paket_fehler", False):
                 self._paket_fehler = True
                 import traceback
                 print(f"!! Pakete: {type(e).__name__}: {e}\n{traceback.format_exc(limit=4)}", flush=True)
+
+    def _herz_nachher(self, m: Merkmale, modus: str | None, aus: list = ()) -> None:
+        """Auftrag 027, 1: "warum nicht" als Nachsatz und der Herzschlag - NACH der Planwahl dieses Takts (vorher
+        sprach der Herzschlag den Plan des letzten Takts: bei 18 % Leben "Farm Top" neben "Zurueck", konstruierte
+        Lage k-leben-kritisch-trotz-welle). In Gefahr schweigt der Herzschlag - dann spricht der Rueckzug."""
+        import os
+        if os.environ.get("LOLCOACH_OHNE_PAKETE"):
+            return
+        from .herzschlag import nachsatz, vorlage
+        from .pakete import warum_nicht
+        from .herzschlag import START_S
+        saetze, self._paket_roh = list(getattr(self, "_paket_roh", None) or []), []
+        if m.zeit < START_S:              # vor dem Spielbeginn kein Paket-Start (140253 0:24 "Farm deine Mid-Welle")
+            saetze = [x for x in saetze if x[0] != "START"]
+        try:
+            gesagt = self.transport.gesagt if self.transport is not None else []
+            # (nicht, wenn ein Gegner schon bei dir ist - dann kommt dein eigener Kampf-Ruf, 102112 25:01 und 26:31)
+            nah = m.b is not None and any(g.sichtbar and not g.s.tot and g.abstand is not None and g.abstand <= 1500
+                                          for g in m.b.gegner)
+            if modus not in ("KAMPF", "TOT") and not nah and (w := warum_nicht(self, m, modus, self.pakete)) is not None:
+                # Auftrag 027, 1.2: "warum nicht" nur als Nachsatz zu einer positiven Anweisung, nie allein
+                if (s := nachsatz(vorlage(self, m), w, gesagt, m.zeit, self.cfg["sprechen"]["max_woerter"])) \
+                        is not None:
+                    saetze.append(("WARUM_NICHT", s))
+            ende = any(art in ("ERLEDIGT", "ABGEBROCHEN", "BUDGET_AB") for art, _ in saetze)
+            # in Gefahr nur die Stillstand-Reaktion, und nur mit dem sicheren Plan-Satz (Rueckzug) - nie "farm"
+            # (in Gefahr ohne sicheren Plan: nur die Wiederholung der letzten Warnung - herzschlag.warn_satz)
+            if (h := self.herzschlag.takt(
+                    self, m, modus, gesagt, paket_ende=ende, nur_still=self.gefahr, diesmal=aus)) is not None:
+                # Auftrag 027, 1: immer eine gesprochene Anweisung; der Kauf hat Vorrang (Schluessel KAUF)
+                if self.herzschlag.kauf:          # 183125 2:22: "Nicht zu Zyra" verdraengte "Kauf Stiefel, dann Top"
+                    saetze = [("KAUF", h)] + [x for x in saetze if x[0] != "WARUM_NICHT"]
+                else:                             # STILL: Stillstand-Reaktion, Vorrang wie eine Pflicht-Info
+                    saetze.append(("STILL" if self.herzschlag.still else "HERZ", h))
+            # ein Back-Ruf aus Herzschlag oder Nachsatz ist ein Back-Ruf (Kanal, Sperre) - 091311 19:48 "Back jetzt:
+            # 2400 Gold für Eklipse. Nicht zu Yorick ..." zaehlte nicht, der Kauf kam erst 4 s nach dem Ankommen
+            if (bt := next((t for art, t in saetze if art in ("HERZ", "STILL", "WARUM_NICHT") and BACK_RUF.search(t)),
+                           None)) is not None:
+                self._back_gesagt(m, bt)
+            # im Tod nur der Herzschlag (Kauf und Ziel vor dem Respawn), in KAMPF nichts
+            self._paket_saetze = saetze if modus not in ("KAMPF", "TOT") else \
+                [x for x in saetze if x[0] in ("HERZ", "KAUF") and modus == "TOT"]
+        except Exception as e:                    # der Herzschlag darf den Kern nie mitreissen
+            self._paket_saetze = [x for x in saetze if modus not in ("KAMPF", "TOT")]
+            if not getattr(self, "_herz_fehler", False):
+                self._herz_fehler = True
+                import traceback
+                print(f"!! Herzschlag: {type(e).__name__}: {e}\n{traceback.format_exc(limit=4)}", flush=True)
 
     def _makro_info(self, m: Merkmale, modus: str | None, gesagt: list):
         """Buch 4, 5 (Auftrag 008): Teamplan, Jungler-Sichtung, Gruppierung, Spike - Budget und Doppelung in makro.py."""
@@ -510,6 +599,15 @@ class Kern:
             self._stumm(m, a.schluessel.split(":", 1)[-1], a.text, self.modus.aktuell, grund="; ".join(gruende))
         return bool(gruende)
 
+    def _herz_sicher(self, a, m: Merkmale) -> bool:
+        """Auftrag 027, 1: faellt der Herzschlag an der Sicherheit ("Nimm den Kampf" ohne Kill-Check, 183125 19:57),
+        bleibt der Spieler nicht ohne Anweisung - die Welle seiner Lane, wenn DIE sicher ist."""
+        lane = m.meine_lane or m.lane_hier
+        if a.schluessel not in ("kern:PAKET_HERZ", "kern:PAKET_STILL") or not lane:
+            return False
+        a.text = f"Geh zu deiner {lane}-Welle und farm sie."
+        return not self._unsicher(a, m)
+
     def _r1_vorn(self, text: str, m: Merkmale) -> bool:
         """Auftrag 016, 6.4: unter R1 (Leben unter vor_leben_min) kein Satz, der nach vorn ruft - auch nicht aus den
         Makro-Infos, der Vorschau oder dem Lagebild (die Kandidaten-Schranke sieht sie nicht)."""
@@ -526,7 +624,9 @@ class Kern:
         if k is None or m.zeit < c["lagebild_ab_s"] or modus in ("KAMPF", None) or self.gefahr \
                 or m.zeit - self._lagebild_zuletzt < c["lagebild_abstand_s"]:
             return None
-        letzte = max((a.gesprochen for a in gesagt if a.gesprochen is not None), default=-1e9)
+        # Auftrag 027: der Herzschlag ("Bleib dabei", Stillstand) zaehlt nicht als Reden - sonst gaebe es nie Ruhe
+        letzte = max((a.gesprochen for a in gesagt if a.gesprochen is not None
+                      and a.schluessel not in ("kern:PAKET_HERZ", "kern:PAKET_STILL")), default=-1e9)
         if m.zeit - letzte < c["lagebild_ruhe_s"] or (m.b is not None and any(
                 g.sichtbar and not g.s.tot and g.ankunft is not None and g.ankunft <= 15 for g in m.b.gegner)):
             return None                  # nur in ruhigen Momenten (102112 26:13: 15 Woerter, Fiddlesticks kam gerade)
@@ -656,7 +756,7 @@ class Kern:
             self._vorschau_zuletzt = m.zeit
             p.gesagt = m.zeit
             if BACK_RUF.search(text):
-                self._back_gesagt(m)
+                self._back_gesagt(m, text)
             self._gesprochen(a, "VORSCHAU", m)
         return a
 
@@ -771,6 +871,11 @@ class Kern:
             return None                  # dieselben Fehlenden eben erst (213624 16:13 und 17:57: "Xin Zhao und Caitlyn")
         zeit = f" seit {max(5, 5 * round(min(g.seit for g in genannt) / 5))} Sekunden"
         text = f"Du stehst tief: {liste([g.champion for g in genannt])} fehlen{zeit}."
+        # Auftrag 027, 1.2 (091311 11:39 "du sagst mal nicht, was ich lieber machen soll"): nie nur die Warnung
+        ort = m.b.sicherer_ort()[0] if hasattr(m.b, "sicherer_ort") else None
+        text += f" Zurück zu {ort}." if ort else " Zieh dich zu deinem Turm zurück."
+        if len(text.split()) > self.cfg["sprechen"]["max_woerter"]:      # die Wortgrenze (Szenario s23)
+            text = text.rsplit(" Zurück zu ", 1)[0].rsplit(" Zieh dich", 1)[0] + " Zieh dich zurück."
         a = self.sprecher.ansage("VORSICHT", "VORSICHT", text, m.zeit, None, gesagt)
         if a is not None:
             self._vorsicht_zuletzt = m.zeit
@@ -1011,13 +1116,12 @@ class Kern:
         kand = [h for h in kand if not (h.daten.get("klein") and h.p_tod >= cfg["gefahr"]["p_min"])]
         if not gefahr and modus in MAKRO_MODI:
             kand += self._makro_ziele(m, modus, kand, tk)          # Auftrag 010, 1
-        # Auftrag 026, 1: auch ein Back-Kandidat aus anderen Modi (nach HALTEN, 133448 15:56, 231200 14:07) wartet fuers
-        # Gold auf die Back-Frist, wenn deine Welle nicht bei ihm liegt - "Welle rein, dann back" bleibt erlaubt
-        u, w = self.uhren, m.welle
-        if not gefahr and u is not None and u.back_spaetestens is not None and u.back_spaetestens < m.zeit \
-                and m.lane_phase and (m.leben or 0.0) >= cfg["recall"]["leben_back"] \
-                and not (w is not None and w.front is not None and w.front >= 0.55) \
-                and any(h.art != "BACK_JETZT" for h in kand):
+        # Auftrag 027, 4: die Frist-Sperre aus 026 ist weg - die Back-Frist sagt nur, wann du spaetestens zurueck sein
+        # musst; laeuft die Welle zu dir, wartet ein Gold-Back, bis sie am Turm ist
+        w = m.welle
+        back_eben = bool(self._back_rufe) and m.zeit - self._back_rufe[-1] <= 30.0   # ein gesagter Back gilt
+        if not gefahr and m.lane_phase and w is not None and w.zustand in ("ZU_DIR", "GROSS_ZU_DIR") and not back_eben \
+                and (m.leben or 0.0) >= cfg["schranken"]["vor_leben_min"] and any(h.art != "BACK_JETZT" for h in kand):
             kand = [h for h in kand if h.art != "BACK_JETZT"]
         # Auftrag 026: ein eben abgebrochenes Paket-Ziel ist kein Kandidat (sonst im naechsten Takt wieder angesagt)
         gs = getattr(getattr(self, "pakete", None), "gesperrt", None)
@@ -1103,18 +1207,33 @@ class Kern:
         wenig = m.leben is not None and m.leben < cr["leben_back"]
         if not (viel or wenig):
             return kand
-        # Auftrag 026, 1 (Buch 15, 2.2): ein Back nur fuers Gold kommt zur Back-Frist der Wellen-Uhr - ist sie schon
-        # vorbei und deine Welle nicht bei ihm, kommt die Kanone vor dir an deinen Turm: erst die Welle, dann Back
-        # (Messung 025: 5 von 10 verspaeteten Backs waren Gold-Backs nach der Frist)
-        u = self.uhren
+        # Auftrag 027, 4 (ersetzt die Frist-Sperre aus 026 - die Back-Frist sagt nur, wann du spaetestens zurueck sein
+        # musst): die Welle entscheidet.
         w = m.welle
-        if viel and not wenig and m.lane_phase and u is not None and u.back_spaetestens is not None \
-                and u.back_spaetestens < m.zeit and not (w is not None and w.front is not None and w.front >= 0.55):
-            return kand
-        bald = any(e.art == "objective" and 0 <= e.in_s(m.zeit) <= 30 for e in self.zeitleiste or []) \
-            or self._fenster_offen(m) is not None
-        if bald:
-            return kand
+        z = w.zustand if w is not None else "UNBEKANNT"
+        r1 = m.leben is not None and m.leben < self.cfg["schranken"]["vor_leben_min"]
+        obj_in = min((e.in_s(m.zeit) for e in self.zeitleiste or [] if e.art == "objective"
+                      and e.in_s(m.zeit) >= 0), default=None)
+        back_eben = bool(self._back_rufe) and m.zeit - self._back_rufe[-1] <= 30.0
+        if z in ("ZU_DIR", "GROSS_ZU_DIR") and not r1 and not back_eben:   # (101426 23:02: der Back von 22:52 gilt)
+            # laeuft zu dir: farmen, bis sie am Turm ist - ausser ein Objective in <= 90 s, und der Verlust ist
+            # hoechstens eine halbe Welle
+            from . import wert
+            from .modi import abwesenheit
+            if obj_in is None or obj_in > 90.0 \
+                    or abwesenheit(m, self.cfg, z) > 0.5 * wert.wellenwert(m.zeit, self.cfg):
+                return kand
+        elif z == "GECRASHT_BEI_IHM" and not r1:
+            # gecrasht: Back - ausser ein Objective oder ein Kampf-Event in <= 20 s
+            kampf_t = getattr(self, "_kampf_ev_t", None)
+            kampf = any(e.typ in ("KAMPF", "ERAHNT_KAMPF") for e in (getattr(self, "events_takt", None) or [])) \
+                or (kampf_t is not None and m.zeit - kampf_t <= 20.0)
+            if (obj_in is not None and obj_in <= 20.0) or kampf or self._fenster_offen(m) is not None:
+                return kand
+        elif not r1:
+            # sonst wie bisher (Auftrag 007, Klasse 11): Back vor Farmen, ausser ein Objective in <= 30 s oder ein Fenster
+            if (obj_in is not None and obj_in <= 30.0) or self._fenster_offen(m) is not None:
+                return kand
         kand = [h for h in kand if h.art != "FARMEN"]
         if not any(h.art in BACK_ARTEN for h in kand) and modus not in ("KAMPF", "TOT", "BASIS", None) \
                 and not gefahr and m.bereich != "basis_eigen":
@@ -1392,7 +1511,7 @@ class Kern:
             if okey is not None:
                 self._obj_gesagt[okey] = h.art
             if BACK_RUF.search(text):
-                self._back_gesagt(m)
+                self._back_gesagt(m, text)
             self._wohin_merken(h, zeit)
             if h.art == "WOHIN" and modus == "BASIS":
                 self._basis["zuletzt"] = zeit      # Ziel 2 (173159 36:50/37:10): die Warteregel wartet ab hier
@@ -1573,7 +1692,7 @@ class Kern:
         from .modi import _akk, liste
         from .modi.basis import wohin
         k = m.kauf
-        kauf = list(k.kaufen[:2]) if k is not None and k.kaufen else []
+        kauf = list(k.kaufen[:4]) if k is not None and k.kaufen else []
         try:
             kurz = wohin(m, self.cfg, "BASIS").daten.get("kurz")
         except Exception:
@@ -1635,7 +1754,9 @@ class Kern:
                                   "rang": karte.ORDNUNG.get((ph.daten.get("turm") or ("", "", ""))[2], 0)}
             if m.bereich == "basis_eigen" and ph.art in ("KAUFEN", "WOHIN", "WOHIN_TP_LANE"):
                 from .fuehren import ziel_label as _zl
-                self._basis_ziel = (m.zeit, _zl(ph))  # Auftrag 007: das Ziel dieses Basis-Aufenthalts
+                w_ = ph.daten.get("wohin") if ph.art == "KAUFEN" else ph
+                # Auftrag 007: das Ziel dieses Basis-Aufenthalts (027: mit der Kurzform fuer den Herzschlag)
+                self._basis_ziel = (m.zeit, _zl(ph), (w_.daten.get("kurz") if w_ is not None else None))
         if kategorie in ("PLAN", "WENDEPUNKT", "FENSTER", "VORSCHAU", "ERINNERUNG") and self.fuehrer.plan is not None:
             from .fuehren import ziel_label
             a._ziel = ziel_label(self.fuehrer.plan.handlung)      # Buch 11, 7: Widersprueche
@@ -1747,8 +1868,11 @@ class Kern:
                 return "Back gesperrt: der letzte wurde ignoriert"
         return None
 
-    def _back_gesagt(self, m: Merkmale) -> None:
+    def _back_gesagt(self, m: Merkmale, text: str = "") -> None:
         self._back_rufe.append(m.zeit)
+        # Auftrag 027: "Back jetzt" beginnt den Kanal - "Welle rein, dann back" noch nicht (173159 12:05)
+        if not re.search(r"\bdann back\b|\bdanach back\b", text, re.I):
+            self._back_sofort = m.zeit
         self._back_stufe = bool(m.kauf is not None and m.kauf.kern_fertig)
 
     def _wohin_ziel(self, h) -> str | None:
@@ -2015,7 +2139,7 @@ class Kern:
             if im_rueckzug:
                 ep["back"] = True
             if BACK_RUF.search(text):
-                self._back_gesagt(m)
+                self._back_gesagt(m, text)
             self._gesprochen(a, "ERINNERUNG", m)
         return a
 

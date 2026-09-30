@@ -15,7 +15,10 @@ Spielt die Aufnahme jedes Szenario-Files nach (wie live, stumm) und prueft jedes
                             Auftrag 002: gesprochen_ohne = ["regex", ...] (was die Stimme bekommt, stimme.sprechbar,
                             passt auf keins - "6/0", "3000" Ziffer fuer Ziffer); seit Auftrag 008:
                             kategorie_min = { "LAGEBILD" = n } (mindestens n Kern-Saetze der Kategorie),
-                            sprache_konkret = true (kein gesprochener Satz mit vager Form, kern.sprache.vage_formen)
+                            sprache_konkret = true (kein gesprochener Satz mit vager Form, kern.sprache.vage_formen);
+                            seit Auftrag 027: positiv_abstand_max (so viele Sekunden im Fenster hoechstens ohne
+                            positive Anweisung), negativ_allein_max, hin_und_her_max (Plan-Saetze mit anderem Ziel
+                            in < 5 s), satz_pruefen = ["..."] + verwerfen = true|false (stratege.pruefe zur `zeit`)
   Datei:                    spielmodus = "CLASSIC" | "SWIFTPLAY" (Vorgabe CLASSIC) - muss zum gameMode der Aufnahme
                             passen, sonst rot (Qualitaetsrunde 2, G6: 133930 und 140253 sind Swiftplay)
   Kern (Modus, Plan-Art):   modus und [[modus_soll]] ab Schritt 2 (irgendein Takt in zeit +-2 s hat einen der
@@ -216,6 +219,28 @@ def neue_pruefungen(sz: dict, ansagen: list, stehend: tuple | None = None) -> li
         if len(treffer) > n:
             aus.append(f"kategorie_max {kat} {n} - {len(treffer)}: "
                        + " / ".join(f"{ns.uhr(ns.gesprochen_um(a))} {a.text[:40]}" for a in treffer))
+    # Auftrag 027, 5: was Carlos hoert - positive Anweisungen, nichts nur Verneinendes, kein Hin und Her
+    from lolcoach.kern.herzschlag import negativ_allein, plan_ziel_von, positiv, ziele_vertraeglich
+    if "positiv_abstand_max" in sz:
+        von, bis = fenster(sz)
+        pos = sorted(ns.gesprochen_um(a) for a in ansagen if positiv(a))
+        punkte = [von] + pos + [bis]
+        luecke = max(b - a for a, b in zip(punkte, punkte[1:]))
+        if luecke > sz["positiv_abstand_max"]:
+            aus.append(f"positiv_abstand_max {sz['positiv_abstand_max']} - {luecke:.0f} s ohne positive Anweisung"
+                       + (f" (positiv um {', '.join(ns.uhr(t) for t in pos)})" if pos else " (keine)"))
+    if "negativ_allein_max" in sz:
+        neg = [a for a in ansagen if a.schluessel != "antwort" and negativ_allein(a.text)]
+        if len(neg) > sz["negativ_allein_max"]:
+            aus.append(f"negativ_allein_max {sz['negativ_allein_max']} - {len(neg)}: "
+                       + " / ".join(f"{ns.uhr(ns.gesprochen_um(a))} {a.text[:50]}" for a in neg[:3]))
+    if "hin_und_her_max" in sz:
+        ps = [(ns.gesprochen_um(a), plan_ziel_von(a), a.text) for a in ansagen if a.thema != "gefahr"]
+        ps = [p for p in ps if p[1]]
+        paare = [(x, y) for x, y in zip(ps, ps[1:]) if y[0] - x[0] < 5.0 and not ziele_vertraeglich(x[1], y[1])]
+        if len(paare) > sz["hin_und_her_max"]:
+            aus.append(f"hin_und_her_max {sz['hin_und_her_max']} - {len(paare)}: " + " / ".join(
+                f"{ns.uhr(x[0])} {x[2][:35]} -> {ns.uhr(y[0])} {y[2][:35]}" for x, y in paare[:2]))
     if "planwechsel_max" in sz:
         arten = [a.schluessel.split(":", 1)[1] for a in ansagen
                  if a.schluessel.startswith("kern:") and a.schluessel not in NICHT_PLAN]
@@ -376,9 +401,15 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
     halte = sorted({ns.sekunden(s["zeit"]) if "zeit" in s else fenster(s)[0]
                     for s in szen if "zeit" in s or "fenster" in s})
     antworten_: dict = {}
+    pruef_: dict = {}
 
     def bei_halt(soll, p, b, lb, wand):
         for s in szen:
+            if s.get("satz_pruefen") and "zeit" in s and ns.sekunden(s["zeit"]) == soll:
+                # Auftrag 027, 3: der Faktencheck (stratege.pruefe) mit der Lage dieses Moments
+                from lolcoach import stratege
+                pl = stratege.pruef_lage(ns.AKTUELL.kern, p)
+                pruef_[s["id"]] = [(satz, stratege.pruefe(satz, pl)) for satz in s["satz_pruefen"]]
             if s.get("frage") and s.get("sofort") and ns.sekunden(s["zeit"]) == soll and nur != "kern":
                 from lolcoach import antworten
                 antworten_[s["id"]] = antworten.sofort(s["frage"], p, lb) or "(keine Sofort-Antwort)"
@@ -412,6 +443,15 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                     verstoesse += v
             else:
                 uebersprungen.append("review (--mit-claude)")
+        elif sz.get("satz_pruefen"):
+            # Auftrag 027, 3: verwerfen = true heisst, pruefe() muss jeden Satz ablehnen (false: durchlassen)
+            geprueft += 1
+            for satz, gruende in pruef_.get(sz["id"], [(s, None) for s in sz["satz_pruefen"]]):
+                if gruende is None:
+                    verstoesse.append(f"satz_pruefen - nicht geprueft (Zeit nicht erreicht): \"{satz[:60]}\"")
+                elif bool(gruende) != bool(sz.get("verwerfen", True)):
+                    verstoesse.append(f"satz_pruefen - {'durchgelassen' if not gruende else 'verworfen: ' + '; '.join(gruende)}"
+                                      f": \"{satz[:70]}\"")
         elif nur != "kern":
             if sz.get("frage") and sz.get("kern_frage"):
                 v, geprueft_, grund = kern_frage_pruefen(sz, kern_antworten.get(sz["id"]), lauf.champions)
@@ -469,7 +509,8 @@ def pruefe_datei(datei: Path, nur: str | None, mit_claude: bool, lage: bool, lau
                                           + " / ".join(f"{ns.uhr(t)} {s[:40]}" for t, s in zaehlt))
                 if any(k in sz for k in ("ziele_max", "satz_mit", "fassung_einmal", "woerter_max", "gold_reicht",
                                          "text_max", "planwechsel_max", "max_woerter", "alte_regeln_max",
-                                         "je_10min_max", "kategorie_max", "kategorie_min", "sprache_konkret")):
+                                         "je_10min_max", "kategorie_max", "kategorie_min", "sprache_konkret",
+                                         "positiv_abstand_max", "negativ_allein_max", "hin_und_her_max")):
                     geprueft += 1
                     verstoesse += neue_pruefungen(sz, ansagen, stehende_ansage(lauf, von) if kern != "alt" else None)
         if "modus" in sz and "zeit" in sz and nur != "alt":
