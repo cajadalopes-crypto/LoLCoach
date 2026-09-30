@@ -1,4 +1,4 @@
-"""Makro-Gehirn, Stufe 3a (Buch 17, Teil B; Auftrag 032).
+"""Makro-Gehirn, Stufe 3a (Buch 17, Teil B; Auftrag 032) und Stufe 4, der Einbau (Auftrag 034).
 
 Alle 111 Makro-Entscheidungen aus Buch 17, Teil B, als reine Funktionen einer `MakroLage`:
 
@@ -9,7 +9,13 @@ Alle 111 Makro-Entscheidungen aus Buch 17, Teil B, als reine Funktionen einer `M
     kommando.py        das Kommando "Tu X: weil Y. Danach Z."
     entscheidungen/    je Bereich ein Modul; Register aller 111
     vorrang.py         Gefahr zuerst, dann die Objective-Kette, dann der Rest nach Wert
+  Stufe 4 (Auftrag 034):
+    live.py            LageBau: MakroLage + Merkmale fuers Gehirn aus API, Minimap, HUD, Chat, Lesern aus 033
+    takt.py            Entscheider: Gehirn + 111 + Vorrang -> genau eine Anweisung; Planwechsel nur mit Grund
+    stimme.py          Claude formt nur den Satz; weicht er ab, faellt er aus, ist er zu langsam: die Vorlage
+    einbau.py          MakroCoach: der Takt im Coach (kern.Kern, Stellung "makro"), Budget, Erinnerung, Fragen,
+                       Protokoll <stamm>_makro.jsonl
 
-Nichts hier spricht selbst: Die eine Stimme baut Stufe 4 (Auftrag 034). Das Paket aendert keine bestehende Datei in
-lolcoach/ und importiert nur (bewertung, kern.uhren).
+Der alte Kern (lolcoach/kern) entscheidet in der Stellung "makro" (--kern makro, Standard) nicht mehr, er ist nur noch
+die Sicherheits-Sperre (kern.Kern.makro_sperre). --kern neu gibt den Stand vor 034.
 """

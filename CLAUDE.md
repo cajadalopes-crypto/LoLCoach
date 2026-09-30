@@ -59,12 +59,18 @@ dem man per Discord den Bildschirm teilt. (Das Review nach dem Spiel ist seit Au
 | `bericht.py` | Text-Bericht (Markdown), nur auf Befehl (`bericht`) - nicht mehr automatisch nach der Partie |
 | `llm_api.py` | Claude ueber die API - nur mit `LOLCOACH_API=1` (setzt allein `Coach starten.cmd`, Sparprotokoll) |
 | `llm.py` | Claude ueber die Claude-Code-Kommandozeile (Abo), schlank (eigener Systemprompt, stdin) |
+| `makro/` | Challenger-Gehirn (Buch 17): 111 Entscheidungen, Rechner, Regeln (032), Wahrnehmung (033); seit 034 der Entscheider im Coach: `live.py` (MakroLage je Takt), `takt.py` (Gehirn + 111 + Vorrang -> eine Anweisung), `stimme.py` (Claude formt nur den Satz, sonst die Vorlage), `einbau.py` (Takt, Budget, Fragen, Protokoll `<stamm>_makro.jsonl`) |
 
 `python -m lolcoach` = live. Weitere Befehle: `abspielen`, `bericht`,
 `frage`, `mikrotest`, `status`, `llm` (siehe `--help`). `live` und `abspielen` nehmen
-`--kern alt|schatten|neu` (Entscheidungskern, Buch 0 Kapitel 3): der Kern (`lolcoach/kern/`) bestimmt in jeder
+`--kern alt|schatten|neu|makro` (Entscheidungskern, Buch 0 Kapitel 3): der Kern (`lolcoach/kern/`) bestimmt in jeder
 Stellung den Modus, sperrt die alten Regeln danach (Kapitel 14) und schreibt live `aufnahmen/<stamm>_kern.jsonl`.
-Seit Schritt 3 ist `neu` Default: in LANE, BASIS und TOT entscheidet und spricht der Kern (Kandidaten je Modus in
+**Seit Auftrag 034 ist `makro` Default:** das Challenger-Gehirn entscheidet (`lolcoach/makro/einbau.py`, Schalter in
+`wissen/kern.toml [makro_gehirn]`), Claude formt nur den Satz (live, nur ueber die API), der alte Kern rechnet mit und
+ist nur noch Sicherheits-Sperre (`Kern.makro_sperre`: R1, Kill-Check, Fakten, verbotene Begriffe); die alten Regeln
+schweigen ueberall; Protokoll `<stamm>_makro.jsonl` (`werkzeuge/makro_protokoll.py`). `--kern neu` gibt den Stand
+davor. Ohne `daten/challenger/modelle` laeuft er ohne Gehirn (nur Regeln und Rechner).
+Bis 034 war `neu` Default: in LANE, BASIS und TOT entscheidet und spricht der Kern (Kandidaten je Modus in
 `kern/modi/`, Wert und Gefahr in `wert.py`/`gefahr.py`, gehaltener Plan in `plan.py`, Budget in `sprechen.py`;
 Welle nach Buch 1, Recall/Kauf nach Buch 3), die alten Regeln schweigen dort; `schatten` = das Regelwerk spricht,
 der Kern schreibt "wuerde sagen"; `alt` = Stand Schritt 2. Schwellen und Startwerte: `wissen/kern.toml`.
@@ -97,7 +103,9 @@ durch denselben Code wie das Live-Spiel.
 
 ## Pruefen
 
-- `python tests/alle.py` - alle Tests (echte Partien als Testfaelle, ~10 s).
+- `python tests/alle.py` - alle Tests (echte Partien als Testfaelle, ~10 s). `python tests/makro/alle.py` - das
+  Makro-Gehirn (032-034, ohne Modelle). `python tests/einzeln.py [--basis alt.txt]` - jede Testfunktion einzeln (ohne
+  `daten/` bricht `alle.py` beim ersten Datenbedarf ab; mit `--basis` nur, was neu rot ist).
 - `python werkzeuge/szenarien.py` - war der Rat in dieser Lage richtig? Szenarien aus
   `tests/szenarien/*.toml` gegen das nachgespielte System (`--mit-claude`: auch Fragen, ueber das
   Abo, `--lage`: nachgespielte Lage je Szenario, `--konstruiert`: die konstruierten Lagen aus

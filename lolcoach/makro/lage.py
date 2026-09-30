@@ -139,6 +139,9 @@ class MakroLage:
     spike_wir: bool = False
     spike_gegner: bool = False
     gesehen_busch: bool | None = None      # der Busch vor dir ist unbekannt (Face-Check-Lage)
+    # Stufe 4 (Auftrag 034): welche Live-Eingaben (wahrnehmung.EINGABEN) in diesem Takt da sind - None heisst "alle"
+    # (konstruierte Lagen der Tests 032). Fehlt eine, schweigt jede Entscheidung, die sie liest (makro/takt.py).
+    vorhanden: set | None = None
 
     # ---- abgeleitet
     @property

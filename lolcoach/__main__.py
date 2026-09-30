@@ -23,7 +23,7 @@ from . import (ansicht, aufzeichnung, bericht, komponist, lage, liveapi, llm, pr
 
 def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, sicht=None,
               anzeigen=(), alle: int = 5, nur_coach: bool = False, gehirn: bool = False,
-              gehirn_ablage=None, kern_ablage=None, kern_stellung: str = "neu",
+              gehirn_ablage=None, kern_ablage=None, kern_stellung: str = "makro",
               makro: bool = False) -> sprechplan.Sprechplan:
     """Gemeinsamer Kern fuer Live und Aufnahme.
 
@@ -40,6 +40,16 @@ def _verfolge(quelle, ich: str | None, takt: float, sprecher, schreiber=None, si
     kern_ = Kern(kern_ablage, stellung=kern_stellung)
     werk.kern = plan.kern = kern_
     kern_.transport = plan
+    if kern_.makro_coach is not None:
+        # Auftrag 034: Claude formt den Satz nur live (Carlos' Partie, Sparprotokoll), nur mit dem Strategen-Schalter
+        # (--ohne-stratege / --ohne-gehirn: immer die Vorlage) und nur ueber die API - das Abo braucht 4-11 s, die
+        # Frist ist 2 s: jeder Abo-Aufruf waere verschenkt. Beim Abspielen spricht die Vorlage.
+        if makro and takt and kern_.makro_coach.cfg.get("claude", True):
+            from . import llm, llm_api
+            if llm_api.aktiv():
+                kern_.makro_coach.stimme.frage = llm.frage
+        print(f"Makro-Entscheider: an (Gehirn {'geladen' if kern_.makro_coach.hirn is not None else 'fehlt - Regeln und Rechner allein'}"
+              f", Claude als Stimme: {'an' if kern_.makro_coach.stimme.frage is not None else 'aus, Vorlage'})", flush=True)
     technik: list = []            # TECHNIK-Ansagen (Kapitel 9.1): Minimap nicht erkannt - durch den Sprechplan
     lagebild = lage.Lagebild() if sicht else None
     stratege_ = None
@@ -564,11 +574,13 @@ def main() -> None:
     lm = unter.add_parser("llm")
     lm.add_argument("frage")
     lm.add_argument("--modell", default="haiku")
-    for sub in (lv, ab):   # Entscheidungskern (buecher/00_entscheidungskern.md, Kapitel 3)
-        sub.add_argument("--kern", choices=("alt", "schatten", "neu"), default="neu",
-                         help="neu (Default, Schritt 3) = der Kern spricht in LANE, BASIS, TOT, die alten Regeln "
-                              "dort nicht; schatten = das Regelwerk spricht, der Kern rechnet mit und schreibt "
-                              "'wuerde sagen' in <stamm>_kern.jsonl; alt = nur Modus und Sperre (Schritt 2)")
+    for sub in (lv, ab):   # Entscheidungskern (buecher/00_entscheidungskern.md, Kapitel 3; Auftrag 034)
+        sub.add_argument("--kern", choices=("alt", "schatten", "neu", "makro"), default="makro",
+                         help="makro (Default, Auftrag 034) = das Challenger-Gehirn entscheidet (lolcoach/makro), "
+                              "Claude formt nur den Satz, der alte Kern ist nur noch Sicherheits-Sperre, Protokoll "
+                              "<stamm>_makro.jsonl; neu = der alte Kern spricht (Stand vor 034); schatten = das "
+                              "Regelwerk spricht, der Kern rechnet mit und schreibt 'wuerde sagen' in "
+                              "<stamm>_kern.jsonl; alt = nur Modus und Sperre (Schritt 2)")
     args = ap.parse_args()
     if args.befehl is None:
         args = ap.parse_args(sys.argv[1:] + ["live"])  # ohne Befehl: live mit allen Voreinstellungen

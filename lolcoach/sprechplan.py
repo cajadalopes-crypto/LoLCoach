@@ -287,7 +287,7 @@ class Sprechplan:
                                 is not None and jetzt is not None and jetzt - self.gesagt[-1].gesprochen < GEFAHR_EBEN):
             eingeworfen = [a for a in eingeworfen if a.schluessel == "briefing"]
         # Buch 0, 9.1 ab Schritt 3: der Midgame-Plan des Strategen laeuft als INFO durch den Kern (Dashboard)
-        if getattr(self.kern, "stellung", "alt") == "neu":
+        if getattr(self.kern, "stellung", "alt") in ("neu", "makro"):
             for a in [a for a in eingeworfen if a.schluessel == "midgame"]:
                 self.kern.info_dazu(a.zeit, a.text)
             eingeworfen = [a for a in eingeworfen if a.schluessel != "midgame"]

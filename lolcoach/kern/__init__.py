@@ -10,7 +10,12 @@ mit und schreibt "wuerde sagen" ins Protokoll, `alt` nur den Modus. Je Takt `<st
 
 Schritt 4 (Buch 5): dazu SEITE, GRUPPE, UNTERWEGS, VERTEIDIGEN - die Karten-Rechnung (modi/karte.py: Turm,
 Seitenwelle, Gruppe/TP, Welle rein und rotieren, Umwandeln bis zum Nexus), Schweigen, wenn du schon hinlaeufst,
-Erinnerung nach 20 s ohne Fortschritt, Bestaetigungen aus Kapitel 9."""
+Erinnerung nach 20 s ohne Fortschritt, Bestaetigungen aus Kapitel 9.
+
+Stufe 4 des Challenger-Gehirns (Auftrag 034, `--kern makro`, Standard): der Kern entscheidet nicht mehr. Er rechnet
+weiter mit (Modus, Merkmale, Wellen-Zustand - "wuerde sagen" im Protokoll) und ist die Sicherheits-Sperre
+(`makro_sperre`: R1, Kill-Check, Fakten, verbotene Begriffe, Carlos' Einsprueche). Gesprochen wird nur, was der
+Makro-Entscheider sagt (lolcoach/makro/einbau.py). `--kern neu` gibt den Stand davor."""
 from __future__ import annotations
 
 import json
@@ -69,7 +74,7 @@ KERN_MODI_5 = KERN_MODI_4 + ("KAMPF", "OBJECTIVE")     # Schritt 5 (Buch 7 und B
 KERN_MODI = KERN_MODI_5
 INFO_ZAUBER = {"SummonerFlash": "Flash", "SummonerTeleport": "TP"}   # Auftrag 024, 4: Pflicht-Info je Zauber
 SPIELSTART_S = 60.0      # davor schweigt der Kern in der Basis (nicht im Buch, Schritt 3: messungen.md)
-STELLUNGEN = ("alt", "schatten", "neu")
+STELLUNGEN = ("alt", "schatten", "neu", "makro")   # makro: Auftrag 034 - das Challenger-Gehirn entscheidet
 # Kehrtwende-Richtung einer Ansage des alten Systems (nur Text, Kapitel 9.4 Punkt 5)
 VOR_TEXT = re.compile(r"Geh rein|nimm den Kampf an|Halte deine Stellung|Bleib an deiner Welle|Trade|Spiel auf|"
                       r"Geh auf|Drück|Nehmt", re.I)
@@ -275,6 +280,12 @@ class Kern:
                 self._datei = open(ablage, "a", encoding="utf-8")
             except OSError:
                 self._datei = None
+        # Auftrag 034: in der Stellung "makro" entscheidet und spricht der Makro-Entscheider; dieser Kern sperrt nur
+        self.makro_coach = None
+        if self.stellung == "makro":
+            from ..makro.einbau import MakroCoach
+            self.makro_coach = MakroCoach(self, ablage=None if ablage is None else
+                                          Path(ablage).with_name(Path(ablage).name.replace("_kern.jsonl", "_makro.jsonl")))
 
     # --- vom Regelwerk gerufen ---------------------------------------------------------
 
@@ -287,8 +298,9 @@ class Kern:
         return self.modus.neu(self.m)
 
     def spricht_in(self, modus: str | None) -> bool:
-        """Spricht der Kern in diesem Modus selbst (dann schweigen dort die alten Regeln)?"""
-        return self.stellung == "neu" and modus in self.modi
+        """Spricht der Kern in diesem Modus selbst (dann schweigen dort die alten Regeln)? In der Stellung "makro"
+        spricht der Makro-Entscheider in allen Modi - die alten Regeln schweigen ueberall (Auftrag 034)."""
+        return self.stellung == "makro" or (self.stellung == "neu" and modus in self.modi)
 
     def info_dazu(self, zeit: float, text: str) -> None:
         self.info.append((zeit, text))
@@ -302,7 +314,7 @@ class Kern:
         ansagen = []
         self._letzte = None
         self._stumm_takt = None
-        if m is not None and self.stellung in ("schatten", "neu"):
+        if m is not None and self.stellung in ("schatten", "neu", "makro"):
             try:
                 self.chronik.takt(p, m.b, lagebild)      # Auftrag 019: "seit dem letzten Aufruf" fuers Lagebild
                 from .. import stratege                  # Auftrag 027, 3: das letzte Minimap-Bild der Mitspieler
@@ -316,7 +328,45 @@ class Kern:
                     import traceback
                     print(f"!! Kern: {type(e).__name__}: {e}\n{traceback.format_exc(limit=4)}", flush=True)
         self._protokoll(p, m)
+        if self.stellung == "makro" and getattr(self, "makro_coach", None) is not None:
+            # Auftrag 034: was der alte Kern baute, wird nicht gesprochen - der Makro-Entscheider spricht
+            try:
+                return self.makro_coach.takt(p, m.b if m is not None else None, lagebild, m,
+                                             gesagt=self.transport.gesagt if self.transport is not None else [])
+            except Exception as e:     # der Entscheider darf die Partie nie mitreissen
+                if not getattr(self, "_makro_fehler", False):
+                    self._makro_fehler = True
+                    import traceback
+                    print(f"!! Makro: {type(e).__name__}: {e}\n{traceback.format_exc(limit=4)}", flush=True)
+                return []
         return ansagen if self.stellung == "neu" else []
+
+    def makro_sperre(self, text: str) -> list[str]:
+        """Auftrag 034: die Sicherheits-Sperre fuer jedes Kommando des Makro-Entscheiders - R1 (nichts nach vorn mit
+        zu wenig Leben), Angriff ohne Kill-Check, "schwach" ohne Beleg, innere Begriffe, Carlos' Einsprueche
+        (`unsicher_jetzt`), Fakten (lebt/tot, Lane-Gegner weg), verbotene Gruende (Floskeln, Tautologien).
+        Leer heisst: darf gesagt werden. Ohne Merkmale (keine Minimap) gelten nur Fakten und Sprache."""
+        from .. import stratege
+        from .sprache import verbotene_gruende
+        gruende = list(self.unsicher_jetzt(text))
+        m = self.m
+        p = getattr(m, "p", None) if m is not None else None
+        if p is not None:
+            lage = {"gegner": [{"name": s.champion, "tot": s.tot} for s in p.gegner()],
+                    "mitspieler": [{"name": s.champion, "tot": s.tot} for s in p.team(p.mein_team)
+                                   if p.ich is None or s.name != p.ich.name]}
+            try:
+                gruende += stratege.fakten(text, lage)
+            except Exception:
+                pass
+        gruende += verbotene_gruende(text)
+        if m is None or m.b is None:
+            try:
+                if (i := stratege.INNERE.search(text)):
+                    gruende.append(f"innerer Begriff ({i.group(0)})")
+            except Exception:
+                pass
+        return list(dict.fromkeys(gruende))
 
     def schritt(self, m: Merkmale, modus: str | None, p=None) -> list:
         """Ein Takt des Kerns auf fertigen Merkmalen (auch fuer Tests mit konstruierten Lagen)."""
@@ -2528,7 +2578,7 @@ class Kern:
             if self._ruf_vor_tod is not None and abs(self._ruf_vor_tod[0] - p.zeit) <= 1.0:
                 zeile["ruf_vor_tod"] = self._ruf_vor_tod[1]
             if self._letzte is not None:
-                zeile["wuerde_sagen" if self.stellung == "schatten" else "sagt"] = list(self._letzte)
+                zeile["wuerde_sagen" if self.stellung in ("schatten", "makro") else "sagt"] = list(self._letzte)
             # Auftrag 025: Paket, Uhren und Events des Takts - die automatischen Masse (werkzeuge/pakete_messen.py)
             if (pk := self.pakete.stand(p.zeit)) is not None:
                 zeile["paket"] = pk
@@ -2550,6 +2600,22 @@ class Kern:
         """Fuer Dashboard und Claude: Modus, Plan mit Grund, die Top-3 (9.5), die letzten INFO-Zeilen."""
         m = self.m
         plan = self.fuehrer.plan
+        mc = getattr(self, "makro_coach", None)
+        if mc is not None and (a := mc.entscheider.aktiv) is not None:
+            from ..makro.kommando import jetzt_statt_null, sprechbar
+            # Auftrag 034: das Dashboard zeigt den Plan des Makro-Entscheiders (Art = Nummer aus Buch 17, Teil B)
+            k = a.kommando
+            return {"modus": self.modus.aktuell, "seit": self.modus.seit, "grund": self.modus.grund,
+                    "bereich": bereich_worte(m.bereich if m else None),
+                    "plan": {"art": f"{k.id} ({a.form})", "ziel": sprechbar(jetzt_statt_null(k.tu)),
+                             "grund": sprechbar(jetzt_statt_null(k.weil)),
+                             "satz": a.vorlage,
+                             "ev": round(k.wert), "schritte": [k.danach] if k.danach else [], "schritt": 0},
+                    "top": [{"art": g, "ev": 0, "grund": "gefeuert"} for g in a.gefeuert[:3]],
+                    "gefahr": a.form == "gefahr",
+                    "info": [{"zeit": t, "text": x} for t, x in list(self.info)[-6:]][::-1],
+                    "danach": k.danach or None, "zeitleiste": _zeitleiste_stand(self.zeitleiste, m.zeit if m else 0.0),
+                    "kartenlage": self.kartenlage.stand() if self.kartenlage is not None else None, "teamplan": None}
         return {"modus": self.modus.aktuell, "seit": self.modus.seit, "grund": self.modus.grund,
                 "bereich": bereich_worte(m.bereich if m else None),
                 "plan": None if plan is None else {"art": plan.art, "ziel": plan.handlung.ziel.name
@@ -2583,12 +2649,15 @@ class Kern:
         if (zauber := self._eigene_zauber()):
             z.append(f"DEINE ZAUBER: {zauber}")               # Auftrag 014, A1
         plan = self.fuehrer.plan
-        if plan is not None:
+        mc = getattr(self, "makro_coach", None)
+        if mc is not None:
+            z += mc.kontext_zeilen()          # Auftrag 034: der Plan kommt vom Makro-Entscheider
+        elif plan is not None:
             z.append(f"PLAN (entschieden): {satz(plan.handlung)}")
             if self.danach_text:
                 z.append(f"DANACH: {self.danach_text}")
         top = [h for h in sorted(self.kandidaten or [], key=lambda h: -h.ev) if not fuehren.stumm(h)][:3]
-        if top:
+        if top and mc is None:
             z.append("ALTERNATIVEN: " + " | ".join(f"{fuehren.kurz(h)} ({h.grund or '-'}, Wert {h.ev:+.0f})" for h in top))
         v = self.vorn()
         if v["verboten"]:                          # Auftrag 014, A1: R1 als eigene Zeile, mit dem, was erlaubt ist
@@ -2714,11 +2783,16 @@ class Kern:
             return None
         zeile = f"MODUS: {self.modus.aktuell} - du stehst {bereich_worte(self.m.bereich if self.m else None)}"
         plan = self.fuehrer.plan
-        if plan is not None and self.spricht_in(self.modus.aktuell) and not plan.handlung.stumm:
+        if (mc := getattr(self, "makro_coach", None)) is not None:
+            if (ps := mc.plan_satz()) is not None:
+                zeile += f"\nPLAN DES COACHS: {ps}"          # Auftrag 034
+        elif plan is not None and self.spricht_in(self.modus.aktuell) and not plan.handlung.stumm:
             zeile += f"\nPLAN DES COACHS: {plan.handlung.satz or plan.handlung.kurz()}"
         return zeile
 
     def schliessen(self) -> None:
+        if getattr(self, "makro_coach", None) is not None:
+            self.makro_coach.schliessen()
         if self._datei is not None:
             try:
                 self._datei.close()

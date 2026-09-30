@@ -224,6 +224,8 @@ class Regelwerk:
                     continue
                 if weg == "stumm":
                     continue
+                if getattr(self.kern, "stellung", None) == "makro":
+                    continue        # Auftrag 034: der Makro-Entscheider spricht, die alten Regeln nie (INFO: Dashboard)
                 a._regel = regel.__name__        # alte Regel (Buch 6, 13: alte_regeln_max; Buch 7, 11: Kampf-Verstoesse)
                 a.zeit = p.zeit
                 if a.pruefe is None:

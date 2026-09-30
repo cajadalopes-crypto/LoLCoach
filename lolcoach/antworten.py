@@ -42,7 +42,17 @@ def frage_kern(frage: str, p: Partie, lagebild=None) -> dict | None:
     if kern is None or getattr(kern, "m", None) is None:
         return None
     from .kern import fragen
+    mc = getattr(kern, "makro_coach", None)
     try:
+        if mc is not None:
+            # Auftrag 034: Fragen nach dem Plan beantwortet der Makro-Entscheider; sonst die Fakten des Kern-Wegs -
+            # immer erst die Antwort, dann der Plan (Auftrag 028)
+            if (r := mc.beantworte(frage, p, lagebild)) is not None:
+                return r
+            r = fragen.beantworte(kern, frage, p, lagebild)
+            if r is not None and r.get("text"):
+                r["text"] = mc.mit_plan(r["text"], r.get("absicht"))
+            return r
         return fragen.beantworte(kern, frage, p, lagebild)
     except Exception as e:           # eine Frage darf die Partie nie mitreissen
         print(f"  Fragenweg des Kerns fehlgeschlagen: {type(e).__name__}: {e}", flush=True)

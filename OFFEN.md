@@ -17,6 +17,14 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 
 ## In Arbeit
 
+**Auftrag 034 (Challenger-Gehirn, Stufe 4: der Einbau) gebaut, Zweig `stufe4-einbau`** - `--kern makro` ist Standard:
+MakroLage live (`makro/live.py`), Entscheider im Takt (`makro/takt.py`, eine Anweisung, Wechsel nur mit Grund,
+Klarheit -> Form, nie Schweigen), Claude nur Stimme (`makro/stimme.py`, Vorlage bei Abweichung/Ausfall/Frist), alter
+Kern nur Sicherheits-Sperre. In der Cloud nur mit konstruierten Lagen geprueft (`tests/makro/test_einbau.py`).
+**Offen fuer Carlos (Stufe 5, Auftrag 035):** Messlauf nach `buecher/challenger/phase4_bericht.md` (Liste "nicht
+geprueft") - Gehirn mit echten Modellen, Laufzeit live, Nachspiele/Szenarien mit `--kern makro`, Generalprobe;
+Punkte "Offen" im Bericht (Briefing, freie Claude-Antworten, Werkzeuge noch mit `--kern neu` als Default).
+
 **Review entfernt auf Carlos' Wunsch (30.09.2026, Auftrag 028)** - wiederherstellbar aus Commit b6377df
 (review.py, review_server.py, web/review.html, verlauf.py, Fokus im Briefing, Bericht nach der Partie); wieder
 aufnehmen, wenn der Coach gut ist.

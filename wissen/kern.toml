@@ -499,3 +499,14 @@ modell_lane = "schnell"          # Lane-Anlaesse (Welle, Kanone, Sichtungen)
 modell_frage = "schnell"         # Carlos' Fragen
 modell_plan = "schnell"          # Plan-Wechsel an Wendepunkten - Messung 019: Sonnet trifft die Soll-Liste nicht besser
                                  # (61,3 % wie Haiku), braucht aber 2,6 / 5,5 s statt 1,6 / 2,6 s und kostet das Doppelte
+
+[makro_gehirn]                   # Auftrag 034 (Stufe 4): der Makro-Entscheider (lolcoach/makro/einbau.py), --kern makro
+stand = "Auftrag 034, 30.09.2026 - Startwerte, bei Carlos (Stufe 5) messen"
+takt_s = 1.0                     # hoechstens so oft wird entschieden (der Coach taktet live 4/s)
+start_s = 45.0                   # davor (Brunnen, Einkauf) spricht der Entscheider nicht
+halten_s = 20.0                  # Regel 028: so lange braucht ein Planwechsel einen Grund (Gefahr, Event, Frage, erledigt)
+erinnern_s = 25.0                # so viel Stille, dann die Erinnerung "Weiter: ..." (danach 2x, 4x so lange, Auftrag 027)
+wendepunkt_abstand_s = 8.0       # ein Wechsel aus einem Ereignis ist budgetfrei, hoechstens einmal je so viele s
+claude = true                    # Claude formt den Satz (nur live, nur ueber die API - das Abo braucht 4-11 s)
+frist_s = 2.0                    # so lange wartet der Satz auf Claude, dann spricht die Vorlage (Haiku API: 1,6 s Median)
+modell = "schnell"               # [llm] schnell

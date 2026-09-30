@@ -1,4 +1,4 @@
-"""Alle Makro-Tests (Auftrag 032), je eigener Prozess.
+"""Alle Makro-Tests (Auftrag 032, Einbau: 034), je eigener Prozess.
 
     python tests/makro/alle.py
 """
@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 
 HIER = Path(__file__).parent
-TESTS = ["test_rechner", "test_register", "test_entscheidungen", "test_gehirn_korrektur"]
+TESTS = ["test_rechner", "test_register", "test_entscheidungen", "test_gehirn_korrektur", "test_einbau"]
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")

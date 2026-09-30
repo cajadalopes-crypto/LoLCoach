@@ -607,7 +607,7 @@ def main() -> None:
     ap.add_argument("--nur", choices=("alt", "kern"))
     ap.add_argument("--mit-claude", action="store_true", help="Fragen echt an Claude (ueber das Abo, Sparprotokoll)")
     ap.add_argument("--lage", action="store_true", help="nachgespielte Lage je Szenario zeigen")
-    ap.add_argument("--kern", choices=("alt", "schatten", "neu"), default="neu")
+    ap.add_argument("--kern", choices=("alt", "schatten", "neu", "makro"), default="neu")   # makro: Auftrag 034
     ap.add_argument("--konstruiert", action="store_true", help="die konstruierten Lagen (Buch 1, 6.2)")
     ap.add_argument("--prozesse", type=int, default=0, help="parallel (Vorgabe: Kerne - 2; 1 = seriell)")
     args = ap.parse_args()
