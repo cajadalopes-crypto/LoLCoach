@@ -21,6 +21,11 @@ man mit ihm redet. Anforderungen: `ANFORDERUNGEN.md`. Bedienung fuer Carlos:
   Carlos' Partie mit. Erst fertig, getestet und committet, dann starten. Laeuft er (League offen, Port 8790), wird
   nicht an ihm gebaut, und schwere Laeufe gehen mit niedriger Prioritaet. Bewiesen wird offline: nachspielen
   (`werkzeuge/nachspielen.py`, Stimme in Spielzeit), `werkzeuge/protokoll.py`, Szenarien.
+- **Guthaben nur fuers echte Spiel (Sparprotokoll, `buecher/16_sparprotokoll.md`).** Die Claude-API (Guthaben)
+  nutzt nur, was Carlos selbst startet: den Coach im echten Spiel. Alles, was Claude Code startet
+  (Tests, Nachspiele, Proben, Kritiker, Eichungen), laeuft ueber den Stub oder das Abo - nie ueber die API, auch
+  nicht "kurz zum Pruefen". Ausnahmen nur mit Betrag im Auftrag, von Carlos freigegeben. Jeder Bericht nennt in
+  der ersten Zeile das verbrauchte Guthaben (Soll: 0,00 $).
 
 ## Aufbau
 

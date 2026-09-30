@@ -2,13 +2,13 @@
 # nicht von Hand pflegen. Quelle je Partie: wer sie braucht.
 
 ["2026-09-26_120049"]
-quellen = ["Nachspiel-Satz (Soll-Liste)"]
+quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/szenarien/2026-09-26_120049_auftrag025.toml", "tests/test_kern.py"]
 
 ["2026-09-26_125902"]
-quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/test_bausteine.py", "tests/test_kern.py"]
+quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/szenarien/2026-09-26_125902_auftrag025.toml", "tests/test_bausteine.py", "tests/test_kern.py"]
 
 ["2026-09-26_164809"]
-quellen = ["Nachspiel-Satz (Soll-Liste)"]
+quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/szenarien/2026-09-26_164809_auftrag025.toml", "tests/test_kern.py"]
 
 ["2026-09-26_194524"]
 quellen = ["tests/test_bausteine.py"]
@@ -44,13 +44,19 @@ quellen = ["tests/szenarien/2026-09-27_164326_buch4.toml", "tests/szenarien/2026
 quellen = ["tests/szenarien/2026-09-27_213624.toml", "tests/szenarien/2026-09-27_213624_auftrag009.toml", "tests/szenarien/2026-09-27_213624_auftrag011.toml", "tests/szenarien/2026-09-27_213624_buch4.toml", "tests/szenarien/2026-09-27_213624_fragen.toml", "tests/szenarien/2026-09-28_101426_auftrag010.toml", "tests/szenarien/offen/2026-09-27_213624.toml", "tests/test_kern.py"]
 
 ["2026-09-28_101426"]
-quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/szenarien/2026-09-28_101426_auftrag008.toml", "tests/szenarien/2026-09-28_101426_auftrag009.toml", "tests/szenarien/2026-09-28_101426_auftrag010.toml", "tests/szenarien/2026-09-28_101426_auftrag011.toml", "tests/szenarien/2026-09-28_101426_kritik008.toml", "tests/szenarien/offen/2026-09-28_101426_leerlauf.toml", "tests/test_kern.py"]
+quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/szenarien/2026-09-28_101426_auftrag008.toml", "tests/szenarien/2026-09-28_101426_auftrag009.toml", "tests/szenarien/2026-09-28_101426_auftrag010.toml", "tests/szenarien/2026-09-28_101426_auftrag011.toml", "tests/szenarien/2026-09-28_101426_auftrag025.toml", "tests/szenarien/2026-09-28_101426_kritik008.toml", "tests/szenarien/offen/2026-09-28_101426_leerlauf.toml", "tests/test_kern.py"]
 
 ["2026-09-28_192113"]
-quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/szenarien/2026-09-28_101426_auftrag010.toml", "tests/szenarien/2026-09-28_192113_auftrag012.toml", "tests/szenarien/2026-09-28_192113_fragen.toml", "tests/test_kern.py"]
+quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/szenarien/2026-09-28_101426_auftrag010.toml", "tests/szenarien/2026-09-28_192113_auftrag012.toml", "tests/szenarien/2026-09-28_192113_auftrag025.toml", "tests/szenarien/2026-09-28_192113_fragen.toml", "tests/test_kern.py"]
 
 ["2026-09-29_133448"]
-quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/szenarien/2026-09-27_213624.toml", "tests/szenarien/2026-09-28_101426_auftrag010.toml", "tests/test_kern.py"]
+quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/szenarien/2026-09-27_213624.toml", "tests/szenarien/2026-09-28_101426_auftrag010.toml", "tests/szenarien/2026-09-29_133448_auftrag025.toml", "tests/test_kern.py"]
 
 ["2026-09-29_183125"]
-quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/szenarien/2026-09-29_183125_auftrag018.toml", "tests/test_kaufplan.py", "tests/test_kern.py", "tests/test_stratege.py"]
+quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/szenarien/2026-09-29_183125_auftrag018.toml", "tests/szenarien/2026-09-29_183125_auftrag025.toml", "tests/test_kaufplan.py", "tests/test_kern.py", "tests/test_stratege.py"]
+
+["2026-09-29_231200"]
+quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/szenarien/2026-09-29_231200_auftrag024.toml", "tests/szenarien/2026-09-29_231200_auftrag025.toml", "tests/szenarien/2026-09-29_231200_auftrag026.toml", "tests/test_kaufplan.py", "tests/test_kern.py"]
+
+["2026-09-30_091311"]
+quellen = ["Nachspiel-Satz (Soll-Liste)", "tests/szenarien/2026-09-30_091311_auftrag027.toml", "tests/test_kaufplan.py", "tests/test_kern.py"]

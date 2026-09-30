@@ -91,6 +91,12 @@ Die Probe aus 013/014 zeigt, dass Claude mit guter Lage im Blindvergleich 70–8
 5. **Messen:** alle Aufnahmen mit blinder Soll-Liste ≥ 80 %, Sicherheit 0 / 0 / 0, Latenz, Kosten. Die Kritiker
    arbeiten blind.
 
+## Begriff: Lebendige Arbeitspakete (Carlos, 29.09.2026)
+
+Die To-dos, die der Coach gibt, heißen im Projekt **lebendige Arbeitspakete**. Der Coach sagt sie nicht nur an. Er
+überwacht sie in jedem Takt und meldet sofort, wenn eines erledigt ist, ungültig wird (Objective weg, Team tot,
+Gegnerüberzahl) oder ein besseres Play auftaucht. Dann gibt er direkt das nächste Paket mit Grund (Auftrag 024).
+
 ## Reihenfolge der Aufträge
 
 017 (läuft) → 019 = Schritt A → 018 (Befunde aus der Graves-Partie, ergänzt das Lagebild) → 020 = Schritt B → 021 = Schritt C.
