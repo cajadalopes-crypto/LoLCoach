@@ -1,0 +1,114 @@
+{
+ "gesamt": {
+  "abdeckung": "4347/4713 (92 %)",
+  "abdeckung_gesagt": "2493/4713 (53 %)",
+  "abbruch": "2/2 (100 %)",
+  "budget": "0/0 Fehler, 0 gefährlich",
+  "back": "- (keine)",
+  "chancen": "3/6 (50 %)",
+  "events": "59/67 (88 %)",
+  "erahnt": {
+   "ERAHNT_KAMPF": "14/21 (67 %)",
+   "ERAHNT_LANE_BACK": "10/12 (83 %)",
+   "ERAHNT_RUECKKEHR": "8/9 (89 %)",
+   "ERAHNT_GANK": "0/5 (0 %)"
+  },
+  "hoeren": {
+   "luecke_p90_max": 9.5,
+   "luecke_max": 15.7,
+   "stillstand": "25/26 (96 %)",
+   "basis": "10/10 (100 %)",
+   "negativ_allein": 0,
+   "hin_und_her": 0,
+   "widerspruch_je_partie": [
+    0
+   ],
+   "fuellsaetze": "0/202 (0 %)",
+   "kanone_je_90s_max": 0.0
+  }
+ },
+ "je_partie": [
+  {
+   "stamm": "2026-09-30_134020",
+   "abdeckung": "4347/4713 (92 %)",
+   "abdeckung_gesagt": "2493/4713 (53 %)",
+   "abbruch": "2/2 (100 %)",
+   "budget": "0/0 Fehler, 0 gefährlich",
+   "back": "- (keine) (+2 fuers Leben oder abseits der Lane)",
+   "chancen": "3/6 (50 %)",
+   "events": "59/67 (88 %)",
+   "erahnt": {
+    "ERAHNT_KAMPF": [
+     21,
+     14
+    ],
+    "ERAHNT_LANE_BACK": [
+     12,
+     10
+    ],
+    "ERAHNT_RUECKKEHR": [
+     9,
+     8
+    ],
+    "ERAHNT_GANK": [
+     5,
+     0
+    ]
+   },
+   "roh": {
+    "frei": 4713,
+    "mit": 4347,
+    "gesagt": 2493,
+    "abbruch": [
+     2,
+     2
+    ],
+    "budget": [
+     0,
+     0,
+     0
+    ],
+    "back": [
+     0,
+     0
+    ],
+    "chancen": [
+     3,
+     6
+    ],
+    "events": [
+     59,
+     67
+    ]
+   },
+   "pakete_n": 133,
+   "sicherheit_liste": [],
+   "hoeren": {
+    "luecke_p90": 9.5,
+    "luecke_max": 15.7,
+    "still": [
+     25,
+     26
+    ],
+    "basis": [
+     10,
+     10
+    ],
+    "negativ": 0,
+    "hin_her": 0,
+    "negativ_beispiele": [],
+    "widerspruch": 0,
+    "widerspruch_beispiele": [],
+    "fuell": [
+     0,
+     202
+    ],
+    "fuell_beispiele": [],
+    "kanone": [
+     0,
+     22.5
+    ]
+   }
+  }
+ ]
+}

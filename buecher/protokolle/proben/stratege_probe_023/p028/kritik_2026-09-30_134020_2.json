@@ -1,0 +1,151 @@
+{"minuten": {
+"1": [
+{"soll": "Dorans Schild hast du schon, kauf es nicht nochmal; beim ersten Back Rubinkristall und Trank holen.", "urteil": "fehlt", "grund": "1:25 nur Notiert; 1:28 Back ohne Kaufziel."},
+{"soll": "Mit 26 % Leben nicht gegen Tryndamere traden, obwohl die Welle bei ihm liegt; Leben ist der Back-Grund.", "urteil": "teilweise", "grund": "1:28 Back wegen 25 % Leben; kein Trade-Verbot."}
+],
+"2": [
+{"soll": "Ja, backen: 0 % Leben ist bei Ornn der einzige Back-Grund; Rubinkristall und Trank kaufen.", "urteil": "teilweise", "grund": "2:20 Rubinkristall; Trank fehlt; 2:00 Back nur fuer Leben, nichts kaufen."},
+{"soll": "Nach dem Respawn laufen, nicht teleportieren: Die Lane ist nah, laufen reicht.", "urteil": "gesagt", "grund": "2:31 Lauf zum Turm; 2:44 laufen reicht."},
+{"soll": "Ihre Tryndamere ist L2 im oberen Fluss, ihre Miss Fortune hat Flash benutzt: nicht ueberziehen, Welle halten.", "urteil": "gesagt", "grund": "2:31 Tryndamere oberer Fluss, 2:41 MF Flash weg, 2:54 Turm/Welle."}
+],
+"3": [
+{"soll": "Nicht druecken, sondern freezen nahe eurem Turm: 2 eigene gegen 3 Vasallen, ihre Sejuani nie gesehen, Ganks moeglich.", "urteil": "gesagt", "grund": "3:21/3:35 freeze am Turm, drei Vasallen; Sejuani-Gankwarnung fehlt."},
+{"soll": "Ihre Tryndamere ist L4 gegen dein L3: kein Trade, Welle halten und Erfahrung nicht verlieren.", "urteil": "fehlt", "grund": "Kein Level-Vergleich, kein Trade-Hinweis bis 3:59."},
+{"soll": "Bei 204 Gold beim naechsten Back Stoffruestung und Bamis-Glutstein-Bausteine kaufen, kein Elixier.", "urteil": "fehlt", "grund": "Kein Kaufrat 3:00-3:59."}
+],
+"4": [
+{"soll": "Nein, nicht als Top-Laner zum ersten Drachen: Er ist unten, ihre Tryndamere lauert, ihre Sejuani unbekannt; bleib an der Welle.", "urteil": "fehlt", "grund": "4:36 Ja, per TP zum Drachen; Gegenteil geraten."},
+{"soll": "Kein Back bei 80 % Leben: Ornn kauft ohne Back, Bamis-Glutstein-Kette unterwegs weiterbauen.", "urteil": "teilweise", "grund": "4:52 Leben reicht, kein Back; aber Stiefel statt Bamis-Kette."}
+],
+"5": [
+{"soll": "Antwort: zurueck auf Top und Welle farmen, nicht zum Drachen; ihre Sejuani L5 steht in eurem unteren Jungle.", "urteil": "gesagt", "grund": "5:10 Top nicht Drache, Farm Welle; 5:25 Sejuani euer Jungle unten."},
+{"soll": "Bei 179 Gold ohne Back Bamis-Glutstein-Teile kaufen; als Stiefel-Upgrade Beschichtete Stahlkappen gegen Tryndamere und Miss Fortune.", "urteil": "teilweise", "grund": "5:46 Bamis ohne Back; Stahlkappen fehlen, nur Stiefel 5:01."}
+],
+"6": [
+{"soll": "Ja, ihre Tryndamere kommt wieder: L6 mit vollem Leben; mit 63 % Leben nur traden, wenn sie deinen Lauf nicht kontern kann.", "urteil": "gesagt", "grund": "6:20 Doch, er kann kommen; 5:43 L6 nur mit Team."},
+{"soll": "961 Gold ohne Back kaufen: Bamis Glutstein plus Kettenweste; Back nur bei Leben.", "urteil": "gesagt", "grund": "6:14 Bamis; 6:47 ohne Back Bamis und Kettenweste."},
+{"soll": "Ihre Sejuani vor 33 s in ihrer Basis: Drache lebt, du gehst nicht mit, Welle 5 gegen 0 ist schon bei ihm.", "urteil": "fehlt", "grund": "6:07 nur nicht zu sehen; kein Drachenrat, keine Basis-Info."}
+],
+"7": [
+{"soll": "Entscheide dich: erst Kanonenwelle Top in 29 s nehmen, dann Drache; eure Sejuani ist unten.", "urteil": "gesagt", "grund": "7:26 TP Top, Kanone in 30 s, dann Larven; Sejuani-Ort fehlt."},
+{"soll": "1498 Gold jetzt ausgeben: Bamis Glutstein, Kettenweste, Stiefel-Upgrade Beschichtete Stahlkappen; kein Elixier.", "urteil": "teilweise", "grund": "7:21 Bamis, Kettenweste, Rubinkristall; Stahlkappen fehlen."},
+{"soll": "Ihre Tryndamere vor 43 s in Basis, ihre Sejuani vor 92 s weg: nicht in den Fluss ueberziehen.", "urteil": "fehlt", "grund": "7:49 nur Sejuani unterer Fluss; keine Zeiten, kein Ueberzieh-Rat."}
+],
+"8": [
+{"soll": "Geh zur Top-Welle 2 gegen 3 in der Mitte; ihre Tryndamere war vor 4 s Mid, nicht Mid laufen.", "urteil": "teilweise", "grund": "8:31 Top-Welle, aber 8:06 Bleib am Mid-Turm bei Yi."},
+{"soll": "Ja, die ganze Kette: Bamis Glutstein, Kettenweste und Rubinkristall kaufen, nicht nur ein Teil.", "urteil": "fehlt", "grund": "8:21 Notiert, dann nur Sonnenfeuer-Aegide; Kette nicht bestaetigt."},
+{"soll": "441 Gold: Sonnenfeuer-Aegide fertig bauen; Elixier nie vor sechs fertigen Items.", "urteil": "teilweise", "grund": "8:21/8:43 Aegide kaufen; Elixier-Regel fehlt."}
+],
+"9": [
+{"soll": "Ihre Sejuani zuletzt vor 102 s im unteren Fluss, ihre Tryndamere im oberen Jungle: nicht ohne Sicht einwandern.", "urteil": "teilweise", "grund": "9:49 Sejuani oben, zurueck zum Turm; Fluss-Zeit fehlt."},
+{"soll": "218 Gold: naechstes Ziel Stahlkappen (300) und Dornenweste-Kette Richtung Dornenpanzer.", "urteil": "fehlt", "grund": "9:44 Aegide, 9:49 nichts zu kaufen; keine Stahlkappen."},
+{"soll": "Grubenlarven leben: mit eurer Sejuani und dem Team nehmen, nicht allein.", "urteil": "fehlt", "grund": "Nur Drache mit Team 9:49; Larven nie genannt."}
+],
+"10": [
+{"soll": "870 Gold ohne Back: Beschichtete Stahlkappen (300) kaufen und Dornenweste-Teile; 74 % Leben ist kein Back-Grund.", "urteil": "teilweise", "grund": "10:32 Stahlkappen ohne Back; Dornenweste-Teile fehlen."},
+{"soll": "Welle 3 gegen 1, Kanone in 25 s: Welle nehmen, dann Drache nur mit eurer Sejuani und Master Yi.", "urteil": "teilweise", "grund": "10:28 Welle rein; Kanone und Drache mit Team fehlen."}
+],
+"11": [
+{"soll": "Du hast recht: Welle gecrasht bei ihm, du farmst weiter Top; die Teamkaempfe unten beginnen nicht durch dich.", "urteil": "gesagt", "grund": "11:02 Ja, Farmen stimmt; 11:23 Farm Top."},
+{"soll": "1539 Gold ohne Back: Kettenweste plus Dornenweste (Dornenpanzer-Kette) und Stahlkappen jetzt kaufen.", "urteil": "teilweise", "grund": "11:17 Stahlkappen ohne Back; Kettenweste/Dornenweste fehlen."},
+{"soll": "Ihre Sejuani zeigt sich im unteren Fluss: bleib Top, kein Flankenlauf.", "urteil": "gesagt", "grund": "11:10 Sejuani unterer Fluss; 11:23 Farm Top."}
+],
+"12": [
+{"soll": "301 Gold: nicht backen, 90 % Leben; bei 850 den Dornenpanzer ohne Back fertig kaufen.", "urteil": "teilweise", "grund": "12:45 ohne Back kaufen, aber Stahlkappen statt Dornenpanzer."},
+{"soll": "Sage: eure Sejuani und Master Yi kaempfen in der Flussmitte, ihre Sejuani vor 60 s in ihrer Basis.", "urteil": "fehlt", "grund": "12:49 nur Notiert; keine Sejuani-Meldung."},
+{"soll": "Drache ist weg (12:15): Herold in 148 s mit Team vorbereiten, Top-Turm halten.", "urteil": "teilweise", "grund": "12:28/12:36 bleib am Turm; Herold-Plan fehlt."}
+],
+"13": [
+{"soll": "21 % Leben: jetzt backen nur fuer Leben; dann 1834 Gold: Dornenpanzer und Stahlkappen kaufen.", "urteil": "gesagt", "grund": "13:12 Back 21 %; 13:30 Stahlkappen und Dornenpanzer."},
+{"soll": "Tryndamere und Brand tot: Herold in 91 s mit eurer Sejuani und Master Yi nehmen.", "urteil": "gesagt", "grund": "13:38 mit Team zum Herold in 81 s; Brand-Tod fehlt."},
+{"soll": "Ihre Sejuani, Leona und Miss Fortune stehen unten: nicht allein dorthin.", "urteil": "teilweise", "grund": "13:21 Sejuani unten; Leona/MF und Warnung fehlen."}
+],
+"14": [
+{"soll": "Dornenpanzer ist gekauft; als naechstes Gefrorenes Herz: Kettenweste und Ruestungs-Komponenten sofort kaufen, kein Gold liegen lassen.", "urteil": "fehlt", "grund": "14:14 Stahlkappen/Auge; 14:28 nichts, Gold blieb liegen."},
+{"soll": "Herold in 32 s nur mit Team, eure Sejuani und Master Yi sind oben; du nimmst Top-Welle 3 gegen 0.", "urteil": "teilweise", "grund": "14:28 Top-Welle, Herold in 32 s; 14:32 aber Bot-Welle."},
+{"soll": "Ihre Tryndamere war vor 20 s in der Flussmitte, Brand Mid: nicht allein Mid.", "urteil": "gesagt", "grund": "14:08 Tryndamere und Brand Mitte, nicht allein nach vorn."}
+],
+"15": [
+{"soll": "Ja, Beschichtete Stahlkappen sind richtig gegen Tryndamere und Miss Fortune; behalte sie, kein Stiefelwechsel.", "urteil": "fehlt", "grund": "15:34 nur Notiert; keine Bestaetigung."},
+{"soll": "1017 Gold ohne Back: Gefrorenes-Herz-Kette und Rookern-Bausteine; Elixier erst nach sechs fertigen Items.", "urteil": "teilweise", "grund": "15:08 Nullmagie-Mantel ohne Back; Gefrorenes Herz, Elixier-Regel fehlen."},
+{"soll": "Ihre Sejuani tot, Turm gefallen: Drache in 103 s mit Team nehmen, Herold lebt.", "urteil": "fehlt", "grund": "15:13 Sejuani unterer Fluss; kein Drachen-/Herold-Rat."}
+],
+"16": [
+{"soll": "Kaenischer Rookern ist kein Elixier und passt gegen Brand: baue ihn aus dem Nullmagie-Mantel fertig.", "urteil": "teilweise", "grund": "16:35 kein Elixier; 16:06 Negatron statt Rookern-Bau."},
+{"soll": "Drache in 45 s: mit Corki, Master Yi und eurer Sejuani gruppieren; ihre Sejuani war vor 9 s unten.", "urteil": "teilweise", "grund": "16:29/16:35 Drache mit Team; Sejuani-Meldung erst 16:50."}
+],
+"17": [
+{"soll": "801 Gold: Rookern ohne Back fertig kaufen; 84 % Leben ist kein Back-Grund.", "urteil": "gesagt", "grund": "17:38 ohne Back; 17:53 Negatron-Mantel fuer Rookern."},
+{"soll": "Brand und Leona tot: Herold nehmen, Baron in 152 s erst mit Team und Sicht anfangen.", "urteil": "fehlt", "grund": "17:29 nur Brand-Respawn, Turm; kein Herold/Baron."},
+{"soll": "Ihre Sejuani zuletzt vor 11 s in ihrem unteren Jungle: Ornn nicht allein in den Fluss.", "urteil": "teilweise", "grund": "17:11 Sejuani unten; keine Warnung."}
+],
+"18": [
+{"soll": "Drache ist weg (18:24): nicht in der Grube bleiben, mit Team Baron in 89 s vorbereiten; Herold lebt.", "urteil": "teilweise", "grund": "18:24 nicht hin, aber 18:27 Bleib am Drachen; 18:40 Herold."},
+{"soll": "225 Gold: kein Elixier; Gefrorenes-Herz-Kette weiter kaufen.", "urteil": "fehlt", "grund": "18:53 Nullmagie-Mantel/Stoffruestung; kein Elixier, kein Gefrorenes Herz."}
+],
+"19": [
+{"soll": "Kein Elixier: du hast erst drei fertige Items; 1245 Gold in Gefrorenes Herz stecken.", "urteil": "teilweise", "grund": "19:49 kein Elixier; 19:30 Jak'Sho-Teile statt Gefrorenes Herz."},
+{"soll": "Baron in 31 s nur beginnen, wenn eure Sejuani und Master Yi da sind; ihre Sejuani war vor 12 s unten.", "urteil": "teilweise", "grund": "20:10 zur Gruppe fuer Baron; 20:25 Sejuani unten."},
+{"soll": "Welle Top ist 3 gegen 1, nicht lange gecrasht: zur Kanone in 48 s, dann zum Team, nicht Mid schieben.", "urteil": "teilweise", "grund": "19:36/19:49 Top-Welle; Kanone-Timer, Team danach fehlen."}
+],
+"20": [
+{"soll": "Ja, Elixier ist ein Spaetitem: erst nach sechs fertigen Items; du hast drei, kaufe Gefrorenes Herz.", "urteil": "teilweise", "grund": "20:10 kein Elixier; 20:44 Faustschild statt Gefrorenes Herz."},
+{"soll": "Ihre Miss Fortune hat ihr Flash benutzt (20:25): mit Team Baron oder Kampf nehmen, Baron lebt.", "urteil": "teilweise", "grund": "20:28 MF Flash weg; 20:42 Rein; Baron fehlt."},
+{"soll": "Ihre Tryndamere L12 mit 76 % oben: nicht allein reingehen, Welle gecrasht bei dir nutzen.", "urteil": "fehlt", "grund": "Keine Meldung zu Tryndamere oben; 20:38 Dreh um."}
+],
+"21": [
+{"soll": "1342 Gold ohne Back: Gefrorenes Herz fertig kaufen, danach Jak'Sho-Kette.", "urteil": "gesagt", "grund": "21:49 ohne Back Gefrorenes Herz und Nullmagie-Mantel."},
+{"soll": "Miss Fortune tot: Drache in 114 s mit Team; ihre Sejuani, Brand und Leona stehen im unteren Jungle, nicht allein dorthin.", "urteil": "fehlt", "grund": "21:14/21:18 Top, nicht zu Sejuani; kein Drache, kein unterer Jungle."}
+],
+"22": [
+{"soll": "Kanone ist nicht die Prioritaet: Drache in 53 s mit eurer Sejuani und Master Yi im oberen Jungle nehmen.", "urteil": "gesagt", "grund": "22:05 Kanone nur Beifang; 22:30/22:35 Drache mit Team."},
+{"soll": "798 Gold ohne Back: Jak'Sho-Bausteine (Kettenweste) kaufen; 100 % Leben.", "urteil": "gesagt", "grund": "22:50 ohne Back Kettenweste; 22:17 Nullmagie fuer Jak'Sho."}
+],
+"23": [
+{"soll": "Team pusht ihre Basis (Inhibitor 23:52): dabei bleiben, Baron erst nachher; ihr Tryndamere respawnt in Sekunden.", "urteil": "teilweise", "grund": "23:03 kein Baron; 23:25 Inhibitor; 23:03 aber raus zu Top."},
+{"soll": "1549 Gold ohne Back: Jak'Sho kaufen, 99 % Leben.", "urteil": "gesagt", "grund": "23:36 ohne Back Guertel des Riesen (Jak'Sho)."}
+],
+"24": [
+{"soll": "22 % Leben und 2427 Gold: nur fuer Leben backen, Jak'Sho und Schikane-Teil ausgeben.", "urteil": "fehlt", "grund": "24:23 kaufen ohne Back trotz 32 %; 24:32 Geh nach Top."},
+{"soll": "Ihre Tryndamere vor 6 s in Basis, ihre Sejuani auch: nicht allein hinein; Baron lebt, erst Inhibitor mit Team.", "urteil": "teilweise", "grund": "24:27 Tryndamere in Basis, unterm Turm; Sejuani, Baron fehlen."}
+],
+"25": [
+{"soll": "1761 Gold: Jak'Sho fertig kaufen; mit Master Yi und Corki gruppiert bleiben, nicht einzeln.", "urteil": "teilweise", "grund": "25:05 Guertel fuer Jak'Sho; 25:18 Zum Baron; kein Gruppieren."},
+{"soll": "Ihre Tryndamere sichtbar oben, ihre Sejuani vor 99 s: nicht Mid ohne Team.", "urteil": "fehlt", "grund": "25:42/25:50 Mitte frei, Welle druecken; Sejuani nie genannt."}
+],
+"26": [
+{"soll": "2611 Gold: Jak'Sho jetzt kaufen, das Gold darf nicht liegen; kein Elixier.", "urteil": "gesagt", "grund": "26:07 Kauf Jak'Sho; Elixier-Verbot fehlt."},
+{"soll": "Eure Team-Mitglieder starben 26:30 bis 26:39: nicht allein in ihre Basis, ihre Sejuani war vor 3 s dort.", "urteil": "fehlt", "grund": "26:22 Sejuani unten; 26:33 Geh nach Top; keine Warnung."}
+],
+"27": [
+{"soll": "Warum keine Chance: du starbst allein in ihrer Basis, Corki, Seraphine und Master Yi waren tot, ihre Tryndamere L14 lebt.", "urteil": "teilweise", "grund": "27:13 Brand und Leona zusammen; 27:46 Doch Chance, widerspruechlich."},
+{"soll": "3545 Gold: nach dem Respawn sofort Jak'Sho und Schikane kaufen, dann mit Team gruppieren.", "urteil": "teilweise", "grund": "27:46 Jak'Sho, dann Gruppe; Schikane fehlt."}
+],
+"28": [
+{"soll": "Drache in 30 s: nicht allein, ihre Sejuani im oberen Fluss; mit Team gruppieren.", "urteil": "gesagt", "grund": "28:06 mit Team zum Drachen; 28:26 Sejuani oberer Fluss."},
+{"soll": "1268 Gold: Schikane als sechstes Item kaufen.", "urteil": "fehlt", "grund": "28:21 nur Raus jetzt; kein Kaufrat."}
+],
+"29": [
+{"soll": "Nein, nicht weg: Nexus offen und vier tot, den Nexus jetzt zerstoeren; ihre Sejuani war vor 31 s Mid.", "urteil": "gesagt", "grund": "29:56 Nein, bleib: schlag den Nexus; Sejuani-Ort fehlt."},
+{"soll": "2569 Gold: Schikane sofort kaufen; danach ist ein Elixier erlaubt.", "urteil": "fehlt", "grund": "Kein Kaufrat 29:00-29:59 bei 2591 Gold."}
+],
+"30": [
+{"soll": "Ihr Team lebt wieder: 39 % Leben, ihre Tryndamere L15 vor 11 s in Basis; nicht allein in ihrer Basis bleiben.", "urteil": "gesagt", "grund": "30:01 Raus jetzt: Leona da; 30:07 Stopp, zurueck zu Yi/Corki."},
+{"soll": "3774 Gold: Schikane plus Elixier kaufen, dann mit Team hinein.", "urteil": "fehlt", "grund": "Kein Kaufrat in Minute 30 bei bis 4144 Gold."}
+],
+"31": [
+{"soll": "4247 Gold: nach Respawn sofort Schikane und Elixier kaufen; ihre Tryndamere L16 Mid, nicht allein.", "urteil": "fehlt", "grund": "31:46 nichts zu kaufen bei 4283 Gold; keine Tryndamere-Meldung."}
+],
+"32": [
+{"soll": "4371 Gold ungenutzt: jetzt in Basis Schikane und Elixier kaufen, dann mit Corki gruppieren.", "urteil": "teilweise", "grund": "32:30 kaufen in Basis, aber Stahlkappen; 32:34 Baron."}
+],
+"33": [
+{"soll": "Miss Fortune und Brand tot: Inhibitor und Nexus druecken, gruppiert bleiben; 2244 Gold fuer Elixier nutzen.", "urteil": "fehlt", "grund": "33:00 Drache, 33:25 Geh nach Top; kein Nexus, kein Kauf."}
+],
+"34": [
+{"soll": "Drache in 3 s: nicht Drache, sondern Nexus, ihre Tryndamere, Miss Fortune und Leona sind tot.", "urteil": "fehlt", "grund": "Letzter Satz 33:50 Geh nach Top, Drache spawnt; kein Nexus."}
+]
+},
+"fuellsaetze": {"anzahl": 12, "saetze_gesamt": 215, "zeiten": ["5:01", "9:44", "10:37", "11:23", "12:36", "18:28", "19:25", "22:05", "24:02", "25:50", "26:33", "30:19"]},
+"widersprueche": {"anzahl": 9, "faelle": ["8:06/8:31 Bleib bei Yi vs nicht zu Yi, Top-Welle", "14:28/14:32 Top-Welle farmen vs Bot-Welle druecken", "18:24/18:27 Drache weg nicht hin vs Bleib am Drachen", "19:28/19:30 innerer Bot-Turm vs Top-Welle", "24:02/24:07 zurueck unter Mid-Turm vs Farm Top", "24:32/24:35 Geh nach Top vs zurueck zu Mid-Turm", "24:35/24:40 zurueck Mid-Turm vs Geh nach Top", "32:34/32:44 Baron vs Top-Welle crashen, Drache", "33:00/33:25 Geh zum Drachen vs Geh nach Top"]}
+}

@@ -4,6 +4,38 @@ Je Schritt: was umgesetzt ist, die Abnahme-Zahlen, Abweichungen vom Buch. Neuest
 
 ---
 
+## Auftrag 028 – Eine Stimme, ein Plan, richtig kaufen (30.09.2026)
+
+Stub (`werkzeuge/pakete_messen.py`, Probe `proben/pakete_028/`, 10 Testpartien, neu: 134020) mit den
+Messdefinitionen aus 027. Neu:
+- **Widerspruch:** ein Planwechsel binnen 20 s ohne Grund. Grund-Erkennung wie `herzschlag.wechsel_grund`.
+  „Back jetzt“ hält, „…, dann back“ nicht.
+- **Füllsätze** (`FUELL`).
+- **Kanone** je 90 s.
+- **Sicherheit,** wie im Abo-Nachspiel.
+
+Abo-Nachspiel: `proben/stratege_probe_028/`, 091311, 134020 und 164809. Kritiker: `stratege_probe_023/p028/`, je
+drei, Mehrheit, kein Punkt strittig.
+
+| Maß | Soll | 027 | 028 Stub | 028 Abo (091311 / 134020 / 164809) |
+|---|---|---|---|---|
+| Lücke p90 (schlechteste) / längste | ≤ 20 / ≤ 35 s | 12,1 / 20,6 s | 16,2 / 37,9 s | – |
+| Stillstand / Basis | ≥ 95 % | 95 / 97 % | 96 / 98 % | – |
+| Hin und Her | 0 | 1 | 0 | 0 / 0 / 0 |
+| Widerspruch automatisch / Kritiker | ≤ 1 | – / 7–20 | 0 | 0 / 0 / 0 – Kritiker 13 / 9 / 6 |
+| Füllsätze automatisch / Kritiker | ≤ 5 % | – / 5–14 | 0 % | 0 % – Kritiker 1 / 5 / 1 |
+| Chancen genutzt | ≥ 68 % | 53 % | 60 % | – |
+| Sicherheit | 0 | 2 | 0 | 0 / 0 / 0 |
+| Soll-Liste (Kritiker) | ≥ 75 % | 091311 77 % | – | 82 / 69 / 80 % |
+| Szenarien | – | 337/358 | 361/376 | – |
+
+- **Soll-Liste 134020** ist neu: `soll_023/soll_2026-09-30_134020.json`, 78 Aussagen, blind aus
+  `proben/lage_028/LAGE_2026-09-30_134020.md`.
+- **Tor-Runde** per Abo nicht gelaufen: 134020 liegt unter 75 %, und die Kritiker zählen mehr als 1 Widerspruch.
+- **Code-Stand der Abo-Läufe:**
+  - 091311 und 164809 liefen auf 464fe8f, 134020 auf c467d30.
+  - Danach kamen c467d30 (3048, Jungler-Sichtung) und c99add7 (Text „Plan geändert.“), nur im Stub geprüft.
+
 ## Auftrag 027 – Der Herzschlag: immer eine gesprochene Anweisung (30.09.2026)
 
 Neues Hauptmaß „was Carlos hört“ in `werkzeuge/pakete_messen.py` (`hoeren()`), Probe `proben/pakete_027/`,

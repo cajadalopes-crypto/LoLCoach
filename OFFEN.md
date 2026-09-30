@@ -21,6 +21,13 @@ Grundsatz. Erledigtes wandert mit Commit nach unten.
 (review.py, review_server.py, web/review.html, verlauf.py, Fokus im Briefing, Bericht nach der Partie); wieder
 aufnehmen, wenn der Coach gut ist.
 
+**Auftrag 028 (Eine Stimme, ein Plan, richtig kaufen) - TOR NICHT ERREICHT** - ein Plan fuer alle Quellen
+(Widerspruch automatisch 0, Hin und Her 0), keine Fuellsaetze, Kill-Check beim Sprechen fuer jede Quelle
+(Sicherheit 0), Kauf mit Inhalt (Stiefel nach Gegnern, Spielakte-Build, Elixier nur mit fertigem Build, Ornn ohne
+Back via wissen/sonderregeln.toml), Carlos' Widerspruch sperrt alle Stimmen, "ihre/eure Sejuani"; offen: Kritiker
+zaehlen 6-13 Widersprueche je Partie, Chancen 60 %, laengste Luecke 38 s, Soll-Liste 134020 69 %, Satzfehler
+"Jetzt, wo Baron in 34 Sekunden aufgetaucht ist", Elixier-Regel von Carlos zu bestaetigen (Bericht 028).
+
 **Auftrag 027 (Herzschlag: immer eine gesprochene Anweisung) - TOR NICHT ERREICHT** - Luecke p90 12/10 s, Stillstand
 95/98 %, Basis 97 %, Kauf gibt alles Gold aus, Faktencheck "Team am Baron", Back-Regel neu; offen: Stratege-Neins
 (10 im API-Nachspiel, danach behoben, nicht nachgemessen), Hin und Her 1 (Wendepunkt), Sicherheit 1 (Claude-Antwort),
