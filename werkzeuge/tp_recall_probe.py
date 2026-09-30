@@ -35,8 +35,7 @@ def _items(p, name: str) -> tuple:
 def lauf(stamm: str) -> dict:
     pfad = next((A / f"{stamm}{e}" for e in (".jsonl.gz", ".jsonl.xz") if (A / f"{stamm}{e}").exists()), None)
     ordner = A / f"{stamm}_bilder"
-    # lage.sicht_fuer kennt nur .jsonl.gz - bei .jsonl.xz fand es den Bilderordner nicht (alle Partien bis 29.09.)
-    sicht = lage.SichtAusProtokoll(ordner) if (ordner / "sichtungen.jsonl.gz").exists() else lage.sicht_fuer(pfad)
+    sicht = lage.sicht_fuer(pfad)
     if sicht is None:
         return {"stamm": stamm, "tp": [], "recall": [], "fehlt": "keine Sichtungen"}
     lb = lage.Lagebild()

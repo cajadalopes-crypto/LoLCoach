@@ -26,6 +26,10 @@ dem man per Discord den Bildschirm teilt. (Das Review nach dem Spiel ist seit Au
   (Tests, Nachspiele, Proben, Kritiker, Eichungen), laeuft ueber den Stub oder das Abo - nie ueber die API, auch
   nicht "kurz zum Pruefen". Ausnahmen nur mit Betrag im Auftrag, von Carlos freigegeben. Jeder Bericht nennt in
   der ersten Zeile das verbrauchte Guthaben (Soll: 0,00 $).
+- **Koennen nur aus High-Elo-Daten (Buch 17).** Was der Coach fuer richtig haelt (Werte, Schwellen, Regeln), kommt nur
+  aus den Master-bis-Challenger-Partien in `daten/riot/` und aus Regeln, die daran geprueft sind. Carlos' eigene
+  Partien sind keine echten Spielbedingungen: daraus nur Wahrnehmung (Minimap, HUD, Bilder), Verdrahtung (spricht
+  er, wann, Widersprueche, Latenz) und Fehlersuche - nie Entscheidungswissen, nie eine Eichung.
 
 ## Aufbau
 

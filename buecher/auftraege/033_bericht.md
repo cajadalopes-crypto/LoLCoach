@@ -35,6 +35,10 @@ Der vollständige Bericht steht in `buecher/challenger/phase3b_bericht.md`.
 **Offene Entscheidungen:**
 1. `lage.sicht_fuer` findet bei `.jsonl.xz`-Aufnahmen die Sichtungen nicht (alle Partien bis 29.09.). Nachgespielt
    wird dann ohne Protokoll. Der Fix ist eine Zeile, ändert aber die Eingaben der Szenarien. Soll er rein?
+   **Nachtrag 30.09.:** Carlos hat zugestimmt, der Fix ist eingebaut (`aufzeichnung.bilderordner`). Der Fehler traf nur,
+   wer den echten `.xz`-Namen übergab. Szenarien und Nachspielen nennen jede Aufnahme `<stamm>.jsonl.gz`, und
+   `aufzeichnung.echt` führt diesen Namen zur xz-Datei. Die Szenarien waren deshalb nie betroffen: vorher und nachher
+   362/376, keine Wertung geändert.
 2. Die Makro-Lage live füllen (Stufe 4): Die Leser liefern jetzt, `MakroLage` wird aber noch nirgends live gebaut.
 3. Wem ein Ward gehört, ließe sich aus einem Trinket-Abzug plus einem neuen Ward neben dem eigenen Icon schließen.
    Nicht gebaut, weil S12 auch an „weg“ scheitert.

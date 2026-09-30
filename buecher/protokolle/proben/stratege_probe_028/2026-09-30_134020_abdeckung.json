@@ -1,0 +1,434 @@
+{
+ "kennzahlen": {
+  "flash": "7/8 (88 %)",
+  "jungler": "15/17 (88 %)",
+  "i4": "1/1 (100 %)",
+  "backs": "8/11 (73 %)",
+  "back_rufe": "2/5 (40 %)",
+  "stille": "27 s",
+  "sicherheit": 0,
+  "widersprueche": 11,
+  "fuellsaetze": "0/215 (0.0 %)",
+  "latenz": "6.39 / 9.84 s (n = 79)",
+  "erster_satz": 6.072317300015129,
+  "cache": "81/81"
+ },
+ "vorher": null,
+ "abdeckung": {
+  "flash": [
+   {
+    "zeit": 161.2025909423828,
+    "champion": "Miss Fortune",
+    "gesagt": "Miss Fortune Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 399.4661560058594,
+    "champion": "Brand",
+    "gesagt": "Brand Flash weg.",
+    "nach_s": 13.2
+   },
+   {
+    "zeit": 594.00439453125,
+    "champion": "Miss Fortune",
+    "gesagt": "Miss Fortune Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 805.6171875,
+    "champion": "Brand",
+    "gesagt": "Brand Flash weg.",
+    "nach_s": 0.0
+   },
+   {
+    "zeit": 903.49560546875,
+    "champion": "Miss Fortune",
+    "gesagt": "Miss Fortune Flash weg.",
+    "nach_s": 1.7
+   },
+   {
+    "zeit": 1225.84375,
+    "champion": "Miss Fortune",
+    "gesagt": "Miss Fortune Flash weg.",
+    "nach_s": 2.3
+   },
+   {
+    "zeit": 1439.415771484375,
+    "champion": "Miss Fortune",
+    "gesagt": null,
+    "nach_s": null
+   },
+   {
+    "zeit": 1991.6038818359375,
+    "champion": "Miss Fortune",
+    "gesagt": "Miss Fortune Flash weg.",
+    "nach_s": 1.0
+   }
+  ],
+  "jungler": [
+   {
+    "zeit": 325.2,
+    "name": "Sejuani",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": null,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani euer Jungle unten."
+   },
+   {
+    "zeit": 469.9,
+    "name": "Sejuani",
+    "ort": "im unteren Fluss",
+    "ohne_s": 126,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani unterer Fluss."
+   },
+   {
+    "zeit": 664.7,
+    "name": "Sejuani",
+    "ort": "im unteren Fluss",
+    "ohne_s": 193,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani unterer Fluss."
+   },
+   {
+    "zeit": 801.7,
+    "name": "Sejuani",
+    "ort": "unten",
+    "ohne_s": 108,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani unten."
+   },
+   {
+    "zeit": 912.0,
+    "name": "Sejuani",
+    "ort": "im unteren Fluss",
+    "ohne_s": 100,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani unterer Fluss, 4 Sekunden."
+   },
+   {
+    "zeit": 958.0,
+    "name": "Sejuani",
+    "ort": "in eurem unteren Jungle",
+    "ohne_s": 29,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani euer Jungle unten."
+   },
+   {
+    "zeit": 1026.3,
+    "name": "Sejuani",
+    "ort": "unten",
+    "ohne_s": 44,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani unten."
+   },
+   {
+    "zeit": 1123.6,
+    "name": "Sejuani",
+    "ort": "im unteren Fluss",
+    "ohne_s": 58,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 1225.6,
+    "name": "Sejuani",
+    "ort": "unten",
+    "ohne_s": 67,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani unten."
+   },
+   {
+    "zeit": 1359.1,
+    "name": "Sejuani",
+    "ort": "oben",
+    "ohne_s": 22,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani oben."
+   },
+   {
+    "zeit": 1428.3,
+    "name": "Sejuani",
+    "ort": "in seiner Basis",
+    "ohne_s": 46,
+    "tot_ich": false,
+    "gesagt": null
+   },
+   {
+    "zeit": 1581.8,
+    "name": "Sejuani",
+    "ort": "unten",
+    "ohne_s": 152,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani unten."
+   },
+   {
+    "zeit": 1682.8,
+    "name": "Sejuani",
+    "ort": "oben",
+    "ohne_s": 43,
+    "tot_ich": true,
+    "gesagt": "Ihre Sejuani oben."
+   },
+   {
+    "zeit": 1707.1,
+    "name": "Sejuani",
+    "ort": "im oberen Fluss",
+    "ohne_s": 23,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani oberer Fluss."
+   },
+   {
+    "zeit": 1769.3,
+    "name": "Sejuani",
+    "ort": "in seiner Basis",
+    "ohne_s": 31,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani in Basis."
+   },
+   {
+    "zeit": 1825.6,
+    "name": "Sejuani",
+    "ort": "in seinem oberen Jungle",
+    "ohne_s": 51,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani sein Jungle oben."
+   },
+   {
+    "zeit": 1993.7,
+    "name": "Sejuani",
+    "ort": "in seiner Basis",
+    "ohne_s": 96,
+    "tot_ich": false,
+    "gesagt": "Ihre Sejuani in Basis."
+   }
+  ],
+  "backs": [
+   {
+    "zeit": 301.5,
+    "gesagt": "Kauf Stiefel und ein Kontroll-Auge, dann Top: lauf direkt, sonst verpasst du die Welle.",
+    "saetze": [
+     "Kauf Stiefel.",
+     "Kauf Stiefel und ein Kontroll-Auge, dann Top: lauf direkt, sonst verpasst du die Welle.",
+     "Raus jetzt, nach Top."
+    ]
+   },
+   {
+    "zeit": 442.1,
+    "gesagt": "Stimmt. Neu: Back jetzt wegen 38 Prozent Leben, kauf Bamis Glutstein und Kettenweste, dann TP nach Top, weil die Welle gecrasht und Tryndamere tot ist.",
+    "saetze": [
+     "Tryndamere weg: Welle rein, dann Platten.",
+     "Farm Top, Larven in 43 Sekunden.",
+     "Kauf Bamis Glutstein für Sonnenfeuer-Ägide, Kettenweste und Rubinkristall."
+    ]
+   },
+   {
+    "zeit": 699.9,
+    "gesagt": "Ja, Farmen stimmt: Kauf jetzt hier die Beschichteten Stahlkappen, dann Welle crashen und zum Drachen, denn ihre Sejuani lauert vermutlich oben.",
+    "saetze": [
+     "Farm Top, kauf Beschichtete Stahlkappen und Rubinkristall gleich hier. Nicht zu Master Yi.",
+     "Tryndamere weg: Welle rein, dann Platten.",
+     "Kauf Beschichtete Stahlkappen, Rubinkristall und Stoffrüstung."
+    ]
+   },
+   {
+    "zeit": 817.4,
+    "gesagt": "Kauf Beschichtete Stahlkappen, dann geh Top zur Welle, danach mit dem Team zum Herold in 81 Sekunden; Tryndamere ist noch in seiner Basis.",
+    "saetze": [
+     "Kauf gleich hier, ohne Back: Beschichtete Stahlkappen und Dornenpanzer.",
+     "Kauf Beschichtete Stahlkappen, dann geh Top zur Welle, danach mit dem Team zum Herold in 81 Sekunden; Tryndamere ist noch in seiner Basis.",
+     "Raus jetzt, nach Top."
+    ]
+   },
+   {
+    "zeit": 966.4,
+    "gesagt": null,
+    "saetze": [
+     "Geh zur Top-Welle und farm sie.",
+     "Kauf Gürtel des Riesen für Jak'Sho, der Proteaner und Negatron-Mantel.",
+     "Raus jetzt, zur Top-Welle."
+    ]
+   },
+   {
+    "zeit": 1074.2,
+    "gesagt": "Yi ist tot und Tryndamere gerade unsichtbar, du hast 44 Prozent Leben: Kanone nehmen, hier den Negatron-Mantel kaufen, dann mit eurer Sejuani und Corki zum Drachen.",
+    "saetze": [
+     "Yi ist tot und Tryndamere gerade unsichtbar, du hast 44 Prozent Leben: Kanone nehmen, hier den Negatron-Mantel kaufen, dann mit eurer Sejuani und Corki zum Drachen.",
+     "Kauf Negatron-Mantel für Kaenischer Rookern.",
+     "Kauf Kaenischer Rookern und ein Kontroll-Auge, dann zum Drachen: ihr seid drei."
+    ]
+   },
+   {
+    "zeit": 1170.8,
+    "gesagt": "Kauf Gürtel des Riesen für Jak'Sho, der Proteaner und Stoffrüstung, dann zur Top-Welle.",
+    "saetze": [
+     "Los: Geh auf ihren inneren Bot-Turm: Miss Fortune kommt vorher.",
+     "Kauf Gürtel des Riesen für Jak'Sho, der Proteaner und Stoffrüstung, dann zur Top-Welle.",
+     "Geh zur Top-Welle und farm sie."
+    ]
+   },
+   {
+    "zeit": 1325.8,
+    "gesagt": "Kauf Nullmagie-Mantel für Jak'Sho, der Proteaner, dann zum Baron: ihr seid vier.",
+    "saetze": [
+     "Kauf Gefrorenes Herz und Nullmagie-Mantel.",
+     "Kauf Nullmagie-Mantel für Jak'Sho, der Proteaner, dann zum Baron: ihr seid vier.",
+     "Geh zum Baron: ihr seid vier."
+    ]
+   },
+   {
+    "zeit": 1505.7,
+    "gesagt": null,
+    "saetze": [
+     "Geh nach Top, nicht zu Master Yi.",
+     "Kauf Gürtel des Riesen für Jak'Sho, der Proteaner.",
+     "Zum Baron."
+    ]
+   },
+   {
+    "zeit": 1528.2,
+    "gesagt": null,
+    "saetze": [
+     "Zum Baron.",
+     "Raus jetzt, zum Baron.",
+     "Tryndamere oben, Brand, Miss Fortune und Leona unten. Drei unten: die Mitte ist frei: Welle drücken."
+    ]
+   },
+   {
+    "zeit": 1948.7,
+    "gesagt": "Du lebst in 6 Sekunden: nichts zu kaufen, dann zu deinem Top-Inhibitor-Turm.",
+    "saetze": [
+     "Kauf Beschichtete Stahlkappen.",
+     "Plan geändert. Nicht zu Corki. Geh zum Baron: keiner von ihnen kommt rechtzeitig.",
+     "Jetzt, wo Leona tot (der erste lebt in 48 Sekunden wieder): Drache in 92 Sekunden: kauf Beschichtete Stahlkappen, crash die Top-Welle. Dann mit Team zum Drachen, Leona ist tot; ihre Sejuani vermutlich oben."
+    ]
+   }
+  ],
+  "back_rufe": [
+   {
+    "zeit": 88.72543334960938,
+    "text": "Back jetzt: 25 Prozent Leben.",
+    "kette": false
+   },
+   {
+    "zeit": 110.9007339477539,
+    "text": "Kanone in 6 Sekunden, dann Back.",
+    "kette": false
+   },
+   {
+    "zeit": 466.384521484375,
+    "text": "Jetzt, wo Brand tot ist: Los: Sauber: Welle drin, dann back. Kauf Bamis Glutstein für Sonnenfeuer-Ägide, Kettenweste, Rubinkristall und ein Kontroll-Auge, dann nach Top.",
+    "kette": true
+   },
+   {
+    "zeit": 792.9169921875,
+    "text": "Back jetzt: 21 Prozent Leben, Tryndamere ist tot. Nicht zu Master Yi.",
+    "kette": false
+   },
+   {
+    "zeit": 1350.9552001953125,
+    "text": "Jetzt, wo Drache in 54 Sekunden aufgetaucht ist: Drache in 51 Sekunden: Welle crashen, back, dann mit Team zum Drachen. Kauf Nullmagie-Mantel.",
+    "kette": true
+   }
+  ],
+  "stille_max": 27,
+  "stille_lang": [],
+  "sicherheit": [],
+  "widersprueche": [
+   {
+    "zeit": 632.6630859375,
+    "von": "welle",
+    "nach": "back",
+    "vorher": "Tryndamere weg: Welle rein, dann Platten.",
+    "text": "Kauf gleich hier, ohne Back: Beschichtete Stahlkappen."
+   },
+   {
+    "zeit": 637.6968994140625,
+    "von": "back",
+    "nach": "welle",
+    "vorher": "Kauf gleich hier, ohne Back: Beschichtete Stahlkappen.",
+    "text": "Los: Farm Top, kauf Beschichtete Stahlkappen gleich hier."
+   },
+   {
+    "zeit": 683.9059448242188,
+    "von": "back",
+    "nach": "welle",
+    "vorher": "Kauf gleich hier, ohne Back: Beschichtete Stahlkappen und Rubinkristall.",
+    "text": "Farm Top, kauf Beschichtete Stahlkappen und Rubinkristall gleich hier. Nicht zu Master Yi."
+   },
+   {
+    "zeit": 832.5092163085938,
+    "von": "welle:top",
+    "nach": "zurueck",
+    "vorher": "Kauf Beschichtete Stahlkappen, dann geh Top zur Welle, danach mit dem Team zum Herold in 81 Sekunden; Tryndamere ist noch in seiner Basis.",
+    "text": "Raus jetzt, nach Top."
+   },
+   {
+    "zeit": 908.9364624023438,
+    "von": "welle:top",
+    "nach": "back",
+    "vorher": "Geh zur Top-Welle: dort kommt ihre nächste Welle.",
+    "text": "Kauf gleich hier, ohne Back: Nullmagie-Mantel."
+   },
+   {
+    "zeit": 1058.931396484375,
+    "von": "welle",
+    "nach": "back",
+    "vorher": "Farm Top, Brand lebt in 8 Sekunden wieder, dann auf ihren inneren Top-Turm.",
+    "text": "Kauf gleich hier, ohne Back: Negatron-Mantel."
+   },
+   {
+    "zeit": 1249.23583984375,
+    "von": "back",
+    "nach": "welle",
+    "vorher": "Kauf gleich hier, ohne Back: Eisiger Faustschild.",
+    "text": "Farm Top, Brand lebt in 23 Sekunden wieder."
+   },
+   {
+    "zeit": 1416.023681640625,
+    "von": "turm",
+    "nach": "back",
+    "vorher": "Tryndamere ist 42 Sekunden weg: Ihr Top-Inhibitor jetzt, Level 16 gegen 10.",
+    "text": "Kauf gleich hier, ohne Back: Gürtel des Riesen."
+   },
+   {
+    "zeit": 1420.523681640625,
+    "von": "back",
+    "nach": "zurueck",
+    "vorher": "Kauf gleich hier, ohne Back: Gürtel des Riesen.",
+    "text": "Raus jetzt: Miss Fortune ist da."
+   },
+   {
+    "zeit": 1804.8663330078125,
+    "von": "zurueck",
+    "nach": "welle:top",
+    "vorher": "Raus jetzt: Leona ist da.",
+    "text": "Geh nach Top: dort kommt ihre nächste Welle."
+   },
+   {
+    "zeit": 1937.10498046875,
+    "von": "zurueck",
+    "nach": "welle:top",
+    "vorher": "Raus jetzt, zur Top-Welle.",
+    "text": "Geh nach Top. Nicht zu Master Yi."
+   }
+  ],
+  "fuellsaetze": [],
+  "saetze_n": 215,
+  "i4": [
+   {
+    "zeit": 191.6,
+    "name": "Tryndamere",
+    "ort": "oben",
+    "gesagt": "Ja, laufen reicht, du hast volles Leben und nichts zu kaufen. Geh zum äußeren Top-Turm, Tryndamere ist unbekannt, dann Kanone unterm Turm in 42 Sekunden."
+   }
+  ],
+  "latenz": {
+   "n": 79,
+   "median": 6.39,
+   "p90": 9.84,
+   "erster_satz_median": 6.072317300015129,
+   "cache_treffer": "81/81"
+  }
+ }
+}

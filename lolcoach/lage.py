@@ -1298,12 +1298,11 @@ def sicht_fuer(pfad):
     dichtesten), aus den Bildern, oder - wenn die schon aufgeraeumt sind - aus der
     gespeicherten sichtungen.json."""
     from . import aufzeichnung
-    ordner = Path(pfad).with_name(Path(pfad).name.removesuffix(".jsonl.gz") + "_bilder")
+    ordner = aufzeichnung.bilderordner(pfad)
     if (ordner / "sichtungen.jsonl.gz").exists():
         return SichtAusProtokoll(ordner)
     if bilder := aufzeichnung.bilder(pfad):
         return SichtAusBildern(bilder)
-    ordner = Path(pfad).with_name(Path(pfad).name.removesuffix(".jsonl.gz") + "_bilder")
     if (ordner / "sichtungen.json").exists():
         return SichtAusBildern.aus_cache(ordner)
     return None

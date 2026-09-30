@@ -202,11 +202,17 @@ def nach_xz(pfad: str | Path) -> int:
     return vorher - ziel.stat().st_size
 
 
+def bilderordner(pfad: str | Path) -> Path:
+    """Der _bilder-Ordner einer Aufnahme - auch unter ihrem echten Namen .jsonl.xz (Auftrag 033: wer den xz-Pfad
+    uebergab statt <stamm>.jsonl.gz, bekam keine Bilder und keine Sichtungen)."""
+    return Path(pfad).with_name(stamm(pfad) + "_bilder")
+
+
 def bilder(pfad: str | Path) -> list[tuple[float, Path]]:
     """Die Minimap-Bilder einer Aufnahme als (Wanduhr, Datei), zeitlich sortiert. Nur die mit reiner Zahl
     als Namen - chat_*.jpg und schirm_*.jpg liegen daneben (int("chat_...") liess das Aufraeumen seit
     Partie 4 still scheitern)."""
-    ordner = Path(pfad).with_name(Path(pfad).name.removesuffix(".jsonl.gz") + "_bilder")
+    ordner = bilderordner(pfad)
     if not ordner.exists():
         return []
     return sorted((int(b.stem) / 1000, b) for b in ordner.glob("*.jpg") if b.stem.isdigit())
@@ -214,7 +220,7 @@ def bilder(pfad: str | Path) -> list[tuple[float, Path]]:
 
 def bildschirme(pfad: str | Path) -> list[tuple[float, Path]]:
     """Die gesicherten Spielbildschirme einer Aufnahme (schirm_<Wanduhr ms>.jpg), zeitlich sortiert."""
-    ordner = Path(pfad).with_name(Path(pfad).name.removesuffix(".jsonl.gz") + "_bilder")
+    ordner = bilderordner(pfad)
     if not ordner.exists():
         return []
     return sorted((int(b.stem[7:]) / 1000, b) for b in ordner.glob("schirm_*.jpg") if b.stem[7:].isdigit())
