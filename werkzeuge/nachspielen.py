@@ -4,11 +4,17 @@ Sprechplan spielen wie live (stumm), dazu je Takt das Noetigste fuer Kehrtwenden
 Benutzt von werkzeuge/szenarien.py, werkzeuge/kennzahlen.py und werkzeuge/szenario_aus_notizen.py."""
 from __future__ import annotations
 
+import os
 import re
 import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+
+# Sparprotokoll (Buch 16, 2): Werkzeuge laufen nie ueber die API - die Freigabe wird aus der Umgebung ENTFERNT, damit
+# auch Unterprozesse (ProcessPool, generalprobe) sie nicht erben. Jedes Werkzeug mit Claude importiert dieses Modul.
+os.environ.pop("LOLCOACH_API", None)
+os.environ.pop("LOLCOACH_API_BUDGET", None)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from lolcoach import aufzeichnung, bewertung, lage, minimap, regeln, sprechplan, stimme, zustand  # noqa: E402

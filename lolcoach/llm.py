@@ -13,6 +13,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 
 
@@ -65,6 +66,18 @@ def _api_ausfall(e: Exception) -> None:
     _API_AUS_BIS[0] = time.monotonic() + 120.0
 
 
+def _abo_zaehlen() -> None:
+    """Sparprotokoll (Buch 16, 5): jeder Abo-Aufruf eine Zeile in daten/abo_aufrufe.jsonl - `live` heisst: Carlos'
+    Coach (LOLCOACH_API=1). werkzeuge/guthaben.py zaehlt die anderen fuer die erste Berichtszeile."""
+    try:
+        d = Path(__file__).resolve().parent.parent / "daten"
+        d.mkdir(exist_ok=True)
+        with open(d / "abo_aufrufe.jsonl", "a", encoding="utf-8") as f:
+            f.write(json.dumps({"t": round(time.time(), 1), "live": os.environ.get("LOLCOACH_API") == "1"}) + "\n")
+    except OSError:
+        pass
+
+
 def _abo_modell(modell: str) -> str:
     """Auf dem Abo gibt es nur sonnet (haiku antwortete ueber die Kommandozeile nicht, Auftrag 017)."""
     return "sonnet" if modell in ("schnell", "stark", "haiku") or modell.startswith("claude-") else modell
@@ -84,6 +97,7 @@ def frage(prompt: str, system: str | None = None, modell: str = "sonnet", timeou
             return api.frage(prompt, system=system, modell=modell, timeout=min(timeout, 60), bilder=bilder)
         except Exception as e:
             _api_ausfall(e)
+    _abo_zaehlen()
     modell = _abo_modell(modell)
     befehl = [_programm(), "-p", "--model", modell, "--tools", "",
               "--no-session-persistence", "--strict-mcp-config", "--disable-slash-commands"]
@@ -268,6 +282,7 @@ def frage_strom(prompt: str, bei_satz, system: str | None = None, modell: str = 
             _api_ausfall(e)
             if gesagt[0]:
                 raise LLMFehler(f"API brach mitten in der Antwort ab: {e}")
+    _abo_zaehlen()
     modell = _abo_modell(modell)
     if wissen:                     # Auftrag 021: das Abo kennt keinen zwischengespeicherten Block - er haengt am System
         system = f"{system or ''}\n\n{wissen}"

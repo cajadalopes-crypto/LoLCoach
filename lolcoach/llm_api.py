@@ -48,8 +48,27 @@ def schluessel() -> str | None:
         return None
 
 
+def freigegeben() -> bool:
+    """Sparprotokoll (Buch 16, 2): die API nur, wenn Carlos' Startdatei LOLCOACH_API=1 setzt - Claude Code setzt es
+    nie; Werkzeuge entfernen es aus der Umgebung ihrer Unterprozesse (werkzeuge/nachspielen.py, generalprobe)."""
+    return os.environ.get("LOLCOACH_API") == "1"
+
+
+def budget_ueberschritten() -> bool:
+    """Buch 16, 4: mit einer Ausnahme im Auftrag setzt Claude Code LOLCOACH_API_BUDGET - dort haelt der Code hart an."""
+    b = os.environ.get("LOLCOACH_API_BUDGET")
+    if not b:
+        return False
+    try:
+        return KOSTEN.summe() >= float(b)
+    except (ValueError, NameError):
+        return True
+
+
 def aktiv() -> bool:
-    """Laeuft Claude ueber die API? ([llm] weg = "api" und ein Schluessel ist da, das SDK installiert.)"""
+    """Laeuft Claude ueber die API? (LOLCOACH_API=1, [llm] weg = "api", ein Schluessel, das SDK installiert.)"""
+    if not freigegeben() or budget_ueberschritten():
+        return False
     if os.environ.get("LOLCOACH_LLM_WEG", _cfg().get("weg", "api")) != "api" or schluessel() is None:
         return False
     try:
@@ -121,6 +140,11 @@ KOSTEN = Kosten()
 
 def _anfrage(prompt: str, system: str | None, modell: str, wissen: str | None, bilder: list[bytes] | None,
              max_tokens: int) -> dict:
+    # zweite Sicherung (Buch 16, 2): kein Werkzeug kommt um aktiv() herum an die API
+    if not freigegeben():
+        raise APIFehler("API gesperrt: LOLCOACH_API=1 fehlt (Sparprotokoll, buecher/16_sparprotokoll.md)")
+    if budget_ueberschritten():
+        raise APIFehler("API-Budget dieses Laufs erreicht (LOLCOACH_API_BUDGET)")
     mid = modell_id(modell)
     sys_bloecke = []
     if system:

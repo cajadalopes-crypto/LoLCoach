@@ -1109,9 +1109,12 @@ def stimme_023():
         messages = type("Msg", (), {"stream": staticmethod(lambda **k: _Strom())})()
     alt_c, alt_k = llm_api._client, llm_api.KOSTEN.dazu
     llm_api._client, llm_api.KOSTEN.dazu = (lambda: _Client()), (lambda *a: 0.0)
+    import os
+    os.environ["LOLCOACH_API"] = "1"         # nur gegen den Attrappen-Client oben - nie die echte API (Buch 16)
     try:
         llm_api.frage_strom("?", lambda s: folge.append(s), bei_fertig=lambda: folge.append("FERTIG"))
     finally:
+        os.environ.pop("LOLCOACH_API", None)
         llm_api._client, llm_api.KOSTEN.dazu = alt_c, alt_k
     assert folge.index("FERTIG") < next(i for i, s in enumerate(folge) if s.startswith("PLAN")), folge
     assert folge.count("FERTIG") == 1 and folge[0] == "Geh zum Drachen.", folge

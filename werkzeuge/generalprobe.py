@@ -28,6 +28,14 @@ import subprocess
 import sys
 import threading
 import time
+
+os.environ.pop("LOLCOACH_API", None)             # Sparprotokoll (Buch 16, 2)
+os.environ.pop("LOLCOACH_API_BUDGET", None)
+
+
+def probe_umgebung(umgebung: dict) -> dict:
+    """Die Umgebung des Probe-Coachs: ohne LOLCOACH_API und ohne Budget (entfernt, nicht nur nicht gesetzt)."""
+    return {k: v for k, v in umgebung.items() if k not in ("LOLCOACH_API", "LOLCOACH_API_BUDGET")}
 from ctypes import wintypes
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -284,6 +292,7 @@ def main():
     if args.ohne_gehirn:
         befehl.append("--ohne-gehirn")
     umgebung = {**os.environ, "LOLCOACH_AUFNAHMEN": str(ordner), "PYTHONUNBUFFERED": "1"}
+    umgebung = probe_umgebung(umgebung)          # Sparprotokoll: der Probe-Coach nie ueber die API
     if gdi:
         umgebung["LOLCOACH_KAMERA"] = "gdi"
     coach = subprocess.Popen(befehl, cwd=WURZEL, stdout=log, stderr=subprocess.STDOUT, env=umgebung)
