@@ -1,0 +1,7 @@
+{
+ "salz": "challenger-030",
+ "pruefspieler": "sha1(salz + puuid) % 5 == 0 (20 %)",
+ "stichtag_ms": 1790459461399,
+ "stichtag": "26.09.2026 23:51",
+ "festgelegt": "30.09.2026, Auftrag 030 - nie mehr aendern; spaetere Partien liegen hinter dem Stichtag und sind Pruefung Zeit"
+}
